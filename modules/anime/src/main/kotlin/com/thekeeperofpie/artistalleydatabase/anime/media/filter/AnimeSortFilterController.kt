@@ -215,7 +215,8 @@ class AnimeSortFilterController<SortType : SortOption>(
                     chaptersRange = null,
                     showAdult = false,
                     showIgnored = true,
-                    airingDate = if (airingDateIsAdvanced) airingDate.second else airingDate.first,
+                    airingDate = initialParams?.year?.let { AiringDate.Basic(seasonYear = it.toString()) }
+                        ?: if (airingDateIsAdvanced) airingDate.second else airingDate.first,
                     sources = sourceSection.filterOptions,
                     licensedBy = licensedBySection.children.flatMap { it.filterOptions },
                 )
@@ -262,7 +263,8 @@ class AnimeSortFilterController<SortType : SortOption>(
     data class InitialParams<SortType : SortOption>(
         override val tagId: String? = null,
         override val genre: String? = null,
-        val airingDateEnabled: Boolean = true,
+        override val year: Int? = null,
+        val airingDateEnabled: Boolean = year == null,
         val onListEnabled: Boolean = true,
         val showIgnoredEnabled: Boolean = true,
         val defaultSort: SortType?,

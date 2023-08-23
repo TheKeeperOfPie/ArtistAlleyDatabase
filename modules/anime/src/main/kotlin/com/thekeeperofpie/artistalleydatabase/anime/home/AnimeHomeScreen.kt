@@ -55,6 +55,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -314,6 +315,10 @@ object AnimeHomeScreen {
                         editViewModel = editViewModel,
                         viewer = viewer,
                         reviews = reviews,
+                    )
+
+                    suggestions(
+                        mediaViewModel = mediaViewModel,
                     )
                 }
 
@@ -950,6 +955,33 @@ object AnimeHomeScreen {
                         }
                     },
                 )
+            }
+        }
+    }
+
+    private fun LazyListScope.suggestions(
+        mediaViewModel: AnimeHomeMediaViewModel,
+    ) {
+        rowHeader(
+            titleRes = R.string.anime_home_suggestions_header,
+            viewAllRoute = null,
+        )
+
+        item("${mediaViewModel.mediaType}-suggestions") {
+            val navigationCallback = LocalNavigationCallback.current
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                mediaViewModel.suggestions.forEach {
+                    item("${mediaViewModel.mediaType}-suggestion-${it.second}") {
+                        SuggestionChip(
+                            onClick = { navigationCallback.navigate(it.second) },
+                            label = { Text(stringResource(it.first)) },
+                        )
+                    }
+                }
             }
         }
     }

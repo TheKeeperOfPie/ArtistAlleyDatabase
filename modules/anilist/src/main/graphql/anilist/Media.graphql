@@ -513,24 +513,7 @@ query HomeAnime(
     }
 }
 
-query HomeAnime2(
-    $perPage: Int!,
-    $includeDescription: Boolean = true,
-) {
-    popular: Page(perPage: $perPage) {
-        media(sort: POPULARITY_DESC, type: ANIME, isAdult: false) {
-            ...MediaPreviewWithDescription
-        }
-    }
-
-    top: Page(perPage: $perPage) {
-        media(sort: SCORE_DESC, type: ANIME, isAdult: false) {
-            ...MediaPreviewWithDescription
-        }
-    }
-}
-
-query HomeManga($perPage: Int!, $includeDescription: Boolean = true) {
+query HomeManga($perPage: Int!, $thisYearStart: FuzzyDateInt!, $includeDescription: Boolean = true) {
     trending: Page(perPage: $perPage) {
         media(sort: TRENDING_DESC, type: MANGA, isAdult: false) {
             ...MediaPreviewWithDescription
@@ -542,17 +525,9 @@ query HomeManga($perPage: Int!, $includeDescription: Boolean = true) {
             ...MediaPreviewWithDescription
         }
     }
-}
 
-query HomeManga2($perPage: Int!, $includeDescription: Boolean = true) {
-    popular: Page(perPage: $perPage) {
-        media(sort: POPULARITY_DESC, type: MANGA, isAdult: false) {
-            ...MediaPreviewWithDescription
-        }
-    }
-
-    top: Page(perPage: $perPage) {
-        media(sort: SCORE_DESC, type: MANGA, isAdult: false) {
+    topThisYear: Page(perPage: $perPage) {
+        media(sort: SCORE_DESC, type: MANGA, isAdult: false, startDate_greater: $thisYearStart) {
             ...MediaPreviewWithDescription
         }
     }

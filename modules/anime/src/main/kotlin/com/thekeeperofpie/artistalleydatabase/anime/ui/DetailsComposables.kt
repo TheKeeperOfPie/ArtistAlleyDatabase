@@ -16,28 +16,23 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material.icons.filled.UnfoldLess
-import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -85,6 +80,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
@@ -261,7 +257,7 @@ internal fun CoverAndBannerHeader(
                                     }
                                     .widthIn(max = maxWidth)
                                     .combinedClickable(
-                                        onClick = { onCoverImageClick?.invoke()},
+                                        onClick = { onCoverImageClick?.invoke() },
                                         onLongClick = {
                                             coverImage?.let(fullscreenImageHandler::openImage)
                                         }
@@ -348,58 +344,44 @@ internal fun LazyListScope.descriptionSection(
     item("descriptionSection") {
         val expanded = expanded()
         ElevatedCard(
+            onClick = { onExpandedChange(!expanded) },
             modifier = Modifier
-                .animateContentSize()
                 .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp)
                 .fillMaxWidth()
         ) {
             val style = MaterialTheme.typography.bodyMedium
 
-            var showExpandButton by rememberSaveable { mutableStateOf(false) }
+            var showExpand by rememberSaveable { mutableStateOf(false) }
 
-            Box {
+            Box(modifier = Modifier.height(IntrinsicSize.Min)) {
                 MarkdownText(
                     text = markdownText,
                     textColor = style.color.takeOrElse { LocalContentColor.current },
                     maxLines = if (expanded) Int.MAX_VALUE else 4,
-                    onOverflowChange = { showExpandButton = it },
+                    onOverflowChange = { showExpand = it },
                     modifier = Modifier
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 10.dp,
-                            bottom = if (expanded) 64.dp else 10.dp,
-                        )
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .conditionally(!expanded && showExpand) { fadingEdgeBottom() }
                         .fillMaxWidth()
-                        .wrapContentHeight()
+                        .animateContentSize()
                 )
 
-                if (showExpandButton || expanded) {
-                    IconButton(
-                        onClick = { onExpandedChange(!expanded) },
+                if (!expanded && showExpand) {
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh
-                                    .copy(alpha = 0.8f),
-                                shape = RoundedCornerShape(topStart = 12.dp),
-                            )
-                    ) {
-                        Icon(
-                            imageVector = if (expanded) {
-                                Icons.Filled.UnfoldLess
-                            } else {
-                                Icons.Filled.UnfoldMore
-                            },
-                            contentDescription = stringResource(
-                                if (expanded) {
-                                    R.string.anime_unfold_less_text
-                                } else {
-                                    R.string.anime_unfold_more_text
-                                }
-                            )
-                        )
-                    }
+                            .fillParentMaxSize()
+                            .clickable { onExpandedChange(true) }
+                    )
+                }
+            }
+
+            if (expanded) {
+                HorizontalDivider()
+                TextButton(
+                    onClick = { onExpandedChange(false) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.anime_unfold_less_text))
                 }
             }
         }

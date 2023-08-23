@@ -356,6 +356,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     interface InitialParams<SortType : SortOption> {
         val tagId: String?
         val genre: String?
+        val year: Int?
     }
 
     data class FilterParams<SortType : SortOption>(

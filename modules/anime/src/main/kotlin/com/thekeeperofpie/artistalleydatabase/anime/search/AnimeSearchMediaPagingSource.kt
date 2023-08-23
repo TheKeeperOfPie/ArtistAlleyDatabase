@@ -7,12 +7,12 @@ import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSort
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.toAniListFuzzyDateInt
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
-import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 class AnimeSearchMediaPagingSource(
@@ -90,11 +90,11 @@ class AnimeSearchMediaPagingSource(
             startDateGreater = (filterParams.airingDate as? AiringDate.Advanced)
                 ?.startDate
                 ?.minus(1, ChronoUnit.DAYS)
-                ?.toApiFuzzyDateInt(),
+                ?.toAniListFuzzyDateInt(),
             startDateLesser = (filterParams.airingDate as? AiringDate.Advanced)
                 ?.endDate
                 ?.plus(1, ChronoUnit.DAYS)
-                ?.toApiFuzzyDateInt(),
+                ?.toAniListFuzzyDateInt(),
             averageScoreGreater = filterParams.averageScoreRange.apiStart,
             averageScoreLesser = filterParams.averageScoreRange.apiEnd,
             // Greater is not inclusive, offset by -1 to ensure correct results
@@ -131,12 +131,6 @@ class AnimeSearchMediaPagingSource(
         )
     } catch (e: Exception) {
         LoadResult.Error(e)
-    }
-
-    private fun LocalDate.toApiFuzzyDateInt(): Int? {
-        val monthString = monthValue.toString().padStart(2, '0')
-        val dayOfMonthString = dayOfMonth.toString().padStart(2, '0')
-        return "$year$monthString$dayOfMonthString".toIntOrNull()
     }
 
     data class RefreshParams(

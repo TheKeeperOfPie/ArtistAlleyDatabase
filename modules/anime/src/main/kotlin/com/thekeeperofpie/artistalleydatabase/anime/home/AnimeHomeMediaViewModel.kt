@@ -11,16 +11,11 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
-import com.anilist.fragment.MediaAndReviewsReview
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.flowFromSuspend
-import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -44,7 +39,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -80,6 +74,8 @@ abstract class AnimeHomeMediaViewModel(
     }
 
     protected abstract suspend fun rows(): Flow<List<RowInput>>
+
+    abstract val suggestions: List<Pair<Int, String>>
 
     // It is faster to load the specific current list,
     // but this duplicates with the full user media lists
@@ -292,75 +288,56 @@ abstract class AnimeHomeMediaViewModel(
         mediaType = MediaType.ANIME,
         errorTextRes = R.string.anime_home_error_loading_anime,
     ) {
+        override val suggestions = listOf(
+            R.string.anime_home_suggestion_popular_all_time to AnimeNavDestinations.SEARCH_MEDIA.id
+                    + "?titleRes=${R.string.anime_home_suggestion_popular_all_time}"
+                    + "&mediaType=${mediaType.name}"
+                    + "&sort=${MediaSortOption.POPULARITY}",
+            R.string.anime_home_suggestion_top to AnimeNavDestinations.SEARCH_MEDIA.id
+                    + "?titleRes=${R.string.anime_home_suggestion_top}"
+                    + "&mediaType=${mediaType.name}"
+                    + "&sort=${MediaSortOption.SCORE}",
+        )
 
-        override suspend fun rows(): Flow<List<RowInput>> {
-            val pageOne = flowFromSuspend {
-                val result = aniListApi.homeAnime()
-                listOf(
-                    RowInput(
-                        "anime_trending",
-                        R.string.anime_home_trending_row_label,
-                        result.trending?.media,
-                        viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                                + "?titleRes=${R.string.anime_home_trending_screen_title}"
-                                + "&mediaType=${mediaType.name}"
-                                + "&sort=${MediaSortOption.TRENDING}"
-                    ),
-                    RowInput(
-                        "anime_popular_this_season",
-                        R.string.anime_home_popular_this_season,
-                        result.popularThisSeason?.media,
-                        viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.THIS.name}"
-                    ),
-                    RowInput(
-                        "anime_last_added",
-                        R.string.anime_home_last_added,
-                        result.lastAdded?.media,
-                        viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                                + "?titleRes=${R.string.anime_home_last_added_screen_title}"
-                                + "&mediaType=${mediaType.name}"
-                                + "&sort=${MediaSortOption.ID}"
-                    ),
-                    RowInput(
-                        "anime_popular_last_season",
-                        R.string.anime_home_popular_last_season,
-                        result.popularLastSeason?.media,
-                        viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.LAST.name}"
-                    ),
-                    RowInput(
-                        "anime_popular_next_season",
-                        R.string.anime_home_popular_next_season,
-                        result.popularNextSeason?.media,
-                        viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.NEXT.name}"
-                    ),
-                )
-            }.startWith(item = emptyList())
-            val pageTwo = flowFromSuspend {
-                val result = aniListApi.homeAnime2()
-                listOf(
-                    RowInput(
-                        "anime_popular",
-                        R.string.anime_home_popular_row_label,
-                        result.popular?.media,
-                        viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                                + "?titleRes=${R.string.anime_home_popular_screen_title}"
-                                + "&mediaType=${mediaType.name}"
-                                + "&sort=${MediaSortOption.POPULARITY}"
-                    ),
-                    RowInput(
-                        "anime_top", R.string.anime_home_top_row_label,
-                        result.top?.media,
-                        viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                                + "?titleRes=${R.string.anime_home_top_screen_title}"
-                                + "&mediaType=${mediaType.name}"
-                                + "&sort=${MediaSortOption.SCORE}"
-                    )
-                )
-            }.startWith(item = emptyList())
-            return combine(
-                pageOne,
-                pageTwo,
-                List<RowInput>::plus
+        override suspend fun rows() = flowFromSuspend {
+            val result = aniListApi.homeAnime()
+            listOf(
+                RowInput(
+                    "anime_trending",
+                    R.string.anime_home_trending_row_label,
+                    result.trending?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_trending_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.TRENDING}"
+                ),
+                RowInput(
+                    "anime_popular_this_season",
+                    R.string.anime_home_popular_this_season,
+                    result.popularThisSeason?.media,
+                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.THIS.name}"
+                ),
+                RowInput(
+                    "anime_last_added",
+                    R.string.anime_home_last_added,
+                    result.lastAdded?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_last_added_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.ID}"
+                ),
+                RowInput(
+                    "anime_popular_last_season",
+                    R.string.anime_home_popular_last_season,
+                    result.popularLastSeason?.media,
+                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.LAST.name}"
+                ),
+                RowInput(
+                    "anime_popular_next_season",
+                    R.string.anime_home_popular_next_season,
+                    result.popularNextSeason?.media,
+                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.NEXT.name}"
+                ),
             )
         }
     }
@@ -382,57 +359,47 @@ abstract class AnimeHomeMediaViewModel(
         mediaType = MediaType.MANGA,
         errorTextRes = R.string.anime_home_error_loading_manga,
     ) {
+        override val suggestions = listOf(
+            R.string.anime_home_suggestion_popular_all_time to AnimeNavDestinations.SEARCH_MEDIA.id
+                    + "?titleRes=${R.string.anime_home_suggestion_popular_all_time}"
+                    + "&mediaType=${mediaType.name}"
+                    + "&sort=${MediaSortOption.POPULARITY}",
+            R.string.anime_home_suggestion_top to AnimeNavDestinations.SEARCH_MEDIA.id
+                    + "?titleRes=${R.string.anime_home_suggestion_top}"
+                    + "&mediaType=${mediaType.name}"
+                    + "&sort=${MediaSortOption.SCORE}",
+        )
 
-        override suspend fun rows(): Flow<List<RowInput>> {
-            val pageOne = flowFromSuspend {
-                val result = aniListApi.homeManga()
-                listOf(
-                    RowInput(
-                        "manga_trending",
-                        R.string.anime_home_trending_row_label,
-                        result.trending?.media,
-                        viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                                + "?titleRes=${R.string.anime_home_trending_screen_title}"
-                                + "&mediaType=${mediaType.name}"
-                                + "&sort=${MediaSortOption.TRENDING}"
-                    ),
-                    RowInput(
-                        "manga_last_added",
-                        R.string.anime_home_last_added,
-                        result.lastAdded?.media,
-                        viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                                + "?titleRes=${R.string.anime_home_last_added_screen_title}"
-                                + "&mediaType=${mediaType.name}"
-                                + "&sort=${MediaSortOption.ID}"
-                    ),
-                )
-            }.startWith(item = emptyList())
-            val pageTwo = flowFromSuspend {
-                val result = aniListApi.homeManga2()
-                listOf(
-                    RowInput(
-                        "manga_popular",
-                        R.string.anime_home_popular_row_label,
-                        result.popular?.media,
-                        viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                                + "?titleRes=${R.string.anime_home_popular_screen_title}"
-                                + "&mediaType=${mediaType.name}"
-                                + "&sort=${MediaSortOption.POPULARITY}"
-                    ),
-                    RowInput(
-                        "manga_top", R.string.anime_home_top_row_label,
-                        result.top?.media,
-                        viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                                + "?titleRes=${R.string.anime_home_top_screen_title}"
-                                + "&mediaType=${mediaType.name}"
-                                + "&sort=${MediaSortOption.SCORE}"
-                    ),
-                )
-            }.startWith(item = emptyList())
-            return combine(
-                pageOne,
-                pageTwo,
-                List<RowInput>::plus
+        override suspend fun rows() = flowFromSuspend {
+            val result = aniListApi.homeManga()
+            listOf(
+                RowInput(
+                    "manga_trending",
+                    R.string.anime_home_trending_row_label,
+                    result.trending?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_trending_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.TRENDING}"
+                ),
+                RowInput(
+                    "manga_last_added",
+                    R.string.anime_home_last_added,
+                    result.lastAdded?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_last_added_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.ID}"
+                ),
+                RowInput(
+                    "manga_top_released_this_year",
+                    R.string.anime_home_top_released_this_year,
+                    result.topThisYear?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_top_released_this_year_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.SCORE}"
+                ),
             )
         }
     }

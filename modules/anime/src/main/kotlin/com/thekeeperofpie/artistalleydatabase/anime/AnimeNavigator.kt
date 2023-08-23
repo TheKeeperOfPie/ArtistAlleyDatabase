@@ -117,7 +117,8 @@ object AnimeNavigator {
                     + "&tagId={tagId}"
                     + "&genre={genre}"
                     + "&mediaType={mediaType}"
-                    + "&sort={sort}",
+                    + "&sort={sort}"
+                    + "&year={year}",
             arguments = listOf(
                 "title",
                 "titleRes",
@@ -125,6 +126,7 @@ object AnimeNavigator {
                 "genre",
                 "mediaType",
                 "sort",
+                "year",
             ).map {
                 navArgument(it) {
                     type = NavType.StringType
@@ -148,11 +150,13 @@ object AnimeNavigator {
                     }
                 }
                 ?: MediaSortOption.TRENDING
+            val year = it.arguments?.getString("year")?.toIntOrNull()
             val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
                 initialize(
                     defaultMediaSort = sort,
                     tagId = tagId,
                     genre = genre,
+                    year = year,
                     searchType = if (mediaType == MediaType.MANGA) {
                         AnimeSearchViewModel.SearchType.MANGA
                     } else {

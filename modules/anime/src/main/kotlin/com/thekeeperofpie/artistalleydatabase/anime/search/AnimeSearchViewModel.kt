@@ -509,6 +509,7 @@ class AnimeSearchViewModel @Inject constructor(
         defaultMediaSort: MediaSortOption,
         tagId: String? = null,
         genre: String? = null,
+        year: Int? = null,
         searchType: SearchType? = null,
         lockSort: Boolean,
     ) {
@@ -523,6 +524,7 @@ class AnimeSearchViewModel @Inject constructor(
             initialParams = AnimeSortFilterController.InitialParams(
                 tagId = tagId,
                 genre = genre,
+                year = year,
                 defaultSort = defaultMediaSort,
                 lockSort = lockSort,
             ),
@@ -533,6 +535,7 @@ class AnimeSearchViewModel @Inject constructor(
             initialParams = MangaSortFilterController.InitialParams(
                 tagId = tagId,
                 genre = genre,
+                year = year,
                 defaultSort = defaultMediaSort,
                 lockSort = lockSort,
             ),

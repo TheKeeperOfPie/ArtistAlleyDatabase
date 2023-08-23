@@ -22,9 +22,7 @@ import com.anilist.ForumThreadDetailsQuery
 import com.anilist.ForumThreadSearchQuery
 import com.anilist.ForumThread_CommentsQuery
 import com.anilist.GenresQuery
-import com.anilist.HomeAnime2Query
 import com.anilist.HomeAnimeQuery
-import com.anilist.HomeManga2Query
 import com.anilist.HomeMangaQuery
 import com.anilist.HomeReviewsQuery
 import com.anilist.LicensorsQuery
@@ -600,11 +598,12 @@ open class AuthedAniListApi(
         )
     }
 
-    open suspend fun homeAnime2(perPage: Int = 10) = query(HomeAnime2Query(perPage = perPage))
-
-    open suspend fun homeManga(perPage: Int = 10) = query(HomeMangaQuery(perPage = perPage))
-
-    open suspend fun homeManga2(perPage: Int = 10) = query(HomeManga2Query(perPage = perPage))
+    open suspend fun homeManga(perPage: Int = 10) = query(
+        HomeMangaQuery(
+            perPage = perPage,
+            thisYearStart = "${AniListUtils.getCurrentSeasonYear().second}0000",
+        )
+    )
 
     open suspend fun airingSchedule(
         startTime: Long,

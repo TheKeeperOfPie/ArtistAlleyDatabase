@@ -226,7 +226,9 @@ class MangaSortFilterController<SortType : SortOption>(
                     chaptersRange = chaptersSection.data,
                     showAdult = false,
                     showIgnored = true,
-                    airingDate = releaseDate,
+                    airingDate = initialParams?.year
+                        ?.let { AiringDate.Basic(seasonYear = it.toString()) }
+                        ?: releaseDate,
                     sources = sourceSection.filterOptions,
                     licensedBy = licensedBySection.children.flatMap { it.filterOptions },
                 )
@@ -271,7 +273,8 @@ class MangaSortFilterController<SortType : SortOption>(
     data class InitialParams<SortType : SortOption>(
         override val tagId: String? = null,
         override val genre: String? = null,
-        val airingDateEnabled: Boolean = true,
+        override val year: Int? = null,
+        val airingDateEnabled: Boolean = year == null,
         val onListEnabled: Boolean = true,
         val hideIgnoredEnabled: Boolean = true,
         val defaultSort: SortType?,

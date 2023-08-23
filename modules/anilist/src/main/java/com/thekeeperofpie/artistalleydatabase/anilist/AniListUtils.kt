@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import java.time.Instant
+import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -179,4 +180,10 @@ fun ApolloClient.Builder.addLoggingInterceptors(
         }
         addHttpInterceptor(LoggingInterceptor(level) { Log.d(tag, it) })
     }
+}
+
+fun LocalDate.toAniListFuzzyDateInt(): Int? {
+    val monthString = monthValue.toString().padStart(2, '0')
+    val dayOfMonthString = dayOfMonth.toString().padStart(2, '0')
+    return "$year$monthString$dayOfMonthString".toIntOrNull()
 }

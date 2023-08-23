@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import com.anilist.ActivityDetailsQuery
-import com.anilist.MediaAutocompleteQuery
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
@@ -365,24 +364,10 @@ class AuthedAniListApiWrapper(
         )
     }
 
-    override suspend fun homeAnime2(perPage: Int) = super.homeAnime2(perPage).let {
-        it.copy(
-            popular = it.popular?.copy(media = it.popular.media?.filter { it?.isAdult == false }),
-            top = it.top?.copy(media = it.top.media?.filter { it?.isAdult == false }),
-        )
-    }
-
     override suspend fun homeManga(perPage: Int) = super.homeManga(perPage).let {
         it.copy(
             trending = it.trending?.copy(media = it.trending.media?.filter { it?.isAdult == false }),
             lastAdded = it.lastAdded?.copy(media = it.lastAdded.media?.filter { it?.isAdult == false }),
-        )
-    }
-
-    override suspend fun homeManga2(perPage: Int) = super.homeManga2(perPage).let {
-        it.copy(
-            popular = it.popular?.copy(media = it.popular.media?.filter { it?.isAdult == false }),
-            top = it.top?.copy(media = it.top.media?.filter { it?.isAdult == false }),
         )
     }
 
