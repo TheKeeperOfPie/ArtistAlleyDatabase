@@ -15,7 +15,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -37,13 +36,10 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import java.util.Optional
 import javax.inject.Inject
-import kotlin.jvm.optionals.getOrNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class AnimeMediaIgnoreViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
@@ -54,6 +50,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    val enabled = settings.mediaIgnoreEnabled
     var selectedType by mutableStateOf(savedStateHandle.get<String?>("mediaType")
         ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
         ?: settings.preferredMediaType.value)
@@ -91,12 +88,16 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
             )
                 .flatMapLatest { (mediaType) ->
                     Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
-                        MediaIgnorePagingSource(ignoreDao, mediaType)
+                        ignoreDao.getEntries(mediaType)
+//                        MediaIgnorePagingSource(ignoreDao, mediaType)
                     }.flow
                 }
                 .map {
                     it.mapNotNull {
-                        mediaRequestBatcher.fetch(it.id)?.let(::MediaPreviewWithDescriptionEntry)
+                        MediaPreviewWithDescriptionEntry(
+                            media = PlaceholderMediaEntry(it)
+                        )
+//                        mediaRequestBatcher.fetch(it.id)?.let(::MediaPreviewWithDescriptionEntry)
                     }
                 }
                 .enforceUniqueIds { it.id.valueId }
@@ -129,34 +130,35 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
     fun placeholder(index: Int, mediaType: MediaType): MediaPreviewWithDescriptionEntry? {
-        val localContent = if (mediaType == MediaType.ANIME) {
-            localContentAnime
-        } else {
-            localContentManga
-        }
-
-        val optional = localContent[index]
-        if (optional != null) {
-            // Check if still loading
-            if (!optional.isPresent) return null
-            optional.getOrNull()?.get()?.let { return it }
-        }
-        localContent[index] = Optional.empty()
-        viewModelScope.launch(CustomDispatchers.IO) {
-            val entry = try {
-                ignoreDao.getEntryAtIndex(index, mediaType)
-            } catch (ignored: Throwable) {
-                return@launch
-            } ?: return@launch
-
-            val result = Optional.of(
-                WeakReference(MediaPreviewWithDescriptionEntry(PlaceholderMediaEntry(entry)))
-            )
-            withContext(CustomDispatchers.Main) {
-                localContent[index] = result
-            }
-        }
         return null
+//        val localContent = if (mediaType == MediaType.ANIME) {
+//            localContentAnime
+//        } else {
+//            localContentManga
+//        }
+//
+//        val optional = localContent[index]
+//        if (optional != null) {
+//            // Check if still loading
+//            if (!optional.isPresent) return null
+//            optional.getOrNull()?.get()?.let { return it }
+//        }
+//        localContent[index] = Optional.empty()
+//        viewModelScope.launch(CustomDispatchers.IO) {
+//            val entry = try {
+//                ignoreDao.getEntryAtIndex(index, mediaType)
+//            } catch (ignored: Throwable) {
+//                return@launch
+//            } ?: return@launch
+//
+//            val result = Optional.of(
+//                WeakReference(MediaPreviewWithDescriptionEntry(PlaceholderMediaEntry(entry)))
+//            )
+//            withContext(CustomDispatchers.Main) {
+//                localContent[index] = result
+//            }
+//        }
+//        return null
     }
 
     data class PlaceholderMediaEntry(

@@ -807,7 +807,15 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(route = AnimeNavDestinations.MEDIA_HISTORY.id) {
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.MEDIA_HISTORY.id + "?mediaType={mediaType}",
+            arguments = listOf(
+                navArgument("mediaType") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
+        ) {
             MediaHistoryScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
@@ -1329,6 +1337,11 @@ object AnimeNavigator {
 
         fun onClickViewIgnored(mediaType: MediaType? = null) {
             navHostController?.navigate(AnimeNavDestinations.IGNORED.id
+                    + "?mediaType=${mediaType?.rawValue}")
+        }
+
+        fun onClickViewMediaHistory(mediaType: MediaType? = null) {
+            navHostController?.navigate(AnimeNavDestinations.MEDIA_HISTORY.id
                     + "?mediaType=${mediaType?.rawValue}")
         }
 

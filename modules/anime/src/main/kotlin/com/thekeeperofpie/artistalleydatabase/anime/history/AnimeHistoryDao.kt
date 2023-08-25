@@ -11,8 +11,8 @@ import com.anilist.type.MediaType
 @Dao
 interface AnimeHistoryDao {
 
-    @Query("""SELECT * FROM anime_media_history ORDER BY viewedAt DESC""")
-    fun getEntries(): PagingSource<Int, AnimeMediaHistoryEntry>
+    @Query("""SELECT * FROM anime_media_history WHERE type = :type ORDER BY viewedAt DESC""")
+    fun getEntries(type: MediaType): PagingSource<Int, AnimeMediaHistoryEntry>
 
     @Query("""
         SELECT * FROM anime_media_history WHERE type = :type

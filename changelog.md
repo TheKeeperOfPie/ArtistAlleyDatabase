@@ -2,6 +2,8 @@
 
 ### Next (9)
 - Add role in media to character details
+- Add media ignored/history menu on re-clicking bottom bar anime/manga
+- Disable network fetch for ignored/history; performance is too terrible
 
 ### 0.43 (8)
 - Add full current media screen

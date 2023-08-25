@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -32,11 +33,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import java.util.Optional
 import javax.inject.Inject
-import kotlin.jvm.optionals.getOrNull
 
 @HiltViewModel
 class MediaHistoryViewModel @Inject constructor(
@@ -45,9 +44,13 @@ class MediaHistoryViewModel @Inject constructor(
     mediaListStatusController: MediaListStatusController,
     val ignoreController: IgnoreController,
     private val historyDao: AnimeHistoryDao,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    var selectedType by mutableStateOf(settings.preferredMediaType.value)
+    val enabled = settings.mediaHistoryEnabled
+    var selectedType by mutableStateOf(savedStateHandle.get<String?>("mediaType")
+        ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
+        ?: settings.preferredMediaType.value)
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
@@ -59,6 +62,7 @@ class MediaHistoryViewModel @Inject constructor(
     private val localContentManga =
         mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
 
+    // TODO: Re-enable network fetch by migrating to custom paginator
     private val mediaRequestBatcher = RequestBatcher(
         scope = viewModelScope,
         apiCall = {
@@ -75,12 +79,16 @@ class MediaHistoryViewModel @Inject constructor(
             snapshotFlow { selectedType }
                 .flatMapLatest {
                     Pager(config = PagingConfig(pageSize = 10, jumpThreshold = 10)) {
-                        MediaHistoryPagingSource(historyDao, it)
+                        historyDao.getEntries(it)
+//                        MediaHistoryPagingSource(historyDao, it)
                     }.flow
                 }
                 .map {
                     it.mapNotNull {
-                        mediaRequestBatcher.fetch(it.id)?.let(::MediaPreviewWithDescriptionEntry)
+                        MediaPreviewWithDescriptionEntry(
+                            media = PlaceholderMediaEntry(it)
+                        )
+//                        mediaRequestBatcher.fetch(it.id)?.let(::MediaPreviewWithDescriptionEntry)
                     }
                 }
                 .enforceUniqueIds { it.id.valueId }
@@ -107,38 +115,39 @@ class MediaHistoryViewModel @Inject constructor(
     }
 
     fun placeholder(index: Int, mediaType: MediaType): MediaPreviewWithDescriptionEntry? {
-        val localContent = if (mediaType == MediaType.ANIME) {
-            localContentAnime
-        } else {
-            localContentManga
-        }
-
-        val optional = localContent[index]
-        if (optional != null) {
-            // Check if still loading
-            if (!optional.isPresent) return null
-            optional.getOrNull()?.get()?.let { return it }
-        }
-        localContent[index] = Optional.empty()
-        viewModelScope.launch(CustomDispatchers.IO) {
-            val entry = try {
-                historyDao.getEntryAtIndex(index)
-            } catch (ignored: Throwable) {
-                return@launch
-            } ?: return@launch
-
-            val result = Optional.of(
-                WeakReference(
-                    MediaPreviewWithDescriptionEntry(
-                        media = PlaceholderMediaEntry(entry)
-                    )
-                )
-            )
-            withContext(CustomDispatchers.Main) {
-                localContent[index] = result
-            }
-        }
         return null
+//        val localContent = if (mediaType == MediaType.ANIME) {
+//            localContentAnime
+//        } else {
+//            localContentManga
+//        }
+//
+//        val optional = localContent[index]
+//        if (optional != null) {
+//            // Check if still loading
+//            if (!optional.isPresent) return null
+//            optional.getOrNull()?.get()?.let { return it }
+//        }
+//        localContent[index] = Optional.empty()
+//        viewModelScope.launch(CustomDispatchers.IO) {
+//            val entry = try {
+//                historyDao.getEntryAtIndex(index)
+//            } catch (ignored: Throwable) {
+//                return@launch
+//            } ?: return@launch
+//
+//            val result = Optional.of(
+//                WeakReference(
+//                    MediaPreviewWithDescriptionEntry(
+//                        media = PlaceholderMediaEntry(entry)
+//                    )
+//                )
+//            )
+//            withContext(CustomDispatchers.Main) {
+//                localContent[index] = result
+//            }
+//        }
+//        return null
     }
 
     data class PlaceholderMediaEntry(

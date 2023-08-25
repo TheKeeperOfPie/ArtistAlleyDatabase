@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -9,6 +10,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AnimeIgnoreDao {
+
+    @Query("""SELECT * FROM anime_media_ignore WHERE type = :type ORDER BY viewedAt DESC""")
+    fun getEntries(type: MediaType): PagingSource<Int, AnimeMediaIgnoreEntry>
 
     @Query("""
         SELECT * FROM anime_media_ignore WHERE type = :type

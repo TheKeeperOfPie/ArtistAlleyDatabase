@@ -4,8 +4,12 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -13,6 +17,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
@@ -101,21 +107,72 @@ object AnimeRootScreen {
                 ) {
                     val navigationCallback = LocalNavigationCallback.current
                     val unlocked by viewModel.unlocked.collectAsState(initial = false)
+
+                    var showAnimeMenu by remember { mutableStateOf(false) }
+                    var showMangaMenu by remember { mutableStateOf(false) }
+
+                    fun dismissMenu(destination: AnimeRootNavDestination) {
+                        if (destination == AnimeRootNavDestination.ANIME) {
+                            showAnimeMenu = false
+                        } else {
+                            showMangaMenu = false
+                        }
+                    }
+
                     AnimeRootNavDestination.values()
                         .filter { !it.requiresAuth || !needsAuth }
                         .filter { !it.requiresUnlock || unlocked }
                         .filter { it != AnimeRootNavDestination.UNLOCK || !unlocked }
                         .forEach { destination ->
                             NavigationBarItem(
-                                icon = { Icon(destination.icon, contentDescription = null) },
+                                icon = {
+                                    Icon(destination.icon, contentDescription = null)
+                                    if (destination == AnimeRootNavDestination.ANIME
+                                        || destination == AnimeRootNavDestination.MANGA
+                                    ) {
+                                        DropdownMenu(
+                                            expanded = if (destination == AnimeRootNavDestination.ANIME) {
+                                                showAnimeMenu
+                                            } else {
+                                                showMangaMenu
+                                            },
+                                            onDismissRequest = { dismissMenu(destination) },
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.anime_root_menu_ignored)) },
+                                                onClick = {
+                                                    dismissMenu(destination)
+                                                    navigationCallback.onClickViewIgnored(
+                                                        if (destination == AnimeRootNavDestination.ANIME) {
+                                                            MediaType.ANIME
+                                                        } else {
+                                                            MediaType.MANGA
+                                                        }
+                                                    )
+                                                },
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.anime_root_menu_history)) },
+                                                onClick = {
+                                                    dismissMenu(destination)
+                                                    navigationCallback.onClickViewMediaHistory(
+                                                        if (destination == AnimeRootNavDestination.ANIME) {
+                                                            MediaType.ANIME
+                                                        } else {
+                                                            MediaType.MANGA
+                                                        }
+                                                    )
+                                                },
+                                            )
+                                        }
+                                    }
+                                },
                                 selected = selectedScreen == destination,
                                 onClick = {
                                     if (selectedScreen == destination) {
                                         when (destination) {
-                                            AnimeRootNavDestination.ANIME -> navigationCallback
-                                                .onClickViewIgnored(MediaType.ANIME)
-                                            AnimeRootNavDestination.MANGA -> navigationCallback
-                                                .onClickViewIgnored(MediaType.MANGA)
+                                            AnimeRootNavDestination.ANIME -> showAnimeMenu = true
+                                            AnimeRootNavDestination.MANGA -> showMangaMenu = true
                                             AnimeRootNavDestination.HOME,
                                             AnimeRootNavDestination.SEARCH,
                                             AnimeRootNavDestination.PROFILE,

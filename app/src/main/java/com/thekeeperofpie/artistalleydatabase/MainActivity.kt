@@ -634,9 +634,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 },
                                 onClickViewMediaHistory = {
-                                    navigationCallback.navigate(
-                                        AnimeNavDestinations.MEDIA_HISTORY.id
-                                    )
+                                    navigationCallback.onClickViewMediaHistory(null)
                                 },
                                 onClickViewMediaIgnore = {
                                     navigationCallback.onClickViewIgnored()

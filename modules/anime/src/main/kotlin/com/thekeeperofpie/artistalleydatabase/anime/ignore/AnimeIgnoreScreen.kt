@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
@@ -55,7 +57,7 @@ object AnimeIgnoreScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = AnimeNavDestinations.IGNORED.id,
+            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             topBar = { TopBar(viewModel, upIconOption, scrollBehavior) },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -68,61 +70,65 @@ object AnimeIgnoreScreen {
                 onRefresh = viewModel::onRefresh,
                 modifier = Modifier.padding(scaffoldPadding),
             ) {
-                when (val refreshState = content.loadState.refresh) {
-                    LoadState.Loading -> Unit
-                    is LoadState.Error -> AnimeMediaListScreen.Error(
-                        exception = refreshState.error,
-                    )
-                    is LoadState.NotLoading -> {
-                        if (content.itemCount == 0) {
-                            AnimeMediaListScreen.NoResults()
-                        } else {
-                            val columns = when (viewModel.mediaViewOption) {
-                                MediaViewOption.SMALL_CARD,
-                                MediaViewOption.LARGE_CARD,
-                                MediaViewOption.COMPACT,
-                                -> GridCells.Adaptive(300.dp)
-                                MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
-                            }
-                            val mediaType = viewModel.selectedType
-                            LazyVerticalGrid(
-                                columns = columns,
-                                contentPadding = PaddingValues(
-                                    top = 16.dp,
-                                    start = 16.dp,
-                                    end = 16.dp,
-                                    bottom = 32.dp,
-                                ),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                items(
-                                    count = content.itemCount,
-                                    key = content.itemKey { it.media.id },
-                                    contentType = content.itemContentType { "media" },
-                                ) { index ->
-                                    val networkEntry = content[index]
-                                    val showQuickEdit = networkEntry != null
-                                    val entry =
-                                        networkEntry ?: viewModel.placeholder(index, mediaType)
-                                    MediaViewOptionRow(
-                                        screenKey = SCREEN_KEY,
-                                        mediaViewOption = viewModel.mediaViewOption,
-                                        viewer = viewer,
-                                        editViewModel = editViewModel,
-                                        entry = entry,
-                                        showQuickEdit = showQuickEdit,
-                                    )
+                val enabled by viewModel.enabled.collectAsState()
+                if (!enabled) {
+                    NotEnabledPrompt(viewModel)
+                } else {
+                    when (val refreshState = content.loadState.refresh) {
+                        LoadState.Loading -> Unit
+                        is LoadState.Error -> AnimeMediaListScreen.Error(
+                            exception = refreshState.error,
+                        )
+                        is LoadState.NotLoading -> {
+                            if (content.itemCount == 0) {
+                                AnimeMediaListScreen.NoResults()
+                            } else {
+                                val columns = when (viewModel.mediaViewOption) {
+                                    MediaViewOption.SMALL_CARD,
+                                    MediaViewOption.LARGE_CARD,
+                                    MediaViewOption.COMPACT,
+                                    -> GridCells.Adaptive(300.dp)
+                                    MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
                                 }
+                                val mediaType = viewModel.selectedType
+                                LazyVerticalGrid(
+                                    columns = columns,
+                                    contentPadding = PaddingValues(
+                                        top = 16.dp,
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        bottom = 32.dp,
+                                    ),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    items(
+                                        count = content.itemCount,
+                                        key = content.itemKey { it.media.id },
+                                        contentType = content.itemContentType { "media" },
+                                    ) { index ->
+                                        val networkEntry = content[index]
+                                        val entry =
+                                            networkEntry ?: viewModel.placeholder(index, mediaType)
+                                        MediaViewOptionRow(
+                                            screenKey = SCREEN_KEY,
+                                            mediaViewOption = viewModel.mediaViewOption,
+                                            viewer = viewer,
+                                            editViewModel = editViewModel,
+                                            entry = entry,
+                                            showQuickEdit = false,
+                                        )
+                                    }
 
-                                when (content.loadState.append) {
-                                    is LoadState.Loading -> item(key = "load_more_append") {
-                                        AnimeMediaListScreen.LoadingMore()
+                                    when (content.loadState.append) {
+                                        is LoadState.Loading -> item(key = "load_more_append") {
+                                            AnimeMediaListScreen.LoadingMore()
+                                        }
+                                        is LoadState.Error -> item(key = "load_more_error") {
+                                            AnimeMediaListScreen.AppendError { content.retry() }
+                                        }
+                                        is LoadState.NotLoading -> Unit
                                     }
-                                    is LoadState.Error -> item(key = "load_more_error") {
-                                        AnimeMediaListScreen.AppendError { content.retry() }
-                                    }
-                                    is LoadState.NotLoading -> Unit
                                 }
                             }
                         }
@@ -182,6 +188,23 @@ object AnimeIgnoreScreen {
                         text = { Text(stringResource(R.string.anime_media_ignore_tab_manga)) },
                     )
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun NotEnabledPrompt(viewModel: AnimeMediaIgnoreViewModel) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.anime_media_ignore_not_enabled_prompt),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(32.dp)
+            )
+            Button(onClick = { viewModel.enabled.value = true }) {
+                Text(stringResource(R.string.anime_media_ignore_not_enabled_button))
             }
         }
     }

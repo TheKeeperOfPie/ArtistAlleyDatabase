@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.history
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -39,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -54,7 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeight
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 object MediaHistoryScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.MEDIA_HISTORY.id
@@ -68,7 +70,7 @@ object MediaHistoryScreen {
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         val snackbarHostState = remember { SnackbarHostState() }
         MediaEditBottomSheetScaffold(
-            screenKey = AnimeNavDestinations.USER_LIST.id,
+            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -135,52 +137,73 @@ object MediaHistoryScreen {
                     .padding(it)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                // TODO: Error state
-                val hasItems = content.itemCount > 0
-                if (!refreshing && !hasItems) {
-                    AnimeMediaListScreen.NoResults()
+                val enabled by viewModel.enabled.collectAsState()
+                if (!enabled) {
+                    NotEnabledPrompt(viewModel)
                 } else {
-                    val columns = when (viewModel.mediaViewOption) {
-                        MediaViewOption.SMALL_CARD,
-                        MediaViewOption.LARGE_CARD,
-                        MediaViewOption.COMPACT,
-                        -> GridCells.Adaptive(300.dp)
-                        MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
-                    }
+                    // TODO: Error state
+                    val hasItems = content.itemCount > 0
+                    if (!refreshing && !hasItems) {
+                        AnimeMediaListScreen.NoResults()
+                    } else {
+                        val columns = when (viewModel.mediaViewOption) {
+                            MediaViewOption.SMALL_CARD,
+                            MediaViewOption.LARGE_CARD,
+                            MediaViewOption.COMPACT,
+                            -> GridCells.Adaptive(300.dp)
+                            MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
+                        }
 
-                    val viewer by viewModel.viewer.collectAsState()
-                    val mediaType = viewModel.selectedType
-                    LazyVerticalGrid(
-                        columns = columns,
-                        contentPadding = PaddingValues(
-                            top = 16.dp,
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = 32.dp,
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(
-                            count = content.itemCount,
-                            key = content.itemKey { "media_${it.media.id}" },
-                            contentType = content.itemContentType { "media" },
+                        val viewer by viewModel.viewer.collectAsState()
+                        val mediaType = viewModel.selectedType
+                        LazyVerticalGrid(
+                            columns = columns,
+                            contentPadding = PaddingValues(
+                                top = 16.dp,
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = 32.dp,
+                            ),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            val networkEntry = content[it]
-                            val showQuickEdit = networkEntry != null
-                            val entry =
-                                networkEntry ?: viewModel.placeholder(it, mediaType)
-                            MediaViewOptionRow(
-                                screenKey = SCREEN_KEY,
-                                mediaViewOption = viewModel.mediaViewOption,
-                                viewer = viewer,
-                                editViewModel = editViewModel,
-                                entry = entry,
-                                showQuickEdit = showQuickEdit,
-                            )
+                            items(
+                                count = content.itemCount,
+                                key = content.itemKey { "media_${it.media.id}" },
+                                contentType = content.itemContentType { "media" },
+                            ) {
+                                val networkEntry = content[it]
+                                val entry =
+                                    networkEntry ?: viewModel.placeholder(it, mediaType)
+                                MediaViewOptionRow(
+                                    screenKey = SCREEN_KEY,
+                                    mediaViewOption = viewModel.mediaViewOption,
+                                    viewer = viewer,
+                                    editViewModel = editViewModel,
+                                    entry = entry,
+                                    showQuickEdit = false,
+                                )
+                            }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun NotEnabledPrompt(viewModel: MediaHistoryViewModel) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.anime_media_history_not_enabled_prompt),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(32.dp)
+            )
+            Button(onClick = { viewModel.enabled.value = true }) {
+                Text(stringResource(R.string.anime_media_history_not_enabled_button))
             }
         }
     }
