@@ -17,6 +17,7 @@ import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import com.anilist.type.MediaType
 import com.anilist.type.StudioSort
+import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
@@ -27,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
@@ -41,7 +43,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserUtils
 import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
@@ -418,46 +422,48 @@ class AnimeSearchViewModel @Inject constructor(
             pagingSource = { AnimeSearchUserPagingSource(aniListApi, it) },
             id = { it.id },
             entry = {
-                val anime = it.favourites?.anime?.edges
-                    ?.filterNotNull()
-                    ?.sortedBy { it.favouriteOrder }
-                    ?.mapNotNull { it.node }
-                    .orEmpty()
-                    .map { UserListRow.Entry.MediaEntry(media = it, isAdult = it.isAdult) }
-
-                val manga = it.favourites?.manga?.edges
-                    ?.filterNotNull()
-                    ?.sortedBy { it.favouriteOrder }
-                    ?.mapNotNull { it.node }
-                    .orEmpty()
-                    .map { UserListRow.Entry.MediaEntry(media = it, isAdult = it.isAdult) }
                 AnimeSearchEntry.User(
                     UserListRow.Entry(
                         user = it,
-                        media = (anime + manga).distinctBy { it.media.id },
+                        media = UserUtils.buildInitialMediaEntries(it),
                     )
                 )
             },
             finalTransform = {
-                flatMapLatest { pagingData ->
+                flatMapLatest {
                     combine(
+                        statusController.allChanges(),
                         ignoreController.updates(),
                         settings.showIgnored,
                         settings.showAdult,
-                    ) { _, showIgnored, showAdult ->
-                        pagingData.mapOnIO {
-                            it.copy(entry = it.entry.copy(
-                                media = it.entry.media
-                                    .filter { showAdult || it.isAdult == false }
-                                    .map {
-                                        it.copy(
-                                            ignored = ignoreController.isIgnored(
-                                                it.media.id.toString()
-                                            )
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                        it.mapNotNull {
+                            it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
+                                applyMediaFiltering(
+                                    statuses = statuses,
+                                    ignoreController = ignoreController,
+                                    showAdult = showAdult,
+                                    showIgnored = showIgnored,
+                                    showLessImportantTags = showLessImportantTags,
+                                    showSpoilerTags = showSpoilerTags,
+                                    entry = it,
+                                    transform = { it },
+                                    media = it.media,
+                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                        copy(
+                                            mediaListStatus = mediaListStatus,
+                                            progress = progress,
+                                            progressVolumes = progressVolumes,
+                                            scoreRaw = scoreRaw,
+                                            ignored = ignored,
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
                                         )
-                                    }
-                                    .filter { showIgnored || !it.ignored }
-                            ))
+                                    },
+                                )
+                            }))
                         }
                     }
                 }

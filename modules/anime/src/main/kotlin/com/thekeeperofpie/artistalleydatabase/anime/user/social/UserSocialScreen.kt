@@ -62,19 +62,21 @@ object UserSocialScreen {
     operator fun invoke(
         screenKey: String,
         userId: String?,
+        user: UserNavigationData?,
         bottomNavigationState: BottomNavigationState?,
     ) {
         val followingViewModel = hiltViewModel<UserSocialViewModel.Following>()
             .apply { initialize(userId) }
         val followersViewModel = hiltViewModel<UserSocialViewModel.Followers>()
             .apply { initialize(userId) }
-        
+
         // TODO: Handle LoadStates
         val following = followingViewModel.data().collectAsLazyPagingItems()
         val followers = followersViewModel.data().collectAsLazyPagingItems()
 
         val isLoading = following.loadState.refresh is LoadState.Loading
                 && followers.loadState.refresh is LoadState.Loading
+        val navigationCallback = LocalNavigationCallback.current
         LazyColumn(
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp),
@@ -100,6 +102,7 @@ object UserSocialScreen {
                 data = following,
                 titleRes = R.string.anime_user_social_following,
                 emptyTextRes = R.string.anime_user_social_not_following_anyone,
+                onClickViewAll = { navigationCallback.onFollowingClick(userId, user?.name) },
             )
 
             if (followers.itemCount > 0) {
@@ -109,6 +112,7 @@ object UserSocialScreen {
                     data = followers,
                     titleRes = R.string.anime_user_social_followers,
                     emptyTextRes = null,
+                    onClickViewAll = { navigationCallback.onFollowersClick(userId, user?.name) },
                 )
             }
         }
@@ -120,9 +124,10 @@ object UserSocialScreen {
         data: LazyPagingItems<out UserNavigationData>,
         @StringRes titleRes: Int,
         @StringRes emptyTextRes: Int?,
+        onClickViewAll: () -> Unit,
     ) {
         item("header_$key") {
-            DetailsSectionHeader(text = stringResource(titleRes))
+            DetailsSectionHeader(text = stringResource(titleRes), onClickViewAll = onClickViewAll)
         }
 
         val empty = data.itemCount == 0

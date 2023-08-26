@@ -79,6 +79,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -204,7 +206,7 @@ object AnimeNavigator {
                 ?.let {
                     MediaListStatus.safeValueOf(it).takeUnless { it == MediaListStatus.UNKNOWN__ }
                 }
-            UserListScreen(
+            UserMediaListScreen(
                 userId = userId,
                 userName = userName,
                 mediaType = mediaType,
@@ -820,6 +822,66 @@ object AnimeNavigator {
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.USER_FOLLOWING.id
+                    + "?userId={userId}"
+                    + "&userName={userName}",
+            arguments = listOf("userId", "userName").map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+        ) {
+            val userId = it.arguments?.getString("userId")
+            val viewModel = hiltViewModel<UserListViewModel.Following>()
+            UserListScreen(
+                screenKey = AnimeNavDestinations.USER_FOLLOWING.id,
+                upIconOption = UpIconOption.Back(navHostController),
+                viewModel = viewModel,
+                title = {
+                    if (userId == null) {
+                        stringResource(id = R.string.anime_user_following_you)
+                    } else {
+                        stringResource(
+                            id = R.string.anime_user_following_user,
+                            it.arguments?.getString("userName").orEmpty()
+                        )
+                    }
+                },
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.USER_FOLLOWERS.id
+                    + "?userId={userId}"
+                    + "&userName={userName}",
+            arguments = listOf("userId", "userName").map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+        ) {
+            val userId = it.arguments?.getString("userId")
+            val viewModel = hiltViewModel<UserListViewModel.Followers>()
+            UserListScreen(
+                screenKey = AnimeNavDestinations.USER_FOLLOWERS.id,
+                upIconOption = UpIconOption.Back(navHostController),
+                viewModel = viewModel,
+                title = {
+                    if (userId == null) {
+                        stringResource(id = R.string.anime_user_followers_you)
+                    } else {
+                        stringResource(
+                            id = R.string.anime_user_followers_user,
+                            it.arguments?.getString("userName").orEmpty()
+                        )
+                    }
+                },
+            )
+        }
     }
 
     fun onTagClick(
@@ -1095,7 +1157,7 @@ object AnimeNavigator {
     )
 
     @Composable
-    fun UserListScreen(
+    fun UserMediaListScreen(
         userId: String?,
         userName: String?,
         mediaType: MediaType,
@@ -1336,13 +1398,17 @@ object AnimeNavigator {
         }
 
         fun onClickViewIgnored(mediaType: MediaType? = null) {
-            navHostController?.navigate(AnimeNavDestinations.IGNORED.id
-                    + "?mediaType=${mediaType?.rawValue}")
+            navHostController?.navigate(
+                AnimeNavDestinations.IGNORED.id
+                        + "?mediaType=${mediaType?.rawValue}"
+            )
         }
 
         fun onClickViewMediaHistory(mediaType: MediaType? = null) {
-            navHostController?.navigate(AnimeNavDestinations.MEDIA_HISTORY.id
-                    + "?mediaType=${mediaType?.rawValue}")
+            navHostController?.navigate(
+                AnimeNavDestinations.MEDIA_HISTORY.id
+                        + "?mediaType=${mediaType?.rawValue}"
+            )
         }
 
         fun onCdEntryClick(model: CdEntryGridModel, imageCornerDp: Dp?) {
@@ -1416,6 +1482,20 @@ object AnimeNavigator {
             navHostController?.navigate(
                 AnimeNavDestinations.FORUM_THREAD_COMMENT.id
                         + "?title=$title&threadId=$threadId&commentId=$commentId"
+            )
+        }
+
+        fun onFollowingClick(userId: String?, userName: String?) {
+            navHostController?.navigate(
+                AnimeNavDestinations.USER_FOLLOWING.id
+                        + "?userId=$userId&userName=$userName"
+            )
+        }
+
+        fun onFollowersClick(userId: String?, userName: String?) {
+            navHostController?.navigate(
+                AnimeNavDestinations.USER_FOLLOWERS.id
+                        + "?userId=$userId&userName=$userName"
             )
         }
 

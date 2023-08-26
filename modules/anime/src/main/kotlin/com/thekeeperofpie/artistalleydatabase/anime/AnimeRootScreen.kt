@@ -4,8 +4,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.DropdownMenu
@@ -34,7 +32,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
@@ -215,7 +212,7 @@ object AnimeRootScreen {
                             ),
                             bottomNavigationState = bottomNavigationState,
                         )
-                        AnimeRootNavDestination.ANIME -> AnimeNavigator.UserListScreen(
+                        AnimeRootNavDestination.ANIME -> AnimeNavigator.UserMediaListScreen(
                             userId = null,
                             userName = null,
                             mediaType = MediaType.ANIME,
@@ -226,7 +223,7 @@ object AnimeRootScreen {
                             ),
                             bottomNavigationState = bottomNavigationState,
                         )
-                        AnimeRootNavDestination.MANGA -> AnimeNavigator.UserListScreen(
+                        AnimeRootNavDestination.MANGA -> AnimeNavigator.UserMediaListScreen(
                             userId = null,
                             userName = null,
                             mediaType = MediaType.MANGA,

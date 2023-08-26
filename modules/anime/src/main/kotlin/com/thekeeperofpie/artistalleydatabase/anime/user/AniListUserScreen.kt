@@ -233,6 +233,7 @@ object AniListUserScreen {
                                 UserTab.SOCIAL -> UserSocialScreen(
                                     screenKey = viewModel.screenKey,
                                     userId = viewModel.userId,
+                                    user = viewModel.entry?.user,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                             }

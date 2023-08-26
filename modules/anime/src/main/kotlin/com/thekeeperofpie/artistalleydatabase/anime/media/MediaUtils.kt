@@ -26,6 +26,7 @@ import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaTitleFragment
+import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRelation
@@ -720,14 +721,7 @@ object MediaUtils {
         return filteredEntries
     }
 
-    fun maxProgress(media: MediaPreview) = if (media.type == MediaType.MANGA) {
-        media.chapters
-    } else {
-        media.episodes ?: media.nextAiringEpisode
-            ?.episode?.let { (it - 1).coerceAtLeast(1) }
-    }
-
-    fun maxProgress(media: MediaCompactWithTags) = if (media.type == MediaType.MANGA) {
+    fun maxProgress(media: MediaWithListStatus) = if (media.type == MediaType.MANGA) {
         media.chapters
     } else {
         media.episodes ?: media.nextAiringEpisode

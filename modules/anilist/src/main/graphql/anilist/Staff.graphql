@@ -110,12 +110,6 @@ fragment StaffDetailsStaffMediaPage on MediaConnection {
             coverImage {
                 color
             }
-            episodes
-            chapters
-            volumes
-            nextAiringEpisode {
-                episode
-            }
             startDate {
                 year
                 month

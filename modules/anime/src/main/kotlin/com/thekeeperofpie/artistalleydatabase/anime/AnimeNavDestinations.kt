@@ -36,4 +36,7 @@ enum class AnimeNavDestinations(val id: String) {
 
     REVIEWS("anime_reviews"),
     RECOMMENDATIONS("anime_recommendations"),
+
+    USER_FOLLOWING("anime_user_following"),
+    USER_FOLLOWERS("anime_user_followers"),
 }

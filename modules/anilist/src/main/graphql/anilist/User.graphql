@@ -27,12 +27,6 @@ fragment UserFavoriteMediaNode on Media {
     }
     format
     averageScore
-    episodes
-    volumes
-    chapters
-    nextAiringEpisode {
-        episode
-    }
 }
 
 query UserById($id: Int!) {
@@ -298,26 +292,7 @@ query UserSearch(
         }
 
         users(search: $search, sort: $sort, isModerator: $isModerator) {
-            ...UserNavigationData
-            bannerImage
-            favourites {
-                anime {
-                    edges {
-                        favouriteOrder
-                        node {
-                            ...MediaNavigationData
-                        }
-                    }
-                }
-                manga {
-                    edges {
-                        favouriteOrder
-                        node {
-                            ...MediaNavigationData
-                        }
-                    }
-                }
-            }
+            ...UserWithFavorites
         }
     }
 }
@@ -346,6 +321,60 @@ query UserSocialFollowers($userId: Int!, $perPage: Int!, $page: Int!) {
         }
         followers(userId: $userId) {
             ...UserNavigationData
+        }
+    }
+}
+
+fragment UserWithFavorites on User {
+    ...UserNavigationData
+    favourites {
+        anime {
+            edges {
+                favouriteOrder
+                node {
+                    ...MediaWithListStatus
+                }
+            }
+        }
+        manga {
+            edges {
+                favouriteOrder
+                node {
+                    ...MediaWithListStatus
+                }
+            }
+        }
+    }
+}
+
+query UserSocialFollowingWithFavorites(
+    $userId: Int!,
+    $sort: [UserSort]!,
+    $perPage: Int!,
+    $page: Int!,
+) {
+    Page(perPage: $perPage, page: $page) {
+        pageInfo @nonnull {
+            ...PaginationInfo
+        }
+        following(userId: $userId, sort: $sort) {
+            ...UserWithFavorites
+        }
+    }
+}
+
+query UserSocialFollowersWithFavorites(
+    $userId: Int!,
+    $sort: [UserSort]!,
+    $perPage: Int!,
+    $page: Int!,
+) {
+    Page(perPage: $perPage, page: $page) {
+        pageInfo @nonnull {
+            ...PaginationInfo
+        }
+        followers(userId: $userId, sort: $sort) {
+            ...UserWithFavorites
         }
     }
 }

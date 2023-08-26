@@ -435,7 +435,10 @@
     <string name="anime_user_error_loading">Error loading user</string>
 
     <string name="anime_user_following_you">Following you</string>
+    <string name="anime_user_following_user">Following %1$s</string>
     <string name="anime_user_following">Following</string>
+    <string name="anime_user_followers_you">Your followers</string>
+    <string name="anime_user_followers_user">%1$s\'s followers</string>
     <string name="anime_user_is_follower_content_description">User following you indicator</string>
     <string name="anime_user_is_not_follower_content_description">User not following you indicator</string>
     <string name="anime_user_is_following_content_description">Following user indicator</string>

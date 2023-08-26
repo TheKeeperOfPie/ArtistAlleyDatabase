@@ -406,6 +406,46 @@ class AuthedAniListApiWrapper(
         perPage: Int,
     ) = super.userSocialFollowing(userId, page, perPage)
 
+    override suspend fun userSocialFollowersWithFavorites(
+        userId: String,
+        sort: List<UserSort>,
+        page: Int,
+        perPage: Int,
+    ) = super.userSocialFollowersWithFavorites(userId, sort, page, perPage).let {
+        it.copy(page = it.page?.copy(followers = it.page.followers?.mapNotNull {
+            it?.copy(
+                favourites = it.favourites?.copy(
+                    anime = it.favourites.anime?.copy(edges = it.favourites.anime.edges?.filter {
+                        it?.node?.isAdult == false
+                    }),
+                    manga = it.favourites.manga?.copy(edges = it.favourites.manga.edges?.filter {
+                        it?.node?.isAdult == false
+                    }),
+                )
+            )
+        }))
+    }
+
+    override suspend fun userSocialFollowingWithFavorites(
+        userId: String,
+        sort: List<UserSort>,
+        page: Int,
+        perPage: Int,
+    ) = super.userSocialFollowingWithFavorites(userId, sort, page, perPage).let {
+        it.copy(page = it.page?.copy(following = it.page.following?.mapNotNull {
+            it?.copy(
+                favourites = it.favourites?.copy(
+                    anime = it.favourites.anime?.copy(edges = it.favourites.anime.edges?.filter {
+                        it?.node?.isAdult == false
+                    }),
+                    manga = it.favourites.manga?.copy(edges = it.favourites.manga.edges?.filter {
+                        it?.node?.isAdult == false
+                    }),
+                )
+            )
+        }))
+    }
+
     override suspend fun userSocialActivity(
         isFollowing: Boolean,
         page: Int,

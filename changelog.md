@@ -6,6 +6,7 @@
 - Disable network fetch for ignored/history; performance is too terrible
 - Change user media list to use tabs for each status
 - Show user's status/score over a media entry when viewing their media lists
+- Add full following/followers screens
 
 ### 0.43 (8)
 - Add full current media screen

@@ -237,7 +237,11 @@ object AnimeSearchScreen {
                                                 )
                                                 is AnimeSearchEntry.User -> UserListRow(
                                                     screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
                                                     entry = item.entry,
+                                                    onClickListEdit = {
+                                                        editViewModel.initialize(it.media)
+                                                    },
                                                 )
 
                                                 // TODO: Separated placeholder types
@@ -268,7 +272,9 @@ object AnimeSearchScreen {
                                                     AnimeSearchViewModel.SearchType.USER ->
                                                         UserListRow(
                                                             screenKey = SCREEN_KEY,
+                                                            viewer = viewer,
                                                             entry = null,
+                                                            onClickListEdit = {},
                                                         )
                                                 }
                                             }

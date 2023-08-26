@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,8 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.UserSearchQuery.Data.Page.User
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.UserNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -44,30 +45,42 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
 object UserListRow {
 
+    private val MIN_HEIGHT = 156.dp
+    private val IMAGE_WIDTH = 108.dp
+    private val MEDIA_WIDTH = 80.dp
+    private val MEDIA_HEIGHT = 120.dp
+
     @Composable
     operator fun invoke(
         screenKey: String,
+        viewer: AniListViewer?,
         entry: Entry?,
+        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 180.dp)
+                .heightIn(min = MIN_HEIGHT)
                 .clickable(
                     enabled = true, // TODO: placeholder,
                     onClick = {
@@ -97,7 +110,7 @@ object UserListRow {
 
                 Column(
                     modifier = Modifier
-                        .heightIn(min = 180.dp)
+                        .heightIn(min = MIN_HEIGHT)
                         .padding(bottom = 12.dp)
                 ) {
                     NameText(
@@ -111,7 +124,9 @@ object UserListRow {
 
                     MediaRow(
                         screenKey = screenKey,
+                        viewer = viewer,
                         entry = entry,
+                        onClickListEdit = onClickListEdit,
                         onMediaClick = navigationCallback::onMediaClick,
                     )
                 }
@@ -136,7 +151,7 @@ object UserListRow {
                 .crossfade(true)
                 .allowHardware(colorCalculationState.hasColor(entry?.user?.id?.toString()))
                 .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                    width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
                     height = Dimension.Undefined
                 )
                 .build(),
@@ -154,8 +169,8 @@ object UserListRow {
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
-                .heightIn(min = 180.dp)
-                .width(130.dp)
+                .heightIn(min = MIN_HEIGHT)
+                .width(IMAGE_WIDTH)
                 .placeholder(
                     visible = false, // TODO: placeholder,
                     highlight = PlaceholderHighlight.shimmer(),
@@ -179,7 +194,7 @@ object UserListRow {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = modifier
-                .padding(start = 12.dp, top = 10.dp, end = 16.dp)
+                .padding(horizontal = 12.dp, vertical = 10.dp)
                 .placeholder(
                     visible = false, // TODO: placeholder
                     highlight = PlaceholderHighlight.shimmer(),
@@ -190,43 +205,59 @@ object UserListRow {
     @Composable
     private fun MediaRow(
         screenKey: String,
+        viewer: AniListViewer?,
         entry: Entry?,
+        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
         onMediaClick: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() } ?: return
         val context = LocalContext.current
         val density = LocalDensity.current
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
+                .padding(top = 8.dp)
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 96.dp)
+                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
+                .fadingEdgeEnd()
         ) {
             items(media, key = { it.media.id }) {
                 SharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
-                    ListRowSmallImage(
-                        context = context,
-                        density = density,
-                        ignored = it.ignored,
-                        image = it.media.coverImage?.extraLarge,
-                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                        onClick = { imageWidthToHeightRatio ->
-                            onMediaClick(it.media, imageWidthToHeightRatio)
-                        },
-                    )
+                    Box {
+                        ListRowSmallImage(
+                            context = context,
+                            density = density,
+                            ignored = it.ignored,
+                            image = it.media.coverImage?.extraLarge,
+                            contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                            width = MEDIA_WIDTH,
+                            height = MEDIA_HEIGHT,
+                            onClick = { imageWidthToHeightRatio ->
+                                onMediaClick(it.media, imageWidthToHeightRatio)
+                            },
+                        )
+
+                        if (viewer != null) {
+                            MediaListQuickEditIconButton(
+                                viewer = viewer,
+                                mediaType = it.media.type,
+                                media = it,
+                                maxProgress = MediaUtils.maxProgress(it.media),
+                                maxProgressVolumes = it.media.volumes,
+                                onClick = { onClickListEdit(it) },
+                                padding = 6.dp,
+                                // API is broken, doesn't return the viewer's entry
+                                forceListEditIcon = true,
+                                modifier = Modifier.align(Alignment.BottomStart)
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
-    // TODO: Hook up media isIgnored
-    data class Entry(val user: User, val media: List<MediaEntry>) {
-        data class MediaEntry(
-            val media: MediaNavigationData,
-            val isAdult: Boolean?,
-            val ignored: Boolean = false,
-        )
-    }
+    data class Entry(val user: UserNavigationData, val media: List<MediaWithListStatusEntry>)
 }

@@ -18,6 +18,12 @@ fragment AniListMedia on Media {
 
 fragment MediaWithListStatus on Media {
     ...MediaNavigationData
+    nextAiringEpisode {
+        episode
+    }
+    episodes
+    chapters
+    volumes
     mediaListEntry {
         id
         status
@@ -62,12 +68,6 @@ fragment MediaCompactWithTags on Media {
     format
     season
     seasonYear
-    episodes
-    chapters
-    volumes
-    nextAiringEpisode {
-        episode
-    }
 }
 
 fragment MediaCompactWithoutTags on Media {
@@ -80,12 +80,6 @@ fragment MediaCompactWithoutTags on Media {
     format
     season
     seasonYear
-    episodes
-    chapters
-    volumes
-    nextAiringEpisode {
-        episode
-    }
 }
 
 query MediaAdvancedSearch(

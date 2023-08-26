@@ -348,7 +348,7 @@ fun MediaListQuickEditIconButton(
             .clickable(onClick = onClick)
             .padding(padding)
     ) {
-        val (imageVector, contentDescriptionRes) = if (forceListEditIcon) {
+        val (imageVector, contentDescriptionRes) = if (forceListEditIcon && listStatus == null) {
             Icons.Filled.Edit to
                     R.string.anime_media_details_fab_user_status_edit_icon_content_description
         } else {

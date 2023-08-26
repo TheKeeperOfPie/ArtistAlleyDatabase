@@ -94,7 +94,9 @@ import com.anilist.UserMediaListQuery
 import com.anilist.UserSearchQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.UserSocialFollowersQuery
+import com.anilist.UserSocialFollowersWithFavoritesQuery
 import com.anilist.UserSocialFollowingQuery
+import com.anilist.UserSocialFollowingWithFavoritesQuery
 import com.anilist.ViewerMediaListQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
@@ -645,6 +647,34 @@ open class AuthedAniListApi(
 
     open suspend fun userSocialFollowing(userId: String, page: Int, perPage: Int = 10) =
         query(UserSocialFollowingQuery(userId = userId.toInt(), perPage = perPage, page = page))
+
+    open suspend fun userSocialFollowersWithFavorites(
+        userId: String,
+        sort: List<UserSort>,
+        page: Int,
+        perPage: Int = 10,
+    ) = query(
+        UserSocialFollowersWithFavoritesQuery(
+            userId = userId.toInt(),
+            sort = sort,
+            perPage = perPage,
+            page = page,
+        )
+    )
+
+    open suspend fun userSocialFollowingWithFavorites(
+        userId: String,
+        sort: List<UserSort>,
+        page: Int,
+        perPage: Int = 10,
+    ) = query(
+        UserSocialFollowingWithFavoritesQuery(
+            userId = userId.toInt(),
+            sort = sort,
+            perPage = perPage,
+            page = page,
+        )
+    )
 
     open suspend fun userSocialActivity(
         isFollowing: Boolean,
