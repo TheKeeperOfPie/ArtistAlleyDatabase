@@ -49,17 +49,28 @@ class AuthedAniListApiWrapper(
     okHttpClient,
 ) {
 
-    override suspend fun userMediaList(
+    override suspend fun viewerMediaList(
         userId: String,
         type: MediaType,
         status: MediaListStatus?,
         includeDescription: Boolean,
-    ) = super.userMediaList(userId, type, status, includeDescription).map {
+    ) = super.viewerMediaList(userId, type, status, includeDescription).map {
         it.transformResult {
             it.copy(lists = it.lists?.map {
                 it?.copy(entries = it.entries?.filter { it?.media?.isAdult == false })
             })
         }
+    }
+
+    override suspend fun userMediaList(
+        userId: String,
+        type: MediaType,
+        status: MediaListStatus?,
+        includeDescription: Boolean,
+    ) = super.userMediaList(userId, type, status, includeDescription).let {
+        it.copy(lists = it.lists?.map {
+            it?.copy(entries = it.entries?.filter { it?.media?.isAdult == false })
+        })
     }
 
     override suspend fun searchMedia(

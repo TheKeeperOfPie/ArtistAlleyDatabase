@@ -2,8 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import android.os.SystemClock
 import com.anilist.UserMediaListQuery
+import com.anilist.ViewerMediaListQuery
+import com.anilist.fragment.UserMediaListMedia
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.anilist.type.ScoreFormat
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
@@ -57,7 +60,7 @@ class UserMediaListController(
         combine(aniListApi.authedUser, includeDescription, refresh, ::Triple)
             .flatMapLatest { (viewer, includeDescription) ->
                 if (viewer == null) return@flatMapLatest flowOf(LoadingResult.empty())
-                aniListApi.userMediaList(
+                aniListApi.viewerMediaList(
                     userId = viewer.id,
                     type = mediaType,
                     includeDescription = includeDescription
@@ -162,19 +165,35 @@ class UserMediaListController(
     data class ListEntry(
         val name: String,
         val status: MediaListStatus?,
+
+        // TODO: This can be moved up a level
+        val scoreFormat: ScoreFormat?,
         val entries: List<MediaEntry>,
     ) {
-        constructor(list: UserMediaListQuery.Data.MediaListCollection.List) : this(
+        constructor(list: ViewerMediaListQuery.Data.MediaListCollection.List) : this(
             name = list.name.orEmpty(),
             status = list.status,
+            scoreFormat = null,
             entries = list.entries?.filterNotNull()
-                ?.map { MediaEntry(it.media) }
+                ?.map { MediaEntry(media = it.media, authorData = null) }
+                .orEmpty()
+        )
+
+        constructor(
+            scoreFormat: ScoreFormat?,
+            list: UserMediaListQuery.Data.MediaListCollection.List,
+        ) : this(
+            name = list.name.orEmpty(),
+            status = list.status,
+            scoreFormat = scoreFormat,
+            entries = list.entries?.filterNotNull()
+                ?.map { MediaEntry(list.status, it) }
                 .orEmpty()
         )
     }
 
     data class MediaEntry(
-        val media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
+        val media: UserMediaListMedia,
         override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
         override val progress: Int? = media.mediaListEntry?.progress,
         override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
@@ -182,5 +201,24 @@ class UserMediaListController(
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
-    ) : MediaStatusAware
+        val authorData: AuthorData? = null,
+    ) : MediaStatusAware {
+        constructor(
+            status: MediaListStatus?,
+            entry: UserMediaListQuery.Data.MediaListCollection.List.Entry,
+        ) : this(
+            media = entry.media,
+            authorData = AuthorData(
+                status = status,
+                rawScore = entry.score,
+                progress = entry.progress,
+            ),
+        )
+
+        data class AuthorData(
+            val status: MediaListStatus?,
+            val rawScore: Double?,
+            val progress: Int?,
+        )
+    }
 }

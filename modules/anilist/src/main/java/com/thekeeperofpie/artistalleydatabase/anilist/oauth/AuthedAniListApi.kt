@@ -95,6 +95,7 @@ import com.anilist.UserSearchQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.UserSocialFollowersQuery
 import com.anilist.UserSocialFollowingQuery
+import com.anilist.ViewerMediaListQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
 import com.anilist.type.AiringSort
@@ -216,19 +217,33 @@ open class AuthedAniListApi(
         }
     }
 
-    open suspend fun userMediaList(
+    open suspend fun viewerMediaList(
         userId: String,
         type: MediaType,
         status: MediaListStatus? = null,
         includeDescription: Boolean,
     ) = queryCacheAndNetwork(
-        UserMediaListQuery(
+        ViewerMediaListQuery(
             userId = userId.toInt(),
             type = type,
             status = Optional.presentIfNotNull(status),
             includeDescription = includeDescription,
         )
     ).map { it.transformResult { it.mediaListCollection } }
+
+    open suspend fun userMediaList(
+        userId: String,
+        type: MediaType,
+        status: MediaListStatus? = null,
+        includeDescription: Boolean,
+    ) = query(
+        UserMediaListQuery(
+            userId = userId.toInt(),
+            type = type,
+            status = Optional.presentIfNotNull(status),
+            includeDescription = includeDescription,
+        )
+    ).mediaListCollection
 
     open suspend fun searchMedia(
         query: String,

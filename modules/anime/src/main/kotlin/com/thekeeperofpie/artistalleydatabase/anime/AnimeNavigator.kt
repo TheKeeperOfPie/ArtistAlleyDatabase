@@ -406,7 +406,7 @@ object AnimeNavigator {
             val headerValues = UserHeaderValues(it.arguments) { viewModel.entry?.user }
             AniListUserScreen(
                 viewModel = viewModel,
-                upIconOption = upIconOption,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
             )
         }

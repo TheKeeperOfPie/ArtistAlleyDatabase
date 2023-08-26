@@ -1,4 +1,20 @@
-query UserMediaList(
+fragment UserMediaListMedia on Media {
+    ...MediaPreviewWithDescription
+    mediaListEntry {
+        priority
+        updatedAt
+        createdAt
+    }
+    synonyms
+    endDate {
+        year
+        month
+        day
+    }
+    updatedAt
+}
+
+query ViewerMediaList(
     $userId: Int!,
     $type: MediaType!,
     $chunk: Int,
@@ -19,20 +35,45 @@ query UserMediaList(
             entries {
                 id
                 media @nonnull {
-                    ...MediaPreviewWithDescription
-                    mediaListEntry {
-                        priority
-                        updatedAt
-                        createdAt
-                    }
-                    synonyms
-                    endDate {
-                        year
-                        month
-                        day
-                    }
-                    updatedAt
+                    ...UserMediaListMedia
                 }
+            }
+            name
+            status
+        }
+    }
+}
+
+query UserMediaList(
+    $userId: Int!,
+    $type: MediaType!,
+    $chunk: Int,
+    $perChunk: Int,
+    $status: MediaListStatus,
+    $includeDescription: Boolean!,
+) {
+    # Sort for this API is completely broken
+    MediaListCollection(
+        userId: $userId,
+        type: $type,
+        chunk: $chunk,
+        perChunk: $perChunk,
+        status: $status,
+    ) @nonnull {
+        user {
+            mediaListOptions {
+                scoreFormat
+            }
+        }
+        hasNextChunk
+        lists {
+            entries {
+                id
+                media @nonnull {
+                    ...UserMediaListMedia
+                }
+                score(format: POINT_100)
+                progress
             }
             name
             status

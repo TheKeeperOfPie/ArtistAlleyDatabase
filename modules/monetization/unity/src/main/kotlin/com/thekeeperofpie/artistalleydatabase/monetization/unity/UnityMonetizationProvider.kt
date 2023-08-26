@@ -90,6 +90,7 @@ class UnityMonetizationProvider(
                 ) {
                     val errorTextRes =
                         if (initError == UnityAds.UnityAdsInitializationError.AD_BLOCKER_DETECTED) {
+                            settings.adsEnabled.value = false
                             R.string.unity_error_initializing_ads_ad_blocker_detected
                         } else {
                             R.string.unity_error_initializing_ads_generic

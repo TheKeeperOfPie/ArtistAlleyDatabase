@@ -494,6 +494,8 @@
     <string name="anime_user_list_manga_search">Search manga list…</string>
     <string name="anime_user_list_header_expand_content_description">Expand list</string>
 
+    <string name="anime_user_list_tab_all">ALL</string>
+
     <string name="anime_media_ignore_header">Ignored</string>
     <string name="anime_media_ignore_tab_anime">Anime</string>
     <string name="anime_media_ignore_tab_manga">Manga</string>

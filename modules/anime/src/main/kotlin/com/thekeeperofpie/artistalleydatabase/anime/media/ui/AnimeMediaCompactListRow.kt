@@ -73,6 +73,7 @@ object AnimeMediaCompactListRow {
         entry: Entry?,
         modifier: Modifier = Modifier,
         onClickListEdit: (Entry) -> Unit,
+        label: (@Composable () -> Unit)? = null,
         showQuickEdit: Boolean = true,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
@@ -132,6 +133,7 @@ object AnimeMediaCompactListRow {
                                 .fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
+                                label?.invoke()
                                 TitleText(entry)
                                 SubtitleText(entry)
                             }
