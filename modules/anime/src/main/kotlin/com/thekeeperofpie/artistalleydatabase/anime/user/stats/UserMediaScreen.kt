@@ -17,6 +17,7 @@ import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserMediaStatistics
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -72,6 +73,7 @@ object UserMediaScreen {
                     isAnime = isAnime,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.genre.orEmpty() },
+                    valueToText = { it.genre.orEmpty() },
                     valueToCount = UserMediaStatistics.Genre::count,
                     valueToMinutesWatched = UserMediaStatistics.Genre::minutesWatched,
                     valueToChaptersRead = UserMediaStatistics.Genre::chaptersRead,
@@ -92,6 +94,7 @@ object UserMediaScreen {
                     isAnime = isAnime,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.tag?.name.orEmpty() },
+                    valueToText = { it.tag?.name.orEmpty() },
                     valueToCount = UserMediaStatistics.Tag::count,
                     valueToMinutesWatched = UserMediaStatistics.Tag::minutesWatched,
                     valueToChaptersRead = UserMediaStatistics.Tag::chaptersRead,
@@ -113,6 +116,7 @@ object UserMediaScreen {
                     isAnime = true,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.voiceActor?.id.toString() },
+                    valueToText = { it.voiceActor?.name?.primaryName().orEmpty() },
                     valueToCount = UserMediaStatistics.VoiceActor::count,
                     valueToMinutesWatched = UserMediaStatistics.VoiceActor::minutesWatched,
                     valueToChaptersRead = UserMediaStatistics.VoiceActor::chaptersRead,
@@ -138,6 +142,7 @@ object UserMediaScreen {
                     isAnime = true,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.studio?.name.orEmpty() },
+                    valueToText = { it.studio?.name.orEmpty() },
                     valueToCount = UserMediaStatistics.Studio::count,
                     valueToMinutesWatched = UserMediaStatistics.Studio::minutesWatched,
                     valueToChaptersRead = UserMediaStatistics.Studio::chaptersRead,
@@ -157,6 +162,7 @@ object UserMediaScreen {
                     isAnime = isAnime,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.staff?.id.toString() },
+                    valueToText = { it.staff?.name?.primaryName().orEmpty() },
                     valueToCount = UserMediaStatistics.Staff::count,
                     valueToMinutesWatched = UserMediaStatistics.Staff::minutesWatched,
                     valueToChaptersRead = UserMediaStatistics.Staff::chaptersRead,

@@ -225,11 +225,19 @@ object AnimeSearchScreen {
                                                 )
                                                 is AnimeSearchEntry.Character -> CharacterListRow(
                                                     screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
                                                     entry = item.entry,
+                                                    onClickListEdit = {
+                                                        editViewModel.initialize(it.media)
+                                                    },
                                                 )
                                                 is AnimeSearchEntry.Staff -> StaffListRow(
                                                     screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
                                                     entry = item.entry,
+                                                    onClickListEdit = {
+                                                        editViewModel.initialize(it.media)
+                                                    },
                                                 )
                                                 is AnimeSearchEntry.Studio -> StudioListRow(
                                                     screenKey = SCREEN_KEY,
@@ -257,12 +265,16 @@ object AnimeSearchScreen {
                                                     AnimeSearchViewModel.SearchType.CHARACTER ->
                                                         CharacterListRow(
                                                             screenKey = SCREEN_KEY,
+                                                            viewer = viewer,
                                                             entry = null,
+                                                            onClickListEdit = {},
                                                         )
                                                     AnimeSearchViewModel.SearchType.STAFF ->
                                                         StaffListRow(
                                                             screenKey = SCREEN_KEY,
+                                                            viewer = viewer,
                                                             entry = null,
+                                                            onClickListEdit = {},
                                                         )
                                                     AnimeSearchViewModel.SearchType.STUDIO ->
                                                         StudioListRow(

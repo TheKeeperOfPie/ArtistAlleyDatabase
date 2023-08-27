@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,8 +41,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.StaffSearchQuery.Data.Page.Staff
-import com.anilist.fragment.MediaNavigationData
+import com.anilist.StaffSearchQuery
+import com.anilist.UserFavoritesStaffQuery
+import com.anilist.fragment.CharacterNavigationData
+import com.anilist.fragment.StaffNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -49,8 +52,12 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
@@ -63,10 +70,17 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 @OptIn(ExperimentalFoundationApi::class)
 object StaffListRow {
 
+    private val MIN_HEIGHT = 156.dp
+    private val IMAGE_WIDTH = 108.dp
+    private val MEDIA_WIDTH = 80.dp
+    private val MEDIA_HEIGHT = 120.dp
+
     @Composable
     operator fun invoke(
         screenKey: String,
+        viewer: AniListViewer?,
         entry: Entry?,
+        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
@@ -84,7 +98,7 @@ object StaffListRow {
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 180.dp)
+                .heightIn(min = MIN_HEIGHT)
                 .clickable(
                     enabled = true, // TODO: placeholder,
                     onClick = onClick,
@@ -100,7 +114,7 @@ object StaffListRow {
 
                 Column(
                     modifier = Modifier
-                        .heightIn(min = 180.dp)
+                        .heightIn(min = MIN_HEIGHT)
                         .padding(bottom = 12.dp)
                 ) {
                     Row(Modifier.fillMaxWidth()) {
@@ -111,7 +125,7 @@ object StaffListRow {
 
                         ListRowFavoritesSection(
                             loading = entry == null,
-                            favorites = entry?.staff?.favourites,
+                            favorites = entry?.favorites,
                         )
                     }
 
@@ -119,7 +133,9 @@ object StaffListRow {
 
                     CharactersAndMediaRow(
                         screenKey = screenKey,
+                        viewer = viewer,
                         entry = entry,
+                        onClickListEdit = onClickListEdit,
                     )
                 }
             }
@@ -143,7 +159,7 @@ object StaffListRow {
                 .crossfade(true)
                 .allowHardware(colorCalculationState.hasColor(entry?.staff?.id?.toString()))
                 .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                    width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
                     height = Dimension.Undefined,
                 )
                 .build(),
@@ -161,8 +177,8 @@ object StaffListRow {
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
-                .heightIn(min = 180.dp)
-                .width(130.dp)
+                .heightIn(min = MIN_HEIGHT)
+                .width(IMAGE_WIDTH)
                 .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                 .placeholder(
                     visible = entry == null,
@@ -189,7 +205,7 @@ object StaffListRow {
             modifier = modifier
                 .fillMaxWidth()
                 .wrapContentHeight(Alignment.Top)
-                .padding(start = 12.dp, top = 10.dp, end = 16.dp)
+                .padding(horizontal = 12.dp, vertical = 10.dp)
                 .placeholder(
                     visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
@@ -219,7 +235,9 @@ object StaffListRow {
     @Composable
     private fun CharactersAndMediaRow(
         screenKey: String,
+        viewer: AniListViewer?,
         entry: Entry?,
+        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
     ) {
         val media = entry?.media.orEmpty()
         val characters = entry?.characters.orEmpty()
@@ -233,7 +251,7 @@ object StaffListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 96.dp)
+                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
         ) {
             items(characters, key = { it.id }) {
                 SharedElement(key = "anime_character_${it.id}_image", screenKey = screenKey) {
@@ -251,38 +269,72 @@ object StaffListRow {
                                 ratio,
                                 colorCalculationState.getColors(it.id.toString()).first,
                             )
-                        }
+                        },
+                        width = MEDIA_WIDTH,
+                        height = MEDIA_HEIGHT,
                     )
                 }
             }
 
             items(media, key = { it.media.id }) {
                 SharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
-                    val navigationCallback = LocalNavigationCallback.current
-                    ListRowSmallImage(
-                        context = context,
-                        density = density,
-                        ignored = it.ignored,
-                        image = it.media.coverImage?.extraLarge,
-                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                        onClick = { ratio -> navigationCallback.onMediaClick(it.media, ratio) }
-                    )
+                    Box {
+                        val navigationCallback = LocalNavigationCallback.current
+                        ListRowSmallImage(
+                            context = context,
+                            density = density,
+                            ignored = it.ignored,
+                            image = it.media.coverImage?.extraLarge,
+                            contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                            onClick = { ratio -> navigationCallback.onMediaClick(it.media, ratio) },
+                            width = MEDIA_WIDTH,
+                            height = MEDIA_HEIGHT,
+                        )
+
+                        if (viewer != null) {
+                            MediaListQuickEditIconButton(
+                                viewer = viewer,
+                                mediaType = it.media.type,
+                                media = it,
+                                maxProgress = MediaUtils.maxProgress(it.media),
+                                maxProgressVolumes = it.media.volumes,
+                                onClick = { onClickListEdit(it) },
+                                padding = 6.dp,
+                                modifier = Modifier.align(Alignment.BottomStart)
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
     data class Entry(
-        val staff: Staff,
-        val media: List<MediaEntry>,
+        val staff: StaffNavigationData,
+        val media: List<MediaWithListStatusEntry>,
+        val characters: List<CharacterNavigationData>,
+        val favorites: Int?,
+        val occupations: List<String>,
     ) {
-        val characters = staff.characters?.nodes?.filterNotNull().orEmpty().distinctBy { it.id }
-        val occupations = staff.primaryOccupations?.filterNotNull().orEmpty()
-
-        data class MediaEntry(
-            val media: MediaNavigationData,
-            val isAdult: Boolean?,
-            val ignored: Boolean = false,
+        constructor(
+            staff: StaffSearchQuery.Data.Page.Staff,
+            media: List<MediaWithListStatusEntry>,
+        ) : this(
+            staff = staff,
+            media = media,
+            characters = staff.characters?.nodes?.filterNotNull().orEmpty().distinctBy { it.id },
+            favorites = staff.favourites,
+            occupations = staff.primaryOccupations?.filterNotNull().orEmpty(),
+        )
+        constructor(
+            staff: UserFavoritesStaffQuery.Data.User.Favourites.Staff.Node,
+            media: List<MediaWithListStatusEntry>,
+        ) : this(
+            staff = staff,
+            media = media,
+            characters = staff.characters?.nodes?.filterNotNull().orEmpty().distinctBy { it.id },
+            favorites = staff.favourites,
+            occupations = staff.primaryOccupations?.filterNotNull().orEmpty(),
         )
     }
 }

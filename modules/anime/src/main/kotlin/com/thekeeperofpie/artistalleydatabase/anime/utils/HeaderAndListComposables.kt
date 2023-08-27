@@ -43,6 +43,7 @@ fun <ListEntryType : Any> HeaderAndListScreen(
     header: @Composable BoxScope.(progress: Float) -> Unit,
     itemKey: (ListEntryType) -> Any,
     item: @Composable LazyGridItemScope.(ListEntryType?) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -64,6 +65,7 @@ fun <ListEntryType : Any> HeaderAndListScreen(
                 onErrorDismiss = { viewModel.error = null }
             )
         },
+        modifier = modifier
     ) {
         List(
             viewModel = viewModel,

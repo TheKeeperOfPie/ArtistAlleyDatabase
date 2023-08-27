@@ -40,4 +40,6 @@ enum class AnimeNavDestinations(val id: String) {
     USER_FOLLOWING("anime_user_following"),
     USER_FOLLOWERS("anime_user_followers"),
     USER_FAVORITE_MEDIA("anime_user_favorite_media"),
+    USER_FAVORITE_CHARACTERS("anime_user_favorite_characters"),
+    USER_FAVORITE_STAFF("anime_user_favorite_staff"),
 }

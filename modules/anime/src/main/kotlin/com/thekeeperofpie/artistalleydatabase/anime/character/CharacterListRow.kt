@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -49,6 +50,7 @@ import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.CharacterWithRoleAndFavorites
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
+import com.anilist.fragment.UserNavigationData
 import com.anilist.type.CharacterRole
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
@@ -58,10 +60,14 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
@@ -73,10 +79,17 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 @OptIn(ExperimentalFoundationApi::class)
 object CharacterListRow {
 
+    private val MIN_HEIGHT = 156.dp
+    private val IMAGE_WIDTH = 108.dp
+    private val MEDIA_WIDTH = 80.dp
+    private val MEDIA_HEIGHT = 120.dp
+
     @Composable
     operator fun invoke(
         screenKey: String,
+        viewer: AniListViewer?,
         entry: Entry?,
+        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
         modifier: Modifier = Modifier,
         showRole: Boolean = false,
     ) {
@@ -97,7 +110,7 @@ object CharacterListRow {
         ElevatedCard(
             modifier = modifier
                 .fillMaxWidth()
-                .heightIn(min = 180.dp)
+                .heightIn(min = MIN_HEIGHT)
                 .clickable(
                     enabled = true, // TODO: placeholder,
                     onClick = onClick,
@@ -113,7 +126,7 @@ object CharacterListRow {
 
                 Column(
                     modifier = Modifier
-                        .heightIn(min = 180.dp)
+                        .heightIn(min = MIN_HEIGHT)
                         .padding(bottom = 12.dp)
                 ) {
                     Row(Modifier.fillMaxWidth()) {
@@ -142,7 +155,9 @@ object CharacterListRow {
 
                     MediaRow(
                         screenKey = screenKey,
+                        viewer = viewer,
                         entry = entry,
+                        onClickListEdit = onClickListEdit,
                     )
                 }
             }
@@ -166,7 +181,7 @@ object CharacterListRow {
                 .crossfade(true)
                 .allowHardware(colorCalculationState.hasColor(entry?.character?.id?.toString()))
                 .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                    width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
                     height = Dimension.Undefined
                 )
                 .build(),
@@ -183,8 +198,8 @@ object CharacterListRow {
             },
             modifier = Modifier
                 .fillMaxHeight()
-                .heightIn(min = 180.dp)
-                .width(130.dp)
+                .heightIn(min = MIN_HEIGHT)
+                .width(IMAGE_WIDTH)
                 .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .placeholder(
@@ -210,7 +225,7 @@ object CharacterListRow {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = modifier
-                .padding(start = 12.dp, top = 10.dp, end = 16.dp)
+                .padding(horizontal = 12.dp, vertical = 10.dp)
                 .placeholder(
                     visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
@@ -224,7 +239,7 @@ object CharacterListRow {
             text = entry?.role?.toTextRes()?.let { stringResource(it) } ?: "Main",
             style = MaterialTheme.typography.bodyMedium,
             modifier = modifier
-                .padding(start = 12.dp, end = 16.dp)
+                .padding(horizontal = 12.dp)
                 .placeholder(
                     visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
@@ -277,7 +292,9 @@ object CharacterListRow {
     @Composable
     private fun MediaRow(
         screenKey: String,
+        viewer: AniListViewer?,
         entry: Entry?,
+        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
@@ -292,7 +309,7 @@ object CharacterListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 96.dp)
+                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
         ) {
             if (voiceActor?.image?.large != null) {
                 val staffId = voiceActor.id
@@ -313,6 +330,8 @@ object CharacterListRow {
                                         .getContainerColor(staffId.toString())
                                 )
                             },
+                            width = MEDIA_WIDTH,
+                            height = MEDIA_HEIGHT,
                         )
                     }
                 }
@@ -323,18 +342,35 @@ object CharacterListRow {
                 key = { index, item -> item?.media?.id ?: "placeholder_$index" },
             ) { index, item ->
                 SharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
-                    ListRowSmallImage(
-                        context = context,
-                        density = density,
-                        ignored = item?.ignored ?: false,
-                        image = item?.media?.coverImage?.extraLarge,
-                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                        onClick = { ratio ->
-                            if (item != null) {
-                                navigationCallback.onMediaClick(item.media, ratio)
-                            }
-                        },
-                    )
+                    Box {
+                        ListRowSmallImage(
+                            context = context,
+                            density = density,
+                            ignored = item?.ignored ?: false,
+                            image = item?.media?.coverImage?.extraLarge,
+                            contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                            onClick = { ratio ->
+                                if (item != null) {
+                                    navigationCallback.onMediaClick(item.media, ratio)
+                                }
+                            },
+                            width = MEDIA_WIDTH,
+                            height = MEDIA_HEIGHT,
+                        )
+
+                        if (viewer != null && item != null) {
+                            MediaListQuickEditIconButton(
+                                viewer = viewer,
+                                mediaType = item.media.type,
+                                media = item,
+                                maxProgress = MediaUtils.maxProgress(item.media),
+                                maxProgressVolumes = item.media.volumes,
+                                onClick = { onClickListEdit(item) },
+                                padding = 6.dp,
+                                modifier = Modifier.align(Alignment.BottomStart)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -343,11 +379,11 @@ object CharacterListRow {
     data class Entry(
         val character: CharacterNavigationData,
         val role: CharacterRole?,
-        val media: List<MediaEntry>,
+        val media: List<MediaWithListStatusEntry>,
         val favorites: Int?,
         private val voiceActors: Map<String?, List<StaffNavigationData>>,
     ) {
-        constructor(character: Character, media: List<MediaEntry>) : this(
+        constructor(character: Character, media: List<MediaWithListStatusEntry>) : this(
             character = character,
             role = null,
             media = media,
@@ -358,11 +394,13 @@ object CharacterListRow {
                 .orEmpty()
         )
 
-        constructor(character: CharacterWithRoleAndFavorites) : this(
+        constructor(
+            character: CharacterWithRoleAndFavorites,
+            media: List<MediaWithListStatusEntry>,
+        ) : this(
             character = character.node,
             role = character.role,
-            media = character.node.media?.nodes?.filterNotNull().orEmpty().distinctBy { it.id }
-                .map { MediaEntry(media = it, isAdult = it.isAdult) },
+            media = media,
             favorites = character.node.favourites,
             voiceActors = character.voiceActors?.filterNotNull().orEmpty()
                 .groupBy { it.languageV2 }
@@ -370,11 +408,5 @@ object CharacterListRow {
 
         @Composable
         fun voiceActor() = AniListUtils.selectVoiceActor(voiceActors)?.firstOrNull()
-
-        data class MediaEntry(
-            val media: MediaNavigationData,
-            val isAdult: Boolean?,
-            val ignored: Boolean = false,
-        )
     }
 }

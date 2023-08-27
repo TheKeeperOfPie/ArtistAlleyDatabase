@@ -60,7 +60,7 @@ object UserStatsDetailScreen {
         bottomNavigationState: BottomNavigationState? = null,
         values: (AniListUserScreen.Entry.Statistics) -> List<Value>,
         valueToKey: (Value) -> String,
-        valueToText: (Value) -> String = valueToKey,
+        valueToText: @Composable (Value) -> String,
         valueToCount: (Value) -> Int,
         valueToMinutesWatched: (Value) -> Int,
         valueToChaptersRead: (Value) -> Int,
@@ -121,7 +121,7 @@ object UserStatsDetailScreen {
     private fun <Value> StatsDetailCard(
         screenKey: String,
         value: Value,
-        valueToText: (Value) -> String,
+        valueToText: @Composable (Value) -> String,
         valueToCount: (Value) -> Int,
         valueToMinutesWatched: (Value) -> Int,
         valueToChaptersRead: (Value) -> Int,

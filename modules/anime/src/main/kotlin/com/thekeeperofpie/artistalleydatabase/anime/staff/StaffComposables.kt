@@ -41,6 +41,7 @@ import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
@@ -56,10 +57,17 @@ fun LazyListScope.staffSection(
     @StringRes titleRes: Int,
     staffList: LazyPagingItems<DetailsStaff>,
     roleLines: Int = 1,
+    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {
     if (staffList.itemCount == 0) return
-    item("$titleRes-header") {
-        DetailsSectionHeader(stringResource(titleRes))
+    item("staffHeader-$titleRes") {
+        val navigationCallback = LocalNavigationCallback.current
+        DetailsSectionHeader(
+            stringResource(titleRes),
+            onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+        )
     }
 
     item("$titleRes-section") {

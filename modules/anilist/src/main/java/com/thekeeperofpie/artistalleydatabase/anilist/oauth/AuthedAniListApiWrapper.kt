@@ -870,4 +870,38 @@ class AuthedAniListApiWrapper(
             )
         )
     }
+
+    override suspend fun userFavoritesCharacters(
+        userId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.userFavoritesCharacters(userId, page, perPage).let {
+        it.copy(
+            user = it.user?.copy(
+                favourites = it.user.favourites?.copy(
+                    characters = it.user.favourites.characters?.copy(
+                        nodes = it.user.favourites.characters.nodes?.map {
+                            it?.copy(media = it.media?.copy(edges = it.media.edges?.filter { it?.node?.isAdult == false }))
+                        })
+                )
+            )
+        )
+    }
+
+    override suspend fun userFavoritesStaff(
+        userId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.userFavoritesStaff(userId, page, perPage).let {
+        it.copy(
+            user = it.user?.copy(
+                favourites = it.user.favourites?.copy(
+                    staff = it.user.favourites.staff?.copy(
+                        nodes = it.user.favourites.staff.nodes?.map {
+                            it?.copy(staffMedia = it.staffMedia?.copy(nodes = it.staffMedia.nodes?.filter { it?.isAdult == false }))
+                        })
+                )
+            )
+        )
+    }
 }

@@ -155,7 +155,7 @@ query StaffSearch(
             }
             staffMedia(sort: [TRENDING_DESC], perPage: 5) {
                 nodes {
-                    ...MediaNavigationData
+                    ...MediaWithListStatus
                 }
             }
         }

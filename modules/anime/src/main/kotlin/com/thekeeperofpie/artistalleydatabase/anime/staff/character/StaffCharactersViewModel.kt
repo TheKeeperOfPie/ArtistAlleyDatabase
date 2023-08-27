@@ -4,6 +4,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.anilist.fragment.CharacterWithRoleAndFavorites
+import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -13,7 +14,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class StaffCharactersViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
+    private val mediaListStatusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
@@ -49,7 +55,11 @@ class StaffCharactersViewModel @Inject constructor(
         )
     }
 
-    override fun makeEntry(item: CharacterWithRoleAndFavorites) = CharacterListRow.Entry(item)
+    override fun makeEntry(item: CharacterWithRoleAndFavorites) = CharacterListRow.Entry(
+        item,
+        media = item.node.media?.nodes?.filterNotNull().orEmpty().distinctBy { it.id }
+            .map(::MediaWithListStatusEntry),
+    )
 
     override fun entryId(entry: CharacterListRow.Entry) = entry.character.id.toString()
 
@@ -79,18 +89,40 @@ class StaffCharactersViewModel @Inject constructor(
     }
 
     override fun Flow<PagingData<CharacterListRow.Entry>>.transformFlow() =
-        flatMapLatest { pagingData ->
+        flatMapLatest {
             combine(
+                mediaListStatusController.allChanges(),
                 ignoreController.updates(),
                 settings.showIgnored,
                 settings.showAdult,
-            ) { _, showIgnored, showAdult ->
-                pagingData.mapOnIO {
-                    it.copy(
-                        media = it.media
-                            .filter { showAdult || it.isAdult == false }
-                            .filter { showIgnored || !ignoreController.isIgnored(it.media.id.toString()) }
-                    )
+                settings.showLessImportantTags,
+                settings.showSpoilerTags,
+            ) { statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                it.mapNotNull {
+                    it.copy(media = it.media.mapNotNull {
+                        applyMediaFiltering(
+                            statuses = statuses,
+                            ignoreController = ignoreController,
+                            showAdult = showAdult,
+                            showIgnored = showIgnored,
+                            showLessImportantTags = showLessImportantTags,
+                            showSpoilerTags = showSpoilerTags,
+                            entry = it,
+                            transform = { it },
+                            media = it.media,
+                            copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                copy(
+                                    mediaListStatus = mediaListStatus,
+                                    progress = progress,
+                                    progressVolumes = progressVolumes,
+                                    scoreRaw = scoreRaw,
+                                    ignored = ignored,
+                                    showLessImportantTags = showLessImportantTags,
+                                    showSpoilerTags = showSpoilerTags,
+                                )
+                            },
+                        )
+                    })
                 }
             }
         }

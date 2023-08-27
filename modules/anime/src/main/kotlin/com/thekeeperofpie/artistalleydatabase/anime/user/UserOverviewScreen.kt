@@ -119,12 +119,16 @@ object UserOverviewScreen {
                 screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_characters_label,
                 characters = characters,
+                onClickViewAll = { it.onUserFavoriteCharactersClick(userId, user.name) },
+                viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_character_content_description,
             )
 
             staffSection(
                 screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_staff_label,
                 staffList = staff,
+                onClickViewAll = { it.onUserFavoriteStaffClick(userId, user.name) },
+                viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_staff_content_description,
             )
 
             favoriteStudiosSection(

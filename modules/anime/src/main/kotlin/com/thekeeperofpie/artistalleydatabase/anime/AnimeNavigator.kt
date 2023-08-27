@@ -79,8 +79,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStaffScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
@@ -920,6 +922,56 @@ object AnimeNavigator {
                 },
             )
         }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.USER_FAVORITE_CHARACTERS.id
+                    + "?userId={userId}"
+                    + "&userName={userName}",
+            arguments = listOf("userId", "userName").map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+        ) {
+            val userId = it.arguments?.getString("userId")
+            val userName = it.arguments?.getString("userName").orEmpty()
+            UserFavoriteCharactersScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                title = {
+                    if (userId == null) {
+                        stringResource(R.string.anime_user_favorite_characters_you)
+                    } else {
+                        stringResource(R.string.anime_user_favorite_characters_user, userName)
+                    }
+                },
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.USER_FAVORITE_STAFF.id
+                    + "?userId={userId}"
+                    + "&userName={userName}",
+            arguments = listOf("userId", "userName").map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+        ) {
+            val userId = it.arguments?.getString("userId")
+            val userName = it.arguments?.getString("userName").orEmpty()
+            UserFavoriteStaffScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                title = {
+                    if (userId == null) {
+                        stringResource(R.string.anime_user_favorite_staff_you)
+                    } else {
+                        stringResource(R.string.anime_user_favorite_staff_user, userName)
+                    }
+                },
+            )
+        }
     }
 
     fun onTagClick(
@@ -1541,6 +1593,20 @@ object AnimeNavigator {
             navHostController?.navigate(
                 AnimeNavDestinations.USER_FAVORITE_MEDIA.id
                         + "?userId=$userId&userName=$userName&mediaType=${mediaType.rawValue}"
+            )
+        }
+
+        fun onUserFavoriteCharactersClick(userId: String?, userName: String?) {
+            navHostController?.navigate(
+                AnimeNavDestinations.USER_FAVORITE_CHARACTERS.id
+                        + "?userId=$userId&userName=$userName"
+            )
+        }
+
+        fun onUserFavoriteStaffClick(userId: String?, userName: String?) {
+            navHostController?.navigate(
+                AnimeNavDestinations.USER_FAVORITE_STAFF.id
+                        + "?userId=$userId&userName=$userName"
             )
         }
 

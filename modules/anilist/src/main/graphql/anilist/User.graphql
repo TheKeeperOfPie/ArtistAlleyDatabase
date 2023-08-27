@@ -488,3 +488,68 @@ query UserFavoritesManga(
         }
     }
 }
+
+query UserFavoritesCharacters(
+    $userId: Int!,
+    $page: Int!,
+    $perPage: Int!,
+) {
+    User(id: $userId) {
+        favourites {
+            characters(page: $page, perPage: $perPage) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+
+                nodes {
+                    ...CharacterNavigationData
+                    favourites
+
+                    media(sort: [TRENDING_DESC, POPULARITY_DESC, FAVOURITES_DESC], perPage: 5) {
+                        edges {
+                            id
+                            voiceActors {
+                                ...StaffNavigationData
+                                languageV2
+                            }
+                            node {
+                                ...MediaWithListStatus
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+query UserFavoritesStaff(
+    $userId: Int!,
+    $page: Int!,
+    $perPage: Int!,
+) {
+    User(id: $userId) {
+        favourites {
+            staff(page: $page, perPage: $perPage) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+                nodes {
+                    ...StaffNavigationData
+                    favourites
+                    primaryOccupations
+                    characters(sort: [FAVOURITES_DESC], perPage: 5) {
+                        nodes {
+                            ...CharacterNavigationData
+                        }
+                    }
+                    staffMedia(sort: [TRENDING_DESC], perPage: 5) {
+                        nodes {
+                            ...MediaWithListStatus
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
