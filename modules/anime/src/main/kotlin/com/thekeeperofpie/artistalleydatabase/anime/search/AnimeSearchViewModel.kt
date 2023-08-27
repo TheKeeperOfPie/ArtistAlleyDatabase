@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
@@ -36,7 +37,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresCont
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
@@ -62,7 +62,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -158,15 +157,7 @@ class AnimeSearchViewModel @Inject constructor(
                 }
         }
 
-        val includeDescriptionFlow = snapshotFlow { mediaViewOption }
-            .map { it == MediaViewOption.LARGE_CARD }
-            .transformWhile {
-                // Take until description is ever requested,
-                // then always request to prevent unnecessary refreshes
-                emit(it)
-                !it
-            }
-            .distinctUntilChanged()
+        val includeDescriptionFlow = MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
 
         collectSearch(
             searchType = SearchType.ANIME,

@@ -79,6 +79,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaScreen
+import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
@@ -842,10 +844,10 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 title = {
                     if (userId == null) {
-                        stringResource(id = R.string.anime_user_following_you)
+                        stringResource(R.string.anime_user_following_you)
                     } else {
                         stringResource(
-                            id = R.string.anime_user_following_user,
+                            R.string.anime_user_following_user,
                             it.arguments?.getString("userName").orEmpty()
                         )
                     }
@@ -872,12 +874,48 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 title = {
                     if (userId == null) {
-                        stringResource(id = R.string.anime_user_followers_you)
+                        stringResource(R.string.anime_user_followers_you)
                     } else {
                         stringResource(
-                            id = R.string.anime_user_followers_user,
+                            R.string.anime_user_followers_user,
                             it.arguments?.getString("userName").orEmpty()
                         )
+                    }
+                },
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.USER_FAVORITE_MEDIA.id
+                    + "?userId={userId}"
+                    + "&userName={userName}"
+                    + "&mediaType={mediaType}",
+            arguments = listOf("userId", "userName", "mediaType").map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+        ) {
+            val userId = it.arguments?.getString("userId")
+            val viewModel: UserFavoriteMediaViewModel = hiltViewModel()
+            val userName = it.arguments?.getString("userName").orEmpty()
+            UserFavoriteMediaScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                viewModel = viewModel,
+                title = {
+                    if (viewModel.mediaType == MediaType.ANIME) {
+                        if (userId == null) {
+                            stringResource(R.string.anime_user_favorite_anime_you)
+                        } else {
+                            stringResource(R.string.anime_user_favorite_anime_user, userName)
+                        }
+                    } else {
+                        if (userId == null) {
+                            stringResource(R.string.anime_user_favorite_manga_you)
+                        } else {
+                            stringResource(R.string.anime_user_favorite_manga_user, userName)
+                        }
                     }
                 },
             )
@@ -1496,6 +1534,13 @@ object AnimeNavigator {
             navHostController?.navigate(
                 AnimeNavDestinations.USER_FOLLOWERS.id
                         + "?userId=$userId&userName=$userName"
+            )
+        }
+
+        fun onUserFavoriteMediaClick(userId: String?, userName: String?, mediaType: MediaType) {
+            navHostController?.navigate(
+                AnimeNavDestinations.USER_FAVORITE_MEDIA.id
+                        + "?userId=$userId&userName=$userName&mediaType=${mediaType.rawValue}"
             )
         }
 

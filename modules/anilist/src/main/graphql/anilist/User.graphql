@@ -428,3 +428,63 @@ query UserSocialActivity(
         }
     }
 }
+
+fragment UserFavoriteMedia on Media {
+    ...MediaHeaderData
+    # Loading tags breaks this API, manually transform at runtime
+    ...MediaCompactWithoutTags
+    episodes
+    volumes
+    chapters
+    genres
+    source
+    startDate {
+        year
+        month
+        day
+    }
+    externalLinks {
+        siteId
+    }
+    description(asHtml: true) @include(if: $includeDescription)
+}
+
+query UserFavoritesAnime(
+    $userId: Int!,
+    $includeDescription: Boolean!,
+    $page: Int!,
+    $perPage: Int!,
+) {
+    User(id: $userId) {
+        favourites {
+            anime(page: $page, perPage: $perPage) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+                nodes {
+                    ...UserFavoriteMedia
+                }
+            }
+        }
+    }
+}
+
+query UserFavoritesManga(
+    $userId: Int!,
+    $includeDescription: Boolean!,
+    $page: Int!,
+    $perPage: Int!,
+) {
+    User(id: $userId) {
+        favourites {
+            manga(page: $page, perPage: $perPage) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+                nodes {
+                    ...UserFavoriteMedia
+                }
+            }
+        }
+    }
+}

@@ -74,6 +74,7 @@ object AnimeMediaCompactListRow {
         modifier: Modifier = Modifier,
         onClickListEdit: (Entry) -> Unit,
         label: (@Composable () -> Unit)? = null,
+        forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
@@ -119,6 +120,7 @@ object AnimeMediaCompactListRow {
                         },
                         onClickListEdit = onClickListEdit,
                         onRatioAvailable = { imageWidthToHeightRatio = it },
+                        forceListEditIcon = forceListEditIcon,
                         showQuickEdit = showQuickEdit,
                     )
 
@@ -183,6 +185,7 @@ object AnimeMediaCompactListRow {
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
         onRatioAvailable: (Float) -> Unit,
+        forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
     ) {
         Box {
@@ -242,6 +245,7 @@ object AnimeMediaCompactListRow {
                     maxProgressVolumes = entry.media.volumes,
                     onClick = { onClickListEdit(entry) },
                     padding = 6.dp,
+                    forceListEditIcon = forceListEditIcon,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .widthIn(max = DEFAULT_IMAGE_WIDTH)

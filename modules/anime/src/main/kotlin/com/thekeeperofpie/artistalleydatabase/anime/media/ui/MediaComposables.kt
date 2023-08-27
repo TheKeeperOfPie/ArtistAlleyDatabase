@@ -113,13 +113,18 @@ fun LazyListScope.mediaHorizontalRow(
     editViewModel: MediaEditViewModel,
     @StringRes titleRes: Int,
     entries: LazyPagingItems<out MediaGridCard.Entry>,
-    sectionTitle: @Composable () -> Unit = {
-        DetailsSectionHeader(stringResource(titleRes))
-    },
     forceListEditIcon: Boolean = false,
+    onClickViewAll: () -> Unit,
+    @StringRes viewAllContentDescriptionTextRes: Int,
 ) {
     if (entries.itemCount == 0) return
-    item("$titleRes-header") { sectionTitle() }
+    item("$titleRes-header") {
+        DetailsSectionHeader(
+            text = stringResource(titleRes),
+            onClickViewAll = onClickViewAll,
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+        )
+    }
 
     item("$titleRes-media") {
         LazyRow(
@@ -459,6 +464,7 @@ fun MediaViewOptionRow(
     viewer: AniListViewer?,
     editViewModel: MediaEditViewModel,
     entry: MediaPreviewWithDescriptionEntry?,
+    forceListEditIcon: Boolean = false,
     showQuickEdit: Boolean = true,
 ) {
     when (mediaViewOption) {
@@ -467,12 +473,14 @@ fun MediaViewOptionRow(
             viewer = viewer,
             entry = entry,
             onClickListEdit = { editViewModel.initialize(it.media) },
+            forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
         )
         MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
             screenKey = screenKey,
             viewer = viewer,
             entry = entry,
+            forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
             onClickListEdit = { editViewModel.initialize(it.media) },
         )
@@ -480,6 +488,7 @@ fun MediaViewOptionRow(
             screenKey = screenKey,
             viewer = viewer,
             entry = entry,
+            forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
             onClickListEdit = { editViewModel.initialize(it.media) },
         )
@@ -488,6 +497,7 @@ fun MediaViewOptionRow(
             entry = entry,
             viewer = viewer,
             onClickListEdit = { editViewModel.initialize(it.media) },
+            forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
         )
     }

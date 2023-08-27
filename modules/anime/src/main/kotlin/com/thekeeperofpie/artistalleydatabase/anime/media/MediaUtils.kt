@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -43,8 +44,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformWhile
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
@@ -392,13 +397,14 @@ object MediaUtils {
                     DateUtils.FORMAT_SHOW_TIME
         )
 
-    fun formatAiringAt(context: Context, timeInMillis: Long, showDate: Boolean = true): String = DateUtils.formatDateTime(
-        context,
-        timeInMillis,
-        (BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_TIME).transformIf(showDate) {
-            this or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
-        }
-    )
+    fun formatAiringAt(context: Context, timeInMillis: Long, showDate: Boolean = true): String =
+        DateUtils.formatDateTime(
+            context,
+            timeInMillis,
+            (BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_TIME).transformIf(showDate) {
+                this or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
+            }
+        )
 
     fun formatRemainingTime(timeInMillis: Long): CharSequence = DateUtils.getRelativeTimeSpanString(
         timeInMillis,
@@ -840,4 +846,15 @@ object MediaUtils {
             }
         }
     }
+
+    fun mediaViewOptionIncludeDescriptionFlow(mediaViewOption: () -> MediaViewOption) =
+        snapshotFlow { mediaViewOption() }
+            .map { it == MediaViewOption.LARGE_CARD }
+            .transformWhile {
+                // Take until description is ever requested,
+                // then always request to prevent unnecessary refreshes
+                emit(it)
+                !it
+            }
+            .distinctUntilChanged()
 }

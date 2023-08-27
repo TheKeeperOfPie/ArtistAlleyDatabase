@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -27,14 +26,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges2
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
@@ -49,7 +47,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -135,15 +132,7 @@ class SeasonalViewModel @Inject constructor(
         init {
             viewModelScope.launch(CustomDispatchers.Main) {
                 combine(
-                    snapshotFlow { mediaViewOption }
-                        .map { it == MediaViewOption.LARGE_CARD }
-                        .transformWhile {
-                            // Take until description is ever requested,
-                            // then always request to prevent unnecessary refreshes
-                            emit(it)
-                            !it
-                        }
-                        .distinctUntilChanged(),
+                    MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
                     refreshUptimeMillis,
                     sortFilterController.filterParams(),
                 ) { includeDescription, requestMillis, filterParams ->

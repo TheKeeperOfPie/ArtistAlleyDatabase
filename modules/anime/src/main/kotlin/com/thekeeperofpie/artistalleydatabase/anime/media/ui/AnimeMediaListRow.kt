@@ -81,6 +81,7 @@ object AnimeMediaListRow {
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
         onClickListEdit: (Entry) -> Unit,
+        forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         showDate: Boolean = true,
@@ -131,6 +132,7 @@ object AnimeMediaListRow {
                     onRatioAvailable = { imageWidthToHeightRatio = it },
                     recommendation = recommendation,
                     onUserRecommendationRating = onUserRecommendationRating,
+                    forceListEditIcon = forceListEditIcon,
                     showQuickEdit = showQuickEdit,
                 )
 
@@ -203,6 +205,7 @@ object AnimeMediaListRow {
             recommendation: RecommendationData,
             newRating: RecommendationRating,
         ) -> Unit,
+        forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
     ) {
         Box {
@@ -334,6 +337,7 @@ object AnimeMediaListRow {
                     maxProgress = MediaUtils.maxProgress(entry.media),
                     maxProgressVolumes = entry.media.volumes,
                     onClick = { onClickListEdit(entry) },
+                    forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.align(Alignment.BottomStart)
                 )
             }

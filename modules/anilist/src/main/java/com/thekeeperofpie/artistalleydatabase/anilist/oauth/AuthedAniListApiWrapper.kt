@@ -838,4 +838,36 @@ class AuthedAniListApiWrapper(
             it?.media?.isAdult == false && it.mediaRecommendation.isAdult == false
         }))
     }
+
+    override suspend fun userFavoritesAnime(
+        userId: String,
+        includeDescription: Boolean,
+        page: Int,
+        perPage: Int,
+    ) = super.userFavoritesAnime(userId, includeDescription, page, perPage).let {
+        it.copy(
+            user = it.user?.copy(
+                favourites = it.user.favourites?.copy(
+                    anime = it.user.favourites.anime?.copy(
+                        nodes = it.user.favourites.anime.nodes?.filter { it?.isAdult == false })
+                )
+            )
+        )
+    }
+
+    override suspend fun userFavoritesManga(
+        userId: String,
+        includeDescription: Boolean,
+        page: Int,
+        perPage: Int,
+    ) = super.userFavoritesManga(userId, includeDescription, page, perPage).let {
+        it.copy(
+            user = it.user?.copy(
+                favourites = it.user.favourites?.copy(
+                    manga = it.user.favourites.manga?.copy(
+                        nodes = it.user.favourites.manga.nodes?.filter { it?.isAdult == false })
+                )
+            )
+        )
+    }
 }

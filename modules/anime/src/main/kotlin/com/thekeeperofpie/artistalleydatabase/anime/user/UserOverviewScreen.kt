@@ -32,7 +32,9 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.UserByIdQuery
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -49,6 +51,7 @@ object UserOverviewScreen {
 
     @Composable
     operator fun invoke(
+        userId: String?,
         entry: AniListUserScreen.Entry,
         viewModel: AniListUserViewModel,
         editViewModel: MediaEditViewModel,
@@ -65,6 +68,7 @@ object UserOverviewScreen {
         val characters = viewModel.characters.collectAsLazyPagingItems()
         val staff = viewModel.staff.collectAsLazyPagingItems()
         val studios = viewModel.studios.collectAsLazyPagingItems()
+        val navigationCallback = LocalNavigationCallback.current
         LazyColumn(
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp)
@@ -92,6 +96,10 @@ object UserOverviewScreen {
                 titleRes = R.string.anime_user_favorite_anime_label,
                 entries = anime,
                 forceListEditIcon = true,
+                onClickViewAll = {
+                    navigationCallback.onUserFavoriteMediaClick(userId, user.name, MediaType.ANIME)
+                },
+                viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_anime_content_description,
             )
 
             mediaHorizontalRow(
@@ -101,6 +109,10 @@ object UserOverviewScreen {
                 titleRes = R.string.anime_user_favorite_manga_label,
                 entries = manga,
                 forceListEditIcon = true,
+                onClickViewAll = {
+                    navigationCallback.onUserFavoriteMediaClick(userId, user.name, MediaType.MANGA)
+                },
+                viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_manga_content_description,
             )
 
             charactersSection(

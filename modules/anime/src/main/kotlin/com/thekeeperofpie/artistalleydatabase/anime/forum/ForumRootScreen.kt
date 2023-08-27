@@ -98,7 +98,7 @@ object ForumRootScreen {
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
                                 lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
                             )

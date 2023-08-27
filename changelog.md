@@ -7,6 +7,7 @@
 - Change user media list to use tabs for each status
 - Show user's status/score over a media entry when viewing their media lists
 - Add full following/followers screens
+- Add full favorite anime/manga screens
 
 ### 0.43 (8)
 - Add full current media screen

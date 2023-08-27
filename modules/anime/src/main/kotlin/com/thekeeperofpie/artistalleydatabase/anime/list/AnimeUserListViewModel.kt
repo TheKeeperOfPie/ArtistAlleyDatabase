@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.list
 
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -17,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableCo
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
@@ -29,8 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresCont
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,9 +40,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -161,15 +157,7 @@ class AnimeUserListViewModel @Inject constructor(
             }
         }
 
-        val includeDescriptionFlow = snapshotFlow { mediaViewOption }
-            .map { it == MediaViewOption.LARGE_CARD }
-            .transformWhile {
-                // Take until description is ever requested,
-                // then always request to prevent unnecessary refreshes
-                emit(it)
-                !it
-            }
-            .distinctUntilChanged()
+        val includeDescriptionFlow = MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
 
         viewModelScope.launch(CustomDispatchers.Main) {
             val response = if (userId == null) {

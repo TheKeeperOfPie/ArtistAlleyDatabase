@@ -82,6 +82,7 @@ object AnimeMediaLargeCard {
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
         onClickListEdit: (Entry) -> Unit,
+        forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
     ) {
         ElevatedCard(
@@ -190,6 +191,7 @@ object AnimeMediaLargeCard {
                                     media = entry,
                                     maxProgress = MediaUtils.maxProgress(entry.media),
                                     maxProgressVolumes = entry.media.volumes,
+                                    forceListEditIcon = forceListEditIcon,
                                     onClick = { onClickListEdit(entry) },
                                 )
                             }

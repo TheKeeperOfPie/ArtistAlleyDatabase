@@ -210,6 +210,7 @@ object AniListUserScreen {
                             val user = viewModel.entry?.user
                             when (UserTab.values()[it]) {
                                 UserTab.OVERVIEW -> UserOverviewScreen(
+                                    userId = viewModel.userId,
                                     entry = entry,
                                     viewModel = viewModel,
                                     editViewModel = editViewModel,

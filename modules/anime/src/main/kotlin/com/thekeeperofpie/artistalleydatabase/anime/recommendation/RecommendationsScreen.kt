@@ -69,7 +69,7 @@ object RecommendationsScreen {
                         TopAppBar(
                             title = { Text(text = stringResource(R.string.anime_recommendations_header)) },
                             navigationIcon = { upIconOption?.let { UpIconButton(upIconOption) } },
-                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
                                     lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
                                 )
