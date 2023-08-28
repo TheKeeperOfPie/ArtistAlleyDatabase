@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -62,6 +63,7 @@ class SeasonalViewModel @Inject constructor(
     mediaGenresController: MediaGenresController,
     mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -71,7 +73,20 @@ class SeasonalViewModel @Inject constructor(
     private val pages = LruCache<Int, Page>(10)
     private val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
 
-    var initialPage = 0
+    private val type = savedStateHandle.get<String?>("type")?.let {
+        try {
+            Type.valueOf(it)
+        } catch (ignored: Throwable) {
+            null
+        }
+    } ?: Type.THIS
+
+    var initialPage = when (type) {
+        Type.LAST -> Int.MAX_VALUE / 2 - 1
+        Type.THIS -> Int.MAX_VALUE / 2
+        Type.NEXT -> Int.MAX_VALUE / 2 + 1
+    }
+
 
     val sortFilterController = AnimeSortFilterController(
         sortTypeEnumClass = MediaSortOption::class,
@@ -85,13 +100,7 @@ class SeasonalViewModel @Inject constructor(
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun initialize(type: Type) {
-        initialPage = when (type) {
-            Type.LAST -> Int.MAX_VALUE / 2 - 1
-            Type.THIS -> Int.MAX_VALUE / 2
-            Type.NEXT -> Int.MAX_VALUE / 2 + 1
-        }
-
+    init {
         sortFilterController.initialize(
             viewModel = this,
             refreshUptimeMillis = refreshUptimeMillis,

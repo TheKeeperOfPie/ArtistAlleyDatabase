@@ -68,7 +68,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScree
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
-import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
@@ -444,19 +443,7 @@ object AnimeNavigator {
                 }
             )
         ) {
-            val type = it.arguments?.getString("type")?.let {
-                try {
-                    SeasonalViewModel.Type.valueOf(it)
-                } catch (ignored: Throwable) {
-                    null
-                }
-            } ?: SeasonalViewModel.Type.THIS
-            val viewModel = hiltViewModel<SeasonalViewModel>()
-                .apply { initialize(type) }
-            SeasonalScreen(
-                viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
-            )
+            SeasonalScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
         navGraphBuilder.composable(AnimeNavDestinations.NEWS.id) {
