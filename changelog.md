@@ -8,6 +8,7 @@
 - Show user's status/score over a media entry when viewing their media lists
 - Add full following/followers screens
 - Add full favorite screens
+- Add activity to user screen
 
 ### 0.43 (8)
 - Add full current media screen

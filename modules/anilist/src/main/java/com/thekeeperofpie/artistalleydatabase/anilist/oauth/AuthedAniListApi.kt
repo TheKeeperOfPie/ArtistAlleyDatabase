@@ -682,7 +682,7 @@ open class AuthedAniListApi(
     )
 
     open suspend fun userSocialActivity(
-        isFollowing: Boolean,
+        isFollowing: Boolean?,
         page: Int,
         perPage: Int = 10,
         sort: List<ActivitySort> = listOf(ActivitySort.PINNED, ActivitySort.ID_DESC),
@@ -696,7 +696,7 @@ open class AuthedAniListApi(
         mediaId: String? = null,
     ) = query(
         UserSocialActivityQuery(
-            isFollowing = isFollowing,
+            isFollowing = Optional.presentIfNotNull(isFollowing),
             sort = sort,
             perPage = perPage,
             page = page,

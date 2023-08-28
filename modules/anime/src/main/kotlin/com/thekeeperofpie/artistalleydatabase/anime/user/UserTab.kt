@@ -6,6 +6,7 @@ enum class UserTab(
     val textRes: Int
 ) {
     OVERVIEW(R.string.anime_user_tab_overview),
+    ACTIVITY(R.string.anime_user_tab_activity),
     ANIME_STATS(R.string.anime_user_tab_anime_stats),
     MANGA_STATS(R.string.anime_user_tab_manga_stats),
     SOCIAL(R.string.anime_user_tab_social),

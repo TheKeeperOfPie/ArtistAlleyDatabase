@@ -41,6 +41,7 @@ class ActivitySortFilterController(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
+    mediaSharedElement: Boolean = true,
 ) : SortFilterController(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
@@ -116,6 +117,7 @@ class ActivitySortFilterController(
         aniListApi = aniListApi,
         settings = settings,
         mediaType = null,
+        mediaSharedElement = mediaSharedElement,
     )
 
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {

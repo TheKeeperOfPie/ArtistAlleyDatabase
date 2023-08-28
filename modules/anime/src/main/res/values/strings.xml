@@ -474,6 +474,7 @@
     <string name="anime_user_statistics_manga_chapters_read">Chapters read</string>
 
     <string name="anime_user_tab_overview">Overview</string>
+    <string name="anime_user_tab_activity">Activity</string>
     <string name="anime_user_tab_anime_stats">Anime</string>
     <string name="anime_user_tab_manga_stats">Manga</string>
     <string name="anime_user_tab_social">Social</string>

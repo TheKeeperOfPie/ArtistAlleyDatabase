@@ -395,7 +395,7 @@ fragment ActivityItem on ActivityUnion {
 }
 
 query UserSocialActivity(
-    $isFollowing: Boolean!,
+    $isFollowing: Boolean,
     $sort: [ActivitySort]!,
     $perPage: Int!,
     $page: Int!,

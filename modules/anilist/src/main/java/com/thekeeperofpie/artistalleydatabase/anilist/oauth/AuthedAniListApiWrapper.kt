@@ -447,7 +447,7 @@ class AuthedAniListApiWrapper(
     }
 
     override suspend fun userSocialActivity(
-        isFollowing: Boolean,
+        isFollowing: Boolean?,
         page: Int,
         perPage: Int,
         sort: List<ActivitySort>,

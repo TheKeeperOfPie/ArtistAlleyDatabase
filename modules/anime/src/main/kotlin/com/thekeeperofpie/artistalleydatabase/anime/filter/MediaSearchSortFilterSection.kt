@@ -77,6 +77,7 @@ class MediaSearchSortFilterSection(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     private val mediaType: MediaType?,
+    private val mediaSharedElement: Boolean = true,
 ) : SortFilterSection.Custom(id) {
 
     var selectedMedia by mutableStateOf<Medium?>(null)
@@ -266,7 +267,7 @@ class MediaSearchSortFilterSection(
                 }
                 .heightIn(min = 54.dp)
                 .width(42.dp)
-            if (sharedElement) {
+            if (sharedElement && mediaSharedElement) {
                 MediaCoverImage(
                     screenKey = screenKey,
                     mediaId = media.id.toString(),

@@ -207,6 +207,7 @@ object AniListUserScreen {
                         modifier = Modifier.pullRefresh(pullRefreshState)
                     ) {
                         Box {
+                            val viewer by viewModel.viewer.collectAsState()
                             val user = viewModel.entry?.user
                             when (UserTab.values()[it]) {
                                 UserTab.OVERVIEW -> UserOverviewScreen(
@@ -214,10 +215,15 @@ object AniListUserScreen {
                                     entry = entry,
                                     viewModel = viewModel,
                                     editViewModel = editViewModel,
-                                    viewer = viewModel.viewer.collectAsState(null).value,
+                                    viewer = viewer,
                                     isFollowing = { viewModel.isFollowing },
                                     onFollowingClick = viewModel::toggleFollow,
                                     bottomNavigationState = bottomNavigationState,
+                                )
+                                UserTab.ACTIVITY -> UserActivityScreen(
+                                    viewModel = viewModel,
+                                    editViewModel = editViewModel,
+                                    viewer = viewer,
                                 )
                                 UserTab.ANIME_STATS -> UserMediaScreen(
                                     user = { user },

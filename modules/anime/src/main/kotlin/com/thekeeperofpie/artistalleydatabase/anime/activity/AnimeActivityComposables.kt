@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
@@ -6,13 +6,17 @@ import android.text.format.DateUtils
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRightAlt
 import androidx.compose.material.icons.filled.Comment
@@ -23,6 +27,9 @@ import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material.icons.outlined.ThumbUp
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,6 +47,11 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
+import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.ListActivityWithoutMedia
 import com.anilist.fragment.MessageActivityFragment
 import com.anilist.fragment.TextActivityFragment
@@ -52,12 +64,126 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import java.time.Instant
 import java.time.ZoneOffset
+
+@Composable
+fun ActivityList(
+    screenKey: String,
+    editViewModel: MediaEditViewModel,
+    viewer: AniListViewer?,
+    activities: LazyPagingItems<ActivityEntry>,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    showMedia: Boolean,
+    allowUserClick: Boolean = true,
+) {
+    when (val refreshState = activities.loadState.refresh) {
+        is LoadState.Error -> AnimeMediaListScreen.Error(
+            exception = refreshState.error,
+        )
+        else -> {
+            if (activities.itemCount == 0
+                && activities.loadState.refresh is LoadState.NotLoading
+            ) {
+                AnimeMediaListScreen.NoResults()
+            } else {
+                // TODO: Move this up a level
+                val refreshing = activities.loadState.refresh is LoadState.Loading
+                val pullRefreshState = rememberPullRefreshState(
+                    refreshing = refreshing,
+                    onRefresh = { activities.refresh() },
+                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    LazyColumn(
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 16.dp,
+                            bottom = 72.dp,
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.pullRefresh(state = pullRefreshState)
+                    ) {
+                        items(
+                            count = activities.itemCount,
+                            key = activities.itemKey { it.activityId.scopedId },
+                            contentType = activities.itemContentType { it.activityId.type }
+                        ) {
+                            val entry = activities[it]
+                            when (val activity = entry?.activity) {
+                                is UserSocialActivityQuery.Data.Page.TextActivityActivity -> TextActivitySmallCard(
+                                    screenKey = screenKey,
+                                    viewer = viewer,
+                                    activity = activity,
+                                    entry = entry,
+                                    onActivityStatusUpdate = onActivityStatusUpdate,
+                                    allowUserClick = allowUserClick,
+                                    clickable = true,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                is UserSocialActivityQuery.Data.Page.ListActivityActivity -> ListActivitySmallCard(
+                                    screenKey = screenKey,
+                                    viewer = viewer,
+                                    activity = activity,
+                                    mediaEntry = entry.media,
+                                    showMedia = showMedia,
+                                    entry = entry,
+                                    onActivityStatusUpdate = onActivityStatusUpdate,
+                                    onClickListEdit = { editViewModel.initialize(it.media) },
+                                    allowUserClick = allowUserClick,
+                                    clickable = true,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> MessageActivitySmallCard(
+                                    screenKey = screenKey,
+                                    viewer = viewer,
+                                    activity = activity,
+                                    entry = entry,
+                                    onActivityStatusUpdate = onActivityStatusUpdate,
+                                    allowUserClick = allowUserClick,
+                                    clickable = true,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                is UserSocialActivityQuery.Data.Page.OtherActivity,
+                                null,
+                                -> TextActivitySmallCard(
+                                    screenKey = screenKey,
+                                    activity = null,
+                                    viewer = viewer,
+                                    entry = null,
+                                    onActivityStatusUpdate = onActivityStatusUpdate,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+
+                        when (activities.loadState.append) {
+                            is LoadState.Loading -> item("load_more_append") {
+                                AnimeMediaListScreen.LoadingMore()
+                            }
+                            is LoadState.Error -> item("load_more_error") {
+                                AnimeMediaListScreen.AppendError { activities.retry() }
+                            }
+                            is LoadState.NotLoading -> Unit
+                        }
+                    }
+
+                    PullRefreshIndicator(
+                        refreshing = refreshing,
+                        state = pullRefreshState,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun TextActivitySmallCard(
@@ -67,6 +193,7 @@ fun TextActivitySmallCard(
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     modifier: Modifier = Modifier,
+    allowUserClick: Boolean = true,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -79,6 +206,7 @@ fun TextActivitySmallCard(
             user = activity?.user,
             entry = entry,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            allowUserClick = allowUserClick,
             clickable = clickable,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
@@ -111,6 +239,7 @@ fun ColumnScope.TextActivityCardContent(
     user: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    allowUserClick: Boolean = true,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -125,6 +254,7 @@ fun ColumnScope.TextActivityCardContent(
                 screenKey = screenKey,
                 loading = activity == null,
                 user = user,
+                clickable = allowUserClick,
             )
         }
 
@@ -210,6 +340,7 @@ fun MessageActivitySmallCard(
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     modifier: Modifier = Modifier,
+    allowUserClick: Boolean = true,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -222,6 +353,7 @@ fun MessageActivitySmallCard(
             messenger = activity?.messenger,
             entry = entry,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            allowUserClick = allowUserClick,
             clickable = clickable,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
@@ -253,6 +385,7 @@ fun ColumnScope.MessageActivityCardContent(
     messenger: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    allowUserClick: Boolean = false,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -267,6 +400,7 @@ fun ColumnScope.MessageActivityCardContent(
                 screenKey = screenKey,
                 loading = activity == null,
                 user = messenger,
+                clickable = allowUserClick,
             )
         }
 
@@ -401,6 +535,7 @@ fun ListActivitySmallCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     modifier: Modifier = Modifier,
+    allowUserClick: Boolean = true,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -415,6 +550,7 @@ fun ListActivitySmallCard(
         subscribed = entry?.subscribed ?: false,
         onActivityStatusUpdate = onActivityStatusUpdate,
         onClickListEdit = onClickListEdit,
+        allowUserClick = allowUserClick,
         clickable = clickable,
         showActionsRow = showActionsRow,
         onClickDelete = onClickDelete,
@@ -431,11 +567,12 @@ fun ListActivitySmallCard(
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    modifier: Modifier = Modifier,
+    allowUserClick: Boolean = true,
     clickable: Boolean = false,
     showMedia: Boolean = true,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     ListActivitySmallCard(
         screenKey = screenKey,
@@ -447,6 +584,7 @@ fun ListActivitySmallCard(
         subscribed = entry?.subscribed ?: false,
         onActivityStatusUpdate = onActivityStatusUpdate,
         onClickListEdit = onClickListEdit,
+        allowUserClick = allowUserClick,
         clickable = clickable,
         showActionsRow = showActionsRow,
         onClickDelete = onClickDelete,
@@ -465,6 +603,7 @@ private fun ListActivitySmallCard(
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    allowUserClick: Boolean,
     clickable: Boolean,
     showActionsRow: Boolean,
     onClickDelete: (String) -> Unit,
@@ -484,6 +623,7 @@ private fun ListActivitySmallCard(
             onClickListEdit = onClickListEdit,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
+            allowUserClick = allowUserClick,
         )
     }
     if (clickable && activity != null) {
@@ -519,6 +659,7 @@ fun ColumnScope.ListActivityCardContent(
     showUser: Boolean = true,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
+    allowUserClick: Boolean = true,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -530,6 +671,7 @@ fun ColumnScope.ListActivityCardContent(
                 screenKey = screenKey,
                 loading = activity == null,
                 user = user,
+                clickable = allowUserClick,
             )
         }
 
@@ -746,6 +888,7 @@ private fun UserImage(
     screenKey: String,
     loading: Boolean,
     user: UserNavigationData?,
+    clickable: Boolean = true,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val navigationCallback = LocalNavigationCallback.current
@@ -757,7 +900,7 @@ private fun UserImage(
             .size(40.dp)
             .clip(shape)
             .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
-            .clickable {
+            .clickable(enabled = clickable) {
                 if (user != null) {
                     navigationCallback.onUserClick(user, 1f)
                 }

@@ -15,17 +15,26 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.ToggleFollowMutation
+import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.PaginationInfo
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserMediaStatistics
 import com.anilist.type.MediaListStatus
+import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortOption
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activity.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -37,8 +46,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
@@ -58,6 +71,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import javax.inject.Inject
 
@@ -65,10 +81,12 @@ import javax.inject.Inject
 @HiltViewModel
 class AniListUserViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
-    private val statusController: MediaListStatusController,
+    private val mediaListStatusController: MediaListStatusController,
+    private val activityStatusController: ActivityStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     private val markwon: Markwon,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     val screenKey = "${AnimeNavDestinations.USER.id}-${UUID.randomUUID()}"
@@ -86,9 +104,25 @@ class AniListUserViewModel @Inject constructor(
     var studios by mutableStateOf(StudiosEntry())
         private set
 
+    val activities = MutableStateFlow(PagingData.empty<ActivityEntry>())
+
     val animeStats = States.Anime(viewModelScope, aniListApi)
     val mangaStats = States.Manga(viewModelScope, aniListApi)
 
+    val activitySortFilterController = ActivitySortFilterController(
+        screenKey = AnimeNavDestinations.ACTIVITY.id,
+        scope = viewModelScope,
+        aniListApi = aniListApi,
+        settings = settings,
+        featureOverrideProvider = featureOverrideProvider,
+        // Disable shared element otherwise the tab view will animate into the sort list
+        mediaSharedElement = false,
+    )
+
+    val activityToggleHelper =
+        ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
+
+    private val offset = ZoneId.systemDefault().rules.getOffset(Instant.now())
     private var toggleFollowRequestMillis = MutableStateFlow(-1L)
     private var initialFollowState by mutableStateOf<Boolean?>(null)
     private var toggleFollowingResult by mutableStateOf<ToggleFollowMutation.Data.ToggleFollow?>(
@@ -152,7 +186,7 @@ class AniListUserViewModel @Inject constructor(
             property = anime,
             transformFlow = {
                 applyMediaStatusChanges(
-                    statusController = statusController,
+                    statusController = mediaListStatusController,
                     ignoreController = ignoreController,
                     settings = settings,
                     media = { it.media },
@@ -189,7 +223,7 @@ class AniListUserViewModel @Inject constructor(
             property = manga,
             transformFlow = {
                 applyMediaStatusChanges(
-                    statusController = statusController,
+                    statusController = mediaListStatusController,
                     ignoreController = ignoreController,
                     settings = settings,
                     media = { it.media },
@@ -286,6 +320,110 @@ class AniListUserViewModel @Inject constructor(
                         toggleFollowingResult = it
                     }
                 }
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            snapshotFlow { entry }
+                .filterNotNull()
+                .flowOn(CustomDispatchers.Main)
+                .flatMapLatest { (entry) ->
+                    combine(
+                        activitySortFilterController.filterParams(),
+                        refreshUptimeMillis,
+                        ::Pair
+                    ).flatMapLatest { (filterParams) ->
+                        Pager(config = PagingConfig(10)) {
+                            AniListPagingSource {
+                                val result = aniListApi.userSocialActivity(
+                                    isFollowing = null,
+                                    page = it,
+                                    userId = entry.id.toString(),
+                                    userIdNot = null,
+                                    sort = filterParams.sort
+                                        .selectedOption(ActivitySortOption.NEWEST)
+                                        .toApiValue(),
+                                    typeIn = filterParams.type
+                                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                                        .map { it.value }
+                                        .ifEmpty { null },
+                                    typeNotIn = filterParams.type
+                                        .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
+                                        .map { it.value }
+                                        .ifEmpty { null },
+                                    hasReplies = if (filterParams.hasReplies) true else null,
+                                    createdAtGreater = filterParams.date.startDate
+                                        ?.atStartOfDay()
+                                        ?.toEpochSecond(offset)
+                                        ?.toInt(),
+                                    createdAtLesser = filterParams.date.endDate
+                                        ?.plus(1, ChronoUnit.DAYS)
+                                        ?.atStartOfDay()
+                                        ?.toEpochSecond(offset)
+                                        ?.toInt(),
+                                    mediaId = filterParams.mediaId,
+                                )
+                                result.page?.pageInfo to
+                                        result.page?.activities?.filterNotNull().orEmpty()
+                            }
+                        }
+                            .flow
+                    }
+                }
+                .enforceUniqueIntIds {
+                    when (it) {
+                        is UserSocialActivityQuery.Data.Page.ListActivityActivity -> it.id
+                        is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> it.id
+                        is UserSocialActivityQuery.Data.Page.TextActivityActivity -> it.id
+                        is UserSocialActivityQuery.Data.Page.OtherActivity -> null
+                    }
+                }
+                .mapLatest { it.mapOnIO(::ActivityEntry) }
+                .cachedIn(viewModelScope)
+                .flatMapLatest { pagingData ->
+                    combine(
+                        mediaListStatusController.allChanges(),
+                        activityStatusController.allChanges(),
+                        ignoreController.updates(),
+                        settings.showAdult,
+                        settings.showIgnored,
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { mediaListStatuses, activityStatuses, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                        pagingData.mapNotNull {
+                            applyActivityFiltering(
+                                mediaListStatuses = mediaListStatuses,
+                                activityStatuses = activityStatuses,
+                                ignoreController = ignoreController,
+                                showAdult = showAdult,
+                                showIgnored = showIgnored,
+                                showLessImportantTags = showLessImportantTags,
+                                showSpoilerTags = showSpoilerTags,
+                                entry = it,
+                                activityId = it.activityId.valueId,
+                                activityStatusAware = it,
+                                media = (it.activity as? UserSocialActivityQuery.Data.Page.ListActivityActivity)?.media,
+                                mediaStatusAware = it.media,
+                                copyMedia = { status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                    copy(
+                                        media = media?.copy(
+                                            mediaListStatus = status,
+                                            progress = progress,
+                                            progressVolumes = progressVolumes,
+                                            ignored = ignored,
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
+                                        )
+                                    )
+                                },
+                                copyActivity = { liked, subscribed ->
+                                    copy(liked = liked, subscribed = subscribed)
+                                }
+                            )
+                        }
+                    }
+                }
+                .cachedIn(viewModelScope)
+                .collectLatest(activities::emit)
         }
     }
 

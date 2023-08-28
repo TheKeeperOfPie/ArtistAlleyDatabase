@@ -6,7 +6,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.UserSocialActivityQuery
 import com.anilist.UserSocialActivityQuery.Data.Page.ListActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.MessageActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.OtherActivity
@@ -18,20 +17,13 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entryId
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.isAdult
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
-import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -40,7 +32,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -121,11 +112,10 @@ class AnimeActivityViewModel @Inject constructor(
     ) = viewModelScope.launch(CustomDispatchers.IO) {
         aniListApi.authedUser.flatMapLatest { viewer ->
             combine(
-                settings.showAdult,
                 sortFilterController.filterParams(),
                 refreshUptimeMillis,
-                ::Triple
-            ).flatMapLatest { (showAdult, filterParams) ->
+                ::Pair
+            ).flatMapLatest { (filterParams) ->
                 Pager(config = PagingConfig(10)) {
                     AniListPagingSource {
                         val result = aniListApi.userSocialActivity(
@@ -161,7 +151,6 @@ class AnimeActivityViewModel @Inject constructor(
                     }
                 }
                     .flow
-                    .map { it.filterOnIO { showAdult || !it.isAdult() } }
             }
         }
             .enforceUniqueIntIds {
@@ -221,19 +210,4 @@ class AnimeActivityViewModel @Inject constructor(
             .collectLatest(target::emit)
     }
 
-    data class ActivityEntry(
-        val activityId: EntryId,
-        val activity: UserSocialActivityQuery.Data.Page.Activity,
-        override val liked: Boolean,
-        override val subscribed: Boolean,
-        val media: MediaCompactWithTagsEntry?,
-    ) : ActivityStatusAware {
-        constructor(activity: UserSocialActivityQuery.Data.Page.Activity) : this(
-            activityId = activity.entryId,
-            activity = activity,
-            liked = activity.liked,
-            subscribed = activity.subscribed,
-            media = (activity as? ListActivityActivity)?.media?.let(::MediaCompactWithTagsEntry),
-        )
-    }
 }

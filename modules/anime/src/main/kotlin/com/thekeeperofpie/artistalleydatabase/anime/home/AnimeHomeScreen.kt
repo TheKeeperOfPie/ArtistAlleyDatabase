@@ -106,8 +106,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
-import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
@@ -397,7 +397,7 @@ object AnimeHomeScreen {
     private fun LazyListScope.activityRow(
         editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
-        data: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
+        data: LazyPagingItems<ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     ) {
         rowHeader(

@@ -17,12 +17,12 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entryId
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
-import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -68,7 +68,7 @@ class AnimeHomeViewModel @Inject constructor(
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
     private val refresh = MutableStateFlow(-1L)
-    val activity = MutableStateFlow(PagingData.empty<AnimeActivityViewModel.ActivityEntry>())
+    val activity = MutableStateFlow(PagingData.empty<ActivityEntry>())
     val recommendations = MutableStateFlow(PagingData.empty<RecommendationEntry>())
 
     val recommendationToggleHelper =
@@ -106,7 +106,7 @@ class AnimeHomeViewModel @Inject constructor(
                         settings.showSpoilerTags,
                     ) { mediaUpdates, ignoredIds, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
                         pagingData.mapOnIO {
-                            AnimeActivityViewModel.ActivityEntry(
+                            ActivityEntry(
                                 it.entryId,
                                 it,
                                 it.liked,
