@@ -904,4 +904,21 @@ class AuthedAniListApiWrapper(
             )
         )
     }
+
+    override suspend fun userFavoritesStudios(
+        userId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.userFavoritesStudios(userId, page, perPage).let {
+        it.copy(
+            user = it.user?.copy(
+                favourites = it.user.favourites?.copy(
+                    studios = it.user.favourites.studios?.copy(
+                        nodes = it.user.favourites.studios.nodes?.map {
+                            it?.copy(media = it.media?.copy(nodes = it.media.nodes?.filter { it?.isAdult == false }))
+                        })
+                )
+            )
+        )
+    }
 }

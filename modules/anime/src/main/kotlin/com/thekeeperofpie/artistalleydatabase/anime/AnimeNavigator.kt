@@ -82,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCh
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStaffScreen
+import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
@@ -959,6 +960,31 @@ object AnimeNavigator {
                 },
             )
         }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.USER_FAVORITE_STUDIOS.id
+                    + "?userId={userId}"
+                    + "&userName={userName}",
+            arguments = listOf("userId", "userName").map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+        ) {
+            val userId = it.arguments?.getString("userId")
+            val userName = it.arguments?.getString("userName").orEmpty()
+            UserFavoriteStudiosScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                title = {
+                    if (userId == null) {
+                        stringResource(R.string.anime_user_favorite_studios_you)
+                    } else {
+                        stringResource(R.string.anime_user_favorite_studios_user, userName)
+                    }
+                },
+            )
+        }
     }
 
     fun onTagClick(
@@ -1593,6 +1619,13 @@ object AnimeNavigator {
         fun onUserFavoriteStaffClick(userId: String?, userName: String?) {
             navHostController?.navigate(
                 AnimeNavDestinations.USER_FAVORITE_STAFF.id
+                        + "?userId=$userId&userName=$userName"
+            )
+        }
+
+        fun onUserFavoriteStudiosClick(userId: String?, userName: String?) {
+            navHostController?.navigate(
+                AnimeNavDestinations.USER_FAVORITE_STUDIOS.id
                         + "?userId=$userId&userName=$userName"
             )
         }

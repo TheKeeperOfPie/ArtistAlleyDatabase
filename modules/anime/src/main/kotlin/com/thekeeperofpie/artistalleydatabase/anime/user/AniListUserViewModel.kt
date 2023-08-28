@@ -31,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
@@ -82,7 +83,8 @@ class AniListUserViewModel @Inject constructor(
     val manga = MutableStateFlow(PagingData.empty<MediaEntry>())
     val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
     val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
-    val studios = MutableStateFlow(PagingData.empty<StudioListRow.Entry>())
+    var studios by mutableStateOf(StudiosEntry())
+        private set
 
     val animeStats = States.Anime(viewModelScope, aniListApi)
     val mangaStats = States.Manga(viewModelScope, aniListApi)
@@ -252,27 +254,25 @@ class AniListUserViewModel @Inject constructor(
             property = staff,
         )
 
-        collectFavoritesPage(
-            request = { entry, page ->
-                if (page == 1) {
-                    val result = entry.user.favourites?.studios
-                    result?.pageInfo to result?.nodes?.filterNotNull().orEmpty()
-                } else {
-                    val result = aniListApi.userDetailsStudiosPage(
-                        userId = entry.user.id.toString(),
-                        page = page,
-                    )
-                    result.pageInfo to result.nodes.filterNotNull()
+        viewModelScope.launch(CustomDispatchers.Main) {
+            snapshotFlow { entry }
+                .flowOn(CustomDispatchers.Main)
+                .mapLatest {
+                    val result = it?.user?.favourites?.studios
+                    val hasMore = result?.pageInfo?.hasNextPage ?: false
+                    val studios = result?.nodes?.filterNotNull()?.map {
+                        StudioListRow.Entry(
+                            studio = it,
+                            media = it.media?.nodes?.filterNotNull()
+                                ?.map(::MediaWithListStatusEntry)
+                                .orEmpty()
+                        )
+                    }.orEmpty()
+                    StudiosEntry(hasMore = hasMore, studios = studios)
                 }
-            },
-            map = {
-                StudioListRow.Entry(it, it.media?.nodes?.filterNotNull()?.map {
-                    StudioListRow.Entry.MediaEntry(it, it.isAdult)
-                }.orEmpty())
-            },
-            id = { it.studio.id.toString() },
-            property = studios,
-        )
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { studios = it }
+        }
 
         viewModelScope.launch(CustomDispatchers.IO) {
             toggleFollowRequestMillis.filter { it > 0 }
@@ -425,4 +425,9 @@ class AniListUserViewModel @Inject constructor(
         override val averageScore = userMedia.averageScore
         override val color = userMedia.coverImage?.color?.let(ComposeColorUtils::hexToColor)
     }
+
+    data class StudiosEntry(
+        val hasMore: Boolean = false,
+        val studios: List<StudioListRow.Entry> = emptyList(),
+    )
 }

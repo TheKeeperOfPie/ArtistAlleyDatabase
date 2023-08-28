@@ -42,4 +42,5 @@ enum class AnimeNavDestinations(val id: String) {
     USER_FAVORITE_MEDIA("anime_user_favorite_media"),
     USER_FAVORITE_CHARACTERS("anime_user_favorite_characters"),
     USER_FAVORITE_STAFF("anime_user_favorite_staff"),
+    USER_FAVORITE_STUDIOS("anime_user_favorite_studios"),
 }

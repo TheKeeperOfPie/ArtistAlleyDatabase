@@ -9,7 +9,7 @@ fragment StudioListRowFragment on Studio {
     favourites
     media(sort: [FAVOURITES_DESC], perPage: 5, isMain: true) {
         nodes {
-            ...MediaNavigationData
+            ...MediaWithListStatus
         }
     }
 }

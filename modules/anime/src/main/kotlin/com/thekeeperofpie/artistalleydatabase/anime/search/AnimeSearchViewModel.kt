@@ -391,35 +391,45 @@ class AnimeSearchViewModel @Inject constructor(
                         studio = it,
                         media = it.media?.nodes?.filterNotNull().orEmpty()
                             .distinctBy { it.id }
-                            .map {
-                                StudioListRow.Entry.MediaEntry(
-                                    media = it,
-                                    isAdult = it.isAdult
-                                )
-                            }
+                            .map(::MediaWithListStatusEntry)
                     )
                 )
             },
             finalTransform = {
-                flatMapLatest { pagingData ->
+                flatMapLatest {
                     combine(
+                        statusController.allChanges(),
                         ignoreController.updates(),
                         settings.showIgnored,
                         settings.showAdult,
-                    ) { _, showIgnored, showAdult ->
-                        pagingData.mapOnIO {
-                            it.copy(entry = it.entry.copy(
-                                media = it.entry.media
-                                    .filter { showAdult || it.isAdult == false }
-                                    .map {
-                                        it.copy(
-                                            ignored = ignoreController.isIgnored(
-                                                it.media.id.toString()
-                                            )
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                        it.mapNotNull {
+                            it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
+                                applyMediaFiltering(
+                                    statuses = statuses,
+                                    ignoreController = ignoreController,
+                                    showAdult = showAdult,
+                                    showIgnored = showIgnored,
+                                    showLessImportantTags = showLessImportantTags,
+                                    showSpoilerTags = showSpoilerTags,
+                                    entry = it,
+                                    transform = { it },
+                                    media = it.media,
+                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                        copy(
+                                            mediaListStatus = mediaListStatus,
+                                            progress = progress,
+                                            progressVolumes = progressVolumes,
+                                            scoreRaw = scoreRaw,
+                                            ignored = ignored,
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
                                         )
-                                    }
-                                    .filter { showIgnored || !it.ignored }
-                            ))
+                                    },
+                                )
+                            }))
                         }
                     }
                 }

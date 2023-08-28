@@ -94,6 +94,7 @@ import com.anilist.UserFavoritesAnimeQuery
 import com.anilist.UserFavoritesCharactersQuery
 import com.anilist.UserFavoritesMangaQuery
 import com.anilist.UserFavoritesStaffQuery
+import com.anilist.UserFavoritesStudiosQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.UserSearchQuery
 import com.anilist.UserSocialActivityQuery
@@ -1202,6 +1203,18 @@ open class AuthedAniListApi(
         perPage: Int = 10,
     ) = query(
         UserFavoritesStaffQuery(
+            userId = userId.toInt(),
+            page = page,
+            perPage = perPage
+        )
+    )
+
+    open suspend fun userFavoritesStudios(
+        userId: String,
+        page: Int,
+        perPage: Int = 10,
+    ) = query(
+        UserFavoritesStudiosQuery(
             userId = userId.toInt(),
             page = page,
             perPage = perPage

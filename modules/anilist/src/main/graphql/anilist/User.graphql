@@ -80,7 +80,7 @@ query UserById($id: Int!) {
                     primaryOccupations
                 }
             }
-            studios(page: 1, perPage: 10) {
+            studios(page: 1, perPage: 5) {
                 pageInfo {
                     ...PaginationInfo
                 }
@@ -548,6 +548,25 @@ query UserFavoritesStaff(
                             ...MediaWithListStatus
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+query UserFavoritesStudios(
+    $userId: Int!,
+    $page: Int!,
+    $perPage: Int!,
+) {
+    User(id: $userId) {
+        favourites {
+            studios(page: $page, perPage: $perPage) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+                nodes {
+                    ...StudioListRowFragment
                 }
             }
         }

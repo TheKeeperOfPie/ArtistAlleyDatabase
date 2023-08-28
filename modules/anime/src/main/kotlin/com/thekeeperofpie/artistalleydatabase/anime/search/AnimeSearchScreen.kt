@@ -241,7 +241,11 @@ object AnimeSearchScreen {
                                                 )
                                                 is AnimeSearchEntry.Studio -> StudioListRow(
                                                     screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
                                                     entry = item.entry,
+                                                    onClickListEdit = {
+                                                        editViewModel.initialize(it.media)
+                                                    },
                                                 )
                                                 is AnimeSearchEntry.User -> UserListRow(
                                                     screenKey = SCREEN_KEY,
@@ -279,7 +283,9 @@ object AnimeSearchScreen {
                                                     AnimeSearchViewModel.SearchType.STUDIO ->
                                                         StudioListRow(
                                                             screenKey = SCREEN_KEY,
+                                                            viewer = viewer,
                                                             entry = null,
+                                                            onClickListEdit = {},
                                                         )
                                                     AnimeSearchViewModel.SearchType.USER ->
                                                         UserListRow(

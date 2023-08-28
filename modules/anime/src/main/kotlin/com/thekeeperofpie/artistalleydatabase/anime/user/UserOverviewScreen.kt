@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
+import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -24,16 +27,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import com.anilist.UserByIdQuery
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
@@ -46,7 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class
+)
 object UserOverviewScreen {
 
     @Composable
@@ -67,7 +72,6 @@ object UserOverviewScreen {
         val manga = viewModel.manga.collectAsLazyPagingItems()
         val characters = viewModel.characters.collectAsLazyPagingItems()
         val staff = viewModel.staff.collectAsLazyPagingItems()
-        val studios = viewModel.studios.collectAsLazyPagingItems()
         val navigationCallback = LocalNavigationCallback.current
         LazyColumn(
             contentPadding = PaddingValues(
@@ -131,9 +135,15 @@ object UserOverviewScreen {
                 viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_staff_content_description,
             )
 
+            val studios = viewModel.studios
             favoriteStudiosSection(
                 screenKey = viewModel.screenKey,
-                studios = studios,
+                viewer = viewer,
+                editViewModel = editViewModel,
+                studios = studios.studios,
+                hasMore = studios.hasMore,
+                onClickViewAll = { it.onUserFavoriteStudiosClick(userId, user.name) },
+                viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_studios_content_description,
             )
 
             previousNamesSection(
@@ -206,22 +216,33 @@ object UserOverviewScreen {
 
     private fun LazyListScope.favoriteStudiosSection(
         screenKey: String,
-        studios: LazyPagingItems<StudioListRow.Entry>,
+        viewer: AniListViewer?,
+        editViewModel: MediaEditViewModel,
+        studios: List<StudioListRow.Entry>,
+        hasMore: Boolean,
+        onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+        @StringRes viewAllContentDescriptionTextRes: Int? = null,
     ) {
-        if (studios.itemCount == 0) return
-        item {
-            DetailsSectionHeader(stringResource(R.string.anime_user_favorite_studios_label))
+        if (studios.isEmpty()) return
+        item("favoriteStudiosHeader") {
+            val navigationCallback = LocalNavigationCallback.current
+            DetailsSectionHeader(
+                stringResource(R.string.anime_user_favorite_studios_label),
+                onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
+                viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            )
         }
 
-        items(
-            count = studios.itemCount,
-            key = studios.itemKey { it.studio.id },
-            contentType = studios.itemContentType { "studio" },
-        ) {
-            val studio = studios[it]
+        itemsIndexed(
+            items = studios,
+            key = { index, item -> item.studio.id },
+            contentType = { _, _ -> "studio" },
+        ) { index, item ->
             StudioListRow(
                 screenKey = screenKey,
-                entry = studio,
+                viewer = viewer,
+                entry = item,
+                onClickListEdit = { editViewModel.initialize(it.media) },
                 mediaWidth = 64.dp,
                 mediaHeight = 96.dp,
                 modifier = Modifier
@@ -229,9 +250,29 @@ object UserOverviewScreen {
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
-                        bottom = if (it == studios.itemCount - 1) 0.dp else 16.dp,
+                        bottom = if (index == studios.lastIndex && !hasMore) 0.dp else 16.dp,
                     )
             )
+        }
+
+        if (hasMore) {
+            item("favoriteStudios-showAll") {
+                val navigationCallback = LocalNavigationCallback.current
+                ElevatedCard(
+                    onClick = { onClickViewAll?.invoke(navigationCallback) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
+                ) {
+                    Text(
+                        text = stringResource(UtilsStringR.view_all),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.studio
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,14 +24,17 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StudioListRowFragment
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
@@ -41,7 +45,9 @@ object StudioListRow {
     @Composable
     operator fun invoke(
         screenKey: String,
+        viewer: AniListViewer?,
         entry: Entry?,
+        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
         modifier: Modifier = Modifier,
         mediaWidth: Dp = 120.dp,
         mediaHeight: Dp = 180.dp,
@@ -78,9 +84,11 @@ object StudioListRow {
 
                 MediaRow(
                     screenKey = screenKey,
+                    viewer = viewer,
                     entry = entry,
                     mediaWidth = mediaWidth,
                     mediaHeight = mediaHeight,
+                    onClickListEdit = onClickListEdit,
                 )
             }
         }
@@ -104,7 +112,9 @@ object StudioListRow {
     @Composable
     private fun MediaRow(
         screenKey: String,
+        viewer: AniListViewer?,
         entry: Entry?,
+        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
         mediaWidth: Dp,
         mediaHeight: Dp,
     ) {
@@ -126,21 +136,36 @@ object StudioListRow {
                 key = { index, item -> item?.media?.id ?: "placeholder_$index" },
             ) { index, item ->
                 SharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
-                    val navigationCallback = LocalNavigationCallback.current
-                    ListRowSmallImage(
-                        context = context,
-                        density = density,
-                        ignored = item?.ignored ?: false,
-                        image = item?.media?.coverImage?.extraLarge,
-                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                        onClick = { ratio ->
-                            if (item != null) {
-                                navigationCallback.onMediaClick(item.media, ratio)
-                            }
-                        },
-                        width = mediaWidth,
-                        height = mediaHeight,
-                    )
+                    Box {
+                        val navigationCallback = LocalNavigationCallback.current
+                        ListRowSmallImage(
+                            context = context,
+                            density = density,
+                            ignored = item?.ignored ?: false,
+                            image = item?.media?.coverImage?.extraLarge,
+                            contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                            onClick = { ratio ->
+                                if (item != null) {
+                                    navigationCallback.onMediaClick(item.media, ratio)
+                                }
+                            },
+                            width = mediaWidth,
+                            height = mediaHeight,
+                        )
+
+                        if (viewer != null && item != null) {
+                            MediaListQuickEditIconButton(
+                                viewer = viewer,
+                                mediaType = item.media.type,
+                                media = item,
+                                maxProgress = MediaUtils.maxProgress(item.media),
+                                maxProgressVolumes = item.media.volumes,
+                                onClick = { onClickListEdit(item) },
+                                padding = 6.dp,
+                                modifier = Modifier.align(Alignment.BottomStart)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -148,12 +173,6 @@ object StudioListRow {
 
     data class Entry(
         val studio: StudioListRowFragment,
-        val media: List<MediaEntry>,
-    ) {
-        data class MediaEntry(
-            val media: MediaNavigationData,
-            val isAdult: Boolean?,
-            val ignored: Boolean = false,
-        )
-    }
+        val media: List<MediaWithListStatusEntry>,
+    )
 }
