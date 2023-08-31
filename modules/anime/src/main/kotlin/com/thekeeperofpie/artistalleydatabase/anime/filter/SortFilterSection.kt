@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -429,10 +431,16 @@ sealed class SortFilterSection(val id: String) {
                     .clickable { expanded = true }
             ) {
                 Text(
-                    text = stringResource(labelTextRes), modifier = Modifier
+                    text = stringResource(labelTextRes),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
                         .weight(1f)
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .heightIn(min = 32.dp)
+                        .wrapContentHeight(Alignment.CenterVertically)
+                        .align(Alignment.CenterVertically)
                 )
+
                 Box {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -441,6 +449,7 @@ sealed class SortFilterSection(val id: String) {
                     ) {
                         Text(
                             text = valueToText(values[selectedIndex]),
+                            style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.padding(vertical = 10.dp)
                         )
 

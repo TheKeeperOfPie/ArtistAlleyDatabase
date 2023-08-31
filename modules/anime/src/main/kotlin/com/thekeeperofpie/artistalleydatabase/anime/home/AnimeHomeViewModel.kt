@@ -156,10 +156,10 @@ class AnimeHomeViewModel @Inject constructor(
     private fun collectRecommendations() {
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
-                Pager(config = PagingConfig(5)) {
-                    AniListPagingSource(perPage = 5) {
+                Pager(config = PagingConfig(3)) {
+                    AniListPagingSource(perPage = 3) {
                         val result =
-                            aniListApi.homeRecommendations(onList = true, page = it, perPage = 5)
+                            aniListApi.homeRecommendations(onList = true, page = it, perPage = 3)
                         result.page.pageInfo to result.page.recommendations.filterNotNull()
                     }
                 }.flow

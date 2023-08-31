@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import android.app.Application
+import androidx.security.crypto.MasterKey
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
@@ -93,12 +95,16 @@ object AnimeHiltModule {
         ignoreController: IgnoreController,
         statusController: MediaListStatusController,
         settings: AnimeSettings,
+        appJson: AppJson,
+        masterKey: MasterKey,
     ) = UserMediaListController(
         scopedApplication = scopedApplication,
         aniListApi = aniListApi,
         ignoreController = ignoreController,
         statusController = statusController,
         settings = settings,
+        appJson = appJson,
+        masterKey = masterKey,
     )
 
     @Singleton

@@ -436,6 +436,8 @@
     <string name="anime_media_tag_info_content_description">Tag details</string>
     <string name="anime_media_genre_info_content_description">Genre details</string>
 
+    <string name="anime_user_media_list_error_loading_cache">Error loading from cache</string>
+
     <string name="anime_user_error_loading">Error loading user</string>
 
     <string name="anime_user_following_you">Following you</string>

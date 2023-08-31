@@ -481,9 +481,7 @@ object AnimeHomeScreen {
             titleRes = headerTextRes,
             viewAllRoute = viewer?.let {
                 AnimeNavDestinations.USER_LIST.id +
-                        "?userId=${it.id}" +
-                        "&userName=${it.name}" +
-                        "&mediaType=${mediaViewModel.mediaType.rawValue}" +
+                        "?mediaType=${mediaViewModel.mediaType.rawValue}" +
                         "&mediaListStatus=${MediaListStatus.CURRENT.rawValue}"
             }
         )
