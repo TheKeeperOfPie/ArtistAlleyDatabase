@@ -38,6 +38,7 @@ import com.anilist.MediaAndReviewsPaginationQuery
 import com.anilist.MediaAndReviewsQuery
 import com.anilist.MediaAutocompleteQuery
 import com.anilist.MediaByIdsQuery
+import com.anilist.MediaDetailsActivityQuery
 import com.anilist.MediaDetailsCharactersPageQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaDetailsStaffPageQuery
@@ -913,11 +914,13 @@ open class AuthedAniListApi(
     open suspend fun mediaActivities(
         id: String,
         sort: List<ActivitySort>,
+        following: Boolean,
         activitiesPerPage: Int = 10,
     ) = query(
         MediaActivityQuery(
             mediaId = id.toInt(),
             sort = sort,
+            following = following,
             activitiesPerPage = activitiesPerPage,
         )
     )
@@ -925,12 +928,14 @@ open class AuthedAniListApi(
     open suspend fun mediaActivitiesPage(
         id: String,
         sort: List<ActivitySort>,
+        following: Boolean,
         page: Int,
         activitiesPerPage: Int = 10,
     ) = query(
         MediaActivityPageQuery(
             mediaId = id.toInt(),
             sort = sort,
+            following = following,
             page = page,
             activitiesPerPage = activitiesPerPage,
         )
@@ -1220,6 +1225,14 @@ open class AuthedAniListApi(
             perPage = perPage
         )
     )
+
+    open suspend fun mediaDetailsActivity(mediaId: String, includeFollowing: Boolean) =
+        query(
+            MediaDetailsActivityQuery(
+                mediaId = mediaId.toInt(),
+                includeFollowing = includeFollowing,
+            )
+        )
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

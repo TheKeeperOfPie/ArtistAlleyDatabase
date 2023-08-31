@@ -696,7 +696,12 @@ fragment MediaListActivityItem on ActivityUnion {
     }
 }
 
-query MediaActivity($mediaId: Int!, $sort: [ActivitySort]!, $activitiesPerPage: Int!) {
+query MediaActivity(
+    $mediaId: Int!,
+    $sort: [ActivitySort]!,
+    $activitiesPerPage: Int!,
+    $following: Boolean!,
+) {
     Media(id: $mediaId) @nonnull {
         ...MediaHeaderData
     }
@@ -705,18 +710,24 @@ query MediaActivity($mediaId: Int!, $sort: [ActivitySort]!, $activitiesPerPage: 
         pageInfo @nonnull {
             ...PaginationInfo
         }
-        activities(mediaId: $mediaId, sort: $sort) @nonnull {
+        activities(mediaId: $mediaId, sort: $sort, isFollowing: $following) @nonnull {
             ...MediaListActivityItem
         }
     }
 }
 
-query MediaActivityPage($mediaId: Int!, $sort: [ActivitySort]!, $page: Int!, $activitiesPerPage: Int!) {
+query MediaActivityPage(
+    $mediaId: Int!,
+    $sort: [ActivitySort]!,
+    $following: Boolean!,
+    $page: Int!,
+    $activitiesPerPage: Int!,
+) {
     Page(page: $page, perPage: $activitiesPerPage) @nonnull {
         pageInfo @nonnull {
             ...PaginationInfo
         }
-        activities(mediaId: $mediaId, sort: $sort) @nonnull {
+        activities(mediaId: $mediaId, sort: $sort, isFollowing: $following) @nonnull {
             ...MediaListActivityItem
         }
     }
@@ -757,6 +768,19 @@ query MediaAutocomplete(
                 color
                 medium
             }
+        }
+    }
+}
+
+query MediaDetailsActivity($mediaId: Int!, $includeFollowing: Boolean!) {
+    following: Page(page: 1, perPage: 5) @include(if: $includeFollowing) {
+        activities(mediaId: $mediaId, isFollowing: true, sort: [ID_DESC]) {
+            ...MediaListActivityItem
+        }
+    }
+    global: Page(page: 1, perPage: 5) {
+        activities(mediaId: $mediaId, isFollowing: false, sort: [ID_DESC]) {
+            ...MediaListActivityItem
         }
     }
 }

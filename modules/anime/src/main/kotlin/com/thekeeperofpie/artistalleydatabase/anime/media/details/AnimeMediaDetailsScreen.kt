@@ -65,6 +65,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
@@ -157,6 +159,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
@@ -246,15 +249,23 @@ object AnimeMediaDetailsScreen {
         val staff = viewModel.staff.collectAsLazyPagingItems()
         val expandedState = rememberExpandedState()
         val animeSongs = viewModel.animeSongs
+
+        val viewer by viewModel.viewer.collectAsState()
+        val activities = viewModel.activities
+        var activityTabIsFollowing by rememberSaveable(viewer, activities) {
+            mutableStateOf(!activities?.following.isNullOrEmpty())
+        }
+
         val sectionIndexInfo = buildSectionIndexInfo(
-            entry.result,
-            characters,
-            staff,
-            expandedState,
-            animeSongs,
-            viewModel.cdEntries,
-            viewModel.activities,
-            viewModel.forumThreads,
+            entry = entry.result,
+            characters = characters,
+            staff = staff,
+            expandedState = expandedState,
+            animeSongs = animeSongs,
+            cdEntries = viewModel.cdEntries,
+            viewer = viewer,
+            activities = if (activityTabIsFollowing) activities?.following else activities?.global,
+            forumThreads = viewModel.forumThreads,
         )
 
         var loadingThresholdPassed by remember { mutableStateOf(false) }
@@ -453,7 +464,6 @@ object AnimeMediaDetailsScreen {
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
                         .fillMaxSize()
                 ) { scaffoldPadding ->
-                    val viewer by viewModel.viewer.collectAsState()
                     val finalError = entry.result == null && !entry.loading
                     Crossfade(targetState = finalError, label = "Media details crossfade") {
                         if (it) {
@@ -474,6 +484,11 @@ object AnimeMediaDetailsScreen {
                                     entry = entry.result!!,
                                     characters = characters,
                                     staff = staff,
+                                    activityTab = if (activityTabIsFollowing) ActivityTab.FOLLOWING else ActivityTab.GLOBAL,
+                                    activities = if (activityTabIsFollowing) activities?.following else activities?.global,
+                                    onActivityTabChange = {
+                                        activityTabIsFollowing = it == ActivityTab.FOLLOWING
+                                    },
                                     onClickListEdit = { editViewModel.initialize(it.media) },
                                     onCharacterLongClick = onCharacterLongClick,
                                     onStaffLongClick = onStaffLongClick,
@@ -501,6 +516,9 @@ object AnimeMediaDetailsScreen {
         entry: Entry,
         characters: LazyPagingItems<DetailsCharacter>,
         staff: LazyPagingItems<DetailsStaff>,
+        activityTab: ActivityTab,
+        activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
+        onActivityTabChange: (ActivityTab) -> Unit,
         onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
         onCharacterLongClick: (String) -> Unit,
         onStaffLongClick: (String) -> Unit,
@@ -597,11 +615,15 @@ object AnimeMediaDetailsScreen {
             viewer = viewer,
             viewModel = viewModel,
             editViewModel = editViewModel,
+            activityTab = activityTab,
+            activities = activities,
+            onActivityTabChange = onActivityTabChange,
             expanded = expandedState::activities,
             onExpandedChange = { expandedState.activities = it },
             onClickViewAll = {
                 it.onMediaActivitiesClick(
                     entry,
+                    activityTab == ActivityTab.FOLLOWING,
                     viewModel.favoritesToggleHelper.favorite,
                     coverImageWidthToHeightRatio()
                 )
@@ -1751,21 +1773,60 @@ object AnimeMediaDetailsScreen {
         screenKey: String,
         viewer: AniListViewer?,
         editViewModel: MediaEditViewModel,
+        activityTab: ActivityTab,
+        activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
+        onActivityTabChange: (ActivityTab) -> Unit,
         viewModel: AnimeMediaDetailsViewModel,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
     ) {
-        listSection(
+        item("activitiesHeader") {
+            val navigationCallback = LocalNavigationCallback.current
+            DetailsSectionHeader(
+                text = stringResource(R.string.anime_media_details_activities_label),
+                modifier = Modifier.clickable { onClickViewAll(navigationCallback) },
+                onClickViewAll = { onClickViewAll(navigationCallback) },
+                viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description
+            )
+        }
+
+        if (viewer != null) {
+            item("activitiesTabHeader") {
+                TabRow(
+                    selectedTabIndex = if (activityTab == ActivityTab.FOLLOWING) 0 else 1,
+                    modifier = Modifier
+                        .padding(bottom = if (activities.isNullOrEmpty()) 0.dp else 16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Tab(
+                        selected = activityTab == ActivityTab.FOLLOWING,
+                        onClick = { onActivityTabChange(ActivityTab.FOLLOWING) },
+                        text = {
+                            Text(stringResource(R.string.anime_media_details_activity_following))
+                        },
+                    )
+                    Tab(
+                        selected = activityTab == ActivityTab.GLOBAL,
+                        onClick = { onActivityTabChange(ActivityTab.GLOBAL) },
+                        text = {
+                            Text(stringResource(R.string.anime_media_details_activity_global))
+                        },
+                    )
+                }
+            }
+        }
+
+        listSectionWithoutHeader(
             titleRes = R.string.anime_media_details_activities_label,
-            values = viewModel.activities,
+            values = activities,
             valueToId = { it.activityId },
             aboveFold = ACTIVITIES_ABOVE_FOLD,
             hasMoreValues = true,
+            noResultsTextRes = R.string.anime_media_details_activities_no_results,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             onClickViewAll = onClickViewAll,
-            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
         ) { item, paddingBottom, modifier ->
             ListActivitySmallCard(
                 screenKey = screenKey,
@@ -2086,6 +2147,7 @@ object AnimeMediaDetailsScreen {
         expandedState: ExpandedState,
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
         cdEntries: List<CdEntryGridModel>,
+        viewer: AniListViewer?,
         activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
         forumThreads: List<ForumThreadEntry>?,
     ) = remember(
@@ -2095,6 +2157,7 @@ object AnimeMediaDetailsScreen {
         expandedState.allValues(),
         animeSongs,
         cdEntries,
+        viewer,
         activities,
         forumThreads,
     ) {
@@ -2215,6 +2278,10 @@ object AnimeMediaDetailsScreen {
 
         if (!activities.isNullOrEmpty()) {
             list += SectionIndexInfo.Section.ACTIVITIES to currentIndex
+            // Add one for tab row, only shown if there's a viewer
+            if (viewer != null) {
+                currentIndex++
+            }
             runListSection(
                 size = activities.size,
                 aboveFold = ACTIVITIES_ABOVE_FOLD,
@@ -2266,5 +2333,9 @@ object AnimeMediaDetailsScreen {
             ACTIVITIES(R.string.anime_media_details_activities_label),
             FORUM_THREADS(R.string.anime_media_details_forum_threads_label),
         }
+    }
+
+    private enum class ActivityTab {
+        FOLLOWING, GLOBAL
     }
 }

@@ -9,6 +9,7 @@
 - Add full following/followers screens
 - Add full favorite screens
 - Add activity to user screen
+- Add following activity to media details
 
 ### 0.43 (8)
 - Add full current media screen

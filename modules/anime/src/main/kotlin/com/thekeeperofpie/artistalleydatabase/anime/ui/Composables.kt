@@ -281,7 +281,52 @@ fun <T> LazyListScope.listSection(
         )
     }
     if (values == null) return
-    val hasMore = values.size > aboveFold
+    listSectionWithoutHeader(
+        titleRes = titleRes,
+        values = values,
+        valueToId = valueToId,
+        aboveFold = aboveFold,
+        hasMoreValues = hasMoreValues,
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        hidden = hidden,
+        hiddenContent = hiddenContent,
+        onClickViewAll = onClickViewAll,
+        itemContent = itemContent,
+    )
+}
+
+fun <T> LazyListScope.listSectionWithoutHeader(
+    @StringRes titleRes: Int,
+    values: Collection<T>?,
+    valueToId: (T) -> String?,
+    aboveFold: Int,
+    hasMoreValues: Boolean = false,
+    noResultsTextRes: Int? = null,
+    expanded: () -> Boolean = { false },
+    onExpandedChange: (Boolean) -> Unit = {},
+    hidden: () -> Boolean = { false },
+    hiddenContent: @Composable () -> Unit = {},
+    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+    itemContent: @Composable LazyListScope.(T, paddingBottom: Dp, modifier: Modifier) -> Unit,
+) {
+    if (values == null) return
+    if (values.isEmpty()) {
+        if (noResultsTextRes != null) {
+            item("$titleRes-noResults") {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(noResultsTextRes),
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .align(Alignment.TopCenter)
+                    )
+                }
+            }
+        }
+        return
+    }
 
     if (hidden()) {
         item("$titleRes-hidden") {
@@ -290,6 +335,7 @@ fun <T> LazyListScope.listSection(
         return
     }
 
+    val hasMore = values.size > aboveFold
     itemsIndexed(
         values.take(aboveFold),
         { index, item -> "$titleRes-${valueToId(item) ?: index}" },
@@ -301,7 +347,11 @@ fun <T> LazyListScope.listSection(
         } else {
             16.dp
         }
-        this@listSection.itemContent(item, paddingBottom, Modifier.animateItemPlacement())
+        this@listSectionWithoutHeader.itemContent(
+            item,
+            paddingBottom,
+            Modifier.animateItemPlacement()
+        )
     }
 
     fun showAllButton() {
@@ -330,7 +380,8 @@ fun <T> LazyListScope.listSection(
                 values.drop(aboveFold),
                 { index, item -> "$titleRes-${valueToId(item) ?: (index + aboveFold)}" },
             ) { _, item ->
-                this@listSection.itemContent(item, 16.dp, Modifier.animateItemPlacement())
+                this@listSectionWithoutHeader
+                    .itemContent(item, 16.dp, Modifier.animateItemPlacement())
             }
 
             if (hasMoreValues) {

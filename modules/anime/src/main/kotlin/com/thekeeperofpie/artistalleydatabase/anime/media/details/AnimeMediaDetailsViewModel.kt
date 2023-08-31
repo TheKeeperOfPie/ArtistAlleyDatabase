@@ -15,7 +15,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.MediaActivityPageQuery
+import com.anilist.fragment.ListActivityMediaListActivityItem
 import com.anilist.type.MediaType
 import com.anilist.type.RecommendationRating
 import com.hoc081098.flowext.combine
@@ -31,7 +31,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortOption
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
@@ -49,7 +48,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
@@ -130,7 +128,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
-    var activities by mutableStateOf<List<ActivityEntry>?>(null)
     var forumThreads by mutableStateOf<List<ForumThreadEntry>?>(null)
     val charactersDeferred = MutableStateFlow(PagingData.empty<DetailsCharacter>())
     val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
@@ -139,6 +136,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var cdEntries by mutableStateOf(emptyList<CdEntryGridModel>())
 
     var trailerPlaybackPosition = 0f
+
+    var activities by mutableStateOf<ActivitiesEntry?>(null)
 
     private var animeSongStates by mutableStateOf(emptyMap<String, AnimeSongState>())
 
@@ -441,32 +440,51 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { entry.result }
-                .filterNotNull()
-                .flowOn(CustomDispatchers.Main)
-                .mapLatest {
-                    aniListApi.mediaActivitiesPage(
-                        id = it.mediaId,
-                        page = 1,
-                        sort = ActivitySortOption.PINNED.toApiValue(),
-                        activitiesPerPage = 10,
+            combine(
+                aniListApi.authedUser,
+                snapshotFlow { entry.result }.flowOn(CustomDispatchers.Main)
+                    .filterNotNull(),
+                ::Pair
+            )
+                .mapLatest { (viewer, entry) ->
+                    val result = aniListApi.mediaDetailsActivity(
+                        mediaId = entry.mediaId,
+                        includeFollowing = viewer != null,
                     )
-                        .page.activities
-                        .filterIsInstance<MediaActivityPageQuery.Data.Page.ListActivityActivity>()
+                    ActivitiesEntry(
+                        following = result.following?.activities
+                            ?.filterIsInstance<ListActivityMediaListActivityItem>()
+                            .orEmpty()
+                            .map(::ActivityEntry),
+                        global = result.global?.activities
+                            ?.filterIsInstance<ListActivityMediaListActivityItem>()
+                            .orEmpty()
+                            .map(::ActivityEntry),
+                    )
                 }
                 .flatMapLatest { activities ->
-                    activityStatusController.allChanges(activities.map { it.id.toString() }
-                        .toSet())
+                    activityStatusController.allChanges(
+                        (activities.following.map { it.activityId }
+                                + activities.global.map { it.activityId })
+                            .toSet()
+                    )
                         .mapLatest { updates ->
-                            activities.map {
-                                ActivityEntry(
-                                    it,
-                                    liked = updates[it.id.toString()]?.liked ?: it.isLiked
-                                    ?: false,
-                                    subscribed = updates[it.id.toString()]?.subscribed
-                                        ?: it.isSubscribed ?: false,
-                                )
-                            }
+                            activities.copy(
+                                following = activities.following.map {
+                                    it.copy(
+                                        liked = updates[it.activityId]?.liked ?: it.liked,
+                                        subscribed = updates[it.activityId]?.subscribed
+                                            ?: it.subscribed,
+                                    )
+                                },
+                                global = activities.global.map {
+                                    it.copy(
+                                        liked = updates[it.activityId]?.liked ?: it.liked,
+                                        subscribed = updates[it.activityId]?.subscribed
+                                            ?: it.subscribed,
+                                    )
+                                },
+                            )
                         }
                 }
                 .catch {}
@@ -583,10 +601,15 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
     }
 
+    data class ActivitiesEntry(
+        val following: List<ActivityEntry>,
+        val global: List<ActivityEntry>,
+    )
+
     data class ActivityEntry(
-        val activity: MediaActivityPageQuery.Data.Page.ListActivityActivity,
+        val activity: ListActivityMediaListActivityItem,
         val activityId: String = activity.id.toString(),
-        override val liked: Boolean,
-        override val subscribed: Boolean,
+        override val liked: Boolean = false,
+        override val subscribed: Boolean = false,
     ) : ActivityStatusAware
 }

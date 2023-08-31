@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -561,21 +562,24 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(
             route = AnimeNavDestinations.MEDIA_ACTIVITIES.id
-                    + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
+                    + "?mediaId={mediaId}"
+                    + "&showFollowing={showFollowing}"
+                    + MediaHeaderValues.routeSuffix,
             arguments = listOf(
                 navArgument("mediaId") {
                     type = NavType.StringType
                     nullable = false
-                }
+                },
+                navArgument("showFollowing") {
+                    type = NavType.StringType
+                    nullable = true
+                },
             ) + MediaHeaderValues.navArguments()
         ) {
-            val arguments = it.arguments!!
-            val mediaId = arguments.getString("mediaId")!!
-
-            val viewModel = hiltViewModel<MediaActivitiesViewModel>().apply { initialize(mediaId) }
+            val viewModel = hiltViewModel<MediaActivitiesViewModel>()
             val headerValues = MediaHeaderValues(
-                arguments = arguments,
-                media = { viewModel.entry?.data?.media },
+                arguments = it.arguments!!,
+                media = { viewModel.entry.result?.data?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
@@ -1078,17 +1082,19 @@ object AnimeNavigator {
         navHostController: NavHostController,
         entry: AnimeMediaDetailsScreen.Entry,
         languageOption: AniListLanguageOption,
+        showFollowing: Boolean,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
-        AnimeNavDestinations.MEDIA_ACTIVITIES.id +
-                "?mediaId=${entry.mediaId}" +
-                MediaHeaderValues.routeSuffix(
-                    media = entry.media,
-                    languageOption = languageOption,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                )
+        AnimeNavDestinations.MEDIA_ACTIVITIES.id
+                + "?mediaId=${entry.mediaId}"
+                + "&showFollowing=${showFollowing}"
+                + MediaHeaderValues.routeSuffix(
+            media = entry.media,
+            languageOption = languageOption,
+            favorite = favorite,
+            imageWidthToHeightRatio = imageWidthToHeightRatio,
+        )
     )
 
     fun onMediaClick(
@@ -1379,6 +1385,7 @@ object AnimeNavigator {
 
         fun onMediaActivitiesClick(
             media: AnimeMediaDetailsScreen.Entry,
+            showFollowing: Boolean,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
         ) {
@@ -1387,6 +1394,7 @@ object AnimeNavigator {
                     navHostController = it,
                     entry = media,
                     languageOption = languageOptionMedia,
+                    showFollowing = showFollowing,
                     favorite = favorite,
                     imageWidthToHeightRatio = imageWidthToHeightRatio
                 )
