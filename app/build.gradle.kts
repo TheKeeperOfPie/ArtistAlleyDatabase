@@ -30,8 +30,8 @@ android {
         applicationId = "com.thekeeperofpie.anichive"
         minSdk = 28
         targetSdk = 33
-        versionCode = 8
-        versionName = "0.43"
+        versionCode = 9
+        versionName = "0.44"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
