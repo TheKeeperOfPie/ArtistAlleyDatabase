@@ -6,7 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 
 enum class MediaListSortOption(@StringRes override val textRes: Int) : SortOption {
 
-    SCORE(R.string.anime_media_list_sort_score),
+    AVERAGE_SCORE(R.string.anime_media_list_sort_average_score),
     STATUS(R.string.anime_media_list_sort_status),
     PROGRESS(R.string.anime_media_list_sort_progress),
     PRIORITY(R.string.anime_media_list_sort_priority),
@@ -18,6 +18,7 @@ enum class MediaListSortOption(@StringRes override val textRes: Int) : SortOptio
     TITLE_ENGLISH(R.string.anime_media_list_sort_title_english),
     TITLE_NATIVE(R.string.anime_media_list_sort_title_native),
     POPULARITY(R.string.anime_media_list_sort_title_popularity),
+    USER_SCORE(R.string.anime_media_list_sort_title_user_score),
 
     ;
 }

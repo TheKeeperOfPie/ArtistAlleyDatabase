@@ -50,7 +50,7 @@
     <string name="anime_media_sort_favourites">Favorites</string>
 
     <string name="anime_media_list_sort_default">Default</string>
-    <string name="anime_media_list_sort_score">Score</string>
+    <string name="anime_media_list_sort_average_score">Average score</string>
     <string name="anime_media_list_sort_status">Status</string>
     <string name="anime_media_list_sort_progress">Progress</string>
     <string name="anime_media_list_sort_priority">Priority</string>
@@ -62,6 +62,7 @@
     <string name="anime_media_list_sort_title_english">Title (English)</string>
     <string name="anime_media_list_sort_title_native">Title (native)</string>
     <string name="anime_media_list_sort_title_popularity">Popularity</string>
+    <string name="anime_media_list_sort_title_user_score">User score</string>
 
     <string name="anime_media_filter_fab_content_description">Media list filter options</string>
     <string name="anime_media_filter_sort_label">Sort</string>
@@ -92,6 +93,11 @@
     <string name="anime_media_filter_list_status_content_description">User list status filter expand</string>
     <string name="anime_media_filter_list_status_chip_state_content_description">User list status chip state</string>
     <string name="anime_media_filter_list_status_on_list">On list</string>
+
+    <string name="anime_media_filter_user_score_label">User score</string>
+    <string name="anime_media_filter_user_score_expand_content_description">User score filter expand</string>
+    <string name="anime_media_filter_user_score_label_start">Start</string>
+    <string name="anime_media_filter_user_score_label_end">End</string>
 
     <string name="anime_media_filter_genre_label">Genres</string>
     <string name="anime_media_filter_genre_content_description">Genre filter expand</string>

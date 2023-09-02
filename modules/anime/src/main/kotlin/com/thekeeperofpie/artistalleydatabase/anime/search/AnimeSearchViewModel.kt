@@ -99,6 +99,7 @@ class AnimeSearchViewModel @Inject constructor(
         mediaTagsController = mediaTagsController,
         mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
+        userScoreEnabled = false,
     )
 
     val mangaSortFilterController = MangaSortFilterController(
@@ -109,6 +110,7 @@ class AnimeSearchViewModel @Inject constructor(
         mediaTagsController = mediaTagsController,
         mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
+        userScoreEnabled = false,
     )
 
     val characterSortFilterController =

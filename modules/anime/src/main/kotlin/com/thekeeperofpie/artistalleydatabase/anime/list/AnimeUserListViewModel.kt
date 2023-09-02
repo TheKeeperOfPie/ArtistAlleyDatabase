@@ -109,6 +109,7 @@ class AnimeUserListViewModel @Inject constructor(
                 mediaTagsController = mediaTagsController,
                 mediaGenresController = mediaGenresController,
                 mediaLicensorsController = mediaLicensorsController,
+                userScoreEnabled = true,
             ).apply {
                 initialize(
                     viewModel = this@AnimeUserListViewModel,
@@ -131,6 +132,7 @@ class AnimeUserListViewModel @Inject constructor(
                 mediaTagsController = mediaTagsController,
                 mediaGenresController = mediaGenresController,
                 mediaLicensorsController = mediaLicensorsController,
+                userScoreEnabled = true,
             ).apply {
                 initialize(
                     viewModel = this@AnimeUserListViewModel,
@@ -241,19 +243,19 @@ class AnimeUserListViewModel @Inject constructor(
                     }
 
                     lists.transformResult { allLists ->
+                        val listStatuses = filterParams.listStatuses
+                            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                            .map { it.value }
                         Entry(
                             all = allLists
+                                .flatMap { it.entries }
                                 .filter {
-                                    val listStatuses = filterParams.listStatuses
-                                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                                        .map { it.value }
                                     if (listStatuses.isEmpty()) {
                                         true
                                     } else {
-                                        listStatuses.contains(it.status)
+                                        listStatuses.contains(it.mediaListStatus)
                                     }
                                 }
-                                .flatMap { it.entries }
                                 .toFilteredEntries(query, filterParams)
                                 .mapEntries(),
                             lists = allLists
@@ -311,7 +313,7 @@ class AnimeUserListViewModel @Inject constructor(
         if (sortOption != null) {
             val baseComparator: Comparator<UserMediaListController.MediaEntry> =
                 when (sortOption) {
-                    MediaListSortOption.SCORE -> compareBy { it.media.averageScore }
+                    MediaListSortOption.AVERAGE_SCORE -> compareBy { it.media.averageScore }
                     MediaListSortOption.STATUS -> compareBy { it.media.status }
                     MediaListSortOption.PROGRESS -> if (mediaType == MediaType.ANIME) {
                         compareBy { it.media.mediaListEntry?.progress }
@@ -337,6 +339,7 @@ class AnimeUserListViewModel @Inject constructor(
                     MediaListSortOption.TITLE_ENGLISH -> compareBy { it.media.title?.english }
                     MediaListSortOption.TITLE_NATIVE -> compareBy { it.media.title?.native }
                     MediaListSortOption.POPULARITY -> compareBy { it.media.popularity }
+                    MediaListSortOption.USER_SCORE -> compareBy { it.scoreRaw }
                 }
 
             val comparator = nullsFirst(baseComparator).let {

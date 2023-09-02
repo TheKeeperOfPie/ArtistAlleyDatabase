@@ -96,6 +96,7 @@ class SeasonalViewModel @Inject constructor(
         mediaTagsController = mediaTagsController,
         mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
+        userScoreEnabled = false,
     )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)

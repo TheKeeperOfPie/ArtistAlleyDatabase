@@ -47,6 +47,7 @@ class AnimeSortFilterController<SortType : SortOption>(
     mediaTagsController: MediaTagsController,
     mediaGenresController: MediaGenresController,
     mediaLicensorsController: MediaLicensorsController,
+    userScoreEnabled: Boolean,
 ) : MediaSortFilterController<SortType, AnimeSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
     aniListApi = aniListApi,
@@ -56,6 +57,7 @@ class AnimeSortFilterController<SortType : SortOption>(
     mediaGenresController = mediaGenresController,
     mediaLicensorsController = mediaLicensorsController,
     mediaType = MediaType.ANIME,
+    userScoreEnabled = userScoreEnabled,
 ) {
     private val formatSection = SortFilterSection.Filter(
         titleRes = R.string.anime_media_filter_format_label,
@@ -168,6 +170,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                                 )
                             }
                         },
+                        userScoreSection,
                         episodesSection,
                         sourceSection,
                         licensedBySection,
@@ -208,6 +211,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                         null,
                         -> null
                     },
+                    userScore = userScoreSection?.data,
                     formats = formatSection.filterOptions,
                     averageScoreRange = averageScoreSection.data,
                     episodesRange = episodesSection.data,

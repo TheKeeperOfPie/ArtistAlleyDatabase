@@ -666,6 +666,22 @@ object MediaUtils {
             }
         }
 
+        val userScore = filterParams.userScore
+        if (userScore != null) {
+            val userScoreStart = userScore.startInt ?: 0
+            val userScoreEnd = userScore.endInt
+            if (userScoreStart > 0) {
+                filteredEntries = filteredEntries.filter {
+                    it.scoreRaw.let { it != null && it >= userScoreStart }
+                }
+            }
+            if (userScoreEnd != null) {
+                filteredEntries = filteredEntries.filter {
+                    it.scoreRaw.let { it != null && it <= userScoreEnd }
+                }
+            }
+        }
+
         val episodes = filterParams.episodesRange
         val episodesStart = episodes?.startInt ?: 0
         val episodesEnd = episodes?.endInt

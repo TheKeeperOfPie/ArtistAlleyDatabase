@@ -57,6 +57,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaGenresController: MediaGenresController,
     private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
+    userScoreEnabled: Boolean,
 ) : SortFilterController(settings, featureOverrideProvider) {
     private var initialized = false
     protected var initialParams by mutableStateOf<ParamsType?>(null)
@@ -113,6 +114,15 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
             )
         },
     )
+
+    // TODO: ScoreFormat support
+    protected val userScoreSection = if (userScoreEnabled) {
+        SortFilterSection.Range(
+            titleRes = R.string.anime_media_filter_user_score_label,
+            titleDropdownContentDescriptionRes = R.string.anime_media_filter_user_score_expand_content_description,
+            initialData = RangeData(100, hardMax = true),
+        )
+    } else null
 
     protected val genreSection = SortFilterSection.Filter(
         titleRes = R.string.anime_media_filter_genre_label,
@@ -368,6 +378,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         val statuses: List<FilterEntry<MediaStatus>>,
         val listStatuses: List<FilterEntry<MediaListStatus>>,
         val onList: Boolean?,
+        val userScore: RangeData?,
         val formats: List<FilterEntry<MediaFormat>>,
         val averageScoreRange: RangeData,
         val episodesRange: RangeData?,
