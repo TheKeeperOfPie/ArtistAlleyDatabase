@@ -40,9 +40,6 @@ import com.anilist.NotificationsQuery.Data.Page.ActivityReplyNotificationNotific
 import com.anilist.NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification
 import com.anilist.fragment.ForumThread
 import com.anilist.fragment.UserNavigationData
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -55,7 +52,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCommentContent
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
+import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import java.time.Instant
 import java.time.ZoneOffset
 

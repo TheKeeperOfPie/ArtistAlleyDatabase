@@ -85,7 +85,6 @@ dependencyResolutionManagement {
             library("com.apollographql.apollo3:apollo-normalized-cache:4.0.0-alpha.3")
             library("com.apollographql.apollo3:apollo-normalized-cache-sqlite:4.0.0-alpha.3")
             library("com.google.accompanist:accompanist-flowlayout:0.31.6-rc")
-            library("com.google.accompanist:accompanist-placeholder-material:0.31.6-rc")
             library("com.google.accompanist:accompanist-navigation-animation:0.31.6-rc")
             library("com.google.accompanist:accompanist-pager-indicators:0.31.6-rc")
             library("com.google.android.gms:play-services-ads:22.2.0")
