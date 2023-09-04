@@ -143,6 +143,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     }
     var tagRank by mutableStateOf("0")
     var tagSearchQuery by mutableStateOf("")
+    var tagShowWhenSpoiler by mutableStateOf(false)
 
     protected val tagSection = object : SortFilterSection.Custom("tag") {
         override fun showingPreview() = true
@@ -167,6 +168,8 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
             TagSection(
                 expanded = { state.expandedState[id] ?: false },
                 onExpandedChange = { state.expandedState[id] = it },
+                showMediaWithTagSpoiler = { tagShowWhenSpoiler },
+                onShowMediaWithTagSpoilerChange = { tagShowWhenSpoiler = it },
                 tags = { tagsByCategoryFiltered },
                 onTagClick = { tagId ->
                     if (tagId != initialParams?.tagId) {
@@ -335,9 +338,19 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         flowOf(result),
         settings.showAdult,
         settings.showIgnored,
-        snapshotFlow { listStatusSection.filterOptions }
+        snapshotFlow {
+            val tags = tagsByCategory.value.values.flatMap {
+                when (it) {
+                    is TagSection.Category -> it.flatten()
+                    is TagSection.Tag -> listOf(it)
+                }
+            }
+
+            Triple(tags, tagShowWhenSpoiler, listStatusSection.filterOptions)
+        }
             .flowOn(CustomDispatchers.Main),
-    ) { pagingData, showAdult, showIgnored, listStatuses ->
+    ) { pagingData, showAdult, showIgnored, triple ->
+        val (tags, tagShowWhenSpoiler, listStatuses) = triple
         val includes = listStatuses
             .filter { it.state == FilterIncludeExcludeState.INCLUDE }
             .mapNotNull { it.value }
@@ -359,7 +372,18 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                 return@filterOnIO false
             }
 
-            if (showIgnored) true else !it.ignored
+            if (!showIgnored) {
+                return@filterOnIO !it.ignored
+            }
+
+            if (!tagShowWhenSpoiler && tags.isNotEmpty()) {
+                return@filterOnIO tags.all { tag ->
+                    media.tags?.find { it?.id.toString() == tag.id }
+                        ?.isMediaSpoiler != true
+                }
+            }
+
+            true
         }
     }
 

@@ -159,7 +159,8 @@ class AnimeUserListViewModel @Inject constructor(
             }
         }
 
-        val includeDescriptionFlow = MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
+        val includeDescriptionFlow =
+            MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
 
         viewModelScope.launch(CustomDispatchers.Main) {
             val response = if (userId == null) {
@@ -207,8 +208,12 @@ class AnimeUserListViewModel @Inject constructor(
                 snapshotFlow { query }.debounce(500.milliseconds),
                 (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.filterParams()
                     ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).filterParams(),
+                snapshotFlow {
+                    (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.tagShowWhenSpoiler
+                        ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).tagShowWhenSpoiler
+                },
                 ::FilterParams
-            ).flatMapLatest { (lists, mediaUpdates, query, filterParams) ->
+            ).flatMapLatest { (lists, mediaUpdates, query, filterParams, showTagWhenSpoiler) ->
                 combine(
                     ignoreController.updates(),
                     settings.showAdult,
@@ -256,7 +261,7 @@ class AnimeUserListViewModel @Inject constructor(
                                         listStatuses.contains(it.mediaListStatus)
                                     }
                                 }
-                                .toFilteredEntries(query, filterParams)
+                                .toFilteredEntries(query, filterParams, showTagWhenSpoiler)
                                 .mapEntries(),
                             lists = allLists
                                 .sortedBy { SORT_ORDER.indexOf(it.status) }
@@ -265,7 +270,7 @@ class AnimeUserListViewModel @Inject constructor(
                                         name = it.name,
                                         scoreFormat = it.scoreFormat,
                                         entries = it.entries
-                                            .toFilteredEntries(query, filterParams)
+                                            .toFilteredEntries(query, filterParams, showTagWhenSpoiler)
                                             .mapEntries(),
                                     )
                                 }
@@ -290,9 +295,11 @@ class AnimeUserListViewModel @Inject constructor(
     private fun List<UserMediaListController.MediaEntry>.toFilteredEntries(
         query: String,
         filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
+        showTagWhenSpoiler: Boolean,
     ): List<MediaEntry> {
         var filteredEntries = MediaUtils.filterEntries(
             filterParams = filterParams,
+            showTagWhenSpoiler = showTagWhenSpoiler,
             entries = this,
             media = { it.media },
         )
@@ -372,6 +379,10 @@ class AnimeUserListViewModel @Inject constructor(
         val mediaUpdates: Map<String, MediaListStatusController.Update>,
         val query: String,
         val filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
+
+        // This is broken out to avoid network refreshes,
+        // since this doesn't affect the network response
+        val showTagWhenSpoiler: Boolean,
     )
 
     data class ListEntry(

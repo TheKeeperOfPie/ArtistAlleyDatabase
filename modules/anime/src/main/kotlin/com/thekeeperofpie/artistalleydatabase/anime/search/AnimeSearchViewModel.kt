@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
@@ -80,6 +81,7 @@ class AnimeSearchViewModel @Inject constructor(
     mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
     private val monetizationController: MonetizationController,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
@@ -90,6 +92,7 @@ class AnimeSearchViewModel @Inject constructor(
     val unlocked = monetizationController.unlocked
 
     private var initialized = false
+    private val tagId = savedStateHandle.get<String?>("tagId")
 
     val animeSortFilterController = AnimeSortFilterController(
         sortTypeEnumClass = MediaSortOption::class,
@@ -160,7 +163,8 @@ class AnimeSearchViewModel @Inject constructor(
                 }
         }
 
-        val includeDescriptionFlow = MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
+        val includeDescriptionFlow =
+            MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
 
         collectSearch(
             searchType = SearchType.ANIME,
@@ -542,7 +546,6 @@ class AnimeSearchViewModel @Inject constructor(
 
     fun initialize(
         defaultMediaSort: MediaSortOption,
-        tagId: String? = null,
         genre: String? = null,
         year: Int? = null,
         searchType: SearchType? = null,

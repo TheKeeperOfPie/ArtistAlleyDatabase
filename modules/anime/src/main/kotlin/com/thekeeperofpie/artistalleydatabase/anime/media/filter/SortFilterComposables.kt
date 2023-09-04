@@ -45,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -529,6 +530,8 @@ fun AiringDateAdvancedSection(
 fun TagSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
+    showMediaWithTagSpoiler: () -> Boolean,
+    onShowMediaWithTagSpoilerChange: (Boolean) -> Unit,
     tags: @Composable () -> Map<String, TagSection>,
     onTagClick: (String) -> Unit,
     tagRank: @Composable () -> String,
@@ -556,6 +559,48 @@ fun TagSection(
         showDivider = showDivider,
     ) {
         Column(modifier = Modifier.animateContentSize()) {
+            @Suppress("NAME_SHADOWING")
+            val tags = tags()
+            val subcategoriesToShow = if (expanded) {
+                tags.values
+            } else {
+                if (query.isNotBlank()) {
+                    tags.values.mapNotNull {
+                        it.filter {
+                            it.state != FilterIncludeExcludeState.DEFAULT
+                                    || it.name.contains(query, ignoreCase = true)
+                        }
+                    }
+                } else {
+                    tags.values.mapNotNull {
+                        it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+                    }
+                }
+            }.filterIsInstance<TagSection.Category>()
+
+            if (expanded || subcategoriesToShow.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onShowMediaWithTagSpoilerChange(!showMediaWithTagSpoiler()) }
+                ) {
+                    Text(
+                        text = stringResource(R.string.anime_media_tag_search_show_when_spoiler),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .padding(start = 32.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+                            .weight(1f)
+                    )
+
+                    Switch(
+                        checked = showMediaWithTagSpoiler(),
+                        onCheckedChange = onShowMediaWithTagSpoilerChange,
+                        modifier = Modifier.padding(end = 16.dp),
+                    )
+                }
+            }
+
             if (expanded) {
                 TextField(
                     value = query,
@@ -575,12 +620,10 @@ fun TagSection(
                     onValueChange = onQueryChange,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 32.dp, end = 16.dp)
                 )
             }
 
-            @Suppress("NAME_SHADOWING")
-            val tags = tags()
             val children =
                 tags.values.filterIsInstance<TagSection.Tag>()
             if (children.isNotEmpty()) {
@@ -590,23 +633,6 @@ fun TagSection(
                     onTagClick = onTagClick,
                 )
             }
-
-            val subcategoriesToShow = if (expanded) {
-                tags.values
-            } else {
-                if (query.isNotBlank()) {
-                    tags.values.mapNotNull {
-                        it.filter {
-                            it.state != FilterIncludeExcludeState.DEFAULT
-                                    || it.name.contains(query, ignoreCase = true)
-                        }
-                    }
-                } else {
-                    tags.values.mapNotNull {
-                        it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
-                    }
-                }
-            }.filterIsInstance<TagSection.Category>()
 
             subcategoriesToShow.forEachIndexed { index, section ->
                 TagSubsection(

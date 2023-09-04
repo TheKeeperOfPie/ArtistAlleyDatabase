@@ -3,6 +3,7 @@
 ### Next (10)
 - Add user score filter to media lists
 - Improve home loading placeholders
+- On tag filter, hide media where tag is spoiler
 
 ### 0.44 (9)
 - Add role in media to character details

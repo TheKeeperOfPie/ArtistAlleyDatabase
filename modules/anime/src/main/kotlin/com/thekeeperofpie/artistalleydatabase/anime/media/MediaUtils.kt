@@ -496,6 +496,7 @@ object MediaUtils {
 
     fun <SortType : SortOption, MediaEntryType : MediaStatusAware> filterEntries(
         filterParams: MediaSortFilterController.FilterParams<SortType>,
+        showTagWhenSpoiler: Boolean,
         entries: List<MediaEntryType>,
         media: (MediaEntryType) -> MediaPreview,
         forceShowIgnored: Boolean = false,
@@ -523,7 +524,7 @@ object MediaUtils {
         )
 
         val tagRank = filterParams.tagRank
-        val transformIncludes: ((MediaEntryType) -> List<String>)? =
+        val tagTransformIncludes: ((MediaEntryType) -> List<String>)? =
             if (tagRank == null) null else {
                 {
                     media(it).tags
@@ -534,19 +535,29 @@ object MediaUtils {
                 }
             }
 
+        val tags = filterParams.tagsByCategory.values.flatMap {
+            when (it) {
+                is TagSection.Category -> it.flatten()
+                is TagSection.Tag -> listOf(it)
+            }
+        }
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            filters = filterParams.tagsByCategory.values.flatMap {
-                when (it) {
-                    is TagSection.Category -> it.flatten()
-                    is TagSection.Tag -> listOf(it)
-                }
-            },
+            filters = tags,
             list = filteredEntries,
             state = { it.state },
             key = { it.value.id.toString() },
             transform = { media(it).tags?.filterNotNull()?.map { it.id.toString() }.orEmpty() },
-            transformIncludes = transformIncludes,
+            transformIncludes = tagTransformIncludes,
         )
+
+        if (!showTagWhenSpoiler && tags.isNotEmpty()) {
+            filteredEntries = filteredEntries.filter {
+                tags.all { tag ->
+                    media(it).tags?.find { it?.id.toString() == tag.id }
+                        ?.isMediaSpoiler != true
+                }
+            }
+        }
 
         if (!filterParams.showAdult) {
             filteredEntries = filteredEntries.filterNot { media(it).isAdult ?: false }

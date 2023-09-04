@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -162,7 +161,6 @@ object AnimeNavigator {
             val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
                 initialize(
                     defaultMediaSort = sort,
-                    tagId = tagId,
                     genre = genre,
                     year = year,
                     searchType = if (mediaType == MediaType.MANGA) {
@@ -184,7 +182,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 tagId = tagId,
                 genre = genre,
-                scrollStateSaver = ScrollStateSaver(),
             )
         }
 

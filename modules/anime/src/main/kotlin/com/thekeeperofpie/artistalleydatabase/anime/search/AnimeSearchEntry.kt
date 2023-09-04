@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
@@ -28,7 +29,8 @@ sealed interface AnimeSearchEntry {
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
-    ) : AnimeMediaListRow.Entry, AnimeSearchEntry, MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry, AnimeMediaCompactListRow.Entry {
+    ) : AnimeMediaListRow.Entry, AnimeSearchEntry, MediaStatusAware, AnimeMediaLargeCard.Entry,
+        MediaGridCard.Entry, AnimeMediaCompactListRow.Entry {
         override val entryId = EntryId("media", media.id.toString())
         override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         override val type = media.type
@@ -39,6 +41,17 @@ sealed interface AnimeSearchEntry {
         // So that enough meaningful text is shown, strip any double newlines
         override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
         override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
+
+        val entry = MediaPreviewWithDescriptionEntry(
+            media = media,
+            mediaListStatus = mediaListStatus,
+            progress = progress,
+            progressVolumes = progressVolumes,
+            scoreRaw = scoreRaw,
+            ignored = ignored,
+            showLessImportantTags = showLessImportantTags,
+            showSpoilerTags = showSpoilerTags,
+        )
     }
 
     data class Character(

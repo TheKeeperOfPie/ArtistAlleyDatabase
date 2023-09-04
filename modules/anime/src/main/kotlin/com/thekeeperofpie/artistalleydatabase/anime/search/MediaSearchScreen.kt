@@ -3,15 +3,19 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -20,6 +24,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -44,9 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
@@ -62,7 +67,6 @@ object MediaSearchScreen {
         viewModel: AnimeSearchViewModel = hiltViewModel(),
         tagId: String?,
         genre: String?,
-        scrollStateSaver: ScrollStateSaver,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
@@ -111,38 +115,50 @@ object MediaSearchScreen {
                             if (content.itemCount == 0) {
                                 AnimeMediaListScreen.NoResults()
                             } else {
-                                LazyColumn(
-                                    state = scrollStateSaver.lazyListState(),
+                                val gridState = rememberLazyGridState()
+                                val showWithSpoiler =
+                                    if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
+                                        viewModel.animeSortFilterController.tagShowWhenSpoiler
+                                    } else {
+                                        viewModel.mangaSortFilterController.tagShowWhenSpoiler
+                                    }
+                                LaunchedEffect(showWithSpoiler) {
+                                    gridState.scrollToItem(0)
+                                }
+
+                                val columns = when (viewModel.mediaViewOption) {
+                                    MediaViewOption.SMALL_CARD,
+                                    MediaViewOption.LARGE_CARD,
+                                    MediaViewOption.COMPACT,
+                                    -> GridCells.Adaptive(300.dp)
+                                    MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
+                                }
+
+                                LazyVerticalGrid(
+                                    state = gridState,
+                                    columns = columns,
                                     contentPadding = PaddingValues(
+                                        top = 16.dp,
                                         start = 16.dp,
                                         end = 16.dp,
-                                        top = 16.dp,
-                                        bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
+                                        bottom = 32.dp,
                                     ),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     items(
                                         count = content.itemCount,
                                         key = content.itemKey { it.entryId.scopedId },
                                         contentType = content.itemContentType { it.entryId.type }
-                                    ) { index ->
-                                        when (val item = content[index]) {
-                                            is AnimeSearchEntry.Media -> AnimeMediaListRow(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                entry = item,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
-                                            )
-
-                                            else -> AnimeMediaListRow(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = null,
-                                                entry = null,
-                                                onClickListEdit = {},
-                                            )
-                                        }
+                                    ) {
+                                        val item = content[it] as? AnimeSearchEntry.Media
+                                        MediaViewOptionRow(
+                                            screenKey = SCREEN_KEY,
+                                            mediaViewOption = viewModel.mediaViewOption,
+                                            viewer = viewer,
+                                            editViewModel = editViewModel,
+                                            entry = item?.entry,
+                                        )
                                     }
 
                                     when (content.loadState.append) {
@@ -214,6 +230,20 @@ object MediaSearchScreen {
                                 )
                             }
                         }
+
+                        val mediaViewOption = viewModel.mediaViewOption
+                        val nextMediaViewOption = MediaViewOption.values()
+                            .let { it[(it.indexOf(mediaViewOption) + 1) % it.size] }
+                        IconButton(onClick = {
+                            viewModel.mediaViewOption = nextMediaViewOption
+                        }) {
+                            Icon(
+                                imageVector = nextMediaViewOption.icon,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_view_option_icon_content_description
+                                ),
+                            )
+                        }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
@@ -221,6 +251,36 @@ object MediaSearchScreen {
                         )
                     ),
                 )
+
+                if (tagId != null) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        val showWithSpoiler =
+                            if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
+                                viewModel.animeSortFilterController.tagShowWhenSpoiler
+                            } else {
+                                viewModel.mangaSortFilterController.tagShowWhenSpoiler
+                            }
+
+                        Switch(
+                            checked = showWithSpoiler,
+                            onCheckedChange = {
+                                if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
+                                    viewModel.animeSortFilterController.tagShowWhenSpoiler = it
+                                } else {
+                                    viewModel.mangaSortFilterController.tagShowWhenSpoiler = it
+                                }
+                            },
+                        )
+
+                        Text(
+                            text = stringResource(R.string.anime_media_tag_search_show_when_spoiler),
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        )
+                    }
+                }
 
                 val selectedIsAnime =
                     viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME
