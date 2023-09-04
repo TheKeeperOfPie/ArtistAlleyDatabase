@@ -48,6 +48,8 @@ class AnimeNewsViewModel @Inject constructor(
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (_, filterParams) ->
                     animeNewsController.news().mapLatest { news ->
+                        // More efficient to pre-calculate
+                        @Suppress("MoveVariableDeclarationIntoWhen")
                         val sortOption =
                             filterParams.sort.selectedOption(AnimeNewsSortOption.DATETIME)
                         val baseComparator: Comparator<AnimeNewsArticleEntry<*>> =
@@ -61,7 +63,7 @@ class AnimeNewsViewModel @Inject constructor(
                             if (filterParams.sortAscending) it else it.reversed()
                         }
 
-                        news.sortedWith(comparator)
+                        news?.sortedWith(comparator)
                     }.startWith(null)
                 }
                 .flowOn(CustomDispatchers.IO)

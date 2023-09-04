@@ -133,7 +133,13 @@ object AnimeMediaLargeCard {
                         )
                     }
 
-                    val description = entry?.description
+                    val description = if (entry == null) {
+                        "Some really long placeholder description for a loading media large card, "
+                            .repeat(3)
+                    } else {
+                        entry.description
+                    }
+
                     if (description == null) {
                         Spacer(Modifier.weight(1f))
                     } else {
@@ -147,6 +153,10 @@ object AnimeMediaLargeCard {
                                 .weight(1f)
                                 .fillMaxWidth()
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
+                                .placeholder(
+                                    visible = entry == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
                         )
                     }
 

@@ -30,6 +30,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
@@ -39,22 +42,22 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AnimeNewsSmallCard(
-    entry: AnimeNewsArticleEntry<*>,
+    entry: AnimeNewsArticleEntry<*>?,
     uriHandler: UriHandler,
 ) {
-    val onClick = entry.link?.let { { uriHandler.openUri(it) } }
+    val onClick = entry?.link?.let { { uriHandler.openUri(it) } }
     val content: @Composable ColumnScope.() -> Unit = {
         Row(
             modifier = Modifier
-                .conditionally(entry.image != null) {
+                .conditionally(entry?.image != null) {
                     height(IntrinsicSize.Min)
                 }
         ) {
-            entry.image?.let {
+            if (entry == null || entry.image != null) {
                 Box {
                     val fullscreenImageHandler = LocalFullscreenImageHandler.current
                     AsyncImage(
-                        model = it,
+                        model = entry?.image,
                         contentDescription = stringResource(
                             R.string.anime_news_article_image_content_description
                         ),
@@ -65,12 +68,12 @@ fun AnimeNewsSmallCard(
                             .fillMaxHeight()
                             .combinedClickable(
                                 onClick = { onClick?.invoke() },
-                                onLongClick = { fullscreenImageHandler.openImage(it) },
+                                onLongClick = { entry?.image?.let(fullscreenImageHandler::openImage) },
                             )
                             .blurForScreenshotMode()
                     )
 
-                    entry.icon?.let {
+                    entry?.icon?.let {
                         AsyncImage(
                             model = it,
                             contentDescription = stringResource(
@@ -93,35 +96,41 @@ fun AnimeNewsSmallCard(
                         start = 8.dp,
                         end = 8.dp,
                         top = 8.dp,
-                        bottom = if (entry.copyright == null) 8.dp else 4.dp,
+                        bottom = if (entry != null && entry.copyright == null) 8.dp else 4.dp,
                     )
                     .weight(1f)
                     .wrapContentHeight()
             ) {
-                entry.title?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.labelMedium,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.primary,
+                Text(
+                    text = entry?.title
+                        ?: "Some really long placeholder news article title that fills 2 lines of space",
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.placeholder(
+                        visible = entry == null,
+                        highlight = PlaceholderHighlight.shimmer(),
                     )
-                }
+                )
 
-                entry.description?.let {
-                    CustomHtmlText(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        minLines = 3,
-                        maxLines = 3,
-                        overflow = TextOverflow.Clip,
-                        detectTaps = false,
+                CustomHtmlText(
+                    text = entry?.description
+                        ?: "Some really long placeholder news description that fills 3 lines of space; some really long placeholder news description that fills 3 lines of space.",
+                    style = MaterialTheme.typography.bodySmall,
+                    minLines = 3,
+                    maxLines = 3,
+                    overflow = TextOverflow.Clip,
+                    detectTaps = false,
+                    modifier = Modifier.placeholder(
+                        visible = entry == null,
+                        highlight = PlaceholderHighlight.shimmer(),
                     )
-                }
+                )
 
-                entry.copyright?.let {
+                if (entry == null || entry.copyright != null) {
                     Text(
-                        text = it,
+                        text = entry?.copyright ?: "Copyright",
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 8.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

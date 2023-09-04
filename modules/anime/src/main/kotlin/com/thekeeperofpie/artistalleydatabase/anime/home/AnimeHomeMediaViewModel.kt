@@ -15,7 +15,6 @@ import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.hoc081098.flowext.combine
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -40,6 +39,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -174,8 +174,7 @@ abstract class AnimeHomeMediaViewModel(
                                         titleRes = it.titleRes,
                                         entries = it.list?.filterNotNull()
                                             ?.map(AnimeHomeDataEntry::MediaEntry)
-                                            .orEmpty()
-                                            .mapNotNull {
+                                            ?.mapNotNull {
                                                 applyMediaFiltering(
                                                     statuses = mediaStatusUpdates,
                                                     ignoreController = ignoreController,
@@ -299,45 +298,58 @@ abstract class AnimeHomeMediaViewModel(
                     + "&sort=${MediaSortOption.SCORE}",
         )
 
-        override suspend fun rows() = flowFromSuspend {
+        override suspend fun rows() = flow {
+            val trending = RowInput(
+                id = "anime_trending",
+                titleRes = R.string.anime_home_trending_row_label,
+                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                        + "?titleRes=${R.string.anime_home_trending_screen_title}"
+                        + "&mediaType=${mediaType.name}"
+                        + "&sort=${MediaSortOption.TRENDING}"
+            )
+            val popularThisSeason = RowInput(
+                id = "anime_popular_this_season",
+                titleRes = R.string.anime_home_popular_this_season,
+                viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.THIS.name}"
+            )
+            val lastAdded = RowInput(
+                id = "anime_last_added",
+                titleRes = R.string.anime_home_last_added,
+                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                        + "?titleRes=${R.string.anime_home_last_added_screen_title}"
+                        + "&mediaType=${mediaType.name}"
+                        + "&sort=${MediaSortOption.ID}"
+            )
+            val popularLastSeason = RowInput(
+                id = "anime_popular_last_season",
+                titleRes = R.string.anime_home_popular_last_season,
+                viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.LAST.name}"
+            )
+            val popularNextSeason = RowInput(
+                id = "anime_popular_next_season",
+                titleRes = R.string.anime_home_popular_next_season,
+                viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.NEXT.name}"
+            )
+
+            emit(
+                listOf(
+                    trending,
+                    popularThisSeason,
+                    lastAdded,
+                    popularLastSeason,
+                    popularNextSeason,
+                )
+            )
+
             val result = aniListApi.homeAnime()
-            listOf(
-                RowInput(
-                    "anime_trending",
-                    R.string.anime_home_trending_row_label,
-                    result.trending?.media,
-                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                            + "?titleRes=${R.string.anime_home_trending_screen_title}"
-                            + "&mediaType=${mediaType.name}"
-                            + "&sort=${MediaSortOption.TRENDING}"
-                ),
-                RowInput(
-                    "anime_popular_this_season",
-                    R.string.anime_home_popular_this_season,
-                    result.popularThisSeason?.media,
-                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.THIS.name}"
-                ),
-                RowInput(
-                    "anime_last_added",
-                    R.string.anime_home_last_added,
-                    result.lastAdded?.media,
-                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                            + "?titleRes=${R.string.anime_home_last_added_screen_title}"
-                            + "&mediaType=${mediaType.name}"
-                            + "&sort=${MediaSortOption.ID}"
-                ),
-                RowInput(
-                    "anime_popular_last_season",
-                    R.string.anime_home_popular_last_season,
-                    result.popularLastSeason?.media,
-                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.LAST.name}"
-                ),
-                RowInput(
-                    "anime_popular_next_season",
-                    R.string.anime_home_popular_next_season,
-                    result.popularNextSeason?.media,
-                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.NEXT.name}"
-                ),
+            emit(
+                listOf(
+                    trending.copy(list = result.trending?.media.orEmpty()),
+                    popularThisSeason.copy(list = result.popularThisSeason?.media.orEmpty()),
+                    lastAdded.copy(list = result.lastAdded?.media.orEmpty()),
+                    popularLastSeason.copy(list = result.popularLastSeason?.media.orEmpty()),
+                    popularNextSeason.copy(list = result.popularNextSeason?.media.orEmpty()),
+                )
             )
         }
     }
@@ -370,36 +382,46 @@ abstract class AnimeHomeMediaViewModel(
                     + "&sort=${MediaSortOption.SCORE}",
         )
 
-        override suspend fun rows() = flowFromSuspend {
+        override suspend fun rows() = flow {
+            val trending = RowInput(
+                id = "manga_trending",
+                titleRes = R.string.anime_home_trending_row_label,
+                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                        + "?titleRes=${R.string.anime_home_trending_screen_title}"
+                        + "&mediaType=${mediaType.name}"
+                        + "&sort=${MediaSortOption.TRENDING}"
+            )
+            val lastAdded = RowInput(
+                id = "manga_last_added",
+                titleRes = R.string.anime_home_last_added,
+                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                        + "?titleRes=${R.string.anime_home_last_added_screen_title}"
+                        + "&mediaType=${mediaType.name}"
+                        + "&sort=${MediaSortOption.ID}"
+            )
+            val topReleasedThisYear = RowInput(
+                id = "manga_top_released_this_year",
+                titleRes = R.string.anime_home_top_released_this_year,
+                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                        + "?titleRes=${R.string.anime_home_top_released_this_year_title}"
+                        + "&mediaType=${mediaType.name}"
+                        + "&sort=${MediaSortOption.SCORE}"
+            )
+            emit(
+                listOf(
+                    trending,
+                    lastAdded,
+                    topReleasedThisYear,
+                )
+            )
+
             val result = aniListApi.homeManga()
-            listOf(
-                RowInput(
-                    "manga_trending",
-                    R.string.anime_home_trending_row_label,
-                    result.trending?.media,
-                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                            + "?titleRes=${R.string.anime_home_trending_screen_title}"
-                            + "&mediaType=${mediaType.name}"
-                            + "&sort=${MediaSortOption.TRENDING}"
-                ),
-                RowInput(
-                    "manga_last_added",
-                    R.string.anime_home_last_added,
-                    result.lastAdded?.media,
-                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                            + "?titleRes=${R.string.anime_home_last_added_screen_title}"
-                            + "&mediaType=${mediaType.name}"
-                            + "&sort=${MediaSortOption.ID}"
-                ),
-                RowInput(
-                    "manga_top_released_this_year",
-                    R.string.anime_home_top_released_this_year,
-                    result.topThisYear?.media,
-                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                            + "?titleRes=${R.string.anime_home_top_released_this_year_title}"
-                            + "&mediaType=${mediaType.name}"
-                            + "&sort=${MediaSortOption.SCORE}"
-                ),
+            emit(
+                listOf(
+                    trending.copy(list = result.trending?.media.orEmpty()),
+                    lastAdded.copy(list = result.lastAdded?.media.orEmpty()),
+                    topReleasedThisYear.copy(list = result.topThisYear?.media.orEmpty()),
+                )
             )
         }
     }
@@ -407,7 +429,7 @@ abstract class AnimeHomeMediaViewModel(
     data class RowInput(
         val id: String,
         val titleRes: Int,
-        val list: List<MediaPreviewWithDescription?>?,
         val viewAllRoute: String? = null,
+        val list: List<MediaPreviewWithDescription?>? = null,
     )
 }

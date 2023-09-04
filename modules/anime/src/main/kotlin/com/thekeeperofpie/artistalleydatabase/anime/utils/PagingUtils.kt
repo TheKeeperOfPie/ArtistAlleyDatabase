@@ -1,9 +1,21 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.utils
 
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.annotation.CheckResult
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.Composable
+import androidx.paging.LoadState
 import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import androidx.paging.filter
 import androidx.paging.map
 import com.apollographql.apollo3.api.Optional
@@ -76,3 +88,61 @@ fun <T : Any, R : Any> PagingData<T>.mapOnIO(transform: suspend (T) -> R) = map 
 }
 
 object PagingPlaceholderContentType
+
+fun <T : Any> LazyListScope.items(
+    data: LazyPagingItems<T>,
+    placeholderCount: Int,
+    key: (T) -> Any,
+    contentType: (T?) -> String,
+    itemContent: @Composable LazyItemScope.(item: T?) -> Unit,
+) {
+    val mockingPlaceholder =
+        data.loadState.refresh is LoadState.Loading && data.itemCount == 0
+    val itemCount = if (mockingPlaceholder) placeholderCount else data.itemCount
+    val itemKey = data.itemKey { key(it) }
+    val itemContentType = data.itemContentType { contentType(it) }
+    items(
+        count = itemCount,
+        key = { if (mockingPlaceholder) PagingPlaceholderKey(it) else itemKey(it) },
+        contentType = { if (mockingPlaceholder) contentType(null) else itemContentType(it) },
+    ) {
+        val item = if (mockingPlaceholder) null else data[it]
+        itemContent(item)
+    }
+}
+
+fun <T : Any> LazyListScope.itemsIndexed(
+    data: List<T>?,
+    placeholderCount: Int,
+    key: (index: Int, T) -> Any,
+    contentType: (index: Int, T?) -> String,
+    itemContent: @Composable LazyItemScope.(index: Int, item: T?) -> Unit,
+) {
+    items(
+        count = data?.size ?: placeholderCount,
+        key = { index ->
+            data?.getOrNull(index)?.let { key(index, it) }
+                ?: PagingPlaceholderKey(index)
+        },
+        contentType = { contentType(it, data?.getOrNull(it)) },
+    ) {
+        itemContent(it, data?.getOrNull(it))
+    }
+}
+
+@Composable
+fun <T : Any> rememberPagerState(data: LazyPagingItems<T>, placeholderCount: Int): PagerState {
+    val mockingPlaceholder =
+        data.loadState.refresh is LoadState.Loading && data.itemCount == 0
+    val itemCount = if (mockingPlaceholder) placeholderCount else data.itemCount
+    return rememberPagerState(pageCount = { itemCount })
+}
+
+@Composable
+fun <T : Any> rememberPagerState(data: List<T>?, placeholderCount: Int): PagerState {
+    val itemCount = data?.size ?: placeholderCount
+    return rememberPagerState(pageCount = { itemCount })
+}
+
+fun <T : Any> LazyPagingItems<T>.getOrNull(index: Int) =
+    if (index >= itemCount) null else get(index)

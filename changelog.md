@@ -2,6 +2,7 @@
 
 ### Next (10)
 - Add user score filter to media lists
+- Improve home loading placeholders
 
 ### 0.44 (9)
 - Add role in media to character details

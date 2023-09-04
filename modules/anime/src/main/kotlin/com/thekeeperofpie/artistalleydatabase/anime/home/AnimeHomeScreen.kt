@@ -26,7 +26,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -48,7 +47,6 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -97,10 +95,12 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.MediaCompactWithTags
-import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -111,6 +111,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdat
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -130,6 +131,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingPlaceholderKey
+import com.thekeeperofpie.artistalleydatabase.anime.utils.getOrNull
+import com.thekeeperofpie.artistalleydatabase.anime.utils.itemsIndexed
+import com.thekeeperofpie.artistalleydatabase.anime.utils.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -367,16 +372,17 @@ object AnimeHomeScreen {
     }
 
     private fun LazyListScope.newsRow(
-        data: List<AnimeNewsArticleEntry<*>>,
+        data: List<AnimeNewsArticleEntry<*>>?,
     ) {
         rowHeader(
             titleRes = R.string.anime_news_home_title,
             viewAllRoute = AnimeNavDestinations.NEWS.id
         )
 
-        if (data.isEmpty()) return
+        val itemCount = data?.size ?: 1
+        if (itemCount == 0) return
         item("newsRow") {
-            val pagerState = rememberPagerState(pageCount = { data.size })
+            val pagerState = rememberPagerState(pageCount = { itemCount })
             val uriHandler = LocalUriHandler.current
             val targetWidth = targetPageWidth()
             HorizontalPager(
@@ -387,7 +393,7 @@ object AnimeHomeScreen {
                 verticalAlignment = Alignment.Top,
             ) {
                 AnimeNewsSmallCard(
-                    entry = data[it],
+                    entry = data?.get(it),
                     uriHandler = uriHandler,
                 )
             }
@@ -405,9 +411,8 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.ACTIVITY.id
         )
 
-        if (data.itemCount == 0) return
         item("activityRow") {
-            val pagerState = rememberPagerState(pageCount = { data.itemCount })
+            val pagerState = rememberPagerState(data = data, placeholderCount = 1)
             val targetWidth = targetPageWidth()
             HorizontalPager(
                 state = pagerState,
@@ -416,7 +421,7 @@ object AnimeHomeScreen {
                 pageSize = PageSize.Fixed(targetWidth),
                 verticalAlignment = Alignment.Top,
             ) {
-                val entry = data[it]
+                val entry = data.getOrNull(it)
                 when (val activity = entry?.activity) {
                     is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
                         TextActivitySmallCard(
@@ -452,12 +457,15 @@ object AnimeHomeScreen {
                         )
                     is UserSocialActivityQuery.Data.Page.OtherActivity,
                     null,
-                    -> TextActivitySmallCard(
+                    -> ListActivitySmallCard(
                         screenKey = SCREEN_KEY,
                         viewer = viewer,
                         activity = null,
+                        mediaEntry = null,
                         entry = null,
                         onActivityStatusUpdate = onActivityStatusUpdate,
+                        onClickListEdit = { editViewModel.initialize(it.media) },
+                        clickable = true,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -475,7 +483,7 @@ object AnimeHomeScreen {
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
     ) {
         val result = mediaViewModel.current.result
-        if (result.isNullOrEmpty()) return
+        if (result != null && result.isEmpty()) return
         val headerTextRes = mediaViewModel.currentHeaderTextRes
         rowHeader(
             titleRes = headerTextRes,
@@ -488,39 +496,31 @@ object AnimeHomeScreen {
 
         item("$headerTextRes-current") {
             val listState = rememberLazyListState()
-
+            val items = result ?: run {
+                val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
+                val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
+                    .coerceAtLeast(1)
+                arrayOfNulls<UserMediaListController.MediaEntry?>(placeholderCount).asList()
+            }
             LazyRow(
                 state = listState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.animateItemPlacement()
             ) {
-                items(
-                    items = result,
-                    key = { it.media.id },
-                    contentType = { "media" },
-                ) {
+                itemsIndexed(
+                    items = items,
+                    key = { index, item -> item?.media?.id ?: PagingPlaceholderKey(index) },
+                    contentType = { _, _ -> "media" },
+                ) { _, item ->
                     CurrentMediaCard(
-                        entry = it,
+                        entry = item,
                         viewer = viewer,
                         onClickListEdit = onClickListEdit,
                         onClickIncrementProgress = onClickIncrementProgress,
-                        onLongClickEntry = { /* TODO */ },
                         modifier = Modifier.animateItemPlacement(),
                     )
                 }
-            }
-        }
-    }
-
-    private fun LazyListScope.loading(key: String) {
-        item(key) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateItemPlacement()
-            ) {
-                CircularProgressIndicator(modifier = Modifier.padding(vertical = 8.dp))
             }
         }
     }
@@ -551,19 +551,14 @@ object AnimeHomeScreen {
             viewAllRoute = viewAllRoute
         )
 
-        if (entries.isNullOrEmpty()) {
-            loading("$titleRes-loading")
-            return
-        }
-
         item("$titleRes-pager") {
-            val pagerState = rememberPagerState(pageCount = { entries.size })
+            val pagerState = rememberPagerState(data = entries, placeholderCount = 1)
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 12.dp),
                 pageSpacing = 8.dp,
             ) {
-                val entry = entries[it]
+                val entry = entries?.getOrNull(it)
                 AnimeMediaLargeCard(
                     screenKey = SCREEN_KEY,
                     viewer = viewer,
@@ -590,23 +585,31 @@ object AnimeHomeScreen {
                 density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
             )
 
+            val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
+            val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
+                .coerceAtLeast(1)
+
             LazyRow(
                 state = listState,
                 contentPadding = PaddingValues(
                     start = 16.dp,
-                    end = (LocalConfiguration.current.screenWidthDp.dp
-                            - MEDIA_ROW_IMAGE_WIDTH).let {
+                    end = (screenWidthDp - MEDIA_ROW_IMAGE_WIDTH).let {
                         if (viewAllRoute == null) it else it - 16.dp - MEDIA_ROW_IMAGE_WIDTH
                     },
                 ),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider)
             ) {
-                itemsIndexed(entries, { _, item -> item.media.id }) { index, item ->
+                itemsIndexed(
+                    data = entries,
+                    placeholderCount = placeholderCount,
+                    key = { _, item -> item.media.id },
+                    contentType = { _, _ -> "media" },
+                ) { index, item ->
                     MediaCard(
-                        media = item.media,
+                        media = item?.media,
                         mediaStatusAware = item,
-                        ignored = item.ignored,
+                        ignored = item?.ignored ?: false,
                         viewer = viewer,
                         cardOutlineBorder = cardOutlineBorder,
                         width = MEDIA_ROW_IMAGE_WIDTH,
@@ -635,24 +638,23 @@ object AnimeHomeScreen {
 
     @Composable
     private fun CurrentMediaCard(
-        entry: UserMediaListController.MediaEntry,
+        entry: UserMediaListController.MediaEntry?,
         viewer: AniListViewer?,
         onClickListEdit: (MediaPreview) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
-        onLongClickEntry: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val media = entry.media
-        val id = media.id.toString()
+        val media = entry?.media
+        val mediaId = media?.id?.toString()
 
         val colorCalculationState = LocalColorCalculationState.current
-        val colors = colorCalculationState.getColors(id)
+        val colors = colorCalculationState.getColors(mediaId)
         val animationProgress by animateIntAsState(
             if (colors.first.isUnspecified) 0 else 255,
             label = "Media card color fade in",
         )
 
-        val surfaceColor = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        val surfaceColor = media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
             ?: MaterialTheme.colorScheme.surface
         val containerColor = when {
             colors.first.isUnspecified || animationProgress == 0 -> surfaceColor
@@ -669,23 +671,21 @@ object AnimeHomeScreen {
         }
 
         val navigationCallback = LocalNavigationCallback.current
-        var widthToHeightRatio by remember(id) { mutableStateOf<Float?>(null) }
+        var widthToHeightRatio by remember(mediaId) { mutableStateOf<Float?>(null) }
         val onClick = {
             navigationCallback.onMediaClick(media as MediaPreview, widthToHeightRatio ?: 1f)
         }
 
+        val ignoreController = LocalIgnoreController.current
         ElevatedCard(
             colors = CardDefaults.elevatedCardColors(
                 containerColor = containerColor,
             ),
+            onClick = onClick,
             modifier = modifier
                 .widthIn(max = CURRENT_ROW_IMAGE_WIDTH)
                 .clip(RoundedCornerShape(12.dp))
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = { onLongClickEntry(media) },
-                )
-                .alpha(if (entry.ignored) 0.38f else 1f)
+                .alpha(if (entry?.ignored == true) 0.38f else 1f)
                 .padding(2.dp)
         ) {
             Box {
@@ -703,22 +703,24 @@ object AnimeHomeScreen {
                 )
                 MediaCoverImage(
                     screenKey = SCREEN_KEY,
-                    mediaId = media.id.toString(),
+                    mediaId = mediaId,
                     image = ImageRequest.Builder(LocalContext.current)
-                        .data(media.coverImage?.extraLarge)
-                        .allowHardware(colorCalculationState.hasColor(id))
+                        .data(media?.coverImage?.extraLarge)
+                        .allowHardware(colorCalculationState.hasColor(mediaId))
                         .size(width = coilWidth, height = coilHeight)
                         .build(),
                     contentScale = ContentScale.Crop,
                     onSuccess = {
                         widthToHeightRatio = it.widthToHeightRatio()
-                        ComposeColorUtils.calculatePalette(
-                            id = id,
-                            success = it,
-                            colorCalculationState = colorCalculationState,
-                            heightStartThreshold = 3 / 4f,
-                            selectMaxPopulation = true,
-                        )
+                        if (mediaId != null) {
+                            ComposeColorUtils.calculatePalette(
+                                id = mediaId,
+                                success = it,
+                                colorCalculationState = colorCalculationState,
+                                heightStartThreshold = 3 / 4f,
+                                selectMaxPopulation = true,
+                            )
+                        }
                     },
                     modifier = Modifier
                         .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
@@ -728,9 +730,13 @@ object AnimeHomeScreen {
                             height = CURRENT_ROW_IMAGE_HEIGHT
                         )
                         .animateContentSize()
+                        .placeholder(
+                            visible = media == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
                 )
 
-                if (viewer != null) {
+                if (viewer != null && media != null) {
                     val maxProgress = MediaUtils.maxProgress(media)
                     MediaListQuickEditIconButton(
                         viewer = viewer,
@@ -765,22 +771,31 @@ object AnimeHomeScreen {
             }
 
             Text(
-                text = media.title?.primaryTitle().orEmpty(),
+                text = if (media == null) {
+                    "Some long media title that fills 2 lines"
+                } else {
+                    media.title?.primaryTitle().orEmpty()
+                },
                 style = MaterialTheme.typography.labelSmall,
                 color = ComposeColorUtils.bestTextColor(containerColor)
                     ?: Color.Unspecified,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 2,
                 minLines = 2,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                modifier = Modifier
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .placeholder(
+                        visible = media == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
             )
         }
     }
 
     @Composable
     private fun MediaCard(
-        media: MediaPreview,
-        mediaStatusAware: MediaStatusAware,
+        media: MediaPreview?,
+        mediaStatusAware: MediaStatusAware?,
         ignored: Boolean,
         viewer: AniListViewer?,
         cardOutlineBorder: BorderStroke,
@@ -792,15 +807,15 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaPreview) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val id = media.id.toString()
+        val mediaId = media?.id?.toString()
         val colorCalculationState = LocalColorCalculationState.current
-        val colors = colorCalculationState.getColors(id)
+        val colors = colorCalculationState.getColors(mediaId)
         val animationProgress by animateIntAsState(
             if (colors.first.isUnspecified) 0 else 255,
             label = "Media card color fade in",
         )
 
-        val surfaceColor = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        val surfaceColor = media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
             ?: MaterialTheme.colorScheme.surface
         val containerColor = when {
             colors.first.isUnspecified || animationProgress == 0 -> surfaceColor
@@ -817,9 +832,11 @@ object AnimeHomeScreen {
         }
 
         val navigationCallback = LocalNavigationCallback.current
-        var widthToHeightRatio by remember(id) { mutableStateOf<Float?>(null) }
+        var widthToHeightRatio by remember(mediaId) { mutableStateOf<Float?>(null) }
         val onClick = {
-            navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)
+            if (media != null) {
+                navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)
+            }
         }
 
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
@@ -829,7 +846,7 @@ object AnimeHomeScreen {
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = {
-                    media.coverImage?.extraLarge?.let(fullscreenImageHandler::openImage)
+                    media?.coverImage?.extraLarge?.let(fullscreenImageHandler::openImage)
                 },
             )
             .alpha(if (ignored) 0.38f else 1f)
@@ -860,7 +877,7 @@ object AnimeHomeScreen {
             }
 
         SharedElement(
-            key = "anime_media_${media.id}_image",
+            key = "anime_media_${mediaId}_image",
             screenKey = SCREEN_KEY,
         ) {
             card {
@@ -868,42 +885,52 @@ object AnimeHomeScreen {
                     var showTitle by remember(media) { mutableStateOf(false) }
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(media.coverImage?.extraLarge)
+                            .data(media?.coverImage?.extraLarge)
                             .crossfade(true)
-                            .allowHardware(colorCalculationState.hasColor(id))
+                            .allowHardware(colorCalculationState.hasColor(mediaId))
                             .size(width = coilWidth, height = coilHeight)
                             .build(),
                         contentScale = ContentScale.Crop,
                         contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                         onSuccess = {
                             widthToHeightRatio = it.widthToHeightRatio()
-                            ComposeColorUtils.calculatePalette(
-                                id = id,
-                                success = it,
-                                colorCalculationState = colorCalculationState,
-                                heightStartThreshold = 3 / 4f,
-                                selectMaxPopulation = true,
-                            )
+                            if (mediaId != null) {
+                                ComposeColorUtils.calculatePalette(
+                                    id = mediaId,
+                                    success = it,
+                                    colorCalculationState = colorCalculationState,
+                                    heightStartThreshold = 3 / 4f,
+                                    selectMaxPopulation = true,
+                                )
+                            }
                         },
                         onError = { showTitle = true },
                         modifier = Modifier
                             .size(width = width, height = height)
                             .blurForScreenshotMode()
+                            .placeholder(
+                                visible = media == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
                     )
 
                     if (showTitle) {
                         AutoResizeHeightText(
-                            text = media.title?.primaryTitle().orEmpty(),
+                            text = media?.title?.primaryTitle().orEmpty(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = ComposeColorUtils.bestTextColor(containerColor)
                                 ?: Color.Unspecified,
                             modifier = Modifier
                                 .size(width = width, height = height)
                                 .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 40.dp)
+                                .placeholder(
+                                    visible = media == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
                         )
                     }
 
-                    if (viewer != null) {
+                    if (viewer != null && media != null && mediaStatusAware != null) {
                         MediaListQuickEditIconButton(
                             viewer = viewer,
                             mediaType = media.type,
@@ -930,9 +957,8 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.RECOMMENDATIONS.id,
         )
 
-        if (recommendations.itemCount == 0) return
         item("recommendationsRow") {
-            val pagerState = rememberPagerState(pageCount = { recommendations.itemCount })
+            val pagerState = rememberPagerState(data = recommendations, placeholderCount = 1)
             val targetWidth = targetPageWidth()
             HorizontalPager(
                 state = pagerState,
@@ -941,7 +967,7 @@ object AnimeHomeScreen {
                 pageSize = PageSize.Fixed(targetWidth),
                 verticalAlignment = Alignment.Top,
             ) {
-                val entry = recommendations[it]
+                val entry = recommendations.getOrNull(it)
                 RecommendationCard(
                     screenKey = SCREEN_KEY,
                     viewer = viewer,
@@ -970,9 +996,8 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.REVIEWS.id,
         )
 
-        if (reviews.itemCount == 0) return
         item("reviewsRow") {
-            val pagerState = rememberPagerState(pageCount = { reviews.itemCount })
+            val pagerState = rememberPagerState(data = reviews, placeholderCount = 1)
             val targetWidth = targetPageWidth()
             HorizontalPager(
                 state = pagerState,
@@ -981,7 +1006,7 @@ object AnimeHomeScreen {
                 pageSize = PageSize.Fixed(targetWidth),
                 verticalAlignment = Alignment.Top,
             ) {
-                val entry = reviews[it]
+                val entry = reviews.getOrNull(it)
                 ReviewCard(
                     screenKey = SCREEN_KEY,
                     viewer = viewer,
@@ -1035,7 +1060,8 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun targetPageWidth() = 420.coerceAtMost(LocalConfiguration.current.screenWidthDp - 32).dp
+    private fun targetPageWidth() =
+        420.coerceAtMost(LocalConfiguration.current.screenWidthDp - 32).dp
 
     @SuppressLint("ComposableNaming")
     class SelectedItemTracker {

@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import kotlin.collections.plus
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AnimeNewsController(
@@ -32,16 +31,16 @@ class AnimeNewsController(
     private val settings: AnimeSettings,
 ) {
     private var job: Job? = null
-    private val news = MutableStateFlow<List<AnimeNewsArticleEntry<*>>>(emptyList())
-    private var newsDateDescending by mutableStateOf<List<AnimeNewsArticleEntry<*>>>(emptyList())
+    private val news = MutableStateFlow<List<AnimeNewsArticleEntry<*>>?>(null)
+    private var newsDateDescending by mutableStateOf<List<AnimeNewsArticleEntry<*>>?>(null)
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun news(): MutableStateFlow<List<AnimeNewsArticleEntry<*>>> {
+    fun news(): MutableStateFlow<List<AnimeNewsArticleEntry<*>>?> {
         startJobIfNeeded()
         return news
     }
 
-    fun newsDateDescending(): List<AnimeNewsArticleEntry<*>> {
+    fun newsDateDescending(): List<AnimeNewsArticleEntry<*>>? {
         startJobIfNeeded()
         return newsDateDescending
     }
@@ -65,7 +64,6 @@ class AnimeNewsController(
                         )
                     }
                     .catch {}
-                    .startWith(item = emptyList())
 
             val crunchyroll = refreshUptimeMillis
                 .mapLatest {
@@ -81,7 +79,6 @@ class AnimeNewsController(
                     )
                 }
                 .catch {}
-                .startWith(item = emptyList())
 
             val animeNewsNetworkFiltered = combine(
                 animeNewsNetwork,
@@ -96,6 +93,7 @@ class AnimeNewsController(
                     mustContainAll = false,
                 )
             }
+                .startWith(item = null)
 
             val crunchyrollFiltered = combine(
                 crunchyroll,
@@ -110,15 +108,19 @@ class AnimeNewsController(
                     mustContainAll = false,
                 )
             }
+                .startWith(item = null)
 
             combine(
                 animeNewsNetworkFiltered,
                 crunchyrollFiltered,
-                List<AnimeNewsArticleEntry<*>>::plus
-            ).flowOn(CustomDispatchers.IO)
+            ) { annNews, crNews ->
+                val combined = annNews.orEmpty() + crNews.orEmpty()
+                combined.takeIf { (annNews != null && crNews != null) || it.isNotEmpty() }
+            }
+                .flowOn(CustomDispatchers.IO)
                 .collectLatest {
                     news.emit(it)
-                    val sortedDateDescending = it.sortedByDescending { it.date }
+                    val sortedDateDescending = it?.sortedByDescending { it.date }
                     withContext(CustomDispatchers.Main) {
                         newsDateDescending = sortedDateDescending
                     }

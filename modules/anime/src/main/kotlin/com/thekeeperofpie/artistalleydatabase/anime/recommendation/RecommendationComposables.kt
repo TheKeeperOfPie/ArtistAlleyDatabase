@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,8 +33,8 @@ import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 
 @Composable
@@ -147,7 +146,7 @@ fun RecommendationCard(
             }
 
             Text(
-                text = recommendation?.rating?.toString() ?: "00",
+                text = recommendation?.rating?.toString() ?: "0",
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
                     .padding(vertical = 4.dp, horizontal = 16.dp)
