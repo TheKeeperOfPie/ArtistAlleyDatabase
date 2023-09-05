@@ -21,6 +21,7 @@ import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -82,11 +83,11 @@ class UserMediaListController(
     init {
         anime = loadCacheAndNetwork(
             loadMediaFromCache(MediaType.ANIME),
-            loadMediaFromNetwork(refreshAnime, MediaType.ANIME),
+            loadMediaFromNetwork(refreshAnime, MediaType.ANIME).foldPreviousResult(),
         ).shareIn(scopedApplication.scope, SharingStarted.Lazily, replay = 1)
         manga = loadCacheAndNetwork(
             loadMediaFromCache(MediaType.MANGA),
-            loadMediaFromNetwork(refreshManga, MediaType.MANGA),
+            loadMediaFromNetwork(refreshManga, MediaType.MANGA).foldPreviousResult(),
         ).shareIn(scopedApplication.scope, SharingStarted.Lazily, replay = 1)
     }
 

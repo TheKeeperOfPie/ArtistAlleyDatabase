@@ -5,7 +5,6 @@ import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -13,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 sealed interface AnimeSearchEntry {
@@ -21,36 +19,65 @@ sealed interface AnimeSearchEntry {
     val entryId: EntryId
 
     data class Media(
-        override val media: MediaPreviewWithDescription,
-        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = media.mediaListEntry?.progress,
-        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
-        override val scoreRaw: Double? = media.mediaListEntry?.score,
-        override val ignored: Boolean = false,
-        override val showLessImportantTags: Boolean = false,
-        override val showSpoilerTags: Boolean = false,
-    ) : AnimeMediaListRow.Entry, AnimeSearchEntry, MediaStatusAware, AnimeMediaLargeCard.Entry,
-        MediaGridCard.Entry, AnimeMediaCompactListRow.Entry {
+        val entry: MediaPreviewWithDescriptionEntry,
+    ) : AnimeSearchEntry, AnimeMediaListRow.Entry by entry, MediaStatusAware by entry,
+        AnimeMediaLargeCard.Entry by entry, MediaGridCard.Entry by entry,
+        AnimeMediaCompactListRow.Entry by entry {
         override val entryId = EntryId("media", media.id.toString())
-        override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-        override val type = media.type
-        override val maxProgress = MediaUtils.maxProgress(media)
-        override val maxProgressVolumes = media.volumes
-        override val averageScore = media.averageScore
+        override val color
+            get() = entry.color
+        override val type
+            get() = entry.type
+        override val maxProgress
+            get() = entry.maxProgress
+        override val maxProgressVolumes
+            get() = entry.maxProgressVolumes
+        override val averageScore
+            get() = entry.averageScore
 
         // So that enough meaningful text is shown, strip any double newlines
-        override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
-        override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
+        override val description
+            get() =entry.description
+        override val tags
+            get() =entry.tags
 
-        val entry = MediaPreviewWithDescriptionEntry(
-            media = media,
-            mediaListStatus = mediaListStatus,
-            progress = progress,
-            progressVolumes = progressVolumes,
-            scoreRaw = scoreRaw,
-            ignored = ignored,
-            showLessImportantTags = showLessImportantTags,
-            showSpoilerTags = showSpoilerTags,
+        override val media
+            get() = entry.media
+        override val mediaListStatus
+            get() = entry.mediaListStatus
+        override val progress
+            get() = entry.progress
+        override val progressVolumes
+            get() = entry.progressVolumes
+        override val scoreRaw
+            get() = entry.scoreRaw
+        override val ignored
+            get() = entry.ignored
+        override val showLessImportantTags
+            get() = entry.showLessImportantTags
+        override val showSpoilerTags
+            get() = entry.showSpoilerTags
+
+        constructor(
+            media: MediaPreviewWithDescription,
+            mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+            progress: Int? = media.mediaListEntry?.progress,
+            progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+            scoreRaw: Double? = media.mediaListEntry?.score,
+            ignored: Boolean = false,
+            showLessImportantTags: Boolean = false,
+            showSpoilerTags: Boolean = false,
+        ) : this(
+            MediaPreviewWithDescriptionEntry(
+                media = media,
+                mediaListStatus = mediaListStatus,
+                progress = progress,
+                progressVolumes = progressVolumes,
+                scoreRaw = scoreRaw,
+                ignored = ignored,
+                showLessImportantTags = showLessImportantTags,
+                showSpoilerTags = showSpoilerTags,
+            )
         )
     }
 

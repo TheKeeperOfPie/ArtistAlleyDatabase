@@ -498,7 +498,7 @@ object AnimeHomeScreen {
             val items = result ?: run {
                 val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
                 val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
-                    .coerceAtLeast(1)
+                    .coerceAtLeast(1) + 1
                 arrayOfNulls<UserMediaListController.MediaEntry?>(placeholderCount).asList()
             }
             LazyRow(
@@ -586,7 +586,7 @@ object AnimeHomeScreen {
 
             val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
             val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
-                .coerceAtLeast(1)
+                .coerceAtLeast(1) + 1
 
             LazyRow(
                 state = listState,
@@ -913,19 +913,16 @@ object AnimeHomeScreen {
                             )
                     )
 
-                    if (showTitle) {
+                    val title = media?.title?.primaryTitle()
+                    if (showTitle && title != null) {
                         AutoResizeHeightText(
-                            text = media?.title?.primaryTitle().orEmpty(),
+                            text = title,
                             style = MaterialTheme.typography.bodyMedium,
                             color = ComposeColorUtils.bestTextColor(containerColor)
                                 ?: Color.Unspecified,
                             modifier = Modifier
                                 .size(width = width, height = height)
                                 .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 40.dp)
-                                .placeholder(
-                                    visible = media == null,
-                                    highlight = PlaceholderHighlight.shimmer(),
-                                )
                         )
                     }
 

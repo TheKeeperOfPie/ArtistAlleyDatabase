@@ -37,6 +37,14 @@ data class AnimeMediaTagEntry(
     val rank: Int? = null,
 ) {
     companion object {
+
+        val PLACEHOLDERS = (0 until 4).map {
+            AnimeMediaTagEntry(
+                id = it.toString(),
+                name = "Tag".repeat(it),
+            )
+        }
+
         @Composable
         fun Chip(
             tag: AnimeMediaTagEntry,

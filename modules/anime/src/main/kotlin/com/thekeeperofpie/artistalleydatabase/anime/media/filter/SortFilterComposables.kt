@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -187,11 +188,10 @@ fun SortFilterBottomScaffold(
         confirmValueChange = { it != SheetValue.Hidden },
         skipHiddenState = true,
     ),
+    scaffoldState: BottomSheetScaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(sheetState),
     bottomNavigationState: BottomNavigationState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val scaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(sheetState)
-
     val scope = rememberCoroutineScope()
     val bottomSheetState = scaffoldState.bottomSheetState
     BackHandler(enabled = bottomSheetState.targetValue == SheetValue.Expanded

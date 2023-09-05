@@ -167,11 +167,12 @@ object AnimeMediaListRow {
                     val colorCalculationState = LocalColorCalculationState.current
                     val (containerColor, textColor) =
                         colorCalculationState.getColors(entry?.media?.id?.toString())
-                    val tags = entry?.tags.orEmpty()
+                    val tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS
                     if (tags.isEmpty()) {
                         Spacer(Modifier.height(8.dp))
                     } else {
                         MediaTagRow(
+                            loading = entry == null,
                             tags = tags,
                             onTagClick = { id, name ->
                                 if (entry != null) {
@@ -364,12 +365,16 @@ object AnimeMediaListRow {
     private fun SubtitleText(entry: Entry?) {
         val media = entry?.media
         Text(
-            text = MediaUtils.formatSubtitle(
-                format = media?.format,
-                status = media?.status,
-                season = media?.season,
-                seasonYear = media?.seasonYear,
-            ),
+            text = if (entry == null) {
+                "Placeholder subtitle"
+            } else {
+                MediaUtils.formatSubtitle(
+                    format = media?.format,
+                    status = media?.status,
+                    season = media?.season,
+                    seasonYear = media?.seasonYear,
+                )
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current }

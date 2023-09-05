@@ -155,6 +155,7 @@ object MediaGridCard {
                         MediaRatingIconsSection(
                             rating = entry?.averageScore,
                             popularity = null,
+                            showPopularity = false,
                             loading = entry == null,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)

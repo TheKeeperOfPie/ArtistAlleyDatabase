@@ -535,14 +535,14 @@ object MediaUtils {
                 }
             }
 
-        val tags = filterParams.tagsByCategory.values.flatMap {
+        val allTags = filterParams.tagsByCategory.values.flatMap {
             when (it) {
                 is TagSection.Category -> it.flatten()
                 is TagSection.Tag -> listOf(it)
             }
         }
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            filters = tags,
+            filters = allTags,
             list = filteredEntries,
             state = { it.state },
             key = { it.value.id.toString() },
@@ -550,9 +550,10 @@ object MediaUtils {
             transformIncludes = tagTransformIncludes,
         )
 
-        if (!showTagWhenSpoiler && tags.isNotEmpty()) {
+        val tagsIncluded = allTags.filter { it.state == FilterIncludeExcludeState.INCLUDE }
+        if (!showTagWhenSpoiler && tagsIncluded.isNotEmpty()) {
             filteredEntries = filteredEntries.filter {
-                tags.all { tag ->
+                tagsIncluded.all { tag ->
                     media(it).tags?.find { it?.id.toString() == tag.id }
                         ?.isMediaSpoiler != true
                 }

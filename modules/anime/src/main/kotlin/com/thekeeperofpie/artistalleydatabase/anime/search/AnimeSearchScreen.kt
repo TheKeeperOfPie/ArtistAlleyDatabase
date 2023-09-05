@@ -32,8 +32,10 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -46,9 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -57,14 +56,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
+import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -114,6 +111,7 @@ object AnimeSearchScreen {
                     confirmValueChange = { it != SheetValue.Hidden },
                     skipHiddenState = true,
                 )
+            val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState)
             SortFilterBottomScaffold(
                 sortFilterController = sortFilterController,
                 topBar = {
@@ -126,6 +124,7 @@ object AnimeSearchScreen {
                     )
                 },
                 sheetState = sheetState,
+                scaffoldState = bottomSheetScaffoldState,
                 bottomNavigationState = bottomNavigationState,
                 modifier = Modifier
                     .conditionally(bottomNavigationState != null) {
@@ -134,13 +133,22 @@ object AnimeSearchScreen {
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 val content = viewModel.content.collectAsLazyPagingItems()
+                val refreshState = content.loadState.refresh
+                val errorText = (refreshState as? LoadState.Error)
+                    ?.let { stringResource(R.string.anime_media_list_error_loading)}
+                LaunchedEffect(errorText) {
+                    if (errorText != null) {
+                        bottomSheetScaffoldState.snackbarHostState.showSnackbar(errorText)
+                    }
+                }
+
                 val selectedType = viewModel.selectedType
                 val unlocked by viewModel.unlocked.collectAsState(false)
                 val selectedUnlocked = selectedType == AnimeSearchViewModel.SearchType.ANIME
                         || selectedType == AnimeSearchViewModel.SearchType.MANGA
                         || unlocked
 
-                val refreshing = content.loadState.refresh is LoadState.Loading && selectedUnlocked
+                val refreshing = refreshState is LoadState.Loading && selectedUnlocked
 
                 val viewer by viewModel.viewer.collectAsState()
                 AnimeMediaListScreen(
@@ -177,178 +185,152 @@ object AnimeSearchScreen {
                             }
                         }
                     } else {
-                        when (val refreshState = content.loadState.refresh) {
-                            LoadState.Loading -> Unit
-                            is LoadState.Error -> AnimeMediaListScreen.Error(
-                                exception = refreshState.error,
-                            )
-                            is LoadState.NotLoading -> {
-                                if (content.itemCount == 0) {
-                                    AnimeMediaListScreen.NoResults()
-                                } else {
-                                    val columns =
-                                        if (selectedType == AnimeSearchViewModel.SearchType.ANIME || selectedType == AnimeSearchViewModel.SearchType.MANGA) {
-                                            when (viewModel.mediaViewOption) {
-                                                MediaViewOption.SMALL_CARD,
-                                                MediaViewOption.LARGE_CARD,
-                                                MediaViewOption.COMPACT,
-                                                -> GridCells.Adaptive(300.dp)
-                                                MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
-                                            }
-                                        } else {
-                                            GridCells.Adaptive(300.dp)
-                                        }
-                                    LazyVerticalGrid(
-                                        columns = columns,
-                                        state = scrollStateSaver.lazyGridState(),
-                                        contentPadding = PaddingValues(
-                                            start = 16.dp,
-                                            end = 16.dp,
-                                            top = 16.dp,
-                                            bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
-                                        ),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.fillMaxSize()
+                        val columns =
+                            if (selectedType == AnimeSearchViewModel.SearchType.ANIME || selectedType == AnimeSearchViewModel.SearchType.MANGA) {
+                                when (viewModel.mediaViewOption) {
+                                    MediaViewOption.SMALL_CARD,
+                                    MediaViewOption.LARGE_CARD,
+                                    MediaViewOption.COMPACT,
+                                    -> GridCells.Adaptive(300.dp)
+                                    MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
+                                }
+                            } else {
+                                GridCells.Adaptive(300.dp)
+                            }
+                        LazyVerticalGrid(
+                            columns = columns,
+                            state = scrollStateSaver.lazyGridState(),
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 16.dp,
+                                bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
+                            ),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            when {
+                                refreshState is LoadState.Error && content.itemCount == 0 ->
+                                    item {
+                                        AnimeMediaListScreen.ErrorContent(
+                                            errorTextRes = R.string.anime_media_list_error_loading,
+                                            exception = refreshState.error,
+                                        )
+                                    }
+                                refreshState is LoadState.NotLoading && content.itemCount == 0 ->
+                                    item {
+                                        Text(
+                                            stringResource(id = R.string.anime_media_list_no_results),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                        )
+                                    }
+                                else -> {
+                                    items(
+                                        data = content,
+                                        placeholderCount = 10,
+                                        key = { it.entryId.scopedId },
+                                        contentType = { it.entryId.type }
                                     ) {
-                                        items(
-                                            count = content.itemCount,
-                                            key = content.itemKey { it.entryId.scopedId },
-                                            contentType = content.itemContentType { it.entryId.type }
-                                        ) { index ->
-                                            when (val item = content[index]) {
-                                                is AnimeSearchEntry.Media -> MediaRow(
+                                        when (it) {
+                                            is AnimeSearchEntry.Media -> MediaViewOptionRow(
+                                                screenKey = SCREEN_KEY,
+                                                mediaViewOption = viewModel.mediaViewOption,
+                                                viewer = viewer,
+                                                editViewModel = editViewModel,
+                                                entry = it.entry,
+                                            )
+                                            is AnimeSearchEntry.Character -> CharacterListRow(
+                                                screenKey = SCREEN_KEY,
+                                                viewer = viewer,
+                                                entry = it.entry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
+                                            )
+                                            is AnimeSearchEntry.Staff -> StaffListRow(
+                                                screenKey = SCREEN_KEY,
+                                                viewer = viewer,
+                                                entry = it.entry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
+                                            )
+                                            is AnimeSearchEntry.Studio -> StudioListRow(
+                                                screenKey = SCREEN_KEY,
+                                                viewer = viewer,
+                                                entry = it.entry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
+                                            )
+                                            is AnimeSearchEntry.User -> UserListRow(
+                                                screenKey = SCREEN_KEY,
+                                                viewer = viewer,
+                                                entry = it.entry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
+                                            )
+
+                                            null -> when (selectedType) {
+                                                AnimeSearchViewModel.SearchType.ANIME,
+                                                AnimeSearchViewModel.SearchType.MANGA,
+                                                -> MediaViewOptionRow(
+                                                    screenKey = SCREEN_KEY,
+                                                    mediaViewOption = viewModel.mediaViewOption,
                                                     viewer = viewer,
-                                                    viewModel = viewModel,
                                                     editViewModel = editViewModel,
-                                                    entry = item,
+                                                    entry = null,
                                                 )
-                                                is AnimeSearchEntry.Character -> CharacterListRow(
-                                                    screenKey = SCREEN_KEY,
-                                                    viewer = viewer,
-                                                    entry = item.entry,
-                                                    onClickListEdit = {
-                                                        editViewModel.initialize(it.media)
-                                                    },
-                                                )
-                                                is AnimeSearchEntry.Staff -> StaffListRow(
-                                                    screenKey = SCREEN_KEY,
-                                                    viewer = viewer,
-                                                    entry = item.entry,
-                                                    onClickListEdit = {
-                                                        editViewModel.initialize(it.media)
-                                                    },
-                                                )
-                                                is AnimeSearchEntry.Studio -> StudioListRow(
-                                                    screenKey = SCREEN_KEY,
-                                                    viewer = viewer,
-                                                    entry = item.entry,
-                                                    onClickListEdit = {
-                                                        editViewModel.initialize(it.media)
-                                                    },
-                                                )
-                                                is AnimeSearchEntry.User -> UserListRow(
-                                                    screenKey = SCREEN_KEY,
-                                                    viewer = viewer,
-                                                    entry = item.entry,
-                                                    onClickListEdit = {
-                                                        editViewModel.initialize(it.media)
-                                                    },
-                                                )
-
-                                                // TODO: Separated placeholder types
-                                                null -> when (selectedType) {
-                                                    AnimeSearchViewModel.SearchType.ANIME,
-                                                    AnimeSearchViewModel.SearchType.MANGA,
-                                                    -> MediaRow(
+                                                AnimeSearchViewModel.SearchType.CHARACTER ->
+                                                    CharacterListRow(
+                                                        screenKey = SCREEN_KEY,
                                                         viewer = viewer,
-                                                        viewModel = viewModel,
-                                                        editViewModel = editViewModel,
                                                         entry = null,
+                                                        onClickListEdit = {},
                                                     )
-                                                    AnimeSearchViewModel.SearchType.CHARACTER ->
-                                                        CharacterListRow(
-                                                            screenKey = SCREEN_KEY,
-                                                            viewer = viewer,
-                                                            entry = null,
-                                                            onClickListEdit = {},
-                                                        )
-                                                    AnimeSearchViewModel.SearchType.STAFF ->
-                                                        StaffListRow(
-                                                            screenKey = SCREEN_KEY,
-                                                            viewer = viewer,
-                                                            entry = null,
-                                                            onClickListEdit = {},
-                                                        )
-                                                    AnimeSearchViewModel.SearchType.STUDIO ->
-                                                        StudioListRow(
-                                                            screenKey = SCREEN_KEY,
-                                                            viewer = viewer,
-                                                            entry = null,
-                                                            onClickListEdit = {},
-                                                        )
-                                                    AnimeSearchViewModel.SearchType.USER ->
-                                                        UserListRow(
-                                                            screenKey = SCREEN_KEY,
-                                                            viewer = viewer,
-                                                            entry = null,
-                                                            onClickListEdit = {},
-                                                        )
-                                                }
+                                                AnimeSearchViewModel.SearchType.STAFF ->
+                                                    StaffListRow(
+                                                        screenKey = SCREEN_KEY,
+                                                        viewer = viewer,
+                                                        entry = null,
+                                                        onClickListEdit = {},
+                                                    )
+                                                AnimeSearchViewModel.SearchType.STUDIO ->
+                                                    StudioListRow(
+                                                        screenKey = SCREEN_KEY,
+                                                        viewer = viewer,
+                                                        entry = null,
+                                                        onClickListEdit = {},
+                                                    )
+                                                AnimeSearchViewModel.SearchType.USER ->
+                                                    UserListRow(
+                                                        screenKey = SCREEN_KEY,
+                                                        viewer = viewer,
+                                                        entry = null,
+                                                        onClickListEdit = {},
+                                                    )
                                             }
-                                        }
-
-                                        when (content.loadState.append) {
-                                            is LoadState.Loading -> item(key = "load_more_append") {
-                                                AnimeMediaListScreen.LoadingMore()
-                                            }
-                                            is LoadState.Error -> item(key = "load_more_error") {
-                                                AnimeMediaListScreen.AppendError { content.retry() }
-                                            }
-                                            is LoadState.NotLoading -> Unit
                                         }
                                     }
                                 }
+                            }
+
+                            when (content.loadState.append) {
+                                is LoadState.Loading -> item(key = "load_more_append") {
+                                    AnimeMediaListScreen.LoadingMore()
+                                }
+                                is LoadState.Error -> item(key = "load_more_error") {
+                                    AnimeMediaListScreen.AppendError { content.retry() }
+                                }
+                                is LoadState.NotLoading -> Unit
                             }
                         }
                     }
                 }
             }
-        }
-    }
-
-    @Composable
-    private fun MediaRow(
-        viewer: AniListViewer?,
-        viewModel: AnimeSearchViewModel,
-        editViewModel: MediaEditViewModel,
-        entry: AnimeSearchEntry.Media?,
-    ) {
-        when (viewModel.mediaViewOption) {
-            MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
-                screenKey = SCREEN_KEY,
-                viewer = viewer,
-                entry = entry,
-                onClickListEdit = { editViewModel.initialize(it.media) },
-            )
-            MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
-                screenKey = SCREEN_KEY,
-                viewer = viewer,
-                entry = entry,
-                onClickListEdit = { editViewModel.initialize(it.media) },
-            )
-            MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
-                screenKey = SCREEN_KEY,
-                viewer = viewer,
-                entry = entry,
-                onClickListEdit = { editViewModel.initialize(it.media) },
-            )
-            MediaViewOption.GRID -> MediaGridCard(
-                screenKey = SCREEN_KEY,
-                entry = entry,
-                viewer = viewer,
-                onClickListEdit = { editViewModel.initialize(it.media) },
-            )
         }
     }
 

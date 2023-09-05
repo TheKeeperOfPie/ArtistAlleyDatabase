@@ -154,15 +154,15 @@ fun MediaRatingIconsSection(
     rating: Int?,
     popularity: Int?,
     modifier: Modifier = Modifier,
+    showPopularity: Boolean = true,
     loading: Boolean = false,
 ) {
-    if (rating == null && popularity == null) return
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.End,
         modifier = modifier,
     ) {
-        if (rating != null) {
+        if (rating != null || loading) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -173,13 +173,14 @@ fun MediaRatingIconsSection(
                         highlight = PlaceholderHighlight.shimmer(),
                     ),
             ) {
+                val ratingOrDefault = rating ?: 66
                 Text(
-                    text = rating.toString(),
+                    text = ratingOrDefault.toString(),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(top = 4.dp)
                 )
 
-                val iconTint = remember(rating) { MediaUtils.ratingColor(rating) }
+                val iconTint = remember(ratingOrDefault) { MediaUtils.ratingColor(ratingOrDefault) }
                 Icon(
                     imageVector = Icons.Filled.BarChart,
                     contentDescription = stringResource(
@@ -191,7 +192,7 @@ fun MediaRatingIconsSection(
             }
         }
 
-        if (popularity != null) {
+        if (showPopularity && popularity != null || loading) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -203,16 +204,17 @@ fun MediaRatingIconsSection(
                         highlight = PlaceholderHighlight.shimmer(),
                     ),
             ) {
+                val popularityOrDefault = popularity ?: 66
                 Text(
-                    text = popularity.toString(),
+                    text = popularityOrDefault.toString(),
                     style = MaterialTheme.typography.labelSmall,
                 )
 
                 Icon(
                     imageVector = when {
-                        popularity > 100000 -> Icons.Filled.PeopleAlt
-                        popularity > 50000 -> Icons.Outlined.PeopleAlt
-                        popularity > 10000 -> Icons.Filled.Person
+                        popularityOrDefault > 100000 -> Icons.Filled.PeopleAlt
+                        popularityOrDefault > 50000 -> Icons.Outlined.PeopleAlt
+                        popularityOrDefault > 10000 -> Icons.Filled.Person
                         else -> Icons.Filled.PersonOutline
                     },
                     contentDescription = stringResource(
@@ -254,6 +256,7 @@ fun MediaNextAiringSection(
 
 @Composable
 fun MediaTagRow(
+    loading: Boolean,
     tags: List<AnimeMediaTagEntry>,
     onTagClick: (tagId: String, tagName: String) -> Unit,
     tagContainerColor: Color,
@@ -288,7 +291,13 @@ fun MediaTagRow(
                 containerColor = tagContainerColor,
                 textColor = tagTextColor,
                 textStyle = tagTextStyle,
-                modifier = Modifier.height(height),
+                modifier = Modifier
+                    .height(height)
+                    .placeholder(
+                        visible = loading,
+                        shape = RoundedCornerShape(12.dp),
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
             )
         }
     }

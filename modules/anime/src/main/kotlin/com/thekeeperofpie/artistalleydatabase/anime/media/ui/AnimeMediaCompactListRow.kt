@@ -86,24 +86,25 @@ object AnimeMediaCompactListRow {
             ) {
                 val navigationCallback = LocalNavigationCallback.current
                 val ignoreController = LocalIgnoreController.current
-                Row(modifier = Modifier
-                    .height(IntrinsicSize.Min)
-                    .combinedClickable(
-                        enabled = entry != null,
-                        onClick = {
-                            if (entry != null) {
-                                navigationCallback.onMediaClick(
-                                    entry.media,
-                                    imageWidthToHeightRatio
-                                )
-                            }
-                        },
-                        onLongClick = {
-                            if (entry != null) {
-                                ignoreController.toggle(entry.media)
-                            }
-                        },
-                    )
+                Row(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .combinedClickable(
+                            enabled = entry != null,
+                            onClick = {
+                                if (entry != null) {
+                                    navigationCallback.onMediaClick(
+                                        entry.media,
+                                        imageWidthToHeightRatio
+                                    )
+                                }
+                            },
+                            onLongClick = {
+                                if (entry != null) {
+                                    ignoreController.toggle(entry.media)
+                                }
+                            },
+                        )
                 ) {
                     CoverImage(
                         screenKey = screenKey,
@@ -153,7 +154,8 @@ object AnimeMediaCompactListRow {
                         val (containerColor, textColor) =
                             colorCalculationState.getColors(entry?.media?.id?.toString())
                         MediaTagRow(
-                            tags = entry?.tags.orEmpty(),
+                            loading = entry == null,
+                            tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
                             onTagClick = { id, name ->
                                 if (entry != null) {
                                     navigationCallback.onTagClick(
@@ -256,7 +258,11 @@ object AnimeMediaCompactListRow {
     @Composable
     private fun TitleText(entry: Entry?) {
         Text(
-            text = entry?.media?.title?.primaryTitle() ?: "Loading...",
+            text = if (entry == null) {
+                "Some placeholder media title..."
+            } else {
+                entry.media.title?.primaryTitle().orEmpty()
+            },
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             overflow = TextOverflow.Ellipsis,
@@ -276,12 +282,16 @@ object AnimeMediaCompactListRow {
     private fun SubtitleText(entry: Entry?) {
         val media = entry?.media
         Text(
-            text = MediaUtils.formatSubtitle(
-                format = media?.format,
-                status = null,
-                season = media?.season,
-                seasonYear = media?.seasonYear,
-            ),
+            text = if (entry == null) {
+                "Placeholder subtitle"
+            } else {
+                MediaUtils.formatSubtitle(
+                    format = media?.format,
+                    status = null,
+                    season = media?.season,
+                    seasonYear = media?.seasonYear,
+                )
+            },
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.typography.labelSmall.color
                 .takeOrElse { LocalContentColor.current }

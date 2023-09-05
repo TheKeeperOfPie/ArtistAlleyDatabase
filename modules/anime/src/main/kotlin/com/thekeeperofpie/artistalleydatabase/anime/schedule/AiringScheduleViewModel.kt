@@ -151,7 +151,7 @@ class AiringScheduleViewModel @Inject constructor(
                         nullsLast()
                     ) {
                         it.media?.popularity
-                    }.thenComparing(compareBy(nullsLast()) { it.airingAt })
+                    }.thenBy(nullsLast()) { it.airingAt }
 
                 emit(
                     PagingData.from(

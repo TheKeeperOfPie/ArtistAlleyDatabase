@@ -173,7 +173,8 @@ object AnimeMediaLargeCard {
                                 colorCalculationState.getColors(entry?.id?.valueId)
 
                             MediaTagRow(
-                                tags = entry?.tags.orEmpty(),
+                                loading = entry == null,
+                                tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
                                 onTagClick = { id, name ->
                                     if (entry != null) {
                                         navigationCallback.onTagClick(
@@ -279,7 +280,7 @@ object AnimeMediaLargeCard {
     @Composable
     private fun TitleText(entry: Entry?) {
         Text(
-            text = entry?.media?.title?.primaryTitle() ?: "Loading...",
+            text = entry?.media?.title?.primaryTitle() ?: "Placeholder media title...",
             style = MaterialTheme.typography.headlineSmall,
             fontSize = 20.sp,
             fontWeight = FontWeight.Black,
@@ -299,7 +300,7 @@ object AnimeMediaLargeCard {
     private fun SubtitleText(entry: Entry?) {
         val media = entry?.media
         Text(
-            text = if (entry == null) "Loading..." else MediaUtils.formatSubtitle(
+            text = if (entry == null) "Placeholder subtitle text..." else MediaUtils.formatSubtitle(
                 format = media?.format,
                 status = media?.status,
                 season = media?.season,

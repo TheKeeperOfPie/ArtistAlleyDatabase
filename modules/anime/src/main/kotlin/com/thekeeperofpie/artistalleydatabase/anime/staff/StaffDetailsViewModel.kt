@@ -326,8 +326,8 @@ class StaffDetailsViewModel @Inject constructor(
                 compareBy<StaffDetailsCharacterMediaPage.Edge, Int?>(nullsLast()) {
                     it.node?.startDate?.year
                 }
-                    .thenComparing(compareBy(nullsLast()) { it.node?.startDate?.month })
-                    .thenComparing(compareBy(nullsLast()) { it.node?.startDate?.day })
+                    .thenBy(nullsLast()) { it.node?.startDate?.month }
+                    .thenBy(nullsLast()) { it.node?.startDate?.day }
                     .reversed()
             )
                 .filter { if (showAdult) true else it.node?.isAdult == false }
@@ -358,8 +358,8 @@ class StaffDetailsViewModel @Inject constructor(
                 compareBy<StaffDetailsStaffMediaPage.Edge, Int?>(nullsLast()) {
                     it.node?.startDate?.year
                 }
-                    .thenComparing(compareBy(nullsLast()) { it.node?.startDate?.month })
-                    .thenComparing(compareBy(nullsLast()) { it.node?.startDate?.day })
+                    .thenBy(nullsLast()) { it.node?.startDate?.month }
+                    .thenBy(nullsLast()) { it.node?.startDate?.day }
                     .reversed()
             )
                 .filter { if (showAdult) true else it.node?.isAdult == false }

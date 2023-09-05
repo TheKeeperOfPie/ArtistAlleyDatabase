@@ -270,7 +270,11 @@ class AnimeUserListViewModel @Inject constructor(
                                         name = it.name,
                                         scoreFormat = it.scoreFormat,
                                         entries = it.entries
-                                            .toFilteredEntries(query, filterParams, showTagWhenSpoiler)
+                                            .toFilteredEntries(
+                                                query,
+                                                filterParams,
+                                                showTagWhenSpoiler,
+                                            )
                                             .mapEntries(),
                                     )
                                 }
@@ -332,14 +336,14 @@ class AnimeUserListViewModel @Inject constructor(
                         compareBy<UserMediaListController.MediaEntry, Int?>(nullsLast()) {
                             it.media.startDate?.year
                         }
-                            .thenComparing(compareBy(nullsLast()) { it.media.startDate?.month })
-                            .thenComparing(compareBy(nullsLast()) { it.media.startDate?.day })
+                            .thenBy(nullsLast()) { it.media.startDate?.month }
+                            .thenBy(nullsLast()) { it.media.startDate?.day }
                     MediaListSortOption.FINISHED_ON ->
                         compareBy<UserMediaListController.MediaEntry, Int?>(nullsLast()) {
                             it.media.endDate?.year
                         }
-                            .thenComparing(compareBy(nullsLast()) { it.media.endDate?.month })
-                            .thenComparing(compareBy(nullsLast()) { it.media.endDate?.day })
+                            .thenBy(nullsLast()) { it.media.endDate?.month }
+                            .thenBy(nullsLast()) { it.media.endDate?.day }
                     MediaListSortOption.ADDED_TIME -> compareBy { it.media.mediaListEntry?.createdAt }
                     MediaListSortOption.UPDATED_TIME -> compareBy { it.media.mediaListEntry?.updatedAt }
                     MediaListSortOption.TITLE_ROMAJI -> compareBy { it.media.title?.romaji }

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -75,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -84,6 +84,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
+import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -98,7 +100,6 @@ object AnimeUserListScreen {
     operator fun invoke(
         upIconOption: UpIconOption? = null,
         viewModel: AnimeUserListViewModel,
-        mediaType: MediaType = MediaType.ANIME,
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
@@ -121,7 +122,7 @@ object AnimeUserListScreen {
             val entry = viewModel.entry
             val pagerState = rememberPagerState(
                 initialPage = 0,
-                pageCount = { entry.result?.lists?.size?.let { it + 1 } ?: 0 },
+                pageCount = { (entry.result?.lists?.size ?: 0) + 1 },
             )
             val sortFilterController = viewModel.sortFilterController
             sortFilterController.PromptDialog()
@@ -182,8 +183,8 @@ object AnimeUserListScreen {
                             entry.result?.all
                         } else {
                             listEntry?.entries
-                        }.orEmpty()
-                        val hasItems = mediaEntries.isNotEmpty()
+                        }
+                        val hasItems = mediaEntries == null || mediaEntries.isNotEmpty()
                         when {
                             !entry.loading && !entry.success && !hasItems ->
                                 AnimeMediaListScreen.Error(
@@ -219,7 +220,8 @@ object AnimeUserListScreen {
                                             modifier = Modifier.fillMaxSize()
                                         ) {
                                             items(
-                                                items = mediaEntries,
+                                                data = mediaEntries,
+                                                placeholderCount = 10,
                                                 key = { "media_${it.entry.media.id}" },
                                                 contentType = { "media" },
                                             ) {
@@ -228,7 +230,8 @@ object AnimeUserListScreen {
                                                     viewer = viewer,
                                                     viewModel = viewModel,
                                                     editViewModel = editViewModel,
-                                                    scoreFormat = scoreFormat ?: viewer?.scoreFormat,
+                                                    scoreFormat = scoreFormat
+                                                        ?: viewer?.scoreFormat,
                                                     modifier = Modifier
                                                         .animateItemPlacement(),
                                                 )
@@ -240,10 +243,6 @@ object AnimeUserListScreen {
                                             modifier = Modifier
                                                 .align(Alignment.CenterEnd)
                                                 .fillMaxHeight()
-                                                .padding(
-                                                    bottom = 56.dp + (bottomNavigationState?.bottomOffsetPadding()
-                                                        ?: 0.dp)
-                                                )
                                         )
                                     }
                                 }
@@ -416,25 +415,30 @@ object AnimeUserListScreen {
         viewModel: AnimeUserListViewModel,
         editViewModel: MediaEditViewModel,
         scoreFormat: ScoreFormat?,
-        entry: AnimeUserListViewModel.MediaEntry,
+        entry: AnimeUserListViewModel.MediaEntry?,
         modifier: Modifier = Modifier,
     ) {
-        val authorData = entry.authorData
-        val statusText = authorData?.let {
-            authorData.status.toStatusText(
-                mediaType = viewModel.mediaType,
-                progress = authorData.progress ?: 0,
-                progressMax = MediaUtils.maxProgress(entry.entry.media),
-                score = authorData.rawScore,
-                scoreFormat = scoreFormat,
-            )
+        val authorData = entry?.authorData
+        val statusText = if (entry == null) {
+            "Placeholder status text"
+        } else {
+            authorData?.let {
+                authorData.status.toStatusText(
+                    mediaType = viewModel.mediaType,
+                    progress = authorData.progress ?: 0,
+                    progressMax = entry?.entry?.media?.let(MediaUtils::maxProgress),
+                    score = authorData.rawScore,
+                    scoreFormat = scoreFormat,
+                )
+            }
         }
+
         when (viewModel.mediaViewOption) {
             MediaViewOption.SMALL_CARD -> {
                 AnimeMediaListRow(
                     screenKey = SCREEN_KEY,
                     viewer = viewer,
-                    entry = entry.entry,
+                    entry = entry?.entry,
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     label = if (statusText == null) null else {
                         {
@@ -449,6 +453,10 @@ object AnimeUserListScreen {
                                         top = 8.dp,
                                         end = 16.dp,
                                     )
+                                    .placeholder(
+                                        visible = entry == null,
+                                        highlight = PlaceholderHighlight.shimmer(),
+                                    )
                             )
                         }
                     },
@@ -458,7 +466,7 @@ object AnimeUserListScreen {
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
-                entry = entry.entry,
+                entry = entry?.entry,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 label = if (statusText == null) null else {
                     {
@@ -472,6 +480,10 @@ object AnimeUserListScreen {
                                     top = 8.dp,
                                     end = 16.dp,
                                 )
+                                .placeholder(
+                                    visible = entry == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
                         )
                     }
                 },
@@ -480,7 +492,7 @@ object AnimeUserListScreen {
             MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
-                entry = entry.entry,
+                entry = entry?.entry,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 label = if (statusText == null) null else {
                     {
@@ -495,6 +507,10 @@ object AnimeUserListScreen {
                                     top = 8.dp,
                                     end = 16.dp,
                                 )
+                                .placeholder(
+                                    visible = entry == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
                         )
                     }
                 },
@@ -502,7 +518,7 @@ object AnimeUserListScreen {
             )
             MediaViewOption.GRID -> MediaGridCard(
                 screenKey = SCREEN_KEY,
-                entry = entry.entry,
+                entry = entry?.entry,
                 viewer = viewer,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 modifier = modifier,

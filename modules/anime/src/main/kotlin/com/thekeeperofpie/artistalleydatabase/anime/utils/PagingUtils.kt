@@ -8,6 +8,8 @@ import androidx.annotation.CheckResult
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -108,6 +110,72 @@ fun <T : Any> LazyListScope.items(
     ) {
         val item = if (mockingPlaceholder) null else data[it]
         itemContent(item)
+    }
+}
+
+fun <T : Any> LazyGridScope.items(
+    data: LazyPagingItems<T>,
+    placeholderCount: Int,
+    key: (T) -> Any,
+    contentType: (T) -> String,
+    itemContent: @Composable LazyGridItemScope.(item: T?) -> Unit,
+) {
+    val mockingPlaceholder =
+        data.loadState.refresh is LoadState.Loading && data.itemCount == 0
+    val itemCount = if (mockingPlaceholder) placeholderCount else data.itemCount
+    val itemKey = data.itemKey { key(it) }
+    val itemContentType = data.itemContentType { contentType(it) }
+    items(
+        count = itemCount,
+        key = { if (mockingPlaceholder) PagingPlaceholderKey(it) else itemKey(it) },
+        contentType = {
+            if (mockingPlaceholder) {
+                PagingPlaceholderContentType
+            } else {
+                itemContentType(it)
+            }
+        },
+    ) {
+        val item = if (mockingPlaceholder) null else data[it]
+        itemContent(item)
+    }
+}
+
+fun <T : Any> LazyListScope.items(
+    data: List<T>?,
+    placeholderCount: Int,
+    key: (index: Int, T) -> Any,
+    contentType: (index: Int, T?) -> String,
+    itemContent: @Composable LazyItemScope.(index: Int, item: T?) -> Unit,
+) {
+    items(
+        count = data?.size ?: placeholderCount,
+        key = { index ->
+            data?.getOrNull(index)?.let { key(index, it) }
+                ?: PagingPlaceholderKey(index)
+        },
+        contentType = { contentType(it, data?.getOrNull(it)) },
+    ) {
+        itemContent(it, data?.getOrNull(it))
+    }
+}
+
+fun <T : Any> LazyGridScope.items(
+    data: List<T>?,
+    placeholderCount: Int,
+    key: (T) -> Any,
+    contentType: (T?) -> String,
+    itemContent: @Composable LazyGridItemScope.(item: T?) -> Unit,
+) {
+    items(
+        count = data?.size ?: placeholderCount,
+        key = { index ->
+            data?.getOrNull(index)?.let { key(it) }
+                ?: PagingPlaceholderKey(index)
+        },
+        contentType = { contentType(data?.getOrNull(it)) },
+    ) {
+        itemContent(data?.getOrNull(it))
     }
 }
 
