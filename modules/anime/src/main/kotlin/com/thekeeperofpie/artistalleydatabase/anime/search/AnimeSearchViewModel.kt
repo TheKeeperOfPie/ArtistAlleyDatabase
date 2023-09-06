@@ -523,7 +523,13 @@ class AnimeSearchViewModel @Inject constructor(
                 .debounce(100.milliseconds)
                 .distinctUntilChanged()
                 .flatMapLatest {
-                    Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
+                    Pager(
+                        PagingConfig(
+                            pageSize = 10,
+                            initialLoadSize = 10,
+                            enablePlaceholders = true
+                        )
+                    ) {
                         pagingSource(it)
                     }.flow
                 }

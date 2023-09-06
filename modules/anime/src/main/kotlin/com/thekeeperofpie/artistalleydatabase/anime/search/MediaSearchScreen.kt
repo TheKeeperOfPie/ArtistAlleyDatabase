@@ -40,6 +40,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -98,7 +99,7 @@ object MediaSearchScreen {
                 },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
-                val content = viewModel.content.collectAsLazyPagingItems()
+                val content = viewModel.content.collectAsLazyPagingItems(CustomDispatchers.IO)
                 val refreshing = content.loadState.refresh is LoadState.Loading
                 val viewer by viewModel.viewer.collectAsState()
                 AnimeMediaListScreen(

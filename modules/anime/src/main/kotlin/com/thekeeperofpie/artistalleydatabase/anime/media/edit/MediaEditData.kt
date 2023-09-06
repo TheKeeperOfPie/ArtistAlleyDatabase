@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.anilist.fragment.MediaDetailsListEntry
-import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
@@ -62,18 +61,19 @@ class MediaEditData {
         if (score.isBlank()) return SimpleResult.Success(0)
 
         return SimpleResult.successIfNotNull(when (scoreFormat) {
-                ScoreFormat.POINT_10_DECIMAL -> {
-                    val scoreAsFloat = score.toFloatOrNull()?.let {
-                        (it * 10).takeIf { it < 101f }
-                    }
-                    scoreAsFloat?.toInt()?.coerceAtMost(100)
+            ScoreFormat.POINT_10_DECIMAL -> {
+                val scoreAsFloat = score.toFloatOrNull()?.let {
+                    (it * 10).takeIf { it < 101f }
                 }
-                ScoreFormat.POINT_10 -> score.toIntOrNull()?.let { it * 10 }
-                ScoreFormat.POINT_100,
-                ScoreFormat.POINT_5,
-                ScoreFormat.POINT_3,
-                ScoreFormat.UNKNOWN__ -> score.toIntOrNull()
+                scoreAsFloat?.toInt()?.coerceAtMost(100)
             }
+            ScoreFormat.POINT_10 -> score.toIntOrNull()?.let { it * 10 }
+            ScoreFormat.POINT_100,
+            ScoreFormat.POINT_5,
+            ScoreFormat.POINT_3,
+            ScoreFormat.UNKNOWN__,
+            -> score.toIntOrNull()
+        }
         )
     }
 
@@ -85,7 +85,9 @@ class MediaEditData {
     data class InitialParams(
         val id: String?,
         val mediaId: String?,
-        val media: MediaNavigationData?,
+        val coverImage: String?,
+        val type: MediaType?,
+        val title: String?,
         val status: MediaListStatus?,
         val score: Double?,
         val progress: Int?,
@@ -110,7 +112,9 @@ class MediaEditData {
     ) {
         constructor(
             mediaId: String?,
-            media: MediaNavigationData?,
+            coverImage: String?,
+            type: MediaType?,
+            title: String?,
             mediaListEntry: MediaDetailsListEntry?,
             mediaType: MediaType?,
             maxProgress: Int?,
@@ -119,7 +123,9 @@ class MediaEditData {
         ) : this(
             id = mediaListEntry?.id?.toString(),
             mediaId = mediaId,
-            media = media,
+            coverImage = coverImage,
+            type = type,
+            title = title,
             status = mediaListEntry?.status,
             score = mediaListEntry?.score,
             progress = mediaListEntry?.progress,

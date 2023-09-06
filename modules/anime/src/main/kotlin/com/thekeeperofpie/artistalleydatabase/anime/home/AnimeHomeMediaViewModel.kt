@@ -11,6 +11,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.anilist.fragment.HomeMedia
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -184,7 +185,12 @@ abstract class AnimeHomeMediaViewModel(
                                                     showSpoilerTags = showSpoilerTags,
                                                     entry = it,
                                                     transform = { it },
-                                                    media = it.media,
+                                                    mediaId = it.media.id.toString(),
+                                                    isAdult = it.media.isAdult,
+                                                    status = it.media.mediaListEntry?.status,
+                                                    progress = it.media.mediaListEntry?.progress,
+                                                    progressVolumes = it.media.mediaListEntry?.progressVolumes,
+                                                    scoreRaw = it.media.mediaListEntry?.score,
                                                     copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                                                         copy(
                                                             mediaListStatus = mediaListStatus,
@@ -430,6 +436,6 @@ abstract class AnimeHomeMediaViewModel(
         val id: String,
         val titleRes: Int,
         val viewAllRoute: String? = null,
-        val list: List<MediaPreviewWithDescription?>? = null,
+        val list: List<HomeMedia?>? = null,
     )
 }

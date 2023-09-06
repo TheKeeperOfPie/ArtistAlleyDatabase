@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import androidx.compose.runtime.Composable
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -28,4 +30,49 @@ data class MediaPreviewWithDescriptionEntry(
     // So that enough meaningful text is shown, strip any double newlines
     override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
     override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
+
+    override val mediaId: String
+        get() = media.id.toString()
+    override val image
+        get() = media.coverImage?.extraLarge
+    override val imageBanner
+        get() = media.bannerImage
+
+    override val rating
+        get() = media.averageScore
+    override val popularity
+        get() = media.popularity
+
+    override val nextAiringEpisode
+        get() = media.nextAiringEpisode?.episode
+    override val nextAiringAiringAt: Int?
+        get() = media.nextAiringEpisode?.airingAt
+
+    override val isAdult
+        get() = media.isAdult
+
+    override val titleRomaji
+        get() = media.title?.romaji
+    override val titleEnglish
+        get() = media.title?.english
+    override val titleNative
+        get() = media.title?.native
+
+    override val format
+        get() = media.format
+    override val status
+        get() = media.status
+    override val season
+        get() = media.season
+    override val seasonYear
+        get() = media.seasonYear
+    override val episodes
+        get() = media.episodes
+    override val chapters: Int?
+        get() = media.chapters
+    override val volumes: Int?
+        get() = media.volumes
+
+    @Composable
+    override fun primaryTitle() = media.title?.primaryTitle()
 }

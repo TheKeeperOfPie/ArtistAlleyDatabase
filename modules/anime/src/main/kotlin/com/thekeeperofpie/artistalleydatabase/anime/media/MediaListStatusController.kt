@@ -125,24 +125,59 @@ suspend fun <Input> applyMediaFiltering(
     media: MediaWithListStatus?,
     forceShowIgnored: Boolean = false,
     copy: Input.(MediaListStatus?, progress: Int?, progressVolumes: Int?, scoreRaw: Double?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> Input,
+): Input? = applyMediaFiltering(
+    statuses = statuses,
+    ignoreController = ignoreController,
+    showAdult = showAdult,
+    showIgnored = showIgnored,
+    showLessImportantTags = showLessImportantTags,
+    showSpoilerTags = showSpoilerTags,
+    entry = entry,
+    transform = transform,
+    mediaId = media?.id?.toString(),
+    isAdult = media?.isAdult,
+    status = media?.mediaListEntry?.status,
+    progress = media?.mediaListEntry?.progress,
+    progressVolumes = media?.mediaListEntry?.progressVolumes,
+    scoreRaw = media?.mediaListEntry?.score,
+    forceShowIgnored = forceShowIgnored,
+    copy = copy,
+)
+
+suspend fun <Input> applyMediaFiltering(
+    statuses: Map<String, MediaListStatusController.Update>,
+    ignoreController: IgnoreController,
+    showAdult: Boolean,
+    showIgnored: Boolean,
+    showLessImportantTags: Boolean,
+    showSpoilerTags: Boolean,
+    entry: Input,
+    transform: (Input) -> MediaStatusAware,
+    mediaId: String?,
+    isAdult: Boolean?,
+    status: MediaListStatus?,
+    progress: Int?,
+    progressVolumes: Int?,
+    scoreRaw: Double?,
+    forceShowIgnored: Boolean = false,
+    copy: Input.(MediaListStatus?, progress: Int?, progressVolumes: Int?, scoreRaw: Double?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> Input,
 ): Input? {
-    if (!showAdult && media?.isAdult != false) return null
-    val mediaId = media?.id
-    val status: MediaListStatus?
-    val progress: Int?
-    val progressVolumes: Int?
-    val scoreRaw: Double?
+    if (!showAdult && isAdult != false) return null
+    val newStatus: MediaListStatus?
+    val newProgress: Int?
+    val newProgressVolumes: Int?
+    val newScoreRaw: Double?
     if (mediaId == null || !statuses.containsKey(mediaId.toString())) {
-        status = media?.mediaListEntry?.status
-        progress = media?.mediaListEntry?.progress
-        progressVolumes = media?.mediaListEntry?.progressVolumes
-        scoreRaw = media?.mediaListEntry?.score
+        newStatus = status
+        newProgress = progress
+        newProgressVolumes = progressVolumes
+        newScoreRaw = scoreRaw
     } else {
         val update = statuses[mediaId.toString()]?.entry
-        status = update?.status
-        progress = update?.progress
-        progressVolumes = update?.progressVolumes
-        scoreRaw = update?.score
+        newStatus = update?.status
+        newProgress = update?.progress
+        newProgressVolumes = update?.progressVolumes
+        newScoreRaw = update?.score
     }
 
     val ignored = if (forceShowIgnored) {
@@ -153,10 +188,10 @@ suspend fun <Input> applyMediaFiltering(
 
     if (!showIgnored && ignored) return null
     val mediaStatusAware = transform(entry)
-    return if (status == mediaStatusAware.mediaListStatus
-        && mediaStatusAware.progress == progress
-        && mediaStatusAware.progressVolumes == progressVolumes
-        && mediaStatusAware.scoreRaw == scoreRaw
+    return if (newStatus == mediaStatusAware.mediaListStatus
+        && mediaStatusAware.progress == newProgress
+        && mediaStatusAware.progressVolumes == newProgressVolumes
+        && mediaStatusAware.scoreRaw == newScoreRaw
         && mediaStatusAware.ignored == ignored
         && mediaStatusAware.showLessImportantTags == showLessImportantTags
         && mediaStatusAware.showSpoilerTags == showSpoilerTags
@@ -164,10 +199,10 @@ suspend fun <Input> applyMediaFiltering(
         entry
     } else {
         entry.copy(
-            status,
-            progress,
-            progressVolumes,
-            scoreRaw,
+            newStatus,
+            newProgress,
+            newProgressVolumes,
+            newScoreRaw,
             ignored,
             showLessImportantTags,
             showSpoilerTags,

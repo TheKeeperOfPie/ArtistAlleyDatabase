@@ -234,9 +234,26 @@ fun MediaNextAiringSection(
     format: MediaFormat?,
     showDate: Boolean = true,
 ) {
-    val text = MediaUtils.nextAiringSectionText(
+    MediaNextAiringSection(
         airingAtAniListTimestamp = nextAiringEpisode.airingAt,
         episode = nextAiringEpisode.episode,
+        episodes = episodes,
+        format = format,
+        showDate = showDate,
+    )
+}
+
+@Composable
+fun MediaNextAiringSection(
+    airingAtAniListTimestamp: Int,
+    episode: Int,
+    episodes: Int?,
+    format: MediaFormat?,
+    showDate: Boolean = true,
+) {
+    val text = MediaUtils.nextAiringSectionText(
+        airingAtAniListTimestamp = airingAtAniListTimestamp,
+        episode = episode,
         episodes = episodes,
         format = format,
         showDate = showDate,
@@ -490,7 +507,7 @@ fun MediaViewOptionRow(
             entry = entry,
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
-            onClickListEdit = { editViewModel.initialize(it.media) },
+            editViewModel = editViewModel,
         )
         MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
             screenKey = screenKey,

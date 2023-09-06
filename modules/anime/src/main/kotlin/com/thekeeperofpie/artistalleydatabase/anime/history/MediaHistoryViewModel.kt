@@ -78,7 +78,7 @@ class MediaHistoryViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             snapshotFlow { selectedType }
                 .flatMapLatest {
-                    Pager(config = PagingConfig(pageSize = 10, jumpThreshold = 10)) {
+                    Pager(config = PagingConfig(pageSize = 10)) {
                         historyDao.getEntries(it)
 //                        MediaHistoryPagingSource(historyDao, it)
                     }.flow
@@ -91,7 +91,7 @@ class MediaHistoryViewModel @Inject constructor(
 //                        mediaRequestBatcher.fetch(it.id)?.let(::MediaPreviewWithDescriptionEntry)
                     }
                 }
-                .enforceUniqueIds { it.id.valueId }
+                .enforceUniqueIds { it.mediaId }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = mediaListStatusController,

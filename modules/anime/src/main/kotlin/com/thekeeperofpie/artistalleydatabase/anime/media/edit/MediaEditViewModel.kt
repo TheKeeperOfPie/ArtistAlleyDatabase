@@ -12,9 +12,11 @@ import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.SimpleResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,10 +44,11 @@ import javax.inject.Inject
 class MediaEditViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val statusController: MediaListStatusController,
+    private val settings: AnimeSettings,
 ) : ViewModel() {
 
     val initialParams = MutableStateFlow<MediaEditData.InitialParams?>(null)
-    private val mediaEntryRequest = MutableStateFlow<MediaNavigationData?>(null)
+    private val mediaEntryRequest = MutableStateFlow<MediaRequest?>(null)
 
     val editData = MediaEditData()
 
@@ -67,16 +70,18 @@ class MediaEditViewModel @Inject constructor(
             mediaEntryRequest
                 .filterNotNull()
                 .mapLatest {
-                    Result.success(it to aniListApi.mediaListEntry(it.id.toString()).media)
+                    Result.success(it to aniListApi.mediaListEntry(it.mediaId).media)
                 }
                 .catch { emit(Result.failure(it)) }
                 .collectLatest {
                     withContext(CustomDispatchers.Main) {
                         if (it.isSuccess) {
-                            val (mediaNavData, media) = it.getOrThrow()
+                            val (request, media) = it.getOrThrow()
                             initialize(
-                                mediaId = mediaNavData.id.toString(),
-                                media = mediaNavData,
+                                mediaId = request.mediaId,
+                                coverImage = request.coverImage,
+                                type = request.type,
+                                title = request.title,
                                 mediaListEntry = media.mediaListEntry,
                                 mediaType = media.type,
                                 status = media.mediaListEntry?.status,
@@ -116,10 +121,20 @@ class MediaEditViewModel @Inject constructor(
         val mediaId = media.id.toString()
         val initialParams = initialParams.value
         if (initialParams?.mediaId != mediaId) {
-            mediaEntryRequest.tryEmit(media)
+            val title = media.title?.primaryTitle(settings.languageOptionMedia.value)
+            mediaEntryRequest.tryEmit(
+                MediaRequest(
+                    mediaId = mediaId,
+                    coverImage = media.coverImage?.extraLarge,
+                    type = media.type,
+                    title = title,
+                )
+            )
             initialize(
                 mediaId = mediaId,
-                media = media,
+                coverImage = media.coverImage?.extraLarge,
+                type = media.type,
+                title = title,
                 mediaListEntry = null,
                 mediaType = null,
                 status = null,
@@ -133,7 +148,43 @@ class MediaEditViewModel @Inject constructor(
 
     fun initialize(
         mediaId: String,
-        media: MediaNavigationData?,
+        coverImage: String?,
+        type: MediaType?,
+        titleRomaji: String?,
+        titleEnglish: String?,
+        titleNative: String?,
+    ) {
+        val initialParams = initialParams.value
+        if (initialParams?.mediaId != mediaId) {
+            val title = MediaUtils.userPreferredTitle(
+                titleRomaji = titleRomaji,
+                titleEnglish = titleEnglish,
+                titleNative = titleNative,
+                titleLanguage = aniListApi.authedUser.value?.titleLanguage,
+                languageOption = settings.languageOptionMedia.value,
+            )
+            mediaEntryRequest.tryEmit(MediaRequest(mediaId, coverImage, title, type))
+            initialize(
+                mediaId = mediaId,
+                coverImage = coverImage,
+                type = type,
+                title = title,
+                mediaListEntry = null,
+                mediaType = null,
+                status = null,
+                maxProgress = null,
+                maxProgressVolumes = null,
+                loading = true
+            )
+        }
+        editData.showing = true
+    }
+
+    fun initialize(
+        mediaId: String,
+        coverImage: String?,
+        title: String?,
+        type: MediaType?,
         mediaListEntry: MediaDetailsListEntry?,
         mediaType: MediaType?,
         status: MediaListStatus?,
@@ -143,7 +194,9 @@ class MediaEditViewModel @Inject constructor(
     ) {
         initialParams.value = MediaEditData.InitialParams(
             mediaId = mediaId,
-            media = media,
+            coverImage = coverImage,
+            title = title,
+            type = type,
             mediaListEntry = mediaListEntry,
             mediaType = mediaType,
             maxProgress = maxProgress,
@@ -152,7 +205,8 @@ class MediaEditViewModel @Inject constructor(
         )
         editData.status = status
         editData.progress = mediaListEntry?.progress.takeUnless { it == 0 }?.toString().orEmpty()
-        editData.progressVolumes = mediaListEntry?.progressVolumes.takeUnless { it == 0 }?.toString().orEmpty()
+        editData.progressVolumes =
+            mediaListEntry?.progressVolumes.takeUnless { it == 0 }?.toString().orEmpty()
         editData.repeat = mediaListEntry?.repeat.takeUnless { it == 0 }?.toString().orEmpty()
         editData.startDate = MediaUtils.parseLocalDate(mediaListEntry?.startedAt)
         editData.endDate = MediaUtils.parseLocalDate(mediaListEntry?.completedAt)
@@ -250,7 +304,9 @@ class MediaEditViewModel @Inject constructor(
                     dismissRequests.emit(System.currentTimeMillis())
                     initialize(
                         mediaId = mediaId,
-                        media = null,
+                        coverImage = null,
+                        type = null,
+                        title = null,
                         mediaListEntry = null,
                         mediaType = null,
                         status = null,
@@ -372,7 +428,9 @@ class MediaEditViewModel @Inject constructor(
                     dismissRequests.emit(System.currentTimeMillis())
                     initialize(
                         mediaId = mediaId,
-                        media = initialParams.media,
+                        coverImage = initialParams.coverImage,
+                        type = initialParams.type,
+                        title = initialParams.title,
                         mediaListEntry = result,
                         mediaType = initialParams.mediaType,
                         status = result.status,
@@ -388,4 +446,11 @@ class MediaEditViewModel @Inject constructor(
             }
         }
     }
+
+    data class MediaRequest(
+        val mediaId: String,
+        val coverImage: String?,
+        val title: String?,
+        val type: MediaType?,
+    )
 }

@@ -21,7 +21,7 @@ class IgnoreController(
 
     fun updates(): Flow<Int> = ignoreDao.entryCountFlow()
 
-    private fun toggle(
+    fun toggle(
         mediaId: String,
         type: MediaType?,
         isAdult: Boolean?,

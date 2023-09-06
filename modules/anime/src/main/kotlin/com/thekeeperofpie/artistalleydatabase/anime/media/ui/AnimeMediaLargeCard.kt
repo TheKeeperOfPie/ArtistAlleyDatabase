@@ -47,7 +47,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.fragment.MediaPreviewWithDescription
+import com.anilist.type.MediaFormat
+import com.anilist.type.MediaSeason
+import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
@@ -57,7 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -66,7 +68,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeMediaLargeCard {
@@ -80,7 +81,7 @@ object AnimeMediaLargeCard {
         entry: Entry?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        onClickListEdit: (Entry) -> Unit,
+        editViewModel: MediaEditViewModel,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
     ) {
@@ -92,15 +93,31 @@ object AnimeMediaLargeCard {
         ) {
             val navigationCallback = LocalNavigationCallback.current
             val ignoreController = LocalIgnoreController.current
+            val title = entry?.primaryTitle()
             Box(
                 modifier = Modifier.combinedClickable(
                     enabled = entry != null,
                     onClick = {
-                        if (entry != null) navigationCallback.onMediaClick(entry.media)
+                        if (entry != null) {
+                            navigationCallback.onMediaClick(
+                                mediaId = entry.mediaId,
+                                title = title,
+                                coverImage = entry.image,
+                            )
+                        }
                     },
                     onLongClick = {
-                        if (entry?.media != null) {
-                            ignoreController.toggle(entry.media)
+                        if (entry != null) {
+                            ignoreController.toggle(
+                                mediaId = entry.mediaId,
+                                type = entry.type,
+                                isAdult = entry.isAdult,
+                                bannerImage = entry.imageBanner,
+                                coverImage = entry.image,
+                                titleRomaji = entry.titleRomaji,
+                                titleEnglish = entry.titleEnglish,
+                                titleNative = entry.titleNative,
+                            )
                         }
                     }
                 )
@@ -118,7 +135,7 @@ object AnimeMediaLargeCard {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(Modifier.weight(1f)) {
                             label?.invoke()
-                            TitleText(entry)
+                            TitleText(entry, title)
                             SubtitleText(entry)
                         }
 
@@ -160,17 +177,20 @@ object AnimeMediaLargeCard {
                     }
 
                     Row(verticalAlignment = Alignment.Bottom) {
+                        val nextAiringEpisode = entry?.nextAiringEpisode
                         Column(modifier = Modifier.weight(1f)) {
-                            entry?.nextAiringEpisode?.let {
+                            val nextAiringAt = entry?.nextAiringAiringAt
+                            if (nextAiringAt != null && nextAiringEpisode != null) {
                                 MediaNextAiringSection(
-                                    nextAiringEpisode = it,
-                                    episodes = entry.media.episodes,
-                                    format = entry.media.format,
+                                    airingAtAniListTimestamp = nextAiringAt,
+                                    episode = nextAiringEpisode,
+                                    episodes = entry.episodes,
+                                    format = entry.format,
                                 )
                             }
                             val colorCalculationState = LocalColorCalculationState.current
                             val (containerColor, textColor) =
-                                colorCalculationState.getColors(entry?.id?.valueId)
+                                colorCalculationState.getColors(entry?.mediaId)
 
                             MediaTagRow(
                                 loading = entry == null,
@@ -178,7 +198,7 @@ object AnimeMediaLargeCard {
                                 onTagClick = { id, name ->
                                     if (entry != null) {
                                         navigationCallback.onTagClick(
-                                            entry.media.type ?: MediaType.ANIME,
+                                            entry.type ?: MediaType.ANIME,
                                             id,
                                             name
                                         )
@@ -197,12 +217,26 @@ object AnimeMediaLargeCard {
                             ) {
                                 MediaListQuickEditIconButton(
                                     viewer = viewer,
-                                    mediaType = entry.media.type,
+                                    mediaType = entry.type,
                                     media = entry,
-                                    maxProgress = MediaUtils.maxProgress(entry.media),
-                                    maxProgressVolumes = entry.media.volumes,
+                                    maxProgress = MediaUtils.maxProgress(
+                                        type = entry.type,
+                                        chapters = entry.chapters,
+                                        episodes = entry.episodes,
+                                        nextAiringEpisode = nextAiringEpisode,
+                                    ),
+                                    maxProgressVolumes = entry.volumes,
                                     forceListEditIcon = forceListEditIcon,
-                                    onClick = { onClickListEdit(entry) },
+                                    onClick = {
+                                        editViewModel.initialize(
+                                            mediaId = entry.mediaId,
+                                            coverImage = entry.image,
+                                            type = entry.type,
+                                            titleRomaji = entry.titleRomaji,
+                                            titleEnglish = entry.titleEnglish,
+                                            titleNative = entry.titleNative,
+                                        )
+                                    },
                                 )
                             }
                         }
@@ -218,11 +252,11 @@ object AnimeMediaLargeCard {
         entry: Entry?,
     ) {
         SharedElement(
-            key = "${entry?.id?.scopedId}_banner_image",
+            key = "anime_media_${entry?.mediaId}_banner_image",
             screenKey = screenKey,
         ) {
             val foregroundColor = MaterialTheme.colorScheme.surface
-            var loaded by remember(entry?.id?.valueId) { mutableStateOf(false) }
+            var loaded by remember(entry?.mediaId) { mutableStateOf(false) }
             val alpha by animateFloatAsState(
                 if (loaded) 1f else 0f,
                 label = "AnimeMediaLargeCard banner image alpha",
@@ -235,7 +269,7 @@ object AnimeMediaLargeCard {
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.imageBanner ?: entry?.image)
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry?.id?.valueId))
+                    .allowHardware(colorCalculationState.hasColor(entry?.mediaId))
                     .size(
                         width = Dimension.Undefined,
                         height = Dimension.Pixels(
@@ -249,7 +283,7 @@ object AnimeMediaLargeCard {
                     loaded = true
                     if (entry != null) {
                         ComposeColorUtils.calculatePalette(
-                            entry.id.valueId,
+                            entry.mediaId,
                             it,
                             colorCalculationState,
                         )
@@ -278,9 +312,13 @@ object AnimeMediaLargeCard {
     }
 
     @Composable
-    private fun TitleText(entry: Entry?) {
+    private fun TitleText(entry: Entry?, title: String?) {
         Text(
-            text = entry?.media?.title?.primaryTitle() ?: "Placeholder media title...",
+            text = if (entry == null) {
+                "Placeholder media title..."
+            } else {
+                title.orEmpty()
+            },
             style = MaterialTheme.typography.headlineSmall,
             fontSize = 20.sp,
             fontWeight = FontWeight.Black,
@@ -298,14 +336,17 @@ object AnimeMediaLargeCard {
 
     @Composable
     private fun SubtitleText(entry: Entry?) {
-        val media = entry?.media
         Text(
-            text = if (entry == null) "Placeholder subtitle text..." else MediaUtils.formatSubtitle(
-                format = media?.format,
-                status = media?.status,
-                season = media?.season,
-                seasonYear = media?.seasonYear,
-            ),
+            text = if (entry == null) {
+                "Placeholder subtitle text..."
+            } else {
+                MediaUtils.formatSubtitle(
+                    format = entry.format,
+                    status = entry.status,
+                    season = entry.season,
+                    seasonYear = entry.seasonYear,
+                )
+            },
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.W500,
             color = MaterialTheme.typography.bodySmall.color
@@ -322,26 +363,30 @@ object AnimeMediaLargeCard {
     }
 
     interface Entry : MediaStatusAware {
-        val media: MediaPreviewWithDescription
-        val id: EntryId
-            get() = EntryId("anime_media", media.id.toString())
+        val mediaId: String
         val image: String?
-            get() = media.coverImage?.extraLarge
         val imageBanner: String?
-            get() = media.bannerImage
         val color: Color?
-            get() = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-
         val rating: Int?
-            get() = media.averageScore
         val popularity: Int?
-            get() = media.popularity
-
-        val nextAiringEpisode: MediaPreviewWithDescription.NextAiringEpisode?
-            get() = media.nextAiringEpisode
-
+        val nextAiringAiringAt: Int?
+        val nextAiringEpisode: Int?
         val tags: List<AnimeMediaTagEntry>
-
         val description: String?
+        val type: MediaType?
+        val isAdult: Boolean?
+        val titleRomaji: String?
+        val titleEnglish: String?
+        val titleNative: String?
+        val format: MediaFormat?
+        val status: MediaStatus?
+        val season: MediaSeason?
+        val seasonYear: Int?
+        val episodes: Int?
+        val chapters: Int?
+        val volumes: Int?
+
+        @Composable
+        fun primaryTitle(): String?
     }
 }

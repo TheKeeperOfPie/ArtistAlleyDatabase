@@ -75,7 +75,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
@@ -239,9 +238,10 @@ object AnimeMediaEditBottomSheet {
         initialParams: MediaEditData.InitialParams?,
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
-        val media = initialParams?.media
+        val mediaId = initialParams?.mediaId
+        val coverImage = initialParams?.coverImage
         val editData = viewModel.editData
-        if (media != null && editData.showing) {
+        if (mediaId != null && editData.showing) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -255,11 +255,11 @@ object AnimeMediaEditBottomSheet {
                 val colorCalculationState = LocalColorCalculationState.current
                 MediaCoverImage(
                     screenKey = screenKey,
-                    mediaId = media.id.toString(),
+                    mediaId = mediaId,
                     image = ImageRequest.Builder(LocalContext.current)
-                        .data(media.coverImage?.extraLarge)
+                        .data(coverImage)
                         .crossfade(true)
-                        .allowHardware(colorCalculationState.hasColor(media.id.toString()))
+                        .allowHardware(colorCalculationState.hasColor(mediaId))
                         .size(
                             width = Dimension.Pixels(
                                 LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
@@ -271,7 +271,7 @@ object AnimeMediaEditBottomSheet {
                     onSuccess = {
                         imageWidthToHeightRatio = it.widthToHeightRatio()
                         ComposeColorUtils.calculatePalette(
-                            media.id.toString(),
+                            mediaId,
                             it,
                             colorCalculationState,
                         )
@@ -283,14 +283,13 @@ object AnimeMediaEditBottomSheet {
                         .combinedClickable(
                             onClick = {
                                 navigationCallback.onMediaClick(
-                                    media,
-                                    imageWidthToHeightRatio,
+                                    mediaId = mediaId,
+                                    title = initialParams.title,
+                                    coverImage = coverImage,
+                                    imageWidthToHeightRatio = imageWidthToHeightRatio,
                                 )
                             },
-                            onLongClick = {
-                                media.coverImage?.extraLarge
-                                    ?.let(fullscreenImageHandler::openImage)
-                            },
+                            onLongClick = { coverImage?.let(fullscreenImageHandler::openImage) },
                             onLongClickLabel = stringResource(
                                 R.string.anime_media_cover_image_long_press_preview
                             ),
@@ -298,7 +297,7 @@ object AnimeMediaEditBottomSheet {
                 )
 
                 AutoSizeText(
-                    text = media.title?.primaryTitle().orEmpty(),
+                    text = initialParams.title.orEmpty(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Black,
                     modifier = Modifier

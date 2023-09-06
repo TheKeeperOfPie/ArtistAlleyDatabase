@@ -443,10 +443,11 @@ object AnimeMediaDetailsScreen {
                                     contentColor = contentColor,
                                     onClick = {
                                         if (showFloatingActionButton) {
-
                                             editViewModel.initialize(
                                                 mediaId = media.id.toString(),
-                                                media = null,
+                                                coverImage = null,
+                                                type = null,
+                                                title = null,
                                                 mediaListEntry = listStatus?.entry,
                                                 mediaType = media.type,
                                                 status = listStatus?.entry?.status,

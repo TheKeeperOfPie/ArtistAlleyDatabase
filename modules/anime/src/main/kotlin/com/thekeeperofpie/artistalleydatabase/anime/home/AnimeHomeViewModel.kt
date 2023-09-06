@@ -83,7 +83,7 @@ class AnimeHomeViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(refresh, aniListApi.authedUser, ::Pair)
                 .flatMapLatest { (_, viewer) ->
-                    Pager(config = PagingConfig(3)) {
+                    Pager(config = PagingConfig(pageSize = 3, initialLoadSize = 3)) {
                         AniListPagingSource {
                             val result = aniListApi.userSocialActivity(
                                 isFollowing = viewer != null,
@@ -156,7 +156,7 @@ class AnimeHomeViewModel @Inject constructor(
     private fun collectRecommendations() {
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
-                Pager(config = PagingConfig(3)) {
+                Pager(config = PagingConfig(pageSize = 3, initialLoadSize = 3)) {
                     AniListPagingSource(perPage = 3) {
                         val result =
                             aniListApi.homeRecommendations(onList = true, page = it, perPage = 3)

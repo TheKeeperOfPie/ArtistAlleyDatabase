@@ -100,7 +100,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
 //                        mediaRequestBatcher.fetch(it.id)?.let(::MediaPreviewWithDescriptionEntry)
                     }
                 }
-                .enforceUniqueIds { it.id.valueId }
+                .enforceUniqueIds { it.mediaId }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,

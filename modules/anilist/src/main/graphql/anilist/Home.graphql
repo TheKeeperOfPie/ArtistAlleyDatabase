@@ -1,0 +1,129 @@
+fragment HomeMedia on Media {
+    id
+    coverImage {
+        extraLarge
+        color
+    }
+    bannerImage
+    averageScore
+    popularity
+    nextAiringEpisode {
+        airingAt
+        episode
+    }
+    tags {
+        id
+        name
+        isAdult
+        isGeneralSpoiler
+        isMediaSpoiler
+
+        # TODO: This can technically be removed by cross referencing the all tags query
+        category
+    }
+    description
+    type
+    isAdult
+    title {
+        userPreferred
+        romaji
+        english
+        native
+    }
+    format
+    status
+    season
+    seasonYear
+    episodes
+    chapters
+    volumes
+    mediaListEntry {
+        id
+        status
+        progressVolumes
+        progress
+        score(format: POINT_100)
+    }
+}
+
+query HomeAnime(
+    $currentSeason: MediaSeason!,
+    $currentYear: Int!,
+    $lastSeason: MediaSeason!,
+    $lastYear: Int!,
+    $nextSeason: MediaSeason!,
+    $nextYear: Int!,
+    $perPage: Int!,
+) {
+    trending: Page(perPage: $perPage) {
+        media(sort: TRENDING_DESC, type: ANIME, isAdult: false) {
+            ...HomeMedia
+        }
+    }
+
+    popularThisSeason: Page(perPage: $perPage) {
+        media(
+            season: $currentSeason,
+            seasonYear: $currentYear,
+            sort: POPULARITY_DESC,
+            type: ANIME,
+            isAdult: false,
+        ) {
+            ...HomeMedia
+        }
+    }
+
+    lastAdded: Page(perPage: $perPage) {
+        media(
+            sort: ID_DESC,
+            type: ANIME,
+            isAdult: false,
+        ) {
+            ...HomeMedia
+        }
+    }
+
+    popularLastSeason: Page(perPage: $perPage) {
+        media(
+            season: $lastSeason,
+            seasonYear: $lastYear,
+            sort: POPULARITY_DESC,
+            type: ANIME,
+            isAdult: false,
+        ) {
+            ...HomeMedia
+        }
+    }
+
+    popularNextSeason: Page(perPage: $perPage) {
+        media(
+            season: $nextSeason,
+            seasonYear: $nextYear,
+            sort: POPULARITY_DESC,
+            type: ANIME,
+            isAdult: false,
+        ) {
+            ...HomeMedia
+        }
+    }
+}
+
+query HomeManga($perPage: Int!, $thisYearStart: FuzzyDateInt!) {
+    trending: Page(perPage: $perPage) {
+        media(sort: TRENDING_DESC, type: MANGA, isAdult: false) {
+            ...HomeMedia
+        }
+    }
+
+    lastAdded: Page(perPage: $perPage) {
+        media(sort: ID_DESC, type: MANGA, isAdult: false) {
+            ...HomeMedia
+        }
+    }
+
+    topThisYear: Page(perPage: $perPage) {
+        media(sort: SCORE_DESC, type: MANGA, isAdult: false, startDate_greater: $thisYearStart) {
+            ...HomeMedia
+        }
+    }
+}

@@ -129,12 +129,16 @@ fun AnimeNewsSmallCard(
 
                 if (entry == null || entry.copyright != null) {
                     Text(
-                        text = entry?.copyright ?: "Copyright",
+                        text = entry?.copyright ?: "Copyright placeholder",
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 8.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.placeholder(
+                            visible = entry == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
                     )
                 }
             }

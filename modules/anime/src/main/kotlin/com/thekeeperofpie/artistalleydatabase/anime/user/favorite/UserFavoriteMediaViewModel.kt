@@ -69,7 +69,7 @@ class UserFavoriteMediaViewModel @Inject constructor(
                 ::Triple,
             ).flatMapLatest { (includeDescription, viewer) ->
                 val userId = userId ?: viewer?.id
-                Pager(config = PagingConfig(10, jumpThreshold = 10)) {
+                Pager(config = PagingConfig(10)) {
                     AniListPagingSource {
                         if (mediaType == MediaType.ANIME) {
                             val result = aniListApi.userFavoritesAnime(
@@ -92,7 +92,7 @@ class UserFavoriteMediaViewModel @Inject constructor(
                 }.flow
             }
                 .mapLatest { it.mapOnIO { MediaPreviewWithDescriptionEntry(MediaWrapper(it)) } }
-                .enforceUniqueIds { it.id.valueId }
+                .enforceUniqueIds { it.mediaId }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges2(
                     statusController = mediaListStatusController,

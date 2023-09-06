@@ -70,7 +70,7 @@ abstract class UserListViewModel(
                 if (userId == null) {
                     flowOf(PagingData.empty())
                 } else {
-                    Pager(config = PagingConfig(10, jumpThreshold = 10)) {
+                    Pager(config = PagingConfig(10)) {
                         AniListPagingSource {
                             apiCall(userId, filterParams, it)
                         }

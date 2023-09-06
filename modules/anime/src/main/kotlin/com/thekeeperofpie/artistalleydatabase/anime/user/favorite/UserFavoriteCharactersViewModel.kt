@@ -55,7 +55,7 @@ class UserFavoriteCharactersViewModel @Inject constructor(
                 ::Pair,
             ).flatMapLatest { (viewer) ->
                 val userId = userId ?: viewer?.id
-                Pager(config = PagingConfig(10, jumpThreshold = 10)) {
+                Pager(config = PagingConfig(10)) {
                     AniListPagingSource {
                         val result =
                             aniListApi.userFavoritesCharacters(userId = userId!!, page = it)

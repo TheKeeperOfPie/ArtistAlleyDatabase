@@ -94,6 +94,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.anilist.UserSocialActivityQuery
+import com.anilist.fragment.HomeMedia
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
@@ -328,7 +329,7 @@ object AnimeHomeScreen {
                     mediaList(
                         mediaViewModel = mediaViewModel,
                         viewer = viewer,
-                        onClickListEdit = { editViewModel.initialize(it) },
+                        editViewModel = editViewModel,
                         selectedItemTracker = selectedItemTracker,
                     )
 
@@ -356,7 +357,7 @@ object AnimeHomeScreen {
     private fun LazyListScope.mediaList(
         mediaViewModel: AnimeHomeMediaViewModel,
         viewer: AniListViewer?,
-        onClickListEdit: (MediaCompactWithTags) -> Unit,
+        editViewModel: MediaEditViewModel,
         selectedItemTracker: SelectedItemTracker,
     ) {
         val entry = mediaViewModel.entry
@@ -364,7 +365,7 @@ object AnimeHomeScreen {
             mediaRow(
                 data = it,
                 viewer = viewer,
-                onClickListEdit = onClickListEdit,
+                editViewModel = editViewModel,
                 selectedItemTracker = selectedItemTracker,
             )
         }
@@ -541,7 +542,7 @@ object AnimeHomeScreen {
     private fun LazyListScope.mediaRow(
         data: AnimeHomeDataEntry.RowData,
         viewer: AniListViewer?,
-        onClickListEdit: (MediaCompactWithTags) -> Unit,
+        editViewModel: MediaEditViewModel,
         selectedItemTracker: SelectedItemTracker,
     ) {
         val (rowKey, titleRes, entries, viewAllRoute) = data
@@ -562,7 +563,7 @@ object AnimeHomeScreen {
                     screenKey = SCREEN_KEY,
                     viewer = viewer,
                     entry = entry,
-                    onClickListEdit = { onClickListEdit(it.media) },
+                    editViewModel = editViewModel,
                 )
             }
 
@@ -606,6 +607,7 @@ object AnimeHomeScreen {
                     contentType = { _, _ -> "media" },
                 ) { index, item ->
                     MediaCard(
+                        editViewModel = editViewModel,
                         media = item?.media,
                         mediaStatusAware = item,
                         ignored = item?.ignored ?: false,
@@ -616,7 +618,6 @@ object AnimeHomeScreen {
                         coilWidth = coilWidth,
                         coilHeight = coilHeight,
                         selected = selectedItemTracker.keyToPosition[rowKey]?.second == index,
-                        onClickListEdit = onClickListEdit,
                         modifier = Modifier.animateItemPlacement(),
                     )
                 }
@@ -793,7 +794,8 @@ object AnimeHomeScreen {
 
     @Composable
     private fun MediaCard(
-        media: MediaPreview?,
+        editViewModel: MediaEditViewModel,
+        media: HomeMedia?,
         mediaStatusAware: MediaStatusAware?,
         ignored: Boolean,
         viewer: AniListViewer?,
@@ -803,7 +805,6 @@ object AnimeHomeScreen {
         coilWidth: coil.size.Dimension,
         coilHeight: coil.size.Dimension,
         selected: Boolean,
-        onClickListEdit: (MediaPreview) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         val mediaId = media?.id?.toString()
@@ -832,9 +833,20 @@ object AnimeHomeScreen {
 
         val navigationCallback = LocalNavigationCallback.current
         var widthToHeightRatio by remember(mediaId) { mutableStateOf<Float?>(null) }
+        val title = MediaUtils.userPreferredTitle(
+            userPreferred = media?.title?.userPreferred,
+            romaji = media?.title?.romaji,
+            english = media?.title?.english,
+            native = media?.title?.native,
+        )
         val onClick = {
             if (media != null) {
-                navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)
+                navigationCallback.onMediaClick(
+                    mediaId = media.id.toString(),
+                    title = title,
+                    coverImage = media.coverImage?.extraLarge,
+                    imageWidthToHeightRatio = widthToHeightRatio ?: 1f,
+                )
             }
         }
 
@@ -913,7 +925,6 @@ object AnimeHomeScreen {
                             )
                     )
 
-                    val title = media?.title?.primaryTitle()
                     if (showTitle && title != null) {
                         AutoResizeHeightText(
                             text = title,
@@ -931,9 +942,23 @@ object AnimeHomeScreen {
                             viewer = viewer,
                             mediaType = media.type,
                             media = mediaStatusAware,
-                            maxProgress = MediaUtils.maxProgress(media),
+                            maxProgress = MediaUtils.maxProgress(
+                                type = media.type,
+                                chapters = media.chapters,
+                                episodes = media.episodes,
+                                nextAiringEpisode = media.nextAiringEpisode?.episode,
+                            ),
                             maxProgressVolumes = media.volumes,
-                            onClick = { onClickListEdit(media) },
+                            onClick = {
+                                editViewModel.initialize(
+                                    mediaId = media.id.toString(),
+                                    coverImage = media.coverImage?.extraLarge,
+                                    type = media.type,
+                                    titleRomaji = media.title?.romaji,
+                                    titleEnglish = media.title?.english,
+                                    titleNative = media.title?.native,
+                                )
+                            },
                             modifier = Modifier.align(Alignment.BottomStart)
                         )
                     }

@@ -467,7 +467,7 @@ object AnimeUserListScreen {
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry?.entry,
-                onClickListEdit = { editViewModel.initialize(it.media) },
+                editViewModel = editViewModel,
                 label = if (statusText == null) null else {
                     {
                         Text(

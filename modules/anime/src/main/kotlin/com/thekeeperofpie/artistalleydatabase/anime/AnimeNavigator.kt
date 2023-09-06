@@ -1107,6 +1107,20 @@ object AnimeNavigator {
                 imageWidthToHeightRatio?.let { "&coverImageWidthToHeightRatio=$it" }.orEmpty()
     )
 
+    fun onMediaClick(
+        navHostController: NavHostController,
+        mediaId: String,
+        title: String?,
+        coverImage: String?,
+        imageWidthToHeightRatio: Float?,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.MEDIA_DETAILS.id +
+                "?mediaId=$mediaId" +
+                "&title=$title" +
+                "&coverImage=$coverImage" +
+                imageWidthToHeightRatio?.let { "&coverImageWidthToHeightRatio=$it" }.orEmpty()
+    )
+
     fun onCharacterClick(
         navHostController: NavHostController,
         character: CharacterNavigationData,
@@ -1315,6 +1329,23 @@ object AnimeNavigator {
                     navHostController = it,
                     media = media,
                     languageOption = languageOptionMedia,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio
+                )
+            }
+        }
+
+        fun onMediaClick(
+            mediaId: String,
+            title: String?,
+            coverImage: String?,
+            imageWidthToHeightRatio: Float? = null,
+        ) {
+            navHostController?.let {
+                onMediaClick(
+                    navHostController = it,
+                    mediaId = mediaId,
+                    title = title,
+                    coverImage = coverImage,
                     imageWidthToHeightRatio = imageWidthToHeightRatio
                 )
             }

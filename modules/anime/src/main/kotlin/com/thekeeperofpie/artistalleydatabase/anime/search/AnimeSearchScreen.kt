@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -132,7 +133,7 @@ object AnimeSearchScreen {
                     }
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
-                val content = viewModel.content.collectAsLazyPagingItems()
+                val content = viewModel.content.collectAsLazyPagingItems(CustomDispatchers.IO)
                 val refreshState = content.loadState.refresh
                 val errorText = (refreshState as? LoadState.Error)
                     ?.let { stringResource(R.string.anime_media_list_error_loading)}

@@ -146,8 +146,8 @@ object UserFavoriteMediaScreen {
                             ) {
                                 items(
                                     count = media.itemCount,
-                                    key = media.itemKey { it.id.scopedId },
-                                    contentType = media.itemContentType { it.id.type }
+                                    key = media.itemKey { it.mediaId },
+                                    contentType = media.itemContentType { "media" }
                                 ) {
                                     val entry = media[it]
                                     MediaViewOptionRow(

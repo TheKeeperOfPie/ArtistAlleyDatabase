@@ -36,6 +36,7 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
+import com.anilist.type.UserTitleLanguage
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
@@ -782,6 +783,45 @@ object MediaUtils {
         FavoriteType.MANGA
     }
 
+    fun userPreferredTitle(
+        titleRomaji: String?,
+        titleEnglish: String?,
+        titleNative: String?,
+        titleLanguage: UserTitleLanguage?,
+        languageOption: AniListLanguageOption?,
+    ) = when (languageOption) {
+        AniListLanguageOption.DEFAULT -> when (titleLanguage) {
+            UserTitleLanguage.ROMAJI -> titleRomaji
+            UserTitleLanguage.ENGLISH -> titleEnglish
+            UserTitleLanguage.NATIVE -> titleNative
+            UserTitleLanguage.ROMAJI_STYLISED -> titleRomaji
+            UserTitleLanguage.ENGLISH_STYLISED -> titleEnglish
+            UserTitleLanguage.NATIVE_STYLISED -> titleNative
+            UserTitleLanguage.UNKNOWN__,
+            null,
+            -> null
+        }
+        AniListLanguageOption.ENGLISH -> titleEnglish
+        AniListLanguageOption.NATIVE -> titleNative
+        AniListLanguageOption.ROMAJI -> titleRomaji
+        null -> null
+    } ?: titleRomaji ?: titleEnglish ?: titleNative
+
+    @Composable
+    fun userPreferredTitle(
+        userPreferred: String?,
+        romaji: String?,
+        english: String?,
+        native: String?,
+        languageOption: AniListLanguageOption? = LocalLanguageOptionMedia.current,
+    ) = when (languageOption) {
+        AniListLanguageOption.DEFAULT -> userPreferred
+        AniListLanguageOption.ENGLISH -> english
+        AniListLanguageOption.NATIVE -> native
+        AniListLanguageOption.ROMAJI -> romaji
+        null -> null
+    } ?: userPreferred ?: romaji ?: english ?: native
+
     @Composable
     fun MediaTitleFragment.primaryTitle() = primaryTitle(LocalLanguageOptionMedia.current)
 
@@ -791,7 +831,7 @@ object MediaUtils {
             AniListLanguageOption.ENGLISH -> english
             AniListLanguageOption.NATIVE -> native
             AniListLanguageOption.ROMAJI -> romaji
-        }
+        } ?: userPreferred ?: romaji ?: english ?: native
 
     fun buildTags(
         media: MediaCompactWithTags,
