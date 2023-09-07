@@ -183,7 +183,7 @@ suspend fun <Input> applyMediaFiltering(
     val ignored = if (forceShowIgnored) {
         false
     } else {
-        mediaId?.toString()?.let { ignoreController.isIgnored(it) } ?: false
+        mediaId?.let { ignoreController.isIgnored(it) } ?: false
     }
 
     if (!showIgnored && ignored) return null

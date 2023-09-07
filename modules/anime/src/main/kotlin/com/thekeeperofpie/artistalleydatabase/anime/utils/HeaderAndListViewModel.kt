@@ -8,14 +8,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.fragment.PaginationInfo
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
@@ -106,9 +104,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
                 }
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (entry, sortOption, sortAscending) ->
-                    Pager(config = PagingConfig(10)) {
-                        AniListPagingSource { pagedRequest(entry, it, sortOption, sortAscending) }
-                    }.flow
+                    AniListPager { pagedRequest(entry, it, sortOption, sortAscending) }
                 }
                 .map { it.mapOnIO { makeEntry(it) } }
                 .enforceUniqueIds { entryId(it) }

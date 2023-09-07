@@ -14,9 +14,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -108,7 +110,7 @@ class SeasonalViewModel @Inject constructor(
             initialParams = AnimeSortFilterController.InitialParams(
                 airingDateEnabled = false,
                 defaultSort = MediaSortOption.POPULARITY,
-                lockSort =  false,
+                lockSort = false,
             ),
         )
     }
@@ -157,19 +159,28 @@ class SeasonalViewModel @Inject constructor(
                     .debounce(100.milliseconds)
                     .distinctUntilChanged()
                     .flatMapLatest {
+                        val cache =
+                            LruCache<Int, PagingSource.LoadResult.Page<Int, MediaAdvancedSearchQuery.Data.Page.Medium>>(
+                                20
+                            )
                         Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
-                            AnimeSearchMediaPagingSource(aniListApi, it, MediaType.ANIME)
+                            AnimeSearchMediaPagingSource(
+                                aniListApi = aniListApi,
+                                refreshParams = it,
+                                cache = cache,
+                                mediaType = MediaType.ANIME,
+                            )
                         }.flow
                     }
                     .enforceUniqueIntIds { it.id }
                     .map { it.mapOnIO { MediaPreviewWithDescriptionEntry(it) } }
                     .cachedIn(viewModelScope)
+                    .flatMapLatest { sortFilterController.filterMedia(it) { it.media } }
                     .applyMediaStatusChanges2(
                         statusController = statusController,
                         ignoreController = ignoreController,
                         settings = settings,
                     )
-                    .flatMapLatest { sortFilterController.filterMedia(it) { it.media } }
                     .cachedIn(viewModelScope)
                     .flowOn(CustomDispatchers.IO)
                     .collectLatest(content::emit)

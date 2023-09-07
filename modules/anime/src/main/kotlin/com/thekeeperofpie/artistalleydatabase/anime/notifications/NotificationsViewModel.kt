@@ -2,8 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.notifications
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.NotificationMediaAndActivityQuery
@@ -11,8 +9,8 @@ import com.anilist.NotificationsQuery
 import com.anilist.fragment.ActivityItem.Companion.asListActivity
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
@@ -71,88 +69,86 @@ class NotificationsViewModel @Inject constructor(
                 refresh,
                 ::Pair,
             ).flatMapLatest { (showAdult) ->
-                Pager(config = PagingConfig(10)) {
-                    AniListPagingSource {
-                        val result =
-                            aniListApi.notifications(it, resetNotificationCount = it == 1)
+                AniListPager {
+                    val result =
+                        aniListApi.notifications(it, resetNotificationCount = it == 1)
 
-                        if (it == 1) {
-                            notificationsController.clear()
-                        }
-
-                        val notifications = result.page?.notifications?.filterNotNull().orEmpty()
-                        val mediaToFetch = mutableListOf<String>()
-                        val activityToFetch = mutableListOf<String>()
-                        notifications.forEach {
-                            it.mediaId?.let { mediaToFetch += it }
-                            it.activityId?.let { activityToFetch += it }
-                        }
-
-                        val mediaAndActivity = aniListApi.notificationMediaAndActivity(
-                            mediaIds = mediaToFetch,
-                            activityIds = activityToFetch,
-                        )
-
-                        val mediasById = mediaAndActivity.media?.media
-                            ?.associateBy { it?.id?.toString() }
-                            .orEmpty()
-
-                        val activityById = mediaAndActivity.activity?.activities
-                            ?.associateBy {
-                                when (it) {
-                                    is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> it.id.toString()
-                                    is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> it.id.toString()
-                                    is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> it.id.toString()
-                                    is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
-                                    null,
-                                    -> null
-                                }
-                            }
-                            .orEmpty()
-
-                        result.page?.pageInfo to notifications.map {
-                            val activity = activityById[it.activityId]
-                            val media = mediasById[it.mediaId]
-                            NotificationEntry(
-                                notificationId = EntryId(it.__typename, it.id.toString()),
-                                notification = it,
-                                activityEntry = activity?.let {
-                                    NotificationEntry.ActivityEntry(
-                                        id = when (activity) {
-                                            is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> activity.id.toString()
-                                            is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> activity.id.toString()
-                                            is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> activity.id.toString()
-                                            is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity -> ""
-                                        },
-                                        activity = activity,
-                                        liked = when (activity) {
-                                            is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> activity.isLiked
-                                            is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> activity.isLiked
-                                            is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> activity.isLiked
-                                            is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity -> false
-                                        } ?: false,
-                                        subscribed = when (activity) {
-                                            is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> activity.isSubscribed
-                                            is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> activity.isSubscribed
-                                            is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> activity.isSubscribed
-                                            is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity -> false
-                                        } ?: false,
-                                    )
-                                },
-                                mediaEntry = media?.let { MediaCompactWithTagsEntry(it) }
-                                    ?: activity?.asListActivity()?.media
-                                        ?.let { MediaCompactWithTagsEntry(it) },
-                                commentEntry = it.comment?.let {
-                                    ForumCommentEntry(
-                                        comment = it,
-                                        commentMarkdown = it.comment?.let(markwon::toMarkdown),
-                                        children = emptyList(),
-                                    )
-                                }
-                            )
-                        }
+                    if (it == 1) {
+                        notificationsController.clear()
                     }
-                }.flow
+
+                    val notifications = result.page?.notifications?.filterNotNull().orEmpty()
+                    val mediaToFetch = mutableListOf<String>()
+                    val activityToFetch = mutableListOf<String>()
+                    notifications.forEach {
+                        it.mediaId?.let { mediaToFetch += it }
+                        it.activityId?.let { activityToFetch += it }
+                    }
+
+                    val mediaAndActivity = aniListApi.notificationMediaAndActivity(
+                        mediaIds = mediaToFetch,
+                        activityIds = activityToFetch,
+                    )
+
+                    val mediasById = mediaAndActivity.media?.media
+                        ?.associateBy { it?.id?.toString() }
+                        .orEmpty()
+
+                    val activityById = mediaAndActivity.activity?.activities
+                        ?.associateBy {
+                            when (it) {
+                                is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> it.id.toString()
+                                is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> it.id.toString()
+                                is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> it.id.toString()
+                                is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
+                                null,
+                                -> null
+                            }
+                        }
+                        .orEmpty()
+
+                    result.page?.pageInfo to notifications.map {
+                        val activity = activityById[it.activityId]
+                        val media = mediasById[it.mediaId]
+                        NotificationEntry(
+                            notificationId = EntryId(it.__typename, it.id.toString()),
+                            notification = it,
+                            activityEntry = activity?.let {
+                                NotificationEntry.ActivityEntry(
+                                    id = when (activity) {
+                                        is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> activity.id.toString()
+                                        is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> activity.id.toString()
+                                        is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> activity.id.toString()
+                                        is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity -> ""
+                                    },
+                                    activity = activity,
+                                    liked = when (activity) {
+                                        is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> activity.isLiked
+                                        is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> activity.isLiked
+                                        is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> activity.isLiked
+                                        is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity -> false
+                                    } ?: false,
+                                    subscribed = when (activity) {
+                                        is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> activity.isSubscribed
+                                        is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> activity.isSubscribed
+                                        is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> activity.isSubscribed
+                                        is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity -> false
+                                    } ?: false,
+                                )
+                            },
+                            mediaEntry = media?.let { MediaCompactWithTagsEntry(it) }
+                                ?: activity?.asListActivity()?.media
+                                    ?.let { MediaCompactWithTagsEntry(it) },
+                            commentEntry = it.comment?.let {
+                                ForumCommentEntry(
+                                    comment = it,
+                                    commentMarkdown = it.comment?.let(markwon::toMarkdown),
+                                    children = emptyList(),
+                                )
+                            }
+                        )
+                    }
+                }
                     .map { it.filterOnIO { showAdult || it.mediaEntry?.media?.isAdult != true } }
             }
                 .enforceUniqueIds { it.notificationId.scopedId }

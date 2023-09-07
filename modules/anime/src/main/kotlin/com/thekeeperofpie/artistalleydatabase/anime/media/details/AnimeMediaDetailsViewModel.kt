@@ -24,9 +24,10 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
@@ -339,21 +340,19 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (mediaId, characters) ->
-                    Pager(config = PagingConfig(10)) {
-                        AniListPagingSource { page ->
-                            if (page == 1) {
-                                characters?.pageInfo to characters?.edges?.filterNotNull()
-                                    .orEmpty()
-                            } else {
-                                val result =
-                                    aniListApi.mediaDetailsCharactersPage(
-                                        mediaId,
-                                        page
-                                    ).characters
-                                result.pageInfo to result.edges.filterNotNull()
-                            }
+                    AniListPager { page ->
+                        if (page == 1) {
+                            characters?.pageInfo to characters?.edges?.filterNotNull()
+                                .orEmpty()
+                        } else {
+                            val result =
+                                aniListApi.mediaDetailsCharactersPage(
+                                    mediaId,
+                                    page
+                                ).characters
+                            result.pageInfo to result.edges.filterNotNull()
                         }
-                    }.flow
+                    }
                 }
                 .mapLatest { it.mapOnIO(CharacterUtils::toDetailsCharacter) }
                 .enforceUniqueIds { it.id }
@@ -366,37 +365,35 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (mediaId, staff) ->
-                    Pager(config = PagingConfig(10)) {
-                        AniListPagingSource {
-                            if (it == 1) {
-                                staff?.pageInfo to staff?.edges?.filterNotNull().orEmpty()
-                                    .mapNotNull {
-                                        val role = it.role
-                                        it.node?.let {
-                                            DetailsStaff(
-                                                id = it.id.toString(),
-                                                name = it.name,
-                                                image = it.image?.large,
-                                                role = role,
-                                                staff = it
-                                            )
-                                        }
+                    AniListPager {
+                        if (it == 1) {
+                            staff?.pageInfo to staff?.edges?.filterNotNull().orEmpty()
+                                .mapNotNull {
+                                    val role = it.role
+                                    it.node?.let {
+                                        DetailsStaff(
+                                            id = it.id.toString(),
+                                            name = it.name,
+                                            image = it.image?.large,
+                                            role = role,
+                                            staff = it
+                                        )
                                     }
-                            } else {
-                                val result =
-                                    aniListApi.mediaDetailsStaffPage(mediaId, it).staff
-                                result.pageInfo to result.edges.filterNotNull().map {
-                                    DetailsStaff(
-                                        id = it.node.id.toString(),
-                                        name = it.node.name,
-                                        image = it.node.image?.large,
-                                        role = it.role,
-                                        staff = it.node,
-                                    )
                                 }
+                        } else {
+                            val result =
+                                aniListApi.mediaDetailsStaffPage(mediaId, it).staff
+                            result.pageInfo to result.edges.filterNotNull().map {
+                                DetailsStaff(
+                                    id = it.node.id.toString(),
+                                    name = it.node.name,
+                                    image = it.node.image?.large,
+                                    role = it.role,
+                                    staff = it.node,
+                                )
                             }
                         }
-                    }.flow
+                    }
                 }
                 .enforceUniqueIds { it.idWithRole }
                 .cachedIn(viewModelScope)

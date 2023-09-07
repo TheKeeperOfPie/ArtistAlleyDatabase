@@ -5,8 +5,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.home
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.UserSocialActivityQuery
@@ -14,8 +12,8 @@ import com.anilist.type.RecommendationRating
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
@@ -83,18 +81,16 @@ class AnimeHomeViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(refresh, aniListApi.authedUser, ::Pair)
                 .flatMapLatest { (_, viewer) ->
-                    Pager(config = PagingConfig(pageSize = 3, initialLoadSize = 3)) {
-                        AniListPagingSource {
-                            val result = aniListApi.userSocialActivity(
-                                isFollowing = viewer != null,
-                                page = it,
-                                perPage = 3,
-                                userIdNot = viewer?.id,
-                            )
-                            result.page?.pageInfo to
-                                    result.page?.activities?.filterNotNull().orEmpty()
-                        }
-                    }.flow.cachedIn(viewModelScope)
+                    AniListPager {
+                        val result = aniListApi.userSocialActivity(
+                            isFollowing = viewer != null,
+                            page = it,
+                            perPage = 3,
+                            userIdNot = viewer?.id,
+                        )
+                        result.page?.pageInfo to
+                                result.page?.activities?.filterNotNull().orEmpty()
+                    }.cachedIn(viewModelScope)
                 }
                 .flatMapLatest { pagingData ->
                     combine(
@@ -156,13 +152,11 @@ class AnimeHomeViewModel @Inject constructor(
     private fun collectRecommendations() {
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
-                Pager(config = PagingConfig(pageSize = 3, initialLoadSize = 3)) {
-                    AniListPagingSource(perPage = 3) {
-                        val result =
-                            aniListApi.homeRecommendations(onList = true, page = it, perPage = 3)
-                        result.page.pageInfo to result.page.recommendations.filterNotNull()
-                    }
-                }.flow
+                AniListPager(perPage = 3) {
+                    val result =
+                        aniListApi.homeRecommendations(onList = true, page = it, perPage = 3)
+                    result.page.pageInfo to result.page.recommendations.filterNotNull()
+                }
             }
                 .mapLatest {
                     it.mapOnIO {

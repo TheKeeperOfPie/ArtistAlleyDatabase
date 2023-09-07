@@ -7,16 +7,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.flatMap
 import com.anilist.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
@@ -141,21 +139,19 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { character ->
-                    Pager(config = PagingConfig(10)) {
-                        // TODO: Possible to hook up LocalVoiceActorLanguageOption?
-                        AniListPagingSource {
-                            if (it == 1) {
-                                character.media?.pageInfo to character.media?.edges?.filterNotNull()
-                                    .orEmpty()
-                            } else {
-                                val result = aniListApi.characterDetailsMediaPage(
-                                    character.id.toString(),
-                                    it
-                                ).media
-                                result.pageInfo to result.edges.filterNotNull()
-                            }
+                    // TODO: Possible to hook up LocalVoiceActorLanguageOption?
+                    AniListPager {
+                        if (it == 1) {
+                            character.media?.pageInfo to character.media?.edges?.filterNotNull()
+                                .orEmpty()
+                        } else {
+                            val result = aniListApi.characterDetailsMediaPage(
+                                character.id.toString(),
+                                it
+                            ).media
+                            result.pageInfo to result.edges.filterNotNull()
                         }
-                    }.flow
+                    }
                 }
                 .map {
                     it.flatMap {

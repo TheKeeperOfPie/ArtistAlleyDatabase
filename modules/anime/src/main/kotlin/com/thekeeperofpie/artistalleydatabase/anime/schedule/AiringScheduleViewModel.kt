@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
@@ -16,8 +14,8 @@ import com.anilist.type.AiringSort
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -163,18 +161,16 @@ class AiringScheduleViewModel @Inject constructor(
                 )
             }
         } else {
-            Pager(PagingConfig(10)) {
-                AniListPagingSource {
-                    val result = aniListApi.airingSchedule(
-                        startTime = startTime,
-                        endTime = endTime,
-                        sort = sort.toApiValue(filterParams.sortAscending),
-                        perPage = 10,
-                        page = it,
-                    )
-                    result.page?.pageInfo to result.page?.airingSchedules?.filterNotNull().orEmpty()
-                }
-            }.flow
+            AniListPager {
+                val result = aniListApi.airingSchedule(
+                    startTime = startTime,
+                    endTime = endTime,
+                    sort = sort.toApiValue(filterParams.sortAscending),
+                    perPage = 10,
+                    page = it,
+                )
+                result.page?.pageInfo to result.page?.airingSchedules?.filterNotNull().orEmpty()
+            }
         }
     }
 

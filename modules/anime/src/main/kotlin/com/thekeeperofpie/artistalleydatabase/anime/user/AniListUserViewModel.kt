@@ -9,8 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.MediaTitlesAndImagesQuery
@@ -24,8 +22,8 @@ import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -332,41 +330,38 @@ class AniListUserViewModel @Inject constructor(
                         refreshUptimeMillis,
                         ::Pair
                     ).flatMapLatest { (filterParams) ->
-                        Pager(config = PagingConfig(10)) {
-                            AniListPagingSource {
-                                val result = aniListApi.userSocialActivity(
-                                    isFollowing = null,
-                                    page = it,
-                                    userId = entry.id.toString(),
-                                    userIdNot = null,
-                                    sort = filterParams.sort
-                                        .selectedOption(ActivitySortOption.NEWEST)
-                                        .toApiValue(),
-                                    typeIn = filterParams.type
-                                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                                        .map { it.value }
-                                        .ifEmpty { null },
-                                    typeNotIn = filterParams.type
-                                        .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                                        .map { it.value }
-                                        .ifEmpty { null },
-                                    hasReplies = if (filterParams.hasReplies) true else null,
-                                    createdAtGreater = filterParams.date.startDate
-                                        ?.atStartOfDay()
-                                        ?.toEpochSecond(offset)
-                                        ?.toInt(),
-                                    createdAtLesser = filterParams.date.endDate
-                                        ?.plus(1, ChronoUnit.DAYS)
-                                        ?.atStartOfDay()
-                                        ?.toEpochSecond(offset)
-                                        ?.toInt(),
-                                    mediaId = filterParams.mediaId,
-                                )
-                                result.page?.pageInfo to
-                                        result.page?.activities?.filterNotNull().orEmpty()
-                            }
+                        AniListPager {
+                            val result = aniListApi.userSocialActivity(
+                                isFollowing = null,
+                                page = it,
+                                userId = entry.id.toString(),
+                                userIdNot = null,
+                                sort = filterParams.sort
+                                    .selectedOption(ActivitySortOption.NEWEST)
+                                    .toApiValue(),
+                                typeIn = filterParams.type
+                                    .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                                    .map { it.value }
+                                    .ifEmpty { null },
+                                typeNotIn = filterParams.type
+                                    .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
+                                    .map { it.value }
+                                    .ifEmpty { null },
+                                hasReplies = if (filterParams.hasReplies) true else null,
+                                createdAtGreater = filterParams.date.startDate
+                                    ?.atStartOfDay()
+                                    ?.toEpochSecond(offset)
+                                    ?.toInt(),
+                                createdAtLesser = filterParams.date.endDate
+                                    ?.plus(1, ChronoUnit.DAYS)
+                                    ?.atStartOfDay()
+                                    ?.toEpochSecond(offset)
+                                    ?.toInt(),
+                                mediaId = filterParams.mediaId,
+                            )
+                            result.page?.pageInfo to
+                                    result.page?.activities?.filterNotNull().orEmpty()
                         }
-                            .flow
                     }
                 }
                 .enforceUniqueIntIds {
@@ -438,11 +433,7 @@ class AniListUserViewModel @Inject constructor(
             snapshotFlow { entry }
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
-                .flatMapLatest { entry ->
-                    Pager(config = PagingConfig(10)) {
-                        AniListPagingSource { request(entry, it) }
-                    }.flow
-                }
+                .flatMapLatest { entry -> AniListPager { request(entry, it) } }
                 .mapLatest { it.mapOnIO(map) }
                 .enforceUniqueIds(id)
                 .cachedIn(viewModelScope)

@@ -117,8 +117,7 @@ query MediaAdvancedSearch(
 ) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
-            hasNextPage
-            total
+            ...PaginationInfo
         }
         media(
             search: $search,

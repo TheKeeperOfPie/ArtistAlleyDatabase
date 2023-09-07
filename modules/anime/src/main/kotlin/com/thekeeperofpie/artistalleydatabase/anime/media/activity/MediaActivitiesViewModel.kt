@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.activity
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,8 +7,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.fragment.ListActivityWithoutMedia
@@ -18,8 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -120,27 +117,25 @@ class MediaActivitiesViewModel @Inject constructor(
                 .flatMapLatest { (entry) ->
                     combine(activitySortFilterController.filterParams(), refresh, ::Pair)
                         .flatMapLatest { (filterParams) ->
-                            Pager(config = PagingConfig(10)) {
-                                AniListPagingSource { page ->
-                                    if (page == 1 && initialIsFollowing) {
-                                        val result = entry.data.page
-                                        return@AniListPagingSource result.pageInfo to
-                                                result.activities
-                                                    .filterIsInstance<ListActivityWithoutMedia>()
-                                    }
-
-                                    val result = aniListApi.mediaActivitiesPage(
-                                        id = entry.data.media.id.toString(),
-                                        sort = filterParams.sort
-                                            .selectedOption(ActivitySortOption.NEWEST)
-                                            .toApiValue(),
-                                        following = true,
-                                        page = page,
-                                    ).page
-                                    result.pageInfo to result.activities
-                                        .filterIsInstance<ListActivityWithoutMedia>()
+                            AniListPager { page ->
+                                if (page == 1 && initialIsFollowing) {
+                                    val result = entry.data.page
+                                    return@AniListPager result.pageInfo to
+                                            result.activities
+                                                .filterIsInstance<ListActivityWithoutMedia>()
                                 }
-                            }.flow
+
+                                val result = aniListApi.mediaActivitiesPage(
+                                    id = entry.data.media.id.toString(),
+                                    sort = filterParams.sort
+                                        .selectedOption(ActivitySortOption.NEWEST)
+                                        .toApiValue(),
+                                    following = true,
+                                    page = page,
+                                ).page
+                                result.pageInfo to result.activities
+                                    .filterIsInstance<ListActivityWithoutMedia>()
+                            }
                         }
                 }
                 .mapLatest {
@@ -178,27 +173,25 @@ class MediaActivitiesViewModel @Inject constructor(
                 .flatMapLatest { entry ->
                     combine(activitySortFilterController.filterParams(), refresh, ::Pair)
                         .flatMapLatest { (filterParams) ->
-                            Pager(config = PagingConfig(10)) {
-                                AniListPagingSource { page ->
-                                    if (page == 1 && !initialIsFollowing) {
-                                        val result = entry.data.page
-                                        return@AniListPagingSource result.pageInfo to
-                                                result.activities
-                                                    .filterIsInstance<ListActivityWithoutMedia>()
-                                    }
-
-                                    val result = aniListApi.mediaActivitiesPage(
-                                        id = entry.data.media.id.toString(),
-                                        sort = filterParams.sort
-                                            .selectedOption(ActivitySortOption.NEWEST)
-                                            .toApiValue(),
-                                        following = false,
-                                        page = page,
-                                    ).page
-                                    result.pageInfo to result.activities
-                                        .filterIsInstance<ListActivityWithoutMedia>()
+                            AniListPager { page ->
+                                if (page == 1 && !initialIsFollowing) {
+                                    val result = entry.data.page
+                                    return@AniListPager result.pageInfo to
+                                            result.activities
+                                                .filterIsInstance<ListActivityWithoutMedia>()
                                 }
-                            }.flow
+
+                                val result = aniListApi.mediaActivitiesPage(
+                                    id = entry.data.media.id.toString(),
+                                    sort = filterParams.sort
+                                        .selectedOption(ActivitySortOption.NEWEST)
+                                        .toApiValue(),
+                                    following = false,
+                                    page = page,
+                                ).page
+                                result.pageInfo to result.activities
+                                    .filterIsInstance<ListActivityWithoutMedia>()
+                            }
                         }
                 }
                 .mapLatest {

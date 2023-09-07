@@ -9,17 +9,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumUtils
@@ -151,13 +149,11 @@ class ForumThreadViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
                 // TODO: Make an AniListPager which forces jumpThreshold to skip network requests
-                Pager(config = PagingConfig(pageSize = 10, jumpThreshold = 10)) {
-                    AniListPagingSource {
-                        val result = aniListApi.forumThreadComments(threadId, page = it)
-                        result.page?.pageInfo to result.page?.threadComments?.filterNotNull()
-                            .orEmpty()
-                    }
-                }.flow
+                AniListPager {
+                    val result = aniListApi.forumThreadComments(threadId, page = it)
+                    result.page?.pageInfo to result.page?.threadComments?.filterNotNull()
+                        .orEmpty()
+                }
             }
                 .map {
                     it.mapOnIO {

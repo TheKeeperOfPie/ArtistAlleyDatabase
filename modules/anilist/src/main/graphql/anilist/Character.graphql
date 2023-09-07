@@ -51,8 +51,7 @@ query CharacterAdvancedSearch(
 ) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
-            hasNextPage
-            total
+            ...PaginationInfo
         }
         characters(search: $search, isBirthday: $isBirthday, sort: $sort) {
             ...CharacterNavigationData

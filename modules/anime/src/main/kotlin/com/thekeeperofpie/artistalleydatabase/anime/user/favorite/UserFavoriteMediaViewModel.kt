@@ -7,8 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.fragment.MediaPreviewWithDescription
@@ -19,8 +17,8 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -69,27 +67,25 @@ class UserFavoriteMediaViewModel @Inject constructor(
                 ::Triple,
             ).flatMapLatest { (includeDescription, viewer) ->
                 val userId = userId ?: viewer?.id
-                Pager(config = PagingConfig(10)) {
-                    AniListPagingSource {
-                        if (mediaType == MediaType.ANIME) {
-                            val result = aniListApi.userFavoritesAnime(
-                                userId = userId!!,
-                                includeDescription = includeDescription,
-                                page = it,
-                            )
-                            result.user?.favourites?.anime?.pageInfo to
-                                    result.user?.favourites?.anime?.nodes?.filterNotNull().orEmpty()
-                        } else {
-                            val result = aniListApi.userFavoritesManga(
-                                userId = userId!!,
-                                includeDescription = includeDescription,
-                                page = it,
-                            )
-                            result.user?.favourites?.manga?.pageInfo to
-                                    result.user?.favourites?.manga?.nodes?.filterNotNull().orEmpty()
-                        }
+                AniListPager {
+                    if (mediaType == MediaType.ANIME) {
+                        val result = aniListApi.userFavoritesAnime(
+                            userId = userId!!,
+                            includeDescription = includeDescription,
+                            page = it,
+                        )
+                        result.user?.favourites?.anime?.pageInfo to
+                                result.user?.favourites?.anime?.nodes?.filterNotNull().orEmpty()
+                    } else {
+                        val result = aniListApi.userFavoritesManga(
+                            userId = userId!!,
+                            includeDescription = includeDescription,
+                            page = it,
+                        )
+                        result.user?.favourites?.manga?.pageInfo to
+                                result.user?.favourites?.manga?.nodes?.filterNotNull().orEmpty()
                     }
-                }.flow
+                }
             }
                 .mapLatest { it.mapOnIO { MediaPreviewWithDescriptionEntry(MediaWrapper(it)) } }
                 .enforceUniqueIds { it.mediaId }

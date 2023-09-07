@@ -2,16 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.anime.user.social
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.UserSocialFollowersQuery
 import com.anilist.UserSocialFollowingQuery
 import com.anilist.fragment.PaginationInfo
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -28,7 +26,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class UserSocialViewModel<T : Any>(
     private val aniListApi: AuthedAniListApi,
-    private val apiCall: suspend (userId: String, page: Int) -> Pair<PaginationInfo?, List<T>>
+    private val apiCall: suspend (userId: String, page: Int) -> Pair<PaginationInfo?, List<T>>,
 ) : ViewModel() {
 
     private val viewer = aniListApi.authedUser
@@ -51,9 +49,7 @@ abstract class UserSocialViewModel<T : Any>(
                     .flatMapLatest { userId ->
                         refreshUptimeMillis
                             .flatMapLatest {
-                                Pager(PagingConfig(pageSize = 10)) {
-                                    AniListPagingSource { apiCall(userId, it) }
-                                }.flow
+                                AniListPager { apiCall(userId, it) }
                             }
                     }
                     .catch {

@@ -3,8 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.user.follow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.fragment.PaginationInfo
@@ -12,8 +10,8 @@ import com.anilist.fragment.UserWithFavorites
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -70,11 +68,7 @@ abstract class UserListViewModel(
                 if (userId == null) {
                     flowOf(PagingData.empty())
                 } else {
-                    Pager(config = PagingConfig(10)) {
-                        AniListPagingSource {
-                            apiCall(userId, filterParams, it)
-                        }
-                    }.flow
+                    AniListPager { apiCall(userId, filterParams, it) }
                 }
             }
                 .mapLatest {

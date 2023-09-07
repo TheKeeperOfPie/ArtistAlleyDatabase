@@ -3,8 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.type.RecommendationRating
@@ -12,8 +10,8 @@ import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -64,23 +62,21 @@ class RecommendationsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             sortFilterController.filterParams()
                 .flatMapLatest { filterParams ->
-                    Pager(config = PagingConfig(10)) {
-                        AniListPagingSource {
-                            val result = aniListApi.recommendationSearch(
-                                sort = filterParams.sort
-                                    .selectedOption(RecommendationSortOption.ID)
-                                    .toApiValue(filterParams.sortAscending),
-                                sourceMediaId = filterParams.sourceMediaId,
-                                targetMediaId = filterParams.targetMediaId,
-                                ratingGreater = filterParams.ratingRange.apiStart,
-                                ratingLesser = filterParams.ratingRange.apiEnd,
-                                onList = filterParams.onList,
-                                page = it,
-                            )
+                    AniListPager {
+                        val result = aniListApi.recommendationSearch(
+                            sort = filterParams.sort
+                                .selectedOption(RecommendationSortOption.ID)
+                                .toApiValue(filterParams.sortAscending),
+                            sourceMediaId = filterParams.sourceMediaId,
+                            targetMediaId = filterParams.targetMediaId,
+                            ratingGreater = filterParams.ratingRange.apiStart,
+                            ratingLesser = filterParams.ratingRange.apiEnd,
+                            onList = filterParams.onList,
+                            page = it,
+                        )
 
-                            result.page.pageInfo to result.page.recommendations.filterNotNull()
-                        }
-                    }.flow
+                        result.page.pageInfo to result.page.recommendations.filterNotNull()
+                    }
                 }
                 .mapLatest {
                     it.mapOnIO {

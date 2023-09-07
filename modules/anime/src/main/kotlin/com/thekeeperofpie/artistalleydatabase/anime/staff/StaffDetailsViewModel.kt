@@ -7,8 +7,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.fragment.StaffDetailsCharacterMediaPage
@@ -18,8 +16,8 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
@@ -112,21 +110,19 @@ class StaffDetailsViewModel @Inject constructor(
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { entry ->
-                    Pager(config = PagingConfig(10)) {
-                        AniListPagingSource {
-                            if (it == 1) {
-                                entry.staff.characters.let {
-                                    it?.pageInfo to it?.nodes?.filterNotNull().orEmpty()
-                                }
-                            } else {
-                                val result = aniListApi.staffDetailsCharactersPage(
-                                    staffId = entry.staff.id.toString(),
-                                    page = it,
-                                )
-                                result.pageInfo to result.nodes.filterNotNull()
+                    AniListPager {
+                        if (it == 1) {
+                            entry.staff.characters.let {
+                                it?.pageInfo to it?.nodes?.filterNotNull().orEmpty()
                             }
+                        } else {
+                            val result = aniListApi.staffDetailsCharactersPage(
+                                staffId = entry.staff.id.toString(),
+                                page = it,
+                            )
+                            result.pageInfo to result.nodes.filterNotNull()
                         }
-                    }.flow
+                    }
                 }
                 .mapLatest {
                     it.mapOnIO {

@@ -7,20 +7,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.fragment.HomeMedia
-import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -219,13 +216,11 @@ abstract class AnimeHomeMediaViewModel(
     private fun collectReviews() {
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
-                Pager(config = PagingConfig(0)) {
-                    AniListPagingSource(perPage = 5) {
-                        val result =
-                            aniListApi.homeReviews(mediaType = mediaType, page = it, perPage = 5)
-                        result.page.pageInfo to result.page.reviews.filterNotNull()
-                    }
-                }.flow
+                AniListPager(perPage = 3) {
+                    val result =
+                        aniListApi.homeReviews(mediaType = mediaType, page = it, perPage = 5)
+                    result.page.pageInfo to result.page.reviews.filterNotNull()
+                }
             }
                 .mapLatest {
                     it.mapOnIO {

@@ -4,14 +4,12 @@ import android.os.SystemClock
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -55,15 +53,13 @@ class UserFavoriteCharactersViewModel @Inject constructor(
                 ::Pair,
             ).flatMapLatest { (viewer) ->
                 val userId = userId ?: viewer?.id
-                Pager(config = PagingConfig(10)) {
-                    AniListPagingSource {
-                        val result =
-                            aniListApi.userFavoritesCharacters(userId = userId!!, page = it)
-                        result.user?.favourites?.characters?.pageInfo to
-                                result.user?.favourites?.characters?.nodes?.filterNotNull()
-                                    .orEmpty()
-                    }
-                }.flow
+                AniListPager {
+                    val result =
+                        aniListApi.userFavoritesCharacters(userId = userId!!, page = it)
+                    result.user?.favourites?.characters?.pageInfo to
+                            result.user?.favourites?.characters?.nodes?.filterNotNull()
+                                .orEmpty()
+                }
             }
                 .mapLatest {
                     it.mapOnIO {

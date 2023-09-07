@@ -6,8 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.ActivityDetailsQuery
@@ -17,8 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
@@ -131,20 +129,25 @@ class ActivityDetailsViewModel @Inject constructor(
                         }
                     }
                 }
-                .catch{ emit(LoadingResult.error(R.string.anime_activity_details_error_loading, it))}
+                .catch {
+                    emit(
+                        LoadingResult.error(
+                            R.string.anime_activity_details_error_loading,
+                            it
+                        )
+                    )
+                }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { entry = it }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
-                Pager(config = PagingConfig(10)) {
-                    AniListPagingSource {
-                        val result = aniListApi.activityReplies(id = activityId, page = it)
-                        result.page?.pageInfo to result.page?.activityReplies?.filterNotNull()
-                            .orEmpty()
-                    }
-                }.flow
+                AniListPager {
+                    val result = aniListApi.activityReplies(id = activityId, page = it)
+                    result.page?.pageInfo to result.page?.activityReplies?.filterNotNull()
+                        .orEmpty()
+                }
             }
                 .enforceUniqueIntIds { it.id }
                 .cachedIn(viewModelScope)

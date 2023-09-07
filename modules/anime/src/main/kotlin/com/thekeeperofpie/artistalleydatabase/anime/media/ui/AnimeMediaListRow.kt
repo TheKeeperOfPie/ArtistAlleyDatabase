@@ -211,6 +211,7 @@ object AnimeMediaListRow {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
             val colorCalculationState = LocalColorCalculationState.current
+            val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
             MediaCoverImage(
                 screenKey = screenKey,
                 mediaId = entry?.media?.id?.toString(),
@@ -236,13 +237,14 @@ object AnimeMediaListRow {
                 },
                 modifier = Modifier
                     // Clip to match card so that shared element animation keeps rounded corner
-                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                    .clip(shape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .fillMaxHeight()
                     .heightIn(min = 180.dp)
                     .width(130.dp)
                     .placeholder(
                         visible = entry == null,
+                        shape = shape,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
                     .combinedClickable(

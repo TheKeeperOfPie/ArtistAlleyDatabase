@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import android.os.SystemClock
 import androidx.annotation.StringRes
+import androidx.collection.LruCache
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,17 +17,23 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
+import com.anilist.CharacterAdvancedSearchQuery
+import com.anilist.MediaAdvancedSearchQuery
+import com.anilist.StaffSearchQuery
+import com.anilist.StudioSearchQuery
+import com.anilist.UserSearchQuery
 import com.anilist.type.MediaType
 import com.anilist.type.StudioSort
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -41,15 +48,18 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserUtils
 import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -177,7 +187,14 @@ class AnimeSearchViewModel @Inject constructor(
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
             },
-            pagingSource = { AnimeSearchMediaPagingSource(aniListApi, it, MediaType.ANIME) },
+            pagingSource = { params, cache: LruCache<Int, PagingSource.LoadResult.Page<Int, MediaAdvancedSearchQuery.Data.Page.Medium>> ->
+                AnimeSearchMediaPagingSource(
+                    aniListApi = aniListApi,
+                    refreshParams = params,
+                    cache = cache,
+                    mediaType = MediaType.ANIME,
+                )
+            },
             id = { it.id },
             entry = { AnimeSearchEntry.Media(it) },
             filter = { animeSortFilterController.filterMedia(it) { it.media } },
@@ -214,7 +231,14 @@ class AnimeSearchViewModel @Inject constructor(
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
             },
-            pagingSource = { AnimeSearchMediaPagingSource(aniListApi, it, MediaType.MANGA) },
+            pagingSource = { params, cache: LruCache<Int, PagingSource.LoadResult.Page<Int, MediaAdvancedSearchQuery.Data.Page.Medium>> ->
+                AnimeSearchMediaPagingSource(
+                    aniListApi = aniListApi,
+                    refreshParams = params,
+                    cache = cache,
+                    mediaType = MediaType.MANGA,
+                )
+            },
             id = { it.id },
             entry = { AnimeSearchEntry.Media(it) },
             filter = { mangaSortFilterController.filterMedia(it) { it.media } },
@@ -245,12 +269,22 @@ class AnimeSearchViewModel @Inject constructor(
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
-                    refreshUptimeMillis,
                     characterSortFilterController.filterParams(),
-                    AnimeSearchCharacterPagingSource::RefreshParams
+                    refreshUptimeMillis,
+                    ::Triple
                 )
             },
-            pagingSource = { AnimeSearchCharacterPagingSource(aniListApi, it) },
+            pagingSource = { (query, filterParams), cache: LruCache<Int, PagingSource.LoadResult.Page<Int, CharacterAdvancedSearchQuery.Data.Page.Character>> ->
+                AniListPagingSource(cache = cache) {
+                    aniListApi.searchCharacters(
+                        query = query,
+                        page = it,
+                        sort = filterParams.sort.selectedOption(CharacterSortOption.SEARCH_MATCH)
+                            .toApiValueForSearch(filterParams.sortAscending),
+                        isBirthday = filterParams.isBirthday,
+                    ).page.run { pageInfo to characters }
+                }
+            },
             id = { it.id },
             entry = {
                 AnimeSearchEntry.Character(
@@ -308,12 +342,22 @@ class AnimeSearchViewModel @Inject constructor(
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
-                    refreshUptimeMillis,
                     staffSortFilterController.filterParams(),
-                    AnimeSearchStaffPagingSource::RefreshParams
+                    refreshUptimeMillis,
+                    ::Triple
                 )
             },
-            pagingSource = { AnimeSearchStaffPagingSource(aniListApi, it) },
+            pagingSource = { (query, filterParams), cache: LruCache<Int, PagingSource.LoadResult.Page<Int, StaffSearchQuery.Data.Page.Staff>> ->
+                AniListPagingSource(cache = cache) {
+                    aniListApi.searchStaff(
+                        query = query,
+                        page = it,
+                        sort = filterParams.sort.selectedOption(StaffSortOption.SEARCH_MATCH)
+                            .toApiValueForSearch(filterParams.sortAscending),
+                        isBirthday = filterParams.isBirthday,
+                    ).page.run { pageInfo to staff }
+                }
+            },
             id = { it.id },
             entry = {
                 AnimeSearchEntry.Staff(
@@ -376,18 +420,16 @@ class AnimeSearchViewModel @Inject constructor(
                     ::Triple,
                 )
             },
-            pagingSource = { (query, _, filterParams) ->
-                AniListPagingSource {
-                    val result = aniListApi.searchStudios(
+            pagingSource = { (query, _, filterParams), cache: LruCache<Int, PagingSource.LoadResult.Page<Int, StudioSearchQuery.Data.Page.Studio>> ->
+                AniListPagingSource(cache = cache) {
+                    aniListApi.searchStudios(
                         query = query,
                         page = it,
                         perPage = 10,
                         sort = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
                             .flatMap { it.value.toApiValue(filterParams.sortAscending) }
                             .ifEmpty { listOf(StudioSort.SEARCH_MATCH) }
-                    )
-
-                    result.page.pageInfo to result.page.studios?.filterNotNull().orEmpty()
+                    ).page.run { pageInfo to studios }
                 }
             },
             id = { it.id },
@@ -447,12 +489,22 @@ class AnimeSearchViewModel @Inject constructor(
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
-                    refreshUptimeMillis,
                     userSortFilterController.filterParams(),
-                    AnimeSearchUserPagingSource::RefreshParams
+                    refreshUptimeMillis,
+                    ::Triple,
                 )
             },
-            pagingSource = { AnimeSearchUserPagingSource(aniListApi, it) },
+            pagingSource = { (query, filterParams), cache: LruCache<Int, PagingSource.LoadResult.Page<Int, UserSearchQuery.Data.Page.User>> ->
+                AniListPagingSource {
+                    aniListApi.searchUsers(
+                        query = query,
+                        page = it,
+                        sort = filterParams.sort.selectedOption(UserSortOption.SEARCH_MATCH)
+                            .toApiValue(filterParams.sortAscending),
+                        isModerator = filterParams.isModerator,
+                    ).page.run { pageInfo to users }
+                }
+            },
             id = { it.id },
             entry = {
                 AnimeSearchEntry.User(
@@ -507,7 +559,7 @@ class AnimeSearchViewModel @Inject constructor(
     private fun <Params, Result : Any, Entry : AnimeSearchEntry> collectSearch(
         searchType: SearchType,
         flow: () -> Flow<Params>,
-        pagingSource: (Params) -> PagingSource<Int, Result>,
+        pagingSource: (Params, LruCache<Int, PagingSource.LoadResult.Page<Int, Result>>) -> PagingSource<Int, Result>,
         id: (Result) -> Int,
         entry: (Result) -> Entry,
         filter: ((PagingData<Entry>) -> Flow<PagingData<Entry>>)? = null,
@@ -523,14 +575,16 @@ class AnimeSearchViewModel @Inject constructor(
                 .debounce(100.milliseconds)
                 .distinctUntilChanged()
                 .flatMapLatest {
+                    val cache = LruCache<Int, PagingSource.LoadResult.Page<Int, Result>>(20)
                     Pager(
                         PagingConfig(
                             pageSize = 10,
                             initialLoadSize = 10,
-                            enablePlaceholders = true
+                            jumpThreshold = 20,
+                            enablePlaceholders = true,
                         )
                     ) {
-                        pagingSource(it)
+                        pagingSource(it, cache)
                     }.flow
                 }
                 .map {

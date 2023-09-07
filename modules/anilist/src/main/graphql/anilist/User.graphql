@@ -287,8 +287,7 @@ query UserSearch(
 ) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
-            hasNextPage
-            total
+            ...PaginationInfo
         }
 
         users(search: $search, sort: $sort, isModerator: $isModerator) {

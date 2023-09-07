@@ -140,8 +140,7 @@ query StaffSearch(
 ) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
-            hasNextPage
-            total
+            ...PaginationInfo
         }
 
         staff(search: $search, isBirthday: $isBirthday, sort: $sort) {

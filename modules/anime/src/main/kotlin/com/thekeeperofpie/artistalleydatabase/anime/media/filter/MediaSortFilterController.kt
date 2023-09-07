@@ -336,21 +336,19 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         transform: (Entry) -> MediaPreview,
     ) = combine(
         flowOf(result),
-        settings.showAdult,
-        settings.showIgnored,
         snapshotFlow {
-            val tags = tagsByCategory.value.values.flatMap {
+            val includedTags = tagsByCategory.value.values.flatMap {
                 when (it) {
                     is TagSection.Category -> it.flatten()
                     is TagSection.Tag -> listOf(it)
                 }
-            }
+            }.filter { it.state == FilterIncludeExcludeState.INCLUDE }
 
-            Triple(tags, tagShowWhenSpoiler, listStatusSection.filterOptions)
+            Triple(includedTags, tagShowWhenSpoiler, listStatusSection.filterOptions)
         }
             .flowOn(CustomDispatchers.Main),
-    ) { pagingData, showAdult, showIgnored, triple ->
-        val (tags, tagShowWhenSpoiler, listStatuses) = triple
+    ) { pagingData, triple ->
+        val (includedTags, tagShowWhenSpoiler, listStatuses) = triple
         val includes = listStatuses
             .filter { it.state == FilterIncludeExcludeState.INCLUDE }
             .mapNotNull { it.value }
@@ -368,16 +366,8 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                 return@filterOnIO false
             }
 
-            if (!showAdult && media.isAdult != false) {
-                return@filterOnIO false
-            }
-
-            if (!showIgnored) {
-                return@filterOnIO !it.ignored
-            }
-
-            if (!tagShowWhenSpoiler && tags.isNotEmpty()) {
-                return@filterOnIO tags.all { tag ->
+            if (!tagShowWhenSpoiler && includedTags.isNotEmpty()) {
+                return@filterOnIO includedTags.all { tag ->
                     media.tags?.find { it?.id.toString() == tag.id }
                         ?.isMediaSpoiler != true
                 }

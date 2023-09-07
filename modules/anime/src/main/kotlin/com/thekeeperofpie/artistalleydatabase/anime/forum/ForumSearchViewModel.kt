@@ -7,15 +7,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.ForumThreadSearchQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
@@ -75,25 +73,23 @@ class ForumSearchViewModel @Inject constructor(
                 ::Pair
             )
                 .flatMapLatest { (query, filterParams) ->
-                    Pager(config = PagingConfig(10)) {
-                        AniListPagingSource {
-                            val result = aniListApi.forumThreadSearch(
-                                search = query,
-                                subscribed = filterParams.subscribed,
-                                categoryId = filterParams.categories
-                                    .firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
-                                    ?.value
-                                    ?.categoryId
-                                    ?.toString(),
-                                mediaCategoryId = filterParams.mediaCategoryId,
-                                sort = filterParams.sortOptions.firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
-                                    ?.value
-                                    ?.toApiValue(filterParams.sortAscending),
-                                page = it,
-                            )
-                            result.page.pageInfo to result.page.threads?.filterNotNull().orEmpty()
-                        }
-                    }.flow
+                    AniListPager {
+                        val result = aniListApi.forumThreadSearch(
+                            search = query,
+                            subscribed = filterParams.subscribed,
+                            categoryId = filterParams.categories
+                                .firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
+                                ?.value
+                                ?.categoryId
+                                ?.toString(),
+                            mediaCategoryId = filterParams.mediaCategoryId,
+                            sort = filterParams.sortOptions.firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
+                                ?.value
+                                ?.toApiValue(filterParams.sortAscending),
+                            page = it,
+                        )
+                        result.page.pageInfo to result.page.threads?.filterNotNull().orEmpty()
+                    }
                 }
                 .enforceUniqueIntIds { it.id }
                 .cachedIn(viewModelScope)
