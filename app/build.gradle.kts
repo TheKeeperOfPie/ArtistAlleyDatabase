@@ -140,7 +140,7 @@ ksp {
 }
 
 tasks.register("installAll") {
-    dependsOn("installDebug", "installRelease")
+    dependsOn("installDebug", "installReleaseTemp")
 }
 
 fun Exec.launchActivity(
@@ -155,16 +155,34 @@ fun Exec.launchActivity(
     )
 }
 
+
+// TODO: (b/299506174)
+tasks.register<Exec>("installReleaseTemp") {
+    commandLine(
+        "adb", "install",
+        project.rootDir.resolve("app/build/outputs/apk/release/app-release.apk")
+    )
+    outputs.upToDateWhen { false }
+}
+
+tasks.register<Exec>("installInternalTemp") {
+    commandLine(
+        "adb", "install",
+        project.rootDir.resolve("app/build/outputs/apk/internal/app-internal.apk")
+    )
+    outputs.upToDateWhen { false }
+}
+
 tasks.register("launchRelease") {
-    dependsOn("installRelease")
-    finalizedBy("compileAndLaunchRelease", "installInternal", "installDebug")
+    dependsOn("installReleaseTemp")
+    finalizedBy("compileAndLaunchRelease", "installInternalTemp", "installDebug")
     outputs.upToDateWhen { false }
 }
 
 tasks.register<Exec>("launchDebug") {
     dependsOn("installDebug")
     launchActivity("com.thekeeperofpie.anichive.debug")
-    finalizedBy("installRelease", "installInternal")
+    finalizedBy("installReleaseTemp", "installInternalTemp")
     outputs.upToDateWhen { false }
 }
 
