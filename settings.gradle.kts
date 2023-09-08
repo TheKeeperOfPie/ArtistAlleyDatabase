@@ -26,13 +26,10 @@ dependencyResolutionManagement {
     }
 
     versionCatalogs {
-        create("kaptProcessors") {
-            prefix("androidx") { library("androidx.hilt:hilt-compiler:1.1.0-alpha01") }
-            prefix("dagger") { library("com.google.dagger:hilt-compiler:2.47") }
-        }
-
         create("kspProcessors") {
-            library("androidx.room:room-compiler:2.6.0-alpha03")
+            prefix("androidx") { library("androidx.hilt:hilt-compiler:1.1.0-alpha01") }
+            prefix("dagger") { library("com.google.dagger:hilt-compiler:2.48") }
+            library("androidx.room:room-compiler:2.6.0-beta01")
             library("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
         }
 
@@ -40,11 +37,11 @@ dependencyResolutionManagement {
             fun plugin(id: String) = plugin(id, id)
             plugin("com.apollographql.apollo3.external").version("4.0.0-alpha.3")
             plugin("com.autonomousapps.dependency-analysis").version("1.21.0")
-            plugin("com.github.ben-manes.versions").version("0.47.0")
-            plugin("com.google.dagger.hilt.android").version("2.47")
+            plugin("com.github.ben-manes.versions").version("0.48.0")
+            plugin("com.google.dagger.hilt.android").version("2.48")
             plugin("com.jaredsburrows.license").version("0.9.3")
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
-            plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.0")
+            plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.10")
 
             library("androidx.activity:activity-compose:1.8.0-alpha06")
             library("androidx.compose.material3:material3:1.2.0-alpha04")
@@ -55,44 +52,44 @@ dependencyResolutionManagement {
             library("androidx.core:core-ktx:1.12.0-beta01")
             library("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
             library("androidx.hilt:hilt-work:1.1.0-alpha01")
-            library("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0-alpha01")
-            library("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0-alpha01")
-            library("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0-alpha01")
-            library("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0-alpha01")
-            library("androidx.media3:media3-datasource-cronet:1.1.1")
-            library("androidx.media3:media3-exoplayer:1.1.1")
-            library("androidx.media3:media3-exoplayer-dash:1.1.1")
-            library("androidx.media3:media3-exoplayer-hls:1.1.1")
-            library("androidx.media3:media3-exoplayer-rtsp:1.1.1")
-            library("androidx.media3:media3-ui:1.1.1")
+            library("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0-alpha02")
+            library("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0-alpha02")
+            library("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0-alpha02")
+            library("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0-alpha02")
+            library("androidx.media3:media3-datasource-cronet:1.2.0-alpha01")
+            library("androidx.media3:media3-exoplayer:1.2.0-alpha01")
+            library("androidx.media3:media3-exoplayer-dash:1.2.0-alpha01")
+            library("androidx.media3:media3-exoplayer-hls:1.2.0-alpha01")
+            library("androidx.media3:media3-exoplayer-rtsp:1.2.0-alpha01")
+            library("androidx.media3:media3-ui:1.2.0-alpha01")
 
             // Upgrading past 2.6.0 will break shared element transitions
             library("androidx.navigation:navigation-compose:2.6.0")
-            library("androidx.paging:paging-compose:3.2.0")
-            library("androidx.paging:paging-runtime-ktx:3.2.0")
+            library("androidx.paging:paging-compose:3.2.1")
+            library("androidx.paging:paging-runtime-ktx:3.2.1")
             library("androidx.palette:palette-ktx:1.0.0")
-            library("androidx.room:room-compiler:2.6.0-alpha03")
-            library("androidx.room:room-ktx:2.6.0-alpha03")
-            library("androidx.room:room-paging:2.6.0-alpha03")
-            library("androidx.room:room-runtime:2.6.0-alpha03")
-            library("androidx.room:room-testing:2.6.0-alpha03")
+            library("androidx.room:room-compiler:2.6.0-beta01")
+            library("androidx.room:room-ktx:2.6.0-beta01")
+            library("androidx.room:room-paging:2.6.0-beta01")
+            library("androidx.room:room-runtime:2.6.0-beta01")
+            library("androidx.room:room-testing:2.6.0-beta01")
             library("androidx.test.ext:junit:1.2.0-alpha01", alias = "androidx.junit.test")
-            library("androidx.test:runner:1.6.0-alpha03", alias = "androidx.test.runner")
-            library("androidx.work:work-runtime-ktx:2.9.0-alpha02")
-            library("androidx.work:work-runtime:2.9.0-alpha02")
+            library("androidx.test:runner:1.6.0-alpha04", alias = "androidx.test.runner")
+            library("androidx.work:work-runtime-ktx:2.9.0-beta01")
+            library("androidx.work:work-runtime:2.9.0-beta01")
             library("com.android.billingclient:billing-ktx:6.0.1")
             library("com.apollographql.apollo3:apollo-runtime:4.0.0-alpha.3")
             library("com.apollographql.apollo3:apollo-normalized-cache:4.0.0-alpha.3")
             library("com.apollographql.apollo3:apollo-normalized-cache-sqlite:4.0.0-alpha.3")
-            library("com.google.accompanist:accompanist-flowlayout:0.31.6-rc")
-            library("com.google.accompanist:accompanist-navigation-animation:0.31.6-rc")
-            library("com.google.accompanist:accompanist-pager-indicators:0.31.6-rc")
-            library("com.google.android.gms:play-services-ads:22.2.0")
+            library("com.google.accompanist:accompanist-flowlayout:0.33.1-alpha")
+            library("com.google.accompanist:accompanist-navigation-animation:0.33.1-alpha")
+            library("com.google.accompanist:accompanist-pager-indicators:0.33.1-alpha")
+            library("com.google.android.gms:play-services-ads:22.3.0")
             library("com.google.android.gms:play-services-oss-licenses:17.0.1")
             library("com.google.android.play:app-update:2.1.0")
             library("com.google.android.play:app-update-ktx:2.1.0")
             library("com.google.android.ump:user-messaging-platform:2.1.0")
-            library("com.google.dagger:hilt-android:2.47")
+            library("com.google.dagger:hilt-android:2.48")
             library("com.google.net.cronet:cronet-okhttp:0.1.0")
             library("com.google.truth:truth:1.1.5")
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
@@ -126,8 +123,8 @@ dependencyResolutionManagement {
             library("org.junit.jupiter:junit-jupiter-api:5.10.0")
             library("org.junit.jupiter:junit-jupiter-engine:5.10.0")
             library("org.mockito.kotlin:mockito-kotlin:5.1.0")
-            library("org.mockito:mockito-android:5.4.0")
-            library("org.mockito:mockito-core:5.4.0")
+            library("org.mockito:mockito-android:5.5.0")
+            library("org.mockito:mockito-core:5.5.0")
 
             prefix("androidx") {
                 library("androidx.browser:browser:1.6.0-rc01")

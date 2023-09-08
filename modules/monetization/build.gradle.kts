@@ -1,7 +1,7 @@
 plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -13,8 +13,8 @@ dependencies {
     api(project(":modules:compose-utils"))
 
     implementation(libs.hilt.android)
-    kapt(kaptProcessors.dagger.hilt.compiler)
-    kapt(kaptProcessors.androidx.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.compose.ui)

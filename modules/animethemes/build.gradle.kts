@@ -1,6 +1,5 @@
 plugins {
     id("module-library")
-    id("kotlin-kapt")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
@@ -17,8 +16,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)
-    kapt(kaptProcessors.dagger.hilt.compiler)
-    kapt(kaptProcessors.androidx.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
 
     implementation(libs.okhttp)
 }

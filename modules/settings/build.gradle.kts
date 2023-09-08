@@ -1,7 +1,6 @@
 plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
@@ -26,8 +25,8 @@ dependencies {
     runtimeOnly(libs.kotlinx.coroutines.android)
 
     implementation(libs.hilt.android)
-    kapt(kaptProcessors.dagger.hilt.compiler)
-    kapt(kaptProcessors.androidx.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
 
     api(libs.androidx.security.crypto)
 

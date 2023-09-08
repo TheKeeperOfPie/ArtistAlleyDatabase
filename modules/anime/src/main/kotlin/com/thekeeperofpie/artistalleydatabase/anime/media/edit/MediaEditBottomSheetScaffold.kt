@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -30,11 +33,11 @@ object MediaEditBottomSheetScaffold {
     @Composable
     operator fun invoke(
         screenKey: String,
-        viewModel: MediaEditViewModel = hiltViewModel(),
         modifier: Modifier = Modifier,
+        viewModel: MediaEditViewModel = hiltViewModel(),
         topBar: @Composable (() -> Unit)? = null,
         bottomNavigationState: BottomNavigationState? = null,
-        sheetState: androidx.compose.material3.SheetState = androidx.compose.material3.rememberStandardBottomSheetState(
+        sheetState: SheetState = rememberStandardBottomSheetState(
             initialValue = SheetValue.Hidden,
             confirmValueChange = viewModel::onEditSheetValueChange,
             skipHiddenState = false,
@@ -42,7 +45,7 @@ object MediaEditBottomSheetScaffold {
         snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
         content: @Composable (PaddingValues) -> Unit,
     ) {
-        val bottomSheetScaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(
+        val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
             bottomSheetState = sheetState,
             snackbarHostState = snackbarHostState,
         )

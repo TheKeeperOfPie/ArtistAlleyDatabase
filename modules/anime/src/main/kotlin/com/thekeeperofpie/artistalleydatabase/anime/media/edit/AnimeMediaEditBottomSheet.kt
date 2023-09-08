@@ -110,7 +110,7 @@ object AnimeMediaEditBottomSheet {
             Column(
                 Modifier
                     .verticalScroll(rememberScrollState())
-                    .weight(1f)
+                    .weight(1f, fill = false)
             ) {
                 Crossfade(
                     targetState = initialParams?.loading,
@@ -221,7 +221,6 @@ object AnimeMediaEditBottomSheet {
                     TextButton(onClick = {
                         viewModel.editData.showConfirmClose = false
                         viewModel.editData.showing = false
-                        viewModel.dismissRequests.tryEmit(System.currentTimeMillis())
                         onDismiss()
                     }) {
                         Text(stringResource(R.string.anime_media_edit_confirm_delete_exit_button))

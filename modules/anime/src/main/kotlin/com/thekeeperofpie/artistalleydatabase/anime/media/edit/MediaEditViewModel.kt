@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -36,7 +35,6 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.util.Collections
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterial3Api::class)
@@ -54,10 +52,6 @@ class MediaEditViewModel @Inject constructor(
 
     private val rawScore = MutableSharedFlow<Double?>(1, 1)
     val scoreFormat = MutableStateFlow(ScoreFormat.POINT_100)
-
-    val dismissRequests = MutableSharedFlow<Long>()
-
-    private val jobs = Collections.synchronizedMap(mutableMapOf<String, Job>())
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -301,7 +295,6 @@ class MediaEditViewModel @Inject constructor(
                     editData.deleting = false
                     editData.showing = false
                     editData.showConfirmClose = false
-                    dismissRequests.emit(System.currentTimeMillis())
                     initialize(
                         mediaId = mediaId,
                         coverImage = null,
@@ -425,7 +418,6 @@ class MediaEditViewModel @Inject constructor(
                     editData.saving = false
                     editData.showing = false
                     editData.showConfirmClose = false
-                    dismissRequests.emit(System.currentTimeMillis())
                     initialize(
                         mediaId = mediaId,
                         coverImage = initialParams.coverImage,

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.user
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -51,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditI
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
@@ -59,7 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHig
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 object UserListRow {
 
     private val MIN_HEIGHT = 156.dp
@@ -77,20 +77,17 @@ object UserListRow {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
+            onClick = {
+                if (entry != null) {
+                    navigationCallback.onUserClick(
+                        entry.user,
+                        imageWidthToHeightRatio,
+                    )
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = MIN_HEIGHT)
-                .clickable(
-                    enabled = true, // TODO: placeholder,
-                    onClick = {
-                        if (entry != null) {
-                            navigationCallback.onUserClick(
-                                entry.user,
-                                imageWidthToHeightRatio,
-                            )
-                        }
-                    },
-                )
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 UserImage(
@@ -171,7 +168,7 @@ object UserListRow {
                 .heightIn(min = MIN_HEIGHT)
                 .width(IMAGE_WIDTH)
                 .placeholder(
-                    visible = false, // TODO: placeholder,
+                    visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
                 )
                 .combinedClickable(
@@ -189,13 +186,13 @@ object UserListRow {
     @Composable
     private fun NameText(entry: Entry?, modifier: Modifier = Modifier) {
         AutoHeightText(
-            text = entry?.user?.name ?: "Username",
+            text = entry?.user?.name ?: "Placeholder username",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = modifier
                 .padding(horizontal = 12.dp, vertical = 10.dp)
                 .placeholder(
-                    visible = false, // TODO: placeholder
+                    visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
                 )
         )
@@ -222,23 +219,30 @@ object UserListRow {
                 .size(width = LocalConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
                 .fadingEdgeEnd()
         ) {
-            items(media, key = { it.media.id }) {
-                SharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
+            items(
+                data = media,
+                placeholderCount = 5,
+                key = { it.media.id },
+                contentType = { "media" },
+            ) {
+                SharedElement(key = "anime_media_${it?.media?.id}_image", screenKey = screenKey) {
                     Box {
                         ListRowSmallImage(
                             context = context,
                             density = density,
-                            ignored = it.ignored,
-                            image = it.media.coverImage?.extraLarge,
+                            ignored = it?.ignored ?: false,
+                            image = it?.media?.coverImage?.extraLarge,
                             contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
                             width = MEDIA_WIDTH,
                             height = MEDIA_HEIGHT,
                             onClick = { imageWidthToHeightRatio ->
-                                onMediaClick(it.media, imageWidthToHeightRatio)
+                                it?.media?.let {
+                                    onMediaClick(it, imageWidthToHeightRatio)
+                                }
                             },
                         )
 
-                        if (viewer != null) {
+                        if (viewer != null && it != null) {
                             MediaListQuickEditIconButton(
                                 viewer = viewer,
                                 mediaType = it.media.type,

@@ -1,7 +1,7 @@
 plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
@@ -17,8 +17,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)
-    kapt(kaptProcessors.dagger.hilt.compiler)
-    kapt(kaptProcessors.androidx.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
 
     implementation(libs.lifecycle.viewmodel.ktx)
 

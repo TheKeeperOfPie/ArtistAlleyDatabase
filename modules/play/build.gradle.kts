@@ -1,7 +1,7 @@
 plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
@@ -19,8 +19,8 @@ dependencies {
     api(project(":modules:monetization"))
 
     implementation(libs.hilt.android)
-    kapt(kaptProcessors.dagger.hilt.compiler)
-    kapt(kaptProcessors.androidx.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
 
     implementation(libs.lifecycle.runtime.ktx)
 

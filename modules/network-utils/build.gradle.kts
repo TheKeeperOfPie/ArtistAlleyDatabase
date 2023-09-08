@@ -1,6 +1,5 @@
 plugins {
     id("module-library")
-    id("kotlin-kapt")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
 }
@@ -17,7 +16,7 @@ dependencies {
     implementation(libs.cronet.okhttp)
 
     api(libs.hilt.android)
-    kapt(kaptProcessors.dagger.hilt.compiler)
-    kapt(kaptProcessors.androidx.hilt.compiler)
-    kapt(kaptProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
 }

@@ -4,7 +4,6 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     alias(libs.plugins.com.jaredsburrows.license)
@@ -114,7 +113,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.3"
     }
     packaging {
         resources {
@@ -228,8 +227,8 @@ dependencies {
     implementation(libs.paging.compose)
 
     implementation(libs.hilt.android)
-    kapt(kaptProcessors.dagger.hilt.compiler)
-    kapt(kaptProcessors.androidx.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.hilt.work)
 

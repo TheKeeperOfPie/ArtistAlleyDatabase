@@ -9,7 +9,6 @@ import com.squareup.kotlinpoet.TypeSpec
 plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
     alias(libs.plugins.com.apollographql.apollo3.external)
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
@@ -148,8 +147,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     api(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    kapt(kaptProcessors.dagger.hilt.compiler)
-    kapt(kaptProcessors.androidx.hilt.compiler)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
     implementation(libs.material.icons.core)
     implementation(libs.material.icons.extended)
 
