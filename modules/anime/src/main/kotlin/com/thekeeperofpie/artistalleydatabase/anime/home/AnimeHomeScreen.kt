@@ -26,7 +26,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
@@ -129,8 +128,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingPlaceholderKey
 import com.thekeeperofpie.artistalleydatabase.anime.utils.getOrNull
+import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.anime.utils.itemsIndexed
 import com.thekeeperofpie.artistalleydatabase.anime.utils.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
@@ -496,11 +495,10 @@ object AnimeHomeScreen {
 
         item("$headerTextRes-current") {
             val listState = rememberLazyListState()
-            val items = result ?: run {
-                val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
-                val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
-                    .coerceAtLeast(1) + 1
-                arrayOfNulls<UserMediaListController.MediaEntry?>(placeholderCount).asList()
+            val placeholderCount = if (result == null) {
+                mediaViewModel.currentMediaPreviousSize.collectAsState().value
+            } else {
+                0
             }
             LazyRow(
                 state = listState,
@@ -508,13 +506,14 @@ object AnimeHomeScreen {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.animateItemPlacement()
             ) {
-                itemsIndexed(
-                    items = items,
-                    key = { index, item -> item?.media?.id ?: PagingPlaceholderKey(index) },
-                    contentType = { _, _ -> "media" },
-                ) { _, item ->
+                items(
+                    data = result,
+                    placeholderCount = placeholderCount,
+                    key = { it.media.id },
+                    contentType = { "media" },
+                ) {
                     CurrentMediaCard(
-                        entry = item,
+                        entry = it,
                         viewer = viewer,
                         onClickListEdit = onClickListEdit,
                         onClickIncrementProgress = onClickIncrementProgress,

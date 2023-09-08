@@ -26,6 +26,4 @@ data class LoadingResult<T>(
             error = error,
         )
     }
-
-    fun toDebugStringWithoutResult() = "loading = $loading, success = $success, error = $error"
 }

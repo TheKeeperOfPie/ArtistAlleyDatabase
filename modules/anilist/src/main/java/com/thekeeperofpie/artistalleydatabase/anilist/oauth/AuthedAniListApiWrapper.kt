@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import com.anilist.ActivityDetailsQuery
-import com.anilist.MediaDetailsActivityQuery
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
@@ -598,8 +597,10 @@ class AuthedAniListApiWrapper(
     ) = super.searchStudios(query, page, perPage, sort).let {
         it.copy(page = it.page.copy(studios = it.page.studios?.map {
             it?.copy(
-                media = it.media?.copy(
-                    nodes = it.media.nodes?.filter { it?.isAdult == false })
+                main = it.main?.copy(
+                    nodes = it.main.nodes?.filter { it?.isAdult == false }),
+                nonMain = it.nonMain?.copy(
+                    nodes = it.nonMain.nodes?.filter { it?.isAdult == false }),
             )
         }))
     }
@@ -922,7 +923,10 @@ class AuthedAniListApiWrapper(
                 favourites = it.user.favourites?.copy(
                     studios = it.user.favourites.studios?.copy(
                         nodes = it.user.favourites.studios.nodes?.map {
-                            it?.copy(media = it.media?.copy(nodes = it.media.nodes?.filter { it?.isAdult == false }))
+                            it?.copy(
+                                main = it.main?.copy(nodes = it.main.nodes?.filter { it?.isAdult == false }),
+                                nonMain = it.nonMain?.copy(nodes = it.nonMain.nodes?.filter { it?.isAdult == false }),
+                            )
                         })
                 )
             )

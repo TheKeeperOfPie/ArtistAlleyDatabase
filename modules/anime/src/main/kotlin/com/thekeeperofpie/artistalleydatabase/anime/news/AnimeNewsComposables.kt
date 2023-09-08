@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
+import android.text.format.DateUtils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -127,19 +129,46 @@ fun AnimeNewsSmallCard(
                     )
                 )
 
-                if (entry == null || entry.copyright != null) {
-                    Text(
-                        text = entry?.copyright ?: "Copyright placeholder",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 8.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.placeholder(
-                            visible = entry == null,
-                            highlight = PlaceholderHighlight.shimmer(),
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (entry == null || entry.copyright != null) {
+                        Text(
+                            text = entry?.copyright ?: "Copyright placeholder",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 8.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .placeholder(
+                                    visible = entry == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
                         )
-                    )
+                    }
+
+                    val time = entry?.date?.time
+                    if (entry == null || time != null) {
+                        Text(
+                            text = time?.let(DateUtils::getRelativeTimeSpanString)
+                                ?.toString()
+                                ?: "00 minutes ago",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 8.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .placeholder(
+                                    visible = entry == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
+                        )
+                    }
                 }
             }
         }

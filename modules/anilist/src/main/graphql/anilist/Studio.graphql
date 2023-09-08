@@ -7,7 +7,12 @@ fragment StudioListRowFragment on Studio {
     ...StudioNavigationData
     isAnimationStudio
     favourites
-    media(sort: [FAVOURITES_DESC], perPage: 5, isMain: true) {
+    main: media(sort: [FAVOURITES_DESC], perPage: 3, isMain: true) {
+        nodes {
+            ...MediaWithListStatus
+        }
+    }
+    nonMain: media(sort: [FAVOURITES_DESC], perPage: 3, isMain: false) {
         nodes {
             ...MediaWithListStatus
         }

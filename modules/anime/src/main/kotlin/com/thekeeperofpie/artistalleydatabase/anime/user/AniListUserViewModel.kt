@@ -295,9 +295,10 @@ class AniListUserViewModel @Inject constructor(
                     val studios = result?.nodes?.filterNotNull()?.map {
                         StudioListRow.Entry(
                             studio = it,
-                            media = it.media?.nodes?.filterNotNull()
-                                ?.map(::MediaWithListStatusEntry)
-                                .orEmpty()
+                            media = it.main?.nodes?.filterNotNull().orEmpty()
+                                .map(::MediaWithListStatusEntry) +
+                                    it.nonMain?.nodes?.filterNotNull().orEmpty()
+                                        .map(::MediaWithListStatusEntry)
                         )
                     }.orEmpty()
                     StudiosEntry(hasMore = hasMore, studios = studios)

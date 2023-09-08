@@ -4,7 +4,6 @@ import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.hoc081098.flowext.startWith
 import com.rometools.rome.feed.synd.SyndCategory
 import com.rometools.rome.io.SyndFeedInput
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
@@ -12,19 +11,25 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.onTimeout
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class AnimeNewsController(
     private val scopedApplication: ScopedApplication,
     private val okHttpClient: OkHttpClient,
@@ -51,32 +56,54 @@ class AnimeNewsController(
         job = scopedApplication.scope.launch(CustomDispatchers.IO) {
             val animeNewsNetwork =
                 combine(settings.animeNewsNetworkRegion, refreshUptimeMillis, ::Pair)
-                    .mapLatest { (region) ->
-                        fetchFeed(
-                            type = AnimeNewsType.ANIME_NEWS_NETWORK,
-                            okHttpClient = okHttpClient,
-                            url = "${AnimeNewsNetworkUtils.NEWS_ATOM_URL_PREFIX}${region.id}",
-                            mapCategories = { category ->
-                                AnimeNewsNetworkCategory.values().find { it.id == category.name }
-                                    ?: AnimeNewsNetworkCategory.UNKNOWN
-                            },
-                            ifEmpty = AnimeNewsNetworkCategory.UNKNOWN,
-                        )
+                    .flatMapLatest { (region) ->
+                        flow {
+                            val result = async {
+                                fetchFeed(
+                                    type = AnimeNewsType.ANIME_NEWS_NETWORK,
+                                    okHttpClient = okHttpClient,
+                                    url = "${AnimeNewsNetworkUtils.NEWS_ATOM_URL_PREFIX}${region.id}",
+                                    mapCategories = { category ->
+                                        AnimeNewsNetworkCategory.entries.find { it.id == category.name }
+                                            ?: AnimeNewsNetworkCategory.UNKNOWN
+                                    },
+                                    ifEmpty = AnimeNewsNetworkCategory.UNKNOWN,
+                                )
+                            }
+                            select {
+                                result.onAwait { emit(it) }
+                                onTimeout(2.seconds) {
+                                    emit(null)
+                                    emit(result.await())
+                                }
+                            }
+                        }
                     }
                     .catch {}
 
             val crunchyroll = refreshUptimeMillis
-                .mapLatest {
-                    fetchFeed(
-                        type = AnimeNewsType.CRUNCHYROLL,
-                        okHttpClient = okHttpClient,
-                        url = CrunchyrollNewsUtils.NEW_RSS_URL,
-                        mapCategories = { category ->
-                            CrunchyrollNewsCategory.values().find { it.id == category.name }
-                                ?: CrunchyrollNewsCategory.UNKNOWN
-                        },
-                        ifEmpty = CrunchyrollNewsCategory.UNKNOWN,
-                    )
+                .flatMapLatest {
+                    flow {
+                        val result = async {
+                            fetchFeed(
+                                type = AnimeNewsType.CRUNCHYROLL,
+                                okHttpClient = okHttpClient,
+                                url = CrunchyrollNewsUtils.NEW_RSS_URL,
+                                mapCategories = { category ->
+                                    CrunchyrollNewsCategory.entries.find { it.id == category.name }
+                                        ?: CrunchyrollNewsCategory.UNKNOWN
+                                },
+                                ifEmpty = CrunchyrollNewsCategory.UNKNOWN,
+                            )
+                        }
+                        select {
+                            result.onAwait { emit(it) }
+                            onTimeout(2.seconds) {
+                                emit(null)
+                                emit(result.await())
+                            }
+                        }
+                    }
                 }
                 .catch {}
 
@@ -85,6 +112,7 @@ class AnimeNewsController(
                 settings.animeNewsNetworkCategoriesIncluded,
                 settings.animeNewsNetworkCategoriesExcluded,
             ) { news, included, excluded ->
+                news ?: return@combine null
                 FilterIncludeExcludeState.applyFiltering(
                     includes = included,
                     excludes = excluded,
@@ -93,13 +121,13 @@ class AnimeNewsController(
                     mustContainAll = false,
                 )
             }
-                .startWith(item = null)
 
             val crunchyrollFiltered = combine(
                 crunchyroll,
                 settings.crunchyrollNewsCategoriesIncluded,
                 settings.crunchyrollNewsCategoriesExcluded,
             ) { news, included, excluded ->
+                news ?: return@combine null
                 FilterIncludeExcludeState.applyFiltering(
                     includes = included,
                     excludes = excluded,
@@ -108,7 +136,6 @@ class AnimeNewsController(
                     mustContainAll = false,
                 )
             }
-                .startWith(item = null)
 
             combine(
                 animeNewsNetworkFiltered,

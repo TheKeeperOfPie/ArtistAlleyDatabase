@@ -64,9 +64,10 @@ class UserFavoriteStudiosViewModel @Inject constructor(
                     it.mapOnIO {
                         StudioListRow.Entry(
                             studio = it,
-                            media = it.media?.nodes?.filterNotNull().orEmpty()
-                                .distinctBy { it.id }
-                                .map(::MediaWithListStatusEntry)
+                            media = it.main?.nodes?.filterNotNull().orEmpty()
+                                .map(::MediaWithListStatusEntry) +
+                                    it.nonMain?.nodes?.filterNotNull().orEmpty()
+                                        .map(::MediaWithListStatusEntry)
                         )
                     }
                 }

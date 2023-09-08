@@ -136,7 +136,7 @@ object AnimeSearchScreen {
                 val content = viewModel.content.collectAsLazyPagingItems(CustomDispatchers.IO)
                 val refreshState = content.loadState.refresh
                 val errorText = (refreshState as? LoadState.Error)
-                    ?.let { stringResource(R.string.anime_media_list_error_loading)}
+                    ?.let { stringResource(R.string.anime_media_list_error_loading) }
                 LaunchedEffect(errorText) {
                     if (errorText != null) {
                         bottomSheetScaffoldState.snackbarHostState.showSnackbar(errorText)
@@ -221,11 +221,19 @@ object AnimeSearchScreen {
                                     }
                                 refreshState is LoadState.NotLoading && content.itemCount == 0 ->
                                     item {
-                                        Text(
-                                            stringResource(id = R.string.anime_media_list_no_results),
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                                        )
+                                        Box(
+                                            contentAlignment = Alignment.TopCenter,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(
+                                                stringResource(id = R.string.anime_media_list_no_results),
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                modifier = Modifier.padding(
+                                                    horizontal = 16.dp,
+                                                    vertical = 10.dp
+                                                ),
+                                            )
+                                        }
                                     }
                                 else -> {
                                     items(

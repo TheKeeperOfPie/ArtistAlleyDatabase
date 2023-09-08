@@ -45,6 +45,9 @@ interface AnimeSettings {
     val languageOptionVoiceActor: MutableStateFlow<VoiceActorLanguageOption>
     val showFallbackVoiceActor: MutableStateFlow<Boolean>
 
+    val currentMediaListSizeAnime: MutableStateFlow<Int>
+    val currentMediaListSizeManga: MutableStateFlow<Int>
+
     val lastCrash: MutableStateFlow<String>
     val lastCrashShown: MutableStateFlow<Boolean>
 }

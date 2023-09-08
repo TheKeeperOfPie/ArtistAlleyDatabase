@@ -63,6 +63,9 @@ abstract class AnimeHomeMediaViewModel(
     )
     val reviews = MutableStateFlow(PagingData.empty<ReviewEntry>())
 
+    // Track the previous size to inform placeholder count; this probably isn't worth it
+    abstract val currentMediaPreviousSize: MutableStateFlow<Int>
+
     private val refresh = MutableStateFlow(-1L)
 
     init {
@@ -148,7 +151,13 @@ abstract class AnimeHomeMediaViewModel(
                     }
                 }
                 .flowOn(CustomDispatchers.IO)
-                .collectLatest { current = it }
+                .collectLatest {
+                    current = it
+                    val result = it.result
+                    if (it.success && result != null) {
+                        currentMediaPreviousSize.emit(result.size)
+                    }
+                }
         }
     }
 
@@ -288,6 +297,7 @@ abstract class AnimeHomeMediaViewModel(
         mediaType = MediaType.ANIME,
         errorTextRes = R.string.anime_home_error_loading_anime,
     ) {
+        override val currentMediaPreviousSize = settings.currentMediaListSizeAnime
         override val suggestions = listOf(
             R.string.anime_home_suggestion_popular_all_time to AnimeNavDestinations.SEARCH_MEDIA.id
                     + "?titleRes=${R.string.anime_home_suggestion_popular_all_time}"
@@ -372,6 +382,7 @@ abstract class AnimeHomeMediaViewModel(
         mediaType = MediaType.MANGA,
         errorTextRes = R.string.anime_home_error_loading_manga,
     ) {
+        override val currentMediaPreviousSize = settings.currentMediaListSizeManga
         override val suggestions = listOf(
             R.string.anime_home_suggestion_popular_all_time to AnimeNavDestinations.SEARCH_MEDIA.id
                     + "?titleRes=${R.string.anime_home_suggestion_popular_all_time}"

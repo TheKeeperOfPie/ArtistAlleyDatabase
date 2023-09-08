@@ -148,6 +148,11 @@ class SettingsProvider(
     override val lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
     val screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
 
+    override val currentMediaListSizeAnime =
+        MutableStateFlow(deserialize("currentMediaListSizeAnime") ?: 3)
+    override val currentMediaListSizeManga =
+        MutableStateFlow(deserialize("currentMediaListSizeManga") ?: 3)
+
     override var unlockAllFeatures = ignoreOnRelease("unlockAllFeatures", false)
 
     private fun deserializeAnimeFilters(): Map<String, FilterData> {
@@ -207,6 +212,8 @@ class SettingsProvider(
         subscribeProperty(scope, ::lastCrash)
         subscribeProperty(scope, ::lastCrashShown)
         subscribeProperty(scope, ::screenshotMode)
+        subscribeProperty(scope, ::currentMediaListSizeAnime)
+        subscribeProperty(scope, ::currentMediaListSizeManga)
         subscribeProperty(scope, ::unlockAllFeatures)
         subscribeProperty(scope, ::animeNewsNetworkRegion)
         subscribeProperty(scope, ::adsEnabled)
