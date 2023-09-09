@@ -196,7 +196,7 @@ class UserMediaListController(
         result: LoadingResult<List<ListEntry>>,
         mediaType: MediaType,
     ) {
-        if (!result.success) return
+        if (!result.success || result.result == null) return
         val lists = result.result.orEmpty()
         scopedApplication.scope.launch(CustomDispatchers.IO) {
             try {

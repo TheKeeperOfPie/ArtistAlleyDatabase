@@ -21,7 +21,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import com.anilist.MediaDetailsQuery
+import com.anilist.MediaDetails2Query
 import com.anilist.MediaListEntryQuery
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaDetailsListEntry
@@ -435,7 +435,7 @@ object MediaUtils {
 
     @Composable
     fun formatRanking(
-        ranking: MediaDetailsQuery.Data.Media.Ranking,
+        ranking: MediaDetails2Query.Data.Media.Ranking,
         @StringRes seasonYearTextRes: Int,
         @StringRes yearTextRes: Int,
         @StringRes allTimeTextRes: Int,

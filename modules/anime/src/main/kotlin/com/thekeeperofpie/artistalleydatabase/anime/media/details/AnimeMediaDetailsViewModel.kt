@@ -11,8 +11,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.fragment.ListActivityMediaListActivityItem
@@ -27,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
@@ -73,6 +70,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -126,8 +124,10 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val hasAuth = oAuthStore.hasAuth
 
     val refresh = MutableStateFlow(-1L)
+    private val refreshSecondary = MutableStateFlow(-1L)
 
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
+    var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.loading())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
     var forumThreads by mutableStateOf<List<ForumThreadEntry>?>(null)
     val charactersDeferred = MutableStateFlow(PagingData.empty<DetailsCharacter>())
@@ -199,44 +199,18 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                 .orEmpty()
                                 .sortedBy { AnimeMediaDetailsScreen.RELATION_SORT_ORDER.indexOf(it.relation) }
 
-                            val recommendations = media.recommendations?.edges?.filterNotNull()
-                                ?.mapNotNull {
-                                    val node = it.node ?: return@mapNotNull null
-                                    val mediaRecommendation = node.mediaRecommendation
-                                    AnimeMediaDetailsScreen.Entry.Recommendation(
-                                        node.id.toString(),
-                                        RecommendationData(
-                                            mediaId = mediaId,
-                                            recommendationMediaId = mediaRecommendation.id.toString(),
-                                            rating = node.rating ?: 0,
-                                            userRating = node.userRating
-                                                ?: RecommendationRating.NO_RATING,
-                                        ),
-                                        MediaPreviewEntry(mediaRecommendation)
-                                    )
-                                }
-                                .orEmpty()
-
                             val mediaIds = setOf(media.id.toString()) +
-                                    relations.map { it.entry.media.id.toString() } +
-                                    recommendations.map { it.entry.media.id.toString() }
-
-                            val recommendationMediaIds =
-                                recommendations.map { it.data.recommendationMediaId }.toSet()
+                                    relations.map { it.entry.media.id.toString() }
 
                             val description = media.description?.let(markwon::toMarkdown)
 
                             combine(
                                 mediaListStatusController.allChanges(mediaIds),
-                                recommendationStatusController.allChanges(
-                                    mediaId,
-                                    recommendationMediaIds,
-                                ),
                                 ignoreController.updates(),
                                 settings.showAdult,
                                 settings.showLessImportantTags,
                                 settings.showSpoilerTags,
-                            ) { mediaListUpdates, recommendationUpdates, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                            ) { mediaListUpdates, _, showAdult, showLessImportantTags, showSpoilerTags ->
                                 loadingResult.transformResult {
                                     AnimeMediaDetailsScreen.Entry(
                                         mediaId,
@@ -266,45 +240,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                                     )
                                                 }
                                             )
-                                        },
-                                        recommendations = recommendations.mapNotNull {
-                                            applyMediaFiltering(
-                                                statuses = mediaListUpdates,
-                                                ignoreController = ignoreController,
-                                                showAdult = showAdult,
-                                                showIgnored = true,
-                                                showLessImportantTags = showLessImportantTags,
-                                                showSpoilerTags = showSpoilerTags,
-                                                entry = it,
-                                                transform = { it.entry },
-                                                media = it.entry.media,
-                                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                                    copy(
-                                                        entry = entry.copy(
-                                                            media = it.entry.media,
-                                                            mediaListStatus = mediaListStatus,
-                                                            progress = progress,
-                                                            progressVolumes = progressVolumes,
-                                                            scoreRaw = scoreRaw,
-                                                            ignored = ignored,
-                                                            showLessImportantTags = showLessImportantTags,
-                                                            showSpoilerTags = showSpoilerTags,
-                                                        )
-                                                    )
-                                                }
-                                            )?.let {
-                                                val recommendationUpdate =
-                                                    recommendationUpdates[it.data.mediaId to it.data.recommendationMediaId]
-                                                val userRating = recommendationUpdate?.rating
-                                                    ?: it.data.userRating
-                                                it.transformIf(userRating != it.data.userRating) {
-                                                    copy(
-                                                        data = data.copy(
-                                                            userRating = userRating
-                                                        )
-                                                    )
-                                                }
-                                            }
                                         },
                                         description = description,
                                     )
@@ -336,21 +271,16 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { entry.result?.media?.let { it.id.toString() to it.characters } }
+            snapshotFlow { entry.result?.media?.characters }
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
-                .flatMapLatest { (mediaId, characters) ->
-                    AniListPager { page ->
+                .flatMapLatest { characters ->
+                    AniListPager(perPage = 5) { page ->
                         if (page == 1) {
-                            characters?.pageInfo to characters?.edges?.filterNotNull()
-                                .orEmpty()
+                            characters.run { pageInfo to edges }
                         } else {
-                            val result =
-                                aniListApi.mediaDetailsCharactersPage(
-                                    mediaId,
-                                    page
-                                ).characters
-                            result.pageInfo to result.edges.filterNotNull()
+                            aniListApi.mediaDetailsCharactersPage(mediaId, page).characters
+                                .run { pageInfo to edges }
                         }
                     }
                 }
@@ -361,26 +291,13 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { entry.result?.media?.let { it.id.toString() to it.staff } }
+            snapshotFlow { entry.result }
                 .filterNotNull()
+                .take(1)
                 .flowOn(CustomDispatchers.Main)
-                .flatMapLatest { (mediaId, staff) ->
-                    AniListPager {
-                        if (it == 1) {
-                            staff?.pageInfo to staff?.edges?.filterNotNull().orEmpty()
-                                .mapNotNull {
-                                    val role = it.role
-                                    it.node?.let {
-                                        DetailsStaff(
-                                            id = it.id.toString(),
-                                            name = it.name,
-                                            image = it.image?.large,
-                                            role = role,
-                                            staff = it
-                                        )
-                                    }
-                                }
-                        } else {
+                .flatMapLatest {
+                    refresh.flatMapLatest {
+                        AniListPager {
                             val result =
                                 aniListApi.mediaDetailsStaffPage(mediaId, it).staff
                             result.pageInfo to result.edges.filterNotNull().map {
@@ -492,17 +409,20 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             snapshotFlow { entry.result }
                 .filterNotNull()
+                .take(1)
                 .flowOn(CustomDispatchers.Main)
-                .mapLatest {
-                    aniListApi.forumThreadSearch(
-                        null,
-                        false,
-                        null,
-                        mediaCategoryId = it.mediaId,
-                        sort = ForumThreadSortOption.REPLIED_AT.toApiValue(sortAscending = false),
-                        page = 1,
-                    ).page.threads?.filterNotNull().orEmpty()
-                        .map { ForumThreadEntry(thread = it, bodyMarkdown = null) }
+                .flatMapLatest {
+                    refresh.mapLatest {
+                        aniListApi.forumThreadSearch(
+                            null,
+                            false,
+                            null,
+                            mediaCategoryId = mediaId,
+                            sort = ForumThreadSortOption.REPLIED_AT.toApiValue(sortAscending = false),
+                            page = 1,
+                        ).page.threads?.filterNotNull().orEmpty()
+                            .map { ForumThreadEntry(thread = it, bodyMarkdown = null) }
+                    }
                 }
                 .flatMapLatest { threads ->
                     threadStatusController.allChanges(threads.map { it.thread.id.toString() }
@@ -520,6 +440,105 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 }
                 .catch {}
                 .collectLatest { forumThreads = it }
+        }
+
+        viewModelScope.launch(CustomDispatchers.Main) {
+            snapshotFlow { entry.result }
+                .filterNotNull()
+                .take(1)
+                .flowOn(CustomDispatchers.Main)
+                .flatMapLatest {
+                    combine(refresh, refreshSecondary, ::Pair)
+                        .flatMapLatest { aniListApi.mediaDetails2(mediaId) }
+                        .flatMapLatest { result ->
+                            val media = result.result?.media
+                            if (media == null) {
+                                flowOf(result.transformResult<AnimeMediaDetailsScreen.Entry2> { null })
+                            } else {
+                                val recommendations = media.recommendations?.edges?.filterNotNull()
+                                    ?.mapNotNull {
+                                        val node = it.node ?: return@mapNotNull null
+                                        val mediaRecommendation = node.mediaRecommendation
+                                        AnimeMediaDetailsScreen.Entry2.Recommendation(
+                                            node.id.toString(),
+                                            RecommendationData(
+                                                mediaId = mediaId,
+                                                recommendationMediaId = mediaRecommendation.id.toString(),
+                                                rating = node.rating ?: 0,
+                                                userRating = node.userRating
+                                                    ?: RecommendationRating.NO_RATING,
+                                            ),
+                                            MediaPreviewEntry(mediaRecommendation)
+                                        )
+                                    }
+                                    .orEmpty()
+
+                                val recommendationMediaIds =
+                                    recommendations.map { it.entry.media.id.toString() }.toSet()
+
+                                combine(
+                                    mediaListStatusController.allChanges(recommendationMediaIds),
+                                    recommendationStatusController.allChanges(
+                                        mediaId,
+                                        recommendationMediaIds,
+                                    ),
+                                    ignoreController.updates(),
+                                    settings.showAdult,
+                                    settings.showLessImportantTags,
+                                    settings.showSpoilerTags,
+                                ) { mediaListUpdates, recommendationUpdates, _, showAdult, showLessImportantTags, showSpoilerTags ->
+                                    result.transformResult {
+                                        AnimeMediaDetailsScreen.Entry2(
+                                            mediaId,
+                                            media,
+                                            recommendations = recommendations.mapNotNull {
+                                                applyMediaFiltering(
+                                                    statuses = mediaListUpdates,
+                                                    ignoreController = ignoreController,
+                                                    showAdult = showAdult,
+                                                    showIgnored = true,
+                                                    showLessImportantTags = showLessImportantTags,
+                                                    showSpoilerTags = showSpoilerTags,
+                                                    entry = it,
+                                                    transform = { it.entry },
+                                                    media = it.entry.media,
+                                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                                        copy(
+                                                            entry = entry.copy(
+                                                                media = it.entry.media,
+                                                                mediaListStatus = mediaListStatus,
+                                                                progress = progress,
+                                                                progressVolumes = progressVolumes,
+                                                                scoreRaw = scoreRaw,
+                                                                ignored = ignored,
+                                                                showLessImportantTags = showLessImportantTags,
+                                                                showSpoilerTags = showSpoilerTags,
+                                                            )
+                                                        )
+                                                    }
+                                                )?.let {
+                                                    val recommendationUpdate =
+                                                        recommendationUpdates[it.data.mediaId to it.data.recommendationMediaId]
+                                                    val userRating = recommendationUpdate?.rating
+                                                        ?: it.data.userRating
+                                                    it.transformIf(userRating != it.data.userRating) {
+                                                        copy(
+                                                            data = data.copy(
+                                                                userRating = userRating
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                }
+                .foldPreviousResult()
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { entry2 = it }
         }
     }
 
@@ -572,6 +591,10 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     fun refresh() {
         refresh.value = SystemClock.uptimeMillis()
+    }
+
+    fun refreshSecondary() {
+        refreshSecondary.value = SystemClock.uptimeMillis()
     }
 
     fun animeSongsCollapseAll() {

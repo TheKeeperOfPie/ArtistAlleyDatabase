@@ -207,7 +207,7 @@ query MediaDetails($mediaId: Int!) {
             ...MediaTitleFragment
         }
 
-        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: 10) {
+        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: 5) {
             pageInfo {
                 ...PaginationInfo
             }
@@ -222,17 +222,6 @@ query MediaDetails($mediaId: Int!) {
         duration
         favourites
         source
-        staff(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: 10) {
-            pageInfo {
-                ...PaginationInfo
-            }
-            edges {
-                role
-                node {
-                    ...StaffNavigationData
-                }
-            }
-        }
         studios {
             edges {
                 isMain
@@ -244,14 +233,6 @@ query MediaDetails($mediaId: Int!) {
         }
         synonyms
         episodes
-        externalLinks {
-            id
-            type
-            url
-            icon
-            site
-            color
-        }
         format
         genres
         hashtag
@@ -264,16 +245,6 @@ query MediaDetails($mediaId: Int!) {
             airingAt
         }
         popularity
-        rankings {
-            id
-            rank
-            type
-            format
-            year
-            season
-            allTime
-            context
-        }
 
         relations {
             pageInfo {
@@ -286,6 +257,49 @@ query MediaDetails($mediaId: Int!) {
                     ...MediaPreview
                 }
             }
+        }
+
+        season
+        seasonYear
+        status
+        startDate {
+            year
+            month
+            day
+        }
+        endDate {
+            year
+            month
+            day
+        }
+        trending
+        type
+        volumes
+        chapters
+    }
+}
+
+query MediaDetails2($mediaId: Int!) {
+    Media(id: $mediaId) {
+        isAdult
+        type
+        externalLinks {
+            id
+            type
+            url
+            icon
+            site
+            color
+        }
+        rankings {
+            id
+            rank
+            type
+            format
+            year
+            season
+            allTime
+            context
         }
 
         recommendations(sort: [RATING_DESC], perPage: 5) {
@@ -312,8 +326,6 @@ query MediaDetails($mediaId: Int!) {
                 ...MediaAndReviewsReview
             }
         }
-        season
-        seasonYear
         stats {
             scoreDistribution {
                 score
@@ -323,17 +335,6 @@ query MediaDetails($mediaId: Int!) {
                 status
                 amount
             }
-        }
-        status
-        startDate {
-            year
-            month
-            day
-        }
-        endDate {
-            year
-            month
-            day
         }
         streamingEpisodes {
             title
@@ -351,10 +352,6 @@ query MediaDetails($mediaId: Int!) {
             site
             thumbnail
         }
-        trending
-        type
-        volumes
-        chapters
     }
 }
 

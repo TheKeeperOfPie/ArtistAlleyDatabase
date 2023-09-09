@@ -17,9 +17,9 @@ object AniListPager {
         val cache = LruCache<Int, PagingSource.LoadResult.Page<Int, T>>(20)
         return Pager(
             config = PagingConfig(
-                pageSize = 10,
-                initialLoadSize = 10,
-                jumpThreshold = 20,
+                pageSize = perPage,
+                initialLoadSize = perPage,
+                jumpThreshold = perPage * 2,
                 enablePlaceholders = true,
             ),
             pagingSourceFactory = {

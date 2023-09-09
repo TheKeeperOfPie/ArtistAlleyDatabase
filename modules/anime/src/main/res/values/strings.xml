@@ -378,6 +378,8 @@
     <string name="anime_media_details_open_external">Open in external</string>
     <string name="anime_media_details_open_external_icon_content_description">Open in external</string>
     <string name="anime_media_details_error_loading">Error loading media</string>
+    <string name="anime_media_details_error_loading_secondary_data">Error loading additional data</string>
+    <string name="anime_media_details_error_loading_secondary_data_retry_button">Retry</string>
 
     <string name="anime_media_details_activity_following">Following</string>
     <string name="anime_media_details_activity_global">Global</string>

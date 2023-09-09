@@ -38,6 +38,7 @@ import com.anilist.MediaAndReviewsPaginationQuery
 import com.anilist.MediaAndReviewsQuery
 import com.anilist.MediaAutocompleteQuery
 import com.anilist.MediaByIdsQuery
+import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsActivityQuery
 import com.anilist.MediaDetailsCharactersPageQuery
 import com.anilist.MediaDetailsQuery
@@ -142,18 +143,21 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.addLoggingInterceptors
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -161,6 +165,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
 import okhttp3.Callback
@@ -173,6 +178,7 @@ import java.time.LocalDate
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 open class AuthedAniListApi(
     private val scopedApplication: ScopedApplication,
     private val oAuthStore: AniListOAuthStore,
@@ -338,7 +344,10 @@ open class AuthedAniListApi(
 
     open suspend fun mediaDetails(id: String) = queryCacheAndNetwork(MediaDetailsQuery(id.toInt()))
 
-    open suspend fun mediaDetailsCharactersPage(mediaId: String, page: Int, perPage: Int = 10) =
+    open suspend fun mediaDetails2(id: String) =
+        queryCacheAndNetwork(MediaDetails2Query(id.toInt()))
+
+    open suspend fun mediaDetailsCharactersPage(mediaId: String, page: Int, perPage: Int = 5) =
         query(
             MediaDetailsCharactersPageQuery(
                 mediaId = mediaId.toInt(),
@@ -1201,37 +1210,55 @@ open class AuthedAniListApi(
     private suspend fun <D : Mutation.Data> mutate(mutation: Mutation<D>) =
         apolloClient.mutation(mutation).execute().dataOrThrow()
 
-    private fun <D : Query.Data> queryCacheAndNetwork(query: Query<D>) = combine(
-        // TODO: Cancel the cache query if network returns first
-        apolloClient.query(query).fetchPolicy(FetchPolicy.CacheOnly).toFlow()
-            .flowOn(CustomDispatchers.IO)
-            .startWith(null),
-        apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkOnly).toFlow()
-            .flowOn(CustomDispatchers.IO)
-            .startWith(null),
-    ) { cache, network ->
-        val cacheHasErrors = cache?.exception != null
-        if (network != null) {
-            val networkHasErrors = network.exception != null
-            val result = if (networkHasErrors) cache?.data else network.data
-            LoadingResult(
-                success = !networkHasErrors,
-                result = result,
-                error = if (networkHasErrors) {
-                    UtilsStringR.error_loading_from_network to network.exception
-                } else if (result == null && cacheHasErrors) {
-                    UtilsStringR.error_loading_from_cache to cache?.exception
-                } else {
-                    null
-                },
-            )
-        } else {
-            LoadingResult(
-                loading = true,
-                success = !cacheHasErrors,
-                result = cache?.data,
-                error = null,
-            )
+    private fun <D : Query.Data> queryCacheAndNetwork(query: Query<D>) = flow {
+        coroutineScope {
+            val cache = async {
+                apolloClient.query(query).fetchPolicy(FetchPolicy.CacheOnly).execute()
+            }
+            val network = async {
+                apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkOnly).execute()
+            }
+            select {
+                cache.onAwait {
+                    emit(it to null)
+                    emit(it to network.await())
+                }
+                network.onAwait {
+                    emit(null to it)
+                    if (it.hasErrors()) {
+                        emit(cache.await() to it)
+                    } else {
+                        cache.cancel()
+                    }
+                }
+            }
         }
-    }
+    }.flowOn(CustomDispatchers.IO)
+        .mapLatestNotNull { (cache, network) ->
+            val cacheHasErrors = cache?.exception != null
+            if (network != null) {
+                val networkHasErrors = network.exception != null
+                val result = if (networkHasErrors) cache?.data else network.data
+                LoadingResult(
+                    success = !networkHasErrors,
+                    result = result,
+                    error = if (networkHasErrors) {
+                        UtilsStringR.error_loading_from_network to network.exception
+                    } else if (result == null && cacheHasErrors) {
+                        UtilsStringR.error_loading_from_cache to cache?.exception
+                    } else {
+                        null
+                    },
+                )
+            } else if (cacheHasErrors) {
+                null
+            } else {
+                LoadingResult(
+                    loading = true,
+                    success = true,
+                    result = cache?.data,
+                    error = null,
+                )
+            }
+        }
 }

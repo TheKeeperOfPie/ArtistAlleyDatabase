@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsQuery
 import com.anilist.fragment.GeneralMediaTag
 import com.anilist.fragment.HomeMedia
@@ -145,6 +146,12 @@ data class AnimeMediaTagEntry(
     )
 
     constructor(tag: MediaDetailsQuery.Data.Media.Tag) : this(
+        tag,
+        isMediaSpoiler = tag.isMediaSpoiler,
+        rank = tag.rank
+    )
+
+    constructor(tag: MediaDetails2Query.Data.Media.Tag) : this(
         tag,
         isMediaSpoiler = tag.isMediaSpoiler,
         rank = tag.rank

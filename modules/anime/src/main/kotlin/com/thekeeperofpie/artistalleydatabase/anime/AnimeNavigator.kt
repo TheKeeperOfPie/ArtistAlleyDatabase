@@ -32,8 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
-import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasScreen
@@ -50,6 +48,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption

@@ -53,6 +53,8 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -96,6 +98,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -110,6 +113,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.size.Dimension
+import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
@@ -122,6 +126,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -242,6 +247,7 @@ object AnimeMediaDetailsScreen {
         }
         var headerTransitionFinished by remember { mutableStateOf(false) }
         val entry = viewModel.entry
+        val entry2 = viewModel.entry2
         val charactersInitial = (entry.result?.charactersInitial
             ?: MutableStateFlow(PagingData.empty())).collectAsLazyPagingItems()
         val charactersDeferred = viewModel.charactersDeferred.collectAsLazyPagingItems()
@@ -258,6 +264,7 @@ object AnimeMediaDetailsScreen {
 
         val sectionIndexInfo = buildSectionIndexInfo(
             entry = entry.result,
+            entry2 = entry2.result,
             characters = characters,
             staff = staff,
             expandedState = expandedState,
@@ -269,7 +276,8 @@ object AnimeMediaDetailsScreen {
         )
 
         var loadingThresholdPassed by remember { mutableStateOf(false) }
-        val refreshing = headerTransitionFinished && entry.loading && loadingThresholdPassed
+        val refreshing =
+            headerTransitionFinished && (entry.loading || entry2.loading) && loadingThresholdPassed
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
             onRefresh = viewModel::refresh,
@@ -483,6 +491,7 @@ object AnimeMediaDetailsScreen {
                                     editViewModel = editViewModel,
                                     viewer = viewer,
                                     entry = entry.result!!,
+                                    entry2Result = entry2,
                                     characters = characters,
                                     staff = staff,
                                     activityTab = if (activityTabIsFollowing) ActivityTab.FOLLOWING else ActivityTab.GLOBAL,
@@ -515,6 +524,7 @@ object AnimeMediaDetailsScreen {
         editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         entry: Entry,
+        entry2Result: LoadingResult<Entry2>,
         characters: LazyPagingItems<DetailsCharacter>,
         staff: LazyPagingItems<DetailsStaff>,
         activityTab: ActivityTab,
@@ -578,33 +588,66 @@ object AnimeMediaDetailsScreen {
             staffList = staff,
         )
 
-        statsSection(entry)
+        val entry2 = entry2Result.result
+        if (entry2 != null) {
+            statsSection(entry2)
+            tagsSection(entry.mediaId, entry2)
 
-        tagsSection(entry)
+            trailerSection(
+                entry = entry2,
+                playbackPosition = { viewModel.trailerPlaybackPosition },
+                onPlaybackPositionUpdate = { viewModel.trailerPlaybackPosition = it },
+            )
 
-        trailerSection(
-            entry = entry,
-            playbackPosition = { viewModel.trailerPlaybackPosition },
-            onPlaybackPositionUpdate = { viewModel.trailerPlaybackPosition = it },
-        )
+            streamingEpisodesSection(
+                entry = entry2,
+                expanded = expandedState::streamingEpisodes,
+                onExpandedChange = { expandedState.streamingEpisodes = it },
+                hidden = expandedState::streamingEpisodesHidden,
+                onHiddenChange = { expandedState.streamingEpisodesHidden = it },
+            )
 
-        streamingEpisodesSection(
-            entry = entry,
-            expanded = expandedState::streamingEpisodes,
-            onExpandedChange = { expandedState.streamingEpisodes = it },
-            hidden = expandedState::streamingEpisodesHidden,
-            onHiddenChange = { expandedState.streamingEpisodesHidden = it },
-        )
+            socialLinksSection(entry = entry2)
+            streamingLinksSection(entry = entry2)
+            otherLinksSection(entry = entry2)
+        } else if (entry2Result.loading) {
+            item("secondaryDataError") {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        } else {
+            item("secondaryDataError") {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.anime_media_details_error_loading_secondary_data),
+                        textAlign = TextAlign.Center,
+                    )
 
-        socialLinksSection(entry = entry)
-        streamingLinksSection(entry = entry)
-        otherLinksSection(entry = entry)
+                    Button(onClick = viewModel::refreshSecondary) {
+                        Text(stringResource(R.string.anime_media_details_error_loading_secondary_data_retry_button))
+                    }
+                }
+            }
+        }
 
         recommendationsSection(
             screenKey = screenKey,
             viewModel = viewModel,
             viewer = viewer,
             entry = entry,
+            entry2 = entry2,
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             expanded = expandedState::recommendations,
             onExpandedChange = { expandedState.recommendations = it },
@@ -645,6 +688,7 @@ object AnimeMediaDetailsScreen {
         reviewsSection(
             viewModel = viewModel,
             entry = entry,
+            entry2 = entry2,
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             expanded = expandedState::reviews,
             onExpandedChange = { expandedState.reviews = it },
@@ -1318,6 +1362,7 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel,
         viewer: AniListViewer?,
         entry: Entry,
+        entry2: Entry2?,
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
@@ -1325,10 +1370,10 @@ object AnimeMediaDetailsScreen {
     ) {
         listSection(
             titleRes = R.string.anime_media_details_recommendations_label,
-            values = entry.recommendations,
+            values = entry2?.recommendations,
             valueToId = { "anime_media_${it.entry.media.id}" },
             aboveFold = RECOMMENDATIONS_ABOVE_FOLD,
-            hasMoreValues = entry.recommendationsHasMore,
+            hasMoreValues = entry2?.recommendationsHasMore ?: false,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             onClickViewAll = {
@@ -1369,7 +1414,7 @@ object AnimeMediaDetailsScreen {
         )
     }
 
-    private fun LazyListScope.statsSection(entry: Entry) {
+    private fun LazyListScope.statsSection(entry: Entry2) {
         item("statsHeader") {
             DetailsSectionHeader(
                 stringResource(R.string.anime_media_details_stats_label),
@@ -1475,7 +1520,7 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.tagsSection(entry: Entry) {
+    private fun LazyListScope.tagsSection(mediaId: String, entry: Entry2) {
         if (entry.tags.isNotEmpty()) {
             item("tagsHeader") {
                 DetailsSectionHeader(
@@ -1495,7 +1540,7 @@ object AnimeMediaDetailsScreen {
                 ) {
                     entry.tags.forEach {
                         val (containerColor, textColor) =
-                            colorCalculationState.getColors(entry.id.valueId)
+                            colorCalculationState.getColors(mediaId)
                         AnimeMediaTagEntry.Chip(
                             tag = it,
                             title = {
@@ -1527,7 +1572,7 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.trailerSection(
-        entry: Entry,
+        entry: Entry2,
         playbackPosition: () -> Float,
         onPlaybackPositionUpdate: (Float) -> Unit,
     ) {
@@ -1610,7 +1655,7 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.streamingEpisodesSection(
-        entry: Entry,
+        entry: Entry2,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         hidden: () -> Boolean,
@@ -1708,19 +1753,19 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.socialLinksSection(entry: Entry) {
+    private fun LazyListScope.socialLinksSection(entry: Entry2) {
         linksSection(R.string.anime_media_details_social_links_label, entry.socialLinks)
     }
 
-    private fun LazyListScope.streamingLinksSection(entry: Entry) {
+    private fun LazyListScope.streamingLinksSection(entry: Entry2) {
         linksSection(R.string.anime_media_details_streaming_links_label, entry.streamingLinks)
     }
 
-    private fun LazyListScope.otherLinksSection(entry: Entry) {
+    private fun LazyListScope.otherLinksSection(entry: Entry2) {
         linksSection(R.string.anime_media_details_other_links_label, entry.otherLinks)
     }
 
-    private fun LazyListScope.linksSection(@StringRes headerRes: Int, links: List<Entry.Link>) {
+    private fun LazyListScope.linksSection(@StringRes headerRes: Int, links: List<Entry2.Link>) {
         if (links.isEmpty()) return
 
         item("linksHeader-$headerRes") {
@@ -1877,18 +1922,19 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.reviewsSection(
         viewModel: AnimeMediaDetailsViewModel,
         entry: Entry,
+        entry2: Entry2?,
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
     ) {
-        val reviews = entry.reviews
-        if (reviews.isEmpty()) return
+        val reviews = entry2?.reviews
+        if (reviews != null && reviews.isEmpty()) return
         listSection(
             titleRes = R.string.anime_media_details_reviews_label,
             values = reviews,
             valueToId = { it.id.toString() },
             aboveFold = REVIEWS_ABOVE_FOLD,
-            hasMoreValues = entry.reviewsHasMore,
+            hasMoreValues = entry2?.reviewsHasMore ?: false,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             onClickViewAll = {
@@ -1921,7 +1967,6 @@ object AnimeMediaDetailsScreen {
         val mediaId: String,
         val media: Media,
         val relations: List<Relation>,
-        val recommendations: List<Recommendation>,
         val description: Spanned?,
     ) {
         val charactersInitial = MutableStateFlow(
@@ -1965,6 +2010,41 @@ object AnimeMediaDetailsScreen {
 
         val genres = media.genres?.filterNotNull().orEmpty().map(::Genre)
 
+        val studios = media.studios?.edges?.filterNotNull()?.map {
+            Studio(
+                id = it.node?.id.toString(),
+                name = it.node?.name.orEmpty(),
+                main = it.isMain,
+            )
+        }.orEmpty()
+            .sortedByDescending { it.main }
+
+        val relationsHasMore = media.relations?.pageInfo?.hasNextPage ?: true
+
+        data class Genre(
+            val name: String,
+            val color: Color = MediaUtils.genreColor(name),
+            val textColor: Color? = ComposeColorUtils.bestTextColor(color),
+        )
+
+        data class Relation(
+            val id: String,
+            val relation: MediaRelation,
+            val entry: MediaPreviewEntry,
+        )
+
+        data class Studio(
+            val id: String,
+            val name: String,
+            val main: Boolean,
+        )
+    }
+
+    data class Entry2(
+        val mediaId: String,
+        val media: MediaDetails2Query.Data.Media,
+        val recommendations: List<Recommendation>,
+    ) {
         val recommendationsHasMore = media.recommendations?.pageInfo?.hasNextPage ?: true
 
         val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
@@ -1998,15 +2078,6 @@ object AnimeMediaDetailsScreen {
             }
         )
 
-        val studios = media.studios?.edges?.filterNotNull()?.map {
-            Studio(
-                id = it.node?.id.toString(),
-                name = it.node?.name.orEmpty(),
-                main = it.isMain,
-            )
-        }.orEmpty()
-            .sortedByDescending { it.main }
-
         val rankings = media.rankings?.filterNotNull().orEmpty()
 
         val scoreDistribution = media.stats?.scoreDistribution
@@ -2019,7 +2090,7 @@ object AnimeMediaDetailsScreen {
                     repeat(10) {
                         val value = (it + 1) * 10
                         if (list.none { it.score == value }) {
-                            list += Media.Stats.ScoreDistribution(
+                            list += MediaDetails2Query.Data.Media.Stats.ScoreDistribution(
                                 score = value,
                                 amount = 0
                             )
@@ -2036,20 +2107,6 @@ object AnimeMediaDetailsScreen {
         val reviews = media.reviews?.nodes?.filterNotNull().orEmpty()
         val reviewsHasMore = media.reviews?.pageInfo?.hasNextPage ?: true
 
-        val relationsHasMore = media.relations?.pageInfo?.hasNextPage ?: true
-
-        data class Genre(
-            val name: String,
-            val color: Color = MediaUtils.genreColor(name),
-            val textColor: Color? = ComposeColorUtils.bestTextColor(color),
-        )
-
-        data class Relation(
-            val id: String,
-            val relation: MediaRelation,
-            val entry: MediaPreviewEntry,
-        )
-
         data class Recommendation(
             val id: String,
             val data: RecommendationData,
@@ -2065,12 +2122,6 @@ object AnimeMediaDetailsScreen {
             val color: Color? = null,
             val textColor: Color? = color
                 ?.let(ComposeColorUtils::bestTextColor),
-        )
-
-        data class Studio(
-            val id: String,
-            val name: String,
-            val main: Boolean,
         )
     }
 
@@ -2143,6 +2194,7 @@ object AnimeMediaDetailsScreen {
     @Composable
     private fun buildSectionIndexInfo(
         entry: Entry?,
+        entry2: Entry2?,
         characters: LazyPagingItems<DetailsCharacter>,
         staff: LazyPagingItems<DetailsStaff>,
         expandedState: ExpandedState,
@@ -2153,6 +2205,7 @@ object AnimeMediaDetailsScreen {
         forumThreads: List<ForumThreadEntry>?,
     ) = remember(
         entry,
+        entry2,
         characters.itemCount,
         staff.itemCount,
         expandedState.allValues(),
@@ -2221,59 +2274,64 @@ object AnimeMediaDetailsScreen {
         list += SectionIndexInfo.Section.STATS to currentIndex
         currentIndex += 2
 
-        if (entry.tags.isNotEmpty()) {
-            list += SectionIndexInfo.Section.TAGS to currentIndex
-            currentIndex += 2
-        }
-
-        val trailer = entry.media.trailer
-        if (trailer != null && (trailer.site == "youtube" || trailer.site == "dailymotion")) {
-            list += SectionIndexInfo.Section.TRAILER to currentIndex
-            currentIndex += 2
-        }
-
-        val streamingEpisodes = entry.media.streamingEpisodes?.filterNotNull().orEmpty()
-        if (streamingEpisodes.isNotEmpty()) {
-            list += SectionIndexInfo.Section.EPISODES to currentIndex
-            if (expandedState.streamingEpisodesHidden) {
+        if (entry2 == null) {
+            currentIndex++
+        } else {
+            // TODO: If entry2 values are null, show/mock header
+            if (entry2.tags.isNotEmpty()) {
+                list += SectionIndexInfo.Section.TAGS to currentIndex
                 currentIndex += 2
-            } else {
-                runListSection(
-                    size = streamingEpisodes.size,
-                    aboveFold = STREAMING_EPISODES_ABOVE_FOLD,
-                    expanded = expandedState.streamingEpisodes,
-                    hasMore = false,
-                )
+            }
+
+            val trailer = entry2.media?.trailer
+            if (trailer != null && (trailer.site == "youtube" || trailer.site == "dailymotion")) {
+                list += SectionIndexInfo.Section.TRAILER to currentIndex
+                currentIndex += 2
+            }
+
+            val streamingEpisodes = entry2.media.streamingEpisodes?.filterNotNull().orEmpty()
+            if (streamingEpisodes.isNotEmpty()) {
+                list += SectionIndexInfo.Section.EPISODES to currentIndex
+                if (expandedState.streamingEpisodesHidden) {
+                    currentIndex += 2
+                } else {
+                    runListSection(
+                        size = streamingEpisodes.size,
+                        aboveFold = STREAMING_EPISODES_ABOVE_FOLD,
+                        expanded = expandedState.streamingEpisodes,
+                        hasMore = false,
+                    )
+                }
+            }
+
+            if (entry2.socialLinks.isNotEmpty()
+                || entry2.streamingLinks.isNotEmpty()
+                || entry2.otherLinks.isNotEmpty()
+            ) {
+                list += SectionIndexInfo.Section.LINKS to currentIndex
+            }
+
+            if (entry2.socialLinks.isNotEmpty()) {
+                currentIndex += 2
+            }
+
+            if (entry2.streamingLinks.isNotEmpty()) {
+                currentIndex += 2
+            }
+
+            if (entry2.otherLinks.isNotEmpty()) {
+                currentIndex += 2
             }
         }
 
-        if (entry.socialLinks.isNotEmpty()
-            || entry.streamingLinks.isNotEmpty()
-            || entry.otherLinks.isNotEmpty()
-        ) {
-            list += SectionIndexInfo.Section.LINKS to currentIndex
-        }
-
-        if (entry.socialLinks.isNotEmpty()) {
-            currentIndex += 2
-        }
-
-        if (entry.streamingLinks.isNotEmpty()) {
-            currentIndex += 2
-        }
-
-        if (entry.otherLinks.isNotEmpty()) {
-            currentIndex += 2
-        }
-
-        val recommendations = entry.recommendations
-        if (recommendations.isNotEmpty()) {
+        val recommendations = entry2?.recommendations
+        if (!recommendations.isNullOrEmpty()) {
             list += SectionIndexInfo.Section.RECOMMENDATIONS to currentIndex
             runListSection(
                 size = recommendations.size,
                 aboveFold = RECOMMENDATIONS_ABOVE_FOLD,
                 expanded = expandedState.recommendations,
-                hasMore = entry.recommendationsHasMore,
+                hasMore = entry2.recommendationsHasMore,
             )
         }
 
@@ -2301,14 +2359,14 @@ object AnimeMediaDetailsScreen {
             )
         }
 
-        val reviews = entry.reviews
-        if (reviews.isNotEmpty()) {
+        val reviews = entry2?.reviews
+        if (!reviews.isNullOrEmpty()) {
             list += SectionIndexInfo.Section.REVIEWS to currentIndex
             runListSection(
                 size = reviews.size,
                 aboveFold = REVIEWS_ABOVE_FOLD,
                 expanded = expandedState.reviews,
-                hasMore = entry.reviewsHasMore,
+                hasMore = entry2.reviewsHasMore,
             )
         }
 
