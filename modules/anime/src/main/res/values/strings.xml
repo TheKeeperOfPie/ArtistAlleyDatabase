@@ -551,9 +551,12 @@
     <string name="anime_media_recommendation_rate_up_empty_content_description">Rate up empty</string>
     <string name="anime_media_recommendation_rate_up_filled_content_description">Rate up filled</string>
 
+    <string name="anime_media_recommendations_filter_sort_label">Sort</string>
+    <string name="anime_media_recommendations_filter_setting_title_language">Title language</string>
+
     <string name="anime_character_filter_sort_label">Sort</string>
     <string name="anime_character_filter_birthday_label">Birthday today</string>
-    <string name="anime_character_filter_setting_title_language">Name language</string>
+    <string name="anime_character_filter_setting_name_language">Name language</string>
 
     <string name="anime_character_details_voice_actors_label">Voice actors</string>
     <string name="anime_character_details_media_label">Media</string>
@@ -810,9 +813,14 @@
 
     <string name="anime_character_medias_error_loading">Error loading media</string>
     <string name="anime_character_medias_header">Media</string>
+    <string name="anime_character_media_filter_sort_label">Sort</string>
+    <string name="anime_character_media_filter_on_list_label">On list</string>
+    <string name="anime_character_media_filter_setting_title_language">Title language</string>
 
     <string name="anime_staff_characters_error_loading">Error loading characters</string>
     <string name="anime_staff_characters_header">Characters</string>
+    <string name="anime_staff_characters_filter_sort_label">Sort</string>
+    <string name="anime_staff_characters_filter_setting_name_language">Name language</string>
 
     <string name="anime_generic_filter_show_adult_content">Show adult content</string>
     <string name="anime_generic_view_all_content_description">View all</string>
@@ -829,6 +837,11 @@
     <string name="anime_studio_sort_favorites">Favorites</string>
     <string name="anime_studio_filter_sort_label">Sort</string>
     <string name="anime_studio_medias_error_loading">Error loading medias</string>
+
+    <string name="anime_studio_media_filter_sort_label">Sort</string>
+    <string name="anime_studio_media_filter_main_label">Main studio</string>
+    <string name="anime_studio_media_filter_setting_title_language">Title language</string>
+
     <string name="anime_media_tag_search_clear_content_description">Clear query</string>
 
     <string name="anime_requires_unlock">Requires higher feature tier</string>
@@ -952,6 +965,14 @@
     <string name="anime_media_history_not_enabled_button">Enable</string>
 
     <string name="anime_media_tag_search_show_when_spoiler">Show media where tag is spoiler</string>
+
+    <string name="anime_media_characters_filter_sort_label">Sort</string>
+    <string name="anime_media_characters_filter_role_label">Role</string>
+    <string name="anime_media_characters_filter_role_dropdown_content_description">Role dropdown expand</string>
+    <string name="anime_media_characters_filter_role_include_exclude_icon_content_description">Include/exclude role</string>
+    <string name="anime_media_characters_filter_setting_name_language">Name language</string>
+
+    <string name="anime_media_reviews_filter_sort_label">Sort</string>
 
     <!-- TODO: Move this elsewhere -->
     <string name="last_crash_notification">App crash detected</string>

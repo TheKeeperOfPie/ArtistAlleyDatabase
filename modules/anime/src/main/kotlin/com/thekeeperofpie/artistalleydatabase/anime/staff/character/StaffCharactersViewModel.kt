@@ -1,10 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff.character
 
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.anilist.fragment.CharacterWithRoleAndFavorites
 import com.hoc081098.flowext.combine
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -19,11 +21,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
@@ -35,20 +36,23 @@ class StaffCharactersViewModel @Inject constructor(
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
-) : HeaderAndListViewModel<StaffCharactersScreen.Entry, CharacterWithRoleAndFavorites, CharacterListRow.Entry, CharacterSortOption>(
+    featureOverrideProvider: FeatureOverrideProvider,
+    savedStateHandle: SavedStateHandle,
+) : HeaderAndListViewModel<StaffCharactersScreen.Entry, CharacterWithRoleAndFavorites, CharacterListRow.Entry, CharacterSortOption, StaffCharactersSortFilterController.FilterParams>(
     aniListApi = aniListApi,
-    sortOptionEnum = CharacterSortOption::class,
-    sortOptionEnumDefault = CharacterSortOption.FAVORITES,
     loadingErrorTextRes = R.string.anime_staff_characters_error_loading,
 ) {
+    val staffId = savedStateHandle.get<String>("staffId")!!
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    override fun initialize(headerId: String) {
-        super.initialize(headerId)
+    override val sortFilterController =
+        StaffCharactersSortFilterController(settings, featureOverrideProvider)
+
+    init {
         favoritesToggleHelper.initializeTracking(
             viewModel = this,
-            entry = { snapshotFlow { entry } },
+            entry = { snapshotFlow { entry.result } },
             entryToId = { it.staff.id.toString() },
             entryToType = { FavoriteType.STAFF },
             entryToFavorite = { it.staff.isFavourite },
@@ -64,29 +68,18 @@ class StaffCharactersViewModel @Inject constructor(
     override fun entryId(entry: CharacterListRow.Entry) = entry.character.id.toString()
 
     override suspend fun initialRequest(
-        headerId: String,
-        sortOption: CharacterSortOption,
-        sortAscending: Boolean,
-    ) = StaffCharactersScreen.Entry(
-        aniListApi.staffAndCharacters(staffId = headerId, sortOption.toApiValue(sortAscending))
-    )
+        filterParams: StaffCharactersSortFilterController.FilterParams?,
+    ) = StaffCharactersScreen.Entry(aniListApi.staffAndCharacters(staffId = staffId))
 
     override suspend fun pagedRequest(
-        entry: StaffCharactersScreen.Entry,
         page: Int,
-        sortOption: CharacterSortOption,
-        sortAscending: Boolean,
-    ) = if (page == 1) {
-        val result = entry.staff.characters
-        result?.pageInfo to result?.edges?.filterNotNull().orEmpty()
-    } else {
-        val result = aniListApi.staffAndCharactersPage(
-            staffId = entry.staff.id.toString(),
-            sort = sortOption.toApiValue(sortAscending),
-            page = page,
-        ).staff.characters
-        result?.pageInfo to result?.edges?.filterNotNull().orEmpty()
-    }
+        filterParams: StaffCharactersSortFilterController.FilterParams?,
+    ) = aniListApi.staffAndCharactersPage(
+        staffId = staffId,
+        sort = filterParams!!.sort.selectedOption(CharacterSortOption.FAVORITES)
+            .toApiValue(filterParams.sortAscending),
+        page = page,
+    ).staff.characters.run { pageInfo to edges }
 
     override fun Flow<PagingData<CharacterListRow.Entry>>.transformFlow() =
         flatMapLatest {

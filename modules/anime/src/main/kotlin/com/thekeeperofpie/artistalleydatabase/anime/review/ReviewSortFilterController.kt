@@ -6,10 +6,10 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -25,7 +25,10 @@ class ReviewSortFilterController(
     featureOverrideProvider: FeatureOverrideProvider,
     mediaType: MediaType?,
     private val sortSection: SortFilterSection.Sort<ReviewSortOption> = sortSection(),
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<ReviewSortFilterController.FilterParams>(
+    settings,
+    featureOverrideProvider
+) {
 
     companion object {
         fun sortSection() = SortFilterSection.Sort(
@@ -51,7 +54,7 @@ class ReviewSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    fun filterParams() = snapshotFlow {
+    override fun filterParams() = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

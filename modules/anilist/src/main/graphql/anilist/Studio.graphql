@@ -7,12 +7,12 @@ fragment StudioListRowFragment on Studio {
     ...StudioNavigationData
     isAnimationStudio
     favourites
-    main: media(sort: [FAVOURITES_DESC], perPage: 3, isMain: true) {
+    main: media(sort: [TRENDING_DESC], perPage: 3, isMain: true) {
         nodes {
             ...MediaWithListStatus
         }
     }
-    nonMain: media(sort: [FAVOURITES_DESC], perPage: 3, isMain: false) {
+    nonMain: media(sort: [TRENDING_DESC], perPage: 3, isMain: false) {
         nodes {
             ...MediaWithListStatus
         }
@@ -36,40 +36,24 @@ query StudioSearch(
     }
 }
 
-query StudioMedias(
-    $studioId: Int!,
-    $sort: [MediaSort]!,
-    $mediasPerPage: Int!,
-) {
+query StudioMedias($studioId: Int!) {
     Studio(id: $studioId) @nonnull {
         id
         name
         isAnimationStudio
         isFavourite
-
-        media(sort: $sort, page: 1, perPage: $mediasPerPage) {
-            pageInfo @nonnull {
-                ...PaginationInfo
-            }
-            nodes {
-                ...MediaPreview
-            }
-        }
     }
 }
 
 query StudioMediasPagination(
     $studioId: Int!,
     $sort: [MediaSort]!,
+    $main: Boolean,
     $page: Int!,
     $mediasPerPage: Int!,
 ) {
     Studio(id: $studioId) @nonnull {
-        id
-        name
-        isAnimationStudio
-
-        media(sort: $sort, page: $page, perPage: $mediasPerPage) {
+        media(sort: $sort, isMain: $main, page: $page, perPage: $mediasPerPage) @nonnull {
             pageInfo @nonnull {
                 ...PaginationInfo
             }

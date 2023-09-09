@@ -16,7 +16,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class StudioSortFilterController(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<StudioSortFilterController.FilterParams>(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = StudioSortOption::class,
@@ -30,7 +30,7 @@ class StudioSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    fun filterParams() = snapshotFlow {
+    override fun filterParams() = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

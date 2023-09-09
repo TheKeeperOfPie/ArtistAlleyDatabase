@@ -47,12 +47,12 @@ object CharacterMediasScreen {
                 CharacterHeader(
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
-                    characterId = viewModel.headerId,
+                    characterId = viewModel.characterId,
                     progress = it,
                     headerValues = headerValues,
                     onFavoriteChanged = {
                         viewModel.favoritesToggleHelper
-                            .set(FavoriteType.CHARACTER, viewModel.headerId, it)
+                            .set(FavoriteType.CHARACTER, viewModel.characterId, it)
                     },
                     onImageWidthToHeightRatioAvailable = {
                         characterImageWidthToHeightRatio = it

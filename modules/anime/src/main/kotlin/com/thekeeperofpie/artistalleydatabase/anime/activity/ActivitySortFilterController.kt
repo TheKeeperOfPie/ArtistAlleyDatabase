@@ -42,7 +42,7 @@ class ActivitySortFilterController(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     mediaSharedElement: Boolean = true,
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<ActivitySortFilterController.FilterParams>(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = ActivitySortOption::class,
@@ -147,7 +147,7 @@ class ActivitySortFilterController(
     }
 
 
-    fun filterParams() = snapshotFlow {
+    override fun filterParams() = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             type = typeSection.filterOptions,

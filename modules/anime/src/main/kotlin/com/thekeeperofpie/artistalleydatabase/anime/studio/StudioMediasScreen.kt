@@ -29,7 +29,7 @@ object StudioMediasScreen {
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,
-        viewModel: StudioMediasViewModel,
+        viewModel: StudioMediasViewModel = hiltViewModel(),
         name: () -> String,
         favorite: () -> Boolean?,
     ) {
@@ -53,7 +53,7 @@ object StudioMediasScreen {
                         FavoriteIconButton(favorite = favorite(), onFavoriteChanged = {
                             viewModel.favoritesToggleHelper.set(
                                 FavoriteType.STUDIO,
-                                viewModel.headerId,
+                                viewModel.studioId,
                                 it
                             )
                         })

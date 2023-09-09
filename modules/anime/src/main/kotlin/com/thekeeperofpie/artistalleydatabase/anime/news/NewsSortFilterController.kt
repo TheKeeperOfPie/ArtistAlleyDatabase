@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class NewsSortFilterController(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<NewsSortFilterController.FilterParams>(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         AnimeNewsSortOption::class,
@@ -71,7 +71,7 @@ class NewsSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    fun filterParams() = snapshotFlow {
+    override fun filterParams() = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

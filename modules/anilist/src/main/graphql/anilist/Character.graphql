@@ -218,24 +218,22 @@ fragment CharacterWithRoleAndFavorites on CharacterEdge {
     role
 }
 
-query MediaAndCharacters($mediaId: Int!, $charactersPerPage: Int!) {
+query MediaAndCharacters($mediaId: Int!) {
     Media(id: $mediaId) @nonnull {
         ...MediaHeaderData
-        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: $charactersPerPage) {
-            pageInfo @nonnull {
-                ...PaginationInfo
-            }
-            edges {
-                ...CharacterWithRole
-            }
-        }
     }
 }
 
-query MediaAndCharactersPagination($mediaId: Int!, $page: Int!, $charactersPerPage: Int!) {
+query MediaAndCharactersPagination(
+    $mediaId: Int!,
+    $sort: [CharacterSort]!,
+    $role: CharacterRole,
+    $page: Int!,
+    $charactersPerPage: Int!,
+) {
     Media(id: $mediaId) @nonnull {
         isAdult
-        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: $page, perPage: $charactersPerPage) {
+        characters(sort: $sort, role: $role, page: $page, perPage: $charactersPerPage) @nonnull {
             pageInfo @nonnull {
                 ...PaginationInfo
             }
@@ -246,33 +244,21 @@ query MediaAndCharactersPagination($mediaId: Int!, $page: Int!, $charactersPerPa
     }
 }
 
-query CharacterAndMedias(
-    $characterId: Int!,
-    $sort: [MediaSort]!,
-    $mediasPerPage: Int!,
-) {
+query CharacterAndMedias($characterId: Int!) {
     Character(id: $characterId) @nonnull {
         ...CharacterHeaderData
-
-        media(sort: $sort, page: 1, perPage: $mediasPerPage) {
-            pageInfo @nonnull {
-                ...PaginationInfo
-            }
-            nodes {
-                ...MediaPreview
-            }
-        }
     }
 }
 
 query CharacterAndMediasPagination(
     $characterId: Int!,
     $sort: [MediaSort]!,
+    $onList: Boolean,
     $page: Int!,
     $mediasPerPage: Int!,
 ) {
     Character(id: $characterId) @nonnull {
-        media(sort: $sort, page: $page, perPage: $mediasPerPage) {
+        media(sort: $sort, onList: $onList, page: $page, perPage: $mediasPerPage) @nonnull {
             pageInfo @nonnull {
                 ...PaginationInfo
             }

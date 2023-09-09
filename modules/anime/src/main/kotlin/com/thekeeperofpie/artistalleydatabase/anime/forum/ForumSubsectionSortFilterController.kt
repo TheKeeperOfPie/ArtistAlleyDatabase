@@ -28,7 +28,7 @@ class ForumSubsectionSortFilterController(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<ForumSubsectionSortFilterController.FilterParams>(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         ForumThreadSortOption::class,
@@ -90,7 +90,7 @@ class ForumSubsectionSortFilterController(
         )
     }
 
-    fun filterParams() = snapshotFlow {
+    override fun filterParams() = snapshotFlow {
         FilterParams(
             sortOptions = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

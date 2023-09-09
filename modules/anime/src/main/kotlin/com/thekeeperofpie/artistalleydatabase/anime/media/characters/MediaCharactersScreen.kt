@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.character
+package com.thekeeperofpie.artistalleydatabase.anime.media.characters
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
@@ -26,13 +26,14 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceAc
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
-object CharactersScreen {
+object MediaCharactersScreen {
 
     private val MIN_IMAGE_HEIGHT = 100.dp
     private val IMAGE_WIDTH = 72.dp
@@ -40,12 +41,12 @@ object CharactersScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: CharactersViewModel,
+        viewModel: MediaCharactersViewModel,
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
     ) {
         val entry = viewModel.entry
-        val media = entry?.media
+        val media = entry.result?.media
 
         val (voiceActorLanguageDefault) = LocalLanguageOptionVoiceActor.current
         var voiceActorLanguage by rememberSaveable { mutableStateOf(voiceActorLanguageDefault) }
@@ -53,14 +54,14 @@ object CharactersScreen {
             viewModel = viewModel,
             headerTextRes = R.string.anime_characters_header,
             header = {
-                val mediaType = viewModel.entry?.media?.type
-                val mediaId = viewModel.headerId
+                val mediaType = media?.type
+                val mediaId = viewModel.mediaId
                 MediaHeader(
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
                     mediaId = mediaId,
                     mediaType = mediaType,
-                    titles = entry?.titlesUnique,
+                    titles = entry.result?.titlesUnique,
                     episodes = media?.episodes,
                     format = media?.format,
                     averageScore = media?.averageScore,
@@ -125,7 +126,7 @@ object CharactersScreen {
                                 expanded = showLanguageMenu,
                                 onDismissRequest = { showLanguageMenu = false },
                             ) {
-                                VoiceActorLanguageOption.values().forEach {
+                                VoiceActorLanguageOption.entries.forEach {
                                     DropdownMenuItem(
                                         text = { Text(stringResource(it.textRes)) },
                                         onClick = {

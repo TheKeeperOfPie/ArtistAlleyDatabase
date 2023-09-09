@@ -174,22 +174,9 @@ fragment StaffHeaderData on Staff {
     isFavourite
 }
 
-query StaffAndCharacters(
-    $staffId: Int!,
-    $sort: [CharacterSort]!,
-    $charactersPerPage: Int!,
-) {
+query StaffAndCharacters($staffId: Int!) {
     Staff(id: $staffId) @nonnull {
         ...StaffHeaderData
-
-        characters(sort: $sort, page: 1, perPage: $charactersPerPage) {
-            pageInfo @nonnull {
-                ...PaginationInfo
-            }
-            edges {
-                ...CharacterWithRoleAndFavorites
-            }
-        }
     }
 }
 
@@ -200,7 +187,7 @@ query StaffAndCharactersPagination(
     $charactersPerPage: Int!,
 ) {
     Staff(id: $staffId) @nonnull {
-        characters(sort: $sort, page: $page, perPage: $charactersPerPage) {
+        characters(sort: $sort, page: $page, perPage: $charactersPerPage) @nonnull {
             pageInfo @nonnull {
                 ...PaginationInfo
             }

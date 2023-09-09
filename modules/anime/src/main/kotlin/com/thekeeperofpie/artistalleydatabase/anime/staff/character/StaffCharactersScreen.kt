@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeader
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
@@ -43,13 +42,13 @@ object StaffCharactersScreen {
                 headerTextRes = R.string.anime_staff_characters_header,
                 header = {
                     StaffHeader(
-                        staffId = viewModel.headerId,
+                        staffId = viewModel.staffId,
                         upIconOption = upIconOption,
                         progress = it,
                         headerValues = headerValues,
                         onFavoriteChanged = {
                             viewModel.favoritesToggleHelper
-                                .set(FavoriteType.STAFF, viewModel.headerId, it)
+                                .set(FavoriteType.STAFF, viewModel.staffId, it)
                         },
                     )
                 },

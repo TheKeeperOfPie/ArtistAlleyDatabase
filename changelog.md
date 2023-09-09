@@ -4,6 +4,7 @@
 - Add user score filter to media lists
 - Improve home loading placeholders
 - On tag filter, hide media where tag is spoiler
+- Expose sort/filter options for some full view screens (characters, recommendations, reviews, etc.)
 
 ### 0.44 (9)
 - Add role in media to character details

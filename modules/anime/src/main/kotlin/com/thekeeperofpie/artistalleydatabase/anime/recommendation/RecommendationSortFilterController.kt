@@ -5,10 +5,10 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +23,7 @@ class RecommendationSortFilterController(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<RecommendationSortFilterController.FilterParams>(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = RecommendationSortOption::class,
@@ -73,7 +73,7 @@ class RecommendationSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    fun filterParams() = snapshotFlow {
+    override fun filterParams() = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

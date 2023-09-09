@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character.media
 
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.anilist.fragment.MediaPreview
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -15,8 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -28,20 +30,23 @@ class CharacterMediasViewModel @Inject constructor(
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
-) : HeaderAndListViewModel<CharacterMediasScreen.Entry, MediaPreview, MediaPreviewEntry, MediaSortOption>(
+    featureOverrideProvider: FeatureOverrideProvider,
+    savedStateHandle: SavedStateHandle,
+) : HeaderAndListViewModel<CharacterMediasScreen.Entry, MediaPreview, MediaPreviewEntry, MediaSortOption, CharacterMediaSortFilterController.FilterParams>(
     aniListApi = aniListApi,
-    sortOptionEnum = MediaSortOption::class,
-    sortOptionEnumDefault = MediaSortOption.POPULARITY,
     loadingErrorTextRes = R.string.anime_character_medias_error_loading,
 ) {
+    val characterId = savedStateHandle.get<String>("characterId")!!
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    override fun initialize(headerId: String) {
-        super.initialize(headerId)
+    override val sortFilterController =
+        CharacterMediaSortFilterController(settings, featureOverrideProvider)
+
+    init {
         favoritesToggleHelper.initializeTracking(
             viewModel = this,
-            entry = { snapshotFlow { entry } },
+            entry = { snapshotFlow { entry.result } },
             entryToId = { it.character.id.toString() },
             entryToType = { FavoriteType.CHARACTER },
             entryToFavorite = { it.character.isFavourite },
@@ -53,32 +58,21 @@ class CharacterMediasViewModel @Inject constructor(
     override fun entryId(entry: MediaPreviewEntry) = entry.media.id.toString()
 
     override suspend fun initialRequest(
-        headerId: String,
-        sortOption: MediaSortOption,
-        sortAscending: Boolean,
+        filterParams: CharacterMediaSortFilterController.FilterParams?,
     ) = CharacterMediasScreen.Entry(
-        aniListApi.characterAndMedias(
-            characterId = headerId,
-            sort = sortOption.toApiValue(sortAscending),
-        )
+        aniListApi.characterAndMedias(characterId = characterId)
     )
 
     override suspend fun pagedRequest(
-        entry: CharacterMediasScreen.Entry,
         page: Int,
-        sortOption: MediaSortOption,
-        sortAscending: Boolean,
-    ) = if (page == 1) {
-        val result = entry.character.media
-        result?.pageInfo to result?.nodes?.filterNotNull().orEmpty()
-    } else {
-        val result = aniListApi.characterAndMediasPage(
-            characterId = entry.character.id.toString(),
-            sort = sortOption.toApiValue(sortAscending),
-            page = page,
-        ).character.media
-        result?.pageInfo to result?.nodes?.filterNotNull().orEmpty()
-    }
+        filterParams: CharacterMediaSortFilterController.FilterParams?,
+    ) = aniListApi.characterAndMediasPage(
+        characterId = characterId,
+        sort = filterParams!!.sort.selectedOption(MediaSortOption.TRENDING)
+            .toApiValue(filterParams.sortAscending),
+        onList = filterParams.onList,
+        page = page,
+    ).character.media.run { pageInfo to nodes }
 
     override fun Flow<PagingData<MediaPreviewEntry>>.transformFlow() =
         applyMediaStatusChanges(

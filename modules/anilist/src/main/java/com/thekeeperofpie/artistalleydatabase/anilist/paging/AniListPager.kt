@@ -12,7 +12,7 @@ object AniListPager {
 
     operator fun <T : Any> invoke(
         perPage: Int = 10,
-        apiCall: suspend (page: Int) -> Pair<PaginationInfo?, List<T>>,
+        apiCall: suspend (page: Int) -> Pair<PaginationInfo?, List<T?>?>,
     ): Flow<PagingData<T>> {
         val cache = LruCache<Int, PagingSource.LoadResult.Page<Int, T>>(20)
         return Pager(

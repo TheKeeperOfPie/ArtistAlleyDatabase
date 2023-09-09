@@ -6,6 +6,7 @@ import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
 import com.anilist.type.AiringSort
+import com.anilist.type.CharacterRole
 import com.anilist.type.CharacterSort
 import com.anilist.type.ExternalLinkMediaType
 import com.anilist.type.MediaFormat
@@ -484,26 +485,22 @@ class AuthedAniListApiWrapper(
         }))
     }
 
-    override suspend fun mediaAndCharacters(
-        mediaId: String,
-        charactersPerPage: Int,
-    ) = super.mediaAndCharacters(mediaId, charactersPerPage).also {
-        if (it.isAdult != false) throw IOException("Cannot load media")
-    }
+    override suspend fun mediaAndCharacters(mediaId: String) =
+        super.mediaAndCharacters(mediaId).also {
+            if (it.isAdult != false) throw IOException("Cannot load media")
+        }
 
     override suspend fun mediaAndCharactersPage(
         mediaId: String,
+        sort: List<CharacterSort>,
+        role: CharacterRole?,
         page: Int,
         charactersPerPage: Int,
-    ) = super.mediaAndCharactersPage(mediaId, page, charactersPerPage).also {
+    ) = super.mediaAndCharactersPage(mediaId, sort, role, page, charactersPerPage).also {
         if (it.media.isAdult != false) throw IOException("Cannot load media")
     }
 
-    override suspend fun mediaAndReviews(
-        mediaId: String,
-        sort: List<ReviewSort>,
-        reviewsPerPage: Int,
-    ) = super.mediaAndReviews(mediaId, sort, reviewsPerPage).also {
+    override suspend fun mediaAndReviews(mediaId: String) = super.mediaAndReviews(mediaId).also {
         if (it.isAdult != false) throw IOException("Cannot load media")
     }
 
@@ -523,14 +520,10 @@ class AuthedAniListApiWrapper(
     override suspend fun rateReview(reviewId: String, rating: ReviewRating) =
         super.rateReview(reviewId, rating)
 
-    override suspend fun mediaAndRecommendations(
-        mediaId: String,
-        sort: List<RecommendationSort>,
-        recommendationsPerPage: Int,
-    ) = super.mediaAndRecommendations(mediaId, sort, recommendationsPerPage).let {
-        if (it.isAdult != false) throw IOException("Cannot load media")
-        it.copy(recommendations = it.recommendations?.copy(nodes = it.recommendations.nodes?.filter { it?.mediaRecommendation?.isAdult == false }))
-    }
+    override suspend fun mediaAndRecommendations(mediaId: String) =
+        super.mediaAndRecommendations(mediaId).also {
+            if (it.isAdult != false) throw IOException("Cannot load media")
+        }
 
     override suspend fun mediaAndRecommendationsPage(
         mediaId: String,
@@ -541,42 +534,26 @@ class AuthedAniListApiWrapper(
         if (it.media.isAdult != false) throw IOException("Cannot load media")
         it.copy(
             media = it.media.copy(
-                recommendations = it.media.recommendations?.copy(
+                recommendations = it.media.recommendations.copy(
                     nodes = it.media.recommendations.nodes?.filter { it?.mediaRecommendation?.isAdult == false })
             )
         )
     }
 
-    override suspend fun characterAndMedias(
-        characterId: String,
-        sort: List<MediaSort>,
-        mediasPerPage: Int,
-    ) = super.characterAndMedias(characterId, sort, mediasPerPage).let {
-        it.copy(media = it.media?.copy(nodes = it.media.nodes?.filter { it?.isAdult == false }))
-    }
+    override suspend fun characterAndMedias(characterId: String) =
+        super.characterAndMedias(characterId)
 
     override suspend fun characterAndMediasPage(
         characterId: String,
         sort: List<MediaSort>,
+        onList: Boolean?,
         page: Int,
         mediasPerPage: Int,
-    ) = super.characterAndMediasPage(characterId, sort, page, mediasPerPage).let {
-        it.copy(character = it.character.copy(media = it.character.media?.copy(nodes = it.character.media.nodes?.filter { it?.isAdult == false })))
+    ) = super.characterAndMediasPage(characterId, sort, onList, page, mediasPerPage).let {
+        it.copy(character = it.character.copy(media = it.character.media.copy(nodes = it.character.media.nodes?.filter { it?.isAdult == false })))
     }
 
-    override suspend fun staffAndCharacters(
-        staffId: String,
-        sort: List<CharacterSort>,
-        charactersPerPage: Int,
-    ) = super.staffAndCharacters(staffId, sort, charactersPerPage).let {
-        it.copy(characters = it.characters?.copy(edges = it.characters.edges?.map {
-            it?.copy(
-                node = it.node.copy(
-                    media = it.node.media?.copy(nodes = it.node.media.nodes?.filter { it?.isAdult == false })
-                )
-            )
-        }))
-    }
+    override suspend fun staffAndCharacters(staffId: String) = super.staffAndCharacters(staffId)
 
     override suspend fun staffAndCharactersPage(
         staffId: String,
@@ -584,7 +561,7 @@ class AuthedAniListApiWrapper(
         page: Int,
         charactersPerPage: Int,
     ) = super.staffAndCharactersPage(staffId, sort, page, charactersPerPage).let {
-        it.copy(staff = it.staff.copy(characters = it.staff.characters?.copy(edges = it.staff.characters.edges?.map {
+        it.copy(staff = it.staff.copy(characters = it.staff.characters.copy(edges = it.staff.characters.edges?.map {
             it?.copy(node = it.node.copy(media = it.node.media?.copy(nodes = it.node.media.nodes?.filter { it?.isAdult == false })))
         })))
     }
@@ -605,21 +582,16 @@ class AuthedAniListApiWrapper(
         }))
     }
 
-    override suspend fun studioMedias(
-        studioId: String,
-        sort: List<MediaSort>,
-        mediasPerPage: Int,
-    ) = super.studioMedias(studioId, sort, mediasPerPage).let {
-        it.copy(media = it.media?.copy(nodes = it.media.nodes?.filter { it?.isAdult == false }))
-    }
+    override suspend fun studioMedias(studioId: String) = super.studioMedias(studioId)
 
     override suspend fun studioMediasPage(
         studioId: String,
         sort: List<MediaSort>,
+        main: Boolean?,
         page: Int,
         mediasPerPage: Int,
-    ) = super.studioMediasPage(studioId, sort, page, mediasPerPage).let {
-        it.copy(studio = it.studio.copy(media = it.studio.media?.copy(nodes = it.studio.media.nodes?.filter { it?.isAdult == false })))
+    ) = super.studioMediasPage(studioId, sort, main, page, mediasPerPage).let {
+        it.copy(studio = it.studio.copy(media = it.studio.media.copy(nodes = it.studio.media.nodes?.filter { it?.isAdult == false })))
     }
 
     override suspend fun toggleAnimeFavorite(id: String) = super.toggleAnimeFavorite(id)

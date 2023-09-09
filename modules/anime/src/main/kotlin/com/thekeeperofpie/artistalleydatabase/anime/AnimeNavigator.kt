@@ -32,8 +32,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersScreen
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasScreen
@@ -313,14 +313,10 @@ object AnimeNavigator {
                 }
             ) + MediaHeaderValues.navArguments()
         ) {
-            val arguments = it.arguments!!
-            val characterId = arguments.getString("characterId")!!
-
             val viewModel = hiltViewModel<CharacterMediasViewModel>()
-                .apply { initialize(characterId) }
             val headerValues = CharacterHeaderValues(
-                arguments,
-                character = { viewModel.entry?.character },
+                it.arguments!!,
+                character = { viewModel.entry.result?.character },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
@@ -373,13 +369,10 @@ object AnimeNavigator {
                 }
             ) + StaffHeaderValues.navArguments()
         ) {
-            val arguments = it.arguments!!
-            val staffId = arguments.getString("staffId")!!
-
-            val viewModel = hiltViewModel<StaffCharactersViewModel>().apply { initialize(staffId) }
+            val viewModel = hiltViewModel<StaffCharactersViewModel>()
             val headerValues = StaffHeaderValues(
-                arguments,
-                staff = { viewModel.entry?.staff },
+                arguments = it.arguments!!,
+                staff = { viewModel.entry.result?.staff },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
@@ -471,18 +464,14 @@ object AnimeNavigator {
                 },
             ) + MediaHeaderValues.navArguments()
         ) {
-            val arguments = it.arguments!!
-            val mediaId = arguments.getString("mediaId")!!
-
-            val viewModel = hiltViewModel<CharactersViewModel>()
-                .apply { initialize(mediaId) }
+            val viewModel = hiltViewModel<MediaCharactersViewModel>()
             val headerValues = MediaHeaderValues(
-                arguments = arguments,
-                media = { viewModel.entry?.media },
+                arguments = it.arguments!!,
+                media = { viewModel.entry.result?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
-            CharactersScreen(
+            MediaCharactersScreen(
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
@@ -499,14 +488,10 @@ object AnimeNavigator {
                 }
             ) + MediaHeaderValues.navArguments()
         ) {
-            val arguments = it.arguments!!
-            val mediaId = arguments.getString("mediaId")!!
-
             val viewModel = hiltViewModel<MediaReviewsViewModel>()
-                .apply { initialize(mediaId) }
             val headerValues = MediaHeaderValues(
-                arguments = arguments,
-                media = { viewModel.entry?.media },
+                arguments = it.arguments!!,
+                media = { viewModel.entry.result?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
@@ -539,14 +524,10 @@ object AnimeNavigator {
                 }
             ) + MediaHeaderValues.navArguments()
         ) {
-            val arguments = it.arguments!!
-            val mediaId = arguments.getString("mediaId")!!
-
             val viewModel = hiltViewModel<MediaRecommendationsViewModel>()
-                .apply { initialize(mediaId) }
             val headerValues = MediaHeaderValues(
-                arguments = arguments,
-                media = { viewModel.entry?.media },
+                arguments = it.arguments!!,
+                media = { viewModel.entry.result?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
@@ -645,19 +626,18 @@ object AnimeNavigator {
             ),
         ) {
             val arguments = it.arguments!!
-            val studioId = arguments.getString("studioId")!!
             val name = arguments.getString("name")
             val favorite = arguments.getString("favorite")?.toBooleanStrictOrNull()
 
-            val viewModel = hiltViewModel<StudioMediasViewModel>().apply { initialize(studioId) }
+            val viewModel = hiltViewModel<StudioMediasViewModel>()
 
             StudioMediasScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
-                name = { viewModel.entry?.studio?.name ?: name ?: "" },
+                name = { viewModel.entry.result?.studio?.name ?: name ?: "" },
                 favorite = {
                     viewModel.favoritesToggleHelper.favorite
-                        ?: viewModel.entry?.studio?.isFavourite
+                        ?: viewModel.entry.result?.studio?.isFavourite
                         ?: favorite
                 },
             )

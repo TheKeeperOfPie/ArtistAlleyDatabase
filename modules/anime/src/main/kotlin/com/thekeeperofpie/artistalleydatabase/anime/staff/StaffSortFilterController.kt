@@ -19,7 +19,7 @@ class StaffSortFilterController(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     private val allowRelevanceSort: Boolean = false,
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<StaffSortFilterController.FilterParams>(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = StaffSortOption::class,
@@ -51,7 +51,7 @@ class StaffSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    fun filterParams() = snapshotFlow {
+    override fun filterParams() = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

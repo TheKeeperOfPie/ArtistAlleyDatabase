@@ -17,7 +17,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class UserFollowSortFilterController(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<UserFollowSortFilterController.FilterParams>(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = UserSortOption::class,
@@ -33,7 +33,7 @@ class UserFollowSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    fun filterParams() = snapshotFlow {
+    override fun filterParams() = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

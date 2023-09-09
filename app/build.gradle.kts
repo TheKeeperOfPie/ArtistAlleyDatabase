@@ -158,6 +158,7 @@ fun Exec.launchActivity(
 
 // TODO: (b/299506174)
 tasks.register<Exec>("installReleaseTemp") {
+    dependsOn("assembleRelease")
     commandLine(
         "adb", "install",
         project.rootDir.resolve("app/build/outputs/apk/release/app-release.apk")
@@ -166,6 +167,7 @@ tasks.register<Exec>("installReleaseTemp") {
 }
 
 tasks.register<Exec>("installInternalTemp") {
+    dependsOn("assembleInternal")
     commandLine(
         "adb", "install",
         project.rootDir.resolve("app/build/outputs/apk/internal/app-internal.apk")

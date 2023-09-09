@@ -502,21 +502,9 @@ fragment MediaAndReviewsReview on Review {
     createdAt
 }
 
-query MediaAndReviews(
-    $mediaId: Int!,
-    $sort: [ReviewSort]!,
-    $reviewsPerPage: Int!,
-) {
+query MediaAndReviews($mediaId: Int!) {
     Media(id: $mediaId) @nonnull {
         ...MediaHeaderData
-        reviews(sort: $sort, page: 1, perPage: $reviewsPerPage) {
-            pageInfo @nonnull {
-                ...PaginationInfo
-            }
-            nodes {
-                ...MediaAndReviewsReview
-            }
-        }
     }
 }
 
@@ -528,7 +516,7 @@ query MediaAndReviewsPagination(
 ) {
     Media(id: $mediaId) @nonnull {
         isAdult
-        reviews(sort: $sort, page: $page, perPage: $reviewsPerPage) {
+        reviews(sort: $sort, page: $page, perPage: $reviewsPerPage) @nonnull {
             pageInfo @nonnull {
                 ...PaginationInfo
             }
@@ -553,19 +541,9 @@ fragment MediaAndRecommendationsRecommendation on Recommendation {
 
 query MediaAndRecommendations(
     $mediaId: Int!,
-    $sort: [RecommendationSort]!,
-    $recommendationsPerPage: Int!,
 ) {
     Media(id: $mediaId) @nonnull {
         ...MediaHeaderData
-        recommendations(sort: $sort, page: 1, perPage: $recommendationsPerPage) {
-            pageInfo @nonnull {
-                ...PaginationInfo
-            }
-            nodes {
-                ...MediaAndRecommendationsRecommendation
-            }
-        }
     }
 }
 
@@ -577,7 +555,7 @@ query MediaAndRecommendationsPagination(
 ) {
     Media(id: $mediaId) @nonnull {
         isAdult
-        recommendations(sort: $sort, page: $page, perPage: $recommendationsPerPage) {
+        recommendations(sort: $sort, page: $page, perPage: $recommendationsPerPage) @nonnull {
             pageInfo @nonnull {
                 ...PaginationInfo
             }

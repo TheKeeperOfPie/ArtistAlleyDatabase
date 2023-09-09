@@ -58,7 +58,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
     userScoreEnabled: Boolean,
-) : SortFilterController(settings, featureOverrideProvider) {
+) : SortFilterController<MediaSortFilterController.FilterParams<SortType>>(settings, featureOverrideProvider) {
     private var initialized = false
     protected var initialParams by mutableStateOf<ParamsType?>(null)
 

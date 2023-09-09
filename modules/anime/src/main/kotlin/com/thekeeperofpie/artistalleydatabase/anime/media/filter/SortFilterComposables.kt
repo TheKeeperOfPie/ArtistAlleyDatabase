@@ -124,7 +124,7 @@ fun SortFilterOptionsPanel(
 
 @Composable
 fun SortFilterBottomScaffoldNoAppBarOffset(
-    sortFilterController: SortFilterController?,
+    sortFilterController: SortFilterController<*>?,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
     sheetState: SheetState = rememberStandardBottomSheetState(
@@ -181,7 +181,7 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
 
 @Composable
 fun SortFilterBottomScaffold(
-    sortFilterController: SortFilterController?,
+    sortFilterController: SortFilterController<*>?,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
     sheetState: androidx.compose.material3.SheetState = androidx.compose.material3.rememberStandardBottomSheetState(
@@ -237,7 +237,7 @@ fun SortFilterBottomScaffold(
 
 @Composable
 private fun SheetDragHandle(
-    sortFilterController: SortFilterController?,
+    sortFilterController: SortFilterController<*>?,
     targetValue: () -> SheetValue,
     onClick: () -> Unit,
 ) {
@@ -298,7 +298,7 @@ private fun SheetDragHandle(
 
 @Composable
 private fun SheetContent(
-    sortFilterController: SortFilterController?,
+    sortFilterController: SortFilterController<*>?,
     bottomNavigationState: BottomNavigationState?,
 ) {
     if (sortFilterController != null) {

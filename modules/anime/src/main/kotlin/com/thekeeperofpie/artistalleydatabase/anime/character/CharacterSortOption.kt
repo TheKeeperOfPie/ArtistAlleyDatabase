@@ -21,7 +21,8 @@ enum class CharacterSortOption(
     fun toApiValue(ascending: Boolean) = when (this) {
         ID -> listOf(if (ascending) CharacterSort.ID else CharacterSort.ID_DESC)
         ROLE -> listOf(
-            if (ascending) CharacterSort.ROLE else CharacterSort.ROLE_DESC,
+            // Role sort is reversed from the API definition because it's more intuitive
+            if (ascending) CharacterSort.ROLE_DESC else CharacterSort.ROLE,
             CharacterSort.RELEVANCE,
         )
         SEARCH_MATCH -> listOf(
@@ -34,13 +35,14 @@ enum class CharacterSortOption(
             CharacterSort.RELEVANCE,
             CharacterSort.ROLE_DESC,
         )
-        RELEVANCE -> listOf(CharacterSort.RELEVANCE, CharacterSort.ROLE_DESC)
+        RELEVANCE -> listOf(CharacterSort.RELEVANCE, CharacterSort.ROLE)
     }
 
     fun toApiValueForSearch(ascending: Boolean) = when (this) {
         ID -> listOf(if (ascending) CharacterSort.ID else CharacterSort.ID_DESC)
         ROLE -> listOf(
-            if (ascending) CharacterSort.ROLE else CharacterSort.ROLE_DESC,
+            // Role sort is reversed from the API definition because it's more intuitive
+            if (ascending) CharacterSort.ROLE_DESC else CharacterSort.ROLE,
             CharacterSort.SEARCH_MATCH,
         )
         SEARCH_MATCH -> listOf(
@@ -51,6 +53,6 @@ enum class CharacterSortOption(
         FAVORITES -> listOf(
             if (ascending) CharacterSort.FAVOURITES else CharacterSort.FAVOURITES_DESC,
         )
-        RELEVANCE -> listOf(CharacterSort.RELEVANCE, CharacterSort.ROLE_DESC)
+        RELEVANCE -> listOf(CharacterSort.RELEVANCE, CharacterSort.ROLE)
     }
 }

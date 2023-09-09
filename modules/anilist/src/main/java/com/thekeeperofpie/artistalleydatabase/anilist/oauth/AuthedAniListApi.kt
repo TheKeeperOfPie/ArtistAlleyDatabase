@@ -107,6 +107,7 @@ import com.anilist.ViewerMediaListQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
 import com.anilist.type.AiringSort
+import com.anilist.type.CharacterRole
 import com.anilist.type.CharacterSort
 import com.anilist.type.ExternalLinkMediaType
 import com.anilist.type.FuzzyDateInput
@@ -712,36 +713,27 @@ open class AuthedAniListApi(
         )
     )
 
-    open suspend fun mediaAndCharacters(mediaId: String, charactersPerPage: Int = 10) = query(
-        MediaAndCharactersQuery(
-            mediaId = mediaId.toInt(),
-            charactersPerPage = charactersPerPage,
-        )
-    ).media
+    open suspend fun mediaAndCharacters(mediaId: String) =
+        query(MediaAndCharactersQuery(mediaId = mediaId.toInt())).media
 
     open suspend fun mediaAndCharactersPage(
         mediaId: String,
+        sort: List<CharacterSort>,
+        role: CharacterRole?,
         page: Int,
         charactersPerPage: Int = 10,
     ) = query(
         MediaAndCharactersPaginationQuery(
             mediaId = mediaId.toInt(),
             page = page,
+            sort = sort,
+            role = Optional.presentIfNotNull(role),
             charactersPerPage = charactersPerPage,
         )
     )
 
-    open suspend fun mediaAndReviews(
-        mediaId: String,
-        sort: List<ReviewSort>,
-        reviewsPerPage: Int = 10,
-    ) = query(
-        MediaAndReviewsQuery(
-            mediaId = mediaId.toInt(),
-            sort = sort,
-            reviewsPerPage = reviewsPerPage,
-        )
-    ).media
+    open suspend fun mediaAndReviews(mediaId: String) =
+        query(MediaAndReviewsQuery(mediaId = mediaId.toInt())).media
 
     open suspend fun mediaAndReviewsPage(
         mediaId: String,
@@ -763,17 +755,8 @@ open class AuthedAniListApi(
     open suspend fun rateReview(reviewId: String, rating: ReviewRating) =
         mutate(RateReviewMutation(id = reviewId.toInt(), rating = rating)).rateReview.userRating
 
-    open suspend fun mediaAndRecommendations(
-        mediaId: String,
-        sort: List<RecommendationSort>,
-        recommendationsPerPage: Int = 10,
-    ) = query(
-        MediaAndRecommendationsQuery(
-            mediaId = mediaId.toInt(),
-            sort = sort,
-            recommendationsPerPage = recommendationsPerPage,
-        )
-    ).media
+    open suspend fun mediaAndRecommendations(mediaId: String) =
+        query(MediaAndRecommendationsQuery(mediaId = mediaId.toInt())).media
 
     open suspend fun mediaAndRecommendationsPage(
         mediaId: String,
@@ -789,43 +772,27 @@ open class AuthedAniListApi(
         )
     )
 
-    open suspend fun characterAndMedias(
-        characterId: String,
-        sort: List<MediaSort>,
-        mediasPerPage: Int = 10,
-    ) = query(
-        CharacterAndMediasQuery(
-            characterId = characterId.toInt(),
-            sort = sort,
-            mediasPerPage = mediasPerPage,
-        )
-    ).character
+    open suspend fun characterAndMedias(characterId: String) =
+        query(CharacterAndMediasQuery(characterId = characterId.toInt())).character
 
     open suspend fun characterAndMediasPage(
         characterId: String,
         sort: List<MediaSort>,
+        onList: Boolean?,
         page: Int,
         mediasPerPage: Int = 10,
     ) = query(
         CharacterAndMediasPaginationQuery(
             characterId = characterId.toInt(),
             sort = sort,
+            onList = Optional.presentIfNotNull(onList),
             page = page,
             mediasPerPage = mediasPerPage,
         )
     )
 
-    open suspend fun staffAndCharacters(
-        staffId: String,
-        sort: List<CharacterSort>,
-        charactersPerPage: Int = 10,
-    ) = query(
-        StaffAndCharactersQuery(
-            staffId = staffId.toInt(),
-            sort = sort,
-            charactersPerPage = charactersPerPage,
-        )
-    ).staff
+    open suspend fun staffAndCharacters(staffId: String) =
+        query(StaffAndCharactersQuery(staffId = staffId.toInt())).staff
 
     open suspend fun staffAndCharactersPage(
         staffId: String,
@@ -855,27 +822,20 @@ open class AuthedAniListApi(
         )
     )
 
-    open suspend fun studioMedias(
-        studioId: String,
-        sort: List<MediaSort>,
-        mediasPerPage: Int = 10,
-    ) = query(
-        StudioMediasQuery(
-            studioId = studioId.toInt(),
-            sort = sort,
-            mediasPerPage = mediasPerPage,
-        )
-    ).studio
+    open suspend fun studioMedias(studioId: String) =
+        query(StudioMediasQuery(studioId = studioId.toInt())).studio
 
     open suspend fun studioMediasPage(
         studioId: String,
         sort: List<MediaSort>,
+        main: Boolean?,
         page: Int,
         mediasPerPage: Int = 10,
     ) = query(
         StudioMediasPaginationQuery(
             studioId = studioId.toInt(),
             sort = sort,
+            main = Optional.presentIfNotNull(main),
             page = page,
             mediasPerPage = mediasPerPage,
         )

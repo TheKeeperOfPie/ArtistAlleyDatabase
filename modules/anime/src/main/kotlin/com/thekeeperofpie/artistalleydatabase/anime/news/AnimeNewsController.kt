@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
@@ -59,16 +60,18 @@ class AnimeNewsController(
                     .flatMapLatest { (region) ->
                         flow {
                             val result = async {
-                                fetchFeed(
-                                    type = AnimeNewsType.ANIME_NEWS_NETWORK,
-                                    okHttpClient = okHttpClient,
-                                    url = "${AnimeNewsNetworkUtils.NEWS_ATOM_URL_PREFIX}${region.id}",
-                                    mapCategories = { category ->
-                                        AnimeNewsNetworkCategory.entries.find { it.id == category.name }
-                                            ?: AnimeNewsNetworkCategory.UNKNOWN
-                                    },
-                                    ifEmpty = AnimeNewsNetworkCategory.UNKNOWN,
-                                )
+                                runCatching {
+                                    fetchFeed(
+                                        type = AnimeNewsType.ANIME_NEWS_NETWORK,
+                                        okHttpClient = okHttpClient,
+                                        url = "${AnimeNewsNetworkUtils.NEWS_ATOM_URL_PREFIX}${region.id}",
+                                        mapCategories = { category ->
+                                            AnimeNewsNetworkCategory.entries.find { it.id == category.name }
+                                                ?: AnimeNewsNetworkCategory.UNKNOWN
+                                        },
+                                        ifEmpty = AnimeNewsNetworkCategory.UNKNOWN,
+                                    )
+                                }
                             }
                             select {
                                 result.onAwait { emit(it) }
@@ -79,22 +82,25 @@ class AnimeNewsController(
                             }
                         }
                     }
+                    .map { it?.getOrNull() }
                     .catch {}
 
             val crunchyroll = refreshUptimeMillis
                 .flatMapLatest {
                     flow {
                         val result = async {
-                            fetchFeed(
-                                type = AnimeNewsType.CRUNCHYROLL,
-                                okHttpClient = okHttpClient,
-                                url = CrunchyrollNewsUtils.NEW_RSS_URL,
-                                mapCategories = { category ->
-                                    CrunchyrollNewsCategory.entries.find { it.id == category.name }
-                                        ?: CrunchyrollNewsCategory.UNKNOWN
-                                },
-                                ifEmpty = CrunchyrollNewsCategory.UNKNOWN,
-                            )
+                            runCatching {
+                                fetchFeed(
+                                    type = AnimeNewsType.CRUNCHYROLL,
+                                    okHttpClient = okHttpClient,
+                                    url = CrunchyrollNewsUtils.NEW_RSS_URL,
+                                    mapCategories = { category ->
+                                        CrunchyrollNewsCategory.entries.find { it.id == category.name }
+                                            ?: CrunchyrollNewsCategory.UNKNOWN
+                                    },
+                                    ifEmpty = CrunchyrollNewsCategory.UNKNOWN,
+                                )
+                            }
                         }
                         select {
                             result.onAwait { emit(it) }
@@ -105,6 +111,7 @@ class AnimeNewsController(
                         }
                     }
                 }
+                .map { it?.getOrNull() }
                 .catch {}
 
             val animeNewsNetworkFiltered = combine(

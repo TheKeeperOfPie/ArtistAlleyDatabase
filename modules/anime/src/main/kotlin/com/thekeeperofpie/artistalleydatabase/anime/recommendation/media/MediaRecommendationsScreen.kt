@@ -32,7 +32,7 @@ object MediaRecommendationsScreen {
         headerValues: MediaHeaderValues,
     ) {
         val entry = viewModel.entry
-        val media = entry?.media
+        val media = entry.result?.media
         var coverImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
@@ -48,9 +48,9 @@ object MediaRecommendationsScreen {
                 MediaHeader(
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
-                    mediaId = viewModel.headerId,
-                    mediaType = viewModel.entry?.media?.type,
-                    titles = entry?.titlesUnique,
+                    mediaId = viewModel.mediaId,
+                    mediaType = media?.type,
+                    titles = entry.result?.titlesUnique,
                     episodes = media?.episodes,
                     format = media?.format,
                     averageScore = media?.averageScore,
@@ -60,7 +60,7 @@ object MediaRecommendationsScreen {
                     onFavoriteChanged = {
                         viewModel.favoritesToggleHelper.set(
                             headerValues.type.toFavoriteType(),
-                            viewModel.headerId,
+                            viewModel.mediaId,
                             it,
                         )
                     },

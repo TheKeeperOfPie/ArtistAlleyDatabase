@@ -202,7 +202,7 @@ class MangaSortFilterController<SortType : SortOption>(
         }
     }
 
-    fun filterParams() =
+    override fun filterParams() =
         combine(
             snapshotFlow {
                 @Suppress("UNCHECKED_CAST")

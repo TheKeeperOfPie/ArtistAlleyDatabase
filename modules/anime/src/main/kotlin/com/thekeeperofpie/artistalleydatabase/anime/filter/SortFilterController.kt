@@ -5,8 +5,9 @@ import androidx.compose.runtime.collectAsState
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import kotlinx.coroutines.flow.Flow
 
-abstract class SortFilterController(
+abstract class SortFilterController<FilterParams>(
     protected val settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
 ) {
@@ -37,6 +38,8 @@ abstract class SortFilterController(
         titleDropdownContentDescriptionRes = R.string.anime_generic_filter_advanced_group_expand_content_description,
         children = listOfNotNull(showAdultSection, collapseOnCloseSection, hideIgnoredSection)
     )
+
+    abstract fun filterParams() : Flow<FilterParams>
 
     @Composable
     open fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
