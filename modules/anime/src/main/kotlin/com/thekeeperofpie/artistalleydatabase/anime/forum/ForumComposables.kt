@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
-import android.text.Spanned
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -89,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.openForceExternal
@@ -610,7 +610,7 @@ fun ThreadHeader(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (thread == null || !entry.bodyMarkdown.isNullOrBlank()) {
+        if (thread == null || !entry.bodyMarkdown?.value.isNullOrBlank()) {
             var bodyShown by rememberSaveable(thread?.title) {
                 val mayHaveSpoilers =
                     thread?.title?.contains("Spoilers", ignoreCase = true) == true
@@ -618,7 +618,7 @@ fun ThreadHeader(
             }
             if (bodyShown) {
                 MarkdownText(
-                    text = entry?.bodyMarkdown,
+                    markdownText = entry?.bodyMarkdown,
                     textColor = MaterialTheme.typography.bodySmall.color,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -729,7 +729,7 @@ fun ThreadHeader(
 @Composable
 fun ThreadDeleteCommentPrompt(
     commentId: String,
-    commentMarkdown: Spanned?,
+    commentMarkdown: StableSpanned?,
     deleting: () -> Boolean,
     onDismiss: () -> Unit,
     onConfirmDelete: (String) -> Unit,
@@ -745,7 +745,7 @@ fun ThreadDeleteCommentPrompt(
         },
         text = {
             MarkdownText(
-                text = commentMarkdown,
+                markdownText = commentMarkdown,
                 textColor = MaterialTheme.typography.bodySmall.color,
             )
         },
@@ -795,8 +795,8 @@ fun ThreadComment(
     viewer: AniListViewer?,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: ((String, Spanned?) -> Unit)? = null,
-    onClickReplyComment: ((String, Spanned?) -> Unit)? = null,
+    onClickDelete: ((String, StableSpanned?) -> Unit)? = null,
+    onClickReplyComment: ((String, StableSpanned?) -> Unit)? = null,
 ) {
     // TODO: Child comments
 
@@ -845,14 +845,14 @@ fun ThreadCommentContent(
     viewer: AniListViewer?,
     loading: Boolean,
     commentId: String?,
-    commentMarkdown: Spanned?,
+    commentMarkdown: StableSpanned?,
     createdAt: Int?,
     liked: Boolean,
     likeCount: Int,
     user: UserNavigationData?,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: ((String, Spanned?) -> Unit)? = null,
-    onClickReplyComment: ((String, Spanned?) -> Unit)? = null,
+    onClickDelete: ((String, StableSpanned?) -> Unit)? = null,
+    onClickReplyComment: ((String, StableSpanned?) -> Unit)? = null,
 ) {
     val navigationCallback = LocalNavigationCallback.current
     Row(
@@ -1005,7 +1005,7 @@ fun ThreadCommentContent(
     }
 
     MarkdownText(
-        text = commentMarkdown,
+        markdownText = commentMarkdown,
         modifier = Modifier
             .conditionally(loading) { fillMaxWidth() }
             .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
@@ -1024,8 +1024,8 @@ fun ColumnScope.ThreadCommentChild(
     level: Int,
     child: ForumCommentChild,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: ((String, Spanned?) -> Unit)? = null,
-    onClickReplyComment: ((String, Spanned?) -> Unit)? = null,
+    onClickDelete: ((String, StableSpanned?) -> Unit)? = null,
+    onClickReplyComment: ((String, StableSpanned?) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier

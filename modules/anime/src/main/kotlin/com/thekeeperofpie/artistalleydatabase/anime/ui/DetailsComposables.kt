@@ -6,7 +6,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
-import android.text.Spanned
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -77,10 +76,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
@@ -335,54 +336,53 @@ internal fun LazyListScope.detailsLoadingOrError(
     }
 }
 
-internal fun LazyListScope.descriptionSection(
-    markdownText: Spanned?,
+@Composable
+internal fun DescriptionSection(
+    markdownText: StableSpanned?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
 ) {
-    if (markdownText.isNullOrEmpty()) return
-    item("descriptionSection") {
-        val expanded = expanded()
-        ElevatedCard(
-            onClick = { onExpandedChange(!expanded) },
-            modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp)
-                .fillMaxWidth()
-        ) {
-            val style = MaterialTheme.typography.bodyMedium
+    val expanded = expanded()
+    ElevatedCard(
+        onClick = { onExpandedChange(!expanded) },
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp)
+            .fillMaxWidth()
+            .recomposeHighlighter()
+    ) {
+        val style = MaterialTheme.typography.bodyMedium
 
-            var showExpand by rememberSaveable { mutableStateOf(false) }
+        var showExpand by rememberSaveable { mutableStateOf(false) }
 
-            Box(modifier = Modifier.height(IntrinsicSize.Min)) {
-                MarkdownText(
-                    text = markdownText,
-                    textColor = style.color.takeOrElse { LocalContentColor.current },
-                    maxLines = if (expanded) Int.MAX_VALUE else 4,
-                    onOverflowChange = { showExpand = it },
+        Box(modifier = Modifier.height(IntrinsicSize.Min)) {
+            MarkdownText(
+                markdownText = markdownText,
+                textColor = style.color.takeOrElse { LocalContentColor.current },
+                maxLines = if (expanded) Int.MAX_VALUE else 4,
+                onOverflowChange = { showExpand = it },
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .conditionally(!expanded && showExpand) { fadingEdgeBottom() }
+                    .fillMaxWidth()
+                    .animateContentSize()
+            )
+
+            if (!expanded && showExpand) {
+                Box(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                        .conditionally(!expanded && showExpand) { fadingEdgeBottom() }
-                        .fillMaxWidth()
-                        .animateContentSize()
+                        .matchParentSize()
+                        .clickable { onExpandedChange(true) }
                 )
-
-                if (!expanded && showExpand) {
-                    Box(
-                        modifier = Modifier
-                            .fillParentMaxSize()
-                            .clickable { onExpandedChange(true) }
-                    )
-                }
             }
+        }
 
-            if (expanded) {
-                HorizontalDivider()
-                TextButton(
-                    onClick = { onExpandedChange(false) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.anime_unfold_less_text))
-                }
+        if (expanded) {
+            HorizontalDivider()
+            TextButton(
+                onClick = { onExpandedChange(false) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.anime_unfold_less_text))
             }
         }
     }

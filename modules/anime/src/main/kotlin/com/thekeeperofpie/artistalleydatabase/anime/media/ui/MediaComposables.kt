@@ -67,18 +67,20 @@ import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import kotlinx.collections.immutable.ImmutableList
 
 fun <T> LazyListScope.mediaListSection(
     screenKey: String,
+    editViewModel: MediaEditViewModel,
     viewer: AniListViewer?,
     @StringRes titleRes: Int,
-    values: Collection<T>,
+    values: ImmutableList<T>,
     valueToEntry: (T) -> AnimeMediaListRow.Entry,
     aboveFold: Int,
     hasMoreValues: Boolean,
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
-    onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
@@ -101,8 +103,10 @@ fun <T> LazyListScope.mediaListSection(
         label = if (label == null) null else {
             { label(item) }
         },
-        onClickListEdit = onClickListEdit,
-        modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+        onClickListEdit = remember { { editViewModel.initialize(it.media) } },
+        modifier = modifier
+            .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+            .recomposeHighlighter()
     )
 }
 

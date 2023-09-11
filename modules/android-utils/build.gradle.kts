@@ -16,6 +16,7 @@ dependencies {
     api(libs.androidx.security.crypto)
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.collections.immutable)
     runtimeOnly(libs.kotlinx.coroutines.android)
 
     runtimeOnly(libs.room.runtime)
@@ -29,4 +30,6 @@ dependencies {
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit.test)
+
+    compileOnly(libs.compose.runtime)
 }

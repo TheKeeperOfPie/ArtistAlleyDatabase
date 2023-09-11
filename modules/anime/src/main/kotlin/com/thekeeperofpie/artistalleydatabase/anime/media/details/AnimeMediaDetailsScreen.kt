@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
-import android.text.Spanned
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -35,7 +34,9 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -74,6 +75,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -106,9 +108,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
-import androidx.paging.LoadState
-import androidx.paging.LoadStates
-import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
@@ -129,6 +128,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.orEmpty
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -162,7 +162,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
@@ -177,6 +177,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
@@ -184,12 +185,14 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
@@ -233,8 +236,6 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
-        onCharacterLongClick: (String) -> Unit = {},
-        onStaffLongClick: (String) -> Unit = {},
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -245,13 +246,14 @@ object AnimeMediaDetailsScreen {
         var coverImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
+        val coverImageWidthToHeightRatioGetter: () -> Float =
+            remember { { coverImageWidthToHeightRatio } }
         var headerTransitionFinished by remember { mutableStateOf(false) }
         val entry = viewModel.entry
         val entry2 = viewModel.entry2
-        val charactersInitial = (entry.result?.charactersInitial
-            ?: MutableStateFlow(PagingData.empty())).collectAsLazyPagingItems()
+        val charactersInitial = entry.result?.charactersInitial.orEmpty()
         val charactersDeferred = viewModel.charactersDeferred.collectAsLazyPagingItems()
-        val characters = charactersDeferred.takeIf { it.itemCount > 0 } ?: charactersInitial
+        val charactersDeferredGetter = remember { { charactersDeferred } }
         val staff = viewModel.staff.collectAsLazyPagingItems()
         val expandedState = rememberExpandedState()
         val animeSongs = viewModel.animeSongs
@@ -261,11 +263,13 @@ object AnimeMediaDetailsScreen {
         var activityTabIsFollowing by rememberSaveable(viewer, activities) {
             mutableStateOf(!activities?.following.isNullOrEmpty())
         }
+        val onActivityTabChange: (ActivityTab) -> Unit =
+            remember { { activityTabIsFollowing = it == ActivityTab.FOLLOWING } }
 
         val sectionIndexInfo = buildSectionIndexInfo(
             entry = entry.result,
             entry2 = entry2.result,
-            characters = characters,
+            charactersCount = charactersDeferred.itemCount.coerceAtLeast(charactersInitial.size),
             staff = staff,
             expandedState = expandedState,
             animeSongs = animeSongs,
@@ -481,31 +485,23 @@ object AnimeMediaDetailsScreen {
                                 exception = entry.error?.second,
                             )
                         } else if (entry.result != null) {
-                            LazyColumn(
-                                state = lazyListState,
-                                contentPadding = PaddingValues(bottom = 16.dp),
-                                modifier = Modifier.padding(scaffoldPadding)
-                            ) {
-                                content(
-                                    viewModel = viewModel,
-                                    editViewModel = editViewModel,
-                                    viewer = viewer,
-                                    entry = entry.result!!,
-                                    entry2Result = entry2,
-                                    characters = characters,
-                                    staff = staff,
-                                    activityTab = if (activityTabIsFollowing) ActivityTab.FOLLOWING else ActivityTab.GLOBAL,
-                                    activities = if (activityTabIsFollowing) activities?.following else activities?.global,
-                                    onActivityTabChange = {
-                                        activityTabIsFollowing = it == ActivityTab.FOLLOWING
-                                    },
-                                    onClickListEdit = { editViewModel.initialize(it.media) },
-                                    onCharacterLongClick = onCharacterLongClick,
-                                    onStaffLongClick = onStaffLongClick,
-                                    expandedState = expandedState,
-                                    coverImageWidthToHeightRatio = { coverImageWidthToHeightRatio },
-                                )
-                            }
+                            Content(
+                                scaffoldPadding = scaffoldPadding,
+                                lazyListState = lazyListState,
+                                viewModel = viewModel,
+                                editViewModel = editViewModel,
+                                viewer = viewer,
+                                entry = entry.result!!,
+                                entry2Result = entry2,
+                                charactersInitial = charactersInitial,
+                                charactersDeferred = charactersDeferredGetter,
+                                staff = staff,
+                                activityTab = if (activityTabIsFollowing) ActivityTab.FOLLOWING else ActivityTab.GLOBAL,
+                                activities = if (activityTabIsFollowing) activities?.following else activities?.global,
+                                onActivityTabChange = onActivityTabChange,
+                                expandedState = expandedState,
+                                coverImageWidthToHeightRatio = coverImageWidthToHeightRatioGetter,
+                            )
                         }
                     }
                 }
@@ -519,53 +515,98 @@ object AnimeMediaDetailsScreen {
         }
     }
 
+    @Composable
+    private fun Content(
+        scaffoldPadding: PaddingValues,
+        lazyListState: LazyListState,
+        viewModel: AnimeMediaDetailsViewModel,
+        editViewModel: MediaEditViewModel,
+        viewer: AniListViewer?,
+        entry: Entry,
+        entry2Result: LoadingResult<Entry2>,
+        charactersInitial: ImmutableList<DetailsCharacter>,
+        charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
+        staff: LazyPagingItems<DetailsStaff>,
+        activityTab: ActivityTab,
+        activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
+        onActivityTabChange: (ActivityTab) -> Unit,
+        expandedState: ExpandedState,
+        coverImageWidthToHeightRatio: () -> Float,
+    ) {
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = PaddingValues(bottom = 16.dp),
+            modifier = Modifier.padding(scaffoldPadding)
+        ) {
+            content(
+                viewModel = viewModel,
+                editViewModel = editViewModel,
+                viewer = viewer,
+                entry = entry,
+                entry2Result = entry2Result,
+                charactersInitial = charactersInitial,
+                charactersDeferred = charactersDeferred,
+                staff = staff,
+                activityTab = activityTab,
+                activities = activities,
+                onActivityTabChange = onActivityTabChange,
+                expandedState = expandedState,
+                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+            )
+        }
+    }
+
     private fun LazyListScope.content(
         viewModel: AnimeMediaDetailsViewModel,
         editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         entry: Entry,
         entry2Result: LoadingResult<Entry2>,
-        characters: LazyPagingItems<DetailsCharacter>,
+        charactersInitial: ImmutableList<DetailsCharacter>,
+        charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
         staff: LazyPagingItems<DetailsStaff>,
         activityTab: ActivityTab,
-        activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
+        activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
         onActivityTabChange: (ActivityTab) -> Unit,
-        onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
-        onCharacterLongClick: (String) -> Unit,
-        onStaffLongClick: (String) -> Unit,
-        expandedState: ExpandedState,
         coverImageWidthToHeightRatio: () -> Float,
+        expandedState: ExpandedState,
     ) {
         val screenKey = viewModel.screenKey
-        genreSection(entry = entry)
+        if (entry.genres.isNotEmpty()) {
+            item("genreSection", "genreSection") {
+                GenreSection(genres = entry.genres, mediaType = entry.media.type)
+            }
+        }
 
-        descriptionSection(
-            markdownText = entry.description,
-            expanded = expandedState::description,
-            onExpandedChange = { expandedState.description = it },
-        )
+        if (!entry.description?.value.isNullOrEmpty()) {
+            item("descriptionSection", "descriptionSection") {
+                DescriptionSection(
+                    markdownText = entry.description,
+                    expanded = remember { { expandedState.description } },
+                    onExpandedChange = remember { { expandedState.description = it } },
+                )
+            }
+        }
 
         charactersSection(
             screenKey = screenKey,
             titleRes = R.string.anime_media_details_characters_label,
-            characters = characters,
-            onClickViewAll = {
-                it.onMediaCharactersClick(
-                    entry,
-                    viewModel.favoritesToggleHelper.favorite,
-                    coverImageWidthToHeightRatio(),
-                )
-            },
+            charactersInitial = charactersInitial,
+            charactersDeferred = charactersDeferred,
+            mediaId = entry.mediaId,
+            media = entry.media,
+            mediaFavorite = viewModel.favoritesToggleHelper.favorite,
+            mediaCoverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
         )
 
         relationsSection(
             screenKey = screenKey,
+            editViewModel = editViewModel,
             viewer = viewer,
             entry = entry,
             relationsExpanded = expandedState::relations,
             onRelationsExpandedChange = { expandedState.relations = it },
-            onClickListEdit = onClickListEdit,
         )
 
         infoSection(entry)
@@ -645,13 +686,13 @@ object AnimeMediaDetailsScreen {
         recommendationsSection(
             screenKey = screenKey,
             viewModel = viewModel,
+            editViewModel = editViewModel,
             viewer = viewer,
             entry = entry,
             entry2 = entry2,
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             expanded = expandedState::recommendations,
             onExpandedChange = { expandedState.recommendations = it },
-            onClickListEdit = onClickListEdit,
         )
 
         activitiesSection(
@@ -695,53 +736,55 @@ object AnimeMediaDetailsScreen {
         )
     }
 
-    private fun LazyListScope.genreSection(entry: Entry) {
-        if (entry.genres.isNotEmpty()) {
-            item("genreSection") {
-                val navigationCallback = LocalNavigationCallback.current
-                val mediaGenreDialogController = LocalMediaGenreDialogController.current
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 8.dp)
-                        .animateContentSize()
-                        .animateItemPlacement()
-                ) {
-                    entry.genres.forEach {
-                        AssistChip(
-                            onClick = {
-                                navigationCallback.onGenreClick(
-                                    entry.media.type ?: MediaType.ANIME,
-                                    it.name
-                                )
-                            },
-                            onLongClickLabel = stringResource(
-                                R.string.anime_media_tag_long_click_content_description
-                            ),
-                            onLongClick = { mediaGenreDialogController.onLongClickGenre(it.name) },
-                            label = { AutoHeightText(it.name) },
-                            colors = assistChipColors(
-                                containerColor = it.color,
-                                labelColor = it.textColor ?: MaterialTheme.colorScheme.onSurface,
-                            ),
+    @Composable
+    private fun LazyItemScope.GenreSection(
+        genres: ImmutableList<Entry.Genre>,
+        mediaType: MediaType?,
+    ) {
+        val navigationCallback = LocalNavigationCallback.current
+        val mediaGenreDialogController = LocalMediaGenreDialogController.current
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                .animateContentSize()
+                .animateItemPlacement()
+                .recomposeHighlighter()
+        ) {
+            genres.forEach {
+                AssistChip(
+                    onClick = {
+                        navigationCallback.onGenreClick(
+                            mediaType ?: MediaType.ANIME,
+                            it.name
                         )
-                    }
-                }
+                    },
+                    onLongClickLabel = stringResource(
+                        R.string.anime_media_tag_long_click_content_description
+                    ),
+                    onLongClick = { mediaGenreDialogController.onLongClickGenre(it.name) },
+                    label = { AutoHeightText(it.name) },
+                    colors = assistChipColors(
+                        containerColor = it.color,
+                        labelColor = it.textColor ?: MaterialTheme.colorScheme.onSurface,
+                    ),
+                )
             }
         }
     }
 
     private fun LazyListScope.relationsSection(
         screenKey: String,
+        editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         entry: Entry,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedChange: (Boolean) -> Unit,
-        onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         mediaListSection(
             screenKey = screenKey,
+            editViewModel = editViewModel,
             viewer = viewer,
             titleRes = R.string.anime_media_details_relations_label,
             values = entry.relations,
@@ -750,7 +793,6 @@ object AnimeMediaDetailsScreen {
             hasMoreValues = entry.relationsHasMore,
             expanded = relationsExpanded,
             onExpandedChange = onRelationsExpandedChange,
-            onClickListEdit = onClickListEdit,
             label = { RelationLabel(it.relation) },
         )
     }
@@ -1360,13 +1402,13 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.recommendationsSection(
         screenKey: String,
         viewModel: AnimeMediaDetailsViewModel,
+        editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         entry: Entry,
         entry2: Entry2?,
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
-        onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         listSection(
             titleRes = R.string.anime_media_details_recommendations_label,
@@ -1390,7 +1432,7 @@ object AnimeMediaDetailsScreen {
                 screenKey = screenKey,
                 entry = entry,
                 viewer = viewer,
-                onClickListEdit = onClickListEdit,
+                onClickListEdit = { editViewModel.initialize(it.media) },
                 recommendation = item.data,
                 onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                 modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
@@ -1661,8 +1703,7 @@ object AnimeMediaDetailsScreen {
         hidden: () -> Boolean,
         onHiddenChange: (Boolean) -> Unit,
     ) {
-        val streamingEpisodes = entry.media.streamingEpisodes?.filterNotNull()
-            ?.takeIf { it.isNotEmpty() } ?: return
+        val streamingEpisodes = entry.streamingEpisodes
         listSection(
             titleRes = R.string.anime_media_details_streaming_episodes_label,
             values = streamingEpisodes,
@@ -1820,7 +1861,7 @@ object AnimeMediaDetailsScreen {
         viewer: AniListViewer?,
         editViewModel: MediaEditViewModel,
         activityTab: ActivityTab,
-        activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
+        activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
         onActivityTabChange: (ActivityTab) -> Unit,
         viewModel: AnimeMediaDetailsViewModel,
         expanded: () -> Boolean,
@@ -1963,28 +2004,16 @@ object AnimeMediaDetailsScreen {
         }
     }
 
+    @Stable
     data class Entry(
         val mediaId: String,
         val media: Media,
-        val relations: List<Relation>,
-        val description: Spanned?,
+        val relations: ImmutableList<Relation>,
+        val description: StableSpanned?,
     ) {
-        val charactersInitial = MutableStateFlow(
-            PagingData.from(
-                CharacterUtils.toDetailsCharacters(
-                    media.characters?.edges?.filterNotNull().orEmpty()
-                ),
-                sourceLoadStates = LoadStates(
-                    refresh = LoadState.NotLoading(
-                        endOfPaginationReached = media.characters?.pageInfo?.hasNextPage != true
-                    ),
-                    prepend = LoadState.NotLoading(true),
-                    append = LoadState.NotLoading(
-                        endOfPaginationReached = media.characters?.pageInfo?.hasNextPage != true
-                    )
-                )
-            )
-        )
+        val charactersInitial =
+            CharacterUtils.toDetailsCharacters(media.characters?.edges?.filterNotNull().orEmpty())
+                .toImmutableList()
 
         val id = EntryId("media", mediaId)
         val titlesUnique = media.title
@@ -2008,7 +2037,7 @@ object AnimeMediaDetailsScreen {
             media.title?.native,
         ).distinct() + media.synonyms?.filterNotNull().orEmpty()
 
-        val genres = media.genres?.filterNotNull().orEmpty().map(::Genre)
+        val genres = media.genres?.filterNotNull().orEmpty().map(::Genre).toImmutableList()
 
         val studios = media.studios?.edges?.filterNotNull()?.map {
             Studio(
@@ -2043,7 +2072,7 @@ object AnimeMediaDetailsScreen {
     data class Entry2(
         val mediaId: String,
         val media: MediaDetails2Query.Data.Media,
-        val recommendations: List<Recommendation>,
+        val recommendations: ImmutableList<Recommendation>,
     ) {
         val recommendationsHasMore = media.recommendations?.pageInfo?.hasNextPage ?: true
 
@@ -2104,8 +2133,11 @@ object AnimeMediaDetailsScreen {
             ?.sortedBy { it.score }
             .orEmpty()
 
-        val reviews = media.reviews?.nodes?.filterNotNull().orEmpty()
+        val reviews = media.reviews?.nodes?.filterNotNull()?.toImmutableList().orEmpty()
         val reviewsHasMore = media.reviews?.pageInfo?.hasNextPage ?: true
+
+        val streamingEpisodes =
+            media.streamingEpisodes?.filterNotNull()?.toImmutableList().orEmpty()
 
         data class Recommendation(
             val id: String,
@@ -2195,7 +2227,7 @@ object AnimeMediaDetailsScreen {
     private fun buildSectionIndexInfo(
         entry: Entry?,
         entry2: Entry2?,
-        characters: LazyPagingItems<DetailsCharacter>,
+        charactersCount: Int,
         staff: LazyPagingItems<DetailsStaff>,
         expandedState: ExpandedState,
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
@@ -2206,7 +2238,7 @@ object AnimeMediaDetailsScreen {
     ) = remember(
         entry,
         entry2,
-        characters.itemCount,
+        charactersCount,
         staff.itemCount,
         expandedState.allValues(),
         animeSongs,
@@ -2220,7 +2252,7 @@ object AnimeMediaDetailsScreen {
         var currentIndex = 0
         if (entry.genres.isNotEmpty()) currentIndex += 1
         if (!entry.media.description.isNullOrEmpty()) currentIndex += 1
-        if (characters.itemCount > 0) {
+        if (charactersCount > 0) {
             list += SectionIndexInfo.Section.CHARACTERS to currentIndex
             currentIndex += 2
         }

@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":modules:network-utils"))
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.collections.immutable)
 
     implementation(libs.hilt.android)
     ksp(kspProcessors.dagger.hilt.compiler)

@@ -42,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import kotlinx.coroutines.launch
 
@@ -173,7 +174,7 @@ object StaffDetailsScreen {
 
     data class Entry(
         val staff: Staff,
-        val description: Spanned?,
+        val description: StableSpanned?,
     )
 
     @Composable

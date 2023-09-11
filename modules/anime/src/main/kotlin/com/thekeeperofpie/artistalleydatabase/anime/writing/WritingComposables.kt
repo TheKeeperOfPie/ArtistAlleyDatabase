@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.writing
 
-import android.text.Spanned
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
@@ -50,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import kotlinx.coroutines.launch
 
 @Composable
@@ -69,7 +69,7 @@ fun WritingReplyPanelScaffold(
         snackbarHostState = snackbarHostState,
     ),
     @StringRes sendButtonTextRes: Int = R.string.anime_writing_send_button,
-    writingPreview: Spanned? = null,
+    writingPreview: StableSpanned? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -114,15 +114,16 @@ fun WritingSheetContent(
     onValueChange: (String) -> Unit,
     onClickSend: () -> Unit,
     @StringRes sendButtonTextRes: Int = R.string.anime_writing_send_button,
-    writingPreview: Spanned?,
+    writingPreview: StableSpanned?,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = stringResource(if (writingPreview == null) {
-                R.string.anime_writing_replying_to_op
-            } else {
-                R.string.anime_writing_replying_to
-            }
+            text = stringResource(
+                if (writingPreview == null) {
+                    R.string.anime_writing_replying_to_op
+                } else {
+                    R.string.anime_writing_replying_to
+                }
             ),
             modifier = Modifier.padding(horizontal = 16.dp)
         )
@@ -134,7 +135,7 @@ fun WritingSheetContent(
                     .padding(horizontal = 16.dp)
             ) {
                 MarkdownText(
-                    text = writingPreview,
+                    markdownText = writingPreview,
                 )
             }
         }

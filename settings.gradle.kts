@@ -116,6 +116,7 @@ dependencyResolutionManagement {
             library("org.apache.commons:commons-csv:1.10.0")
             library("org.awaitility:awaitility:4.2.0")
             library("org.chromium.net:cronet-embedded:113.5672.61")
+            library("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
             library("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
             library("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
             library("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
@@ -137,6 +138,7 @@ dependencyResolutionManagement {
                 library("androidx.compose.ui:ui-tooling-preview:1.6.0-alpha02")
                 library("androidx.compose.ui:ui-tooling:1.6.0-alpha02")
                 library("androidx.compose.ui:ui:1.6.0-alpha02")
+                library("org.jetbrains.compose.runtime:runtime:1.5.1")
             }
 
             prefix("junit5") {

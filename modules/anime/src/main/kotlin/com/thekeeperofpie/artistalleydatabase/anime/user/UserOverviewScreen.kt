@@ -44,7 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
-import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
@@ -86,11 +86,15 @@ object UserOverviewScreen {
                 onFollowingClick = onFollowingClick,
             )
 
-            descriptionSection(
-                markdownText = entry.about,
-                expanded = { descriptionExpanded },
-                onExpandedChange = { descriptionExpanded = it },
-            )
+            if (!entry.about?.value.isNullOrEmpty()) {
+                item("aboutSection", "aboutSection") {
+                    DescriptionSection(
+                        markdownText = entry.about,
+                        expanded = { descriptionExpanded },
+                        onExpandedChange = { descriptionExpanded = it },
+                    )
+                }
+            }
 
             // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
             mediaHorizontalRow(

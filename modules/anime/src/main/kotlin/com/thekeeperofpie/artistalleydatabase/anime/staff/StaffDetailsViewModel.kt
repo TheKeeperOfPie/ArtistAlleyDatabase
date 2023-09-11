@@ -31,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
@@ -89,7 +90,7 @@ class StaffDetailsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
                 val staff = aniListApi.staffDetails(staffId)
-                val description = staff.description?.let(markwon::toMarkdown)
+                val description = staff.description?.let(markwon::toStableMarkdown)
                 val entry = StaffDetailsScreen.Entry(staff, description)
                 withContext(CustomDispatchers.Main) {
                     this@StaffDetailsViewModel.entry = entry

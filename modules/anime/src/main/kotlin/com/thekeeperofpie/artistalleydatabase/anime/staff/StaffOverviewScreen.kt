@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
@@ -38,11 +38,15 @@ object StaffOverviewScreen {
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            descriptionSection(
-                markdownText = entry.description,
-                expanded = expandedState::description,
-                onExpandedChange = { expandedState.description = it },
-            )
+            if (!entry.description?.value.isNullOrEmpty()) {
+                item("descriptionSection", "descriptionSection") {
+                    DescriptionSection(
+                        markdownText = entry.description,
+                        expanded = expandedState::description,
+                        onExpandedChange = { expandedState.description = it },
+                    )
+                }
+            }
 
             charactersSection(
                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,

@@ -68,7 +68,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import kotlinx.collections.immutable.ImmutableList
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -254,7 +256,7 @@ fun StartEndDateDialog(
 
 fun <T> LazyListScope.listSection(
     @StringRes titleRes: Int,
-    values: Collection<T>?,
+    values: ImmutableList<T>?,
     valueToId: (T) -> String?,
     aboveFold: Int,
     hasMoreValues: Boolean = false,
@@ -271,12 +273,14 @@ fun <T> LazyListScope.listSection(
         val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             text = stringResource(titleRes),
-            modifier = Modifier.clickable(
-                enabled = onClickViewAll != null,
-                onClick = { onClickViewAll?.invoke(navigationCallback) },
-            ),
             onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
-            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            modifier = Modifier
+                .clickable(
+                    enabled = onClickViewAll != null,
+                    onClick = { onClickViewAll?.invoke(navigationCallback) },
+                )
+                .recomposeHighlighter()
         )
     }
     if (values == null) return
@@ -297,7 +301,7 @@ fun <T> LazyListScope.listSection(
 
 fun <T> LazyListScope.listSectionWithoutHeader(
     @StringRes titleRes: Int,
-    values: Collection<T>?,
+    values: ImmutableList<T>?,
     valueToId: (T) -> String?,
     aboveFold: Int,
     hasMoreValues: Boolean = false,

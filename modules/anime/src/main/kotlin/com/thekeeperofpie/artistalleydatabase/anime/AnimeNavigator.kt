@@ -262,8 +262,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                onCharacterLongClick = { /*TODO*/ },
-                onStaffLongClick = { /*TODO*/ },
             )
         }
 
@@ -1006,15 +1004,16 @@ object AnimeNavigator {
 
     fun onMediaCharactersClick(
         navHostController: NavHostController,
-        entry: AnimeMediaDetailsScreen.Entry,
+        mediaId: String,
+        media: MediaHeaderData?,
         languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_CHARACTERS.id +
-                "?mediaId=${entry.mediaId}" +
+                "?mediaId=$mediaId" +
                 MediaHeaderValues.routeSuffix(
-                    media = entry.media,
+                    media = media,
                     languageOption = languageOption,
                     favorite = favorite,
                     imageWidthToHeightRatio = imageWidthToHeightRatio,
@@ -1343,14 +1342,16 @@ object AnimeNavigator {
         }
 
         fun onMediaCharactersClick(
-            media: AnimeMediaDetailsScreen.Entry,
+            mediaId: String,
+            media: MediaHeaderData?,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let {
                 onMediaCharactersClick(
                     navHostController = it,
-                    entry = media,
+                    mediaId = mediaId,
+                    media = media,
                     languageOption = languageOptionMedia,
                     favorite = favorite,
                     imageWidthToHeightRatio = imageWidthToHeightRatio

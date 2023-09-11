@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread
 
 import android.os.SystemClock
-import android.text.Spanned
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,6 +28,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -82,7 +83,7 @@ class ForumThreadViewModel @Inject constructor(
             flowForRefreshableContent(refresh, R.string.anime_forum_thread_error_loading) {
                 flowFromSuspend {
                     val thread = aniListApi.forumThread(threadId)
-                    val bodyMarkdown = thread.thread.body?.let(markwon::toMarkdown)
+                    val bodyMarkdown = thread.thread.body?.let(markwon::toStableMarkdown)
                     ForumThreadEntry(
                         thread = thread.thread,
                         bodyMarkdown = bodyMarkdown,
@@ -160,7 +161,7 @@ class ForumThreadViewModel @Inject constructor(
                         val children = (it.childComments as? List<*>)?.filterNotNull()
                             ?.mapNotNull { ForumUtils.decodeChild(markwon, it) }
                             .orEmpty()
-                        val commentMarkdown = it.comment?.let(markwon::toMarkdown)
+                        val commentMarkdown = it.comment?.let(markwon::toStableMarkdown)
                         ForumCommentEntry(
                             comment = it.toForumThreadComment(),
                             commentMarkdown = commentMarkdown,
@@ -192,7 +193,7 @@ class ForumThreadViewModel @Inject constructor(
         }
     }
 
-    fun onClickReplyComment(commentId: String?, commentMarkdown: Spanned?) {
+    fun onClickReplyComment(commentId: String?, commentMarkdown: StableSpanned?) {
         replyData = ReplyData(commentId, commentMarkdown)
     }
 
@@ -244,6 +245,6 @@ class ForumThreadViewModel @Inject constructor(
 
     data class ReplyData(
         val id: String?,
-        val text: Spanned?,
+        val text: StableSpanned?,
     )
 }

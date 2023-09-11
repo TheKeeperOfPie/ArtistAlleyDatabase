@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.android_utils
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 
+@Immutable
 data class LoadingResult<T>(
     val loading: Boolean = false,
     val success: Boolean = false,

@@ -1,12 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 
-import android.text.Spanned
 import com.anilist.fragment.ForumThreadComment
 import com.anilist.fragment.UserNavigationData
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 
 data class ForumCommentEntry(
     val comment: ForumThreadComment,
-    val commentMarkdown: Spanned?,
+    val commentMarkdown: StableSpanned?,
     val liked: Boolean = comment.isLiked ?: false,
     val children: List<ForumCommentChild>,
     val user: UserNavigationData? = comment.user?.let {

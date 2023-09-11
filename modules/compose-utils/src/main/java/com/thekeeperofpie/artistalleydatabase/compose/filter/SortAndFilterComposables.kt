@@ -250,33 +250,6 @@ object SortAndFilterComposables {
     )
 }
 
-
-@Composable
-fun <Entry : FilterEntry<*>> FilterSection(
-    expanded: () -> Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    entries: @Composable () -> List<Entry>,
-    onEntryClick: (Entry) -> Unit,
-    @StringRes titleRes: Int,
-    @StringRes titleDropdownContentDescriptionRes: Int,
-    valueToText: @Composable (Entry) -> String,
-    @StringRes includeExcludeIconContentDescriptionRes: Int,
-    showDivider: Boolean = true,
-    showIcons: Boolean = true,
-) = FilterSection(
-    expanded = expanded,
-    onExpandedChange = onExpandedChange,
-    entries = entries,
-    onEntryClick = onEntryClick,
-    title = { stringResource(titleRes) },
-    titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
-    valueToText = valueToText,
-    iconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
-    showDivider = showDivider,
-    showIcons = showIcons,
-)
-
-
 @Composable
 fun <Entry : FilterEntry<*>> FilterSection(
     expanded: () -> Boolean,

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character.details
 
-import android.text.Spanned
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -64,21 +63,22 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Duration.Companion.seconds
@@ -209,11 +209,15 @@ object CharacterDetailsScreen {
         expandedState: ExpandedState,
         colorCalculationState: ColorCalculationState,
     ) {
-        descriptionSection(
-            markdownText = entry.description,
-            expanded = expandedState::description,
-            onExpandedChange = { expandedState.description = it },
-        )
+        if (!entry.description?.value.isNullOrEmpty()) {
+            item("descriptionSection", "descriptionSection") {
+                DescriptionSection(
+                    markdownText = entry.description,
+                    expanded = expandedState::description,
+                    onExpandedChange = { expandedState.description = it },
+                )
+            }
+        }
 
         staffSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
@@ -224,13 +228,13 @@ object CharacterDetailsScreen {
 
         mediaSection(
             viewer = viewer,
+            editViewModel = editViewModel,
             entry = entry,
             headerValues = headerValues,
             characterImageWidthToHeightRatio = characterImageWidthToHeightRatio,
             expanded = expandedState::media,
             onExpandedChange = { expandedState.media = it },
             colorCalculationState = colorCalculationState,
-            onClickListEdit = { editViewModel.initialize(it.media) },
         )
 
         infoSection(entry = entry)
@@ -397,16 +401,17 @@ object CharacterDetailsScreen {
 
     private fun LazyListScope.mediaSection(
         viewer: AniListViewer?,
+        editViewModel: MediaEditViewModel,
         entry: Entry,
         headerValues: CharacterHeaderValues,
         characterImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
-        onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
+            editViewModel = editViewModel,
             viewer = viewer,
             titleRes = R.string.anime_character_details_media_label,
             values = entry.media,
@@ -415,7 +420,6 @@ object CharacterDetailsScreen {
             hasMoreValues = entry.mediaHasMore,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
-            onClickListEdit = onClickListEdit,
             onClickViewAll = {
                 it.onCharacterMediasClick(
                     character = entry.character,
@@ -446,8 +450,8 @@ object CharacterDetailsScreen {
 
     data class Entry(
         val character: Character,
-        val media: List<AnimeCharacterDetailsViewModel.MediaEntry>,
-        val description: Spanned?,
+        val media: ImmutableList<AnimeCharacterDetailsViewModel.MediaEntry>,
+        val description: StableSpanned?,
     ) {
         val voiceActorsInitial = MutableStateFlow(
             PagingData.from(

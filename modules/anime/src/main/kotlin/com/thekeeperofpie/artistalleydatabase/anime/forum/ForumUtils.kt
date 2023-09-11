@@ -5,6 +5,7 @@ import com.anilist.fragment.ForumThreadComment
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentChild
+import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import io.noties.markwon.Markwon
 
 object ForumUtils {
@@ -51,7 +52,7 @@ object ForumUtils {
             val likeCount = map["likeCount"] as? Int
             val comment = map["comment"] as? String
             val isLiked = map["isLiked"] as? Boolean ?: false
-            val commentMarkdown = comment?.let(markwon::toMarkdown)
+            val commentMarkdown = comment?.let(markwon::toStableMarkdown)
 
             val childComments = (map["childComments"] as? List<*>)
                 ?.filterNotNull()
@@ -63,6 +64,7 @@ object ForumUtils {
                 createdAt = createdAt,
                 likeCount = likeCount,
                 user = user,
+                commentRaw = comment,
                 commentMarkdown = commentMarkdown,
                 liked = isLiked,
                 childComments = childComments,

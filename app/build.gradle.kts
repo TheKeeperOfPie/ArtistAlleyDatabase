@@ -177,7 +177,13 @@ tasks.register<Exec>("installInternalTemp") {
 
 tasks.register("launchRelease") {
     dependsOn("installReleaseTemp")
-    finalizedBy("compileAndLaunchRelease", "installInternalTemp", "installDebug")
+    finalizedBy("compileAndLaunchRelease", "installDebug")
+    outputs.upToDateWhen { false }
+}
+
+tasks.register("launchInternal") {
+    dependsOn("installInternalTemp")
+    finalizedBy("compileAndLaunchInternal")
     outputs.upToDateWhen { false }
 }
 
@@ -196,6 +202,22 @@ tasks.register<Exec>("compileAndLaunchRelease") {
         "com.thekeeperofpie.anichive",
     )
     finalizedBy("launchReleaseMainActivity")
+    outputs.upToDateWhen { false }
+}
+
+tasks.register<Exec>("compileAndLaunchInternal") {
+    commandLine(
+        "adb", "shell", "pm", "compile", "-f",
+        "-m", "everything",
+        "--check-prof", "false",
+        "com.thekeeperofpie.anichive.internal",
+    )
+    finalizedBy("launchReleaseMainActivity")
+    outputs.upToDateWhen { false }
+}
+
+tasks.register<Exec>("launchInternalMainActivity") {
+    launchActivity("com.thekeeperofpie.anichive.internal")
     outputs.upToDateWhen { false }
 }
 

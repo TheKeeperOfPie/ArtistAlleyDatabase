@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 
-import android.text.Spanned
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -65,6 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
@@ -182,7 +182,7 @@ object ForumThreadCommentTreeScreen {
                         refreshing = refreshing,
                         onRefresh = viewModel::refresh,
                     )
-                    var deletePromptData by remember { mutableStateOf<Pair<String, Spanned?>?>(null) }
+                    var deletePromptData by remember { mutableStateOf<Pair<String, StableSpanned?>?>(null) }
 
                     Box(
                         modifier = Modifier

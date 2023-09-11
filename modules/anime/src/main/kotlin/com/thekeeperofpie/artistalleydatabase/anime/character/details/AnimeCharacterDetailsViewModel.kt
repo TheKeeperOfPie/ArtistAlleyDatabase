@@ -26,8 +26,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -122,9 +124,9 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
 
                                         }
                                     )
-                                },
+                                }.toImmutableList(),
                                 description = character.character?.description
-                                    ?.let(markwon::toMarkdown),
+                                    ?.let(markwon::toStableMarkdown),
                             )
                         }
                     }

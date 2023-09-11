@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -58,6 +59,7 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.anilist.fragment.MediaHeaderData
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
@@ -80,8 +82,10 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun CharacterSmallCard(
@@ -237,81 +241,163 @@ fun LazyListScope.charactersSection(
     item("charactersHeader-$titleRes") {
         val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
-            stringResource(titleRes),
-            onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
+            text = stringResource(titleRes),
+            onClickViewAll = remember { onClickViewAll?.let { { it(navigationCallback) } } },
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            modifier = Modifier.recomposeHighlighter()
         )
     }
 
     item("charactersSection-$titleRes") {
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            items(
-                count = characters.itemCount,
-                key = characters.itemKey { it.id },
-                contentType = characters.itemContentType { "character" },
-            ) {
-                val character = characters[it]
-                var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-                var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
-                val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
+        CharactersSection(
+            screenKey = screenKey,
+            characters = characters,
+        )
+    }
+}
 
-                val navigationCallback = LocalNavigationCallback.current
-                val colorCalculationState = LocalColorCalculationState.current
-                CharacterSmallCard(
-                    screenKey = screenKey,
-                    id = EntryId("anime_character", character?.id.orEmpty()),
-                    image = character?.image,
-                    onClick = {
-                        character?.character?.let {
-                            navigationCallback.onCharacterClick(
-                                character.character,
-                                null,
-                                imageWidthToHeightRatio,
-                                colorCalculationState.getColors(character.id).first,
-                            )
-                        }
-                    },
-                    innerImage = voiceActor?.image,
-                    innerImageKey = "anime_staff_${voiceActor?.id}_image",
-                    onClickInnerImage = voiceActor?.image?.let {
-                        {
-                            navigationCallback.onStaffClick(
-                                voiceActor.staff,
-                                null,
-                                innerImageWidthToHeightRatio,
-                                colorCalculationState.getColors(voiceActor.id).first,
-                            )
-                        }
-                    },
-                    onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-                    onInnerImageSuccess = {
-                        innerImageWidthToHeightRatio = it.widthToHeightRatio()
-                    },
-                ) { textColor ->
-                    AutoHeightText(
-                        text = character?.name?.primaryName().orEmpty(),
-                        color = textColor,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            lineBreak = LineBreak(
-                                strategy = LineBreak.Strategy.Balanced,
-                                strictness = LineBreak.Strictness.Strict,
-                                wordBreak = LineBreak.WordBreak.Default,
-                            )
-                        ),
-                        minTextSizeSp = 8f,
-                        modifier = Modifier
-                            .size(width = 100.dp, height = 56.dp)
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+fun LazyListScope.charactersSection(
+    screenKey: String,
+    @StringRes titleRes: Int,
+    mediaId: String,
+    media: MediaHeaderData?,
+    mediaFavorite: Boolean?,
+    charactersInitial: ImmutableList<DetailsCharacter>,
+    charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
+    mediaCoverImageWidthToHeightRatio: () -> Float,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
+) {
+    if (charactersDeferred().itemCount.coerceAtLeast(charactersInitial.size) == 0) return
+    item("charactersHeader-$titleRes") {
+        val navigationCallback = LocalNavigationCallback.current
+        DetailsSectionHeader(
+            text = stringResource(titleRes),
+            onClickViewAll = remember(mediaId, media, mediaFavorite) {
+                {
+                    navigationCallback.onMediaCharactersClick(
+                        mediaId = mediaId,
+                        media = media,
+                        favorite = mediaFavorite,
+                        imageWidthToHeightRatio = mediaCoverImageWidthToHeightRatio(),
                     )
                 }
+            },
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            modifier = Modifier.recomposeHighlighter()
+        )
+    }
+
+    item("charactersSection-$titleRes") {
+        CharactersSection(screenKey, charactersInitial, charactersDeferred)
+    }
+}
+
+@Composable
+private fun CharactersSection(
+    screenKey: String,
+    characters: LazyPagingItems<DetailsCharacter>,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.recomposeHighlighter()
+    ) {
+        items(
+            count = characters.itemCount,
+            key = characters.itemKey { it.id },
+            contentType = characters.itemContentType { "character" },
+        ) {
+            CharactersSectionItem(screenKey = screenKey, character = characters[it])
+        }
+    }
+}
+
+@Composable
+private fun CharactersSection(
+    screenKey: String,
+    charactersInitial: ImmutableList<DetailsCharacter>,
+    charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.recomposeHighlighter()
+    ) {
+        @Suppress("NAME_SHADOWING")
+        val charactersDeferred = charactersDeferred()
+        if (charactersDeferred.itemCount > 0) {
+            items(
+                count = charactersDeferred.itemCount,
+                key = charactersDeferred.itemKey { it.id },
+                contentType = charactersDeferred.itemContentType { "character" }
+            ) {
+                val character = charactersDeferred[it]
+                CharactersSectionItem(screenKey = screenKey, character = character)
+            }
+        } else {
+            items(charactersInitial, key = { it.id }, contentType = { "character" }) {
+                CharactersSectionItem(screenKey = screenKey, character = it)
             }
         }
     }
 }
 
+@Composable
+fun CharactersSectionItem(screenKey: String, character: DetailsCharacter?) {
+    var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+    var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
+    val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
+
+    val navigationCallback = LocalNavigationCallback.current
+    val colorCalculationState = LocalColorCalculationState.current
+    CharacterSmallCard(
+        screenKey = screenKey,
+        id = EntryId("anime_character", character?.id.orEmpty()),
+        image = character?.image,
+        onClick = {
+            character?.character?.let {
+                navigationCallback.onCharacterClick(
+                    character.character,
+                    null,
+                    imageWidthToHeightRatio,
+                    colorCalculationState.getColors(character.id).first,
+                )
+            }
+        },
+        innerImage = voiceActor?.image,
+        innerImageKey = "anime_staff_${voiceActor?.id}_image",
+        onClickInnerImage = voiceActor?.image?.let {
+            {
+                navigationCallback.onStaffClick(
+                    voiceActor.staff,
+                    null,
+                    innerImageWidthToHeightRatio,
+                    colorCalculationState.getColors(voiceActor.id).first,
+                )
+            }
+        },
+        onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
+        onInnerImageSuccess = {
+            innerImageWidthToHeightRatio = it.widthToHeightRatio()
+        },
+    ) { textColor ->
+        AutoHeightText(
+            text = character?.name?.primaryName().orEmpty(),
+            color = textColor,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                lineBreak = LineBreak(
+                    strategy = LineBreak.Strategy.Balanced,
+                    strictness = LineBreak.Strictness.Strict,
+                    wordBreak = LineBreak.WordBreak.Default,
+                )
+            ),
+            minTextSizeSp = 8f,
+            modifier = Modifier
+                .size(width = 100.dp, height = 56.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        )
+    }
+}
 
 @Composable
 fun CharacterCard(

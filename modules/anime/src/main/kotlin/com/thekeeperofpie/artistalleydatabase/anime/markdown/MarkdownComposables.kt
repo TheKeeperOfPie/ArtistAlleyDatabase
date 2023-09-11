@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.markdown
 
-import android.text.Spanned
 import android.text.TextUtils
 import android.widget.TextView
 import androidx.compose.material3.LocalContentColor
@@ -12,11 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import io.noties.markwon.Markwon
 
 @Composable
 fun MarkdownText(
-    text: Spanned?,
+    markdownText: StableSpanned?,
     modifier: Modifier = Modifier,
     textColor: Color? = null,
     maxLines: Int? = null,
@@ -25,24 +25,24 @@ fun MarkdownText(
     val contentColor = LocalContentColor.current
     val color = (textColor?.takeOrElse { contentColor } ?: contentColor).toArgb()
     val markwon = LocalMarkwon.current
-    val asString = remember(text) { text.toString() }
+    val asString = remember(markdownText) { markdownText.toString() }
     AndroidView(
         factory = {
             TextView(it).apply {
                 setTextColor(color)
                 ellipsize = TextUtils.TruncateAt.END
                 setTextIsSelectable(true)
-                if (text != null) {
+                if (markdownText != null) {
                     setTextColor(color)
-                    markwon.setParsedMarkdown(this, text)
+                    markwon.setParsedMarkdown(this, markdownText.value)
                 }
             }
         },
         update = {
             it.maxLines = maxLines ?: Int.MAX_VALUE
-            if (text != null) {
+            if (markdownText != null) {
                 it.setTextColor(color)
-                markwon.setParsedMarkdown(it, text)
+                markwon.setParsedMarkdown(it, markdownText.value)
             }
             if (maxLines != null) {
                 it.post {

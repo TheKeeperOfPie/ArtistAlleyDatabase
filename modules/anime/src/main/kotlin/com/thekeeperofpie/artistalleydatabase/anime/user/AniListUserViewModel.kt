@@ -47,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
@@ -153,7 +154,7 @@ class AniListUserViewModel @Inject constructor(
                         } else {
                             entry = aniListApi.user(userOrViewerId)
                                 ?.let {
-                                    val about = it.about?.let(markwon::toMarkdown)
+                                    val about = it.about?.let(markwon::toStableMarkdown)
                                     AniListUserScreen.Entry(it, about)
                                 }
                         }

@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
@@ -142,7 +143,7 @@ class NotificationsViewModel @Inject constructor(
                             commentEntry = it.comment?.let {
                                 ForumCommentEntry(
                                     comment = it,
-                                    commentMarkdown = it.comment?.let(markwon::toMarkdown),
+                                    commentMarkdown = it.comment?.let(markwon::toStableMarkdown),
                                     children = emptyList(),
                                 )
                             }

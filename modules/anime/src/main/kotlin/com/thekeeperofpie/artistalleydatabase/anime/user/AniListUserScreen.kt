@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import android.text.Spanned
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -53,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import kotlinx.coroutines.launch
@@ -260,7 +260,7 @@ object AniListUserScreen {
     // TODO: Filter out isAdult
     data class Entry(
         val user: User,
-        val about: Spanned?,
+        val about: StableSpanned?,
     ) {
         val statisticsAnime = user.statistics?.anime?.let(::Statistics)
         val statisticsManga = user.statistics?.manga?.let(::Statistics)

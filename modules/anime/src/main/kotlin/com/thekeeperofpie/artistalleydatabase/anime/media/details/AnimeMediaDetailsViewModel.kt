@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.anilist.MediaDetailsQuery
 import com.anilist.fragment.ListActivityMediaListActivityItem
 import com.anilist.type.MediaType
 import com.anilist.type.RecommendationRating
@@ -54,10 +55,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -67,9 +72,9 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -129,7 +134,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
     var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.loading())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
-    var forumThreads by mutableStateOf<List<ForumThreadEntry>?>(null)
+    var forumThreads by mutableStateOf<ImmutableList<ForumThreadEntry>?>(null)
     val charactersDeferred = MutableStateFlow(PagingData.empty<DetailsCharacter>())
     val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
 
@@ -155,99 +160,111 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         )
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest {
-                aniListApi.mediaDetails(mediaId)
-                    .map {
-                        val result = it.result
-                        if (result != null && result.media?.isAdult != false
-                            && !settings.showAdult.value
-                        ) {
-                            throw IOException("Cannot load media")
-                        }
+            refresh.flatMapLatest { aniListApi.mediaDetails(mediaId) }
+                .mapLatest {
+                    val result = it.result
+                    if (result != null && result.media?.isAdult != false
+                        && !settings.showAdult.value
+                    ) {
+                        LoadingResult.error(
+                            R.string.anime_media_details_error_loading,
+                            IOException("Cannot load media")
+                        )
+                    } else {
                         it
                     }
-                    .onEach {
-                        it.result?.media?.let {
-                            historyController.onVisitMediaDetails(
-                                mediaId = it.id.toString(),
-                                type = it.type,
-                                isAdult = it.isAdult,
-                                bannerImage = it.bannerImage,
-                                coverImage = it.coverImage?.extraLarge,
-                                titleRomaji = it.title?.romaji,
-                                titleEnglish = it.title?.english,
-                                titleNative = it.title?.native,
-                            )
-                        }
+                }
+                .onEach {
+                    it.result?.media?.let {
+                        historyController.onVisitMediaDetails(
+                            mediaId = it.id.toString(),
+                            type = it.type,
+                            isAdult = it.isAdult,
+                            bannerImage = it.bannerImage,
+                            coverImage = it.coverImage?.extraLarge,
+                            titleRomaji = it.title?.romaji,
+                            titleEnglish = it.title?.english,
+                            titleNative = it.title?.native,
+                        )
                     }
-                    .flatMapLatest { loadingResult ->
-                        val media = loadingResult.result?.media
-                        if (media == null) {
-                            flowOf(loadingResult
-                                .transformResult<AnimeMediaDetailsScreen.Entry> { null })
+                }
+                .runningFold(null as Pair<Pair<String?, StableSpanned?>?, LoadingResult<MediaDetailsQuery.Data>>?) { accumulator, loadingResult ->
+                    val descriptionRaw = loadingResult.result?.media?.description
+                    val previousDescriptionPair = accumulator?.first
+                    val description =
+                        if (previousDescriptionPair != null && descriptionRaw == previousDescriptionPair.first) {
+                            previousDescriptionPair.second
                         } else {
-                            val relations = media.relations?.edges?.filterNotNull()
-                                ?.mapNotNull {
-                                    val node = it.node ?: return@mapNotNull null
-                                    val relation = it.relationType ?: return@mapNotNull null
-                                    AnimeMediaDetailsScreen.Entry.Relation(
-                                        it.id.toString(),
-                                        relation,
-                                        MediaPreviewEntry(node)
-                                    )
-                                }
-                                .orEmpty()
-                                .sortedBy { AnimeMediaDetailsScreen.RELATION_SORT_ORDER.indexOf(it.relation) }
+                            descriptionRaw?.let(markwon::toStableMarkdown)
+                        }
+                    descriptionRaw to description to loadingResult
+                }
+                .filterNotNull()
+                .flatMapLatest { (descriptionPair, loadingResult) ->
+                    val media = loadingResult.result?.media
+                    if (media == null) {
+                        flowOf(loadingResult
+                            .transformResult<AnimeMediaDetailsScreen.Entry> { null })
+                    } else {
+                        val relations = media.relations?.edges?.filterNotNull()
+                            ?.mapNotNull {
+                                val node = it.node ?: return@mapNotNull null
+                                val relation = it.relationType ?: return@mapNotNull null
+                                AnimeMediaDetailsScreen.Entry.Relation(
+                                    it.id.toString(),
+                                    relation,
+                                    MediaPreviewEntry(node)
+                                )
+                            }
+                            .orEmpty()
+                            .sortedBy { AnimeMediaDetailsScreen.RELATION_SORT_ORDER.indexOf(it.relation) }
 
-                            val mediaIds = setOf(media.id.toString()) +
-                                    relations.map { it.entry.media.id.toString() }
+                        val mediaIds = setOf(media.id.toString()) +
+                                relations.map { it.entry.media.id.toString() }
 
-                            val description = media.description?.let(markwon::toMarkdown)
-
-                            combine(
-                                mediaListStatusController.allChanges(mediaIds),
-                                ignoreController.updates(),
-                                settings.showAdult,
-                                settings.showLessImportantTags,
-                                settings.showSpoilerTags,
-                            ) { mediaListUpdates, _, showAdult, showLessImportantTags, showSpoilerTags ->
-                                loadingResult.transformResult {
-                                    AnimeMediaDetailsScreen.Entry(
-                                        mediaId,
-                                        media,
-                                        relations = relations.mapNotNull {
-                                            applyMediaFiltering(
-                                                statuses = mediaListUpdates,
-                                                ignoreController = ignoreController,
-                                                showAdult = showAdult,
-                                                showIgnored = true,
-                                                showLessImportantTags = showLessImportantTags,
-                                                showSpoilerTags = showSpoilerTags,
-                                                entry = it,
-                                                transform = { it.entry },
-                                                media = it.entry.media,
-                                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                                    copy(
-                                                        entry = entry.copy(
-                                                            mediaListStatus = mediaListStatus,
-                                                            progress = progress,
-                                                            progressVolumes = progressVolumes,
-                                                            scoreRaw = scoreRaw,
-                                                            ignored = ignored,
-                                                            showLessImportantTags = showLessImportantTags,
-                                                            showSpoilerTags = showSpoilerTags,
-                                                        )
+                        combine(
+                            mediaListStatusController.allChanges(mediaIds),
+                            ignoreController.updates(),
+                            settings.showAdult,
+                            settings.showLessImportantTags,
+                            settings.showSpoilerTags,
+                        ) { mediaListUpdates, _, showAdult, showLessImportantTags, showSpoilerTags ->
+                            loadingResult.transformResult {
+                                AnimeMediaDetailsScreen.Entry(
+                                    mediaId,
+                                    media,
+                                    relations = relations.mapNotNull {
+                                        applyMediaFiltering(
+                                            statuses = mediaListUpdates,
+                                            ignoreController = ignoreController,
+                                            showAdult = showAdult,
+                                            showIgnored = true,
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
+                                            entry = it,
+                                            transform = { it.entry },
+                                            media = it.entry.media,
+                                            copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                                copy(
+                                                    entry = entry.copy(
+                                                        mediaListStatus = mediaListStatus,
+                                                        progress = progress,
+                                                        progressVolumes = progressVolumes,
+                                                        scoreRaw = scoreRaw,
+                                                        ignored = ignored,
+                                                        showLessImportantTags = showLessImportantTags,
+                                                        showSpoilerTags = showSpoilerTags,
                                                     )
-                                                }
-                                            )
-                                        },
-                                        description = description,
-                                    )
-                                }
+                                                )
+                                            }
+                                        )
+                                    }.toImmutableList(),
+                                    description = descriptionPair?.second,
+                                )
                             }
                         }
                     }
-            }
+                }
                 .foldPreviousResult()
                 .catch { emit(LoadingResult.error(R.string.anime_media_details_error_loading, it)) }
                 .flowOn(CustomDispatchers.IO)
@@ -283,8 +300,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                 .run { pageInfo to edges }
                         }
                     }
+                        .mapLatest { it.mapOnIO(CharacterUtils::toDetailsCharacter) }
                 }
-                .mapLatest { it.mapOnIO(CharacterUtils::toDetailsCharacter) }
                 .enforceUniqueIds { it.id }
                 .cachedIn(viewModelScope)
                 .collectLatest(charactersDeferred::emit)
@@ -334,7 +351,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                         val media = it.result?.media
                         if (media?.type == MediaType.ANIME) {
                             try {
-                                val songEntries = animeSongsProvider.getSongs(media)
+                                val songEntries =
+                                    animeSongsProvider.getSongs(media).toImmutableList()
                                 if (songEntries.isNotEmpty()) {
                                     val songStates = songEntries
                                         .map { AnimeSongState(id = it.id, entry = it) }
@@ -369,11 +387,13 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                         following = result.following?.activities
                             ?.filterIsInstance<ListActivityMediaListActivityItem>()
                             .orEmpty()
-                            .map(::ActivityEntry),
+                            .map(::ActivityEntry)
+                            .toImmutableList(),
                         global = result.global?.activities
                             ?.filterIsInstance<ListActivityMediaListActivityItem>()
                             .orEmpty()
-                            .map(::ActivityEntry),
+                            .map(::ActivityEntry)
+                            .toImmutableList(),
                     )
                 }
                 .flatMapLatest { activities ->
@@ -390,14 +410,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                         subscribed = updates[it.activityId]?.subscribed
                                             ?: it.subscribed,
                                     )
-                                },
+                                }.toImmutableList(),
                                 global = activities.global.map {
                                     it.copy(
                                         liked = updates[it.activityId]?.liked ?: it.liked,
                                         subscribed = updates[it.activityId]?.subscribed
                                             ?: it.subscribed,
                                     )
-                                },
+                                }.toImmutableList(),
                             )
                         }
                 }
@@ -435,7 +455,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                 it.transformIf(liked != it.liked || subscribed != it.subscribed) {
                                     copy(liked = liked, subscribed = subscribed)
                                 }
-                            }
+                            }.toImmutableList()
                         }
                 }
                 .catch {}
@@ -529,7 +549,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                                         )
                                                     }
                                                 }
-                                            },
+                                            }.toImmutableList(),
                                         )
                                     }
                                 }
@@ -603,7 +623,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     }
 
     data class AnimeSongs(
-        val entries: List<AnimeSongEntry>,
+        val entries: ImmutableList<AnimeSongEntry>,
     )
 
     // State separated from immutable data so that recomposition is as granular as possible
@@ -622,8 +642,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     }
 
     data class ActivitiesEntry(
-        val following: List<ActivityEntry>,
-        val global: List<ActivityEntry>,
+        val following: ImmutableList<ActivityEntry>,
+        val global: ImmutableList<ActivityEntry>,
     )
 
     data class ActivityEntry(
