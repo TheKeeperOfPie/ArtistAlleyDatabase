@@ -26,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
@@ -35,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactLi
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 
 @Composable
 fun RecommendationCard(
@@ -43,14 +45,14 @@ fun RecommendationCard(
     user: UserNavigationData?,
     media: AnimeMediaCompactListRow.Entry?,
     mediaRecommendation: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     recommendation: RecommendationData?,
     onUserRecommendationRating: (
         recommendation: RecommendationData,
         newRating: RecommendationRating,
     ) -> Unit = { _, _ -> },
 ) {
-    ElevatedCard {
+    ElevatedCard(modifier = Modifier.recomposeHighlighter()) {
         if (user != null || media == null) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

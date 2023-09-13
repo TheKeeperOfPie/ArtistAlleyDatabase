@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
@@ -68,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeMediaLargeCard {
@@ -81,7 +83,6 @@ object AnimeMediaLargeCard {
         entry: Entry?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        editViewModel: MediaEditViewModel,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
     ) {
@@ -90,6 +91,7 @@ object AnimeMediaLargeCard {
                 .fillMaxWidth()
                 .heightIn(min = HEIGHT)
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
+                .recomposeHighlighter()
         ) {
             val navigationCallback = LocalNavigationCallback.current
             val ignoreController = LocalIgnoreController.current
@@ -215,6 +217,7 @@ object AnimeMediaLargeCard {
                                     .padding(end = 4.dp, bottom = 4.dp)
                                     .clip(RoundedCornerShape(12.dp))
                             ) {
+                                val editViewModel = hiltViewModel<MediaEditViewModel>()
                                 MediaListQuickEditIconButton(
                                     viewer = viewer,
                                     mediaType = entry.type,
@@ -269,7 +272,7 @@ object AnimeMediaLargeCard {
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.imageBanner ?: entry?.image)
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry?.mediaId))
+                    .allowHardware(colorCalculationState.allowHardware(entry?.mediaId))
                     .size(
                         width = Dimension.Undefined,
                         height = Dimension.Pixels(

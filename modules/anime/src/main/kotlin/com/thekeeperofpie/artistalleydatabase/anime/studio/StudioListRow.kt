@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StudioListRowFragment
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
@@ -46,7 +47,7 @@ object StudioListRow {
         screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
-        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
         mediaWidth: Dp = 120.dp,
         mediaHeight: Dp = 180.dp,
@@ -113,7 +114,7 @@ object StudioListRow {
         screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
-        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         mediaWidth: Dp,
         mediaHeight: Dp,
     ) {
@@ -159,7 +160,7 @@ object StudioListRow {
                                 media = item,
                                 maxProgress = MediaUtils.maxProgress(item.media),
                                 maxProgressVolumes = item.media.volumes,
-                                onClick = { onClickListEdit(item) },
+                                onClick = { onClickListEdit(item.media) },
                                 padding = 6.dp,
                                 modifier = Modifier.align(Alignment.BottomStart)
                             )

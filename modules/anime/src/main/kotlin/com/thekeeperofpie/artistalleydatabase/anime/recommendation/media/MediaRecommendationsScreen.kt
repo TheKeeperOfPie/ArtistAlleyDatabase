@@ -76,7 +76,7 @@ object MediaRecommendationsScreen {
                     screenKey = SCREEN_KEY,
                     entry = it?.entry,
                     viewer = viewer,
-                    onClickListEdit = { editViewModel.initialize(it.media) },
+                    onClickListEdit = editViewModel::initialize,
                     recommendation = it?.recommendationData,
                     onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)

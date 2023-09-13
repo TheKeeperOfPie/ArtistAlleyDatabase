@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import androidx.compose.runtime.Stable
 import com.anilist.type.MediaListStatus
 
+@Stable
 interface MediaStatusAware {
     val mediaListStatus: MediaListStatus?
     val progress: Int?

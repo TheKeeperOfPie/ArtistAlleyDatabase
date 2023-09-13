@@ -44,6 +44,7 @@ import coil.size.Dimension
 import com.anilist.StaffSearchQuery
 import com.anilist.UserFavoritesStaffQuery
 import com.anilist.fragment.CharacterNavigationData
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
@@ -79,7 +80,7 @@ object StaffListRow {
         screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
-        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
@@ -156,7 +157,7 @@ object StaffListRow {
             image = ImageRequest.Builder(LocalContext.current)
                 .data(entry?.staff?.image?.large)
                 .crossfade(true)
-                .allowHardware(colorCalculationState.hasColor(entry?.staff?.id?.toString()))
+                .allowHardware(colorCalculationState.allowHardware(entry?.staff?.id?.toString()))
                 .size(
                     width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
                     height = Dimension.Undefined,
@@ -236,7 +237,7 @@ object StaffListRow {
         screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
-        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         val media = entry?.media.orEmpty()
         val characters = entry?.characters.orEmpty()
@@ -297,7 +298,7 @@ object StaffListRow {
                                 media = it,
                                 maxProgress = MediaUtils.maxProgress(it.media),
                                 maxProgressVolumes = it.media.volumes,
-                                onClick = { onClickListEdit(it) },
+                                onClick = { onClickListEdit(it.media) },
                                 padding = 6.dp,
                                 modifier = Modifier.align(Alignment.BottomStart)
                             )

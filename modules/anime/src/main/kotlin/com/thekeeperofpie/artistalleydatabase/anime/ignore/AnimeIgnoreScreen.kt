@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -114,7 +113,7 @@ object AnimeIgnoreScreen {
                                             screenKey = SCREEN_KEY,
                                             mediaViewOption = viewModel.mediaViewOption,
                                             viewer = viewer,
-                                            editViewModel = editViewModel,
+                                            onClickListEdit = editViewModel::initialize,
                                             entry = entry,
                                             showQuickEdit = false,
                                         )

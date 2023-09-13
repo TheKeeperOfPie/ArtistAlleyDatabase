@@ -1,7 +1,7 @@
-
 import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.compiler.hooks.ApolloCompilerKotlinHooks.FileInfo
 import com.apollographql.apollo3.compiler.hooks.DefaultApolloCompilerKotlinHooks
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.TypeSpec
@@ -36,12 +36,35 @@ apollo {
         decapitalizeFields.set(true)
 
         @Suppress("OPT_IN_USAGE")
-        compilerKotlinHooks.set(listOf(DefaultValuesApolloHooks()))
+        compilerKotlinHooks.set(listOf(DefaultValuesApolloHooks, ComposeStableApolloHooks))
     }
 }
 
 @ApolloExperimental
-class DefaultValuesApolloHooks : DefaultApolloCompilerKotlinHooks() {
+object ComposeStableApolloHooks : DefaultApolloCompilerKotlinHooks() {
+    override val version = "ComposeStableApolloHooks.2"
+
+    private val stableAnnotation = ClassName("androidx.compose.runtime", "Stable")
+
+    override fun postProcessFiles(files: Collection<FileInfo>) = files.map {
+        it.copy(fileSpec = it.fileSpec
+            .toBuilder()
+            .apply {
+                members.replaceAll {
+                    (it as? TypeSpec)?.addAnnotation() ?: it
+                }
+            }
+            .build()
+        )
+    }
+
+    private fun TypeSpec.addAnnotation() = toBuilder()
+        .addAnnotation(stableAnnotation)
+        .build()
+}
+
+@ApolloExperimental
+object DefaultValuesApolloHooks : DefaultApolloCompilerKotlinHooks() {
     override val version = "DefaultValuesApolloHooks.0"
 
     override fun postProcessFiles(files: Collection<FileInfo>): Collection<FileInfo> {
@@ -75,23 +98,27 @@ class DefaultValuesApolloHooks : DefaultApolloCompilerKotlinHooks() {
                                         com.squareup.kotlinpoet.BOOLEAN -> "false"
                                         com.squareup.kotlinpoet.BYTE,
                                         com.squareup.kotlinpoet.SHORT,
-                                        com.squareup.kotlinpoet.INT -> "-1"
+                                        com.squareup.kotlinpoet.INT,
+                                        -> "-1"
                                         com.squareup.kotlinpoet.LONG -> "-1L"
                                         com.squareup.kotlinpoet.CHAR -> "'-'"
                                         com.squareup.kotlinpoet.FLOAT -> "-1f"
                                         com.squareup.kotlinpoet.DOUBLE -> "-1.0"
                                         com.squareup.kotlinpoet.STRING,
-                                        com.squareup.kotlinpoet.CHAR_SEQUENCE -> "\"Default\""
+                                        com.squareup.kotlinpoet.CHAR_SEQUENCE,
+                                        -> "\"Default\""
                                         com.squareup.kotlinpoet.NOTHING -> "Nothing"
                                         com.squareup.kotlinpoet.NUMBER -> "-1"
                                         com.squareup.kotlinpoet.ITERABLE,
                                         com.squareup.kotlinpoet.COLLECTION,
-                                        com.squareup.kotlinpoet.LIST -> "emptyList()"
+                                        com.squareup.kotlinpoet.LIST,
+                                        -> "emptyList()"
                                         com.squareup.kotlinpoet.SET -> "emptySet()"
                                         com.squareup.kotlinpoet.MAP -> "emptyMap()"
                                         com.squareup.kotlinpoet.MUTABLE_ITERABLE,
                                         com.squareup.kotlinpoet.MUTABLE_COLLECTION,
-                                        com.squareup.kotlinpoet.MUTABLE_LIST -> "mutableListOf()"
+                                        com.squareup.kotlinpoet.MUTABLE_LIST,
+                                        -> "mutableListOf()"
                                         com.squareup.kotlinpoet.MUTABLE_SET -> "mutableSetOf()"
                                         com.squareup.kotlinpoet.MUTABLE_MAP -> "mutableMapOf()"
                                         com.squareup.kotlinpoet.BOOLEAN_ARRAY -> "booleanArrayOf()"
@@ -105,7 +132,8 @@ class DefaultValuesApolloHooks : DefaultApolloCompilerKotlinHooks() {
                                         com.squareup.kotlinpoet.U_BYTE,
                                         com.squareup.kotlinpoet.U_SHORT,
                                         com.squareup.kotlinpoet.U_INT,
-                                        com.squareup.kotlinpoet.U_LONG -> "0u"
+                                        com.squareup.kotlinpoet.U_LONG,
+                                        -> "0u"
                                         com.squareup.kotlinpoet.U_BYTE_ARRAY -> "ubyteArrayOf()"
                                         com.squareup.kotlinpoet.U_SHORT_ARRAY -> "ushortArrayOf()"
                                         com.squareup.kotlinpoet.U_INT_ARRAY -> "uintArrayOf()"

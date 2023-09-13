@@ -87,8 +87,9 @@ object StaffMediaScreen {
                                         it.character,
                                         null,
                                         imageWidthToHeightRatio,
-                                        colorCalculationState.getColors(it.character.id.toString())
-                                            .first,
+                                        colorCalculationState.getColors(
+                                            it.character.id.toString()
+                                        ).first,
                                     )
                                 },
                                 onClickInnerImage = {

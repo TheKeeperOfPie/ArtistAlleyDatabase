@@ -198,9 +198,7 @@ object ActivityDetailsScreen {
                                             onClickDelete = {
                                                 deletePromptData = Either.Left(Unit)
                                             },
-                                            onClickListEdit = {
-                                                editViewModel.initialize(it.media)
-                                            },
+                                            onClickListEdit = editViewModel::initialize,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.TextActivityActivity -> {

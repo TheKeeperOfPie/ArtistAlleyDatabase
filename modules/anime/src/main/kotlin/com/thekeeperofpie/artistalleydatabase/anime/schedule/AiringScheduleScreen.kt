@@ -219,7 +219,7 @@ object AiringScheduleScreen {
                                                 screenKey = SCREEN_KEY,
                                                 viewer = viewer,
                                                 entry = schedule?.entry,
-                                                onClickListEdit = { editViewModel.initialize(it.media) },
+                                                onClickListEdit = editViewModel::initialize,
                                                 nextAiringEpisode = schedule?.data?.let {
                                                     NextAiringEpisode(
                                                         episode = it.episode,

@@ -74,8 +74,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -114,6 +114,7 @@ import coil.compose.AsyncImage
 import coil.size.Dimension
 import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsQuery.Data.Media
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
@@ -186,6 +187,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -297,6 +299,7 @@ object AnimeMediaDetailsScreen {
                 .pullRefresh(state = pullRefreshState)
         ) {
             val editViewModel = hiltViewModel<MediaEditViewModel>()
+            val onClickListEdit = rememberCallback(editViewModel::initialize)
             MediaEditBottomSheetScaffold(
                 screenKey = viewModel.screenKey,
                 viewModel = editViewModel,
@@ -489,7 +492,6 @@ object AnimeMediaDetailsScreen {
                                 scaffoldPadding = scaffoldPadding,
                                 lazyListState = lazyListState,
                                 viewModel = viewModel,
-                                editViewModel = editViewModel,
                                 viewer = viewer,
                                 entry = entry.result!!,
                                 entry2Result = entry2,
@@ -499,6 +501,7 @@ object AnimeMediaDetailsScreen {
                                 activityTab = if (activityTabIsFollowing) ActivityTab.FOLLOWING else ActivityTab.GLOBAL,
                                 activities = if (activityTabIsFollowing) activities?.following else activities?.global,
                                 onActivityTabChange = onActivityTabChange,
+                                onClickListEdit = onClickListEdit,
                                 expandedState = expandedState,
                                 coverImageWidthToHeightRatio = coverImageWidthToHeightRatioGetter,
                             )
@@ -520,7 +523,6 @@ object AnimeMediaDetailsScreen {
         scaffoldPadding: PaddingValues,
         lazyListState: LazyListState,
         viewModel: AnimeMediaDetailsViewModel,
-        editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         entry: Entry,
         entry2Result: LoadingResult<Entry2>,
@@ -530,6 +532,7 @@ object AnimeMediaDetailsScreen {
         activityTab: ActivityTab,
         activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
         onActivityTabChange: (ActivityTab) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         expandedState: ExpandedState,
         coverImageWidthToHeightRatio: () -> Float,
     ) {
@@ -540,7 +543,6 @@ object AnimeMediaDetailsScreen {
         ) {
             content(
                 viewModel = viewModel,
-                editViewModel = editViewModel,
                 viewer = viewer,
                 entry = entry,
                 entry2Result = entry2Result,
@@ -550,6 +552,7 @@ object AnimeMediaDetailsScreen {
                 activityTab = activityTab,
                 activities = activities,
                 onActivityTabChange = onActivityTabChange,
+                onClickListEdit = onClickListEdit,
                 expandedState = expandedState,
                 coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             )
@@ -558,7 +561,6 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.content(
         viewModel: AnimeMediaDetailsViewModel,
-        editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         entry: Entry,
         entry2Result: LoadingResult<Entry2>,
@@ -568,6 +570,7 @@ object AnimeMediaDetailsScreen {
         activityTab: ActivityTab,
         activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
         onActivityTabChange: (ActivityTab) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         coverImageWidthToHeightRatio: () -> Float,
         expandedState: ExpandedState,
     ) {
@@ -602,7 +605,7 @@ object AnimeMediaDetailsScreen {
 
         relationsSection(
             screenKey = screenKey,
-            editViewModel = editViewModel,
+            onClickListEdit = onClickListEdit,
             viewer = viewer,
             entry = entry,
             relationsExpanded = expandedState::relations,
@@ -686,25 +689,25 @@ object AnimeMediaDetailsScreen {
         recommendationsSection(
             screenKey = screenKey,
             viewModel = viewModel,
-            editViewModel = editViewModel,
             viewer = viewer,
             entry = entry,
             entry2 = entry2,
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             expanded = expandedState::recommendations,
             onExpandedChange = { expandedState.recommendations = it },
+            onClickListEdit = onClickListEdit,
         )
 
         activitiesSection(
             screenKey = screenKey,
             viewer = viewer,
             viewModel = viewModel,
-            editViewModel = editViewModel,
             activityTab = activityTab,
             activities = activities,
             onActivityTabChange = onActivityTabChange,
             expanded = expandedState::activities,
             onExpandedChange = { expandedState.activities = it },
+            onClickListEdit = onClickListEdit,
             onClickViewAll = {
                 it.onMediaActivitiesClick(
                     entry,
@@ -776,15 +779,15 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.relationsSection(
         screenKey: String,
-        editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         entry: Entry,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedChange: (Boolean) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         mediaListSection(
             screenKey = screenKey,
-            editViewModel = editViewModel,
+            onClickListEdit = onClickListEdit,
             viewer = viewer,
             titleRes = R.string.anime_media_details_relations_label,
             values = entry.relations,
@@ -981,12 +984,14 @@ object AnimeMediaDetailsScreen {
             aboveFold = SONGS_ABOVE_FOLD,
             expanded = songsExpanded,
             onExpandedChange = onSongsExpandedChange,
-        ) { item, paddingBottom, modifier ->
+        ) { item, paddingBottom ->
             AnimeThemeRow(
                 screenKey,
                 viewModel = viewModel,
                 entry = item,
-                modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                modifier = Modifier
+                    .animateItemPlacement()
+                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }
     }
@@ -1402,13 +1407,13 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.recommendationsSection(
         screenKey: String,
         viewModel: AnimeMediaDetailsViewModel,
-        editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         entry: Entry,
         entry2: Entry2?,
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         listSection(
             titleRes = R.string.anime_media_details_recommendations_label,
@@ -1426,16 +1431,18 @@ object AnimeMediaDetailsScreen {
                 )
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-        ) { item, paddingBottom, modifier ->
+        ) { item, paddingBottom ->
             val entry = item.entry
             AnimeMediaListRow(
                 screenKey = screenKey,
                 entry = entry,
                 viewer = viewer,
-                onClickListEdit = { editViewModel.initialize(it.media) },
+                onClickListEdit = onClickListEdit,
                 recommendation = item.data,
                 onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
-                modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                modifier = Modifier
+                    .animateItemPlacement()
+                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }
     }
@@ -1739,10 +1746,11 @@ object AnimeMediaDetailsScreen {
                     }
                 }
             }
-        ) { item, paddingBottom, modifier ->
+        ) { item, paddingBottom ->
             val uriHandler = LocalUriHandler.current
             ElevatedCard(
-                modifier = modifier
+                modifier = Modifier
+                    .animateItemPlacement()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
                     .optionalClickable(onClick = item.url?.let { { uriHandler.openUri(it) } }),
             ) {
@@ -1859,7 +1867,6 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.activitiesSection(
         screenKey: String,
         viewer: AniListViewer?,
-        editViewModel: MediaEditViewModel,
         activityTab: ActivityTab,
         activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
         onActivityTabChange: (ActivityTab) -> Unit,
@@ -1867,6 +1874,7 @@ object AnimeMediaDetailsScreen {
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         item("activitiesHeader") {
             val navigationCallback = LocalNavigationCallback.current
@@ -1914,16 +1922,17 @@ object AnimeMediaDetailsScreen {
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             onClickViewAll = onClickViewAll,
-        ) { item, paddingBottom, modifier ->
+        ) { item, paddingBottom ->
             ListActivitySmallCard(
                 screenKey = screenKey,
                 viewer = viewer,
                 activity = item.activity,
                 entry = item,
                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                onClickListEdit = { editViewModel.initialize(it.media) },
+                onClickListEdit = onClickListEdit,
                 clickable = true,
-                modifier = modifier
+                modifier = Modifier
+                    .animateItemPlacement()
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
@@ -1948,12 +1957,13 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = onExpandedChange,
             onClickViewAll = onClickViewAll,
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-        ) { item, paddingBottom, modifier ->
+        ) { item, paddingBottom ->
             ThreadSmallCard(
                 viewer = viewer,
                 entry = item,
                 onStatusUpdate = onStatusUpdate,
-                modifier = modifier
+                modifier = Modifier
+                    .animateItemPlacement()
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
@@ -1986,7 +1996,7 @@ object AnimeMediaDetailsScreen {
                 )
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-        ) { item, paddingBottom, modifier ->
+        ) { item, paddingBottom ->
             val navigationCallback = LocalNavigationCallback.current
             ReviewSmallCard(
                 screenKey = viewModel.screenKey,
@@ -1999,12 +2009,14 @@ object AnimeMediaDetailsScreen {
                         imageWidthToHeightRatio = coverImageWidthToHeightRatio()
                     )
                 },
-                modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                modifier = Modifier
+                    .animateItemPlacement()
+                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }
     }
 
-    @Stable
+    @Immutable
     data class Entry(
         val mediaId: String,
         val media: Media,
@@ -2315,7 +2327,7 @@ object AnimeMediaDetailsScreen {
                 currentIndex += 2
             }
 
-            val trailer = entry2.media?.trailer
+            val trailer = entry2.media.trailer
             if (trailer != null && (trailer.site == "youtube" || trailer.site == "dailymotion")) {
                 list += SectionIndexInfo.Section.TRAILER to currentIndex
                 currentIndex += 2

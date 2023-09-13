@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
@@ -66,7 +67,7 @@ object MediaGridCard {
         screenKey: String,
         entry: Entry?,
         viewer: AniListViewer?,
-        onClickListEdit: (Entry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
@@ -195,7 +196,7 @@ object MediaGridCard {
         entry: Entry?,
         viewer: AniListViewer?,
         onClick: (Entry) -> Unit = {},
-        onClickListEdit: (Entry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         onRatioAvailable: (Float) -> Unit,
         forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
@@ -209,7 +210,7 @@ object MediaGridCard {
                 image = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.media?.coverImage?.extraLarge)
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
+                    .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
                         width = Dimension.Pixels(LocalDensity.current.run { 120.dp.roundToPx() }),
                         height = Dimension.Undefined
@@ -255,7 +256,7 @@ object MediaGridCard {
                     media = entry,
                     maxProgress = entry.maxProgress,
                     maxProgressVolumes = entry.maxProgressVolumes,
-                    onClick = { onClickListEdit(entry) },
+                    onClick = { onClickListEdit(entry.media) },
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.align(Alignment.BottomStart)
                 )

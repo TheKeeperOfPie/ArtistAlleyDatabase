@@ -74,7 +74,7 @@ fun CharacterHeader(
             progress = progress,
             color = { headerValues.color(colorCalculationState) },
             coverImage = { headerValues.image },
-            coverImageAllowHardware = colorCalculationState.hasColor(characterId),
+            coverImageAllowHardware = colorCalculationState.allowHardware(characterId),
             coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
             coverImageOnSuccess = {
                 onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
@@ -254,7 +254,12 @@ class CharacterHeaderValues(
     @Composable
     fun subtitle() = character()?.name?.subtitleName() ?: _subtitle ?: ""
 
+    @Composable
     fun color(colorCalculationState: ColorCalculationState) =
+        colorCalculationState.getColors(character()?.id?.toString()).first
+            .takeOrElse { _color ?: Color.Unspecified }
+
+    fun colorNonComposable(colorCalculationState: ColorCalculationState) =
         colorCalculationState.getColors(character()?.id?.toString()).first
             .takeOrElse { _color ?: Color.Unspecified }
 }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -266,7 +267,7 @@ fun <T> LazyListScope.listSection(
     hiddenContent: @Composable () -> Unit = {},
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
-    itemContent: @Composable LazyListScope.(T, paddingBottom: Dp, modifier: Modifier) -> Unit,
+    itemContent: @Composable LazyItemScope.(T, paddingBottom: Dp) -> Unit,
 ) {
     if (values != null && values.isEmpty()) return
     item("$titleRes-header") {
@@ -275,12 +276,6 @@ fun <T> LazyListScope.listSection(
             text = stringResource(titleRes),
             onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
-            modifier = Modifier
-                .clickable(
-                    enabled = onClickViewAll != null,
-                    onClick = { onClickViewAll?.invoke(navigationCallback) },
-                )
-                .recomposeHighlighter()
         )
     }
     if (values == null) return
@@ -311,7 +306,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
     hidden: () -> Boolean = { false },
     hiddenContent: @Composable () -> Unit = {},
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
-    itemContent: @Composable LazyListScope.(T, paddingBottom: Dp, modifier: Modifier) -> Unit,
+    itemContent: @Composable LazyItemScope.(T, paddingBottom: Dp) -> Unit,
 ) {
     if (values == null) return
     if (values.isEmpty()) {
@@ -350,11 +345,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
         } else {
             16.dp
         }
-        this@listSectionWithoutHeader.itemContent(
-            item,
-            paddingBottom,
-            Modifier.animateItemPlacement()
-        )
+        itemContent(item, paddingBottom)
     }
 
     fun showAllButton() {
@@ -383,8 +374,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                 values.drop(aboveFold),
                 { index, item -> "$titleRes-${valueToId(item) ?: (index + aboveFold)}" },
             ) { _, item ->
-                this@listSectionWithoutHeader
-                    .itemContent(item, 16.dp, Modifier.animateItemPlacement())
+                itemContent(item, 16.dp)
             }
 
             if (hasMoreValues) {
@@ -583,5 +573,6 @@ fun NavigationHeader(
                 navigationCallback.navigate(viewAllRoute!!)
             }
             .then(modifier)
+            .recomposeHighlighter()
     )
 }

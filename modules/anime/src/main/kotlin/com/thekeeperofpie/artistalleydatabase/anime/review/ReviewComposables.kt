@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.fragment.MediaAndReviewsReview
+import com.anilist.fragment.MediaNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -43,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactLi
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -158,7 +160,7 @@ fun ReviewCard(
     review: MediaAndReviewsReview?,
     media: AnimeMediaCompactListRow.Entry?,
     onClick: (AnimeNavigator.NavigationCallback) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     showMedia: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
@@ -168,7 +170,8 @@ fun ReviewCard(
             .clickable(
                 enabled = review?.id != null,
                 onClick = { onClick(navigationCallback) },
-            ),
+            )
+            .recomposeHighlighter()
     ) {
         ReviewSmallCardContent(screenKey, review)
 

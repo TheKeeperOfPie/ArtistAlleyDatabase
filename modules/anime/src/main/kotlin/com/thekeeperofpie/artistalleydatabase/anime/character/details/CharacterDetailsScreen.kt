@@ -411,7 +411,7 @@ object CharacterDetailsScreen {
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
-            editViewModel = editViewModel,
+            onClickListEdit = editViewModel::initialize,
             viewer = viewer,
             titleRes = R.string.anime_character_details_media_label,
             values = entry.media,
@@ -425,7 +425,7 @@ object CharacterDetailsScreen {
                     character = entry.character,
                     favorite = headerValues.favorite,
                     imageWidthToHeightRatio = characterImageWidthToHeightRatio(),
-                    color = headerValues.color(colorCalculationState),
+                    color = headerValues.colorNonComposable(colorCalculationState),
                 )
             },
             viewAllContentDescriptionTextRes = R.string.anime_character_details_view_all_content_description,

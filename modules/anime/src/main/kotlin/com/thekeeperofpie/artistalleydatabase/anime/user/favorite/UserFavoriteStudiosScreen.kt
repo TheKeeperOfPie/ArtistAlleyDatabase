@@ -125,7 +125,7 @@ object UserFavoriteStudiosScreen {
                                         screenKey = SCREEN_KEY,
                                         viewer = viewer,
                                         entry = entry,
-                                        onClickListEdit = { editViewModel.initialize(it.media) },
+                                        onClickListEdit = editViewModel::initialize,
                                     )
                                 }
 

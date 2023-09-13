@@ -32,6 +32,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,7 +60,7 @@ abstract class AnimeHomeMediaViewModel(
 ) : ViewModel() {
 
     var entry by mutableStateOf<LoadingResult<AnimeHomeDataEntry>>(LoadingResult.loading())
-    var current by mutableStateOf<LoadingResult<List<UserMediaListController.MediaEntry>>>(
+    var current by mutableStateOf<LoadingResult<ImmutableList<UserMediaListController.MediaEntry>>>(
         LoadingResult.loading()
     )
     val reviews = MutableStateFlow(PagingData.empty<ReviewEntry>())
@@ -120,8 +122,8 @@ abstract class AnimeHomeMediaViewModel(
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
                     ) { mediaStatusUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
-                        current.copy(
-                            result = current.result?.mapNotNull {
+                        current.transformResult {
+                            it.mapNotNull {
                                 applyMediaFiltering(
                                     statuses = mediaStatusUpdates,
                                     ignoreController = ignoreController,
@@ -145,9 +147,8 @@ abstract class AnimeHomeMediaViewModel(
                                         )
                                     }
                                 )
-                            },
-                            error = current.error?.copy(first = errorTextRes),
-                        )
+                            }.toImmutableList()
+                        }
                     }
                 }
                 .flowOn(CustomDispatchers.IO)
@@ -441,7 +442,7 @@ abstract class AnimeHomeMediaViewModel(
     data class RowInput(
         val id: String,
         val titleRes: Int,
-        val viewAllRoute: String? = null,
+        val viewAllRoute: String,
         val list: List<HomeMedia?>? = null,
     )
 }

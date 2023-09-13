@@ -246,7 +246,7 @@ object UserOverviewScreen {
                 screenKey = screenKey,
                 viewer = viewer,
                 entry = item,
-                onClickListEdit = { editViewModel.initialize(it.media) },
+                onClickListEdit = editViewModel::initialize,
                 mediaWidth = 64.dp,
                 mediaHeight = 96.dp,
                 modifier = Modifier

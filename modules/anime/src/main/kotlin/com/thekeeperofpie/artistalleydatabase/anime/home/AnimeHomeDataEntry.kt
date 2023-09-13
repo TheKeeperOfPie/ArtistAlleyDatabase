@@ -94,6 +94,6 @@ data class AnimeHomeDataEntry(
         val id: String,
         val titleRes: Int,
         val entries: List<MediaEntry>?,
-        val viewAllRoute: String?,
+        val viewAllRoute: String,
     )
 }

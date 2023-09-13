@@ -53,6 +53,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.ListActivityWithoutMedia
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MessageActivityFragment
 import com.anilist.fragment.TextActivityFragment
 import com.anilist.fragment.UserNavigationData
@@ -134,7 +135,7 @@ fun ActivityList(
                                     showMedia = showMedia,
                                     entry = entry,
                                     onActivityStatusUpdate = onActivityStatusUpdate,
-                                    onClickListEdit = { editViewModel.initialize(it.media) },
+                                    onClickListEdit = editViewModel::initialize,
                                     allowUserClick = allowUserClick,
                                     clickable = true,
                                     modifier = Modifier.fillMaxWidth()
@@ -532,7 +533,7 @@ fun ListActivitySmallCard(
     activity: ListActivityWithoutMedia?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     modifier: Modifier = Modifier,
     allowUserClick: Boolean = true,
     clickable: Boolean = false,
@@ -565,13 +566,13 @@ fun ListActivitySmallCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     modifier: Modifier = Modifier,
     allowUserClick: Boolean = true,
     clickable: Boolean = false,
     showMedia: Boolean = true,
     showActionsRow: Boolean = false,
-    onClickDelete: (String) -> Unit = {},
+    onClickDelete: ((String) -> Unit)? = null,
 ) {
     ListActivitySmallCard(
         screenKey = screenKey,
@@ -601,11 +602,11 @@ private fun ListActivitySmallCard(
     liked: Boolean,
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     allowUserClick: Boolean,
     clickable: Boolean,
     showActionsRow: Boolean,
-    onClickDelete: (String) -> Unit,
+    onClickDelete: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val content: @Composable ColumnScope.() -> Unit = {
@@ -653,11 +654,11 @@ fun ColumnScope.ListActivityCardContent(
     liked: Boolean,
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     showMedia: Boolean = entry != null,
     showUser: Boolean = true,
     showActionsRow: Boolean = false,
-    onClickDelete: (String) -> Unit = {},
+    onClickDelete: ((String) -> Unit)? = null,
     allowUserClick: Boolean = true,
 ) {
     Row(
@@ -758,14 +759,14 @@ fun ColumnScope.ListActivityCardContent(
 fun ActivityDetailsActionRow(
     activityId: String?,
     isViewer: Boolean,
-    onClickDelete: (String) -> Unit,
+    onClickDelete: ((String) -> Unit)?,
 ) {
     Row(
         horizontalArrangement = Arrangement.End,
         modifier = Modifier.fillMaxWidth()
     ) {
         if (isViewer) {
-            IconButton(onClick = { if (activityId != null) onClickDelete(activityId) }) {
+            IconButton(onClick = { if (activityId != null) onClickDelete?.invoke(activityId) }) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
                     contentDescription = stringResource(

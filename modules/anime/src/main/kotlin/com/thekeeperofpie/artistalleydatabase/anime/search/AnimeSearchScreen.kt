@@ -70,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeSearchScreen {
@@ -86,6 +87,7 @@ object AnimeSearchScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val onClickListEdit = rememberCallback(editViewModel::initialize)
         val editSheetState = rememberStandardBottomSheetState(
             initialValue = SheetValue.Hidden,
             confirmValueChange = editViewModel::onEditSheetValueChange,
@@ -241,46 +243,38 @@ object AnimeSearchScreen {
                                         placeholderCount = 10,
                                         key = { it.entryId.scopedId },
                                         contentType = { it.entryId.type }
-                                    ) {
-                                        when (it) {
+                                    ) { data ->
+                                        when (data) {
                                             is AnimeSearchEntry.Media -> MediaViewOptionRow(
                                                 screenKey = SCREEN_KEY,
                                                 mediaViewOption = viewModel.mediaViewOption,
                                                 viewer = viewer,
-                                                editViewModel = editViewModel,
-                                                entry = it.entry,
+                                                onClickListEdit = onClickListEdit,
+                                                entry = data.entry,
                                             )
                                             is AnimeSearchEntry.Character -> CharacterListRow(
                                                 screenKey = SCREEN_KEY,
                                                 viewer = viewer,
-                                                entry = it.entry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                entry = data.entry,
+                                                onClickListEdit = onClickListEdit,
                                             )
                                             is AnimeSearchEntry.Staff -> StaffListRow(
                                                 screenKey = SCREEN_KEY,
                                                 viewer = viewer,
-                                                entry = it.entry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                entry = data.entry,
+                                                onClickListEdit = onClickListEdit,
                                             )
                                             is AnimeSearchEntry.Studio -> StudioListRow(
                                                 screenKey = SCREEN_KEY,
                                                 viewer = viewer,
-                                                entry = it.entry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                entry = data.entry,
+                                                onClickListEdit = onClickListEdit,
                                             )
                                             is AnimeSearchEntry.User -> UserListRow(
                                                 screenKey = SCREEN_KEY,
                                                 viewer = viewer,
-                                                entry = it.entry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                entry = data.entry,
+                                                onClickListEdit = onClickListEdit,
                                             )
 
                                             null -> when (selectedType) {
@@ -290,7 +284,7 @@ object AnimeSearchScreen {
                                                     screenKey = SCREEN_KEY,
                                                     mediaViewOption = viewModel.mediaViewOption,
                                                     viewer = viewer,
-                                                    editViewModel = editViewModel,
+                                                    onClickListEdit = onClickListEdit,
                                                     entry = null,
                                                 )
                                                 AnimeSearchViewModel.SearchType.CHARACTER ->

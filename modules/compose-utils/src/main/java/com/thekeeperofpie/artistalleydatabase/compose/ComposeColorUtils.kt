@@ -11,7 +11,6 @@ import androidx.palette.graphics.get
 import coil.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 object ComposeColorUtils {
 
@@ -42,7 +41,7 @@ object ComposeColorUtils {
         widthEndThreshold: Float = 1f,
         selectMaxPopulation: Boolean = false,
     ) {
-        if (!colorCalculationState.hasColor(id)) {
+        if (colorCalculationState.shouldCalculate(id)) {
             (success.result.drawable as? BitmapDrawable)?.bitmap?.let {
                 colorCalculationState.scope.launch(CustomDispatchers.IO) {
                     try {
@@ -68,18 +67,16 @@ object ComposeColorUtils {
                             palette[target]
                         } ?: palette.swatches.firstOrNull()
                         if (swatch != null) {
-                            withContext(CustomDispatchers.Main) {
-                                colorCalculationState.setColor(
-                                    id = id,
-                                    containerColor = Color(swatch.rgb),
-                                    textColor = Color(
-                                        ColorUtils.setAlphaComponent(
-                                            swatch.bodyTextColor,
-                                            0xFF
-                                        )
+                            colorCalculationState.setColor(
+                                id = id,
+                                containerColor = Color(swatch.rgb),
+                                textColor = Color(
+                                    ColorUtils.setAlphaComponent(
+                                        swatch.bodyTextColor,
+                                        0xFF
                                     )
                                 )
-                            }
+                            )
                         }
                     } catch (ignored: Exception) {
                     }

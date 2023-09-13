@@ -59,7 +59,7 @@ object StaffCharactersScreen {
                         viewer = viewer,
                         entry = it,
                         showRole = true,
-                        onClickListEdit = { editViewModel.initialize(it.media) },
+                        onClickListEdit = editViewModel::initialize,
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                     )
                 },

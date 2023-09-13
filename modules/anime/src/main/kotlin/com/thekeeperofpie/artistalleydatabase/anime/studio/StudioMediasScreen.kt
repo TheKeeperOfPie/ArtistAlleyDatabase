@@ -66,7 +66,7 @@ object StudioMediasScreen {
                     screenKey = SCREEN_KEY,
                     entry = it,
                     viewer = viewer,
-                    onClickListEdit = { editViewModel.initialize(it.media) },
+                    onClickListEdit = editViewModel::initialize,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,

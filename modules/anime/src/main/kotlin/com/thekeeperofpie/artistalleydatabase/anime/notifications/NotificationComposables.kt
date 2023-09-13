@@ -39,6 +39,7 @@ import com.anilist.NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNot
 import com.anilist.NotificationsQuery.Data.Page.ActivityReplyNotificationNotification
 import com.anilist.NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification
 import com.anilist.fragment.ForumThread
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -120,7 +121,7 @@ fun ActivityMentionNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -148,7 +149,7 @@ fun ActivityMessageNotificationCard(
     notification: NotificationsQuery.Data.Page.ActivityMessageNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -177,7 +178,7 @@ fun ActivityReplyNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -206,7 +207,7 @@ fun ActivityReplySubscribedNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -235,7 +236,7 @@ fun ActivityLikedNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -264,7 +265,7 @@ fun ActivityReplyLikedNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -291,7 +292,7 @@ fun AiringNotificationCard(
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.AiringNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         Row(
@@ -346,7 +347,7 @@ fun RelatedMediaAdditionNotificationCard(
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         Row(
@@ -377,7 +378,7 @@ fun MediaDataChangeNotificationCard(
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         Row(
@@ -418,7 +419,7 @@ fun MediaDeletionNotificationCard(
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaDeletionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         Row(
@@ -462,7 +463,7 @@ fun MediaMergeNotificationCard(
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaMergeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     ElevatedCard {
         Row(
@@ -749,7 +750,7 @@ private fun ActivityCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
     OutlinedCard(

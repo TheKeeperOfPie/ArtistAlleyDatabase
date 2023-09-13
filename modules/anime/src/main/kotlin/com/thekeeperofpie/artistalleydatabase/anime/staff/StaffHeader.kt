@@ -68,7 +68,7 @@ fun StaffHeader(
         progress = progress,
         color = { headerValues.color(colorCalculationState) },
         coverImage = { headerValues.image },
-        coverImageAllowHardware = colorCalculationState.hasColor(staffId),
+        coverImageAllowHardware = colorCalculationState.allowHardware(staffId),
         coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
         coverImageOnSuccess = {
             onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
@@ -247,6 +247,7 @@ class StaffHeaderValues(
     @Composable
     fun subtitle() = staff()?.name?.subtitleName() ?: _subtitle ?: ""
 
+    @Composable
     fun color(colorCalculationState: ColorCalculationState) =
         colorCalculationState.getColors(staff()?.id?.toString()).first
             .takeOrElse { _color ?: Color.Unspecified }

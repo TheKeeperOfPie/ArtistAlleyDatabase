@@ -57,7 +57,8 @@ object StaffOverviewScreen {
                         entry.staff,
                         viewModel.favoritesToggleHelper.favorite,
                         staffImageWidthToHeightRatio(),
-                        colorCalculationState.getColors(entry.staff.id.toString()).first
+                        colorCalculationState.getColors(entry.staff.id.toString())
+                            .first
                     )
                 },
                 viewAllContentDescriptionTextRes = R.string.anime_staff_details_view_all_content_description,

@@ -72,7 +72,7 @@ object UserListRow {
         screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
-        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
@@ -145,7 +145,7 @@ object UserListRow {
             image = ImageRequest.Builder(LocalContext.current)
                 .data(entry?.user?.avatar?.large)
                 .crossfade(true)
-                .allowHardware(colorCalculationState.hasColor(entry?.user?.id?.toString()))
+                .allowHardware(colorCalculationState.allowHardware(entry?.user?.id?.toString()))
                 .size(
                     width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
                     height = Dimension.Undefined
@@ -203,7 +203,7 @@ object UserListRow {
         screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
-        onClickListEdit: (MediaWithListStatusEntry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         onMediaClick: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() } ?: return
@@ -249,7 +249,7 @@ object UserListRow {
                                 media = it,
                                 maxProgress = MediaUtils.maxProgress(it.media),
                                 maxProgressVolumes = it.media.volumes,
-                                onClick = { onClickListEdit(it) },
+                                onClick = { onClickListEdit(it.media) },
                                 padding = 6.dp,
                                 // API is broken, doesn't return the viewer's entry
                                 forceListEditIcon = true,

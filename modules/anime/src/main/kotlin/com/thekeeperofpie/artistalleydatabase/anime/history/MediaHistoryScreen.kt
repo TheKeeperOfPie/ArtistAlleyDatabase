@@ -36,22 +36,13 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -179,7 +170,7 @@ object MediaHistoryScreen {
                                     screenKey = SCREEN_KEY,
                                     mediaViewOption = viewModel.mediaViewOption,
                                     viewer = viewer,
-                                    editViewModel = editViewModel,
+                                    onClickListEdit = editViewModel::initialize,
                                     entry = entry,
                                     showQuickEdit = false,
                                 )

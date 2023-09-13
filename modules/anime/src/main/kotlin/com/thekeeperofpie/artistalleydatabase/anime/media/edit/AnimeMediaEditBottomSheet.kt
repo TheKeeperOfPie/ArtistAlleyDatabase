@@ -258,7 +258,7 @@ object AnimeMediaEditBottomSheet {
                     image = ImageRequest.Builder(LocalContext.current)
                         .data(coverImage)
                         .crossfade(true)
-                        .allowHardware(colorCalculationState.hasColor(mediaId))
+                        .allowHardware(colorCalculationState.allowHardware(mediaId))
                         .size(
                             width = Dimension.Pixels(
                                 LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }

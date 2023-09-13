@@ -207,7 +207,7 @@ fun StaffSmallCard(
             image = ImageRequest.Builder(LocalContext.current)
                 .data(image)
                 .crossfade(true)
-                .allowHardware(colorCalculationState.hasColor(id.scopedId))
+                .allowHardware(colorCalculationState.allowHardware(id.scopedId))
                 .size(
                     width = density.run { width.roundToPx() },
                     height = density.run { (width * 1.5f).roundToPx() },

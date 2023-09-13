@@ -96,7 +96,7 @@ internal fun CoverAndBannerHeader(
     progress: Float = 0f,
     coverSize: Dp = 256.dp,
     coverImageWidthToHeightRatio: Float = 1f,
-    color: () -> Color? = { null },
+    color: @Composable () -> Color? = { null },
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
     coverImageOnSuccess: (AsyncImagePainter.State.Success) -> Unit = {},

@@ -69,7 +69,6 @@ object AnimeNewsScreen {
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) { scaffoldPadding ->
-            val uriHandler = LocalUriHandler.current
             val news = viewModel.news
             val pullRefreshState =
                 rememberPullRefreshState(refreshing = news == null, onRefresh = viewModel::refresh)
@@ -108,7 +107,7 @@ object AnimeNewsScreen {
                                 count = news.size,
                                 key = { news[it].id },
                                 contentType = { "news " }) {
-                                AnimeNewsSmallCard(entry = news[it], uriHandler = uriHandler)
+                                AnimeNewsSmallCard(entry = news[it])
                             }
                         }
                     }

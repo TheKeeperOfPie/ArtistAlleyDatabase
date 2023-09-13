@@ -127,7 +127,9 @@ object UserMediaScreen {
                             value.voiceActor!!,
                             null,
                             imageWidthToHeightRatio,
-                            colorCalculationState.getColors(value.voiceActor!!.id.toString()).first,
+                            colorCalculationState.getColors(
+                                value.voiceActor!!.id.toString()
+                            ).first,
                         )
                     },
                     initialItemId = { it.voiceActor?.id.toString() },
@@ -173,7 +175,9 @@ object UserMediaScreen {
                             value.staff!!,
                             null,
                             imageWidthToHeightRatio,
-                            colorCalculationState.getColors(value.staff!!.id.toString()).first,
+                            colorCalculationState.getColors(
+                                value.staff!!.id.toString()
+                            ).first,
                         )
                     },
                     initialItemId = { it.staff?.id.toString() },

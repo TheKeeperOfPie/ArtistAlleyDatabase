@@ -73,3 +73,9 @@ fun LoadingResult<*>.ErrorSnackbar(snackbarHostState: SnackbarHostState) {
 // TODO: Replace other usages
 fun UriHandler.openForceExternal(uri: String) =
     openUri("$uri?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true")
+
+@Composable
+fun rememberCallback(block: () -> Unit) = remember { block }
+
+@Composable
+fun <T> rememberCallback(block: (T) -> Unit) = remember { block }

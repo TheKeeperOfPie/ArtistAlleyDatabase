@@ -439,7 +439,7 @@ object AnimeUserListScreen {
                     screenKey = SCREEN_KEY,
                     viewer = viewer,
                     entry = entry?.entry,
-                    onClickListEdit = { editViewModel.initialize(it.media) },
+                    onClickListEdit = editViewModel::initialize,
                     label = if (statusText == null) null else {
                         {
                             Text(
@@ -467,7 +467,6 @@ object AnimeUserListScreen {
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry?.entry,
-                editViewModel = editViewModel,
                 label = if (statusText == null) null else {
                     {
                         Text(
@@ -493,7 +492,7 @@ object AnimeUserListScreen {
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry?.entry,
-                onClickListEdit = { editViewModel.initialize(it.media) },
+                onClickListEdit = editViewModel::initialize,
                 label = if (statusText == null) null else {
                     {
                         Text(
@@ -520,7 +519,7 @@ object AnimeUserListScreen {
                 screenKey = SCREEN_KEY,
                 entry = entry?.entry,
                 viewer = viewer,
-                onClickListEdit = { editViewModel.initialize(it.media) },
+                onClickListEdit = editViewModel::initialize,
                 modifier = modifier,
             )
         }

@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.fragment.MediaCompactWithTags
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
@@ -71,7 +73,7 @@ object AnimeMediaCompactListRow {
         viewer: AniListViewer?,
         entry: Entry?,
         modifier: Modifier = Modifier,
-        onClickListEdit: (Entry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         label: (@Composable () -> Unit)? = null,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
@@ -184,7 +186,7 @@ object AnimeMediaCompactListRow {
         viewer: AniListViewer?,
         entry: Entry?,
         onClick: (Entry) -> Unit = {},
-        onClickListEdit: (Entry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         onRatioAvailable: (Float) -> Unit,
         forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
@@ -199,7 +201,7 @@ object AnimeMediaCompactListRow {
                 image = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.media?.coverImage?.extraLarge)
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
+                    .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
                         width = Dimension.Pixels(
                             LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
@@ -246,7 +248,7 @@ object AnimeMediaCompactListRow {
                     media = entry,
                     maxProgress = MediaUtils.maxProgress(entry.media),
                     maxProgressVolumes = entry.media.volumes,
-                    onClick = { onClickListEdit(entry) },
+                    onClick = { onClickListEdit(entry.media) },
                     padding = 6.dp,
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier
@@ -308,6 +310,7 @@ object AnimeMediaCompactListRow {
         )
     }
 
+    @Stable
     interface Entry : MediaStatusAware {
         val media: MediaCompactWithTags
         val tags: List<AnimeMediaTagEntry>

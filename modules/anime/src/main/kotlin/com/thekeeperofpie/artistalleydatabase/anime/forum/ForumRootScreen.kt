@@ -201,7 +201,7 @@ object ForumRootScreen {
         }
     }
 
-    private fun LazyListScope.header(@StringRes titleRes: Int, viewAllRoute: String?) {
+    private fun LazyListScope.header(@StringRes titleRes: Int, viewAllRoute: String) {
         item("header-$titleRes") {
             NavigationHeader(
                 titleRes = titleRes,

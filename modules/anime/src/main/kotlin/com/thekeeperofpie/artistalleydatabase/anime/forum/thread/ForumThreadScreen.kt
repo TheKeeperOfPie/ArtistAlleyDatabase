@@ -219,7 +219,7 @@ object ForumThreadScreen {
                                     screenKey = SCREEN_KEY,
                                     viewer = viewer,
                                     entry = item,
-                                    onClickListEdit = { editViewModel.initialize(it.media) },
+                                    onClickListEdit = editViewModel::initialize,
                                     modifier = Modifier.padding(
                                         start = 16.dp,
                                         end = 16.dp,

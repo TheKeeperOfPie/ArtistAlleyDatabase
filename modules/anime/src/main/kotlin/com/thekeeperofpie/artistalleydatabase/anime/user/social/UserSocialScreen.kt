@@ -191,7 +191,7 @@ object UserSocialScreen {
                     image = ImageRequest.Builder(LocalContext.current)
                         .data(user?.avatar?.large)
                         .crossfade(true)
-                        .allowHardware(colorCalculationState.hasColor(user?.id.toString()))
+                        .allowHardware(colorCalculationState.allowHardware(user?.id.toString()))
                         .size(width = dimension, height = dimension)
                         .build(),
                     contentScale = ContentScale.Crop,

@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
@@ -67,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -79,7 +81,7 @@ object AnimeMediaListRow {
         viewer: AniListViewer?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        onClickListEdit: (Entry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
@@ -98,6 +100,7 @@ object AnimeMediaListRow {
                 .heightIn(min = 180.dp)
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
                 .padding(bottom = 2.dp)
+                .recomposeHighlighter()
         ) {
             val ignoreController = LocalIgnoreController.current
             Row(modifier = Modifier
@@ -198,7 +201,7 @@ object AnimeMediaListRow {
         entry: Entry?,
         viewer: AniListViewer?,
         onClick: (Entry) -> Unit = {},
-        onClickListEdit: (Entry) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         onRatioAvailable: (Float) -> Unit,
         recommendation: RecommendationData?,
         onUserRecommendationRating: (
@@ -218,7 +221,7 @@ object AnimeMediaListRow {
                 image = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.media?.coverImage?.extraLarge)
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
+                    .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
                         width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
                         height = Dimension.Undefined
@@ -338,7 +341,7 @@ object AnimeMediaListRow {
                     media = entry,
                     maxProgress = MediaUtils.maxProgress(entry.media),
                     maxProgressVolumes = entry.media.volumes,
-                    onClick = { onClickListEdit(entry) },
+                    onClick = { onClickListEdit(entry.media) },
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.align(Alignment.BottomStart)
                 )

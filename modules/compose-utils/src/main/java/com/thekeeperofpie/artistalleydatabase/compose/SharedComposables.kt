@@ -151,6 +151,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -591,7 +592,11 @@ fun AutoResizeHeightText(
                     lineHeight *= 0.95f
                     result = textMeasurer.measure(
                         text = text,
-                        style = style.copy(fontSize = fontSize, lineHeight = lineHeight),
+                        style = style.copy(
+                            fontSize = fontSize,
+                            lineHeight = lineHeight,
+                            textMotion = TextMotion.Animated,
+                        ),
                         overflow = overflow,
                         maxLines = maxLines,
                         constraints = constraints,
@@ -610,7 +615,7 @@ fun AutoResizeHeightText(
             softWrap = softWrap,
             maxLines = maxLines,
             minLines = minLines,
-            style = style,
+            style = style.copy(textMotion = TextMotion.Animated),
             modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
@@ -1337,7 +1342,8 @@ fun ImageHtmlText(
 ) {
     val context = LocalContext.current
     var updateMillis by remember { mutableLongStateOf(-1L) }
-    val screenWidth = LocalDensity.current.run { LocalConfiguration.current.screenWidthDp.dp.roundToPx() }
+    val screenWidth =
+        LocalDensity.current.run { LocalConfiguration.current.screenWidthDp.dp.roundToPx() }
     val imageGetter = remember {
         ImageGetterWrapper(CoilImageGetter(context, maxWidth = screenWidth) {
             updateMillis = SystemClock.uptimeMillis()
@@ -1380,7 +1386,11 @@ fun DetailsSectionHeader(
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {
     if (onClickViewAll != null) {
-        Row(modifier = modifier.background(MaterialTheme.colorScheme.surface)) {
+        Row(modifier = modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClickViewAll)
+            .recomposeHighlighter()
+        ) {
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
@@ -1407,7 +1417,8 @@ fun DetailsSectionHeader(
             modifier = modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp)
+                .recomposeHighlighter()
         )
     }
 }

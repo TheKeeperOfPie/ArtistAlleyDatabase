@@ -1,10 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
+import androidx.compose.runtime.Stable
 import com.anilist.AuthedUserQuery
 import com.anilist.type.ScoreFormat
 import com.anilist.type.UserTitleLanguage
 import kotlinx.serialization.Serializable
 
+@Stable
 @Serializable
 data class AniListViewer(
     val id: String,

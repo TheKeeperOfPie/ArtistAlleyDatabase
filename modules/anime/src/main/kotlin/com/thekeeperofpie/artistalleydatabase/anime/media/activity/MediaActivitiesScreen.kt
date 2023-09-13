@@ -204,7 +204,7 @@ object MediaActivitiesScreen {
                                             activity = item?.activity,
                                             entry = item,
                                             onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                            onClickListEdit = { editViewModel.initialize(it.media) },
+                                            onClickListEdit = editViewModel::initialize,
                                             clickable = true,
                                         )
                                     }

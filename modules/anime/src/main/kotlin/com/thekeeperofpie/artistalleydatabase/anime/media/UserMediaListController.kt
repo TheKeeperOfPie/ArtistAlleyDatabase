@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import android.os.SystemClock
+import androidx.compose.runtime.Immutable
 import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.MasterKey
 import com.anilist.UserMediaListQuery
@@ -326,6 +327,7 @@ class UserMediaListController(
         )
     }
 
+    @Immutable
     @Serializable
     data class MediaEntry(
         val media: Media,

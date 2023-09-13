@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -176,15 +177,22 @@ fun <T : Any> LazyListScope.items(
     contentType: (T?) -> String,
     itemContent: @Composable LazyItemScope.(item: T?) -> Unit,
 ) {
-    items(
-        count = data?.size ?: placeholderCount,
-        key = { index ->
-            data?.getOrNull(index)?.let { key(it) }
-                ?: PagingPlaceholderKey(index)
-        },
-        contentType = { contentType(data?.getOrNull(it)) },
-    ) {
-        itemContent(data?.getOrNull(it))
+    if (data == null) {
+        items(
+            count = placeholderCount,
+            key = { PagingPlaceholderKey(it) },
+            contentType = { contentType(null) },
+        ) {
+            itemContent(null)
+        }
+    } else {
+        items(
+            items = data,
+            key = key,
+            contentType = contentType,
+        ) {
+            itemContent(it)
+        }
     }
 }
 
@@ -228,16 +236,16 @@ fun <T : Any> LazyListScope.itemsIndexed(
 
 @Composable
 fun <T : Any> rememberPagerState(data: LazyPagingItems<T>, placeholderCount: Int): PagerState {
-    val mockingPlaceholder =
-        data.loadState.refresh is LoadState.Loading && data.itemCount == 0
-    val itemCount = if (mockingPlaceholder) placeholderCount else data.itemCount
-    return rememberPagerState(pageCount = { itemCount })
+    return rememberPagerState(pageCount = {
+        val mockingPlaceholder =
+            data.loadState.refresh is LoadState.Loading && data.itemCount == 0
+        if (mockingPlaceholder) placeholderCount else data.itemCount
+    })
 }
 
 @Composable
 fun <T : Any> rememberPagerState(data: List<T>?, placeholderCount: Int): PagerState {
-    val itemCount = data?.size ?: placeholderCount
-    return rememberPagerState(pageCount = { itemCount })
+    return rememberPagerState(pageCount = { data?.size ?: placeholderCount })
 }
 
 fun <T : Any> LazyPagingItems<T>.getOrNull(index: Int) =

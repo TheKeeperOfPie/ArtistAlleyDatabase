@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
@@ -67,12 +71,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import kotlinx.collections.immutable.ImmutableList
 
 fun <T> LazyListScope.mediaListSection(
     screenKey: String,
-    editViewModel: MediaEditViewModel,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     viewer: AniListViewer?,
     @StringRes titleRes: Int,
     values: ImmutableList<T>,
@@ -94,7 +97,7 @@ fun <T> LazyListScope.mediaListSection(
     onExpandedChange = onExpandedChange,
     onClickViewAll = onClickViewAll,
     viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
-) { item, paddingBottom, modifier ->
+) { item, paddingBottom ->
     val entry = valueToEntry(item)
     AnimeMediaListRow(
         screenKey = screenKey,
@@ -103,10 +106,10 @@ fun <T> LazyListScope.mediaListSection(
         label = if (label == null) null else {
             { label(item) }
         },
-        onClickListEdit = remember { { editViewModel.initialize(it.media) } },
-        modifier = modifier
+        onClickListEdit = onClickListEdit,
+        modifier = Modifier
+            .animateItemPlacement()
             .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-            .recomposeHighlighter()
     )
 }
 
@@ -144,7 +147,7 @@ fun LazyListScope.mediaHorizontalRow(
                     screenKey = screenKey,
                     entry = entry,
                     viewer = viewer,
-                    onClickListEdit = { editViewModel.initialize(it.media) },
+                    onClickListEdit = editViewModel::initialize,
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.width(120.dp)
                 )
@@ -491,7 +494,7 @@ fun MediaViewOptionRow(
     screenKey: String,
     mediaViewOption: MediaViewOption,
     viewer: AniListViewer?,
-    editViewModel: MediaEditViewModel,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     entry: MediaPreviewWithDescriptionEntry?,
     forceListEditIcon: Boolean = false,
     showQuickEdit: Boolean = true,
@@ -501,7 +504,7 @@ fun MediaViewOptionRow(
             screenKey = screenKey,
             viewer = viewer,
             entry = entry,
-            onClickListEdit = { editViewModel.initialize(it.media) },
+            onClickListEdit = onClickListEdit,
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
         )
@@ -511,7 +514,6 @@ fun MediaViewOptionRow(
             entry = entry,
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
-            editViewModel = editViewModel,
         )
         MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
             screenKey = screenKey,
@@ -519,13 +521,13 @@ fun MediaViewOptionRow(
             entry = entry,
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
-            onClickListEdit = { editViewModel.initialize(it.media) },
+            onClickListEdit = onClickListEdit,
         )
         MediaViewOption.GRID -> MediaGridCard(
             screenKey = screenKey,
             entry = entry,
             viewer = viewer,
-            onClickListEdit = { editViewModel.initialize(it.media) },
+            onClickListEdit = onClickListEdit,
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
         )

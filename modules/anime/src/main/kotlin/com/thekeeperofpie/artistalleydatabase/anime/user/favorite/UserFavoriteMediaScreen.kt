@@ -16,7 +16,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberStandardBottomSheetState
@@ -43,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -154,7 +152,7 @@ object UserFavoriteMediaScreen {
                                         screenKey = SCREEN_KEY,
                                         mediaViewOption = viewModel.mediaViewOption,
                                         viewer = viewer,
-                                        editViewModel = editViewModel,
+                                        onClickListEdit = editViewModel::initialize,
                                         entry = entry,
                                         // API doesn't support returning viewer entry
                                         forceListEditIcon = true,

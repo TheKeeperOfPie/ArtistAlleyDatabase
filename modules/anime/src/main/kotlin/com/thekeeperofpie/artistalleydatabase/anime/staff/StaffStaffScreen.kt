@@ -67,7 +67,7 @@ object StaffStaffScreen {
                                 screenKey = screenKey,
                                 entry = entry,
                                 viewer = viewer,
-                                onClickListEdit = { editViewModel.initialize(it.media) },
+                                onClickListEdit = editViewModel::initialize,
                                 showTypeIcon = true,
                                 modifier = Modifier.width(120.dp),
                             ) { textColor ->

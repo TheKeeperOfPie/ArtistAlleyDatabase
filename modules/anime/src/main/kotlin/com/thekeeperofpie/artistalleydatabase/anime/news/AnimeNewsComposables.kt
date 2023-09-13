@@ -26,7 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,13 +39,12 @@ import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AnimeNewsSmallCard(
-    entry: AnimeNewsArticleEntry<*>?,
-    uriHandler: UriHandler,
-) {
+fun AnimeNewsSmallCard(entry: AnimeNewsArticleEntry<*>?) {
+    val uriHandler = LocalUriHandler.current
     val onClick = entry?.link?.let { { uriHandler.openUri(it) } }
     val content: @Composable ColumnScope.() -> Unit = {
         Row(
@@ -53,6 +52,7 @@ fun AnimeNewsSmallCard(
                 .conditionally(entry?.image != null) {
                     height(IntrinsicSize.Min)
                 }
+                .recomposeHighlighter()
         ) {
             if (entry == null || entry.image != null) {
                 Box {

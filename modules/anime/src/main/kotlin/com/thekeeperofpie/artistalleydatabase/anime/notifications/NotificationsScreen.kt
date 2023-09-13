@@ -109,9 +109,7 @@ object NotificationsScreen {
                                                 activityEntry = entry.activityEntry,
                                                 mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityMessageNotificationNotification ->
                                             ActivityMessageNotificationCard(
@@ -120,9 +118,7 @@ object NotificationsScreen {
                                                 notification = notification,
                                                 activityEntry = entry.activityEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.AiringNotificationNotification ->
                                             AiringNotificationCard(
@@ -130,9 +126,7 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.FollowingNotificationNotification ->
                                             FollowingNotificationCard(
@@ -147,9 +141,7 @@ object NotificationsScreen {
                                                 activityEntry = entry.activityEntry,
                                                 mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification ->
                                             ActivityReplySubscribedNotificationCard(
@@ -159,9 +151,7 @@ object NotificationsScreen {
                                                 activityEntry = entry.activityEntry,
                                                 mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification ->
                                             ActivityLikedNotificationCard(
@@ -171,9 +161,7 @@ object NotificationsScreen {
                                                 activityEntry = entry.activityEntry,
                                                 mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification ->
                                             ActivityReplyLikedNotificationCard(
@@ -183,9 +171,7 @@ object NotificationsScreen {
                                                 activityEntry = entry.activityEntry,
                                                 mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification ->
                                             RelatedMediaAdditionNotificationCard(
@@ -193,9 +179,7 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification ->
                                             MediaDataChangeNotificationCard(
@@ -203,9 +187,7 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.MediaDeletionNotificationNotification ->
                                             MediaDeletionNotificationCard(
@@ -213,9 +195,7 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.MediaMergeNotificationNotification ->
                                             MediaMergeNotificationCard(
@@ -223,9 +203,7 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                         is NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification ->
                                             ThreadCommentMentionNotificationCard(

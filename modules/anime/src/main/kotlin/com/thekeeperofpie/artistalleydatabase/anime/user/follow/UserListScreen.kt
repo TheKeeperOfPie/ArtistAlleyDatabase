@@ -119,7 +119,7 @@ object UserListScreen {
                                             screenKey = screenKey,
                                             viewer = viewer,
                                             entry = users[it],
-                                            onClickListEdit = { editViewModel.initialize(it.media) },
+                                            onClickListEdit = editViewModel::initialize,
                                         )
                                     }
 

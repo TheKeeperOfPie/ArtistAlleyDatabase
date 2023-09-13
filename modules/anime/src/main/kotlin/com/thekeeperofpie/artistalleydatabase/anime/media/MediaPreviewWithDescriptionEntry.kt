@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -10,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 
+@Immutable
 data class MediaPreviewWithDescriptionEntry(
     override val media: MediaPreviewWithDescription,
     override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,

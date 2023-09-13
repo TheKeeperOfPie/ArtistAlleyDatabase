@@ -263,7 +263,7 @@ object SeasonalScreen {
                                     screenKey = SCREEN_KEY,
                                     mediaViewOption = viewModel.mediaViewOption,
                                     viewer = viewer,
-                                    editViewModel = editViewModel,
+                                    onClickListEdit = editViewModel::initialize,
                                     entry = item,
                                 )
                             }
