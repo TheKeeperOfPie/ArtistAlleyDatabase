@@ -1,6 +1,15 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.compose
 
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -10,11 +19,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import coil.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import kotlin.random.Random
 import kotlin.reflect.KProperty
 
 fun <T> observableStateOf(value: T, onChange: (T) -> Unit) =
@@ -79,3 +91,34 @@ fun rememberCallback(block: () -> Unit) = remember { block }
 
 @Composable
 fun <T> rememberCallback(block: (T) -> Unit) = remember { block }
+
+context(LazyItemScope)
+fun Modifier.animateItemPlacementFixed() =
+    animateItemPlacement(animationSpec = NotEqualAnimationSpecDelegate())
+
+context(LazyGridItemScope)
+fun Modifier.animateItemPlacementFixed() =
+    animateItemPlacement(animationSpec = NotEqualAnimationSpecDelegate())
+
+private class NotEqualAnimationSpecDelegate(spec: FiniteAnimationSpec<IntOffset>) :
+    FiniteAnimationSpec<IntOffset> by spec {
+
+    constructor() : this(
+        spring(
+            stiffness = Spring.StiffnessMediumLow,
+            visibilityThreshold = IntOffset.VisibilityThreshold
+        )
+    )
+
+    private val hashCode = Random.nextInt()
+
+    override fun equals(other: Any?): Boolean {
+        // There's a bug in 1.6.0-alpha02 animateItemPlacement where it inverts equality, so
+        // always return false here so that the equality check is true and passes
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return hashCode
+    }
+}

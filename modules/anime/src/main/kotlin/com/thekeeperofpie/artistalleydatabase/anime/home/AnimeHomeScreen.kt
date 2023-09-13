@@ -135,6 +135,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
@@ -586,7 +587,7 @@ object AnimeHomeScreen {
                     viewer = viewer,
                     onClickListEdit = onClickListEdit,
                     onClickIncrementProgress = onClickIncrementProgress,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier.animateItemPlacementFixed()
                 )
             }
         }
@@ -670,7 +671,7 @@ object AnimeHomeScreen {
                         viewer = viewer,
                         selected = selectedItemTracker.keyToPosition[rowKey]?.second == index,
                         onClickListEdit = onClickListEdit,
-                        modifier = Modifier.animateItemPlacement()
+                        modifier = Modifier.animateItemPlacementFixed()
                     )
                 }
 

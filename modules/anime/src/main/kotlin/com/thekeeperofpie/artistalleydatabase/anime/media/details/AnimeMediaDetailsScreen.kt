@@ -181,6 +181,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
@@ -752,7 +753,7 @@ object AnimeMediaDetailsScreen {
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                 .animateContentSize()
-                .animateItemPlacement()
+                .animateItemPlacementFixed()
                 .recomposeHighlighter()
         ) {
             genres.forEach {
@@ -804,7 +805,7 @@ object AnimeMediaDetailsScreen {
         item("infoHeader") {
             DetailsSectionHeader(
                 stringResource(R.string.anime_media_details_information_label),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItemPlacementFixed()
             )
         }
 
@@ -814,7 +815,7 @@ object AnimeMediaDetailsScreen {
             ElevatedCard(
                 modifier = Modifier
                     .animateContentSize()
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
                     .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
             ) {
                 twoColumnInfoText(
@@ -870,7 +871,7 @@ object AnimeMediaDetailsScreen {
             ElevatedCard(
                 modifier = Modifier
                     .animateContentSize()
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
                     .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 2.dp)
             ) {
                 var shown = twoColumnInfoText(
@@ -915,7 +916,7 @@ object AnimeMediaDetailsScreen {
                         top = if (showTopPadding) 16.dp else 0.dp,
                         bottom = 2.dp,
                     )
-                    .animateItemPlacement(),
+                    .animateItemPlacementFixed(),
             ) {
                 var shown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_licensed_label),
@@ -990,7 +991,7 @@ object AnimeMediaDetailsScreen {
                 viewModel = viewModel,
                 entry = item,
                 modifier = Modifier
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }
@@ -1367,7 +1368,7 @@ object AnimeMediaDetailsScreen {
         item("cdsHeader") {
             DetailsSectionHeader(
                 stringResource(R.string.anime_media_details_cds_label),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItemPlacementFixed()
             )
         }
 
@@ -1377,7 +1378,7 @@ object AnimeMediaDetailsScreen {
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItemPlacementFixed(),
             ) {
                 itemsIndexed(cdEntries) { index, cdEntry ->
                     var transitionProgress by remember { mutableFloatStateOf(0f) }
@@ -1441,7 +1442,7 @@ object AnimeMediaDetailsScreen {
                 recommendation = item.data,
                 onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                 modifier = Modifier
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }
@@ -1467,7 +1468,7 @@ object AnimeMediaDetailsScreen {
         item("statsHeader") {
             DetailsSectionHeader(
                 stringResource(R.string.anime_media_details_stats_label),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItemPlacementFixed()
             )
         }
 
@@ -1475,7 +1476,7 @@ object AnimeMediaDetailsScreen {
             ElevatedCard(
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
             ) {
                 expandableListInfoText(
                     labelTextRes = R.string.anime_media_details_rankings_label,
@@ -1574,7 +1575,7 @@ object AnimeMediaDetailsScreen {
             item("tagsHeader") {
                 DetailsSectionHeader(
                     stringResource(R.string.anime_media_details_tags_label),
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier.animateItemPlacementFixed()
                 )
             }
 
@@ -1585,7 +1586,7 @@ object AnimeMediaDetailsScreen {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                        .animateItemPlacementFixed()
                 ) {
                     entry.tags.forEach {
                         val (containerColor, textColor) =
@@ -1633,7 +1634,7 @@ object AnimeMediaDetailsScreen {
         item("trailerHeader") {
             DetailsSectionHeader(
                 stringResource(R.string.anime_media_details_trailer_label),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItemPlacementFixed()
             )
         }
 
@@ -1643,7 +1644,7 @@ object AnimeMediaDetailsScreen {
                 ElevatedCard(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                        .animateItemPlacementFixed()
                 ) {
                     val player = remember { AtomicReference<YouTubePlayer>(null) }
                     AndroidView(
@@ -1687,7 +1688,7 @@ object AnimeMediaDetailsScreen {
                     onClick = { uriHandler.openUri(MediaUtils.dailymotionUrl(videoId)) },
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                        .animateItemPlacementFixed()
                 ) {
                     AsyncImage(
                         model = trailer.thumbnail,
@@ -1750,7 +1751,7 @@ object AnimeMediaDetailsScreen {
             val uriHandler = LocalUriHandler.current
             ElevatedCard(
                 modifier = Modifier
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
                     .optionalClickable(onClick = item.url?.let { { uriHandler.openUri(it) } }),
             ) {
@@ -1820,7 +1821,7 @@ object AnimeMediaDetailsScreen {
         item("linksHeader-$headerRes") {
             DetailsSectionHeader(
                 stringResource(headerRes),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItemPlacementFixed()
             )
         }
 
@@ -1830,7 +1831,7 @@ object AnimeMediaDetailsScreen {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
             ) {
                 links.forEach {
                     androidx.compose.material3.AssistChip(
@@ -1932,7 +1933,7 @@ object AnimeMediaDetailsScreen {
                 onClickListEdit = onClickListEdit,
                 clickable = true,
                 modifier = Modifier
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
@@ -1963,7 +1964,7 @@ object AnimeMediaDetailsScreen {
                 entry = item,
                 onStatusUpdate = onStatusUpdate,
                 modifier = Modifier
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
@@ -2010,7 +2011,7 @@ object AnimeMediaDetailsScreen {
                     )
                 },
                 modifier = Modifier
-                    .animateItemPlacement()
+                    .animateItemPlacementFixed()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }
