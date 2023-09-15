@@ -78,6 +78,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -156,6 +157,11 @@ object AnimeHomeScreen {
     private val CURRENT_ROW_IMAGE_WIDTH = 96.dp
     private val MEDIA_ROW_IMAGE_HEIGHT = 180.dp
     private val MEDIA_ROW_IMAGE_WIDTH = 120.dp
+
+    object FillOr450 : PageSize {
+        override fun Density.calculateMainAxisPageSize(availableSpace: Int, pageSpacing: Int) =
+            availableSpace.coerceAtMost(450.dp.roundToPx())
+    }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
@@ -623,6 +629,7 @@ object AnimeHomeScreen {
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                pageSize = FillOr450,
                 pageSpacing = 8.dp,
                 modifier = Modifier.recomposeHighlighter()
             ) {
@@ -699,7 +706,7 @@ object AnimeHomeScreen {
         val mediaId = media?.id?.toString()
 
         val colorCalculationState = LocalColorCalculationState.current
-        val colors = colorCalculationState.getColors(mediaId)
+        val colors = colorCalculationState.getColorsComposable(mediaId)
         val containerColor = colors.first.takeOrElse {
             media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
                 ?: MaterialTheme.colorScheme.surface

@@ -1,22 +1,20 @@
 package com.thekeeperofpie.artistalleydatabase.compose
 
-import androidx.collection.LruCache
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import java.util.concurrent.locks.ReentrantReadWriteLock
-import kotlin.concurrent.read
-import kotlin.concurrent.write
+import kotlinx.coroutines.withContext
 
 @Stable
 class ColorCalculationState @OptIn(DelicateCoroutinesApi::class) constructor(
@@ -27,62 +25,42 @@ class ColorCalculationState @OptIn(DelicateCoroutinesApi::class) constructor(
         val DEFAULT_VALUE = Entry()
     }
 
-    private val colors = LruCache<String, MutableState<Entry>>(250)
-    private val lock = ReentrantReadWriteLock()
+    private val colors = mutableStateMapOf<String, Entry>()
 
     fun getColors(id: String?) = if (id.isNullOrEmpty()) {
         DEFAULT_VALUE
     } else {
-        lock.read {
-            var existingState = colors[id]
-            if (existingState == null) {
-                existingState = mutableStateOf(DEFAULT_VALUE)
-                lock.write { colors.put(id, existingState) }
-            }
-            existingState.value
-        }
+        colors[id] ?: DEFAULT_VALUE
     }.run { containerColor to textColor }
 
-    fun getContainerColor(id: String?) = if (id.isNullOrEmpty()) {
-        Color.Unspecified
+    @Composable
+    fun getColorsComposable(id: String?) = if (id.isNullOrEmpty()) {
+        DEFAULT_VALUE
     } else {
-        lock.read { colors[id]?.value?.containerColor }
-    }
+        remember(id) {
+            derivedStateOf { colors[id] ?: DEFAULT_VALUE }
+        }.value
+    }.run { containerColor to textColor }
 
     @Composable
     fun allowHardware(id: String?) = if (id == null) {
         true
     } else {
         remember(id) {
-            lock.read {
-                val existingState = colors[id]
-                existingState != null && existingState.value != DEFAULT_VALUE
-            }
-        }
+            derivedStateOf { colors[id] != null }
+        }.value
     }
 
     fun shouldCalculate(id: String?) = if (id == null) {
         false
     } else {
-        lock.read {
-            val existingState = colors[id]
-            existingState == null || existingState.value == DEFAULT_VALUE
-        }
+        colors[id] == null
     }
 
-    fun setColor(id: String, containerColor: Color, textColor: Color) {
-        if (lock.read {
-                val existingState = colors[id]
-                existingState != null && existingState.value != DEFAULT_VALUE
-            }
-        ) return
-        lock.write {
-            val entry = Entry(containerColor = containerColor, textColor = textColor)
-            val existingState = colors[id]
-            if (existingState == null) {
-                colors.put(id, mutableStateOf(entry))
-            } else {
-                existingState.value = entry
+    suspend fun setColor(id: String, containerColor: Color, textColor: Color) {
+        withContext(CustomDispatchers.Main) {
+            if (colors[id] != null) {
+                colors[id] = Entry(containerColor = containerColor, textColor = textColor)
             }
         }
     }

@@ -325,7 +325,7 @@ object CharacterListRow {
                                     favorite = null,
                                     imageWidthToHeightRatio = ratio,
                                     color = colorCalculationState
-                                        .getContainerColor(staffId.toString())
+                                        .getColors(staffId.toString()).first
                                 )
                             },
                             width = MEDIA_WIDTH,
