@@ -87,6 +87,9 @@ fun UriHandler.openForceExternal(uri: String) =
     openUri("$uri?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true")
 
 @Composable
+fun <T> rememberLambda(block: () -> T) = remember { block }
+
+@Composable
 fun rememberCallback(block: () -> Unit) = remember { block }
 
 @Composable

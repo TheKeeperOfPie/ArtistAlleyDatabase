@@ -260,6 +260,6 @@ class CharacterHeaderValues(
             .takeOrElse { _color ?: Color.Unspecified }
 
     fun colorNonComposable(colorCalculationState: ColorCalculationState) =
-        colorCalculationState.getColors(character()?.id?.toString()).first
+        colorCalculationState.getColorsNonComposable(character()?.id?.toString()).first
             .takeOrElse { _color ?: Color.Unspecified }
 }

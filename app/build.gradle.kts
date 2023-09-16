@@ -212,7 +212,7 @@ tasks.register<Exec>("compileAndLaunchInternal") {
         "--check-prof", "false",
         "com.thekeeperofpie.anichive.internal",
     )
-    finalizedBy("launchReleaseMainActivity")
+    finalizedBy("launchInternalMainActivity")
     outputs.upToDateWhen { false }
 }
 

@@ -57,7 +57,7 @@ object StaffOverviewScreen {
                         entry.staff,
                         viewModel.favoritesToggleHelper.favorite,
                         staffImageWidthToHeightRatio(),
-                        colorCalculationState.getColors(entry.staff.id.toString())
+                        colorCalculationState.getColorsNonComposable(entry.staff.id.toString())
                             .first
                     )
                 },

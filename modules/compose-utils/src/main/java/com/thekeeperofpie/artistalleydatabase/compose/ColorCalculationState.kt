@@ -27,19 +27,19 @@ class ColorCalculationState @OptIn(DelicateCoroutinesApi::class) constructor(
 
     private val colors = mutableStateMapOf<String, Entry>()
 
-    fun getColors(id: String?) = if (id.isNullOrEmpty()) {
-        DEFAULT_VALUE
-    } else {
-        colors[id] ?: DEFAULT_VALUE
-    }.run { containerColor to textColor }
-
     @Composable
-    fun getColorsComposable(id: String?) = if (id.isNullOrEmpty()) {
+    fun getColors(id: String?) = if (id.isNullOrEmpty()) {
         DEFAULT_VALUE
     } else {
         remember(id) {
             derivedStateOf { colors[id] ?: DEFAULT_VALUE }
         }.value
+    }.run { containerColor to textColor }
+
+    fun getColorsNonComposable(id: String?) = if (id.isNullOrEmpty()) {
+        DEFAULT_VALUE
+    } else {
+        colors[id] ?: DEFAULT_VALUE
     }.run { containerColor to textColor }
 
     @Composable
@@ -54,12 +54,12 @@ class ColorCalculationState @OptIn(DelicateCoroutinesApi::class) constructor(
     fun shouldCalculate(id: String?) = if (id == null) {
         false
     } else {
-        colors[id] == null
+        !colors.containsKey(id)
     }
 
     suspend fun setColor(id: String, containerColor: Color, textColor: Color) {
         withContext(CustomDispatchers.Main) {
-            if (colors[id] != null) {
+            if (!colors.containsKey(id)) {
                 colors[id] = Entry(containerColor = containerColor, textColor = textColor)
             }
         }

@@ -189,6 +189,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
+import com.thekeeperofpie.artistalleydatabase.compose.rememberLambda
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -250,24 +251,28 @@ object AnimeMediaDetailsScreen {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
         val coverImageWidthToHeightRatioGetter: () -> Float =
-            remember { { coverImageWidthToHeightRatio } }
+            rememberLambda { coverImageWidthToHeightRatio }
         var headerTransitionFinished by remember { mutableStateOf(false) }
         val entry = viewModel.entry
         val entry2 = viewModel.entry2
         val charactersInitial = entry.result?.charactersInitial.orEmpty()
         val charactersDeferred = viewModel.charactersDeferred.collectAsLazyPagingItems()
-        val charactersDeferredGetter = remember { { charactersDeferred } }
+        val charactersDeferredGetter = rememberLambda { charactersDeferred }
         val staff = viewModel.staff.collectAsLazyPagingItems()
         val expandedState = rememberExpandedState()
         val animeSongs = viewModel.animeSongs
 
         val viewer by viewModel.viewer.collectAsState()
         val activities = viewModel.activities
-        var activityTabIsFollowing by rememberSaveable(viewer, activities) {
-            mutableStateOf(!activities?.following.isNullOrEmpty())
+        val (activityTab, onActivityTabChange) = rememberSaveable(viewer, activities) {
+            mutableStateOf(
+                if (activities?.following.isNullOrEmpty()) {
+                    ActivityTab.FOLLOWING
+                } else {
+                    ActivityTab.GLOBAL
+                }
+            )
         }
-        val onActivityTabChange: (ActivityTab) -> Unit =
-            remember { { activityTabIsFollowing = it == ActivityTab.FOLLOWING } }
 
         val sectionIndexInfo = buildSectionIndexInfo(
             entry = entry.result,
@@ -278,7 +283,11 @@ object AnimeMediaDetailsScreen {
             animeSongs = animeSongs,
             cdEntries = viewModel.cdEntries,
             viewer = viewer,
-            activities = if (activityTabIsFollowing) activities?.following else activities?.global,
+            activities = if (activityTab == ActivityTab.FOLLOWING) {
+                activities?.following
+            } else {
+                activities?.global
+            },
             forumThreads = viewModel.forumThreads,
         )
 
@@ -499,8 +508,8 @@ object AnimeMediaDetailsScreen {
                                 charactersInitial = charactersInitial,
                                 charactersDeferred = charactersDeferredGetter,
                                 staff = staff,
-                                activityTab = if (activityTabIsFollowing) ActivityTab.FOLLOWING else ActivityTab.GLOBAL,
-                                activities = if (activityTabIsFollowing) activities?.following else activities?.global,
+                                activityTab = activityTab,
+                                activities = if (activityTab == ActivityTab.FOLLOWING) activities?.following else activities?.global,
                                 onActivityTabChange = onActivityTabChange,
                                 onClickListEdit = onClickListEdit,
                                 expandedState = expandedState,
@@ -586,8 +595,8 @@ object AnimeMediaDetailsScreen {
             item("descriptionSection", "descriptionSection") {
                 DescriptionSection(
                     markdownText = entry.description,
-                    expanded = remember { { expandedState.description } },
-                    onExpandedChange = remember { { expandedState.description = it } },
+                    expanded = rememberLambda { expandedState.description },
+                    onExpandedChange = rememberCallback<Boolean> { expandedState.description = it },
                 )
             }
         }

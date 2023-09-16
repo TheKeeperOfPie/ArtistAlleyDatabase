@@ -91,7 +91,7 @@ object StaffListRow {
                     entry.staff,
                     null,
                     imageWidthToHeightRatio,
-                    colorCalculationState.getColors(entry.staff.id.toString()).first,
+                    colorCalculationState.getColorsNonComposable(entry.staff.id.toString()).first,
                 )
             }
         }
@@ -267,7 +267,7 @@ object StaffListRow {
                                 it,
                                 null,
                                 ratio,
-                                colorCalculationState.getColors(it.id.toString()).first,
+                                colorCalculationState.getColorsNonComposable(it.id.toString()).first,
                             )
                         },
                         width = MEDIA_WIDTH,

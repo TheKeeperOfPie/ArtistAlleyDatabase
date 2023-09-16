@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
@@ -87,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -106,6 +108,7 @@ object AnimeUserListScreen {
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val onClickListEdit = rememberCallback(editViewModel::initialize)
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
         val editSheetState = rememberStandardBottomSheetState(
@@ -230,7 +233,7 @@ object AnimeUserListScreen {
                                                     entry = it,
                                                     viewer = viewer,
                                                     viewModel = viewModel,
-                                                    editViewModel = editViewModel,
+                                                    onClickListEdit = onClickListEdit,
                                                     scoreFormat = scoreFormat
                                                         ?: viewer?.scoreFormat,
                                                     modifier = Modifier
@@ -414,9 +417,9 @@ object AnimeUserListScreen {
     private fun MediaRow(
         viewer: AniListViewer?,
         viewModel: AnimeUserListViewModel,
-        editViewModel: MediaEditViewModel,
         scoreFormat: ScoreFormat?,
         entry: AnimeUserListViewModel.MediaEntry?,
+        onClickListEdit: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         val authorData = entry?.authorData
@@ -440,7 +443,7 @@ object AnimeUserListScreen {
                     screenKey = SCREEN_KEY,
                     viewer = viewer,
                     entry = entry?.entry,
-                    onClickListEdit = editViewModel::initialize,
+                    onClickListEdit = onClickListEdit,
                     label = if (statusText == null) null else {
                         {
                             Text(
@@ -493,7 +496,7 @@ object AnimeUserListScreen {
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry?.entry,
-                onClickListEdit = editViewModel::initialize,
+                onClickListEdit = onClickListEdit,
                 label = if (statusText == null) null else {
                     {
                         Text(
@@ -520,7 +523,7 @@ object AnimeUserListScreen {
                 screenKey = SCREEN_KEY,
                 entry = entry?.entry,
                 viewer = viewer,
-                onClickListEdit = editViewModel::initialize,
+                onClickListEdit = onClickListEdit,
                 modifier = modifier,
             )
         }

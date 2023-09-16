@@ -127,7 +127,7 @@ object UserMediaScreen {
                             value.voiceActor!!,
                             null,
                             imageWidthToHeightRatio,
-                            colorCalculationState.getColors(
+                            colorCalculationState.getColorsNonComposable(
                                 value.voiceActor!!.id.toString()
                             ).first,
                         )
@@ -175,7 +175,7 @@ object UserMediaScreen {
                             value.staff!!,
                             null,
                             imageWidthToHeightRatio,
-                            colorCalculationState.getColors(
+                            colorCalculationState.getColorsNonComposable(
                                 value.staff!!.id.toString()
                             ).first,
                         )

@@ -87,7 +87,7 @@ object StaffMediaScreen {
                                         it.character,
                                         null,
                                         imageWidthToHeightRatio,
-                                        colorCalculationState.getColors(
+                                        colorCalculationState.getColorsNonComposable(
                                             it.character.id.toString()
                                         ).first,
                                     )

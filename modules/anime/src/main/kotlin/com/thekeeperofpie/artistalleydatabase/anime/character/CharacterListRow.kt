@@ -100,7 +100,8 @@ object CharacterListRow {
                     entry.character,
                     null,
                     imageWidthToHeightRatio,
-                    colorCalculationState.getColors(entry.character.id.toString()).first,
+                    colorCalculationState.getColorsNonComposable(entry.character.id.toString())
+                        .first,
                 )
             }
         }
@@ -325,7 +326,7 @@ object CharacterListRow {
                                     favorite = null,
                                     imageWidthToHeightRatio = ratio,
                                     color = colorCalculationState
-                                        .getColors(staffId.toString()).first
+                                        .getColorsNonComposable(staffId.toString()).first
                                 )
                             },
                             width = MEDIA_WIDTH,

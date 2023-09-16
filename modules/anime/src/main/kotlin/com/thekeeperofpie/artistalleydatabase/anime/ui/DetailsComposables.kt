@@ -343,17 +343,20 @@ internal fun DescriptionSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
 ) {
+    var showExpand by rememberSaveable { mutableStateOf(false) }
     val expanded = expanded()
     ElevatedCard(
-        onClick = { onExpandedChange(!expanded) },
+        onClick = {
+            if (showExpand) {
+                onExpandedChange(!expanded)
+            }
+        },
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp)
             .fillMaxWidth()
             .recomposeHighlighter()
     ) {
         val style = MaterialTheme.typography.bodyMedium
-
-        var showExpand by rememberSaveable { mutableStateOf(false) }
 
         Box(modifier = Modifier.height(IntrinsicSize.Min)) {
             MarkdownText(

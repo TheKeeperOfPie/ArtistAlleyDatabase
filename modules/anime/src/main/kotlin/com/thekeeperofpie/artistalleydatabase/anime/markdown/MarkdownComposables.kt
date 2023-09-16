@@ -25,7 +25,7 @@ fun MarkdownText(
     val contentColor = LocalContentColor.current
     val color = (textColor?.takeOrElse { contentColor } ?: contentColor).toArgb()
     val markwon = LocalMarkwon.current
-    val asString = remember(markdownText) { markdownText.toString() }
+    val asString = remember(markdownText) { markdownText?.value.toString() }
     AndroidView(
         factory = {
             TextView(it).apply {

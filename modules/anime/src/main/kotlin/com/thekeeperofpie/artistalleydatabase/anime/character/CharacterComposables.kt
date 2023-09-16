@@ -360,7 +360,7 @@ fun CharactersSectionItem(screenKey: String, character: DetailsCharacter?) {
                     character.character,
                     null,
                     imageWidthToHeightRatio,
-                    colorCalculationState.getColors(character.id).first,
+                    colorCalculationState.getColorsNonComposable(character.id).first,
                 )
             }
         },
@@ -372,7 +372,7 @@ fun CharactersSectionItem(screenKey: String, character: DetailsCharacter?) {
                     voiceActor.staff,
                     null,
                     innerImageWidthToHeightRatio,
-                    colorCalculationState.getColors(voiceActor.id).first,
+                    colorCalculationState.getColorsNonComposable(voiceActor.id).first,
                 )
             }
         },
@@ -417,7 +417,7 @@ fun CharacterCard(
                     it,
                     null,
                     imageWidthToHeightRatio,
-                    colorCalculationState.getColors(it.id.toString()).first,
+                    colorCalculationState.getColorsNonComposable(it.id.toString()).first,
                 )
             }
         },
@@ -550,7 +550,7 @@ fun CharacterCard(
                                     voiceActor.staff,
                                     null,
                                     voiceActorImageWidthToHeightRatio,
-                                    colorCalculationState.getColors(
+                                    colorCalculationState.getColorsNonComposable(
                                         voiceActor.staff.id.toString()
                                     ).first,
                                 )

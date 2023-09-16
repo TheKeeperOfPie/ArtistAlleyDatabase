@@ -96,6 +96,7 @@ import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -146,6 +147,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
+@Suppress("NAME_SHADOWING")
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
     ExperimentalMaterialApi::class
@@ -189,7 +191,7 @@ object AnimeHomeScreen {
                 || recommendations.loadState.refresh == LoadState.Loading
                 || reviews.loadState.refresh == LoadState.Loading
                 || mediaViewModel.entry.loading
-                || mediaViewModel.current.loading
+                || mediaViewModel.currentMedia.loading
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
             onRefresh = {
@@ -416,7 +418,7 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.NEWS.id
         )
 
-        val itemCount = data?.size ?: 1
+        val itemCount = data?.size ?: 3
         if (itemCount == 0) return
         item("newsRow") {
             val pagerState = rememberPagerState(pageCount = { itemCount })
@@ -465,7 +467,7 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         val activities = data.collectAsLazyPagingItems()
-        val pagerState = rememberPagerState(data = activities, placeholderCount = 1)
+        val pagerState = rememberPagerState(data = activities, placeholderCount = 3)
         HorizontalPager(
             state = pagerState,
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
@@ -542,7 +544,7 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaNavigationData) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
     ) {
-        val media = mediaViewModel.current.result
+        val media = mediaViewModel.currentMedia.result
         if (media != null && media.isEmpty()) return
         val headerTextRes = mediaViewModel.currentHeaderTextRes
         rowHeader(
@@ -557,7 +559,7 @@ object AnimeHomeScreen {
         item("$headerTextRes-current") {
             CurrentMediaRow(
                 viewer = viewer,
-                media = media,
+                mediaResult = mediaViewModel::currentMedia,
                 currentMediaPreviousSize = mediaViewModel.currentMediaPreviousSize.collectAsState().value,
                 onClickListEdit = onClickListEdit,
                 onClickIncrementProgress = onClickIncrementProgress,
@@ -568,13 +570,11 @@ object AnimeHomeScreen {
     @Composable
     private fun CurrentMediaRow(
         viewer: AniListViewer?,
-        media: ImmutableList<UserMediaListController.MediaEntry>?,
+        mediaResult: () -> LoadingResult<ImmutableList<UserMediaListController.MediaEntry>>,
         currentMediaPreviousSize: Int,
         onClickListEdit: (MediaNavigationData) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
     ) {
-        if (media != null && media.isEmpty()) return
-        val placeholderCount = if (media == null) currentMediaPreviousSize else 0
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -582,6 +582,8 @@ object AnimeHomeScreen {
                 .fillMaxWidth()
                 .recomposeHighlighter()
         ) {
+            val media = mediaResult().result
+            val placeholderCount = if (media == null) currentMediaPreviousSize else 0
             items(
                 data = media,
                 placeholderCount = placeholderCount,
@@ -625,7 +627,7 @@ object AnimeHomeScreen {
         )
 
         item("$titleRes-pager") {
-            val pagerState = rememberPagerState(data = entries, placeholderCount = 1)
+            val pagerState = rememberPagerState(data = entries, placeholderCount = 3)
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 12.dp),
@@ -706,7 +708,7 @@ object AnimeHomeScreen {
         val mediaId = media?.id?.toString()
 
         val colorCalculationState = LocalColorCalculationState.current
-        val colors = colorCalculationState.getColorsComposable(mediaId)
+        val colors = colorCalculationState.getColors(mediaId)
         val containerColor = colors.first.takeOrElse {
             media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
                 ?: MaterialTheme.colorScheme.surface
@@ -1049,7 +1051,7 @@ object AnimeHomeScreen {
         )
 
         item("recommendationsRow") {
-            val pagerState = rememberPagerState(data = recommendations, placeholderCount = 1)
+            val pagerState = rememberPagerState(data = recommendations, placeholderCount = 3)
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
@@ -1085,7 +1087,7 @@ object AnimeHomeScreen {
         )
 
         item("reviewsRow") {
-            val pagerState = rememberPagerState(data = reviews, placeholderCount = 1)
+            val pagerState = rememberPagerState(data = reviews, placeholderCount = 3)
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp),

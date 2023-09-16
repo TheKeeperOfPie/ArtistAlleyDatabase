@@ -60,7 +60,7 @@ abstract class AnimeHomeMediaViewModel(
 ) : ViewModel() {
 
     var entry by mutableStateOf<LoadingResult<AnimeHomeDataEntry>>(LoadingResult.loading())
-    var current by mutableStateOf<LoadingResult<ImmutableList<UserMediaListController.MediaEntry>>>(
+    var currentMedia by mutableStateOf<LoadingResult<ImmutableList<UserMediaListController.MediaEntry>>>(
         LoadingResult.loading()
     )
     val reviews = MutableStateFlow(PagingData.empty<ReviewEntry>())
@@ -83,9 +83,9 @@ abstract class AnimeHomeMediaViewModel(
     // It is faster to load the specific current list,
     // but this duplicates with the full user media lists
     // TODO: Make this more efficient when user list caching is available
-    suspend fun current() = aniListApi.authedUser.flatMapLatest {
+    protected suspend fun current() = aniListApi.authedUser.flatMapLatest {
         if (it == null) {
-            flowOf(LoadingResult.empty())
+            flowOf(LoadingResult.success(emptyList()))
         } else {
             aniListApi.viewerMediaList(
                 userId = it.id,
@@ -153,7 +153,7 @@ abstract class AnimeHomeMediaViewModel(
                 }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest {
-                    current = it
+                    currentMedia = it
                     val result = it.result
                     if (it.success && result != null) {
                         currentMediaPreviousSize.emit(result.size)

@@ -94,7 +94,7 @@ fun LazyListScope.staffSection(
                                 staff.staff,
                                 null,
                                 imageWidthToHeightRatio,
-                                colorCalculationState.getColors(staff.id).first,
+                                colorCalculationState.getColorsNonComposable(staff.id).first,
                             )
                         }
                     },
