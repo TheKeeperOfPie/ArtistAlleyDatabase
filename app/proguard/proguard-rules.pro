@@ -424,5 +424,7 @@
 -dontwarn org.chromium.net.impl.VersionSafeCallbacks$UrlRequestCallback
 -dontwarn org.chromium.net.impl.VersionSafeCallbacks$UrlRequestStatusListener
 
+-dontwarn com.google.common.annotations.J2ktIncompatible
+
 # For export zip
 -keep class org.apache.commons.compress.archivers.zip.** { *; }

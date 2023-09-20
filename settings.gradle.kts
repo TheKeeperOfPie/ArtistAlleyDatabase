@@ -40,6 +40,8 @@ dependencyResolutionManagement {
             plugin("com.github.ben-manes.versions").version("0.48.0")
             plugin("com.google.dagger.hilt.android").version("2.48")
             plugin("com.jaredsburrows.license").version("0.9.3")
+            plugin("com.netflix.dgs.codegen").version("6.0.2")
+            plugin("io.ktor.plugin").version("2.3.4")
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
             plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.10")
 
@@ -81,6 +83,7 @@ dependencyResolutionManagement {
             library("com.apollographql.apollo3:apollo-runtime:4.0.0-alpha.3")
             library("com.apollographql.apollo3:apollo-normalized-cache:4.0.0-alpha.3")
             library("com.apollographql.apollo3:apollo-normalized-cache-sqlite:4.0.0-alpha.3")
+            library("com.fasterxml.jackson.core:jackson-databind:2.15.2")
             library("com.google.accompanist:accompanist-flowlayout:0.33.1-alpha")
             library("com.google.accompanist:accompanist-navigation-animation:0.33.1-alpha")
             library("com.google.accompanist:accompanist-pager-indicators:0.33.1-alpha")
@@ -94,6 +97,7 @@ dependencyResolutionManagement {
             library("com.google.truth:truth:1.1.5")
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
             library("com.neovisionaries:nv-i18n:1.29")
+            library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:7.5.1")
             library(
                 "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                 alias = "androidyoutubeplayer"
@@ -110,6 +114,8 @@ dependencyResolutionManagement {
             library("io.coil-kt:coil-compose:2.4.0")
             library("io.github.hoc081098:FlowExt:0.7.1")
             library("io.github.java-diff-utils:java-diff-utils:4.12")
+            library("io.ktor:ktor-server-core-jvm:2.3.4")
+            library("io.ktor:ktor-server-tests-jvm:2.3.4")
             library("it.skrape:skrapeit:1.3.0-alpha.1")
             library("junit:junit:4.13.2")
             library("org.apache.commons:commons-compress:1.23.0")
@@ -126,6 +132,7 @@ dependencyResolutionManagement {
             library("org.mockito.kotlin:mockito-kotlin:5.1.0")
             library("org.mockito:mockito-android:5.5.0")
             library("org.mockito:mockito-core:5.5.0")
+            library("systems.manifold:manifold-graphql-rt:2023.1.26")
 
             prefix("androidx") {
                 library("androidx.browser:browser:1.6.0-rc01")
@@ -164,9 +171,10 @@ rootProject.name = "Artist Alley Database"
 include(
     ":app",
     ":modules:alley",
-    ":modules:alley-app",
+//    ":modules:alley-app",
     ":modules:android-utils",
     ":modules:anilist",
+    ":modules:anilist-data",
     ":modules:anime",
     ":modules:animethemes",
     ":modules:art",
@@ -183,6 +191,7 @@ include(
     ":modules:musical-artists",
     ":modules:network-utils",
     ":modules:play",
+    ":modules:server",
     ":modules:settings",
     ":modules:test-utils",
     ":modules:vgmdb",

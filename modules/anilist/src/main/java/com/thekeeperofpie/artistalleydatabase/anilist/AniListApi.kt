@@ -118,7 +118,7 @@ class AniListApi(
     suspend fun getCharacters(ids: List<Int>) = ids.chunked(25).flatMap {
         apolloClient.query(CharactersByIdsQuery(ids = Optional.present(it))).execute()
             .dataOrThrow().page?.characters?.filterNotNull().orEmpty().map {
-                it.copy(media = it.media?.copy(nodes = it.media.nodes?.filter { it?.isAdult == false }))
+                it.copy(media = it.media?.copy(nodes = it.media?.nodes?.filter { it?.isAdult == false }))
             }
     }
 
@@ -146,7 +146,7 @@ class AniListApi(
         ).toFlow().map {
             val data = it.data
             data?.copy(page = data.page.copy(characters = data.page.characters.map {
-                it?.copy(media = it.media?.copy(it.media.nodes?.filter { it?.isAdult == false }))
+                it?.copy(media = it.media?.copy(it.media?.nodes?.filter { it?.isAdult == false }))
             }))
         }
 

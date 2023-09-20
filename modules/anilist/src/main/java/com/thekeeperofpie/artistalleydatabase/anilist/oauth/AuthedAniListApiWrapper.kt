@@ -160,8 +160,8 @@ class AuthedAniListApiWrapper(
         it.transformResult {
             it.copy(
                 media = it.media?.copy(
-                    relations = it.media.relations?.copy(
-                        edges = it.media.relations.edges?.filter { it?.node?.isAdult == false }),
+                    relations = it.media?.relations?.copy(
+                        edges = it.media?.relations?.edges?.filter { it?.node?.isAdult == false }),
                 )
             )
         }
@@ -173,8 +173,8 @@ class AuthedAniListApiWrapper(
         it.transformResult {
             it.copy(
                 media = it.media?.copy(
-                    recommendations = it.media.recommendations?.copy(
-                        edges = it.media.recommendations.edges?.filter {
+                    recommendations = it.media?.recommendations?.copy(
+                        edges = it.media?.recommendations?.edges?.filter {
                             it?.node?.mediaRecommendation?.isAdult == false
                         }),
                 )
@@ -261,7 +261,7 @@ class AuthedAniListApiWrapper(
         sort: List<CharacterSort>?,
     ) = super.searchCharacters(query, page, perPage, isBirthday, sort).let {
         it.copy(page = it.page.copy(characters = it.page.characters?.map {
-            it?.copy(media = it.media?.copy(edges = it.media.edges?.filter { it?.node?.isAdult == false }))
+            it?.copy(media = it.media?.copy(edges = it.media?.edges?.filter { it?.node?.isAdult == false }))
         }))
     }
 
@@ -269,8 +269,8 @@ class AuthedAniListApiWrapper(
         it.transformResult {
             it.copy(
                 character = it.character?.copy(
-                    media = it.character.media?.copy(
-                        edges = it.character.media.edges?.filter { it?.node?.isAdult == false }
+                    media = it.character?.media?.copy(
+                        edges = it.character?.media?.edges?.filter { it?.node?.isAdult == false }
                     )
                 )
             )
@@ -295,7 +295,7 @@ class AuthedAniListApiWrapper(
         it.copy(page = it.page.copy(staff = it.page.staff?.map {
             it?.copy(
                 staffMedia = it.staffMedia?.copy(
-                    nodes = it.staffMedia.nodes?.filter { it?.isAdult == false })
+                    nodes = it.staffMedia?.nodes?.filter { it?.isAdult == false })
             )
         }))
     }
@@ -330,8 +330,8 @@ class AuthedAniListApiWrapper(
         it.copy(page = it.page.copy(users = it.page.users?.map {
             it?.copy(
                 favourites = it.favourites?.copy(
-                    anime = it.favourites.anime?.copy(edges = it.favourites.anime.edges?.filter { it?.node?.isAdult == false }),
-                    manga = it.favourites.manga?.copy(edges = it.favourites.manga.edges?.filter { it?.node?.isAdult == false }),
+                    anime = it.favourites?.anime?.copy(edges = it.favourites?.anime?.edges?.filter { it?.node?.isAdult == false }),
+                    manga = it.favourites?.manga?.copy(edges = it.favourites?.manga?.edges?.filter { it?.node?.isAdult == false }),
                 )
             )
         }))
@@ -340,8 +340,8 @@ class AuthedAniListApiWrapper(
     override suspend fun user(id: String) = super.user(id).let {
         it?.copy(
             favourites = it.favourites?.copy(
-                anime = it.favourites.anime?.copy(nodes = it.favourites.anime.nodes?.filter { it?.isAdult == false }),
-                manga = it.favourites.manga?.copy(nodes = it.favourites.manga.nodes?.filter { it?.isAdult == false }),
+                anime = it.favourites?.anime?.copy(nodes = it.favourites?.anime?.nodes?.filter { it?.isAdult == false }),
+                manga = it.favourites?.manga?.copy(nodes = it.favourites?.manga?.nodes?.filter { it?.isAdult == false }),
             )
         )
     }
@@ -379,18 +379,18 @@ class AuthedAniListApiWrapper(
 
     override suspend fun homeAnime(perPage: Int) = super.homeAnime(perPage).let {
         it.copy(
-            trending = it.trending?.copy(media = it.trending.media?.filter { it?.isAdult == false }),
-            popularThisSeason = it.popularThisSeason?.copy(media = it.popularThisSeason.media?.filter { it?.isAdult == false }),
-            lastAdded = it.lastAdded?.copy(media = it.lastAdded.media?.filter { it?.isAdult == false }),
-            popularLastSeason = it.popularLastSeason?.copy(media = it.popularLastSeason.media?.filter { it?.isAdult == false }),
-            popularNextSeason = it.popularNextSeason?.copy(media = it.popularNextSeason.media?.filter { it?.isAdult == false }),
+            trending = it.trending?.copy(media = it.trending?.media?.filter { it?.isAdult == false }),
+            popularThisSeason = it.popularThisSeason?.copy(media = it.popularThisSeason?.media?.filter { it?.isAdult == false }),
+            lastAdded = it.lastAdded?.copy(media = it.lastAdded?.media?.filter { it?.isAdult == false }),
+            popularLastSeason = it.popularLastSeason?.copy(media = it.popularLastSeason?.media?.filter { it?.isAdult == false }),
+            popularNextSeason = it.popularNextSeason?.copy(media = it.popularNextSeason?.media?.filter { it?.isAdult == false }),
         )
     }
 
     override suspend fun homeManga(perPage: Int) = super.homeManga(perPage).let {
         it.copy(
-            trending = it.trending?.copy(media = it.trending.media?.filter { it?.isAdult == false }),
-            lastAdded = it.lastAdded?.copy(media = it.lastAdded.media?.filter { it?.isAdult == false }),
+            trending = it.trending?.copy(media = it.trending?.media?.filter { it?.isAdult == false }),
+            lastAdded = it.lastAdded?.copy(media = it.lastAdded?.media?.filter { it?.isAdult == false }),
         )
     }
 
@@ -401,7 +401,7 @@ class AuthedAniListApiWrapper(
         perPage: Int,
         page: Int,
     ) = super.airingSchedule(startTime, endTime, sort, perPage, page).let {
-        it.copy(page = it.page?.copy(airingSchedules = it.page.airingSchedules?.filter { it?.media?.isAdult == false }))
+        it.copy(page = it.page?.copy(airingSchedules = it.page?.airingSchedules?.filter { it?.media?.isAdult == false }))
     }
 
     override suspend fun toggleFollow(userId: Int) = super.toggleFollow(userId)
@@ -424,13 +424,13 @@ class AuthedAniListApiWrapper(
         page: Int,
         perPage: Int,
     ) = super.userSocialFollowersWithFavorites(userId, sort, page, perPage).let {
-        it.copy(page = it.page?.copy(followers = it.page.followers?.mapNotNull {
+        it.copy(page = it.page?.copy(followers = it.page?.followers?.mapNotNull {
             it?.copy(
                 favourites = it.favourites?.copy(
-                    anime = it.favourites.anime?.copy(edges = it.favourites.anime.edges?.filter {
+                    anime = it.favourites?.anime?.copy(edges = it.favourites?.anime?.edges?.filter {
                         it?.node?.isAdult == false
                     }),
-                    manga = it.favourites.manga?.copy(edges = it.favourites.manga.edges?.filter {
+                    manga = it.favourites?.manga?.copy(edges = it.favourites?.manga?.edges?.filter {
                         it?.node?.isAdult == false
                     }),
                 )
@@ -444,13 +444,13 @@ class AuthedAniListApiWrapper(
         page: Int,
         perPage: Int,
     ) = super.userSocialFollowingWithFavorites(userId, sort, page, perPage).let {
-        it.copy(page = it.page?.copy(following = it.page.following?.mapNotNull {
+        it.copy(page = it.page?.copy(following = it.page?.following?.mapNotNull {
             it?.copy(
                 favourites = it.favourites?.copy(
-                    anime = it.favourites.anime?.copy(edges = it.favourites.anime.edges?.filter {
+                    anime = it.favourites?.anime?.copy(edges = it.favourites?.anime?.edges?.filter {
                         it?.node?.isAdult == false
                     }),
-                    manga = it.favourites.manga?.copy(edges = it.favourites.manga.edges?.filter {
+                    manga = it.favourites?.manga?.copy(edges = it.favourites?.manga?.edges?.filter {
                         it?.node?.isAdult == false
                     }),
                 )
@@ -485,7 +485,7 @@ class AuthedAniListApiWrapper(
         createdAtLesser,
         mediaId,
     ).let {
-        it.copy(page = it.page?.copy(activities = it.page.activities?.filter {
+        it.copy(page = it.page?.copy(activities = it.page?.activities?.filter {
             when (it) {
                 is UserSocialActivityQuery.Data.Page.ListActivityActivity -> it.media?.isAdult == false
                 is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> true
@@ -573,7 +573,7 @@ class AuthedAniListApiWrapper(
         charactersPerPage: Int,
     ) = super.staffAndCharactersPage(staffId, sort, page, charactersPerPage).let {
         it.copy(staff = it.staff.copy(characters = it.staff.characters.copy(edges = it.staff.characters.edges?.map {
-            it?.copy(node = it.node.copy(media = it.node.media?.copy(nodes = it.node.media.nodes?.filter { it?.isAdult == false })))
+            it?.copy(node = it.node.copy(media = it.node.media?.copy(nodes = it.node.media?.nodes?.filter { it?.isAdult == false })))
         })))
     }
 
@@ -586,9 +586,9 @@ class AuthedAniListApiWrapper(
         it.copy(page = it.page.copy(studios = it.page.studios?.map {
             it?.copy(
                 main = it.main?.copy(
-                    nodes = it.main.nodes?.filter { it?.isAdult == false }),
+                    nodes = it.main?.nodes?.filter { it?.isAdult == false }),
                 nonMain = it.nonMain?.copy(
-                    nodes = it.nonMain.nodes?.filter { it?.isAdult == false }),
+                    nodes = it.nonMain?.nodes?.filter { it?.isAdult == false }),
             )
         }))
     }
@@ -640,8 +640,9 @@ class AuthedAniListApiWrapper(
         super.toggleActivitySubscribe(id, subscribe)
 
     override suspend fun activityDetails(id: String) = super.activityDetails(id).also {
-        if (it.activity is ActivityDetailsQuery.Data.ListActivityActivity
-            && it.activity.media?.isAdult != false
+        val activity = it.activity
+        if (activity is ActivityDetailsQuery.Data.ListActivityActivity
+            && activity.media?.isAdult != false
         ) {
             throw IOException("Cannot load this media")
         }
@@ -679,8 +680,8 @@ class AuthedAniListApiWrapper(
         activityIds: List<String>,
     ) = super.notificationMediaAndActivity(mediaIds, activityIds).let {
         it.copy(
-            media = it.media?.copy(media = it.media.media?.filter { it?.isAdult == false }),
-            activity = it.activity?.copy(activities = it.activity.activities?.filter {
+            media = it.media?.copy(media = it.media?.media?.filter { it?.isAdult == false }),
+            activity = it.activity?.copy(activities = it.activity?.activities?.filter {
                 when (it) {
                     is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> it.media?.isAdult == false
                     is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity,
@@ -803,7 +804,7 @@ class AuthedAniListApiWrapper(
         isAdult: Boolean?,
         mediaType: MediaType?,
     ) = super.mediaAutocomplete(query, isAdult = false, mediaType).let {
-        it.copy(page = it.page?.copy(media = it.page.media?.filter { it?.isAdult == false }))
+        it.copy(page = it.page?.copy(media = it.page?.media?.filter { it?.isAdult == false }))
     }
 
     override suspend fun recommendationSearch(
@@ -838,9 +839,9 @@ class AuthedAniListApiWrapper(
     ) = super.userFavoritesAnime(userId, includeDescription, page, perPage).let {
         it.copy(
             user = it.user?.copy(
-                favourites = it.user.favourites?.copy(
-                    anime = it.user.favourites.anime?.copy(
-                        nodes = it.user.favourites.anime.nodes?.filter { it?.isAdult == false })
+                favourites = it.user?.favourites?.copy(
+                    anime = it.user?.favourites?.anime?.copy(
+                        nodes = it.user?.favourites?.anime?.nodes?.filter { it?.isAdult == false })
                 )
             )
         )
@@ -854,9 +855,9 @@ class AuthedAniListApiWrapper(
     ) = super.userFavoritesManga(userId, includeDescription, page, perPage).let {
         it.copy(
             user = it.user?.copy(
-                favourites = it.user.favourites?.copy(
-                    manga = it.user.favourites.manga?.copy(
-                        nodes = it.user.favourites.manga.nodes?.filter { it?.isAdult == false })
+                favourites = it.user?.favourites?.copy(
+                    manga = it.user?.favourites?.manga?.copy(
+                        nodes = it.user?.favourites?.manga?.nodes?.filter { it?.isAdult == false })
                 )
             )
         )
@@ -869,10 +870,10 @@ class AuthedAniListApiWrapper(
     ) = super.userFavoritesCharacters(userId, page, perPage).let {
         it.copy(
             user = it.user?.copy(
-                favourites = it.user.favourites?.copy(
-                    characters = it.user.favourites.characters?.copy(
-                        nodes = it.user.favourites.characters.nodes?.map {
-                            it?.copy(media = it.media?.copy(edges = it.media.edges?.filter { it?.node?.isAdult == false }))
+                favourites = it.user?.favourites?.copy(
+                    characters = it.user?.favourites?.characters?.copy(
+                        nodes = it.user?.favourites?.characters?.nodes?.map {
+                            it?.copy(media = it.media?.copy(edges = it.media?.edges?.filter { it?.node?.isAdult == false }))
                         })
                 )
             )
@@ -886,10 +887,10 @@ class AuthedAniListApiWrapper(
     ) = super.userFavoritesStaff(userId, page, perPage).let {
         it.copy(
             user = it.user?.copy(
-                favourites = it.user.favourites?.copy(
-                    staff = it.user.favourites.staff?.copy(
-                        nodes = it.user.favourites.staff.nodes?.map {
-                            it?.copy(staffMedia = it.staffMedia?.copy(nodes = it.staffMedia.nodes?.filter { it?.isAdult == false }))
+                favourites = it.user?.favourites?.copy(
+                    staff = it.user?.favourites?.staff?.copy(
+                        nodes = it.user?.favourites?.staff?.nodes?.map {
+                            it?.copy(staffMedia = it.staffMedia?.copy(nodes = it.staffMedia?.nodes?.filter { it?.isAdult == false }))
                         })
                 )
             )
@@ -903,12 +904,12 @@ class AuthedAniListApiWrapper(
     ) = super.userFavoritesStudios(userId, page, perPage).let {
         it.copy(
             user = it.user?.copy(
-                favourites = it.user.favourites?.copy(
-                    studios = it.user.favourites.studios?.copy(
-                        nodes = it.user.favourites.studios.nodes?.map {
+                favourites = it.user?.favourites?.copy(
+                    studios = it.user?.favourites?.studios?.copy(
+                        nodes = it.user?.favourites?.studios?.nodes?.map {
                             it?.copy(
-                                main = it.main?.copy(nodes = it.main.nodes?.filter { it?.isAdult == false }),
-                                nonMain = it.nonMain?.copy(nodes = it.nonMain.nodes?.filter { it?.isAdult == false }),
+                                main = it.main?.copy(nodes = it.main?.nodes?.filter { it?.isAdult == false }),
+                                nonMain = it.nonMain?.copy(nodes = it.nonMain?.nodes?.filter { it?.isAdult == false }),
                             )
                         })
                 )

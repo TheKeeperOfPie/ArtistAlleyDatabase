@@ -26,9 +26,8 @@ tasks.register("recopyVerificationMetadata") {
 
 tasks.register("generateVerificationMetadata") {
     dependsOn("recopyVerificationMetadata")
-    dependsOn(subprojects.mapNotNull { it.tasks.findByName("assemble") })
+    dependsOn(subprojects.mapNotNull { it.tasks.findByName("assembleDebug") })
     dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageDebugAndroidTest") })
-    dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageReleaseAndroidTest") })
     dependsOn("buildHealth")
     finalizedBy(":app:licenseReleaseReport")
 }
@@ -92,6 +91,7 @@ dependencyAnalysis {
                     ":modules:alley-app",
                     ":modules:android-utils",
                     ":modules:anilist",
+                    ":modules:anilist-data",
                     ":modules:anime",
                     ":modules:animethemes",
                     ":modules:art",
@@ -132,6 +132,15 @@ dependencyAnalysis {
             }
         }
 
+        project(":modules:anilist-data") {
+            onUnusedDependencies {
+                exclude(
+                    "com.apollographql.apollo3:apollo-runtime",
+                    "org.jetbrains.compose.runtime:runtime",
+                )
+            }
+        }
+
         project(":modules:browse") {
             onUnusedDependencies {
                 exclude(
@@ -144,6 +153,15 @@ dependencyAnalysis {
             onUnusedDependencies {
                 exclude(
                     "io.coil-kt:coil-compose",
+                )
+            }
+        }
+
+        project(":modules:server") {
+            onUnusedDependencies {
+                exclude(
+                    "io.ktor:ktor-server-tests-jvm",
+                    "systems.manifold:manifold-graphql-rt",
                 )
             }
         }
