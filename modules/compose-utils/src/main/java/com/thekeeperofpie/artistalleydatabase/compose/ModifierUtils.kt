@@ -79,3 +79,7 @@ fun Modifier.optionalClickable(
 @SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.conditionally(apply: Boolean, block: @Composable Modifier.() -> Modifier) =
     composed { if (apply) block() else this }
+
+@SuppressLint("UnnecessaryComposedModifier")
+fun <T> Modifier.conditionallyNonNull(target: T?, block: @Composable Modifier.(T) -> Modifier) =
+    composed { if (target != null) block(target) else this }

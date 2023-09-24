@@ -53,6 +53,11 @@ dependencyAnalysis {
             onIncorrectConfiguration {
                 exclude("io.coil-kt:coil-compose")
             }
+            onRuntimeOnly {
+                exclude(
+                    "com.linkedin.dexmaker:dexmaker-mockito-inline-extended",
+                )
+            }
             onUnusedDependencies {
                 exclude(
                     "androidx.compose.animation:animation",
@@ -61,6 +66,8 @@ dependencyAnalysis {
                     "androidx.compose.material:material",
                     "androidx.compose.material3:material3",
                     "androidx.compose.ui:ui",
+                    "androidx.compose.ui:ui-test-junit4",
+                    "androidx.compose.ui:ui-test-manifest",
                     "androidx.compose.ui:ui-tooling-preview",
                     "androidx.constraintlayout:constraintlayout-compose",
                     "androidx.media3:media3-exoplayer-dash",
@@ -76,6 +83,7 @@ dependencyAnalysis {
                     "com.squareup.leakcanary:leakcanary-android",
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
+                    "de.mannodermaus.junit5:android-test-runner",
                     "io.coil-kt:coil-compose",
                     "org.jetbrains.kotlinx:kotlinx-serialization-json",
                     "org.mockito:mockito-core",
@@ -141,6 +149,14 @@ dependencyAnalysis {
             }
         }
 
+        project(":modules:anime") {
+            onUnusedDependencies {
+                exclude(
+                    "androidx.tracing:tracing",
+                )
+            }
+        }
+
         project(":modules:browse") {
             onUnusedDependencies {
                 exclude(
@@ -167,6 +183,11 @@ dependencyAnalysis {
         }
 
         project(":modules:test-utils") {
+            onUnusedDependencies {
+                exclude(
+                    "io.ktor:ktor-server-tests-jvm",
+                )
+            }
             onRuntimeOnly {
                 exclude(
                     "org.jetbrains.kotlinx:kotlinx-coroutines-android",

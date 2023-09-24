@@ -76,6 +76,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
@@ -139,6 +140,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
@@ -171,18 +173,20 @@ object AnimeHomeScreen {
         viewModel: AnimeHomeViewModel = hiltViewModel<AnimeHomeViewModel>(),
         upIconOption: UpIconOption?,
         scrollStateSaver: ScrollStateSaver,
-        bottomNavigationState: BottomNavigationState,
+        bottomNavigationState: BottomNavigationState?,
+        mediaViewModel: @Composable (Boolean) -> AnimeHomeMediaViewModel = {
+            if (it) {
+                hiltViewModel<AnimeHomeMediaViewModel.Anime>()
+            } else {
+                hiltViewModel<AnimeHomeMediaViewModel.Manga>()
+            }
+        }
     ) {
         var selectedIsAnime by rememberSaveable {
             mutableStateOf(viewModel.preferredMediaType == MediaType.ANIME)
         }
         val selectedItemTracker = remember { SelectedItemTracker() }
-
-        val mediaViewModel = if (selectedIsAnime) {
-            hiltViewModel<AnimeHomeMediaViewModel.Anime>()
-        } else {
-            hiltViewModel<AnimeHomeMediaViewModel.Manga>()
-        }
+        val mediaViewModel = mediaViewModel(selectedIsAnime)
 
         val activity = viewModel.activity.collectAsLazyPagingItems()
         val recommendations = viewModel.recommendations.collectAsLazyPagingItems()
@@ -296,7 +300,9 @@ object AnimeHomeScreen {
                 }
             },
             modifier = Modifier
-                .nestedScroll(bottomNavigationState.nestedScrollConnection)
+                .conditionallyNonNull(bottomNavigationState) {
+                    nestedScroll(it.nestedScrollConnection)
+                }
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             Box(
@@ -309,7 +315,7 @@ object AnimeHomeScreen {
 
                 Content(
                     lazyListState = scrollStateSaver.lazyListState(),
-                    bottomNavBarPadding = bottomNavigationState.bottomNavBarPadding(),
+                    bottomNavBarPadding = bottomNavigationState?.bottomNavBarPadding() ?: 0.dp,
                     viewer = viewer,
                     news = viewModel.newsController.newsDateDescending(),
                     activity = viewModel.activity,
@@ -329,6 +335,7 @@ object AnimeHomeScreen {
                     state = pullRefreshState,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
+                        .testTag("rootRefreshIndicator")
                 )
             }
         }

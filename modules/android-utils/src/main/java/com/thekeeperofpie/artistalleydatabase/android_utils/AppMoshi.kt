@@ -1,7 +1,6 @@
-package com.thekeeperofpie.artistalleydatabase.json
+package com.thekeeperofpie.artistalleydatabase.android_utils
 
 import com.squareup.moshi.Moshi
-import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import kotlinx.serialization.json.JsonElement
 import java.math.BigDecimal
 import java.util.Date

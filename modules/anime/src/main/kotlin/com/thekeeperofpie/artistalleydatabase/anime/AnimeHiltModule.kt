@@ -41,7 +41,6 @@ import io.noties.markwon.image.coil.CoilImagesPlugin
 import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.movement.MovementMethodPlugin
 import okhttp3.OkHttpClient
-import org.chromium.net.CronetEngine
 import javax.inject.Singleton
 
 @Module
@@ -50,8 +49,8 @@ object AnimeHiltModule {
 
     @Singleton
     @Provides
-    fun provideAppMediaPlayer(scopedApplication: ScopedApplication, cronetEngine: CronetEngine) =
-        AppMediaPlayer(scopedApplication, cronetEngine)
+    fun provideAppMediaPlayer(scopedApplication: ScopedApplication, okHttpClient: OkHttpClient) =
+        AppMediaPlayer(scopedApplication, okHttpClient)
 
     @Singleton
     @Provides

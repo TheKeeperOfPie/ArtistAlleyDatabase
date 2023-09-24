@@ -16,7 +16,7 @@ android {
     defaultConfig {
         minSdk = 28
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.thekeeperofpie.artistalleydatabase.test_utils.CustomAndroidJUnitRunner"
         project.file("consumer-rules.pro")
             .takeIf(File::exists)
             ?.let { consumerProguardFiles(it) }
@@ -61,6 +61,16 @@ android {
 
             // Can happen if an archive was built incrementally and accidentally published as-is
             excludes += "**/previous-compilation-data.bin"
+
+            // Kotlin coroutines test
+            pickFirsts += "win32-x86-64/attach_hotspot_windows.dll"
+            pickFirsts += "win32-x86/attach_hotspot_windows.dll"
+
+            // Unknown
+            pickFirsts += "META-INF/licenses/ASM"
+
+            // Mockito inline
+            pickFirsts += "mockito-extensions/org.mockito.plugins.MockMaker"
         }
     }
     testFixtures {

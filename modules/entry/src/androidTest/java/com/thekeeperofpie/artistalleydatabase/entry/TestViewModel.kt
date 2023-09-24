@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.net.Uri
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import java.io.File
@@ -11,6 +12,7 @@ internal class TestViewModel(
     private val cropUri: Uri? = null,
     val entries: MutableMap<String, TestEntry> = mutableMapOf(),
     private val testDirectory: File,
+    appJson: AppJson,
 ) : EntryDetailsViewModel<TestEntry, TestModel>(
     TestEntry::class,
     mockStrict {
@@ -21,7 +23,7 @@ internal class TestViewModel(
     "test",
     -1,
     TestSettings(cropUri),
-    mockStrict { },
+    appJson = appJson,
 ) {
 
     override val sections = emptyList<EntrySection>()

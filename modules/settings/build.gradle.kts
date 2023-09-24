@@ -38,7 +38,6 @@ dependencies {
     api(libs.work.runtime)
     api(libs.work.runtime.ktx)
 
-    testImplementation(project(":modules:test-utils"))
     testCompileOnly(testFixtures(project(":modules:art")))
     testImplementation(project(":modules:art", "_testFixtures"))
     testImplementation(libs.junit.jupiter.api)

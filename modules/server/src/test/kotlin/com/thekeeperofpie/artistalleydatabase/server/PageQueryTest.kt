@@ -1,67 +1,21 @@
 package com.thekeeperofpie.artistalleydatabase.server
 
-import com.thekeeperofpie.artistalleydatabase.server.AniListServer.graphQlModule
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.server.testing.testApplication
-import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.anilist.HomeMangaQuery
+import com.anilist.type.MediaType
+import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
 class PageQueryTest {
 
     @Test
-    fun simpleMedia2() = testApplication {
-        application {
-            graphQlModule()
-        }
-        val response = client.post("/graphql") {
-            contentType(ContentType.parse("application/json"))
-            setBody(
-                graphQlQuery(
-                    """
-                        {
-                             Page(page: 1, perPage: 10) {
-                                media(sort: [TRENDING_DESC], isAdult: true) {
-                                    id
-                                    title {
-                                    userPreferred
-                                    }
-                                }
-                            }
-                        }
-                    """
-                )
-
-            )
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("""
-            {
-              "data": {
-                "Page": {
-                  "media": [
-                    {
-                      "id": 11,
-                      "title": {
-                        "userPreferred": "userPreferredTitle"
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-        """.trimIndent(), response.bodyAsText())
+    fun homeMangaNotEmpty() {
+        val response = RequestUtils.executeQuery(HomeMangaQuery(thisYearStart = "20230000"))
+        assertThat(response.trending?.media).isNotEmpty()
+        assertThat(response.lastAdded?.media).isNotEmpty()
+        assertThat(response.topThisYear?.media).isNotEmpty()
+        val all = response.trending?.media.orEmpty() +
+                response.lastAdded?.media.orEmpty() +
+                response.topThisYear?.media.orEmpty()
+        assertThat(all.all { it?.type == MediaType.MANGA }).isTrue()
     }
-
-    private fun graphQlQuery(@Language("GraphQL") query: String) =
-        """
-            {
-                "query": "${query.trimIndent()}"
-            }
-        """.trimIndent()
 }

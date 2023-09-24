@@ -5,12 +5,10 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
 
-class AniListJson @Inject constructor(override val json: Json) : AppJson() {
+class AniListJson(override val json: Json) : AppJson() {
 
     companion object {
         private const val TAG = "ArtJson"

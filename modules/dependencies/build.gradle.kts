@@ -36,6 +36,9 @@ dependencies {
     debugCompileOnly("com.google.testing.platform:android-test-plugin:0.0.8-alpha08")
     debugCompileOnly("com.google.testing.platform:core:0.0.8-alpha08")
     debugCompileOnly("com.google.testing.platform:launcher:0.0.8-alpha08")
+    debugCompileOnly(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.3"))
+    debugCompileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+    debugCompileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.3")
 
     // Gradle sync
     debugCompileOnly("org.codehaus.groovy:groovy:3.0.17")

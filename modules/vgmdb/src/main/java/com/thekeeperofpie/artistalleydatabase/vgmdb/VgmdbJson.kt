@@ -6,11 +6,9 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
 
-class VgmdbJson @Inject constructor(override val json: Json) : AppJson() {
+class VgmdbJson(override val json: Json) : AppJson() {
 
     companion object {
         private const val TAG = "VgmdbJson"

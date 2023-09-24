@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import androidx.room.Room
 import androidx.security.crypto.MasterKey
-import androidx.work.WorkManager
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
@@ -17,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
@@ -76,22 +74,6 @@ object AppHiltModule {
     @Singleton
     @Provides
     fun provideVgmdbDatabase(appDatabase: AppDatabase): VgmdbDatabase = appDatabase
-
-    @Singleton
-    @Provides
-    fun provideWorkManager(application: Application) = WorkManager.getInstance(application)
-
-    @Singleton
-    @Provides
-    fun provideAppMoshi() = AppMoshi()
-
-    @Singleton
-    @Provides
-    fun provideMoshi(appMoshi: AppMoshi) = appMoshi.moshi
-
-    @Singleton
-    @Provides
-    fun provideAppJson() = AppJson()
 
     @Singleton
     @Provides

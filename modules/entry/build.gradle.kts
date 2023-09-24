@@ -1,7 +1,9 @@
 plugins {
     id("compose-library")
+    id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
 android {
@@ -30,13 +32,14 @@ dependencies {
 
     implementation(libs.java.diff.utils)
 
+    androidTestImplementation(libs.hilt.android)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
+
 //    implementation(libs.shared-elements)
     implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 
-    testImplementation(libs.junit)
-
     androidTestImplementation(project(":modules:test-utils"))
-    androidTestImplementation(kotlin("test-junit"))
     androidTestImplementation(libs.androidx.junit.test)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.junit.jupiter.api)
@@ -44,4 +47,5 @@ dependencies {
     androidTestRuntimeOnly(libs.junit5.android.test.runner)
     androidTestImplementation(libs.truth)
     androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.dexmaker.mockito.inline.extended)
 }

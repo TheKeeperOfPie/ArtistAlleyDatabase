@@ -17,6 +17,7 @@ import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -302,9 +303,8 @@ class EntryImageController(
     /**
      * @return List of files written.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun saveImages(): Map<EntryId, List<SaveResult>>? {
-        val results = withContext(Dispatchers.IO.limitedParallelism(4)) {
+        val results = withContext(CustomDispatchers.io(4)) {
             images.mapIndexed { index, entryImage ->
                 async {
                     // Generate a new ID for new entries

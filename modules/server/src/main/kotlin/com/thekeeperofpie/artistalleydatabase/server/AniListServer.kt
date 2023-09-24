@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.server
 
-import com.anilist.server.api.model.types.Media
-import com.anilist.server.api.model.types.MediaTitle
 import com.anilist.server.api.model.types.Page
 import graphql.ExecutionInput
 import graphql.GraphQL
@@ -22,6 +20,9 @@ import io.ktor.server.routing.routing
 import manifold.json.rt.Json
 import manifold.json.rt.api.DataBindings
 import java.io.InputStreamReader
+
+fun main() {
+}
 
 object AniListServer {
     private val stringCoercer = GraphqlStringCoercing()
@@ -51,7 +52,27 @@ object AniListServer {
                         SchemaParser().parse(it)
                     }
                 }
-        val runtimeWiring = RuntimeWiring.newRuntimeWiring().apply {
+        val runtimeWiring = wiring {
+            query {
+                field("Page") {
+                    Page()
+                }
+            }
+            type<Page> {
+                field("media") {
+                    listOf(MockMedia.generate(it.arguments))
+                }
+            }
+        }
+            .build()
+        val schema = SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring)
+        return GraphQL.newGraphQL(schema)
+            .queryExecutionStrategy(AsyncExecutionStrategy())
+            .build()
+    }
+
+    private fun wiring(block: RuntimeWiring.Builder.() -> Unit) =
+        RuntimeWiring.newRuntimeWiring().apply {
             listOf("CountryCode", "FuzzyDateInt", "Json").forEach {
                 scalar(
                     GraphQLScalarType.Builder()
@@ -69,44 +90,18 @@ object AniListServer {
                 }
             }
 
-            query {
-                field("Page") {
-                    Page()
-                }
-            }
-            type<Page> {
-                field("media") {
-                    val isAdult = it.arguments["isAdult"] as? Boolean
-                    listOf(
-                        Media(
-                            id = { 11 },
-                            title = {
-                                MediaTitle(
-                                    userPreferred = { "userPreferredTitle" },
-                                )
-                            },
-                            isAdult = { isAdult },
-                        )
-                    )
-                }
-            }
+            block()
         }
-            .build()
-        val schema = SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring)
-        return GraphQL.newGraphQL(schema)
-            .queryExecutionStrategy(AsyncExecutionStrategy())
-            .build()
-    }
 
-    private fun executeRequest(graphQL: GraphQL, exec: ExecutionInput): String {
-        val result = graphQL.execute(exec)
+    private fun executeRequest(graphQL: GraphQL, request: ExecutionInput): String {
+        val result = graphQL.execute(request)
         val response = DataBindings()
         result.errors
             .takeIf { it.isNotEmpty() }
             ?.map(GraphQLError::toSpecification)
             ?.let { response["errors"] = it }
         result.getData<Any>()
-            ?.let{ response["data"] = it }
+            ?.let { response["data"] = it }
         return Json.toJson(response)
     }
 }

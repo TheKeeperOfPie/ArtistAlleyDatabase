@@ -18,6 +18,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
         maven("https://androidx.dev/storage/compose-compiler/repository/")
         google()
@@ -41,6 +42,7 @@ dependencyResolutionManagement {
             plugin("com.google.dagger.hilt.android").version("2.48")
             plugin("com.jaredsburrows.license").version("0.9.3")
             plugin("com.netflix.dgs.codegen").version("6.0.2")
+            plugin("de.mannodermaus.android-junit5").version("1.9.3.0")
             plugin("io.ktor.plugin").version("2.3.4")
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
             plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.10")
@@ -58,7 +60,7 @@ dependencyResolutionManagement {
             library("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0-alpha02")
             library("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0-alpha02")
             library("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0-alpha02")
-            library("androidx.media3:media3-datasource-cronet:1.2.0-alpha01")
+            library("androidx.media3:media3-datasource-okhttp:1.2.0-alpha01")
             library("androidx.media3:media3-exoplayer:1.2.0-alpha01")
             library("androidx.media3:media3-exoplayer-dash:1.2.0-alpha01")
             library("androidx.media3:media3-exoplayer-hls:1.2.0-alpha01")
@@ -93,9 +95,11 @@ dependencyResolutionManagement {
             library("com.google.android.play:app-update-ktx:2.1.0")
             library("com.google.android.ump:user-messaging-platform:2.1.0")
             library("com.google.dagger:hilt-android:2.48")
+            library("com.google.dagger:hilt-android-compiler:2.48")
+            library("com.google.dagger:hilt-android-testing:2.48")
             library("com.google.net.cronet:cronet-okhttp:0.1.0")
             library("com.google.truth:truth:1.1.5")
-            library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
+            library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
             library("com.neovisionaries:nv-i18n:1.29")
             library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:7.5.1")
             library(
@@ -137,10 +141,12 @@ dependencyResolutionManagement {
             prefix("androidx") {
                 library("androidx.browser:browser:1.6.0-rc01")
                 library("androidx.security:security-crypto:1.1.0-alpha06")
+                library("androidx.tracing:tracing:1.3.0-alpha02")
             }
 
             prefix("compose") {
                 library("androidx.compose.animation:animation:1.6.0-alpha02")
+                library("androidx.compose.ui:ui-test-junit4:1.6.0-alpha02")
                 library("androidx.compose.ui:ui-test-manifest:1.6.0-alpha02")
                 library("androidx.compose.ui:ui-tooling-preview:1.6.0-alpha02")
                 library("androidx.compose.ui:ui-tooling:1.6.0-alpha02")
@@ -149,8 +155,9 @@ dependencyResolutionManagement {
             }
 
             prefix("junit5") {
-                library("de.mannodermaus.junit5:android-test-core:1.3.0")
-                library("de.mannodermaus.junit5:android-test-runner:1.3.0")
+                library("de.mannodermaus.junit5:android-test-core:1.4.0-SNAPSHOT")
+                library("de.mannodermaus.junit5:android-test-runner:1.4.0-SNAPSHOT")
+                library("de.mannodermaus.junit5:android-test-compose:1.0.0-SNAPSHOT")
             }
 
             prefix("markwon") {

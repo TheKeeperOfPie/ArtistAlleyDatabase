@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.test_utils.during
 import com.thekeeperofpie.artistalleydatabase.test_utils.withDispatchers
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import org.awaitility.Awaitility.await
@@ -11,6 +12,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import kotlin.time.Duration.Companion.seconds
 
+@HiltAndroidTest
 @OptIn(ExperimentalCoroutinesApi::class)
 class EntryDetailsAddTest : EntryDetailsTestBase() {
 

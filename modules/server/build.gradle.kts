@@ -20,6 +20,10 @@ kotlin {
     }
 }
 
+application {
+    mainClass.set("com.thekeeperofpie.artistalleydatabase.server.AniListServerKt")
+}
+
 afterEvaluate {
     tasks.withType(KotlinCompile::class).forEach {
         it.kotlinOptions {
@@ -30,7 +34,8 @@ afterEvaluate {
 }
 
 tasks.withType<com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask> {
-    packageName = "com.anilist.graphql.api.model"
+    schemaPaths += "${projectDir}/src/main/resources"
+    packageName = "com.anilist.server.api.model"
     typeMapping += mapOf(
         "CountryCode" to "String",
         "Json" to "String",

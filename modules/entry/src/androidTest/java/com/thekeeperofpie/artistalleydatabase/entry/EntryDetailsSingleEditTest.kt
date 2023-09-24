@@ -1,11 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import java.util.UUID
 
+@HiltAndroidTest
 class EntryDetailsSingleEditTest : EntryDetailsTestBase() {
 
     @Test

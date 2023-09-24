@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import android.net.Uri
 import androidx.navigation.NavHostController
 import com.google.common.truth.Truth.assertThat
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestBase
 import com.thekeeperofpie.artistalleydatabase.test_utils.atLeast
 import com.thekeeperofpie.artistalleydatabase.test_utils.during
@@ -14,13 +16,18 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import org.awaitility.Awaitility.await
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
-
+@ExtendWith(HiltInjectExtension::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class EntryDetailsTestBase : TestBase() {
+
+    @Inject
+    lateinit var appJson: AppJson
 
     @TempDir
     lateinit var testDir: File
@@ -40,6 +47,7 @@ abstract class EntryDetailsTestBase : TestBase() {
         cropUri = cropUri,
         entries = existingEntries.associateBy { it.id }.toMutableMap(),
         testDirectory = testDir,
+        appJson = appJson,
     )
 
     protected suspend fun EntryDetailsViewModel<*, *>.runSaveAndWait(

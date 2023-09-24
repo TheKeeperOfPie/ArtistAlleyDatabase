@@ -3,6 +3,7 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
 android {
@@ -15,7 +16,6 @@ dependencies {
     api(project(":modules:compose-utils"))
     api(project(":modules:cds"))
     api(project(":modules:monetization"))
-    implementation(project(":modules:network-utils"))
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.collections.immutable)
@@ -41,7 +41,7 @@ dependencies {
     implementation(libs.constraintlayout.compose)
 
     api(libs.media3.exoplayer)
-    implementation(libs.media3.datasource.cronet)
+    implementation(libs.media3.datasource.okhttp)
     implementation(libs.media3.exoplayer.dash)
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.exoplayer.rtsp)
@@ -53,16 +53,33 @@ dependencies {
     implementation(libs.rome)
 
     api(libs.markwon.core)
-//    implementation(libs.markwon.editor)
     implementation(libs.markwon.ext.strikethrough)
     implementation(libs.markwon.ext.tables)
     api(libs.markwon.html)
     implementation(libs.markwon.image.coil)
     implementation(libs.markwon.linkify)
-//    implementation(libs.markwon.simple.ext)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)
     implementation(libs.room.ktx)
     implementation(libs.room.paging)
+
+    androidTestImplementation(project(":modules:test-utils"))
+    androidTestImplementation(project(":modules:network-utils"))
+    androidTestImplementation(libs.dexmaker.mockito.inline.extended)
+    androidTestImplementation(libs.androidx.junit.test)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.junit.jupiter.api)
+    androidTestImplementation(libs.junit5.android.test.core)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestRuntimeOnly(libs.junit.jupiter.engine)
+    androidTestRuntimeOnly(libs.junit5.android.test.runner)
+    androidTestImplementation(libs.junit5.android.test.compose)
+    debugRuntimeOnly(libs.compose.ui.test.manifest)
+    kspAndroidTest(libs.hilt.android.compiler)
+
+    // Resolves a missing method exception during testing
+    debugImplementation(libs.androidx.tracing)
 }

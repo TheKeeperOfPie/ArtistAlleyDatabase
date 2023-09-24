@@ -1,5 +1,6 @@
 plugins {
     id("module-library")
+    id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
 }
 
@@ -9,6 +10,9 @@ android {
 
 dependencies {
     implementation(libs.core.ktx)
+    implementation(libs.hilt.android)
+    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.androidx.hilt.compiler)
 
     runtimeOnly(libs.work.runtime)
     api(libs.work.runtime.ktx)

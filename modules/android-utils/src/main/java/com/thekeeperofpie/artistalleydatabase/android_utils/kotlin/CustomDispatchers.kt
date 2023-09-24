@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.android_utils.kotlin
 import androidx.annotation.VisibleForTesting
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asContextElement
 import kotlin.coroutines.CoroutineContext
 
@@ -46,6 +47,7 @@ import kotlin.coroutines.CoroutineContext
  * }
  * ```
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 object CustomDispatchers {
 
     val mainThreadLocal = ThreadLocal<CoroutineDispatcher>()
@@ -80,6 +82,14 @@ object CustomDispatchers {
         } else {
             Dispatchers.Default
         }
+
+    fun io(parallelism: Int) = if (enabled) {
+        (ioThreadLocal.get() ?: Dispatchers.IO)
+            .limitedParallelism(parallelism)
+            .withContextElements()
+    } else {
+        Dispatchers.IO.limitedParallelism(parallelism)
+    }
 
     private fun CoroutineDispatcher.withContextElements() =
         this + mainThreadLocal.asContextElement(mainThreadLocal.get() ?: Dispatchers.Main) +

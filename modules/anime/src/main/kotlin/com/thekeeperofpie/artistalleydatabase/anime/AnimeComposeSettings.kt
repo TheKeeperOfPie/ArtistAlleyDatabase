@@ -7,4 +7,8 @@ interface AnimeComposeSettings {
 }
 
 val LocalAnimeComposeSettings =
-    staticCompositionLocalOf<AnimeComposeSettings> { throw IllegalStateException() }
+    staticCompositionLocalOf<AnimeComposeSettings> {
+        object : AnimeComposeSettings {
+            override val screenshotMode = false
+        }
+    }
