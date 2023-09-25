@@ -72,6 +72,7 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.hilt.android.testing)
     androidTestImplementation(libs.junit.jupiter.api)
+    androidTestImplementation(libs.junit.jupiter.params)
     androidTestImplementation(libs.junit5.android.test.core)
     androidTestImplementation(libs.kotlinx.coroutines.test)
     androidTestRuntimeOnly(libs.junit.jupiter.engine)

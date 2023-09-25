@@ -133,6 +133,7 @@ dependencyResolutionManagement {
             library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0-RC")
             library("org.junit.jupiter:junit-jupiter-api:5.10.0")
             library("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+            library("org.junit.jupiter:junit-jupiter-params:5.10.0")
             library("org.mockito.kotlin:mockito-kotlin:5.1.0")
             library("org.mockito:mockito-android:5.5.0")
             library("org.mockito:mockito-core:5.5.0")

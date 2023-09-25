@@ -36,6 +36,8 @@ import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.api.parallel.ResourceAccessMode
 import org.junit.jupiter.api.parallel.ResourceLock
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito.spy
 import javax.inject.Inject
 
@@ -84,49 +86,16 @@ class HomeScreenTest {
     @Inject
     lateinit var markwon: Markwon
 
-    @Test
-    fun anySectionLoading_showsRootLoading() {
-        val viewModel = spy(
-            AnimeHomeViewModel(
-                newsController = newsController,
-                aniListApi = aniListApi,
-                mediaListStatusController = mediaListStatusController,
-                ignoreController = ignoreController,
-                recommendationStatusController = recommendationStatusController,
-                activityStatusController = activityStatusController,
-                settings = settings,
-                monetizationController = monetizationController,
-                notificationsController = notificationsController,
-            )
+    @ParameterizedTest
+    @ValueSource(ints = [0, 1, 2, 3, 4])
+    fun anySectionLoading_showsRootLoading(index: Int) {
+        val (viewModel, mediaViewModel) = mockViewModels(
+            activityLoading = index == 0,
+            recommendationsLoading = index == 1,
+            mediaEntryLoading = index == 2,
+            mediaCurrentLoading = index == 3,
+            mediaReviewsLoading = index == 4,
         )
-        whenever(viewModel.activity) {
-            MutableStateFlow(PagingData.empty())
-        }
-        whenever(viewModel.recommendations) {
-            MutableStateFlow(PagingData.empty())
-        }
-
-        val mediaViewModel = spy(
-            AnimeHomeMediaViewModel.Anime(
-                aniListApi = aniListApi,
-                settings = settings,
-                ignoreController = ignoreController,
-                userMediaListController = userMediaListController,
-                mediaListStatusController = mediaListStatusController,
-            )
-        )
-
-        whenever(mediaViewModel.entry) {
-            LoadingResult.loading()
-        }
-
-        whenever(mediaViewModel.currentMedia) {
-            LoadingResult.loading()
-        }
-
-        whenever(mediaViewModel.reviews) {
-            MutableStateFlow(PagingData.empty())
-        }
 
         composeExtension.use {
             setContent {
@@ -156,47 +125,13 @@ class HomeScreenTest {
 
     @Test
     fun noSectionLoading_noRootLoading() {
-        val viewModel = spy(
-            AnimeHomeViewModel(
-                newsController = newsController,
-                aniListApi = aniListApi,
-                mediaListStatusController = mediaListStatusController,
-                ignoreController = ignoreController,
-                recommendationStatusController = recommendationStatusController,
-                activityStatusController = activityStatusController,
-                settings = settings,
-                monetizationController = monetizationController,
-                notificationsController = notificationsController,
-            )
+        val (viewModel, mediaViewModel) = mockViewModels(
+            activityLoading = false,
+            recommendationsLoading = false,
+            mediaEntryLoading = false,
+            mediaCurrentLoading = false,
+            mediaReviewsLoading = false,
         )
-        whenever(viewModel.activity) {
-            MutableStateFlow(PagingData.from(emptyList()))
-        }
-        whenever(viewModel.recommendations) {
-            MutableStateFlow(PagingData.from(emptyList()))
-        }
-
-        val mediaViewModel = spy(
-            AnimeHomeMediaViewModel.Anime(
-                aniListApi = aniListApi,
-                settings = settings,
-                ignoreController = ignoreController,
-                userMediaListController = userMediaListController,
-                mediaListStatusController = mediaListStatusController,
-            )
-        )
-
-        whenever(mediaViewModel.entry) {
-            LoadingResult.empty()
-        }
-
-        whenever(mediaViewModel.currentMedia) {
-            LoadingResult.empty()
-        }
-
-        whenever(mediaViewModel.reviews) {
-            MutableStateFlow(PagingData.from(emptyList()))
-        }
 
         synchronized(composeExtension) {
             composeExtension.use {
@@ -224,5 +159,80 @@ class HomeScreenTest {
                 assertThat(node.children.any { matcher.matches(it) }).isFalse()
             }
         }
+    }
+
+    private fun mockViewModels(
+        activityLoading: Boolean,
+        recommendationsLoading: Boolean,
+        mediaEntryLoading: Boolean,
+        mediaCurrentLoading: Boolean,
+        mediaReviewsLoading: Boolean,
+    ): Pair<AnimeHomeViewModel, AnimeHomeMediaViewModel> {
+        val viewModel = spy(
+            AnimeHomeViewModel(
+                newsController = newsController,
+                aniListApi = aniListApi,
+                mediaListStatusController = mediaListStatusController,
+                ignoreController = ignoreController,
+                recommendationStatusController = recommendationStatusController,
+                activityStatusController = activityStatusController,
+                settings = settings,
+                monetizationController = monetizationController,
+                notificationsController = notificationsController,
+            )
+        )
+        whenever(viewModel.activity) {
+            val pagingData = if (activityLoading) {
+                PagingData.empty()
+            } else {
+                PagingData.from(emptyList())
+            }
+            MutableStateFlow(pagingData)
+        }
+        whenever(viewModel.recommendations) {
+            val pagingData = if (recommendationsLoading) {
+                PagingData.empty()
+            } else {
+                PagingData.from(emptyList())
+            }
+            MutableStateFlow(pagingData)
+        }
+
+        val mediaViewModel = spy(
+            AnimeHomeMediaViewModel.Anime(
+                aniListApi = aniListApi,
+                settings = settings,
+                ignoreController = ignoreController,
+                userMediaListController = userMediaListController,
+                mediaListStatusController = mediaListStatusController,
+            )
+        )
+
+        whenever(mediaViewModel.entry) {
+            if (mediaEntryLoading) {
+                LoadingResult.loading()
+            } else {
+                LoadingResult.empty()
+            }
+        }
+
+        whenever(mediaViewModel.currentMedia) {
+            if (mediaCurrentLoading) {
+                LoadingResult.loading()
+            } else {
+                LoadingResult.empty()
+            }
+        }
+
+        whenever(mediaViewModel.reviews) {
+            val pagingData = if (mediaReviewsLoading) {
+                PagingData.empty()
+            } else {
+                PagingData.from(emptyList())
+            }
+            MutableStateFlow(pagingData)
+        }
+
+        return viewModel to mediaViewModel
     }
 }

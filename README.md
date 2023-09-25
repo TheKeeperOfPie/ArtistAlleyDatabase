@@ -78,6 +78,7 @@ Instructions assume Windows 11 environment using the latest Android Studio Canar
     ```
     aniList.clientId=$CLIENT_ID
     ```
+   TODO: Missing other properties
 5. Install like any other Android application via `./gradlew :app:installDebug`
 
 ### Gradle
