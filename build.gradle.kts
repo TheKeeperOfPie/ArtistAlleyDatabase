@@ -51,7 +51,10 @@ dependencyAnalysis {
                 severity("ignore")
             }
             onIncorrectConfiguration {
-                exclude("io.coil-kt:coil-compose")
+                exclude(
+                    "io.coil-kt:coil-compose",
+                    "org.jetbrains.kotlin:kotlin-stdlib",
+                )
             }
             onRuntimeOnly {
                 exclude(
@@ -85,6 +88,7 @@ dependencyAnalysis {
                     "de.mannodermaus.junit5:android-test-core",
                     "de.mannodermaus.junit5:android-test-runner",
                     "io.coil-kt:coil-compose",
+                    "org.jetbrains.kotlin:kotlin-stdlib",
                     "org.jetbrains.kotlinx:kotlinx-serialization-json",
                     "org.mockito:mockito-core",
                     "org.mockito:mockito-android",

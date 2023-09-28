@@ -2,7 +2,7 @@ plugins {
     id("module-library")
 
     // Gradle --scan
-    id("com.gradle.build-scan") version "3.14.1" apply false
+    id("com.gradle.build-scan") version "3.15" apply false
 }
 
 android {
@@ -19,25 +19,29 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    debugCompileOnly("com.android.tools.emulator:proto:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-device-provider-gradle:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-additional-test-output:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-apk-installer:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-coverage:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info-proto:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-emulator-control:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-logcat:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:31.3.0-alpha02")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:31.3.0-alpha02")
+    debugCompileOnly("com.android.tools.emulator:proto:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-device-provider-gradle:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-additional-test-output:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-apk-installer:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-coverage:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info-proto:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-emulator-control:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-logcat:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:31.3.0-alpha05")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:31.3.0-alpha05")
     debugCompileOnly("com.google.testing.platform:android-device-provider-local:0.0.8-alpha08")
     debugCompileOnly("com.google.testing.platform:android-driver-instrumentation:0.0.8-alpha08")
     debugCompileOnly("com.google.testing.platform:android-test-plugin:0.0.8-alpha08")
     debugCompileOnly("com.google.testing.platform:core:0.0.8-alpha08")
     debugCompileOnly("com.google.testing.platform:launcher:0.0.8-alpha08")
     debugCompileOnly(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.3"))
+
+    // This version is pinned to Studio, maybe
+    //noinspection GradleDependency
     debugCompileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+    //noinspection GradleDependency
     debugCompileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.3")
 
     // Gradle sync
