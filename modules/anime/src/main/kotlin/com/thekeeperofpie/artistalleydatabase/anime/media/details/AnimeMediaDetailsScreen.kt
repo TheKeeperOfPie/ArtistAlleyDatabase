@@ -98,6 +98,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -267,9 +268,9 @@ object AnimeMediaDetailsScreen {
         val (activityTab, onActivityTabChange) = rememberSaveable(viewer, activities) {
             mutableStateOf(
                 if (activities?.following.isNullOrEmpty()) {
-                    ActivityTab.FOLLOWING
-                } else {
                     ActivityTab.GLOBAL
+                } else {
+                    ActivityTab.FOLLOWING
                 }
             )
         }
@@ -550,6 +551,7 @@ object AnimeMediaDetailsScreen {
             state = lazyListState,
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.padding(scaffoldPadding)
+                .testTag("rootColumn")
         ) {
             content(
                 viewModel = viewModel,

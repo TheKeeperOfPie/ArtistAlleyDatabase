@@ -150,7 +150,7 @@ ksp {
 }
 
 tasks.register("installAll") {
-    dependsOn("installDebug", "installRelease")
+    dependsOn("installDebug", "installRelease", "installInternal")
 }
 
 fun Exec.launchActivity(

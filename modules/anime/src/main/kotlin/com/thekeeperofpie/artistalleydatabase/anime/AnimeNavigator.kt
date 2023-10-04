@@ -237,13 +237,9 @@ object AnimeNavigator {
                 }
             ) + MediaHeaderValues.navArguments()
         ) {
-            val arguments = it.arguments!!
-            val mediaId = arguments.getString("mediaId")!!
-
             val viewModel = hiltViewModel<AnimeMediaDetailsViewModel>()
-                .apply { initialize(mediaId) }
             val headerValues = MediaHeaderValues(
-                arguments = arguments,
+                arguments = it.arguments!!,
                 media = { viewModel.entry.result?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )

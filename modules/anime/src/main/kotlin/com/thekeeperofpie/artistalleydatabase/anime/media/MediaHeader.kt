@@ -133,7 +133,7 @@ fun MediaHeader(
             Column {
                 Row(modifier = Modifier.weight(1f)) {
                     AutoResizeHeightText(
-                        text = titles?.get(preferredTitle) ?: headerValues.title(),
+                        text = titles?.getOrNull(preferredTitle) ?: headerValues.title(),
                         style = MaterialTheme.typography.headlineLarge
                             .copy(lineBreak = LineBreak.Simple),
                         modifier = Modifier

@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.map
 class AppFeatureOverrideProvider : FeatureOverrideProvider {
     @Suppress("KotlinConstantConditions")
     override val isReleaseBuild = BuildConfig.BUILD_TYPE == "release"
+    override val enableAppMediaPlayerCache = true
 }
 
 class AppMonetizationOverrideProvider(aniListApi: AuthedAniListApi) : MonetizationOverrideProvider {

@@ -63,6 +63,7 @@ class SettingsDataSerializationTest {
             sharedPreferencesFileName = "${SettingsProvider.PREFERENCES_NAME}-test",
             object : FeatureOverrideProvider {
                 override val isReleaseBuild = false
+                override val enableAppMediaPlayerCache = false
             }
         )
 

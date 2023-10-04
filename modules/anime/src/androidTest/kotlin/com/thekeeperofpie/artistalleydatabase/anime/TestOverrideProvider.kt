@@ -8,5 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class TestOverrideProvider : FeatureOverrideProvider, MonetizationOverrideProvider {
 
     override val isReleaseBuild: Boolean = false
+    override val enableAppMediaPlayerCache = false
     override val overrideUnlock: Flow<Boolean> = MutableStateFlow(false)
 }

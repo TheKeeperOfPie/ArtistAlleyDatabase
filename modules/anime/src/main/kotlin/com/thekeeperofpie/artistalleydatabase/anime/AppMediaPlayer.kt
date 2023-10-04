@@ -18,6 +18,7 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.hoc081098.flowext.interval
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +36,7 @@ import kotlin.time.Duration.Companion.seconds
 class AppMediaPlayer(
     application: ScopedApplication,
     okHttpClient: OkHttpClient,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) {
     // TODO: ID doesn't consider nested duplicate screens; unsure if this matters
     var playingState = MutableStateFlow<Pair<String?, Boolean>>(null to false)
@@ -43,7 +45,7 @@ class AppMediaPlayer(
     val player = ExoPlayer.Builder(application.app)
         .setMediaSourceFactory(
             DefaultMediaSourceFactory(
-                DataSourceFactory(application.app, okHttpClient)
+                DataSourceFactory(application.app, okHttpClient, featureOverrideProvider)
             )
         )
         .build()
@@ -69,23 +71,28 @@ class AppMediaPlayer(
     private class DataSourceFactory(
         application: Application,
         okHttpClient: OkHttpClient,
+        featureOverrideProvider: FeatureOverrideProvider,
     ) : DataSource.Factory {
         private val actualFactory = OkHttpDataSource.Factory(okHttpClient)
 
-        private val cache = SimpleCache(
-            File(application.cacheDir, "exoplayer"),
-            LeastRecentlyUsedCacheEvictor(500L * 1024L * 1024L),
-            StandaloneDatabaseProvider(application)
-        )
+        private val cache = if (featureOverrideProvider.enableAppMediaPlayerCache) {
+            SimpleCache(
+                File(application.cacheDir, "exoplayer"),
+                LeastRecentlyUsedCacheEvictor(500L * 1024L * 1024L),
+                StandaloneDatabaseProvider(application)
+            )
+        } else null
 
-        override fun createDataSource() = CacheDataSource(
-            cache,
-            actualFactory.createDataSource(),
-            FileDataSource(),
-            CacheDataSink(cache, C.LENGTH_UNSET.toLong()),
-            CacheDataSource.FLAG_BLOCK_ON_CACHE or CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
-            null
-        )
+        override fun createDataSource() = cache?.let {
+            CacheDataSource(
+                cache,
+                actualFactory.createDataSource(),
+                FileDataSource(),
+                CacheDataSink(cache, C.LENGTH_UNSET.toLong()),
+                CacheDataSource.FLAG_BLOCK_ON_CACHE or CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
+                null
+            )
+        } ?: actualFactory.createDataSource()
     }
 
     init {

@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -104,6 +105,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     private val threadStatusController: ForumThreadStatusController,
     private val historyController: HistoryController,
     private val markwon: Markwon,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
@@ -112,7 +114,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     val screenKey = "${AnimeNavDestinations.MEDIA_DETAILS.id}-${UUID.randomUUID()}"
     val viewer = aniListApi.authedUser
-    lateinit var mediaId: String
+    val mediaId = savedStateHandle.get<String>("mediaId")!!
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
@@ -147,10 +149,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     private var animeSongStates by mutableStateOf(emptyMap<String, AnimeSongState>())
 
-    fun initialize(mediaId: String) {
-        if (::mediaId.isInitialized) return
-        this.mediaId = mediaId
-
+    init {
         favoritesToggleHelper.initializeTracking(
             viewModel = this,
             entry = { snapshotFlow { entry.result } },
