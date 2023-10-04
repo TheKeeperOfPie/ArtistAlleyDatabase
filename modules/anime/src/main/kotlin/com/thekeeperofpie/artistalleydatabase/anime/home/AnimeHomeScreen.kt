@@ -191,7 +191,8 @@ object AnimeHomeScreen {
         val activity = viewModel.activity.collectAsLazyPagingItems()
         val recommendations = viewModel.recommendations.collectAsLazyPagingItems()
         val reviews = mediaViewModel.reviews.collectAsLazyPagingItems()
-        val refreshing = activity.loadState.refresh == LoadState.Loading
+        val refreshing = viewModel.newsController.newsDateDescending() == null
+                || activity.loadState.refresh == LoadState.Loading
                 || recommendations.loadState.refresh == LoadState.Loading
                 || reviews.loadState.refresh == LoadState.Loading
                 || mediaViewModel.entry.loading
@@ -368,6 +369,7 @@ object AnimeHomeScreen {
                 bottom = 16.dp + bottomNavBarPadding
             ),
             modifier = Modifier.fillMaxSize()
+                .testTag("homeColumn")
         ) {
             newsRow(data = news, pageSize = pageSize)
 
@@ -953,10 +955,10 @@ object AnimeHomeScreen {
             var showTitle by remember(media) { mutableStateOf(false) }
             val density = LocalDensity.current
             val coilWidth = coil.size.Dimension.Pixels(
-                density.run { MEDIA_ROW_IMAGE_WIDTH.roundToPx() / 4 * 3 }
+                density.run { MEDIA_ROW_IMAGE_WIDTH.roundToPx() / 2 }
             )
             val coilHeight = coil.size.Dimension.Pixels(
-                density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
+                density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() / 2 }
             )
 
             val mediaId = media?.id?.toString()

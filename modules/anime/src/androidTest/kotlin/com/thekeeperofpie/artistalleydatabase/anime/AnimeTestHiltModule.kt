@@ -39,6 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,133 +51,78 @@ import javax.inject.Singleton
 // TODO: Separate these into specific modules
 @Module
 @InstallIn(SingletonComponent::class)
-class AnimeTestHiltModule {
+abstract class AnimeTestHiltModule {
 
-    @Singleton
-    @Provides
-    fun provideNetworkSettings(): NetworkSettings {
-        return object : NetworkSettings {
-            override val networkLoggingLevel =
-                MutableStateFlow(NetworkSettings.NetworkLoggingLevel.NONE)
-            override val enableNetworkCaching = MutableStateFlow(false)
-        }
+    companion object {
+        @Singleton
+        @Provides
+        fun provideAniListJson(appJson: AppJson) = AniListJson(appJson.json)
+
+        @Singleton
+        @Provides
+        fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
+
+        @Singleton
+        @Provides
+        fun provideTestDatabase(application: Application) =
+            Room.inMemoryDatabaseBuilder(application, TestDatabase::class.java).build()
+
+        @Singleton
+        @Provides
+        fun provideTestSettingsProvider() = TestSettingsProvider()
+
+        @Singleton
+        @Provides
+        fun provideTestOverrideProvider() = TestOverrideProvider()
     }
 
     @Singleton
-    @Provides
-    fun provideAniListSettings(): AniListSettings {
-        return object : AniListSettings {
-            override val aniListViewer = MutableStateFlow<AniListViewer?>(null)
-        }
-    }
+    @Binds
+    abstract fun provideNetworkSettings(testSettingsProvider: TestSettingsProvider): NetworkSettings
 
     @Singleton
-    @Provides
-    fun provideAnimeSettings(): AnimeSettings {
-        return object : AnimeSettings {
-            override val savedAnimeFilters = MutableStateFlow(emptyMap<String, FilterData>())
-            override val showAdult = MutableStateFlow(false)
-            override val collapseAnimeFiltersOnClose = MutableStateFlow(false)
-            override val showLessImportantTags = MutableStateFlow(false)
-            override val showSpoilerTags = MutableStateFlow(false)
-            override val animeNewsNetworkRegion =
-                MutableStateFlow(AnimeNewsNetworkRegion.USA_CANADA)
-            override val animeNewsNetworkCategoriesIncluded =
-                MutableStateFlow(emptyList<AnimeNewsNetworkCategory>())
-            override val animeNewsNetworkCategoriesExcluded =
-                MutableStateFlow(emptyList<AnimeNewsNetworkCategory>())
-            override val crunchyrollNewsCategoriesIncluded =
-                MutableStateFlow(emptyList<CrunchyrollNewsCategory>())
-            override val crunchyrollNewsCategoriesExcluded =
-                MutableStateFlow(emptyList<CrunchyrollNewsCategory>())
-            override val preferredMediaType = MutableStateFlow(MediaType.ANIME)
-            override val mediaViewOption = MutableStateFlow(MediaViewOption.SMALL_CARD)
-            override val rootNavDestination = MutableStateFlow(AnimeRootNavDestination.HOME)
-            override val mediaHistoryEnabled = MutableStateFlow(false)
-            override val mediaHistoryMaxEntries = MutableStateFlow(100)
-            override val mediaIgnoreEnabled = MutableStateFlow(false)
-            override val mediaIgnoreHide = MutableStateFlow(false)
-            override val showIgnored = mediaIgnoreHide.map(Boolean::not)
-            override val languageOptionMedia = MutableStateFlow(AniListLanguageOption.DEFAULT)
-            override val languageOptionCharacters = MutableStateFlow(AniListLanguageOption.DEFAULT)
-            override val languageOptionStaff = MutableStateFlow(AniListLanguageOption.DEFAULT)
-            override val languageOptionVoiceActor =
-                MutableStateFlow(VoiceActorLanguageOption.JAPANESE)
-            override val showFallbackVoiceActor = MutableStateFlow(false)
-            override val currentMediaListSizeAnime = MutableStateFlow(0)
-            override val currentMediaListSizeManga = MutableStateFlow(0)
-            override val lastCrash = MutableStateFlow("")
-            override val lastCrashShown = MutableStateFlow(false)
-        }
-    }
+    @Binds
+    abstract fun provideAniListSettings(testSettingsProvider: TestSettingsProvider): AniListSettings
 
     @Singleton
-    @Provides
-    fun provideMonetizationSettings(): MonetizationSettings {
-        return object : MonetizationSettings {
-            override val adsEnabled = MutableStateFlow(false)
-            override val subscribed = MutableStateFlow(false)
-            override val unlockAllFeatures = MutableStateFlow(false)
-        }
-    }
+    @Binds
+    abstract fun provideAnimeSettings(testSettingsProvider: TestSettingsProvider): AnimeSettings
 
     @Singleton
-    @Provides
-    fun provideEntrySettings(): EntrySettings {
-        return object : EntrySettings {
-            override val cropDocumentUri = MutableStateFlow<Uri?>(null)
-        }
-    }
+    @Binds
+    abstract fun provideMonetizationSettings(testSettingsProvider: TestSettingsProvider): MonetizationSettings
 
     @Singleton
-    @Provides
-    fun provideFeatureOverrideProvider(): FeatureOverrideProvider {
-        return object : FeatureOverrideProvider {
-            override val isReleaseBuild = false
-        }
-    }
+    @Binds
+    abstract fun provideEntrySettings(testSettings: TestSettingsProvider): EntrySettings
 
     @Singleton
-    @Provides
-    fun provideMonetizationOverrideProvider(): MonetizationOverrideProvider {
-        return object : MonetizationOverrideProvider {
-            override val overrideUnlock = MutableStateFlow(false)
-        }
-    }
+    @Binds
+    abstract fun provideFeatureOverrideProvider(testOverrideProvider: TestOverrideProvider): FeatureOverrideProvider
 
     @Singleton
-    @Provides
-    fun provideAniListJson(appJson: AppJson) = AniListJson(appJson.json)
+    @Binds
+    abstract fun provideMonetizationOverrideProvider(testOverrideProvider: TestOverrideProvider): MonetizationOverrideProvider
 
     @Singleton
-    @Provides
-    fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
+    @Binds
+    abstract fun provideAniListDatabase(testDatabase: TestDatabase): AniListDatabase
 
     @Singleton
-    @Provides
-    fun provideTestDatabase(application: Application) =
-        Room.inMemoryDatabaseBuilder(application, TestDatabase::class.java).build()
+    @Binds
+    abstract fun provideAnimeDatabase(testDatabase: TestDatabase): AnimeDatabase
 
     @Singleton
-    @Provides
-    fun provideAniListDatabase(testDatabase: TestDatabase) = testDatabase as AniListDatabase
+    @Binds
+    abstract fun provideCdEntryDatabase(testDatabase: TestDatabase): CdEntryDatabase
 
     @Singleton
-    @Provides
-    fun provideAnimeDatabase(testDatabase: TestDatabase) = testDatabase as AnimeDatabase
+    @Binds
+    abstract fun provideMusicalArtistDatabase(testDatabase: TestDatabase): MusicalArtistDatabase
 
     @Singleton
-    @Provides
-    fun provideCdEntryDatabase(testDatabase: TestDatabase) = testDatabase as CdEntryDatabase
-
-    @Singleton
-    @Provides
-    fun provideMusicalArtistDatabase(testDatabase: TestDatabase) =
-        testDatabase as MusicalArtistDatabase
-
-    @Singleton
-    @Provides
-    fun provideVgmdbDatabase(testDatabase: TestDatabase) = testDatabase as VgmdbDatabase
+    @Binds
+    abstract fun provideVgmdbDatabase(testDatabase: TestDatabase): VgmdbDatabase
 
     @Database(
         entities = [

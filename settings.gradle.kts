@@ -45,7 +45,7 @@ dependencyResolutionManagement {
             plugin("de.mannodermaus.android-junit5").version("1.9.3.0")
             plugin("io.ktor.plugin").version("2.3.4")
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
-            plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.20-Beta2")
+            plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.20-Beta")
 
             library("androidx.activity:activity-compose:1.8.0-alpha06")
             library("androidx.compose.material3:material3:1.2.0-alpha04")

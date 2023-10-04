@@ -74,7 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.pri
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
-import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
@@ -381,7 +381,7 @@ fun CharactersSectionItem(screenKey: String, character: DetailsCharacter?) {
             innerImageWidthToHeightRatio = it.widthToHeightRatio()
         },
     ) { textColor ->
-        AutoHeightText(
+        AutoResizeHeightText(
             text = character?.name?.primaryName().orEmpty(),
             color = textColor,
             style = MaterialTheme.typography.bodyMedium.copy(
@@ -392,6 +392,7 @@ fun CharactersSectionItem(screenKey: String, character: DetailsCharacter?) {
                 )
             ),
             minTextSizeSp = 8f,
+            textAlignment = Alignment.TopStart,
             modifier = Modifier
                 .size(width = 100.dp, height = 56.dp)
                 .padding(horizontal = 12.dp, vertical = 8.dp)

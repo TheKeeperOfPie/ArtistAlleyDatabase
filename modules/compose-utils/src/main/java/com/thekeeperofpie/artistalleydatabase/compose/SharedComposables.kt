@@ -556,6 +556,7 @@ fun AutoResizeHeightText(
     minLines: Int = 1,
     style: TextStyle = LocalTextStyle.current,
     minTextSizeSp: Float = 2f,
+    textAlignment : Alignment = Alignment.CenterStart,
 ) {
     val initialFontSize = style.fontSize
     var realFontSize by remember { mutableStateOf(initialFontSize) }
@@ -565,7 +566,7 @@ fun AutoResizeHeightText(
     val textMeasurer = rememberTextMeasurer()
 
     Box(
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = textAlignment,
         modifier = modifier
             .onSizeChanged {
                 var fontSize = initialFontSize

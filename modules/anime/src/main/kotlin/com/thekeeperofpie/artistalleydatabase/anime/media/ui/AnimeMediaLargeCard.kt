@@ -276,7 +276,7 @@ object AnimeMediaLargeCard {
                     .size(
                         width = Dimension.Undefined,
                         height = Dimension.Pixels(
-                            LocalDensity.current.run { HEIGHT.roundToPx() / 4 * 3 }
+                            LocalDensity.current.run { HEIGHT.roundToPx() / 2 }
                         ),
                     )
                     .build(),
