@@ -16,7 +16,7 @@ dependencies {
     implementation(libs.cronet.okhttp)
 
     api(libs.hilt.android)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
 }

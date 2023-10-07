@@ -179,5 +179,5 @@ if (!aniListSchemaFile.exists()) {
 
 dependencies {
     api(libs.apollo.runtime)
-    api(libs.compose.runtime)
+    implementation(libs.compose.runtime)
 }

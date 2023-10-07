@@ -21,7 +21,7 @@ dependencies {
     implementation(libs.kotlinx.collections.immutable)
 
     implementation(libs.hilt.android)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
     implementation(libs.lifecycle.viewmodel.ktx)
@@ -64,22 +64,11 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.room.paging)
 
-    androidTestImplementation(project(":modules:test-utils"))
-    androidTestImplementation(project(":modules:network-utils"))
-    androidTestImplementation(libs.dexmaker.mockito.inline.extended)
-    androidTestImplementation(libs.androidx.junit.test)
-    androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.compose.ui.test.junit4)
-    androidTestImplementation(libs.hilt.android.testing)
-    androidTestImplementation(libs.junit.jupiter.api)
     androidTestImplementation(libs.junit.jupiter.params)
-    androidTestImplementation(libs.junit5.android.test.core)
-    androidTestImplementation(libs.kotlinx.coroutines.test)
-    androidTestRuntimeOnly(libs.junit.jupiter.engine)
-    androidTestRuntimeOnly(libs.junit5.android.test.runner)
     androidTestImplementation(libs.junit5.android.test.compose)
     debugRuntimeOnly(libs.compose.ui.test.manifest)
-    kspAndroidTest(libs.hilt.android.compiler)
+    kspAndroidTest(kspProcessors.hilt.android.compiler)
+    androidTestImplementation(libs.hilt.android.testing)
 
     // Resolves a missing method exception during testing
     debugImplementation(libs.androidx.tracing)

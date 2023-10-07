@@ -2,7 +2,7 @@ plugins {
     id("module-library")
 
     // Gradle --scan
-    id("com.gradle.build-scan") version "3.15" apply false
+    id("com.gradle.build-scan") version "3.15.1" apply false
 }
 
 android {
@@ -19,43 +19,40 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    debugCompileOnly("com.android.tools.emulator:proto:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-device-provider-gradle:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-additional-test-output:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-apk-installer:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-coverage:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info-proto:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-emulator-control:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-logcat:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:31.3.0-alpha06")
-    debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:31.3.0-alpha06")
-    debugCompileOnly("com.google.testing.platform:android-device-provider-local:0.0.8-alpha08")
-    debugCompileOnly("com.google.testing.platform:android-driver-instrumentation:0.0.8-alpha08")
-    debugCompileOnly("com.google.testing.platform:android-test-plugin:0.0.8-alpha08")
-    debugCompileOnly("com.google.testing.platform:core:0.0.8-alpha08")
-    debugCompileOnly("com.google.testing.platform:launcher:0.0.8-alpha08")
-    debugCompileOnly(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.3"))
+    val androidTools = "31.3.0-alpha07"
+    debugCompileOnly("com.android.tools.emulator:proto:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-device-provider-gradle:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-additional-test-output:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-apk-installer:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-coverage:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info-proto:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-emulator-control:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-logcat:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:$androidTools")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:$androidTools")
 
-    // This version is pinned to Studio, maybe
-    //noinspection GradleDependency
-    debugCompileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
-    //noinspection GradleDependency
-    debugCompileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.3")
+    val googleTesting = "0.0.9-alpha01"
+    debugCompileOnly("com.google.testing.platform:android-device-provider-local:$googleTesting")
+    debugCompileOnly("com.google.testing.platform:android-driver-instrumentation:$googleTesting")
+    debugCompileOnly("com.google.testing.platform:android-test-plugin:$googleTesting")
+    debugCompileOnly("com.google.testing.platform:core:$googleTesting")
+    debugCompileOnly("com.google.testing.platform:launcher:$googleTesting")
 
     // Gradle sync
-    debugCompileOnly("org.codehaus.groovy:groovy:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-ant:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-astbuilder:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-console:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-datetime:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-dateutil:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-groovydoc:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-json:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-nio:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-sql:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-templates:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-test:3.0.17")
-    debugCompileOnly("org.codehaus.groovy:groovy-xml:3.0.17")
+    val groovyVersion = "3.0.17"
+    debugCompileOnly("org.codehaus.groovy:groovy:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-ant:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-astbuilder:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-console:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-datetime:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-dateutil:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-groovydoc:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-json:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-nio:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-sql:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-test:$groovyVersion")
+    debugCompileOnly("org.codehaus.groovy:groovy-xml:$groovyVersion")
 }

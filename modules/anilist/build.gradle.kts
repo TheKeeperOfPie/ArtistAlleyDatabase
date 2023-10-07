@@ -21,14 +21,14 @@ dependencies {
     api(project(":modules:entry"))
     api(project(":modules:network-utils"))
 
-    api(libs.apollo.runtime)
-    api(libs.apollo.normalized.cache)
-    api(libs.apollo.normalized.cache.sqlite)
+    implementation(libs.apollo.runtime)
+    implementation(libs.apollo.normalized.cache)
+    implementation(libs.apollo.normalized.cache.sqlite)
 
     implementation(libs.kotlinx.serialization.json)
     api(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
     implementation(libs.material.icons.core)
     implementation(libs.material.icons.extended)

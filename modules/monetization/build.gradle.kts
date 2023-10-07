@@ -13,7 +13,7 @@ dependencies {
     api(project(":modules:compose-utils"))
 
     implementation(libs.hilt.android)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 

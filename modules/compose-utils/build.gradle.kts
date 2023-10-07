@@ -14,7 +14,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
     api(libs.material)

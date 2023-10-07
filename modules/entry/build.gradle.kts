@@ -33,19 +33,9 @@ dependencies {
     implementation(libs.java.diff.utils)
 
     androidTestImplementation(libs.hilt.android)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
 //    implementation(libs.shared-elements)
     implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
-
-    androidTestImplementation(project(":modules:test-utils"))
-    androidTestImplementation(libs.androidx.junit.test)
-    androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.junit.jupiter.api)
-    androidTestImplementation(libs.junit5.android.test.core)
-    androidTestRuntimeOnly(libs.junit5.android.test.runner)
-    androidTestImplementation(libs.truth)
-    androidTestImplementation(libs.kotlinx.coroutines.test)
-    androidTestImplementation(libs.dexmaker.mockito.inline.extended)
 }

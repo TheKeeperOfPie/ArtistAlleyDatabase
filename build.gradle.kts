@@ -52,6 +52,8 @@ dependencyAnalysis {
             }
             onIncorrectConfiguration {
                 exclude(
+                    ":modules:network-utils",
+                    "com.apollographql.apollo3:apollo-normalized-cache-sqlite",
                     "io.coil-kt:coil-compose",
                     "org.jetbrains.kotlin:kotlin-stdlib",
                 )
@@ -59,6 +61,7 @@ dependencyAnalysis {
             onRuntimeOnly {
                 exclude(
                     "com.linkedin.dexmaker:dexmaker-mockito-inline-extended",
+                    ":modules:test-utils",
                 )
             }
             onUnusedDependencies {
@@ -123,6 +126,11 @@ dependencyAnalysis {
                     ":modules:settings",
                     ":modules:test-utils",
                     ":modules:vgmdb",
+
+                    // Testing
+                    "com.google.dagger:hilt-android-testing",
+                    "org.junit.jupiter:junit-jupiter-api",
+                    "com.linkedin.dexmaker:dexmaker-mockito-inline-extended",
                 )
             }
             onUnusedAnnotationProcessors {

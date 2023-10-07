@@ -28,10 +28,10 @@ dependencies {
 
     api(libs.truth)
     api(libs.hilt.android.testing)
-    ksp(libs.hilt.android.compiler)
+    ksp(kspProcessors.hilt.android.compiler)
 
     api(libs.hilt.android)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
     implementation(libs.ktor.server.tests.jvm)

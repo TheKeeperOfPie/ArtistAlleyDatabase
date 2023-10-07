@@ -25,12 +25,12 @@ dependencies {
     runtimeOnly(libs.kotlinx.coroutines.android)
 
     implementation(libs.hilt.android)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
     api(libs.androidx.security.crypto)
 
-    implementation(libs.compose.ui)
+    api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material3)
     implementation(libs.material.icons.extended)

@@ -19,7 +19,7 @@ dependencies {
     api(project(":modules:monetization"))
 
     implementation(libs.hilt.android)
-    ksp(kspProcessors.dagger.hilt.compiler)
+    ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
     implementation(libs.lifecycle.runtime.ktx)
@@ -28,7 +28,7 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material.icons.core)
     implementation(libs.material.icons.extended)
-    implementation(libs.material3)
+    api(libs.material3)
 
     implementation(libs.billing.ktx)
 
