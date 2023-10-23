@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.com.jaredsburrows.license)
     id("com.google.android.gms.oss-licenses-plugin")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("android-test-library")
 }
 
 secrets {

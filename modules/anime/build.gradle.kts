@@ -3,7 +3,6 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
-    alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
 android {

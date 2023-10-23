@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.test_utils
 import android.annotation.SuppressLint
 import androidx.test.core.app.ApplicationProvider
 import com.android.dx.mockito.inline.extended.ExtendedMockito
+import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import dagger.hilt.android.internal.Contexts
 import dagger.hilt.android.internal.testing.TestApplicationComponentManager
 import org.junit.jupiter.api.extension.AfterAllCallback
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.TestInstancePostProcessor
 import org.junit.runner.Description
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import org.mockito.quality.Strictness
 
 /**
  * Adapts [dagger.hilt.android.testing.HiltAndroidRule] for JUnit 5 Jupiter.
@@ -27,6 +29,7 @@ class HiltInjectExtension : Extension, TestInstancePostProcessor,
     companion object {
         private val CANONICAL_NAME = this::class.java.canonicalName
         private val NAMESPACE = ExtensionContext.Namespace.create(CANONICAL_NAME)
+        private const val KEY_MOCKITO_SESSION = "MockitoSession"
         private val checkStateIsClearedMethod = TestApplicationComponentManager::class.java
             .getDeclaredMethod("checkStateIsCleared")
             .apply { isAccessible = true }
@@ -54,8 +57,9 @@ class HiltInjectExtension : Extension, TestInstancePostProcessor,
     }
 
     override fun beforeAll(context: ExtensionContext) {
-        ExtendedMockito.mockitoSession()
+        val session = ExtendedMockito.mockitoSession()
             .mockStatic(Contexts::class.java)
+            .strictness(Strictness.LENIENT)
             .startMocking()
         ExtendedMockito.`when`(Contexts.getApplication(any())).thenAnswer {
             val application = it.arguments[0] as CustomHiltTestApplication_Application
@@ -69,6 +73,7 @@ class HiltInjectExtension : Extension, TestInstancePostProcessor,
                 .generatedComponent()
             mockApplication
         }
+        context.getStore(NAMESPACE).put(KEY_MOCKITO_SESSION, session)
     }
 
     @SuppressLint("CheckResult")
@@ -92,6 +97,9 @@ class HiltInjectExtension : Extension, TestInstancePostProcessor,
     }
 
     override fun afterAll(context: ExtensionContext) {
+        (context.getStore(NAMESPACE)
+            .get(KEY_MOCKITO_SESSION) as StaticMockitoSession)
+            .finishMocking()
         val componentManager = context.getStore(NAMESPACE)
             .get(CANONICAL_NAME) as TestApplicationComponentManager
         verifyDelayedComponentWasMadeReadyMethod.invoke(componentManager)

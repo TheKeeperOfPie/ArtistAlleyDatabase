@@ -33,7 +33,7 @@ dependencies {
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:$androidTools")
 
-    val googleTesting = "0.0.9-alpha01"
+    val googleTesting = "0.0.8-alpha08"
     debugCompileOnly("com.google.testing.platform:android-device-provider-local:$googleTesting")
     debugCompileOnly("com.google.testing.platform:android-driver-instrumentation:$googleTesting")
     debugCompileOnly("com.google.testing.platform:android-test-plugin:$googleTesting")
