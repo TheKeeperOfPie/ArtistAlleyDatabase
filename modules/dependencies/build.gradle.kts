@@ -19,8 +19,9 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    val androidTools = "31.3.0-alpha07"
+    val androidTools = "31.3.0-alpha10"
     debugCompileOnly("com.android.tools.emulator:proto:$androidTools")
+    debugCompileOnly("com.android.tools.utp:utp-common:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-device-provider-gradle:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-additional-test-output:$androidTools")
@@ -33,7 +34,7 @@ dependencies {
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:$androidTools")
 
-    val googleTesting = "0.0.8-alpha08"
+    val googleTesting = "0.0.9-alpha01"
     debugCompileOnly("com.google.testing.platform:android-device-provider-local:$googleTesting")
     debugCompileOnly("com.google.testing.platform:android-driver-instrumentation:$googleTesting")
     debugCompileOnly("com.google.testing.platform:android-test-plugin:$googleTesting")

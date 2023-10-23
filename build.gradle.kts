@@ -80,6 +80,7 @@ dependencyAnalysis {
                     "androidx.media3:media3-exoplayer-hls",
                     "androidx.media3:media3-exoplayer-rtsp",
                     "androidx.navigation:navigation-compose",
+                    "androidx.paging:paging-compose",
                     "androidx.test.ext:junit",
                     "androidx.test:runner",
                     "com.android.billingclient:billing-ktx",

@@ -13,6 +13,6 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4-dev-k1.9.20-Beta-692cbee7ddd"
+        kotlinCompilerExtensionVersion = "1.5.4-dev-k1.9.20-RC-1edce5fd625"
     }
 }
