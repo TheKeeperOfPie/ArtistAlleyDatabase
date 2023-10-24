@@ -6,7 +6,7 @@ import org.gradle.api.initialization.resolve.RepositoriesMode
 import org.gradle.kotlin.dsl.maven
 
 object Versions {
-    const val accompanist = "0.33.2-alpha"
+    const val accompanist = "0.33.1-alpha"
     const val apollo = "4.0.0-alpha.3"
     const val compose = "1.6.0-alpha02"
     const val dagger = "2.48.1"
@@ -20,7 +20,7 @@ object Versions {
         const val coroutines = "1.7.3"
     }
 
-    const val ktor = "2.3.5"
+    const val ktor = "2.3.4"
     const val lifecycle = "2.7.0-alpha03"
     const val room = "2.6.0"
     const val markwon = "4.6.2"
@@ -237,7 +237,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("androidx.compose.ui:ui-tooling")
                         library("androidx.compose.ui:ui")
                     }
-                    library("org.jetbrains.compose.runtime:runtime:1.5.10-rc01")
+                    library("org.jetbrains.compose.runtime:runtime:1.5.0")
                 }
 
                 prefix("junit5") {
