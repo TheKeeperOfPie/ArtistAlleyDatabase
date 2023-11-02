@@ -92,7 +92,7 @@ object EntryGrid {
                     padding(paddingValues!!)
                 }
         ) {
-            Column {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 EntriesGrid(
                     imageScreenKey = imageScreenKey,
                     entries = entries,

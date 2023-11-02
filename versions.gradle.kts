@@ -6,9 +6,9 @@ import org.gradle.api.initialization.resolve.RepositoriesMode
 import org.gradle.kotlin.dsl.maven
 
 object Versions {
-    const val accompanist = "0.33.1-alpha"
+    const val accompanist = "0.33.2-alpha"
     const val apollo = "4.0.0-alpha.3"
-    const val compose = "1.6.0-alpha02"
+    const val compose = "1.6.0-alpha08"
     const val dagger = "2.48.1"
     const val hilt = "1.1.0-rc01"
 
@@ -74,11 +74,9 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.20-RC")
 
                 library("androidx.activity:activity-compose:1.8.0-alpha06")
-                library("androidx.compose.material3:material3:1.2.0-alpha04")
-                library("androidx.compose.material:material-icons-core:1.6.0-alpha02")
-                library("androidx.compose.material:material-icons-extended:1.6.0-alpha02")
-                library("androidx.compose.material:material:1.6.0-alpha02")
-                library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha11")
+                // 1.2.0-alpha09 is last version that doesn't IndexOutOfBoundsException
+                library("androidx.compose.material3:material3:1.2.0-alpha10")
+                library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
                 library("androidx.core:core-ktx:1.13.0-alpha01")
 
                 withVersion(Versions.hilt) {
@@ -231,13 +229,17 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 prefix("compose") {
                     withVersion(Versions.compose) {
                         library("androidx.compose.animation:animation")
+                        library("androidx.compose.material:material-icons-core")
+                        library("androidx.compose.material:material-icons-extended")
+                        library("androidx.compose.material:material")
+                        library("androidx.compose.runtime:runtime")
                         library("androidx.compose.ui:ui-test-junit4")
                         library("androidx.compose.ui:ui-test-manifest")
                         library("androidx.compose.ui:ui-tooling-preview")
                         library("androidx.compose.ui:ui-tooling")
                         library("androidx.compose.ui:ui")
                     }
-                    library("org.jetbrains.compose.runtime:runtime:1.5.0")
+                    library("org.jetbrains.compose.runtime:runtime:1.5.10-rc02")
                 }
 
                 prefix("junit5") {

@@ -132,6 +132,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.debugInspectorInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -1826,6 +1827,7 @@ fun ClickableBottomSheetDragHandle(
                 scope.launch { sheetState.expand() }
             }
         }
+        .testTag("bottomSheetDragHandle")
     ) {
         BottomSheetDefaults.DragHandle()
     }

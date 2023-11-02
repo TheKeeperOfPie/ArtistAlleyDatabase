@@ -32,7 +32,7 @@ dependencies {
     implementation(libs.accompanist.flowlayout)
 
     implementation(libs.coil.compose)
-    implementation(libs.material.icons.extended)
+    implementation(libs.compose.material.icons.extended)
 
     implementation(libs.hilt.navigation.compose)
     api(libs.paging.compose)

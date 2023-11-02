@@ -33,7 +33,7 @@ dependencies {
     api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material3)
-    implementation(libs.material.icons.extended)
+    implementation(libs.compose.material.icons.extended)
 
     api(libs.work.runtime)
     api(libs.work.runtime.ktx)

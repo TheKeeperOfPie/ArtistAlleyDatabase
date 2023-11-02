@@ -86,7 +86,6 @@ class MediaEditData {
         val id: String?,
         val mediaId: String?,
         val coverImage: String?,
-        val type: MediaType?,
         val title: String?,
         val status: MediaListStatus?,
         val score: Double?,
@@ -113,7 +112,6 @@ class MediaEditData {
         constructor(
             mediaId: String?,
             coverImage: String?,
-            type: MediaType?,
             title: String?,
             mediaListEntry: MediaDetailsListEntry?,
             mediaType: MediaType?,
@@ -124,7 +122,6 @@ class MediaEditData {
             id = mediaListEntry?.id?.toString(),
             mediaId = mediaId,
             coverImage = coverImage,
-            type = type,
             title = title,
             status = mediaListEntry?.status,
             score = mediaListEntry?.score,

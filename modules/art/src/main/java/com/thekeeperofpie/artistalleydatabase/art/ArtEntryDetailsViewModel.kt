@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -356,7 +357,13 @@ open class ArtEntryDetailsViewModel @Inject constructor(
                 }
             }
 
-        val allEntryIds = (entryIds + saveImagesResult.keys).toSet()
+        val allEntryIds = if (entryIds.isEmpty() && saveImagesResult.isEmpty()) {
+            // TODO: There must be a better way to propagate no image saves
+            // If no images provided, mock an empty save result
+            setOf(EntryId(scopedIdType, UUID.randomUUID().toString()))
+        } else {
+            (entryIds + saveImagesResult.keys).toSet()
+        }
         val entryImages = entryImageController.images.groupBy { it.entryId }
         val entries = allEntryIds.map {
             val entryImage = entryImages[it]?.firstOrNull()

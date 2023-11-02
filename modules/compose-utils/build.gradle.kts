@@ -17,13 +17,13 @@ dependencies {
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
-    api(libs.material)
+    api(libs.compose.material)
     api(libs.material3)
     api(libs.compose.ui)
     api(libs.compose.ui.tooling.preview)
     implementation(libs.activity.compose)
     implementation(libs.navigation.compose)
-    implementation(libs.material.icons.extended)
+    implementation(libs.compose.material.icons.extended)
 
     api(libs.coil.compose)
     implementation(libs.palette.ktx)

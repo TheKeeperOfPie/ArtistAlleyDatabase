@@ -19,7 +19,7 @@ dependencies {
 
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.material.icons.core)
-    implementation(libs.material.icons.extended)
+    implementation(libs.compose.material.icons.core)
+    implementation(libs.compose.material.icons.extended)
     implementation(libs.material3)
 }

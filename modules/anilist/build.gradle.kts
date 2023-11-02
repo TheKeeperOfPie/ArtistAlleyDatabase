@@ -30,8 +30,8 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
-    implementation(libs.material.icons.core)
-    implementation(libs.material.icons.extended)
+    implementation(libs.compose.material.icons.core)
+    implementation(libs.compose.material.icons.extended)
 
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)

@@ -472,7 +472,6 @@ object AnimeMediaDetailsScreen {
                                             editViewModel.initialize(
                                                 mediaId = media.id.toString(),
                                                 coverImage = null,
-                                                type = null,
                                                 title = null,
                                                 mediaListEntry = listStatus?.entry,
                                                 mediaType = media.type,

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -236,6 +237,7 @@ sealed class EntrySection(lockState: LockState? = null) {
         private fun indexOf(entry: Entry) =
             contents.indexOfFirst { it.javaClass == entry.javaClass && it.id == entry.id }
 
+        @Immutable
         sealed class Entry(
             val id: String,
             val text: String,

@@ -74,7 +74,6 @@ class MediaEditViewModel @Inject constructor(
                             initialize(
                                 mediaId = request.mediaId,
                                 coverImage = request.coverImage,
-                                type = request.type,
                                 title = request.title,
                                 mediaListEntry = media.mediaListEntry,
                                 mediaType = media.type,
@@ -127,7 +126,6 @@ class MediaEditViewModel @Inject constructor(
             initialize(
                 mediaId = mediaId,
                 coverImage = media.coverImage?.extraLarge,
-                type = media.type,
                 title = title,
                 mediaListEntry = null,
                 mediaType = null,
@@ -161,7 +159,6 @@ class MediaEditViewModel @Inject constructor(
             initialize(
                 mediaId = mediaId,
                 coverImage = coverImage,
-                type = type,
                 title = title,
                 mediaListEntry = null,
                 mediaType = null,
@@ -178,7 +175,6 @@ class MediaEditViewModel @Inject constructor(
         mediaId: String,
         coverImage: String?,
         title: String?,
-        type: MediaType?,
         mediaListEntry: MediaDetailsListEntry?,
         mediaType: MediaType?,
         status: MediaListStatus?,
@@ -190,7 +186,6 @@ class MediaEditViewModel @Inject constructor(
             mediaId = mediaId,
             coverImage = coverImage,
             title = title,
-            type = type,
             mediaListEntry = mediaListEntry,
             mediaType = mediaType,
             maxProgress = maxProgress,
@@ -237,8 +232,8 @@ class MediaEditViewModel @Inject constructor(
     }
 
     fun onEditSheetValueChange(sheetValue: SheetValue): Boolean {
-        if (sheetValue == SheetValue.PartiallyExpanded) return false
-        if (sheetValue != SheetValue.Hidden) return true
+        if (!editData.showing) return true
+        if (sheetValue == SheetValue.Expanded) return true
         if (editData.isEqualTo(initialParams.value, scoreFormat.value)) return true
         editData.showConfirmClose = true
         return false
@@ -298,7 +293,6 @@ class MediaEditViewModel @Inject constructor(
                     initialize(
                         mediaId = mediaId,
                         coverImage = null,
-                        type = null,
                         title = null,
                         mediaListEntry = null,
                         mediaType = null,
@@ -421,7 +415,6 @@ class MediaEditViewModel @Inject constructor(
                     initialize(
                         mediaId = mediaId,
                         coverImage = initialParams.coverImage,
-                        type = initialParams.type,
                         title = initialParams.title,
                         mediaListEntry = result,
                         mediaType = initialParams.mediaType,

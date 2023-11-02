@@ -658,7 +658,7 @@ object AnimeHomeScreen {
         item("$titleRes-media") {
             val listState = rememberLazyListState()
             val snapLayoutInfoProvider =
-                remember(listState) { SnapLayoutInfoProvider(listState) { _, _, _ -> 0 } }
+                remember(listState) { SnapLayoutInfoProvider(listState) { _, _, _, _, _ -> 0 } }
 
             val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
             val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
