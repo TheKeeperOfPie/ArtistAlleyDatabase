@@ -76,6 +76,7 @@ fun ArtistAlleyDatabaseTheme(
         )
     }
     val isDarkTheme = appTheme == AppThemeSetting.DARK
+            || appTheme == AppThemeSetting.BLACK
             || (appTheme == AppThemeSetting.AUTO && systemInDarkTheme)
 
     val view = LocalView.current
