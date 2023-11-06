@@ -8,7 +8,8 @@ import org.gradle.kotlin.dsl.maven
 object Versions {
     const val accompanist = "0.33.2-alpha"
     const val apollo = "4.0.0-alpha.3"
-    const val compose = "1.6.0-alpha08"
+    // 1.6.0-alpha07 is last version that doesn't IndexOutOfBoundsException
+    const val compose = "1.6.0-alpha07"
     const val dagger = "2.48.1"
     const val hilt = "1.1.0-rc01"
 
@@ -75,7 +76,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 library("androidx.activity:activity-compose:1.8.0-alpha06")
                 // 1.2.0-alpha09 is last version that doesn't IndexOutOfBoundsException
-                library("androidx.compose.material3:material3:1.2.0-alpha10")
+                library("androidx.compose.material3:material3:1.2.0-alpha09")
                 library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
                 library("androidx.core:core-ktx:1.13.0-alpha01")
 
