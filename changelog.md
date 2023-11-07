@@ -1,7 +1,8 @@
 # Changelog
 
 ### Next (11)
-- 
+- Fix status bar icon color when using black theme
+- Hide current media header if previously no results
 
 ### 0.45 (10)
 - Add user score filter to media lists
