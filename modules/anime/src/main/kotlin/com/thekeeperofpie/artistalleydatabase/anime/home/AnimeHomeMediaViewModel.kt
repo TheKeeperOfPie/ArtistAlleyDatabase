@@ -16,6 +16,7 @@ import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -57,16 +58,16 @@ abstract class AnimeHomeMediaViewModel(
     @StringRes val currentHeaderTextRes: Int,
     val mediaType: MediaType,
     @StringRes private val errorTextRes: Int,
+    // Track the previous size to inform placeholder count; this probably isn't worth it
+    val currentMediaPreviousSize: MutableStateFlow<Int>,
 ) : ViewModel() {
 
     var entry by mutableStateOf<LoadingResult<AnimeHomeDataEntry>>(LoadingResult.loading())
     var currentMedia by mutableStateOf<LoadingResult<ImmutableList<UserMediaListController.MediaEntry>>>(
-        LoadingResult.loading()
+        LoadingResult.loading<ImmutableList<UserMediaListController.MediaEntry>>()
+            .copy(result = if (currentMediaPreviousSize.value == 0) emptyImmutableList() else null)
     )
     val reviews = MutableStateFlow(PagingData.empty<ReviewEntry>())
-
-    // Track the previous size to inform placeholder count; this probably isn't worth it
-    abstract val currentMediaPreviousSize: MutableStateFlow<Int>
 
     private val refresh = MutableStateFlow(-1L)
 
@@ -297,8 +298,8 @@ abstract class AnimeHomeMediaViewModel(
         currentHeaderTextRes = R.string.anime_home_anime_current_header,
         mediaType = MediaType.ANIME,
         errorTextRes = R.string.anime_home_error_loading_anime,
+        currentMediaPreviousSize = settings.currentMediaListSizeAnime,
     ) {
-        override val currentMediaPreviousSize = settings.currentMediaListSizeAnime
         override val suggestions = listOf(
             R.string.anime_home_suggestion_popular_all_time to AnimeNavDestinations.SEARCH_MEDIA.id
                     + "?titleRes=${R.string.anime_home_suggestion_popular_all_time}"
@@ -382,8 +383,8 @@ abstract class AnimeHomeMediaViewModel(
         currentHeaderTextRes = R.string.anime_home_manga_current_header,
         mediaType = MediaType.MANGA,
         errorTextRes = R.string.anime_home_error_loading_manga,
+        currentMediaPreviousSize = settings.currentMediaListSizeManga,
     ) {
-        override val currentMediaPreviousSize = settings.currentMediaListSizeManga
         override val suggestions = listOf(
             R.string.anime_home_suggestion_popular_all_time to AnimeNavDestinations.SEARCH_MEDIA.id
                     + "?titleRes=${R.string.anime_home_suggestion_popular_all_time}"
