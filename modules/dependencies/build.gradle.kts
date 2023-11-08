@@ -19,7 +19,7 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    val androidTools = "31.3.0-alpha10"
+    val androidTools = "31.3.0-alpha12"
     debugCompileOnly("com.android.tools.emulator:proto:$androidTools")
     debugCompileOnly("com.android.tools.utp:utp-common:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:$androidTools")

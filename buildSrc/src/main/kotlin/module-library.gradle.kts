@@ -94,6 +94,17 @@ kotlin {
     }
 }
 
+dependencies {
+    // TODO: Figure this out and remove
+    // https://github.com/gradle/gradle/issues/22326
+    // AGP 8.3.0-alpha11 causes a conflicts with Guava
+    modules {
+        module("com.google.guava:listenablefuture") {
+            replacedBy("com.google.guava:guava")
+        }
+    }
+}
+
 /**
  * Temporary hack to support Kotlin testFixtures as it's currently
  * [unsupported](https://issuetracker.google.com/issues/139438142)

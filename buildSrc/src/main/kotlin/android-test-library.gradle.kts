@@ -1,6 +1,6 @@
 
-import gradle.kotlin.dsl.accessors._78c8bcad42e342bbe53fb13aed7578e0.androidTestImplementation
-import gradle.kotlin.dsl.accessors._78c8bcad42e342bbe53fb13aed7578e0.androidTestRuntimeOnly
+import gradle.kotlin.dsl.accessors._4a18f8e30691389e0583de30bf7ecc54.androidTestImplementation
+import gradle.kotlin.dsl.accessors._4a18f8e30691389e0583de30bf7ecc54.androidTestRuntimeOnly
 
 val Project.libs: VersionCatalog
     get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
@@ -24,5 +24,9 @@ dependencies {
 }
 
 fun libs(vararg names: String) = names.map {
-    libs.findLibrary(it.removePrefix("libs.")).get().get()
+    try {
+        libs.findLibrary(it.removePrefix("libs.")).get().get()
+    } catch (t: Throwable) {
+        throw IllegalArgumentException("Failed to find $it", t)
+    }
 }

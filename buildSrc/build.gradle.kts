@@ -1,6 +1,6 @@
 plugins {
-    id("org.gradle.kotlin.kotlin-dsl") version "4.0.7"
-    id("org.gradle.kotlin.kotlin-dsl.precompiled-script-plugins") version "4.0.7"
+    id("org.gradle.kotlin.kotlin-dsl") version "4.2.1"
+    id("org.gradle.kotlin.kotlin-dsl.precompiled-script-plugins") version "4.2.1"
 }
 
 repositories {
