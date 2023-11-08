@@ -229,6 +229,10 @@ subprojects {
                             "/compose_compiler"
                 )
             }
+            freeCompilerArgs += listOf(
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:experimentalStrongSkipping=true"
+            )
         }
     }
 }

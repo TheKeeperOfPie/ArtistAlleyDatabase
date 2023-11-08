@@ -143,7 +143,6 @@ afterEvaluate {
     tasks.withType(KotlinCompile::class).forEach {
         it.kotlinOptions {
             jvmTarget = "11"
-            freeCompilerArgs += "-Xcontext-receivers"
         }
     }
 }
