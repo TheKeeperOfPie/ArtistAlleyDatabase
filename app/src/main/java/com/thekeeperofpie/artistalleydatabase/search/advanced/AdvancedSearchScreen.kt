@@ -31,6 +31,7 @@ object AdvancedSearchScreen {
         sections: () -> List<EntrySection>,
         onClickClear: () -> Unit,
         onClickSearch: () -> Unit,
+        onNavigate: (String) -> Unit,
     ) {
         Scaffold(
             topBar = {
@@ -54,7 +55,7 @@ object AdvancedSearchScreen {
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    EntryForm(loading, sections)
+                    EntryForm(loading, sections, onNavigate)
                 }
 
                 AnimatedVisibility(

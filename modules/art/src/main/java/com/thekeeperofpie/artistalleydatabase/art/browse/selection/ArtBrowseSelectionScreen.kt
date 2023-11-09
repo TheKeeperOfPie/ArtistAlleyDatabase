@@ -14,6 +14,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 
 object ArtBrowseSelectionScreen {
@@ -21,6 +22,7 @@ object ArtBrowseSelectionScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
+        upIconOption: UpIconOption,
         title: () -> String,
         loading: () -> Boolean,
         errorRes: () -> Pair<Int, Exception?>? = { null },
@@ -34,7 +36,7 @@ object ArtBrowseSelectionScreen {
         onConfirmDelete: () -> Unit = {},
     ) {
         Scaffold(
-            topBar = { AppBar(text = title()) },
+            topBar = { AppBar(text = title(), upIconOption = upIconOption) },
             snackbarHost = {
                 SnackbarErrorText(
                     errorRes()?.first,

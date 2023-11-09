@@ -150,6 +150,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                     onLongClickSave = { viewModel.onLongClickSave(navHostController) },
                     onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
                     onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
+                    onNavigate = navHostController::navigate,
                 )
             }
         }

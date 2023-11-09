@@ -89,6 +89,7 @@ object EntryDetailsScreen {
         onConfirmDelete: () -> Unit = {},
         onClickSaveTemplate: (() -> Unit)? = null,
         onExitConfirm: () -> Unit = {},
+        onNavigate: (String) -> Unit,
     ) {
         Scaffold(
             snackbarHost = {
@@ -163,6 +164,7 @@ object EntryDetailsScreen {
                             EntryForm(
                                 areSectionsLoading = { viewModel.sectionsLoading },
                                 sections = { viewModel.sections },
+                                onNavigate = onNavigate,
                             )
                         }
                     }

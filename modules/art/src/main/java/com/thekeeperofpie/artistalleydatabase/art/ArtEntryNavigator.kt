@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
 import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -108,6 +109,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
 
             viewModel.initialize(column, query)
             ArtBrowseSelectionScreen(
+                upIconOption = UpIconOption.Back(navHostController),
                 title = { title },
                 loading = { viewModel.loading },
                 entries = { viewModel.entries.collectAsLazyPagingItems() },
@@ -161,6 +163,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                     onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
                     onClickSaveTemplate = { viewModel.onClickSaveTemplate() },
                     onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
+                    onNavigate = navHostController::navigate,
                 )
             }
         }

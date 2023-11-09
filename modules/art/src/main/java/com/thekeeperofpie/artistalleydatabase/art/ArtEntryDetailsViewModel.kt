@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
@@ -68,6 +69,12 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         R.string.art_entry_series_header_one,
         R.string.art_entry_series_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
+        navRoute = {
+            ArtNavDestinations.BROWSE_SELECTION.id +
+                    "?queryType=${ArtEntryColumn.SERIES.name}" +
+                    "&title=${it.text}" +
+                    "&queryString=${it.text}"
+        }
     )
 
     protected val characterSection = EntrySection.MultiText(
@@ -75,6 +82,12 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         R.string.art_entry_characters_header_one,
         R.string.art_entry_characters_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
+        navRoute = {
+            ArtNavDestinations.BROWSE_SELECTION.id +
+                    "?queryType=${ArtEntryColumn.CHARACTERS.name}" +
+                    "&title=${it.text}" +
+                    "&queryString=${it.text}"
+        }
     )
 
     protected val sourceSection = SourceDropdown(locked = EntrySection.LockState.UNLOCKED)
@@ -84,6 +97,12 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         R.string.art_entry_artists_header_one,
         R.string.art_entry_artists_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
+        navRoute = {
+            ArtNavDestinations.BROWSE_SELECTION.id +
+                    "?queryType=${ArtEntryColumn.ARTISTS.name}" +
+                    "&title=${it.text}" +
+                    "&queryString=${it.text}"
+        }
     )
 
     protected val tagSection = EntrySection.MultiText(
@@ -91,6 +110,12 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         R.string.art_entry_tags_header_one,
         R.string.art_entry_tags_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
+        navRoute = {
+            ArtNavDestinations.BROWSE_SELECTION.id +
+                    "?queryType=${ArtEntryColumn.TAGS.name}" +
+                    "&title=${it.text}" +
+                    "&queryString=${it.text}"
+        }
     )
 
     protected val printSizeSection = PrintSizeDropdown(lockState = EntrySection.LockState.UNLOCKED)

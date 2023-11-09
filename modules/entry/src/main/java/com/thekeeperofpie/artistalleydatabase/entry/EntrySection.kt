@@ -87,7 +87,8 @@ sealed class EntrySection(lockState: LockState? = null) {
         @StringRes val headerOne: Int,
         @StringRes val headerMany: Int,
         initialPendingValue: String = "",
-        lockState: LockState? = null
+        lockState: LockState? = null,
+        val navRoute: ((Entry) -> String)? = null,
     ) : EntrySection(lockState) {
         val contents = mutableStateListOf<Entry>()
         private var contentUpdates = MutableStateFlow(emptyList<Entry>())

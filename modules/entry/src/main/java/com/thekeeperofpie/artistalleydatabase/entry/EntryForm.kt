@@ -57,6 +57,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
@@ -126,6 +127,7 @@ import kotlin.math.roundToInt
 fun EntryForm(
     areSectionsLoading: () -> Boolean = { false },
     sections: () -> List<EntrySection> = { emptyList() },
+    onNavigate: (String) -> Unit,
 ) {
     AnimatedContent(
         targetState = areSectionsLoading(),
@@ -149,7 +151,7 @@ fun EntryForm(
             Column {
                 sections().forEach {
                     when (it) {
-                        is EntrySection.MultiText -> MultiTextSection(it)
+                        is EntrySection.MultiText -> MultiTextSection(it, onNavigate)
                         is EntrySection.LongText -> LongTextSection(it)
                         is EntrySection.Dropdown -> DropdownSection(it)
                         is EntrySection.Custom<*> -> CustomSection(it)
@@ -200,7 +202,10 @@ private fun SectionHeader(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MultiTextSection(section: EntrySection.MultiText) {
+private fun MultiTextSection(
+    section: EntrySection.MultiText,
+    onNavigate: (String) -> Unit,
+) {
     when (section.contentSize()) {
         0 -> section.headerZero
         1 -> section.headerOne
@@ -240,7 +245,9 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                         EntrySection.MultiText.Entry.Custom("")
                     )
                 },
-                lockState = { section.lockState }
+                lockState = { section.lockState },
+                onNavigate = onNavigate,
+                navRoute = section.navRoute,
             )
 
             Box(
@@ -455,6 +462,9 @@ private fun PrefilledSectionField(
     onClickMore: () -> Unit = {},
     onDone: () -> Unit = {},
     lockState: () -> EntrySection.LockState? = { null },
+    onNavigate: (String) -> Unit,
+    // TODO: Move to a higher level shared navigation callback (currently anime module only)
+    navRoute: ((EntrySection.MultiText.Entry) -> String)? = null,
 ) {
     val backgroundShape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
@@ -470,18 +480,31 @@ private fun PrefilledSectionField(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onDone() }),
                 trailingIcon = {
-                    AnimatedVisibility(
-                        visible = lockState?.editable != false,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        IconButton(onClick = onClickMore) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = stringResource(
-                                    R.string.more_actions_content_description
-                                ),
-                            )
+                    Row {
+                        if (navRoute != null) {
+                            IconButton(onClick = { onNavigate(navRoute(entry)) }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                                    contentDescription = stringResource(
+                                        R.string.entry_open_more_content_description
+                                    ),
+                                )
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = lockState?.editable != false,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            IconButton(onClick = onClickMore) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = stringResource(
+                                        R.string.more_actions_content_description
+                                    ),
+                                )
+                            }
                         }
                     }
                 },

@@ -48,4 +48,6 @@
     <string name="entry_image_menu_option_open">Open</string>
     <string name="entry_image_menu_option_edit">Edit</string>
     <string name="entry_image_menu_option_crop">Crop</string>
+
+    <string name="entry_open_more_content_description">Open more</string>
 </resources>

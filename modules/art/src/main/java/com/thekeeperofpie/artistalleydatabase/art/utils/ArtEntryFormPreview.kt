@@ -70,7 +70,8 @@ fun Preview(
                     (first() as EntrySection.MultiText).lockState =
                         EntrySection.LockState.LOCKED
                 }
-            }
+            },
+            onNavigate = {},
         )
     }
 }

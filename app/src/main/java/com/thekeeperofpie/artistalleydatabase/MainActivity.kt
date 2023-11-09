@@ -478,6 +478,7 @@ class MainActivity : ComponentActivity() {
                                                 "?queryId=$queryId"
                                     )
                                 },
+                                onNavigate = navHostController::navigate,
                             )
                         }
 
