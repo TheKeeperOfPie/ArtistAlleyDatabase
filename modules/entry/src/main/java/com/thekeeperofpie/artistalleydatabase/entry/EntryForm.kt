@@ -305,8 +305,8 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                 lockState = { section.lockState },
                 modifier = Modifier
                     .focusRequester(focusRequester)
-                    .onFocusChanged { focused = it.isFocused }
                     .focusable(section.lockState?.editable != false)
+                    .onFocusChanged { focused = it.isFocused }
                     .bringIntoViewRequester(bringIntoViewRequester)
             )
 
