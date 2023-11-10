@@ -59,4 +59,9 @@
     <string name="art_browse_tab_characters">Characters</string>
     <string name="art_browse_tab_tags">Tags</string>
     <string name="art_template_saved">Template saved</string>
+
+    <string name="art_entry_series_unlocked_indicator_content_description">Series unlocked</string>
+    <string name="art_entry_characters_unlocked_indicator_content_description">Characters unlocked</string>
+    <string name="art_entry_artists_unlocked_indicator_content_description">Artists unlocked</string>
+    <string name="art_entry_source_unlocked_indicator_content_description">Source unlocked</string>
 </resources>

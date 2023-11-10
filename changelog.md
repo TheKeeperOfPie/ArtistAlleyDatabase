@@ -4,6 +4,7 @@
 - Fix status bar icon color when using black theme
 - Hide current media header if previously no results
 - Add show more of button for some art entry fields
+- Add indicator icons for unlocked entry fields
 
 ### 0.45 (10)
 - Add user score filter to media lists

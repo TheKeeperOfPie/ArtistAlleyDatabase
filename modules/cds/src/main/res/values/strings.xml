@@ -44,4 +44,12 @@
     <string name="cd_search_option_other">Other</string>
     <string name="cd_search_option_locked">Locked</string>
     <string name="cd_search_option_unlocked">Unlocked</string>
+
+    <string name="cd_entry_catalogId_unlocked_indicator_content_description">Catalog ID unlocked</string>
+    <string name="cd_entry_title_unlocked_indicator_content_description">Title unlocked</string>
+    <string name="cd_entry_performers_unlocked_indicator_content_description">Performers unlocked</string>
+    <string name="cd_entry_composers_unlocked_indicator_content_description">Composers unlocked</string>
+    <string name="cd_entry_series_unlocked_indicator_content_description">Series unlocked</string>
+    <string name="cd_entry_characters_unlocked_indicator_content_description">Characters unlocked</string>
+    <string name="cd_entry_discs_unlocked_indicator_content_description">Discs unlocked</string>
 </resources>

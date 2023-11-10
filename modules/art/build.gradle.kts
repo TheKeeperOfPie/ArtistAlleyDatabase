@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.compose.ui)
     api(libs.compose.ui.tooling.preview)
     implementation(libs.material3)
+    implementation(libs.compose.material.icons.extended)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)

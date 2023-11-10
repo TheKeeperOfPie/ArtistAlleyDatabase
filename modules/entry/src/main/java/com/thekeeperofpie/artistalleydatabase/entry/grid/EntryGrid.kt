@@ -309,6 +309,8 @@ object EntryGrid {
                         contentDescription = stringResource(R.string.selected_content_description),
                     )
                 }
+
+                entry.ErrorIcons(modifier = Modifier.align(Alignment.BottomEnd))
             }
         }
     }

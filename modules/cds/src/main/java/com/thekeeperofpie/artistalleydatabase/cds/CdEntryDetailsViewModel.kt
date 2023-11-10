@@ -439,7 +439,7 @@ class CdEntryDetailsViewModel @Inject constructor(
     }
 
     override fun initializeForm(model: CdEntryModel) {
-        catalogIdSection.setContents(listOf(model.catalogId), model.titlesLocked)
+        catalogIdSection.setContents(listOf(model.catalogId), model.catalogIdLocked)
         titleSection.setContents(model.titles, model.titlesLocked)
         performerSection.setContents(model.performers, model.performersLocked)
         composerSection.setContents(model.composers, model.composersLocked)
