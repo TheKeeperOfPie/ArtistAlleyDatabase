@@ -348,6 +348,8 @@ class EntryImageController(
                         originalFile = originalFile.takeIf { originalError == null },
                         croppedFile = croppedFile.takeIf { croppedError == null },
                         error = croppedError ?: originalError,
+                        width = entryImage.finalWidth,
+                        height = entryImage.finalHeight,
                     )
                 }
             }
@@ -389,5 +391,7 @@ class EntryImageController(
         val originalFile: File?,
         val croppedFile: File?,
         val error: Pair<Int, Exception?>?,
+        val width: Int,
+        val height: Int,
     )
 }

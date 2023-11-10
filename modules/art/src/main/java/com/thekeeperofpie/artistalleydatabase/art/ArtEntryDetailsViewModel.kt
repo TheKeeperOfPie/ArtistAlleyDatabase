@@ -391,11 +391,11 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         }
         val entryImages = entryImageController.images.groupBy { it.entryId }
         val entries = allEntryIds.map {
-            val entryImage = entryImages[it]?.firstOrNull()
+            val result = saveImagesResult[it]?.firstOrNull()
             baseEntry.copy(
                 id = it.valueId,
-                imageWidth = entryImage?.finalWidth,
-                imageHeight = entryImage?.finalHeight,
+                imageWidth = result?.width,
+                imageHeight = result?.height,
             )
         }
         artEntryDao.insertEntries(entries)
