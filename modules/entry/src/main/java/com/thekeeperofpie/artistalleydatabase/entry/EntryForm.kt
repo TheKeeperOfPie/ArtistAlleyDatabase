@@ -1,4 +1,5 @@
 @file:Suppress("NAME_SHADOWING")
+@file:OptIn(ExperimentalFoundationApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.entry
 
@@ -53,6 +54,7 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActionScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -79,6 +81,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -149,12 +152,43 @@ fun EntryForm(
             }
         } else {
             Column {
-                sections().forEach {
-                    when (it) {
-                        is EntrySection.MultiText -> MultiTextSection(it, onNavigate)
-                        is EntrySection.LongText -> LongTextSection(it)
-                        is EntrySection.Dropdown -> DropdownSection(it)
-                        is EntrySection.Custom<*> -> CustomSection(it)
+                val sections = sections()
+                val sectionFocusRequesters = remember(sections) {
+                    sections.map { FocusRequester() }
+                }
+                val onFocusNext = { index: Int ->
+                    try {
+                        (index + 1 until sections.size)
+                            .find {
+                                when (val nextSection = sections[it]) {
+                                    is EntrySection.Custom<*> -> false
+                                    is EntrySection.Dropdown,
+                                    is EntrySection.LongText,
+                                    is EntrySection.MultiText,
+                                    -> nextSection.lockState?.editable != false
+                                }
+                            }
+                            ?.let { sectionFocusRequesters[it] }
+                            ?.requestFocus()
+                    } catch (ignored: Throwable) {
+                        // FocusRequester will throw if it isn't attached
+                    }
+                }
+                sections.forEachIndexed { index, section ->
+                    val focusRequester = sectionFocusRequesters[index]
+                    when (section) {
+                        is EntrySection.MultiText -> {
+                            MultiTextSection(
+                                section = section,
+                                focusRequester = focusRequester,
+                                onNavigate = onNavigate,
+                                onFocusNext = { onFocusNext(index) },
+                            )
+                        }
+                        is EntrySection.LongText -> LongTextSection(section, focusRequester)
+                        is EntrySection.Dropdown -> DropdownSection(section, focusRequester)
+                        // TODO: Custom section FocusRequester
+                        is EntrySection.Custom<*> -> CustomSection(section)
                     }
                 }
 
@@ -204,7 +238,9 @@ private fun SectionHeader(
 @Composable
 private fun MultiTextSection(
     section: EntrySection.MultiText,
+    focusRequester: FocusRequester,
     onNavigate: (String) -> Unit,
+    onFocusNext: () -> Unit,
 ) {
     when (section.contentSize()) {
         0 -> section.headerZero
@@ -290,31 +326,20 @@ private fun MultiTextSection(
         }
     }
 
+    var focused by rememberSaveable { mutableStateOf(false) }
     AnimatedVisibility(
         visible = section.lockState?.editable != false,
         enter = expandVertically(),
         exit = shrinkVertically(),
     ) {
         Box {
-            val focusRequester = remember { FocusRequester() }
             val bringIntoViewRequester = remember { BringIntoViewRequester() }
             val coroutineScope = rememberCoroutineScope()
-            var focused by rememberSaveable { mutableStateOf(false) }
             OpenSectionField(
-                value = { section.pendingValue },
-                onValueChange = { section.pendingValue = it },
-                onDone = {
-                    if (it.isNotEmpty()) {
-                        section.addContent(EntrySection.MultiText.Entry.Custom(it))
-                        section.pendingValue = ""
-                    }
-                },
-                lockState = { section.lockState },
-                modifier = Modifier
-                    .focusRequester(focusRequester)
-                    .focusable(section.lockState?.editable != false)
-                    .onFocusChanged { focused = it.isFocused }
-                    .bringIntoViewRequester(bringIntoViewRequester)
+                section = section,
+                onFocusNext = onFocusNext,
+                focusRequester = focusRequester,
+                onFocusChanged = { focused = it },
             )
 
             if (section.lockState?.editable != false
@@ -323,9 +348,10 @@ private fun MultiTextSection(
             ) {
                 // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
                 val uriHandler = LocalUriHandler.current
+                val expanded by remember { derivedStateOf { focused && section.predictions.isNotEmpty() } }
                 DropdownMenu(
-                    expanded = focused && section.predictions.isNotEmpty(),
-                    onDismissRequest = { focusRequester.freeFocus() },
+                    expanded = expanded,
+                    onDismissRequest = focusRequester::freeFocus,
                     properties = PopupProperties(focusable = false),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -334,7 +360,6 @@ private fun MultiTextSection(
                     section.predictions.forEachIndexed { index, entry ->
                         DropdownMenuItem(
                             onClick = {
-                                focusRequester.requestFocus()
                                 section.onPredictionChosen(index)
                                 coroutineScope.launch {
                                     delay(500)
@@ -436,7 +461,7 @@ private fun MultiTextSection(
 }
 
 @Composable
-private fun LongTextSection(section: EntrySection.LongText) {
+private fun LongTextSection(section: EntrySection.LongText, focusRequester: FocusRequester) {
     SectionHeader(
         text = { stringResource(section.headerRes) },
         lockState = { section.lockState },
@@ -448,6 +473,7 @@ private fun LongTextSection(section: EntrySection.LongText) {
         onValueChange = { section.value = it },
         readOnly = section.lockState?.editable == false,
         modifier = Modifier
+            .focusRequester(focusRequester)
             .focusable(section.lockState?.editable != false)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
@@ -736,11 +762,44 @@ fun EntryImage(
 
 @Composable
 private fun OpenSectionField(
+    section: EntrySection.MultiText,
+    onFocusNext: () -> Unit,
+    focusRequester: FocusRequester,
+    onFocusChanged: (Boolean) -> Unit,
+) {
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val coroutineScope = rememberCoroutineScope()
+    OpenSectionField(
+        value = { section.pendingValue },
+        onValueChange = { section.pendingValue = it },
+        onNext = {
+            if (section.contentSize() > 0) {
+                section.rotateLockState()
+            }
+            onFocusNext()
+        },
+        onDone = {
+            if (it.isNotEmpty()) {
+                section.addContent(EntrySection.MultiText.Entry.Custom(it))
+                section.pendingValue = ""
+            }
+        },
+        lockState = { section.lockState },
+        modifier = Modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged { onFocusChanged(it.isFocused) }
+            .bringIntoViewRequester(bringIntoViewRequester)
+    )
+}
+
+@Composable
+private fun OpenSectionField(
     value: () -> String,
     modifier: Modifier = Modifier,
-    onValueChange: (value: String) -> Unit = {},
-    onDone: (value: String) -> Unit = {},
-    lockState: () -> EntrySection.LockState? = { null },
+    onValueChange: (value: String) -> Unit,
+    onNext: KeyboardActionScope.() -> Unit,
+    onDone: (value: String) -> Unit,
+    lockState: () -> EntrySection.LockState?,
 ) {
     @Suppress("NAME_SHADOWING")
     val value = value()
@@ -748,8 +807,8 @@ private fun OpenSectionField(
         value = value,
         onValueChange = onValueChange,
         readOnly = lockState()?.editable == false,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onDone(value) }),
+        keyboardOptions = KeyboardOptions(imeAction = if (value.isEmpty()) ImeAction.Next else ImeAction.Done),
+        keyboardActions = KeyboardActions(onNext = onNext, onDone = { onDone(value) }),
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
@@ -770,7 +829,7 @@ private fun OpenSectionField(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DropdownSection(section: EntrySection.Dropdown) {
+private fun DropdownSection(section: EntrySection.Dropdown, focusRequester: FocusRequester) {
     SectionHeader(
         text = { stringResource(section.headerRes) },
         lockState = { section.lockState },
@@ -793,9 +852,6 @@ private fun DropdownSection(section: EntrySection.Dropdown) {
             Modifier.fillMaxWidth()
         ) {
             TextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
                 readOnly = true,
                 value = section.selectedItem().fieldText(),
                 onValueChange = {},
@@ -812,6 +868,10 @@ private fun DropdownSection(section: EntrySection.Dropdown) {
                     }
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .menuAnchor()
             )
             ExposedDropdownMenu(
                 expanded = section.expanded,
