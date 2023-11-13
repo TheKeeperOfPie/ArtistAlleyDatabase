@@ -259,7 +259,12 @@ object EntryDetailsScreen {
                             RoundedCornerShape(bottomEnd = 8.dp),
                         )
                 ) {
-                    ArrowBackIconButton(onClickBack)
+                    // TODO: NavHostController#navigateUp doesn't invoke the back press handler
+                    ArrowBackIconButton(onClick = {
+                        if (viewModel.onNavigateBack()) {
+                            onClickBack()
+                        }
+                    })
                 }
             }
 
