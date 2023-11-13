@@ -338,6 +338,7 @@ private fun MultiTextSection(
             OpenSectionField(
                 section = section,
                 onFocusNext = onFocusNext,
+                bringIntoViewRequester = bringIntoViewRequester,
                 focusRequester = focusRequester,
                 onFocusChanged = { focused = it },
             )
@@ -362,6 +363,7 @@ private fun MultiTextSection(
                             onClick = {
                                 section.onPredictionChosen(index)
                                 coroutineScope.launch {
+                                    // TODO: Delay is necessary or column won't scroll
                                     delay(500)
                                     bringIntoViewRequester.bringIntoView()
                                 }
@@ -764,10 +766,10 @@ fun EntryImage(
 private fun OpenSectionField(
     section: EntrySection.MultiText,
     onFocusNext: () -> Unit,
+    bringIntoViewRequester: BringIntoViewRequester,
     focusRequester: FocusRequester,
     onFocusChanged: (Boolean) -> Unit,
 ) {
-    val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val coroutineScope = rememberCoroutineScope()
     OpenSectionField(
         value = { section.pendingValue },
