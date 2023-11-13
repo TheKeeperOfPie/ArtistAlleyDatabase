@@ -66,6 +66,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.rememberPullRefreshState
@@ -368,13 +369,13 @@ object EntryDetailsScreen {
                 cropState = cropState,
                 loading = loading,
                 onClickOpenImage = onImageClickOpen,
-            ) {
-                val uri = it.croppedUri ?: it.uri
+            ) { entryImage, zoomPanState ->
+                val uri = entryImage.croppedUri ?: entryImage.uri
                 if (uri != null) {
                     var transitionProgress by remember { mutableStateOf(1f) }
                     val cornerDp = imageCornerDp?.let { lerp(it, 0.dp, transitionProgress) }
                     SharedElement(
-                        key = "${it.entryId?.scopedId}_image",
+                        key = "${entryImage.entryId?.scopedId}_image",
                         screenKey = screenKey,
                         // Try to disable the fade animation
                         transitionSpec = SharedElementsTransitionSpec(
@@ -385,36 +386,38 @@ object EntryDetailsScreen {
                     ) {
                         val configuration = LocalConfiguration.current
                         val screenWidth = configuration.screenWidthDp.dp
-                        val minimumHeight = screenWidth * it.widthToHeightRatio
-                        AsyncImage(
-                            ImageRequest.Builder(LocalContext.current)
-                                .data(uri)
-                                .crossfade(false)
-                                .placeholderMemoryCacheKey(
-                                    EntryUtils.getImageCacheKey(
-                                        it,
-                                        it.croppedWidth ?: it.width,
-                                        it.croppedHeight ?: it.height,
+                        val minimumHeight = screenWidth * entryImage.widthToHeightRatio
+                        ZoomPanBox(state = zoomPanState) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(uri)
+                                    .crossfade(false)
+                                    .placeholderMemoryCacheKey(
+                                        EntryUtils.getImageCacheKey(
+                                            entryImage,
+                                            entryImage.croppedWidth ?: entryImage.width,
+                                            entryImage.croppedHeight ?: entryImage.height,
+                                        )
                                     )
-                                )
-                                .listener { _, result ->
-                                    imageState().onSizeResult(
-                                        result.drawable.intrinsicWidth,
-                                        result.drawable.intrinsicHeight,
-                                    )
-                                }
-                                .build(),
-                            contentDescription = stringResource(
-                                R.string.entry_image_content_description
-                            ),
-                            contentScale = ContentScale.FillWidth,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = minimumHeight)
-                                .conditionally(imageCornerDp != null) {
-                                    clip(RoundedCornerShape(cornerDp ?: 0.dp))
-                                }
-                        )
+                                    .listener { _, result ->
+                                        imageState().onSizeResult(
+                                            result.drawable.intrinsicWidth,
+                                            result.drawable.intrinsicHeight,
+                                        )
+                                    }
+                                    .build(),
+                                contentDescription = stringResource(
+                                    R.string.entry_image_content_description
+                                ),
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = minimumHeight)
+                                    .conditionally(imageCornerDp != null) {
+                                        clip(RoundedCornerShape(cornerDp ?: 0.dp))
+                                    }
+                            )
+                        }
                     }
                 } else {
                     Spacer(

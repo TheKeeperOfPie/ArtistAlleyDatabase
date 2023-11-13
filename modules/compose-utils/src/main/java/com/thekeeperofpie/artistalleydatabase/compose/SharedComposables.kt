@@ -26,13 +26,15 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.TransformableState
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -116,6 +118,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
@@ -161,6 +164,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
+import androidx.compose.ui.util.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.os.BuildCompat
 import androidx.core.text.HtmlCompat
@@ -557,7 +561,7 @@ fun AutoResizeHeightText(
     minLines: Int = 1,
     style: TextStyle = LocalTextStyle.current,
     minTextSizeSp: Float = 2f,
-    textAlignment : Alignment = Alignment.CenterStart,
+    textAlignment: Alignment = Alignment.CenterStart,
 ) {
     val initialFontSize = style.fontSize
     var realFontSize by remember { mutableStateOf(initialFontSize) }
@@ -1388,10 +1392,11 @@ fun DetailsSectionHeader(
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {
     if (onClickViewAll != null) {
-        Row(modifier = modifier
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable(onClick = onClickViewAll)
-            .recomposeHighlighter()
+        Row(
+            modifier = modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .clickable(onClick = onClickViewAll)
+                .recomposeHighlighter()
         ) {
             Text(
                 text = text,
@@ -1594,6 +1599,24 @@ class ZoomPanState(
     initialTranslationY: Float = 0f,
     initialScale: Float = 1f,
 ) {
+    var maxTranslationX = 0f
+    var maxTranslationY = 0f
+    var transformableState = TransformableState { zoomChange, panChange, _ ->
+        val translation = translation + panChange
+        val scale = this.scale
+        this.translation = translation.copy(
+            x = translation.x.coerceIn(
+                -maxTranslationX * (scale - 1f),
+                maxTranslationX * (scale - 1f),
+            ),
+            y = translation.y.coerceIn(
+                -maxTranslationY * (scale - 1f),
+                maxTranslationY * (scale - 1f),
+            ),
+        )
+        this.scale = (scale * zoomChange).coerceIn(1f, 5f)
+    }
+
     companion object {
         val Saver: Saver<ZoomPanState, *> = listSaver(
             save = { listOf(it.translation.x, it.translation.y, it.scale) },
@@ -1614,21 +1637,31 @@ class ZoomPanState(
         return scale < 1.1f
     }
 
-    fun toggleZoom(offset: Offset, size: IntSize) {
+    suspend fun toggleZoom(offset: Offset, size: IntSize) {
+        val scaleTarget: Float
+        val translationTarget: Offset
         if (scale < 1.1f) {
-            scale = 2.5f
-            translation = calculateZoomOffset(offset, size)
+            scaleTarget = 2.5f
+            translationTarget = calculateZoomOffset(offset, size, scaleTarget)
         } else {
-            scale = 1f
-            translation = Offset.Zero
+            scaleTarget = 1f
+            translationTarget = Offset.Zero
+        }
+        transformableState.transform(MutatePriority.UserInput) {
+            val scaleStart = scale
+            val translationStart = translation
+            Animatable(0f).animateTo(1f) {
+                scale = lerp(scaleStart, scaleTarget, value)
+                translation = lerp(translationStart, translationTarget, value)
+            }
         }
     }
 
-    private fun calculateZoomOffset(tapOffset: Offset, size: IntSize): Offset {
+    private fun calculateZoomOffset(tapOffset: Offset, size: IntSize, scale: Float): Offset {
         val offsetX = (-(tapOffset.x - (size.width / 2f)) * 2f)
-            .coerceIn(-size.width / 2f, size.width / 2f)
+            .coerceIn(-maxTranslationX * (scale - 1f), maxTranslationX * (scale - 1f))
         val offsetY = (-(tapOffset.y - (size.height / 2f)) * 2f)
-            .coerceIn(-size.height / 2f, size.height / 2f)
+            .coerceIn(-maxTranslationY * (scale - 1f), maxTranslationY * (scale - 1f))
         return Offset(offsetX, offsetY)
     }
 }
@@ -1636,37 +1669,18 @@ class ZoomPanState(
 @Composable
 fun ZoomPanBox(
     state: ZoomPanState = rememberZoomPanState(),
-    onClick: () -> Unit = {},
+    onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val density = LocalDensity.current
-    var maxTranslationX by remember(density) { mutableFloatStateOf(0f) }
-    var maxTranslationY by remember(density) { mutableFloatStateOf(0f) }
-    val transformableState =
-        rememberTransformableState { zoomChange, panChange, _ ->
-            val translation = state.translation + panChange
-            val scale = state.scale
-            state.translation = translation.copy(
-                x = translation.x.coerceIn(
-                    -maxTranslationX * (scale - 1f),
-                    maxTranslationX * (scale - 1f)
-                ),
-                y = translation.y.coerceIn(
-                    -maxTranslationY * (scale - 1f),
-                    maxTranslationY * (scale - 1f)
-                ),
-            )
-            state.scale = (scale * zoomChange).coerceIn(1f, 5f)
-        }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .onSizeChanged {
-                maxTranslationX = it.width / 2f
-                maxTranslationY = it.height / 2f
+                state.maxTranslationX = it.width / 2f
+                state.maxTranslationY = it.height / 2f
             }
             .transformable(
-                state = transformableState,
+                state = state.transformableState,
                 canPan = { state.scale > 1.1f },
                 lockRotationOnZoomPan = true
             )
@@ -1676,11 +1690,13 @@ fun ZoomPanBox(
                 scaleX = state.scale,
                 scaleY = state.scale,
             )
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
+            .conditionally(onClick != null) {
+                clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick!!,
+                )
+            },
         content = content,
     )
 }

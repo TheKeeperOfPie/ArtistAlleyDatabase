@@ -30,8 +30,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -80,6 +80,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -102,6 +103,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -119,9 +121,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
+import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanState
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -924,7 +928,7 @@ fun MultiImageSelectBox(
     cropState: () -> CropUtils.CropState,
     loading: () -> Boolean,
     onClickOpenImage: (index: Int) -> Unit,
-    imageContent: @Composable (image: EntryImage) -> Unit,
+    imageContent: @Composable (image: EntryImage, zoomPanState: ZoomPanState) -> Unit,
 ) {
     val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
         GetMultipleContentsChooser,
@@ -1020,9 +1024,16 @@ fun MultiImageSelectBox(
         height = animatedHeight,
         onBackPress = { heightAnimation.animateTo(1f, tween(1000)) }
     ) {
+        val zoomPanStates = remember { mutableMapOf<Int, ZoomPanState>() }
+        val userScrollEnabled by remember {
+            derivedStateOf {
+                zoomPanStates[pagerState.currentPage]?.canPanExternal() != false
+            }
+        }
         val images = imageState().images()
         HorizontalPager(
             state = pagerState,
+            userScrollEnabled = userScrollEnabled,
             modifier = Modifier.heightIn(max = 10000.dp)
         ) { index ->
             if (index == images.size) {
@@ -1037,23 +1048,41 @@ fun MultiImageSelectBox(
                 if (uri == null) {
                     // TODO: Null image placeholder
                 } else {
+                    val coroutineScope = rememberCoroutineScope()
+                    val zoomPanState = rememberZoomPanState()
+                    DisposableEffect(image, index) {
+                        zoomPanStates[index] = zoomPanState
+                        onDispose {
+                            zoomPanStates.remove(index)
+                        }
+                    }
                     Box(
-                        Modifier
+                        modifier = Modifier
                             .wrapContentHeight()
                             .verticalScroll(rememberScrollState())
-                            .combinedClickable(
-                                onClick = { showMenu = true },
-                                onLongClick = {
-                                    val cropState = cropState()
-                                    if (cropState.cropReadyIndex() == index) {
-                                        imageCropLauncher.launch(index)
-                                    } else {
-                                        cropState.onImageRequestCrop(index)
-                                    }
-                                }
-                            )
+                            .pointerInput(zoomPanState) {
+                                detectTapGestures(
+                                    onTap = { showMenu = true },
+                                    onLongPress = {
+                                        val cropState = cropState()
+                                        if (cropState.cropReadyIndex() == index) {
+                                            imageCropLauncher.launch(index)
+                                        } else {
+                                            cropState.onImageRequestCrop(index)
+                                        }
+                                    },
+                                    onDoubleTap = {
+                                        if (zoomPanState.scale < 1.1f) {
+                                            expanded = true
+                                        }
+                                        coroutineScope.launch {
+                                            zoomPanState.toggleZoom(it, size)
+                                        }
+                                    },
+                                )
+                            }
                     ) {
-                        imageContent(image)
+                        imageContent(image, zoomPanState)
                     }
                 }
             }
