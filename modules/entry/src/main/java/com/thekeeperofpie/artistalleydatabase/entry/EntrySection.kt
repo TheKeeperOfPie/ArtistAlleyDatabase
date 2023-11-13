@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
 import kotlinx.coroutines.Dispatchers
@@ -95,8 +96,8 @@ sealed class EntrySection(lockState: LockState? = null) {
 
         private var pendingValueUpdates = MutableStateFlow("")
         var pendingValue by observableStateOf(
-            initialPendingValue,
-            pendingValueUpdates::tryEmit
+            TextFieldValue(text = initialPendingValue),
+            onChange = { pendingValueUpdates.tryEmit(it.text) },
         )
 
         private val predictionChosenUpdates = MutableSharedFlow<Entry>(
@@ -108,7 +109,7 @@ sealed class EntrySection(lockState: LockState? = null) {
         // TODO: Predictions for existing prefilled fields
         var predictions by mutableStateOf(emptyList<Entry>())
 
-        fun pendingEntry() = Entry.Custom(pendingValue)
+        fun pendingEntry() = Entry.Custom(pendingValue.text)
 
         fun contentSize() = contents.size
 
@@ -117,7 +118,7 @@ sealed class EntrySection(lockState: LockState? = null) {
         fun onPredictionChosen(index: Int) {
             val entry = predictions[index]
             addContent(entry)
-            pendingValue = ""
+            pendingValue = pendingValue.copy(text = "")
             predictionChosenUpdates.tryEmit(entry)
         }
 
@@ -167,10 +168,8 @@ sealed class EntrySection(lockState: LockState? = null) {
             contentUpdates.tryEmit(contents.toList())
         }
 
-        fun removeContentAt(index: Int) {
-            contents.removeAt(index)
-            contentUpdates.tryEmit(contents.toList())
-        }
+        fun removeContentAt(index: Int) = contents.removeAt(index)
+            .also { contentUpdates.tryEmit(contents.toList()) }
 
         fun swapContent(firstIndex: Int, secondIndex: Int) {
             val oldValue = contents[firstIndex]
@@ -191,7 +190,7 @@ sealed class EntrySection(lockState: LockState? = null) {
 
         fun valueUpdates() = pendingValueUpdates.asStateFlow()
 
-        fun finalContents() = (contents + Entry.Custom(pendingValue.trim()))
+        fun finalContents() = (contents + Entry.Custom(pendingValue.text.trim()))
             .filterNot { it.serializedValue.isBlank() }
 
         @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)

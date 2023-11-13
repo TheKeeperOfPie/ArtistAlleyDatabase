@@ -112,7 +112,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
@@ -178,6 +180,31 @@ fun EntryForm(
                         // FocusRequester will throw if it isn't attached
                     }
                 }
+                val onFocusPrevious = { index: Int ->
+                    try {
+                        val focusRequester = (index - 1 downTo 0)
+                            .find {
+                                // TODO: Previous will only move if the section is unlocked,
+                                //  which means it's not actually possible to navigate back to
+                                //  a section after committing one with the next button. It's
+                                //  not clear if this should be changed, because the idea of
+                                //  locking is that it should be a difficult operation to unlock
+                                when (val previousSection = sections[it]) {
+                                    is EntrySection.Custom<*> -> false
+                                    is EntrySection.Dropdown,
+                                    is EntrySection.LongText,
+                                    is EntrySection.MultiText,
+                                    -> previousSection.lockState?.editable != false
+                                }
+                            }
+                            ?.let { sectionFocusRequesters[it] }
+                        focusRequester?.requestFocus()
+                        focusRequester != null
+                    } catch (ignored: Throwable) {
+                        // FocusRequester will throw if it isn't attached
+                        false
+                    }
+                }
                 sections.forEachIndexed { index, section ->
                     val focusRequester = sectionFocusRequesters[index]
                     when (section) {
@@ -186,6 +213,7 @@ fun EntryForm(
                                 section = section,
                                 focusRequester = focusRequester,
                                 onNavigate = onNavigate,
+                                onFocusPrevious = { onFocusPrevious(index) },
                                 onFocusNext = { onFocusNext(index) },
                             )
                         }
@@ -244,6 +272,7 @@ private fun MultiTextSection(
     section: EntrySection.MultiText,
     focusRequester: FocusRequester,
     onNavigate: (String) -> Unit,
+    onFocusPrevious: () -> Boolean,
     onFocusNext: () -> Unit,
 ) {
     when (section.contentSize()) {
@@ -257,9 +286,9 @@ private fun MultiTextSection(
                 text = { it },
                 lockState = { section.lockState },
                 onClick = {
-                    if (section.pendingValue.isNotEmpty()) {
+                    if (section.pendingValue.text.isNotEmpty()) {
                         section.addContent(section.pendingEntry())
-                        section.pendingValue = ""
+                        section.pendingValue = section.pendingValue.copy(text = "")
                     }
                     section.rotateLockState()
                 }
@@ -341,6 +370,7 @@ private fun MultiTextSection(
             val coroutineScope = rememberCoroutineScope()
             OpenSectionField(
                 section = section,
+                onFocusPrevious = onFocusPrevious,
                 onFocusNext = onFocusNext,
                 bringIntoViewRequester = bringIntoViewRequester,
                 focusRequester = focusRequester,
@@ -348,7 +378,7 @@ private fun MultiTextSection(
             )
 
             if (section.lockState?.editable != false
-                && section.pendingValue.isNotBlank()
+                && section.pendingValue.text.isNotBlank()
                 && section.predictions.isNotEmpty()
             ) {
                 // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
@@ -769,6 +799,7 @@ fun EntryImage(
 @Composable
 private fun OpenSectionField(
     section: EntrySection.MultiText,
+    onFocusPrevious: () -> Boolean,
     onFocusNext: () -> Unit,
     bringIntoViewRequester: BringIntoViewRequester,
     focusRequester: FocusRequester,
@@ -784,10 +815,23 @@ private fun OpenSectionField(
             }
             onFocusNext()
         },
+        onBackspace = {
+            if (section.contentSize() > 0) {
+                val removed = section.removeContentAt(section.contentSize() - 1)
+                section.pendingValue = TextFieldValue(
+                    text = removed.text,
+                    selection = TextRange(removed.text.length),
+                )
+                true
+            } else {
+                onFocusPrevious()
+            }
+        },
         onDone = {
-            if (it.isNotEmpty()) {
-                section.addContent(EntrySection.MultiText.Entry.Custom(it))
-                section.pendingValue = ""
+            val text = section.pendingValue.text
+            if (text.isNotEmpty()) {
+                section.addContent(EntrySection.MultiText.Entry.Custom(text))
+                section.pendingValue = section.pendingValue.copy(text = "")
             }
         },
         lockState = { section.lockState },
@@ -800,11 +844,12 @@ private fun OpenSectionField(
 
 @Composable
 private fun OpenSectionField(
-    value: () -> String,
+    value: () -> TextFieldValue,
     modifier: Modifier = Modifier,
-    onValueChange: (value: String) -> Unit,
+    onValueChange: (value: TextFieldValue) -> Unit,
     onNext: KeyboardActionScope.() -> Unit,
-    onDone: (value: String) -> Unit,
+    onBackspace: () -> Boolean,
+    onDone: () -> Unit,
     lockState: () -> EntrySection.LockState?,
 ) {
     @Suppress("NAME_SHADOWING")
@@ -813,19 +858,19 @@ private fun OpenSectionField(
         value = value,
         onValueChange = onValueChange,
         readOnly = lockState()?.editable == false,
-        keyboardOptions = KeyboardOptions(imeAction = if (value.isEmpty()) ImeAction.Next else ImeAction.Done),
-        keyboardActions = KeyboardActions(onNext = onNext, onDone = { onDone(value) }),
+        keyboardOptions = KeyboardOptions(imeAction = if (value.text.isEmpty()) ImeAction.Next else ImeAction.Done),
+        keyboardActions = KeyboardActions(onNext = onNext, onDone = { onDone() }) ,
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
             .onKeyEvent {
                 if (it.type == KeyEventType.KeyUp) {
                     return@onKeyEvent when (it.key) {
+                        Key.Backspace -> onBackspace()
                         Key.Enter -> {
-                            onDone(value)
+                            onDone()
                             true
                         }
-
                         else -> false
                     }
                 } else false

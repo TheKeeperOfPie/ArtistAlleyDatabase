@@ -52,7 +52,7 @@ class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<EntrySectio
                     ),
                     lockState = null,
                 )
-                pendingValue = "schoolgirl uniform"
+                pendingValue = pendingValue.copy("schoolgirl uniform")
             },
         )
     )
