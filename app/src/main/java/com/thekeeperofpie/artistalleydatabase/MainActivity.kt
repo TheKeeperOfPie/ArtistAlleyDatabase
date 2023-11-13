@@ -35,10 +35,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,6 +54,7 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -256,8 +259,21 @@ class MainActivity : ComponentActivity() {
                             .collectAsState(false)
 
                         if (unlockDatabaseFeatures) {
+                            var gesturesEnabled by remember { mutableStateOf(true) }
+                            DisposableEffect(navHostController) {
+                                val listener =
+                                    NavController.OnDestinationChangedListener { controller, destination, arguments ->
+                                        gesturesEnabled = NavDrawerItems.entries
+                                            .any { it.route == destination.route }
+                                    }
+                                navHostController.addOnDestinationChangedListener(listener)
+                                onDispose {
+                                    navHostController.removeOnDestinationChangedListener(listener)
+                                }
+                            }
                             ModalNavigationDrawer(
                                 drawerState = drawerState,
+                                gesturesEnabled = gesturesEnabled,
                                 drawerContent = {
                                     // TODO: This is not a good way to to infer the selected root
                                     var selectedRouteIndex by rememberSaveable {
@@ -679,7 +695,8 @@ class MainActivity : ComponentActivity() {
             }
 
             if (!featureOverrideProvider.isReleaseBuild
-                && !settings.screenshotMode.collectAsState().value) {
+                && !settings.screenshotMode.collectAsState().value
+            ) {
                 Box(
                     modifier = Modifier
                         .background(colorResource(R.color.launcher_background))
