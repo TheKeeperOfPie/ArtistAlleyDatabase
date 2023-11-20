@@ -60,17 +60,22 @@ object MediaEditBottomSheetScaffold {
             }
         }
 
+        val scope = rememberCoroutineScope()
         val currentValue = sheetState.currentValue
         LaunchedEffect(currentValue) {
             if (currentValue != SheetValue.Expanded) {
-                viewModel.hide()
+                if (viewModel.attemptDismiss()) {
+                    scope.launch { sheetState.hide() }
+                        .invokeOnCompletion { viewModel.hide() }
+                } else {
+                    sheetState.expand()
+                }
             }
         }
 
-        val scope = rememberCoroutineScope()
         BackHandler(enabled = sheetState.targetValue == SheetValue.Expanded
                 && !WindowInsets.isImeVisible) {
-            if (viewModel.onEditSheetValueChange(SheetValue.Hidden)) {
+            if (viewModel.attemptDismiss()) {
                 scope.launch { sheetState.hide() }
                     .invokeOnCompletion { viewModel.hide() }
             }

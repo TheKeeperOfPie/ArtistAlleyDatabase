@@ -232,8 +232,21 @@ class MediaEditViewModel @Inject constructor(
     }
 
     fun onEditSheetValueChange(sheetValue: SheetValue): Boolean {
+        // TODO: Due to a bug with recent Compose versions, confirmValueChange can be called with
+        //  PartiallyExpanded even if the sheet is fully expanded, which means it's not possible to
+        //  block PartiallyExpanded to show an exit dialog. Instead, this is handled in the UI
+        //  layer by observing the sheet value change. For now, no-op this method, with another
+        //  one (attemptDismiss) created to handle real dismisses.
+        return true
+//        if (!editData.showing) return true
+//        if (sheetValue == SheetValue.Expanded) return true
+//        if (editData.isEqualTo(initialParams.value, scoreFormat.value)) return true
+//        editData.showConfirmClose = true
+//        return false
+    }
+
+    fun  attemptDismiss(): Boolean {
         if (!editData.showing) return true
-        if (sheetValue == SheetValue.Expanded) return true
         if (editData.isEqualTo(initialParams.value, scoreFormat.value)) return true
         editData.showConfirmClose = true
         return false

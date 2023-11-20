@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,7 +47,7 @@ class MediaEditBottomSheetTest {
     val composeExtension = createAndroidComposeExtension<TestActivity>()
 
     @Test
-    fun testSwipeDownDismiss() {
+    fun swipeDownDismiss() {
         composeExtension.use {
             var viewModel: MediaEditViewModel? = null
             setContent {
@@ -72,7 +72,72 @@ class MediaEditBottomSheetTest {
 
             onNodeWithText("Test media title").assertIsDisplayed()
             onNodeWithTag("bottomSheetDragHandle").performTouchInput { swipeDown() }
-            onNodeWithText("Test media title").assertIsNotDisplayed()
+            onNodeWithText("Test media title").assertDoesNotExist()
+        }
+    }
+
+    @Test
+    fun toggleStatus() {
+        composeExtension.use {
+            var viewModel: MediaEditViewModel? = null
+            setContent {
+                Content()
+                viewModel = hiltViewModel<MediaEditViewModel>()
+            }
+
+            // TODO: This needs to be run after initial composition, which isn't correct
+            // TODO: Test request from sparse params
+            viewModel?.initialize(
+                mediaId = "123",
+                coverImage = null,
+                title = "Test media title",
+                mediaListEntry = null,
+                mediaType = MediaType.ANIME,
+                status = null,
+                maxProgress = 10,
+                maxProgressVolumes = null,
+                loading = false,
+            )
+            viewModel?.editData?.showing = true
+
+            onNodeWithText("Not on list").performClick()
+            onNodeWithText("Completed").performClick()
+
+            onNodeWithText("Completed").assertIsDisplayed()
+            onNodeWithText("Exit").assertDoesNotExist()
+        }
+    }
+
+    @Test
+    fun unsavedChange() {
+        composeExtension.use {
+            var viewModel: MediaEditViewModel? = null
+            setContent {
+                Content()
+                viewModel = hiltViewModel<MediaEditViewModel>()
+            }
+
+            // TODO: This needs to be run after initial composition, which isn't correct
+            // TODO: Test request from sparse params
+            viewModel?.initialize(
+                mediaId = "123",
+                coverImage = null,
+                title = "Test media title",
+                mediaListEntry = null,
+                mediaType = MediaType.ANIME,
+                status = null,
+                maxProgress = 10,
+                maxProgressVolumes = null,
+                loading = false,
+            )
+            viewModel?.editData?.showing = true
+
+            onNodeWithText("Not on list").performClick()
+            onNodeWithText("Completed").performClick()
+
+            onNodeWithText("Completed").assertIsDisplayed()
+            onNodeWithTag("bottomSheetDragHandle").performTouchInput { swipeDown() }
+            onNodeWithText("Exit").assertIsDisplayed()
         }
     }
 

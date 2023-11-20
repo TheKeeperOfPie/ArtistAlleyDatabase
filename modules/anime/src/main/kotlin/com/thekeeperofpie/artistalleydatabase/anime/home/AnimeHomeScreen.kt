@@ -726,7 +726,9 @@ object AnimeHomeScreen {
         val navigationCallback = LocalNavigationCallback.current
         var widthToHeightRatio by remember(mediaId) { mutableStateOf<Float?>(null) }
         val onClick = rememberCallback {
-            navigationCallback.onMediaClick(media as MediaPreview, widthToHeightRatio ?: 1f)
+            if (media != null) {
+                navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)
+            }
         }
 
         ElevatedCard(
