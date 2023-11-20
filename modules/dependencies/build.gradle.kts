@@ -19,7 +19,7 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    val androidTools = "31.3.0-alpha13"
+    val androidTools = "31.3.0-alpha14"
     debugCompileOnly("com.android.tools.emulator:proto:$androidTools")
     debugCompileOnly("com.android.tools.utp:utp-common:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:$androidTools")
@@ -34,7 +34,7 @@ dependencies {
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:$androidTools")
 
-    val googleTesting = "0.0.9-alpha01"
+    val googleTesting = "0.0.9-alpha02"
     debugCompileOnly("com.google.testing.platform:android-device-provider-local:$googleTesting")
     debugCompileOnly("com.google.testing.platform:android-driver-instrumentation:$googleTesting")
     debugCompileOnly("com.google.testing.platform:android-test-plugin:$googleTesting")
@@ -56,4 +56,19 @@ dependencies {
     debugCompileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")
     debugCompileOnly("org.codehaus.groovy:groovy-test:$groovyVersion")
     debugCompileOnly("org.codehaus.groovy:groovy-xml:$groovyVersion")
+
+    // buildHealth failure when committing during AGP 8.3.0-alpha14 upgrade
+    // Scoped to allow suppressing GradleDependency
+    @Suppress("GradleDependency")
+    fun additionalDependencies() {
+        debugCompileOnly("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.6.0")
+        debugCompileOnly("com.google.protobuf:protobuf-bom:3.21.8")
+        debugCompileOnly("com.google.protobuf:protobuf-javalite:3.21.8")
+        debugCompileOnly("com.google.protobuf:protobuf-parent:3.21.8")
+        debugCompileOnly("androidx.privacysandbox.tools:tools:1.0.0-alpha03")
+        debugCompileOnly("androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha03")
+        debugCompileOnly("androidx.privacysandbox.tools:tools-core:1.0.0-alpha0")
+    }
+
+    additionalDependencies()
 }

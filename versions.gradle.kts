@@ -23,10 +23,10 @@ object Versions {
     }
 
     const val ktor = "2.3.4"
-    const val lifecycle = "2.7.0-beta01"
+    const val lifecycle = "2.7.0-rc01"
     const val room = "2.6.0"
     const val markwon = "4.6.2"
-    const val media3 = "1.2.0-rc01"
+    const val media3 = "1.2.0"
     const val mockito = "5.7.0"
     const val paging = "3.3.0-alpha02"
     const val work = "2.9.0-rc01"
@@ -65,17 +65,17 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
             create("libs") {
                 fun plugin(id: String) = plugin(id, id)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
-                plugin("com.autonomousapps.dependency-analysis").version("1.25.0")
-                plugin("com.github.ben-manes.versions").version("0.49.0")
+                plugin("com.autonomousapps.dependency-analysis").version("1.26.0")
+                plugin("com.github.ben-manes.versions").version("0.50.0")
                 plugin("com.google.dagger.hilt.android").version(Versions.dagger)
                 plugin("com.jaredsburrows.license").version("0.9.3")
-                plugin("com.netflix.dgs.codegen").version("6.0.3")
+                plugin("com.netflix.dgs.codegen").version("6.1.0")
                 plugin("de.mannodermaus.android-junit5").version("1.10.0.0")
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
                 plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.20")
 
-                library("androidx.activity:activity-compose:1.8.0")
+                library("androidx.activity:activity-compose:1.8.1")
                 // 1.2.0-alpha09 is last version that doesn't IndexOutOfBoundsException
                 library("androidx.compose.material3:material3:1.2.0-alpha09")
                 library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
@@ -128,8 +128,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("androidx.work:work-runtime")
                 }
 
-                library("com.android.billingclient:billing-ktx:6.0.1")
-                library("com.android.tools.build:gradle:8.3.0-alpha13")
+                library("com.android.billingclient:billing-ktx:6.1.0")
+                library("com.android.tools.build:gradle:8.3.0-alpha14")
 
                 withVersion(Versions.apollo) {
                     library("com.apollographql.apollo3:apollo-runtime")
@@ -137,7 +137,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.apollographql.apollo3:apollo-normalized-cache-sqlite")
                 }
 
-                library("com.fasterxml.jackson.core:jackson-databind:2.16.0-rc1")
+                library("com.fasterxml.jackson.core:jackson-databind:2.16.0")
 
                 withVersion(Versions.accompanist) {
                     library("com.google.accompanist:accompanist-flowlayout")
@@ -163,7 +163,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.google.truth:truth:1.1.5")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
                 library("com.neovisionaries:nv-i18n:1.29")
-                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.0.1")
+                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.1.0")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                     alias = "androidyoutubeplayer"
@@ -180,9 +180,9 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     prefix = "okhttp3"
                 )
                 library("com.unity3d.ads:unity-ads:4.9.2")
-                library("de.charlex.compose:html-text:1.5.0")
+                library("de.charlex.compose:html-text:1.6.0")
                 library("io.coil-kt:coil-compose:2.5.0")
-                library("io.github.hoc081098:FlowExt:0.7.3")
+                library("io.github.hoc081098:FlowExt:0.7.4")
                 library("io.github.java-diff-utils:java-diff-utils:4.12")
 
                 withVersion(Versions.ktor) {
@@ -192,7 +192,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 library("it.skrape:skrapeit:1.3.0-alpha.1")
                 library("junit:junit:4.13.2")
-                library("org.apache.commons:commons-compress:1.24.0")
+                library("org.apache.commons:commons-compress:1.25.0")
                 library("org.apache.commons:commons-csv:1.10.0")
                 library("org.awaitility:awaitility:4.2.0")
                 library("org.chromium.net:cronet-embedded:113.5672.61")
@@ -205,7 +205,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.jetbrains.kotlinx:kotlinx-coroutines-test")
                 }
 
-                library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+                library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
 
                 withVersion(Versions.junit.jupiter) {
                     library("org.junit.jupiter:junit-jupiter-api")
@@ -223,7 +223,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("systems.manifold:manifold-graphql-rt:2023.1.30")
 
                 prefix("androidx") {
-                    library("androidx.browser:browser:1.7.0-rc01")
+                    library("androidx.browser:browser:1.8.0-alpha01")
                     library("androidx.security:security-crypto:1.1.0-alpha06")
                     library("androidx.tracing:tracing:1.3.0-alpha02")
                 }
