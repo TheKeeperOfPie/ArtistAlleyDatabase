@@ -2,19 +2,16 @@ package com.thekeeperofpie.artistalleydatabase.art
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
-import com.hoc081098.flowext.withLatestFrom
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
-import com.thekeeperofpie.artistalleydatabase.art.sections.PrintSizeDropdown
-import com.thekeeperofpie.artistalleydatabase.art.sections.SourceDropdown
+import com.thekeeperofpie.artistalleydatabase.art.sections.ArtEntrySections
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
@@ -30,14 +27,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
@@ -63,180 +54,21 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     entrySettings,
     appJson,
 ) {
+    protected val entrySections = ArtEntrySections()
 
-    protected val seriesSection = EntrySection.MultiText(
-        R.string.art_entry_series_header_zero,
-        R.string.art_entry_series_header_one,
-        R.string.art_entry_series_header_many,
-        lockState = EntrySection.LockState.UNLOCKED,
-        navRoute = {
-            ArtNavDestinations.BROWSE_SELECTION.id +
-                    "?queryType=${ArtEntryColumn.SERIES.name}" +
-                    "&title=${it.text}" +
-                    "&queryString=${it.text}"
-        }
-    )
-
-    protected val characterSection = EntrySection.MultiText(
-        R.string.art_entry_characters_header_zero,
-        R.string.art_entry_characters_header_one,
-        R.string.art_entry_characters_header_many,
-        lockState = EntrySection.LockState.UNLOCKED,
-        navRoute = {
-            ArtNavDestinations.BROWSE_SELECTION.id +
-                    "?queryType=${ArtEntryColumn.CHARACTERS.name}" +
-                    "&title=${it.text}" +
-                    "&queryString=${it.text}"
-        }
-    )
-
-    protected val sourceSection = SourceDropdown(locked = EntrySection.LockState.UNLOCKED)
-
-    protected val artistSection = EntrySection.MultiText(
-        R.string.art_entry_artists_header_zero,
-        R.string.art_entry_artists_header_one,
-        R.string.art_entry_artists_header_many,
-        lockState = EntrySection.LockState.UNLOCKED,
-        navRoute = {
-            ArtNavDestinations.BROWSE_SELECTION.id +
-                    "?queryType=${ArtEntryColumn.ARTISTS.name}" +
-                    "&title=${it.text}" +
-                    "&queryString=${it.text}"
-        }
-    )
-
-    protected val tagSection = EntrySection.MultiText(
-        R.string.art_entry_tags_header_zero,
-        R.string.art_entry_tags_header_one,
-        R.string.art_entry_tags_header_many,
-        lockState = EntrySection.LockState.UNLOCKED,
-        navRoute = {
-            ArtNavDestinations.BROWSE_SELECTION.id +
-                    "?queryType=${ArtEntryColumn.TAGS.name}" +
-                    "&title=${it.text}" +
-                    "&queryString=${it.text}"
-        }
-    )
-
-    protected val printSizeSection = PrintSizeDropdown(lockState = EntrySection.LockState.UNLOCKED)
-
-    protected val notesSection = EntrySection.LongText(
-        headerRes = R.string.art_entry_notes_header,
-        lockState = EntrySection.LockState.UNLOCKED
-    )
-
-    override val sections = listOf(
-        seriesSection,
-        characterSection,
-        artistSection,
-        sourceSection,
-        tagSection,
-        printSizeSection,
-        notesSection,
-    )
+    override val sections: List<EntrySection>
+        get() = entrySections.sections
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            artistSection.subscribePredictions(
-                localCall = {
-                    artEntryDao.queryArtists(it)
-                        .map(Entry::Custom)
-                        .map { flowOf(it) }
-                        .ifEmpty { listOf(flowOf(null)) }
-                }
-            )
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            seriesSection.subscribePredictions(
-                localCall = {
-                    aniListAutocompleter.querySeriesLocal(it, artEntryDao::querySeries)
-                },
-                networkCall = aniListAutocompleter::querySeriesNetwork
-            )
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            aniListAutocompleter.characterPredictions(
-                characterSection.lockStateFlow,
-                seriesSection.contentUpdates(),
-                characterSection.valueUpdates(),
-            ) { artEntryDao.queryCharacters(it) }
-                .collectLatest {
-                    withContext(Dispatchers.Main) {
-                        characterSection.predictions = it.toMutableList()
-                    }
-                }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            tagSection.subscribePredictions(
-                localCall = {
-                    artEntryDao.queryTags(it)
-                        .map(Entry::Custom)
-                        .map { flowOf(it) }
-                        .ifEmpty { listOf(flowOf(null)) }
-                }
-            )
-        }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            artistSection.contentUpdates()
-                .withLatestFrom(
-                    combine(
-                        sourceSection.conventionSectionItem.updates(),
-                        sourceSection.lockStateFlow,
-                        ::Pair
-                    )
-                ) { artist, (convention, lock) -> Triple(artist, convention, lock) }
-                .flatMapLatest {
-                    // flatMapLatest to immediately drop request if lockState has changed
-                    flowOf(it)
-                        .filter { (_, _, lockState) ->
-                            when (lockState) {
-                                EntrySection.LockState.LOCKED -> false
-                                EntrySection.LockState.UNLOCKED,
-                                EntrySection.LockState.DIFFERENT,
-                                null -> true
-                            }
-                        }
-                        .filter { (_, convention, _) ->
-                            convention.name.isNotEmpty()
-                                    && convention.year != null && convention.year > 1000
-                                    && (convention.hall.isEmpty() || convention.booth.isEmpty())
-                        }
-                        .mapNotNull { (artistEntries, convention) ->
-                            artistEntries.firstNotNullOfOrNull {
-                                artEntryDao
-                                    .queryArtistForHallBooth(
-                                        it.searchableValue,
-                                        convention.name,
-                                        convention.year!!
-                                    )
-                                    .takeUnless { it.isNullOrBlank() }
-                                    ?.let<String, SourceType.Convention>(
-                                        appJson.json::decodeFromString
-                                    )
-                                    ?.takeIf {
-                                        it.name == convention.name && it.year == convention.year
-                                    }
-                            }
-                        }
-                }
-                .collectLatest {
-                    withContext(Dispatchers.Main) {
-                        val sectionChanged = sourceSection.conventionSectionItem
-                            .updateHallBoothIfEmpty(
-                                expectedName = it.name,
-                                expectedYear = it.year!!,
-                                newHall = it.hall,
-                                newBooth = it.booth
-                            )
-                        if (sectionChanged) {
-                            sourceSection.lockIfUnlocked()
-                        }
-
-                        artistSection.lockIfUnlocked()
-                    }
-                }
-        }
+        entrySections.subscribeSectionPredictions(
+            viewModelScope,
+            artEntryDao,
+            dataConverter,
+            mediaRepository,
+            characterRepository,
+            aniListAutocompleter,
+            appJson,
+        )
     }
 
     override suspend fun buildAddModel() = artSettings.artEntryTemplate.value?.let(::buildModel)
@@ -358,7 +190,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
 
     override suspend fun saveSingleEntry(
         saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
-        skipIgnoreableErrors: Boolean
+        skipIgnoreableErrors: Boolean,
     ): Boolean {
         val baseEntry = makeBaseEntry()
         baseEntry.series(appJson)
@@ -404,17 +236,17 @@ open class ArtEntryDetailsViewModel @Inject constructor(
 
     override suspend fun saveMultiEditEntry(
         saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
-        skipIgnoreableErrors: Boolean
+        skipIgnoreableErrors: Boolean,
     ): Boolean {
-        val series = seriesSection.finalContents()
-        val characters = characterSection.finalContents()
-        val tags = tagSection.finalContents()
-        val artists = artistSection.finalContents()
-        val sourceItem = sourceSection.selectedItem().toSource()
+        val series = entrySections.seriesSection.finalContents()
+        val characters = entrySections.characterSection.finalContents()
+        val tags = entrySections.tagSection.finalContents()
+        val artists = entrySections.artistSection.finalContents()
+        val sourceItem = entrySections.sourceSection.selectedItem().toSource()
 
-        val printWidth = printSizeSection.finalWidth()
-        val printHeight = printSizeSection.finalHeight()
-        val notes = notesSection.value
+        val printWidth = entrySections.printSizeSection.finalWidth()
+        val printHeight = entrySections.printSizeSection.finalHeight()
+        val notes = entrySections.notesSection.value
 
         val entryValueIds = entryIds.map { it.valueId }
 
@@ -460,45 +292,45 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             }
         }
 
-        if (artistSection.lockState != EntrySection.LockState.DIFFERENT) {
+        if (entrySections.artistSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateArtistsLocked(
                 entryValueIds,
-                artistSection.lockState?.toSerializedValue() ?: false
+                entrySections.artistSection.lockState?.toSerializedValue() ?: false
             )
         }
 
-        if (sourceSection.lockState != EntrySection.LockState.DIFFERENT) {
+        if (entrySections.sourceSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateSourceLocked(
                 entryValueIds,
-                sourceSection.lockState?.toSerializedValue() ?: false
+                entrySections.sourceSection.lockState?.toSerializedValue() ?: false
             )
         }
 
-        if (seriesSection.lockState != EntrySection.LockState.DIFFERENT) {
+        if (entrySections.seriesSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateSeriesLocked(
                 entryValueIds,
-                seriesSection.lockState?.toSerializedValue() ?: false
+                entrySections.seriesSection.lockState?.toSerializedValue() ?: false
             )
         }
 
-        if (characterSection.lockState != EntrySection.LockState.DIFFERENT) {
+        if (entrySections.characterSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateCharactersLocked(
                 entryValueIds,
-                characterSection.lockState?.toSerializedValue() ?: false
+                entrySections.characterSection.lockState?.toSerializedValue() ?: false
             )
         }
 
-        if (tagSection.lockState != EntrySection.LockState.DIFFERENT) {
+        if (entrySections.tagSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateTagsLocked(
                 entryValueIds,
-                tagSection.lockState?.toSerializedValue() ?: false
+                entrySections.tagSection.lockState?.toSerializedValue() ?: false
             )
         }
 
-        if (notesSection.lockState != EntrySection.LockState.DIFFERENT) {
+        if (entrySections.notesSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateNotesLocked(
                 entryValueIds,
-                notesSection.lockState?.toSerializedValue() ?: false
+                entrySections.notesSection.lockState?.toSerializedValue() ?: false
             )
 
             // TODO: Real notes different value tracking
@@ -507,10 +339,10 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             }
         }
 
-        if (printSizeSection.lockState != EntrySection.LockState.DIFFERENT) {
+        if (entrySections.printSizeSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updatePrintSizeLocked(
                 entryValueIds,
-                printSizeSection.lockState?.toSerializedValue() ?: false
+                entrySections.printSizeSection.lockState?.toSerializedValue() ?: false
             )
 
             // TODO: Real print size different value tracking
@@ -526,7 +358,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     override suspend fun deleteEntry(entryId: EntryId) = artEntryDao.delete(entryId.valueId)
 
     override fun onImageSizeResult(widthToHeightRatio: Float) {
-        printSizeSection.onSizeChange(widthToHeightRatio)
+        entrySections.printSizeSection.onSizeChange(widthToHeightRatio)
     }
 
     protected fun buildModel(entry: ArtEntry): ArtEntryModel {
@@ -546,13 +378,17 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     }
 
     override fun initializeForm(model: ArtEntryModel) {
-        artistSection.setContents(model.artists, model.artistsLocked)
-        sourceSection.initialize(model, model.sourceLocked)
-        seriesSection.setContents(model.series, model.seriesLocked)
-        characterSection.setContents(model.characters, model.charactersLocked)
-        printSizeSection.initialize(model.printWidth, model.printHeight, model.printSizeLocked)
-        tagSection.setContents(model.tags, model.tagsLocked)
-        notesSection.setContents(model.notes, model.notesLocked)
+        entrySections.artistSection.setContents(model.artists, model.artistsLocked)
+        entrySections.sourceSection.initialize(model, model.sourceLocked)
+        entrySections.seriesSection.setContents(model.series, model.seriesLocked)
+        entrySections.characterSection.setContents(model.characters, model.charactersLocked)
+        entrySections.printSizeSection.initialize(
+            model.printWidth,
+            model.printHeight,
+            model.printSizeLocked
+        )
+        entrySections.tagSection.setContents(model.tags, model.tagsLocked)
+        entrySections.notesSection.setContents(model.notes, model.notesLocked)
 
         model.characters.filterIsInstance<Entry.Prefilled<*>>()
             .mapNotNull(AniListUtils::characterId)
@@ -560,7 +396,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.Main) {
                     aniListAutocompleter.fillCharacterField(it)
                         .flowOn(Dispatchers.IO)
-                        .collectLatest(characterSection::replaceContent)
+                        .collectLatest(entrySections.characterSection::replaceContent)
                 }
             }
 
@@ -570,40 +406,44 @@ open class ArtEntryDetailsViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.Main) {
                     aniListAutocompleter.fillMediaField(it)
                         .flowOn(Dispatchers.IO)
-                        .collectLatest(seriesSection::replaceContent)
+                        .collectLatest(entrySections.seriesSection::replaceContent)
                 }
             }
     }
 
     protected fun makeBaseEntry(): ArtEntry {
-        val sourceItem = sourceSection.selectedItem().toSource()
+        val sourceItem = entrySections.sourceSection.selectedItem().toSource()
 
         return ArtEntry(
             id = "",
-            artists = artistSection.finalContents().map { it.serializedValue },
+            artists = entrySections.artistSection.finalContents().map { it.serializedValue },
             sourceType = sourceItem.serializedType,
             sourceValue = sourceItem.serializedValue(appJson.json),
-            seriesSerialized = seriesSection.finalContents().map { it.serializedValue },
-            seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
+            seriesSerialized = entrySections.seriesSection.finalContents()
+                .map { it.serializedValue },
+            seriesSearchable = entrySections.seriesSection.finalContents()
+                .map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
-            charactersSerialized = characterSection.finalContents().map { it.serializedValue },
-            charactersSearchable = characterSection.finalContents().map { it.searchableValue }
+            charactersSerialized = entrySections.characterSection.finalContents()
+                .map { it.serializedValue },
+            charactersSearchable = entrySections.characterSection.finalContents()
+                .map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
-            tags = tagSection.finalContents().map { it.serializedValue },
+            tags = entrySections.tagSection.finalContents().map { it.serializedValue },
             lastEditTime = Date.from(Instant.now()),
             imageWidth = null,
             imageHeight = null,
-            printWidth = printSizeSection.finalWidth(),
-            printHeight = printSizeSection.finalHeight(),
-            notes = notesSection.value.trim(),
+            printWidth = entrySections.printSizeSection.finalWidth(),
+            printHeight = entrySections.printSizeSection.finalHeight(),
+            notes = entrySections.notesSection.value.trim(),
             locks = ArtEntry.Locks(
-                artistsLocked = artistSection.lockState?.toSerializedValue(),
-                seriesLocked = seriesSection.lockState?.toSerializedValue(),
-                charactersLocked = characterSection.lockState?.toSerializedValue(),
-                sourceLocked = sourceSection.lockState?.toSerializedValue(),
-                tagsLocked = tagSection.lockState?.toSerializedValue(),
-                notesLocked = notesSection.lockState?.toSerializedValue(),
-                printSizeLocked = printSizeSection.lockState?.toSerializedValue(),
+                artistsLocked = entrySections.artistSection.lockState?.toSerializedValue(),
+                seriesLocked = entrySections.seriesSection.lockState?.toSerializedValue(),
+                charactersLocked = entrySections.characterSection.lockState?.toSerializedValue(),
+                sourceLocked = entrySections.sourceSection.lockState?.toSerializedValue(),
+                tagsLocked = entrySections.tagSection.lockState?.toSerializedValue(),
+                notesLocked = entrySections.notesSection.lockState?.toSerializedValue(),
+                printSizeLocked = entrySections.printSizeSection.lockState?.toSerializedValue(),
             )
         )
     }

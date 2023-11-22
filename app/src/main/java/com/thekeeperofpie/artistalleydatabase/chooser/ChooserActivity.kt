@@ -51,11 +51,12 @@ class ChooserActivity : ComponentActivity() {
                             composable(NavDestinations.HOME) {
                                 val viewModel = hiltViewModel<ChooserViewModel>()
                                 ChooserScreen(
-                                    query = { viewModel.query?.query.orEmpty() },
+                                    query = { viewModel.query.orEmpty() },
                                     entriesSize = { viewModel.entriesSize },
                                     onQueryChange = viewModel::onQuery,
-                                    options = { viewModel.options },
-                                    onOptionChange = { viewModel.refreshQuery() },
+                                    // TODO: Migrate to section search
+                                    options = { emptyList() },
+                                    onOptionChange = {},
                                     entries = { viewModel.results.collectAsLazyPagingItems() },
                                     selectedItems = { viewModel.selectedEntries.keys },
                                     onClickEntry = { index, entry ->

@@ -62,7 +62,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
@@ -96,7 +95,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsC
 import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
-import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
@@ -105,7 +103,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
-import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
@@ -116,10 +113,6 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationControlle
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
-import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScreen
-import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
-import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
@@ -479,25 +472,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable(AppNavDestinations.SEARCH.id) {
-                            val viewModel =
-                                hiltViewModel<AdvancedSearchViewModel>()
-                            AdvancedSearchScreen(
-                                upIconOption = navDrawerUpIconOption,
-                                loading = { false },
-                                sections = { viewModel.sections },
-                                onClickClear = viewModel::onClickClear,
-                                onClickSearch = {
-                                    val queryId = viewModel.onClickSearch()
-                                    navHostController.navigate(
-                                        AppNavDestinations.SEARCH_RESULTS.id +
-                                                "?queryId=$queryId"
-                                    )
-                                },
-                                onNavigate = navHostController::navigate,
-                            )
-                        }
-
                         composable(AppNavDestinations.IMPORT.id) {
                             val viewModel = hiltViewModel<ImportViewModel>()
                             ImportScreen(
@@ -547,50 +521,6 @@ class MainActivity : ComponentActivity() {
                                 onErrorDismiss = {
                                     viewModel.errorResource = null
                                 }
-                            )
-                        }
-
-                        composable(
-                            route = AppNavDestinations.SEARCH_RESULTS.id +
-                                    "?queryId={queryId}",
-                            arguments = listOf(
-                                navArgument("queryId") {
-                                    type = NavType.StringType
-                                    nullable = false
-                                },
-                            )
-                        ) {
-                            val arguments = it.arguments!!
-                            val queryId = arguments.getString("queryId")!!
-                            val viewModel =
-                                hiltViewModel<SearchResultsViewModel>()
-                            viewModel.initialize(queryId)
-                            SearchResultsScreen(
-                                upIconOption = it.destination.parent
-                                    ?.let { UpIconOption.Back(navHostController) },
-                                loading = { viewModel.loading },
-                                entries = { viewModel.entries.collectAsLazyPagingItems() },
-                                selectedItems = { viewModel.selectedEntries.keys },
-                                onClickEntry = { index, entry ->
-                                    if (viewModel.selectedEntries.isNotEmpty()) {
-                                        viewModel.selectEntry(index, entry)
-                                    } else {
-                                        navHostController.navToEntryDetails(
-                                            route = ArtNavDestinations.ENTRY_DETAILS.id,
-                                            listOf(entry.id.valueId)
-                                        )
-                                    }
-                                },
-                                onLongClickEntry = viewModel::selectEntry,
-                                onClickClear = viewModel::clearSelected,
-                                onClickEdit = {
-                                    navHostController.navToEntryDetails(
-                                        ArtNavDestinations.ENTRY_DETAILS.id,
-                                        viewModel.selectedEntries.values
-                                            .map { it.id.valueId }
-                                    )
-                                },
-                                onConfirmDelete = viewModel::onDeleteSelected,
                             )
                         }
 

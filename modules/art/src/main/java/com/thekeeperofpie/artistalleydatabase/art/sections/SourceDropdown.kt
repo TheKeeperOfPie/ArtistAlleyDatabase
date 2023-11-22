@@ -69,8 +69,7 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
     }
 
     fun addDifferent() {
-        options += DifferentSectionItem()
-        selectedIndex = options.lastIndex
+        options.add(0, DifferentSectionItem())
     }
 
     override fun selectedItem() = super.selectedItem() as SourceItem

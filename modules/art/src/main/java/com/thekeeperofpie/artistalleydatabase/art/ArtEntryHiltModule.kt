@@ -51,11 +51,6 @@ object ArtEntryHiltModule {
     @Provides
     fun provideArtEntrySyncDao(database: ArtEntryDatabase) = database.artEntrySyncDao()
 
-    @Singleton
-    @Provides
-    fun provideArtEntryAdvancedSearchDao(database: ArtEntryDatabase) =
-        database.artEntryAdvancedSearchDao()
-
     @IntoSet
     @Singleton
     @Provides

@@ -1,5 +1,5 @@
 @file:Suppress("NAME_SHADOWING")
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 
 package com.thekeeperofpie.artistalleydatabase.entry
 
@@ -117,7 +117,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.PopupProperties
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -361,11 +360,13 @@ private fun MultiTextSection(
 
     var focused by rememberSaveable { mutableStateOf(false) }
     AnimatedVisibility(
+        // TODO: Allow showing open field even when locked in search panel
         visible = section.lockState?.editable != false,
         enter = expandVertically(),
         exit = shrinkVertically(),
     ) {
-        Box {
+        var expanded by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             val bringIntoViewRequester = remember { BringIntoViewRequester() }
             val coroutineScope = rememberCoroutineScope()
             OpenSectionField(
@@ -375,19 +376,21 @@ private fun MultiTextSection(
                 bringIntoViewRequester = bringIntoViewRequester,
                 focusRequester = focusRequester,
                 onFocusChanged = { focused = it },
+                modifier = Modifier.menuAnchor(),
             )
 
             if (section.lockState?.editable != false
                 && section.pendingValue.text.isNotBlank()
                 && section.predictions.isNotEmpty()
             ) {
+                LaunchedEffect(section.pendingValue.text, section.predictions) {
+                    expanded = true
+                }
                 // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
                 val uriHandler = LocalUriHandler.current
-                val expanded by remember { derivedStateOf { focused && section.predictions.isNotEmpty() } }
-                DropdownMenu(
+                ExposedDropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = focusRequester::freeFocus,
-                    properties = PopupProperties(focusable = false),
+                    onDismissRequest = { expanded = false },
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = 240.dp)
@@ -804,6 +807,7 @@ private fun OpenSectionField(
     bringIntoViewRequester: BringIntoViewRequester,
     focusRequester: FocusRequester,
     onFocusChanged: (Boolean) -> Unit,
+    modifier: Modifier,
 ) {
     val coroutineScope = rememberCoroutineScope()
     OpenSectionField(
@@ -835,7 +839,7 @@ private fun OpenSectionField(
             }
         },
         lockState = { section.lockState },
-        modifier = Modifier
+        modifier = modifier
             .focusRequester(focusRequester)
             .onFocusChanged { onFocusChanged(it.isFocused) }
             .bringIntoViewRequester(bringIntoViewRequester)
@@ -859,7 +863,7 @@ private fun OpenSectionField(
         onValueChange = onValueChange,
         readOnly = lockState()?.editable == false,
         keyboardOptions = KeyboardOptions(imeAction = if (value.text.isEmpty()) ImeAction.Next else ImeAction.Done),
-        keyboardActions = KeyboardActions(onNext = onNext, onDone = { onDone() }) ,
+        keyboardActions = KeyboardActions(onNext = onNext, onDone = { onDone() }),
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)

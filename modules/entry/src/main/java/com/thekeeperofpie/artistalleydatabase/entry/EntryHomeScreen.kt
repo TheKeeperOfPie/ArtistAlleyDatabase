@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.entry
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,25 +15,21 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DockedSearchBar
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
@@ -42,13 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
 import kotlinx.coroutines.flow.emptyFlow
 
 @Suppress("NAME_SHADOWING")
@@ -62,8 +58,7 @@ object EntryHomeScreen {
         query: () -> String = { "" },
         entriesSize: () -> Int,
         onQueryChange: (String) -> Unit = {},
-        options: () -> List<EntrySearchOption> = { emptyList() },
-        onOptionChange: (EntrySearchOption) -> Unit = {},
+        sections: List<EntrySection>,
         entries: @Composable () -> LazyPagingItems<GridModel> =
             { emptyFlow<PagingData<GridModel>>().collectAsLazyPagingItems() },
         selectedItems: () -> Collection<Int> = { emptyList() },
@@ -73,6 +68,7 @@ object EntryHomeScreen {
         onClickClear: () -> Unit = {},
         onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
+        onNavigate: (String) -> Unit,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         Chrome(
@@ -81,9 +77,9 @@ object EntryHomeScreen {
             entriesSize = entriesSize,
             onQueryChange = onQueryChange,
             showFab = { selectedItems().isEmpty() },
-            options = options,
-            onOptionChange = onOptionChange,
+            sections = sections,
             onClickAddFab = onClickAddFab,
+            onNavigate = onNavigate,
             scrollBehavior = scrollBehavior,
         ) {
             val density = LocalDensity.current
@@ -124,49 +120,56 @@ object EntryHomeScreen {
         query: () -> String = { "" },
         entriesSize: () -> Int,
         onQueryChange: (String) -> Unit = {},
-        options: () -> List<EntrySearchOption> = { emptyList() },
-        onOptionChange: (EntrySearchOption) -> Unit = {},
+        sections: List<EntrySection>,
         showFab: () -> Boolean = { true },
         onClickAddFab: () -> Unit = {},
+        onNavigate: (String) -> Unit,
         scrollBehavior: TopAppBarScrollBehavior,
         content: @Composable (PaddingValues) -> Unit,
     ) {
-        Scaffold(
-            topBar = {
-                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth()
-                            .padding(bottom = 8.dp)
-                    ) {
-                        val isNotEmpty by remember { derivedStateOf { query().isNotEmpty() } }
-                        BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
-                            onQueryChange("")
-                        }
+        BottomSheetScaffold(
+            sheetContent = {
+                SearchFilterSheet(sections = sections, onNavigate = onNavigate)
+            },
+            modifier = Modifier.nestedScroll(
+                NestedScrollSplitter(
+                    primary = scrollBehavior.nestedScrollConnection,
+                    consumeNone = true,
+                )
+            ),
+        ) {
+            Scaffold(
+                topBar = {
+                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
+                            val isNotEmpty by remember { derivedStateOf { query().isNotEmpty() } }
+                            BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                                onQueryChange("")
+                            }
 
-                        var active by remember { mutableStateOf(false) }
-                        DockedSearchBar(
-                            query = query(),
-                            onQueryChange = onQueryChange,
-                            active = active,
-                            onActiveChange = {},
-                            leadingIcon = { NavMenuIconButton(onClickNav) },
-                            placeholder = {
-                                val entriesSize = entriesSize()
-                                Text(
-                                    if (entriesSize > 0) {
-                                        stringResource(
-                                            R.string.entry_search_hint_with_entry_count,
-                                            entriesSize(),
-                                        )
-                                    } else {
-                                        stringResource(R.string.entry_search_hint)
-                                    }
-                                )
-                            },
-                            trailingIcon = {
-                                Row {
+                            StaticSearchBar(
+                                query = query(),
+                                onQueryChange = onQueryChange,
+                                leadingIcon = { NavMenuIconButton(onClickNav) },
+                                placeholder = {
+                                    val entriesSize = entriesSize()
+                                    Text(
+                                        if (entriesSize > 0) {
+                                            stringResource(
+                                                R.string.entry_search_hint_with_entry_count,
+                                                entriesSize(),
+                                            )
+                                        } else {
+                                            stringResource(R.string.entry_search_hint)
+                                        }
+                                    )
+                                },
+                                trailingIcon = {
                                     val showClear by remember {
                                         derivedStateOf { query().isNotEmpty() }
                                     }
@@ -180,81 +183,49 @@ object EntryHomeScreen {
                                             )
                                         }
                                     }
-
-                                    IconButton(onClick = { active = !active }) {
-                                        Icon(
-                                            imageVector = if (active) {
-                                                Icons.Filled.ExpandLess
-                                            } else {
-                                                Icons.Filled.ExpandMore
-                                            },
-                                            contentDescription = stringResource(
-                                                if (active) {
-                                                    R.string.entry_search_options_collapse
-                                                } else {
-                                                    R.string.entry_search_options_expand
-                                                }
-                                            ),
-                                        )
-                                    }
-                                }
-                            },
-                            onSearch = { active = false },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp, end = 16.dp, top = 4.dp)
-                        ) {
-                            val options = options()
-                            options.forEachIndexed { index, option ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .conditionally(index == options.lastIndex) {
-                                            padding(bottom = 8.dp)
-                                        }
-                                        .clickable {
-                                            option.enabled = !option.enabled
-                                            onOptionChange(option)
-                                        }
-                                ) {
-                                    Checkbox(
-                                        checked = option.enabled,
-                                        onCheckedChange = null,
-                                        Modifier.padding(
-                                            start = 16.dp,
-                                            end = 16.dp,
-                                            top = 8.dp,
-                                            bottom = 8.dp
-                                        )
-                                    )
-
-                                    Text(stringResource(option.textRes))
-                                }
-                            }
+                                },
+                                onSearch = {},
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp)
+                            )
                         }
                     }
-                }
-            },
-            floatingActionButton = {
-                if (showFab()) {
-                    FloatingActionButton(
-                        onClick = onClickAddFab,
-                    ) {
-                        Icon(
-                            Icons.Filled.Add,
-                            contentDescription = stringResource(R.string.entry_search_add_entry)
-                        )
+                },
+                floatingActionButton = {
+                    if (showFab()) {
+                        FloatingActionButton(
+                            onClick = onClickAddFab,
+                            modifier = Modifier.padding(bottom = 56.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = stringResource(R.string.entry_search_add_entry)
+                            )
+                        }
                     }
-                }
-            },
-            content = content,
-            modifier = Modifier.nestedScroll(
-                NestedScrollSplitter(
-                    primary = scrollBehavior.nestedScrollConnection,
-                    consumeNone = true,
-                )
-            ),
+                },
+                content = content,
+            )
+        }
+    }
+
+    @Composable
+    private fun SearchFilterSheet(
+        sections: List<EntrySection>,
+        onNavigate: (String) -> Unit,
+    ) {
+        HorizontalDivider()
+        EntryForm(
+            areSectionsLoading = { false },
+            sections = { sections },
+            onNavigate = onNavigate,
         )
+        HorizontalDivider()
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = { sections.forEach {  it.clear() } }) {
+                Text(text = stringResource(UtilsStringR.clear))
+            }
+        }
     }
 }

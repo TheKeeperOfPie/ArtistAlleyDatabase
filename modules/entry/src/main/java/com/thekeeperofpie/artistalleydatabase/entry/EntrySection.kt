@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -34,11 +35,11 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 
-sealed class EntrySection(lockState: LockState? = null) {
+sealed class EntrySection(private val initialLockState: LockState? = null) {
 
-    private var _lockState by mutableStateOf(lockState)
-    var lockStateFlow = MutableStateFlow(lockState)
-    var lockState: LockState? = lockState
+    private var _lockState by mutableStateOf(initialLockState)
+    var lockStateFlow = MutableStateFlow(initialLockState)
+    var lockState: LockState? = initialLockState
         get() = _lockState
         set(value) {
             field = value
@@ -82,6 +83,13 @@ sealed class EntrySection(lockState: LockState? = null) {
             null -> null
         }
     }
+
+    fun clear() {
+        lockState = initialLockState
+        clearSection()
+    }
+
+    protected abstract fun clearSection()
 
     class MultiText(
         @StringRes val headerZero: Int,
@@ -127,6 +135,10 @@ sealed class EntrySection(lockState: LockState? = null) {
             contents.addAll(entries)
             contentUpdates.tryEmit(contents.toList())
             this.lockState = lockState
+        }
+
+        override fun clearSection() {
+            contents.clear()
         }
 
         fun replaceContent(entry: Entry.Prefilled<*>) {
@@ -297,6 +309,10 @@ sealed class EntrySection(lockState: LockState? = null) {
             this.value = value.orEmpty()
             this.lockState = lockState
         }
+
+        override fun clearSection() {
+            value = ""
+        }
     }
 
     open class Dropdown(
@@ -306,7 +322,7 @@ sealed class EntrySection(lockState: LockState? = null) {
         lockState: LockState? = null,
     ) : EntrySection(lockState) {
         var expanded by mutableStateOf(false)
-        var selectedIndex by mutableStateOf(0)
+        var selectedIndex by mutableIntStateOf(0)
 
         open fun selectedItem() = options[selectedIndex]
 
@@ -334,6 +350,10 @@ sealed class EntrySection(lockState: LockState? = null) {
                 @Composable
                 override fun DropdownItemText() = Text(fieldText())
             }
+        }
+
+        override fun clearSection() {
+            selectedIndex = 0
         }
     }
 

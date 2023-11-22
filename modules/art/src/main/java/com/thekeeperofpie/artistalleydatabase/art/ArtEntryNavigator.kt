@@ -37,11 +37,10 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
             EntryHomeScreen(
                 screenKey = ArtNavDestinations.HOME.id,
                 onClickNav = onClickNav,
-                query = { viewModel.query?.query.orEmpty() },
+                query = { viewModel.query },
                 entriesSize = { viewModel.entriesSize },
                 onQueryChange = viewModel::onQuery,
-                options = { viewModel.options },
-                onOptionChange = { viewModel.refreshQuery() },
+                sections = viewModel.sections.sections,
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },
                 onClickAddFab = {
@@ -69,6 +68,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                     )
                 },
                 onConfirmDelete = viewModel::deleteSelected,
+                onNavigate = navHostController::navigate,
             )
         }
 

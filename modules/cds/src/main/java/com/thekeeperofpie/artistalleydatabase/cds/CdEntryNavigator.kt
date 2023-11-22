@@ -40,8 +40,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                 query = { viewModel.query?.query.orEmpty() },
                 entriesSize = { viewModel.entriesSize },
                 onQueryChange = viewModel::onQuery,
-                options = { viewModel.options },
-                onOptionChange = { viewModel.refreshQuery() },
+                sections = emptyList(),
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },
                 onClickAddFab = { onCdEntryClick(navHostController, emptyList()) },
@@ -61,6 +60,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                     )
                 },
                 onConfirmDelete = viewModel::deleteSelected,
+                onNavigate = navHostController::navigate,
             )
         }
 

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art.data
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
@@ -10,12 +11,19 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchQuery
+import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
+import com.thekeeperofpie.artistalleydatabase.art.search.ArtAdvancedSearchQuery
+import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.yield
 
 @Dao
 interface ArtEntryDao {
+
+    companion object {
+        private val WHITESPACE_REGEX = Regex("\\s+")
+    }
 
     @Query("""SELECT * FROM art_entries WHERE id = :id""")
     suspend fun getEntry(id: String): ArtEntry
@@ -41,63 +49,6 @@ interface ArtEntryDao {
         """
     )
     fun getEntries(): PagingSource<Int, ArtEntry>
-
-    fun getEntries(query: ArtSearchQuery): PagingSource<Int, ArtEntry> {
-        val includeAll = query.includeAll
-        val lockedValue = when {
-            includeAll -> null
-            query.locked && query.unlocked -> null
-            query.locked -> "1"
-            query.unlocked -> "0"
-            else -> null
-        }
-
-        val options = query.query.split(Regex("\\s+"))
-            .filter(String::isNotBlank)
-            .map { "*$it*" }
-            .map { queryValue ->
-                mutableListOf<String>().apply {
-                    if (includeAll || query.includeArtists) this += "artists:$queryValue"
-                    if (includeAll || query.includeSources) this += "sourceType:$queryValue"
-                    if (includeAll || query.includeSources) this += "sourceValue:$queryValue"
-                    if (includeAll || query.includeSeries) this += "seriesSearchable:$queryValue"
-                    if (includeAll || query.includeCharacters) this += "charactersSearchable:$queryValue"
-                    if (includeAll || query.includeTags) this += "tags:$queryValue"
-                    if (includeAll || query.includeNotes) this += "notes:$queryValue"
-                }
-            }
-
-        if (options.isEmpty() && lockedValue == null) {
-            return getEntries()
-        }
-
-        val lockOptions = if (lockedValue == null) emptyList() else {
-            mutableListOf<String>().apply {
-                if (query.includeArtists) this += "artistsLocked:$lockedValue"
-                if (query.includeSources) this += "sourceLocked:$lockedValue"
-                if (query.includeSeries) this += "seriesLocked:$lockedValue"
-                if (query.includeCharacters) this += "charactersLocked:$lockedValue"
-                if (query.includeTags) this += "tagsLocked:$lockedValue"
-                if (query.includeNotes) this += "notesLocked:$lockedValue"
-            }
-        }
-
-        val bindArguments = (options.ifEmpty { listOf(listOf("")) }).map {
-            it.joinToString(separator = " OR ") + " " +
-                    lockOptions.joinToString(separator = " ")
-        }
-
-        val statement = bindArguments.joinToString("\nINTERSECT\n") {
-            """
-                SELECT *
-                FROM art_entries
-                JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
-                WHERE art_entries_fts MATCH ?
-                """.trimIndent()
-        } + "\nORDER BY art_entries.lastEditTime DESC"
-
-        return getEntries(SimpleSQLiteQuery(statement, bindArguments.toTypedArray()))
-    }
 
     @Query(
         """
@@ -154,7 +105,7 @@ interface ArtEntryDao {
     suspend fun insertEntriesDeferred(
         dryRun: Boolean,
         replaceAll: Boolean,
-        block: suspend (insertEntry: suspend (ArtEntry) -> Unit) -> Unit
+        block: suspend (insertEntry: suspend (ArtEntry) -> Unit) -> Unit,
     ) {
         if (!dryRun && replaceAll) {
             deleteAll()
@@ -176,4 +127,115 @@ interface ArtEntryDao {
 
     @Transaction
     suspend fun transaction(block: suspend () -> Unit) = block()
+
+    fun search(query: String, filterOptions: ArtAdvancedSearchQuery): PagingSource<Int, ArtEntry> {
+        Log.d("SearchDebug", "search() called with: query = $filterOptions")
+        val filterOptionsQueryPieces = filterOptionsQuery(filterOptions)
+        val options = query.split(Regex("\\s+"))
+            .filter(String::isNotBlank)
+            .map { "*$it*" }
+            .map {
+                listOf(
+                    "artists:$it",
+                    "sourceType:$it",
+                    "sourceValue:$it",
+                    "seriesSearchable:$it",
+                    "charactersSearchable:$it",
+                    "tags:$it",
+                    "notes:$it",
+                )
+            }
+
+        if (options.isEmpty() && filterOptionsQueryPieces.isEmpty()) {
+            return getEntries()
+        }
+
+        val bindArguments = options.map { it.joinToString(separator = " OR ") }
+
+        val statement = (bindArguments + filterOptionsQueryPieces).joinToString("\nINTERSECT\n") {
+            """
+                SELECT *
+                FROM art_entries
+                JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
+                WHERE art_entries_fts MATCH ?
+                """.trimIndent()
+        } + "\nORDER BY art_entries.lastEditTime DESC"
+
+        return getEntries(
+            SimpleSQLiteQuery(
+                statement,
+                bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray()
+            )
+        )
+    }
+
+    private fun filterOptionsQuery(filterOptions: ArtAdvancedSearchQuery): MutableList<String> {
+        val queryPieces = mutableListOf<String>()
+
+        queryPieces += filterOptions.artists.flatMap { it.split(WHITESPACE_REGEX) }
+            .map { "artists:${RoomUtils.wrapMatchQuery(it)}" }
+        queryPieces += filterOptions.series.flatMap { it.split(WHITESPACE_REGEX) }
+            .map { "seriesSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+        queryPieces += filterOptions.seriesById.map {
+            "seriesSerialized:${
+                RoomUtils.wrapMatchQuery(
+                    it
+                )
+            }"
+        }
+        queryPieces += filterOptions.characters.flatMap { it.split(WHITESPACE_REGEX) }
+            .map { "charactersSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+        queryPieces += filterOptions.charactersById
+            .map { "charactersSerialized:${RoomUtils.wrapMatchQuery(it)}" }
+        queryPieces += filterOptions.tags.flatMap { it.split(WHITESPACE_REGEX) }
+            .map { "tags:${RoomUtils.wrapMatchQuery(it)}" }
+        filterOptions.notes.takeUnless(String?::isNullOrBlank)?.let {
+            queryPieces += it.split(WHITESPACE_REGEX)
+                .map { "notes:${RoomUtils.wrapMatchQuery(it)}" }
+        }
+        when (val source = filterOptions.source) {
+            is SourceType.Convention -> {
+                queryPieces += "sourceType:${source.serializedType}"
+                queryPieces += source.name.takeIf(String::isNotBlank)
+                    ?.split(WHITESPACE_REGEX)
+                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    .orEmpty()
+                source.year
+                    ?.let { "sourceValue:${RoomUtils.wrapMatchQuery(it.toString())}" }
+                    ?.let { queryPieces += it }
+                queryPieces += source.hall.takeIf(String::isNotBlank)
+                    ?.split(WHITESPACE_REGEX)
+                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    .orEmpty()
+                queryPieces += source.booth.takeIf(String::isNotBlank)
+                    ?.split(WHITESPACE_REGEX)
+                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    .orEmpty()
+            }
+            is SourceType.Custom -> {
+                queryPieces += "sourceType:${source.serializedType}"
+                queryPieces += source.value.takeIf(String::isNotBlank)
+                    ?.split(WHITESPACE_REGEX)
+                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    .orEmpty()
+            }
+            is SourceType.Online -> TODO()
+            SourceType.Different,
+            SourceType.Unknown,
+            null,
+            -> {
+                // Do nothing
+            }
+        }
+
+        filterOptions.artistsLocked?.let { queryPieces += "artistsLocked:${it.toBit()}" }
+        filterOptions.seriesLocked?.let { queryPieces += "seriesLocked:${it.toBit()}" }
+        filterOptions.charactersLocked?.let { queryPieces += "charactersLocked:${it.toBit()}" }
+        filterOptions.sourceLocked?.let { queryPieces += "sourceLocked:${it.toBit()}" }
+        filterOptions.tagsLocked?.let { queryPieces += "tagsLocked:${it.toBit()}" }
+        filterOptions.notesLocked?.let { queryPieces += "notesLocked:${it.toBit()}" }
+        filterOptions.printSizeLocked?.let { queryPieces += "printSizeLocked:${it.toBit()}" }
+
+        return queryPieces
+    }
 }
