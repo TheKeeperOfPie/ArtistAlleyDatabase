@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.annotation.WorkerThread
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.split
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
@@ -96,7 +95,7 @@ class AniListAutocompleter @Inject constructor(
             entryResult.filterNotNull().forEach { tempMap[it.id] = it }
             localResult.forEach { tempMap[it.id] = it }
             networkResult.forEach { tempMap[it.id] = it }
-            tempMap.values.split { it.text.contains(query, ignoreCase = true) }
+            tempMap.values.partition { it.text.contains(query, ignoreCase = true) }
         }
     }
 
@@ -202,7 +201,7 @@ class AniListAutocompleter @Inject constructor(
                             .startWith(item = emptyList<Entry>() to emptyList())
                     ) { query, series, (charactersFirst, charactersSecond) ->
                         val (seriesFirst, seriesSecond) = series.toMutableList()
-                            .split { it.text.contains(query, ignoreCase = true) }
+                            .partition { it.text.contains(query, ignoreCase = true) }
                         (seriesFirst + charactersFirst + seriesSecond + charactersSecond).distinctBy { it.id }
                     }
                 }

@@ -1,20 +1,29 @@
 package com.thekeeperofpie.artistalleydatabase.cds.search
 
 import android.app.Application
-import androidx.annotation.MainThread
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
-import com.thekeeperofpie.artistalleydatabase.cds.R
-import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.cds.section.CdEntrySections
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbUtils
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -26,8 +35,35 @@ import javax.inject.Inject
 @HiltViewModel
 class CdSearchViewModel @Inject constructor(
     private val application: Application,
-    private val cdEntryDao: CdEntryDao,
+    private val cdEntryDao: CdEntryDetailsDao,
+    private val aniListAutocompleter: AniListAutocompleter,
+    private val vgmdbApi: VgmdbApi,
+    private val vgmdbJson: VgmdbJson,
+    private val vgmdbDataConverter: VgmdbDataConverter,
+    private val vgmdbAutocompleter: VgmdbAutocompleter,
+    private val albumRepository: AlbumRepository,
+    private val artistRepository: ArtistRepository,
 ) : EntrySearchViewModel<CdSearchQuery, CdEntryGridModel>() {
+
+    private val entrySections = CdEntrySections(
+        cdEntryDao = cdEntryDao,
+        aniListAutocompleter = aniListAutocompleter,
+        vgmdbApi = vgmdbApi,
+        vgmdbJson = vgmdbJson,
+        vgmdbDataConverter = vgmdbDataConverter,
+        vgmdbAutocompleter = vgmdbAutocompleter,
+        albumRepository = albumRepository,
+        artistRepository = artistRepository,
+        defaultLockState = EntrySection.LockState.DIFFERENT,
+    )
+
+    // TODO: Track search is hard to implement
+    override val sections = entrySections.sections
+        .filterNot { it == entrySections.discSection }
+
+    init {
+        entrySections.subscribeSectionPredictions(viewModelScope)
+    }
 
     override val entryGridSelectionController =
         EntryGridSelectionController<CdEntryGridModel>({ viewModelScope }) {
@@ -37,54 +73,61 @@ class CdSearchViewModel @Inject constructor(
             }
         }
 
-    private val catalogIdsOption = EntrySearchOption(R.string.cd_search_option_catalog_ids)
-    private val titlesOption = EntrySearchOption(R.string.cd_search_option_titles)
-    private val performersOption = EntrySearchOption(R.string.cd_search_option_performers)
-    private val composersOption = EntrySearchOption(R.string.cd_search_option_composers)
-    private val seriesOption = EntrySearchOption(R.string.cd_search_option_series)
-    private val charactersOption = EntrySearchOption(R.string.cd_search_option_characters)
-    private val discsOption = EntrySearchOption(R.string.cd_search_option_discs)
-    private val tagsOption = EntrySearchOption(R.string.cd_search_option_tags)
-    private val notesOption = EntrySearchOption(R.string.cd_search_option_notes)
-    private val otherOption = EntrySearchOption(R.string.cd_search_option_other)
-    private val lockedOption = EntrySearchOption(R.string.cd_search_option_locked)
-    private val unlockedOption = EntrySearchOption(R.string.cd_search_option_unlocked)
+    override fun searchOptions() = snapshotFlow {
+        val performersContents = entrySections.performerSection.finalContents()
+        val composersContents = entrySections.composerSection.finalContents()
+        val seriesContents = entrySections.seriesSection.finalContents()
+        val characterContents = entrySections.characterSection.finalContents()
+        CdSearchQuery(
+            catalogId = entrySections.catalogIdSection.finalContents()
+                .firstOrNull()?.serializedValue,
+            titles = entrySections.titleSection.finalContents().map { it.serializedValue },
+            performers = performersContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                .map { it.serializedValue }
+                .filterNot(String::isBlank),
+            performersById = performersContents
+                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
+                .mapNotNull(VgmdbUtils::artistId),
+            composers = composersContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                .map { it.serializedValue }
+                .filterNot(String::isBlank),
+            composersById = composersContents
+                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
+                .mapNotNull(VgmdbUtils::artistId),
+            series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                .map { it.serializedValue }
+                .filterNot(String::isBlank),
+            seriesById = seriesContents
+                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
+                .mapNotNull(AniListUtils::mediaId),
+            characters = characterContents
+                .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                .map { it.serializedValue }
+                .filterNot(String::isBlank),
+            charactersById = characterContents
+                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
+                .mapNotNull(AniListUtils::characterId),
+            discs = entrySections.discSection.serializedValue(),
+            tags = entrySections.tagSection.finalContents().map { it.serializedValue },
+            notes = entrySections.notesSection.value.trim(),
+            catalogIdLocked = entrySections.catalogIdSection.lockState?.toSerializedValue(),
+            titlesLocked = entrySections.titleSection.lockState?.toSerializedValue(),
+            performersLocked = entrySections.performerSection.lockState?.toSerializedValue(),
+            composersLocked = entrySections.composerSection.lockState?.toSerializedValue(),
+            seriesLocked = entrySections.seriesSection.lockState?.toSerializedValue(),
+            charactersLocked = entrySections.characterSection.lockState?.toSerializedValue(),
+            discsLocked = entrySections.discSection.lockState?.toSerializedValue(),
+            tagsLocked = entrySections.tagSection.lockState?.toSerializedValue(),
+            notesLocked = entrySections.notesSection.lockState?.toSerializedValue(),
+        )
+    }
 
-    override val options = listOf(
-        catalogIdsOption,
-        titlesOption,
-        performersOption,
-        composersOption,
-        seriesOption,
-        charactersOption,
-        discsOption,
-        tagsOption,
-        notesOption,
-        otherOption,
-        lockedOption,
-        unlockedOption,
-    )
-
-    @MainThread
-    override fun buildQueryWrapper(query: String?) = CdSearchQuery(
-        query = query.orEmpty(),
-        includeCatalogIds = catalogIdsOption.enabled,
-        includeTitles = titlesOption.enabled,
-        includePerformers = performersOption.enabled,
-        includeComposers = composersOption.enabled,
-        includeSeries = seriesOption.enabled,
-        includeCharacters = charactersOption.enabled,
-        includeDiscs = discsOption.enabled,
-        includeTags = tagsOption.enabled,
-        includeNotes = notesOption.enabled,
-        includeOther = otherOption.enabled,
-        locked = lockedOption.enabled,
-        unlocked = unlockedOption.enabled,
-    )
-
-    override fun mapQuery(query: CdSearchQuery?): Flow<PagingData<CdEntryGridModel>> =
+    override fun mapQuery(
+        query: String,
+        options: CdSearchQuery,
+    ): Flow<PagingData<CdEntryGridModel>> =
         Pager(PagingConfig(pageSize = 20)) {
-            trackPagingSource { cdEntryDao.getEntries(query ?: CdSearchQuery()) }
+            trackPagingSource { cdEntryDao.search(query, options) }
         }
             .flow.cachedIn(viewModelScope)
             .onEach {

@@ -11,12 +11,14 @@ object VgmdbUtils {
     fun albumId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
         is AlbumEntry -> value.id
         is AlbumColumnEntry -> value.id
+        is SearchResults.AlbumResult -> value.id
         else -> null
     }
 
     fun artistId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
         is VgmdbArtist -> value.id
         is ArtistColumnEntry -> value.id
+        is SearchResults.ArtistResult -> value.id
         else -> null
     }
 

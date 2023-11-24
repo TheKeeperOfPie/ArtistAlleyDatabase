@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.android_utils.kotlin
 
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -13,19 +11,6 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
-
-fun <T> Iterable<T>.split(predicate: (T) -> Boolean): Pair<List<T>, List<T>> {
-    val filtered = mutableListOf<T>()
-    val remaining = mutableListOf<T>()
-    forEach {
-        if (predicate(it)) {
-            filtered.add(it)
-        } else {
-            remaining.add(it)
-        }
-    }
-    return filtered to remaining
-}
 
 fun <T> List<T>.splitAtIndex(index: Int) =
     if (index == size - 1) {

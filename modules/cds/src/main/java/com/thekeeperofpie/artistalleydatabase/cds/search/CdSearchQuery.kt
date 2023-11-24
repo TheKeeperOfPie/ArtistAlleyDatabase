@@ -1,23 +1,30 @@
 package com.thekeeperofpie.artistalleydatabase.cds.search
 
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchQuery
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class CdSearchQuery(
-    override val query: String = "",
-    val includeCatalogIds: Boolean = false,
-    val includeTitles: Boolean = false,
-    val includePerformers: Boolean = false,
-    val includeComposers: Boolean = false,
-    val includeSeries: Boolean = false,
-    val includeCharacters: Boolean = false,
-    val includeDiscs: Boolean = false,
-    val includeTags: Boolean = false,
-    val includeNotes: Boolean = false,
-    val includeOther: Boolean = false,
-    val locked: Boolean = false,
-    val unlocked: Boolean = false,
-): EntrySearchQuery {
-    val includeAll = !includeCatalogIds && !includeTitles && !includePerformers
-            && !includeComposers && !includeSeries && !includeCharacters && !includeDiscs
-            && !includeTags && !includeNotes && !includeOther && !locked && !unlocked
-}
+    val catalogId: String? = null,
+    val titles: List<String> = emptyList(),
+    val performers: List<String> = emptyList(),
+    val performersById: List<String> = emptyList(),
+    val composers: List<String> = emptyList(),
+    val composersById: List<String> = emptyList(),
+    val series: List<String> = emptyList(),
+    val seriesById: List<String> = emptyList(),
+    val characters: List<String> = emptyList(),
+    val charactersById: List<String> = emptyList(),
+    val discs: List<String> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val notes: String? = null,
+    val catalogIdLocked: Boolean? = null,
+    val titlesLocked: Boolean? = null,
+    val performersLocked: Boolean? = null,
+    val composersLocked: Boolean? = null,
+    val seriesLocked: Boolean? = null,
+    val charactersLocked: Boolean? = null,
+    val discsLocked: Boolean? = null,
+    val tagsLocked: Boolean? = null,
+    val priceLocked: Boolean? = null,
+    val notesLocked: Boolean? = null,
+)

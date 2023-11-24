@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art.data
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
@@ -13,7 +12,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
-import com.thekeeperofpie.artistalleydatabase.art.search.ArtAdvancedSearchQuery
+import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchQuery
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.yield
@@ -128,8 +127,7 @@ interface ArtEntryDao {
     @Transaction
     suspend fun transaction(block: suspend () -> Unit) = block()
 
-    fun search(query: String, filterOptions: ArtAdvancedSearchQuery): PagingSource<Int, ArtEntry> {
-        Log.d("SearchDebug", "search() called with: query = $filterOptions")
+    fun search(query: String, filterOptions: ArtSearchQuery): PagingSource<Int, ArtEntry> {
         val filterOptionsQueryPieces = filterOptionsQuery(filterOptions)
         val options = query.split(Regex("\\s+"))
             .filter(String::isNotBlank)
@@ -169,7 +167,7 @@ interface ArtEntryDao {
         )
     }
 
-    private fun filterOptionsQuery(filterOptions: ArtAdvancedSearchQuery): MutableList<String> {
+    private fun filterOptionsQuery(filterOptions: ArtSearchQuery): MutableList<String> {
         val queryPieces = mutableListOf<String>()
 
         queryPieces += filterOptions.artists.flatMap { it.split(WHITESPACE_REGEX) }

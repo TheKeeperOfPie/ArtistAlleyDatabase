@@ -40,7 +40,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 query = { viewModel.query },
                 entriesSize = { viewModel.entriesSize },
                 onQueryChange = viewModel::onQuery,
-                sections = viewModel.sections.sections,
+                sections = viewModel.sections,
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },
                 onClickAddFab = {

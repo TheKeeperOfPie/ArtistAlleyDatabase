@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
@@ -216,11 +218,13 @@ object EntryHomeScreen {
         onNavigate: (String) -> Unit,
     ) {
         HorizontalDivider()
-        EntryForm(
-            areSectionsLoading = { false },
-            sections = { sections },
-            onNavigate = onNavigate,
-        )
+        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            EntryForm(
+                areSectionsLoading = { false },
+                sections = { sections },
+                onNavigate = onNavigate,
+            )
+        }
         HorizontalDivider()
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
             TextButton(onClick = { sections.forEach {  it.clear() } }) {

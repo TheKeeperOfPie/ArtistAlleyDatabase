@@ -219,6 +219,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
                         flowOf(emptyList())
                     } else {
                         combine(
+                            valueUpdates(),
                             valueUpdates()
                                 .flatMapLatest {
                                     val localFlows = localCall(it)
@@ -234,8 +235,12 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
                                 .filter(String::isNotBlank)
                                 .flatMapLatest(networkCall)
                                 .startWith(flowOf(emptyList()))
-                        ) { (local, network) ->
-                            (local + network).filterNotNull().distinctBy { it.id }
+                        ) { query, local, network ->
+                            (local + network)
+                                .filterNotNull()
+                                .distinctBy { it.id }
+                                .partition { it.text.contains(query, ignoreCase = true) }
+                                .run { first + second }
                         }
                     }
                 }

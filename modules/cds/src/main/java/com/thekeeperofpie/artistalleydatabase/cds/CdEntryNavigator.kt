@@ -37,10 +37,10 @@ class CdEntryNavigator : BrowseSelectionNavigator {
             EntryHomeScreen(
                 screenKey = CdNavDestinations.HOME.id,
                 onClickNav = onClickNav,
-                query = { viewModel.query?.query.orEmpty() },
+                query = { viewModel.query },
                 entriesSize = { viewModel.entriesSize },
                 onQueryChange = viewModel::onQuery,
-                sections = emptyList(),
+                sections = viewModel.sections,
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },
                 onClickAddFab = { onCdEntryClick(navHostController, emptyList()) },

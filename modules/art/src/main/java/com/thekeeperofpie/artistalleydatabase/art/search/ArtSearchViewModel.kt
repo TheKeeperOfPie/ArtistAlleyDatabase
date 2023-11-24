@@ -1,11 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.art.search
 
 import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -14,7 +10,6 @@ import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -27,22 +22,15 @@ import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
-import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridViewModel
+import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.util.WeakHashMap
 import javax.inject.Inject
 
@@ -55,54 +43,10 @@ open class ArtSearchViewModel @Inject constructor(
     private val characterRepository: CharacterRepository,
     private val aniListAutocompleter: AniListAutocompleter,
     protected val appJson: AppJson,
-) : ViewModel(), EntryGridViewModel<ArtEntryGridModel> {
-
-    var query by mutableStateOf<String>("")
-    var entriesSize by mutableStateOf(0)
-
-    val results = MutableStateFlow(PagingData.empty<ArtEntryGridModel>())
+) : EntrySearchViewModel<ArtSearchQuery, ArtEntryGridModel>() {
 
     private val weakMap = WeakHashMap<PagingSource<*, *>, Unit>()
     private val weakMapLock = Mutex(false)
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            @Suppress("OPT_IN_USAGE")
-            combine(snapshotFlow { query }, searchOptions(), ::Pair)
-                .flowOn(CustomDispatchers.Main)
-                .flatMapLatest { (query, options) -> mapQuery(query, options) }
-                .collect(results)
-        }
-
-        viewModelScope.launch(CustomDispatchers.Main) {
-            entriesSize()
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest { entriesSize = it }
-        }
-    }
-
-    fun onQuery(query: String) {
-        val currentValue = this.query
-        if (currentValue != query) {
-            clearSelected()
-        }
-        this.query = query
-    }
-
-    suspend fun invalidate() = weakMapLock.withLock(this) {
-        weakMap.keys.toList()
-    }.forEach { it.invalidate() }
-
-    protected fun <Key : Any, Value : Any> trackPagingSource(
-        block: () -> PagingSource<Key, Value>,
-    ) = block().apply {
-        runBlocking { weakMapLock.withLock(this) { weakMap[this@apply] = Unit } }
-    }
-
-    protected suspend fun <Key : Any, Value : Any> PagingSource<Key, Value>.track() =
-        weakMapLock.withLock(this) {
-            apply { weakMap[this] = Unit }
-        }
 
     override val entryGridSelectionController =
         EntryGridSelectionController<ArtEntryGridModel>({ viewModelScope }) {
@@ -112,15 +56,13 @@ open class ArtSearchViewModel @Inject constructor(
             }
         }
 
-    val sections = ArtEntrySections(EntrySection.LockState.DIFFERENT)
+    private val entrySections = ArtEntrySections(EntrySection.LockState.DIFFERENT)
+    override val sections get() = entrySections.sections
 
     init {
-        sections.printSizeSection.setOptions((PrintSize.PORTRAITS + PrintSize.LANDSCAPES.distinct()))
-        sections.sourceSection.addDifferent()
-        sections.sections.forEach {
-            it.lockState = EntrySection.LockState.DIFFERENT
-        }
-        sections.subscribeSectionPredictions(
+        entrySections.printSizeSection.setOptions((PrintSize.PORTRAITS + PrintSize.LANDSCAPES.distinct()))
+        entrySections.sourceSection.addDifferent()
+        entrySections.subscribeSectionPredictions(
             viewModelScope,
             artEntryDao,
             dataConverter,
@@ -131,13 +73,13 @@ open class ArtSearchViewModel @Inject constructor(
         )
     }
 
-    private fun searchOptions() = snapshotFlow {
-        val sourceItem = sections.sourceSection.selectedItem().toSource()
+    override fun searchOptions() = snapshotFlow {
+        val sourceItem = entrySections.sourceSection.selectedItem().toSource()
 
-        val seriesContents = sections.seriesSection.finalContents()
-        val characterContents = sections.characterSection.finalContents()
-        ArtAdvancedSearchQuery(
-            artists = sections.artistSection.finalContents().map { it.serializedValue },
+        val seriesContents = entrySections.seriesSection.finalContents()
+        val characterContents = entrySections.characterSection.finalContents()
+        ArtSearchQuery(
+            artists = entrySections.artistSection.finalContents().map { it.serializedValue },
             source = sourceItem,
             series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
                 .map { it.serializedValue }
@@ -152,24 +94,24 @@ open class ArtSearchViewModel @Inject constructor(
             charactersById = characterContents
                 .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                 .mapNotNull(AniListUtils::characterId),
-            tags = sections.tagSection.finalContents().map { it.serializedValue },
-            printWidth = sections.printSizeSection.finalWidth(),
-            printHeight = sections.printSizeSection.finalHeight(),
-            notes = sections.notesSection.value.trim(),
-            artistsLocked = sections.artistSection.lockState?.toSerializedValue(),
-            seriesLocked = sections.seriesSection.lockState?.toSerializedValue(),
-            charactersLocked = sections.characterSection.lockState?.toSerializedValue(),
-            sourceLocked = sections.sourceSection.lockState?.toSerializedValue(),
-            tagsLocked = sections.tagSection.lockState?.toSerializedValue(),
-            notesLocked = sections.notesSection.lockState?.toSerializedValue(),
-            printSizeLocked = sections.printSizeSection.lockState?.toSerializedValue(),
+            tags = entrySections.tagSection.finalContents().map { it.serializedValue },
+            printWidth = entrySections.printSizeSection.finalWidth(),
+            printHeight = entrySections.printSizeSection.finalHeight(),
+            notes = entrySections.notesSection.value.trim(),
+            artistsLocked = entrySections.artistSection.lockState?.toSerializedValue(),
+            seriesLocked = entrySections.seriesSection.lockState?.toSerializedValue(),
+            charactersLocked = entrySections.characterSection.lockState?.toSerializedValue(),
+            sourceLocked = entrySections.sourceSection.lockState?.toSerializedValue(),
+            tagsLocked = entrySections.tagSection.lockState?.toSerializedValue(),
+            notesLocked = entrySections.notesSection.lockState?.toSerializedValue(),
+            printSizeLocked = entrySections.printSizeSection.lockState?.toSerializedValue(),
         )
     }
 
     // TODO: Actually use text query?
-    private fun mapQuery(
+    override fun mapQuery(
         query: String,
-        options: ArtAdvancedSearchQuery,
+        options: ArtSearchQuery,
     ): Flow<PagingData<ArtEntryGridModel>> =
         Pager(PagingConfig(pageSize = 20)) {
             trackPagingSource { artEntryDao.search(query, options) }
@@ -188,5 +130,5 @@ open class ArtSearchViewModel @Inject constructor(
                 }
             }
 
-    open fun entriesSize() = artEntryDao.getEntriesSizeFlow()
+    override fun entriesSize() = artEntryDao.getEntriesSizeFlow()
 }
