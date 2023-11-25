@@ -273,6 +273,8 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material.icons.core)
     implementation(libs.compose.material.icons.extended)
+    runtimeOnly(libs.compose.runtime.tracing)
+
     implementation(libs.material3)
     implementation(libs.androidx.security.crypto)
 

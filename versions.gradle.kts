@@ -179,7 +179,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11",
                     prefix = "okhttp3"
                 )
-                library("com.unity3d.ads:unity-ads:4.9.2")
+                // TODO: 4.9.2 crashes with a StorageManager error
+                library("com.unity3d.ads:unity-ads:4.9.1")
                 library("de.charlex.compose:html-text:1.6.0")
                 library("io.coil-kt:coil-compose:2.5.0")
                 library("io.github.hoc081098:FlowExt:0.7.4")
@@ -241,6 +242,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("androidx.compose.ui:ui-tooling")
                         library("androidx.compose.ui:ui")
                     }
+
+                    library("androidx.compose.runtime:runtime-tracing:1.0.0-alpha05")
                 }
 
                 prefix("jetBrainsCompose") {

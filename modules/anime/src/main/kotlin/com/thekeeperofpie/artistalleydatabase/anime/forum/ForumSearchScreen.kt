@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -102,7 +103,10 @@ object ForumSearchScreen {
                     }
                 } else {
                     val columns = GridCells.Adaptive(300.dp)
+                    val gridState = rememberLazyGridState()
+                    sortFilterController.AttachResetScroll(gridState)
                     LazyVerticalGrid(
+                        state = gridState,
                         columns = columns,
                         contentPadding = PaddingValues(
                             start = 16.dp,

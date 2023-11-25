@@ -117,6 +117,7 @@ object MediaSearchScreen {
                                 AnimeMediaListScreen.NoResults()
                             } else {
                                 val gridState = rememberLazyGridState()
+                                sortFilterController.AttachResetScroll(gridState)
                                 val showWithSpoiler =
                                     if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
                                         viewModel.animeSortFilterController.tagShowWhenSpoiler

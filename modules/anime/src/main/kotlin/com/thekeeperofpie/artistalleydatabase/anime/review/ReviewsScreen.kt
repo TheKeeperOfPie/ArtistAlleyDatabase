@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -36,11 +37,11 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -80,6 +81,7 @@ object ReviewsScreen {
                     reviews = reviews,
                     editViewModel = editViewModel,
                     showMedia = selectedMedia == null,
+                    sortFilterController = sortFilterController,
                 )
             }
         }
@@ -133,6 +135,7 @@ object ReviewsScreen {
         reviews: LazyPagingItems<ReviewEntry>,
         editViewModel: MediaEditViewModel,
         showMedia: Boolean,
+        sortFilterController: ReviewSortFilterController,
     ) {
         val refreshing = reviews.loadState.refresh is LoadState.Loading
         val pullRefreshState = rememberPullRefreshState(
@@ -145,7 +148,10 @@ object ReviewsScreen {
                 .padding(scaffoldPadding)
                 .pullRefresh(pullRefreshState)
         ) {
+            val listState = rememberLazyListState()
+            sortFilterController.AttachResetScroll(listState)
             LazyColumn(
+                state = listState,
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,

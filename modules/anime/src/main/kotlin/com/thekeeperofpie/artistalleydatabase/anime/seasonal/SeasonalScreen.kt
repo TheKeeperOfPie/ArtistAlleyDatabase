@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -50,6 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescri
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
@@ -109,6 +111,7 @@ object SeasonalScreen {
                         editViewModel = editViewModel,
                         content = data,
                         scaffoldPadding = scaffoldPadding,
+                        sortFilterController = sortFilterController,
                     )
                 }
             }
@@ -220,6 +223,7 @@ object SeasonalScreen {
         editViewModel: MediaEditViewModel,
         content: LazyPagingItems<MediaPreviewWithDescriptionEntry>,
         scaffoldPadding: PaddingValues,
+        sortFilterController: AnimeSortFilterController<*>,
     ) {
         val refreshing = content.loadState.refresh is LoadState.Loading
         val viewer by viewModel.viewer.collectAsState()
@@ -242,7 +246,10 @@ object SeasonalScreen {
                             -> GridCells.Adaptive(300.dp)
                             MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
                         }
+                        val gridState = rememberLazyGridState()
+                        sortFilterController.AttachResetScroll(gridState)
                         LazyVerticalGrid(
+                            state = gridState,
                             columns = columns,
                             contentPadding = PaddingValues(
                                 start = 16.dp,

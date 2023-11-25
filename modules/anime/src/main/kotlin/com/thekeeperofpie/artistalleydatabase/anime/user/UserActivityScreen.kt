@@ -27,6 +27,7 @@ object UserActivityScreen {
                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                 showMedia = true,
                 allowUserClick = false,
+                sortFilterController = sortFilterController,
             )
         }
     }

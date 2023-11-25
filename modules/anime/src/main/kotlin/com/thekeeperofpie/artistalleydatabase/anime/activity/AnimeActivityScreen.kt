@@ -140,6 +140,7 @@ object AnimeActivityScreen {
                         activities = activities,
                         onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                         showMedia = selectedMedia == null,
+                        sortFilterController = sortFilterController,
                     )
                 }
             }

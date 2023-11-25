@@ -635,7 +635,7 @@ object AnimeHomeScreen {
             viewAllRoute = viewAllRoute
         )
 
-        item("$titleRes-pager") {
+        item(key = "$titleRes-pager", contentType = "mediaRowPager") {
             val pagerState = rememberPagerState(data = entries, placeholderCount = 3)
             HorizontalPager(
                 state = pagerState,
@@ -655,7 +655,7 @@ object AnimeHomeScreen {
             selectedItemTracker.attachPager(key = rowKey, pagerState = pagerState)
         }
 
-        item("$titleRes-media") {
+        item(key = "$titleRes-media", contentType = "mediaRowCards") {
             val listState = rememberLazyListState()
             val snapLayoutInfoProvider =
                 remember(listState) { SnapLayoutInfoProvider(listState) { _, _, _, _, _ -> 0 } }

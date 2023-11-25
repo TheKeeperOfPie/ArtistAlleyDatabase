@@ -78,18 +78,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.BottomSheetScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.FilterChip
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
-import com.thekeeperofpie.artistalleydatabase.compose.SheetState
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.IncludeExcludeIcon
-import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffoldState
-import com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.roundToInt
@@ -120,63 +116,6 @@ fun SortFilterOptionsPanel(
             }
         }
     }
-}
-
-@Composable
-fun SortFilterBottomScaffoldNoAppBarOffset(
-    sortFilterController: SortFilterController<*>?,
-    modifier: Modifier = Modifier,
-    topBar: @Composable (() -> Unit)? = null,
-    sheetState: SheetState = rememberStandardBottomSheetState(
-        confirmValueChange = { it != SheetValue.Hidden },
-        skipHiddenState = true,
-    ),
-    bottomNavigationState: BottomNavigationState? = null,
-    content: @Composable (PaddingValues) -> Unit,
-) {
-    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
-
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(bottomSheetState.targetValue == SheetValue.Expanded
-            && !WindowInsets.isImeVisible) {
-        scope.launch { bottomSheetState.partialExpand() }
-    }
-
-    BottomSheetScaffoldNoAppBarOffset(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = if (sortFilterController == null) {
-            0.dp
-        } else {
-            56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
-        },
-        sheetDragHandle = {
-            SheetDragHandle(
-                sortFilterController = sortFilterController,
-                targetValue = { bottomSheetState.targetValue },
-                onClick = {
-                    if (bottomSheetState.currentValue == SheetValue.Expanded) {
-                        scope.launch { bottomSheetState.partialExpand() }
-                    } else {
-                        scope.launch { bottomSheetState.expand() }
-                    }
-                },
-            )
-        },
-        sheetContent = {
-            SheetContent(
-                sortFilterController = sortFilterController,
-                bottomNavigationState = bottomNavigationState,
-            )
-        },
-        sheetTonalElevation = 4.dp,
-        sheetShadowElevation = 4.dp,
-        topBar = topBar,
-        modifier = modifier,
-        content = content,
-        // TODO: Error state
-        // snackbarHost = {},
-    )
 }
 
 @Composable

@@ -39,6 +39,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -80,6 +81,7 @@ fun <ListEntryType : Any> HeaderAndListScreen(
             scaffoldPadding = it,
             itemKey = itemKey,
             item = item,
+            sortFilterController = sortFilterController,
         )
     }
 }
@@ -135,6 +137,7 @@ fun <ListEntryType : Any> HeaderAndMediaListScreen(
                 scaffoldPadding = it,
                 itemKey = itemKey,
                 item = item,
+                sortFilterController = sortFilterController,
             )
         }
     }
@@ -148,8 +151,10 @@ private fun <ListEntryType : Any> List(
     scaffoldPadding: PaddingValues,
     itemKey: (ListEntryType) -> Any,
     item: @Composable LazyGridItemScope.(ListEntryType?) -> Unit,
+    sortFilterController: SortFilterController<*>,
 ) {
     val gridState = rememberLazyGridState()
+    sortFilterController.AttachResetScroll(gridState)
     val items = viewModel.items.collectAsLazyPagingItems()
     val refreshState = items.loadState.refresh
 

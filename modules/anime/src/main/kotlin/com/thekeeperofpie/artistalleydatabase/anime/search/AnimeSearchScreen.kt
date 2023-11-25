@@ -200,9 +200,11 @@ object AnimeSearchScreen {
                             } else {
                                 GridCells.Adaptive(300.dp)
                             }
+                        val gridState = scrollStateSaver.lazyGridState()
+                        sortFilterController.AttachResetScroll(gridState)
                         LazyVerticalGrid(
                             columns = columns,
-                            state = scrollStateSaver.lazyGridState(),
+                            state = gridState,
                             contentPadding = PaddingValues(
                                 start = 16.dp,
                                 end = 16.dp,

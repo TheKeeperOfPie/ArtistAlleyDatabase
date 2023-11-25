@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
@@ -199,7 +200,10 @@ object AiringScheduleScreen {
                                         modifier = Modifier.pullRefresh(pullRefreshState)
                                     )
                                 } else {
+                                    val listState = rememberLazyListState()
+                                    viewModel.sortFilterController.AttachResetScroll(listState)
                                     LazyColumn(
+                                        state = listState,
                                         contentPadding = PaddingValues(
                                             start = 16.dp,
                                             end = 16.dp,

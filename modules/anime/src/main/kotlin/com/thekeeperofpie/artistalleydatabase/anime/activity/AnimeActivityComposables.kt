@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
@@ -82,6 +83,7 @@ fun ActivityList(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     showMedia: Boolean,
     allowUserClick: Boolean = true,
+    sortFilterController: ActivitySortFilterController,
 ) {
     when (val refreshState = activities.loadState.refresh) {
         is LoadState.Error -> AnimeMediaListScreen.Error(
@@ -100,7 +102,10 @@ fun ActivityList(
                     onRefresh = { activities.refresh() },
                 )
                 Box(modifier = Modifier.fillMaxWidth()) {
+                    val listState = rememberLazyListState()
+                    sortFilterController.AttachResetScroll(listState)
                     LazyColumn(
+                        state = listState,
                         contentPadding = PaddingValues(
                             start = 16.dp,
                             end = 16.dp,
