@@ -14,6 +14,7 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -39,7 +40,7 @@ import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class AnimeSortFilterController<SortType : SortOption>(
+open class AnimeSortFilterController<SortType : SortOption>(
     sortTypeEnumClass: KClass<SortType>,
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
@@ -59,7 +60,7 @@ class AnimeSortFilterController<SortType : SortOption>(
     mediaType = MediaType.ANIME,
     userScoreEnabled = userScoreEnabled,
 ) {
-    private val formatSection = SortFilterSection.Filter(
+    protected val formatSection = SortFilterSection.Filter(
         titleRes = R.string.anime_media_filter_format_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_format_content_description,
         includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_format_chip_state_content_description,
@@ -76,8 +77,8 @@ class AnimeSortFilterController<SortType : SortOption>(
         valueToText = { stringResource(it.value.toTextRes()) },
     )
 
-    private var airingDate by mutableStateOf(AiringDate.Basic() to AiringDate.Advanced())
-    private var airingDateIsAdvanced by mutableStateOf(false)
+    protected var airingDate by mutableStateOf(AiringDate.Basic() to AiringDate.Advanced())
+    protected var airingDateIsAdvanced by mutableStateOf(false)
     private var airingDateShown by mutableStateOf<Boolean?>(null)
 
     private val airingDateSection = object : SortFilterSection.Custom("airingDate") {
@@ -101,7 +102,25 @@ class AnimeSortFilterController<SortType : SortOption>(
                 onExpandedChange = { state.expandedState[id] = it },
                 data = { if (airingDateIsAdvanced) airingDate.second else airingDate.first },
                 onSeasonChange = {
-                    airingDate = airingDate.copy(first = airingDate.first.copy(season = it))
+                    val year = airingDate.first.seasonYear.ifEmpty {
+                        when (it) {
+                            AiringDate.SeasonOption.PREVIOUS ->
+                                AniListUtils.getPreviousSeasonYear().second.toString()
+                            AiringDate.SeasonOption.CURRENT ->
+                                AniListUtils.getCurrentSeasonYear().second.toString()
+                            AiringDate.SeasonOption.NEXT ->
+                                AniListUtils.getNextSeasonYear().second.toString()
+                            AiringDate.SeasonOption.WINTER,
+                            AiringDate.SeasonOption.SPRING,
+                            AiringDate.SeasonOption.SUMMER,
+                            AiringDate.SeasonOption.FALL,
+                            null,
+                            -> ""
+                        }
+                    }
+                    airingDate = airingDate.copy(
+                        first = airingDate.first.copy(season = it, seasonYear = year)
+                    )
                 },
                 onSeasonYearChange = {
                     airingDate = airingDate.copy(first = airingDate.first.copy(seasonYear = it))
@@ -164,7 +183,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                             }
 
                             if (initialParams.mediaListStatus != null) {
-                                changeSelected(
+                                setIncluded(
                                     initialParams.mediaListStatus,
                                     initialParams.lockMediaListStatus,
                                 )
@@ -175,6 +194,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                         sourceSection,
                         licensedBySection,
                         titleLanguageSection,
+                        suggestionsSection,
                         advancedSection.apply {
                             children = listOfNotNull(
                                 showAdultSection,

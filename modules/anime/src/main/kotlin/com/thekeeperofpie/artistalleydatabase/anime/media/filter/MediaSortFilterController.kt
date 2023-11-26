@@ -249,6 +249,8 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         property = settings.languageOptionMedia,
     )
 
+    open val suggestionsSection: SortFilterSection? = null
+
     override var sections by mutableStateOf(emptyList<SortFilterSection>())
 
     protected fun initialize(

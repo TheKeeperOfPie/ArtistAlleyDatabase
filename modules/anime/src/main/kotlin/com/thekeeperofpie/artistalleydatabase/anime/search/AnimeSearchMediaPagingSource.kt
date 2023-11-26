@@ -32,7 +32,7 @@ class AnimeSearchMediaPagingSource(
     val onList = filterParams.onList
 
     val season = refreshParams.seasonYearOverride?.first
-        ?: (filterParams.airingDate as? AiringDate.Basic)?.season
+        ?: (filterParams.airingDate as? AiringDate.Basic)?.season?.toAniListSeason()
 
     val seasonYear = refreshParams.seasonYearOverride?.second
         ?: (filterParams.airingDate as? AiringDate.Basic)

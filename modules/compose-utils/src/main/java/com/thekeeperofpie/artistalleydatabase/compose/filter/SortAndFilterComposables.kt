@@ -30,11 +30,13 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -327,6 +329,56 @@ fun <Entry : FilterEntry<*>> FilterSection(
 
     if (showDivider) {
         Divider()
+    }
+}
+
+@Composable
+fun <T> SuggestionsSection(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    suggestions: @Composable () -> List<T>,
+    suggestionToText: @Composable (T) -> String,
+    onSuggestionClick: (T) -> Unit,
+    title: @Composable () -> String,
+    @StringRes titleDropdownContentDescriptionRes: Int,
+    showDivider: Boolean = true,
+) {
+    @Suppress("NAME_SHADOWING")
+    val expanded = expanded()
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onExpandedChange(!expanded) }
+    ) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 16.dp)
+                .animateContentSize()
+        ) {
+            SortFilterHeaderText(expanded, title)
+
+            if (expanded) {
+                suggestions().forEach {
+                    SuggestionChip(
+                        onClick = { onSuggestionClick(it) },
+                        label = { Text(suggestionToText(it)) })
+                }
+            }
+        }
+
+        TrailingDropdownIconButton(
+            expanded = expanded,
+            contentDescription = stringResource(titleDropdownContentDescriptionRes),
+            onClick = { onExpandedChange(!expanded) },
+            modifier = Modifier.align(Alignment.Top),
+        )
+    }
+
+    if (showDivider) {
+        HorizontalDivider()
     }
 }
 

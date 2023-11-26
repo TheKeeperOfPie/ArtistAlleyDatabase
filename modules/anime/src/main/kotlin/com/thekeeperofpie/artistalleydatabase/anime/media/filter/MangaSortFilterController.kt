@@ -169,7 +169,7 @@ class MangaSortFilterController<SortType : SortOption>(
                                 }
 
                                 if (initialParams.mediaListStatus != null) {
-                                    changeSelected(
+                                    setIncluded(
                                         initialParams.mediaListStatus,
                                         initialParams.lockMediaListStatus,
                                     )

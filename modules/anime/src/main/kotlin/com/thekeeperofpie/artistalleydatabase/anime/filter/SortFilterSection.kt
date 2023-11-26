@@ -48,6 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterCompos
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SuggestionsSection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.reflect.KClass
 
@@ -190,8 +191,13 @@ sealed class SortFilterSection(val id: String) {
             filterOptions = FilterEntry.values(values)
         }
 
-        fun changeSelected(selected: FilterType, locked: Boolean) {
+        fun setIncluded(selected: FilterType, locked: Boolean) {
             filterOptions = FilterEntry.values(values, included = listOf(selected))
+            this.locked = locked
+        }
+
+        fun setExcluded(selected: FilterType, locked: Boolean) {
+            filterOptions = FilterEntry.values(values, excluded = listOf(selected))
             this.locked = locked
         }
 
@@ -533,6 +539,38 @@ sealed class SortFilterSection(val id: String) {
             if (showDivider) {
                 Divider()
             }
+        }
+    }
+
+    class Suggestions<Suggestion : Suggestions.Suggestion>(
+        private val titleRes: Int,
+        @StringRes private val titleDropdownContentDescriptionRes: Int,
+        private val suggestions: List<Suggestion>,
+        private val onSuggestionClick: (Suggestion) -> Unit,
+    ) : SortFilterSection(titleRes) {
+        override fun showingPreview() = false
+
+        override fun clear() {
+            TODO("Not yet implemented")
+        }
+
+        @Composable
+        override fun Content(state: ExpandedState, showDivider: Boolean) {
+            SuggestionsSection(
+                expanded = { state.expandedState[id] ?: false },
+                onExpandedChange = { state.expandedState[id] = it },
+                suggestions = { suggestions },
+                onSuggestionClick = onSuggestionClick,
+                suggestionToText = { it.text() },
+                title = { stringResource(titleRes) },
+                titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
+                showDivider = showDivider,
+            )
+        }
+
+        interface Suggestion {
+            @Composable
+            fun text(): String
         }
     }
 

@@ -82,7 +82,7 @@ class ForumSubsectionSortFilterController(
                     val category = ForumCategoryOption.values()
                         .find { it.categoryId == initialParams.categoryId.toIntOrNull() }
                     if (category != null) {
-                        changeSelected(category, locked = initialParams.lockCategory)
+                        setIncluded(category, locked = initialParams.lockCategory)
                     }
                 }
             },

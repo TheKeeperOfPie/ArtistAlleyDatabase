@@ -68,13 +68,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -256,7 +254,7 @@ fun AiringDateSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     data: @Composable () -> AiringDate,
-    onSeasonChange: (MediaSeason?) -> Unit,
+    onSeasonChange: (AiringDate.SeasonOption?) -> Unit,
     onSeasonYearChange: (String) -> Unit,
     onIsAdvancedToggle: (Boolean) -> Unit,
     onRequestDatePicker: (Boolean) -> Unit,
@@ -280,8 +278,8 @@ fun AiringDateSection(
                     val seasonYear = data.seasonYear.toIntOrNull()
                     when {
                         season != null && seasonYear != null ->
-                            "${stringResource(season.toTextRes())} - $seasonYear"
-                        season != null -> stringResource(season.toTextRes())
+                            "${season.text()} - $seasonYear"
+                        season != null -> season.text()
                         seasonYear != null -> seasonYear.toString()
                         else -> null
                     }
@@ -350,7 +348,7 @@ fun AiringDateSection(
 @Composable
 private fun AiringDateBasicSection(
     data: AiringDate.Basic,
-    onSeasonChange: (MediaSeason?) -> Unit,
+    onSeasonChange: (AiringDate.SeasonOption?) -> Unit,
     onSeasonYearChange: (String) -> Unit,
 ) {
     Row(
@@ -361,16 +359,8 @@ private fun AiringDateBasicSection(
             label = R.string.anime_media_filter_airing_date_season,
             value = data.season,
             iconContentDescription = R.string.anime_media_filter_airing_date_season_dropdown_content_description,
-            values = {
-                listOf(
-                    null,
-                    MediaSeason.WINTER,
-                    MediaSeason.SPRING,
-                    MediaSeason.SUMMER,
-                    MediaSeason.FALL,
-                )
-            },
-            textForValue = { it?.toTextRes()?.let { stringResource(it) }.orEmpty() },
+            values = { listOf(null) + AiringDate.SeasonOption.entries },
+            textForValue = { it?.text().orEmpty() },
             onSelectItem = onSeasonChange,
             maxLines = 1,
             modifier = Modifier.weight(1f),

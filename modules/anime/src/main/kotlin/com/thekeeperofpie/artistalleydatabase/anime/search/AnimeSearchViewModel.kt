@@ -3,10 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import android.os.SystemClock
 import androidx.annotation.StringRes
 import androidx.collection.LruCache
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,11 +24,14 @@ import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.StaffSearchQuery
 import com.anilist.StudioSearchQuery
 import com.anilist.UserSearchQuery
+import com.anilist.type.MediaFormat
+import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.StudioSort
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -34,12 +39,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
@@ -104,7 +111,23 @@ class AnimeSearchViewModel @Inject constructor(
     private var initialized = false
     private val tagId = savedStateHandle.get<String?>("tagId")
 
-    val animeSortFilterController = AnimeSortFilterController(
+    val animeSortFilterController = AnimeSearchSortFilterController(
+        aniListApi = aniListApi,
+        settings = settings,
+        featureOverrideProvider = featureOverrideProvider,
+        mediaTagsController = mediaTagsController,
+        mediaGenresController = mediaGenresController,
+        mediaLicensorsController = mediaLicensorsController,
+    )
+
+    class AnimeSearchSortFilterController(
+        aniListApi: AuthedAniListApi,
+        settings: AnimeSettings,
+        featureOverrideProvider: FeatureOverrideProvider,
+        mediaTagsController: MediaTagsController,
+        mediaGenresController: MediaGenresController,
+        mediaLicensorsController: MediaLicensorsController,
+    ) : AnimeSortFilterController<MediaSortOption>(
         sortTypeEnumClass = MediaSortOption::class,
         aniListApi = aniListApi,
         settings = settings,
@@ -113,7 +136,90 @@ class AnimeSearchViewModel @Inject constructor(
         mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
         userScoreEnabled = false,
-    )
+    ) {
+
+        override val suggestionsSection = SortFilterSection.Suggestions(
+            titleRes = R.string.anime_media_filter_suggestions_label,
+            titleDropdownContentDescriptionRes = R.string.anime_media_filter_suggestions_expand_content_description,
+            suggestions = AnimeFilterSuggestion.entries.toList(),
+            onSuggestionClick = {
+                when (it) {
+                    AnimeFilterSuggestion.RECENT_UNTRACKED -> {
+                        sortSection.changeSelected(
+                            defaultEnabled = MediaSortOption.END_DATE,
+                            sortAscending = false,
+                            lockSort = false,
+                        )
+                        statusSection.setIncluded(MediaStatus.FINISHED, locked = false)
+                        formatSection.setIncluded(MediaFormat.TV, locked = false)
+                        listStatusSection.setExcluded(null, locked = false)
+                        airingDate = AiringDate.Basic() to airingDate.second
+                        airingDateIsAdvanced = false
+                    }
+                    AnimeFilterSuggestion.LAST_SEASON -> {
+                        sortSection.changeSelected(
+                            defaultEnabled = MediaSortOption.POPULARITY,
+                            sortAscending = false,
+                            lockSort = false,
+                        )
+                        statusSection.clear()
+                        formatSection.setIncluded(MediaFormat.TV, locked = false)
+                        val (_, year) = AniListUtils.getPreviousSeasonYear()
+                        airingDate = AiringDate.Basic(
+                            AiringDate.SeasonOption.PREVIOUS,
+                            year.toString(),
+                        ) to airingDate.second
+                        airingDateIsAdvanced = false
+                        listStatusSection.clear()
+                    }
+                    AnimeFilterSuggestion.CURRENT_SEASON -> {
+                        sortSection.changeSelected(
+                            defaultEnabled = MediaSortOption.POPULARITY,
+                            sortAscending = false,
+                            lockSort = false,
+                        )
+                        statusSection.clear()
+                        formatSection.setIncluded(MediaFormat.TV, locked = false)
+                        val (_, year) = AniListUtils.getCurrentSeasonYear()
+                        airingDate = AiringDate.Basic(
+                            AiringDate.SeasonOption.CURRENT,
+                            year.toString(),
+                        ) to airingDate.second
+                        airingDateIsAdvanced = false
+                        listStatusSection.clear()
+                    }
+                    AnimeFilterSuggestion.NEXT_SEASON -> {
+                        sortSection.changeSelected(
+                            defaultEnabled = MediaSortOption.POPULARITY,
+                            sortAscending = false,
+                            lockSort = false,
+                        )
+                        statusSection.clear()
+                        formatSection.setIncluded(MediaFormat.TV, locked = false)
+                        val (_, year) = AniListUtils.getNextSeasonYear()
+                        airingDate = AiringDate.Basic(
+                            AiringDate.SeasonOption.NEXT,
+                            year.toString(),
+                        ) to airingDate.second
+                        airingDateIsAdvanced = false
+                        listStatusSection.clear()
+                    }
+                }
+            }
+        )
+
+        enum class AnimeFilterSuggestion(private val textRes: Int) :
+            SortFilterSection.Suggestions.Suggestion {
+            RECENT_UNTRACKED(R.string.anime_media_filter_suggestions_recent_untracked),
+            LAST_SEASON(R.string.anime_media_filter_suggestions_last_season),
+            CURRENT_SEASON(R.string.anime_media_filter_suggestions_current_season),
+            NEXT_SEASON(R.string.anime_media_filter_suggestions_next_season),
+            ;
+
+            @Composable
+            override fun text() = stringResource(textRes)
+        }
+    }
 
     val mangaSortFilterController = MangaSortFilterController(
         sortTypeEnumClass = MediaSortOption::class,
