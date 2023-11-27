@@ -58,7 +58,10 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
     userScoreEnabled: Boolean,
-) : SortFilterController<MediaSortFilterController.FilterParams<SortType>>(settings, featureOverrideProvider) {
+) : SortFilterController<MediaSortFilterController.FilterParams<SortType>>(
+    settings,
+    featureOverrideProvider
+) {
     private var initialized = false
     protected var initialParams by mutableStateOf<ParamsType?>(null)
 
@@ -132,24 +135,27 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         valueToText = { it.value },
     )
 
-    private val tagsByCategory = MutableStateFlow(emptyMap<String, TagSection>())
-    protected val tagsByCategoryFiltered = tagsByCategory.flatMapLatest { tags ->
-        settings.showAdult.map { showAdult ->
-            if (showAdult) return@map tags
-            tags.values.mapNotNull { it.filter { it.isAdult == false } }
-                .associateBy { it.name }
-                .toSortedMap(String.CASE_INSENSITIVE_ORDER)
+    private var tagsByCategory by mutableStateOf(emptyMap<String, TagSection>())
+    protected val tagsByCategoryFiltered = snapshotFlow { tagsByCategory }
+        .flatMapLatest { tags ->
+            settings.showAdult.map { showAdult ->
+                if (showAdult) return@map tags
+                tags.values.mapNotNull { it.filter { it.isAdult == false } }
+                    .associateBy { it.name }
+                    .toSortedMap(String.CASE_INSENSITIVE_ORDER)
+            }
         }
-    }
     var tagRank by mutableStateOf("0")
     var tagSearchQuery by mutableStateOf("")
     var tagShowWhenSpoiler by mutableStateOf(false)
 
     protected val tagSection = object : SortFilterSection.Custom("tag") {
-        override fun showingPreview() = true
+        override fun showingPreview() = tagsByCategory.any {
+            it.value.filter { it.state != FilterIncludeExcludeState.DEFAULT } != null
+        }
 
         override fun clear() {
-            tagsByCategory.value = tagsByCategory.value.mapValues {
+            tagsByCategory = tagsByCategory.mapValues {
                 it.value.replace {
                     if (it.id == initialParams?.tagId) {
                         it
@@ -173,13 +179,12 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                 tags = { tagsByCategoryFiltered },
                 onTagClick = { tagId ->
                     if (tagId != initialParams?.tagId) {
-                        tagsByCategory.value = tagsByCategory.value
-                            .mapValues { (_, value) ->
-                                value.replace {
-                                    it.takeUnless { it.id == tagId }
-                                        ?: it.copy(state = it.state.next())
-                                }
+                        tagsByCategory = tagsByCategory.mapValues { (_, value) ->
+                            value.replace {
+                                it.takeUnless { it.id == tagId }
+                                    ?: it.copy(state = it.state.next())
                             }
+                        }
                     }
                 },
                 tagRank = { tagRank },
@@ -298,7 +303,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                         }
                     }
                 }
-                .collectLatest(tagsByCategory::emit)
+                .collectLatest { tagsByCategory = it }
         }
 
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
@@ -339,7 +344,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     ) = combine(
         flowOf(result),
         snapshotFlow {
-            val includedTags = tagsByCategory.value.values.flatMap {
+            val includedTags = tagsByCategory.values.flatMap {
                 when (it) {
                     is TagSection.Category -> it.flatten()
                     is TagSection.Tag -> listOf(it)

@@ -8,6 +8,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,9 +22,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -54,6 +57,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,7 +65,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -75,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.FilterChip
@@ -125,14 +129,18 @@ fun SortFilterBottomScaffold(
         confirmValueChange = { it != SheetValue.Hidden },
         skipHiddenState = true,
     ),
-    scaffoldState: BottomSheetScaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(sheetState),
+    scaffoldState: BottomSheetScaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(
+        sheetState
+    ),
     bottomNavigationState: BottomNavigationState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(enabled = bottomSheetState.targetValue == SheetValue.Expanded
-            && !WindowInsets.isImeVisible) {
+    BackHandler(
+        enabled = bottomSheetState.targetValue == SheetValue.Expanded
+                && !WindowInsets.isImeVisible
+    ) {
         scope.launch { bottomSheetState.partialExpand() }
     }
 
@@ -187,11 +195,8 @@ private fun SheetDragHandle(
 
         val collapseOnClose = sortFilterController?.collapseOnClose()
         if (collapseOnClose != null) {
+            @Suppress("NAME_SHADOWING")
             val targetValue = targetValue()
-            val expandAllAlpha by animateFloatAsState(
-                targetValue = if (targetValue == SheetValue.Expanded) 1f else 0f,
-                label = "Anime filter expand all alpha",
-            )
 
             val expandedState = sortFilterController.state.expandedState
             LaunchedEffect(targetValue) {
@@ -202,32 +207,62 @@ private fun SheetDragHandle(
                 }
             }
 
-            val showExpandAll = expandedState.none { it.value }
+            val showExpandAll by remember { derivedStateOf { expandedState.none { it.value } } }
 
-            IconButton(
-                onClick = {
-                    if (showExpandAll) {
-                        sortFilterController.sections.forEach {
-                            expandedState[it.id] = true
-                        }
-                    } else {
-                        expandedState.clear()
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .alpha(expandAllAlpha)
-            ) {
-                Icon(
-                    imageVector = if (showExpandAll) {
-                        Icons.Filled.UnfoldMore
-                    } else {
-                        Icons.Filled.UnfoldLess
-                    },
-                    contentDescription = stringResource(
-                        R.string.anime_media_filter_expand_all_content_description
-                    ),
+            Row(modifier = Modifier.align(Alignment.CenterEnd).padding(end = 8.dp)) {
+                val activatedCount by remember {
+                    derivedStateOf { sortFilterController.sections.count { it.nonDefault() } }
+                }
+
+                val badgeProgress by animateFloatAsState(
+                    targetValue = if (activatedCount > 0) 1f else 0f,
+                    label = "Sort filter badge progress",
                 )
+                if (badgeProgress > 0f) {
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .size(32.dp * badgeProgress)
+                            .background(MaterialTheme.colorScheme.secondary, CircleShape)
+                            .padding(4.dp * badgeProgress)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        AutoSizeText(
+                            text = activatedCount.coerceAtLeast(1).toString(),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
+
+                AnimatedVisibility(visible = targetValue == SheetValue.Expanded) {
+                    IconButton(
+                        onClick = {
+                            if (showExpandAll) {
+                                sortFilterController.sections.forEach {
+                                    expandedState[it.id] = true
+                                    if (it is SortFilterSection.Group<*> && it.children.size == 1) {
+                                        expandedState[it.children.first().id] = true
+                                    }
+                                }
+                            } else {
+                                expandedState.clear()
+                            }
+                        },
+                    ) {
+                        Icon(
+                            imageVector = if (showExpandAll) {
+                                Icons.Filled.UnfoldMore
+                            } else {
+                                Icons.Filled.UnfoldLess
+                            },
+                            contentDescription = stringResource(
+                                R.string.anime_media_filter_expand_all_content_description
+                            ),
+                        )
+                    }
+                }
             }
         }
     }

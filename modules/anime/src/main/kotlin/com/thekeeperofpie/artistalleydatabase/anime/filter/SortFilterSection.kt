@@ -59,6 +59,8 @@ sealed class SortFilterSection(val id: String) {
 
     abstract fun showingPreview(): Boolean
 
+    open fun nonDefault() = showingPreview()
+
     abstract fun clear()
 
     @Composable
@@ -75,6 +77,10 @@ sealed class SortFilterSection(val id: String) {
 
         override fun showingPreview() =
             sortOptions.any { it.state != FilterIncludeExcludeState.DEFAULT }
+
+        override fun nonDefault() = showingPreview()
+                && sortOptions.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+            .map { it.value } != listOf(defaultEnabled)
 
         fun changeSelected(defaultEnabled: SortType, sortAscending: Boolean, lockSort: Boolean) {
             this.defaultEnabled = defaultEnabled
