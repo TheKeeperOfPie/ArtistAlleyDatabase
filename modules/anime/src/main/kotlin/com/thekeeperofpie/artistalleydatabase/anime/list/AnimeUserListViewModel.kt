@@ -248,18 +248,15 @@ class AnimeUserListViewModel @Inject constructor(
                     }
 
                     lists.transformResult { allLists ->
-                        val listStatuses = filterParams.listStatuses
-                            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                            .map { it.value }
                         Entry(
                             all = allLists
                                 .flatMap { it.entries }
-                                .filter {
-                                    if (listStatuses.isEmpty()) {
-                                        true
-                                    } else {
-                                        listStatuses.contains(it.mediaListStatus)
-                                    }
+                                .let {
+                                    FilterIncludeExcludeState.applyFiltering(
+                                        filterParams.listStatuses,
+                                        it,
+                                        { listOfNotNull(it.mediaListStatus) },
+                                    )
                                 }
                                 .toFilteredEntries(query, filterParams, showTagWhenSpoiler)
                                 .mapEntries(),
