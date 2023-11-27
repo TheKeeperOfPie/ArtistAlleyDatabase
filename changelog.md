@@ -3,7 +3,6 @@
 ### Next (11)
 - Fix status bar icon color when using black theme
 - Hide current media header if previously no results
-- Reset list position to the top when filters are changed
 - Add previous, current, and next season options to anime airing date filter
 - Add anime search filter suggestions
 - Add search active filter count
