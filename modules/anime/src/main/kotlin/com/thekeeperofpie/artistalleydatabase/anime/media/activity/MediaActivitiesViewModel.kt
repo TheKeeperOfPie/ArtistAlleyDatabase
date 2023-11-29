@@ -91,7 +91,7 @@ class MediaActivitiesViewModel @Inject constructor(
 
         viewModelScope.launch(CustomDispatchers.Main) {
             flowForRefreshableContent(refresh, R.string.anime_media_activities_error_loading) {
-                combine(activitySortFilterController.filterParams(), refresh, ::Pair)
+                combine(activitySortFilterController.filterParams, refresh, ::Pair)
                     .mapLatest { (filterParams) ->
                         MediaActivitiesScreen.Entry(
                             aniListApi.mediaActivities(
@@ -115,7 +115,7 @@ class MediaActivitiesViewModel @Inject constructor(
             )
                 .filterNotNull()
                 .flatMapLatest { (entry) ->
-                    combine(activitySortFilterController.filterParams(), refresh, ::Pair)
+                    combine(activitySortFilterController.filterParams, refresh, ::Pair)
                         .flatMapLatest { (filterParams) ->
                             AniListPager { page ->
                                 if (page == 1 && initialIsFollowing) {
@@ -171,7 +171,7 @@ class MediaActivitiesViewModel @Inject constructor(
                 .flowOn(CustomDispatchers.Main)
                 .filterNotNull()
                 .flatMapLatest { entry ->
-                    combine(activitySortFilterController.filterParams(), refresh, ::Pair)
+                    combine(activitySortFilterController.filterParams, refresh, ::Pair)
                         .flatMapLatest { (filterParams) ->
                             AniListPager { page ->
                                 if (page == 1 && !initialIsFollowing) {

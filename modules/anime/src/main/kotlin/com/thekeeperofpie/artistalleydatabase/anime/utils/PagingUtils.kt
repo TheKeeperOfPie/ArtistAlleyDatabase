@@ -8,6 +8,7 @@ import androidx.annotation.CheckResult
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -33,18 +34,27 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-object PagingUtils {
-    @Composable
-    fun attachResetScrollState(gridState: LazyGridState, currentRefreshState: LoadState): Any {
-        var previousRefreshState by remember { mutableStateOf(currentRefreshState) }
-        LaunchedEffect(currentRefreshState) {
-            if (previousRefreshState is LoadState.Loading
-                && currentRefreshState is LoadState.NotLoading) {
-                gridState.scrollToItem(0)
-            }
-            previousRefreshState = currentRefreshState
+@Composable
+fun PagingResetScrollEffect(gridState: LazyGridState, currentRefreshState: LoadState) {
+    var previousRefreshState by remember { mutableStateOf(currentRefreshState) }
+    LaunchedEffect(currentRefreshState) {
+        if (previousRefreshState is LoadState.Loading
+            && currentRefreshState is LoadState.NotLoading) {
+            gridState.scrollToItem(0)
         }
-        return Unit
+        previousRefreshState = currentRefreshState
+    }
+}
+
+@Composable
+fun PagingResetScrollEffect(listState: LazyListState, currentRefreshState: LoadState) {
+    var previousRefreshState by remember { mutableStateOf(currentRefreshState) }
+    LaunchedEffect(currentRefreshState) {
+        if (previousRefreshState is LoadState.Loading
+            && currentRefreshState is LoadState.NotLoading) {
+            listState.scrollToItem(0)
+        }
+        previousRefreshState = currentRefreshState
     }
 }
 

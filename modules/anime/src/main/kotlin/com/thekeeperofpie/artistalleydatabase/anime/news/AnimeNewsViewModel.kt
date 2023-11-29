@@ -42,7 +42,7 @@ class AnimeNewsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(
                 refresh,
-                sortFilterController.filterParams(),
+                sortFilterController.filterParams,
                 ::Pair
             )
                 .flowOn(CustomDispatchers.Main)

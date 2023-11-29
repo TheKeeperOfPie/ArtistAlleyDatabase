@@ -89,7 +89,7 @@ class ReviewsViewModel @Inject constructor(
         sortFilterController: ReviewSortFilterController,
     ) {
         viewModelScope.launch(CustomDispatchers.Main) {
-            sortFilterController.filterParams()
+            sortFilterController.filterParams
                 .flatMapLatest { filterParams ->
                     AniListPager {
                         val result = aniListApi.reviewSearch(

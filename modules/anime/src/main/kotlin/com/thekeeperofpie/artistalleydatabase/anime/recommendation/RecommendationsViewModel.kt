@@ -60,7 +60,7 @@ class RecommendationsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            sortFilterController.filterParams()
+            sortFilterController.filterParams
                 .flatMapLatest { filterParams ->
                     AniListPager {
                         val result = aniListApi.recommendationSearch(

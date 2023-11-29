@@ -102,6 +102,7 @@ class AnimeUserListViewModel @Inject constructor(
         this.mediaListStatus = status
         sortFilterController = if (mediaType == MediaType.ANIME) {
             AnimeSortFilterController(
+                scope = viewModelScope,
                 sortTypeEnumClass = MediaListSortOption::class,
                 aniListApi = aniListApi,
                 settings = settings,
@@ -206,8 +207,8 @@ class AnimeUserListViewModel @Inject constructor(
                 response,
                 mediaUpdates,
                 snapshotFlow { query }.debounce(500.milliseconds),
-                (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.filterParams()
-                    ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).filterParams(),
+                (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.filterParams
+                    ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).filterParams,
                 snapshotFlow {
                     (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.tagShowWhenSpoiler
                         ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).tagShowWhenSpoiler

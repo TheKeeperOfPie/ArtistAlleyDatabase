@@ -29,7 +29,7 @@ class AiringScheduleSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    override fun filterParams() = snapshotFlow {
+    override val filterParams = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

@@ -76,7 +76,7 @@ object AnimeNewsScreen {
                 .padding(scaffoldPadding)
                 .fillMaxSize()) {
                 val listState = rememberLazyListState()
-                viewModel.sortFilterController.AttachResetScroll(listState)
+                viewModel.sortFilterController.ImmediateScrollResetEffect(listState)
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(

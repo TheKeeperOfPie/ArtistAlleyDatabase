@@ -69,7 +69,7 @@ class ForumSearchViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(
                 snapshotFlow { query }.flowOn(CustomDispatchers.Main),
-                sortFilterController.filterParams(),
+                sortFilterController.filterParams,
                 ::Pair
             )
                 .flatMapLatest { (query, filterParams) ->

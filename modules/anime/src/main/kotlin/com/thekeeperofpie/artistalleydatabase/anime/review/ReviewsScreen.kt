@@ -42,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -137,7 +138,8 @@ object ReviewsScreen {
         showMedia: Boolean,
         sortFilterController: ReviewSortFilterController,
     ) {
-        val refreshing = reviews.loadState.refresh is LoadState.Loading
+        val refreshState = reviews.loadState.refresh
+        val refreshing = refreshState is LoadState.Loading
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
             onRefresh = reviews::refresh,
@@ -149,7 +151,10 @@ object ReviewsScreen {
                 .pullRefresh(pullRefreshState)
         ) {
             val listState = rememberLazyListState()
-            sortFilterController.AttachResetScroll(listState)
+            PagingResetScrollEffect(
+                listState = listState,
+                currentRefreshState = reviews.loadState.refresh,
+            )
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(

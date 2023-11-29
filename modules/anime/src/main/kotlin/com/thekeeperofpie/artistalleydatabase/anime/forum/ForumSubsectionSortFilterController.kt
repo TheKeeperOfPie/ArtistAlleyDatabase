@@ -90,7 +90,7 @@ class ForumSubsectionSortFilterController(
         )
     }
 
-    override fun filterParams() = snapshotFlow {
+    override val filterParams = snapshotFlow {
         FilterParams(
             sortOptions = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,

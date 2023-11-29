@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -52,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
+import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -100,6 +102,7 @@ object MediaSearchScreen {
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 val content = viewModel.content.collectAsLazyPagingItems(CustomDispatchers.IO)
+                val refreshState = content.loadState.refresh
                 val refreshing = content.loadState.refresh is LoadState.Loading
                 val viewer by viewModel.viewer.collectAsState()
                 AnimeMediaListScreen(
@@ -107,73 +110,91 @@ object MediaSearchScreen {
                     onRefresh = viewModel::onRefresh,
                     modifier = Modifier.padding(scaffoldPadding)
                 ) {
-                    when (val refreshState = content.loadState.refresh) {
-                        LoadState.Loading -> Unit
-                        is LoadState.Error -> AnimeMediaListScreen.Error(
-                            exception = refreshState.error,
-                        )
-                        is LoadState.NotLoading -> {
-                            if (content.itemCount == 0) {
-                                AnimeMediaListScreen.NoResults()
-                            } else {
-                                val gridState = rememberLazyGridState()
-                                sortFilterController.AttachResetScroll(gridState)
-                                val showWithSpoiler =
-                                    if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
-                                        viewModel.animeSortFilterController.tagShowWhenSpoiler
-                                    } else {
-                                        viewModel.mangaSortFilterController.tagShowWhenSpoiler
-                                    }
-                                LaunchedEffect(showWithSpoiler) {
-                                    gridState.scrollToItem(0)
-                                }
+                    val gridState = rememberLazyGridState()
+                    PagingResetScrollEffect(
+                        gridState = gridState,
+                        currentRefreshState = refreshState,
+                    )
+                    val showWithSpoiler =
+                        if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
+                            viewModel.animeSortFilterController.tagShowWhenSpoiler
+                        } else {
+                            viewModel.mangaSortFilterController.tagShowWhenSpoiler
+                        }
+                    LaunchedEffect(showWithSpoiler) {
+                        gridState.scrollToItem(0)
+                    }
 
-                                val columns = when (viewModel.mediaViewOption) {
-                                    MediaViewOption.SMALL_CARD,
-                                    MediaViewOption.LARGE_CARD,
-                                    MediaViewOption.COMPACT,
-                                    -> GridCells.Adaptive(300.dp)
-                                    MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
-                                }
+                    val columns = when (viewModel.mediaViewOption) {
+                        MediaViewOption.SMALL_CARD,
+                        MediaViewOption.LARGE_CARD,
+                        MediaViewOption.COMPACT,
+                        -> GridCells.Adaptive(300.dp)
+                        MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
+                    }
 
-                                LazyVerticalGrid(
-                                    state = gridState,
-                                    columns = columns,
-                                    contentPadding = PaddingValues(
-                                        top = 16.dp,
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        bottom = 32.dp,
-                                    ),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    items(
-                                        count = content.itemCount,
-                                        key = content.itemKey { it.entryId.scopedId },
-                                        contentType = content.itemContentType { it.entryId.type }
+                    LazyVerticalGrid(
+                        state = gridState,
+                        columns = columns,
+                        contentPadding = PaddingValues(
+                            top = 16.dp,
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 32.dp,
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        when {
+                            refreshState is LoadState.Error && content.itemCount == 0 ->
+                                item {
+                                    AnimeMediaListScreen.ErrorContent(
+                                        errorTextRes = R.string.anime_media_list_error_loading,
+                                        exception = refreshState.error,
+                                    )
+                                }
+                            refreshState is LoadState.NotLoading && content.itemCount == 0 ->
+                                item {
+                                    Box(
+                                        contentAlignment = Alignment.TopCenter,
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        val item = content[it] as? AnimeSearchEntry.Media
-                                        MediaViewOptionRow(
-                                            screenKey = SCREEN_KEY,
-                                            mediaViewOption = viewModel.mediaViewOption,
-                                            viewer = viewer,
-                                            onClickListEdit = editViewModel::initialize,
-                                            entry = item?.entry,
+                                        Text(
+                                            stringResource(id = R.string.anime_media_list_no_results),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            modifier = Modifier.padding(
+                                                horizontal = 16.dp,
+                                                vertical = 10.dp
+                                            ),
                                         )
                                     }
-
-                                    when (content.loadState.append) {
-                                        is LoadState.Loading -> item(key = "load_more_append") {
-                                            AnimeMediaListScreen.LoadingMore()
-                                        }
-                                        is LoadState.Error -> item(key = "load_more_error") {
-                                            AnimeMediaListScreen.AppendError { content.retry() }
-                                        }
-                                        is LoadState.NotLoading -> Unit
-                                    }
+                                }
+                            else -> {
+                                items(
+                                    count = content.itemCount,
+                                    key = content.itemKey { it.entryId.scopedId },
+                                    contentType = content.itemContentType { it.entryId.type }
+                                ) {
+                                    val item = content[it] as? AnimeSearchEntry.Media
+                                    MediaViewOptionRow(
+                                        screenKey = SCREEN_KEY,
+                                        mediaViewOption = viewModel.mediaViewOption,
+                                        viewer = viewer,
+                                        onClickListEdit = editViewModel::initialize,
+                                        entry = item?.entry,
+                                    )
                                 }
                             }
+                        }
+
+                        when (content.loadState.append) {
+                            is LoadState.Loading -> item(key = "load_more_append") {
+                                AnimeMediaListScreen.LoadingMore()
+                            }
+                            is LoadState.Error -> item(key = "load_more_error") {
+                                AnimeMediaListScreen.AppendError { content.retry() }
+                            }
+                            is LoadState.NotLoading -> Unit
                         }
                     }
                 }

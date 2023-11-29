@@ -1,14 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.cash.molecule.RecompositionMode
+import app.cash.molecule.launchMolecule
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -25,13 +29,13 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -41,6 +45,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 open class AnimeSortFilterController<SortType : SortOption>(
+    scope: CoroutineScope,
     sortTypeEnumClass: KClass<SortType>,
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
@@ -211,50 +216,77 @@ open class AnimeSortFilterController<SortType : SortOption>(
         }
     }
 
-    override fun filterParams() =
-        combine(
-            snapshotFlow {
-                @Suppress("UNCHECKED_CAST")
-                FilterParams(
-                    sort = sortSection.sortOptions,
-                    sortAscending = sortSection.sortAscending,
-                    genres = genreSection.filterOptions,
-                    tagsByCategory = emptyMap(),
-                    tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
-                    statuses = statusSection.filterOptions,
-                    listStatuses = listStatusSection.filterOptions.filter { it.value != null }
-                            as List<FilterEntry<MediaListStatus>>,
-                    onList = when (listStatusSection.filterOptions.find { it.value == null }?.state) {
-                        FilterIncludeExcludeState.INCLUDE -> true
-                        FilterIncludeExcludeState.EXCLUDE -> false
-                        FilterIncludeExcludeState.DEFAULT,
-                        null,
-                        -> null
-                    },
-                    userScore = userScoreSection?.data,
-                    formats = formatSection.filterOptions,
-                    averageScoreRange = averageScoreSection.data,
-                    episodesRange = episodesSection.data,
-                    volumesRange = null,
-                    chaptersRange = null,
-                    showAdult = false,
-                    showIgnored = true,
-                    airingDate = initialParams?.year?.let { AiringDate.Basic(seasonYear = it.toString()) }
-                        ?: if (airingDateIsAdvanced) airingDate.second else airingDate.first,
-                    sources = sourceSection.filterOptions,
-                    licensedBy = licensedBySection.children.flatMap { it.filterOptions },
-                )
-            }.flowOn(CustomDispatchers.Main),
-            settings.showAdult,
-            settings.showIgnored,
-            tagsByCategoryFiltered,
-        ) { filterParams, showAdult, showIgnored, tagsByCategory ->
-            filterParams.copy(
-                tagsByCategory = tagsByCategory,
-                showAdult = showAdult,
-                showIgnored = showIgnored,
-            )
-        }.debounce(500.milliseconds)
+    override val filterParams = scope.launchMolecule(RecompositionMode.Immediate) {
+        @Suppress("UNCHECKED_CAST")
+        FilterParams(
+            sort = sortSection.sortOptions,
+            sortAscending = sortSection.sortAscending,
+            genres = genreSection.filterOptions,
+            tagsByCategory = tagsByCategoryFiltered.collectAsState(emptyMap()).value,
+            tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
+            statuses = statusSection.filterOptions,
+            listStatuses = listStatusSection.filterOptions.filter { it.value != null }
+                    as List<FilterEntry<MediaListStatus>>,
+            onList = when (listStatusSection.filterOptions.find { it.value == null }?.state) {
+                FilterIncludeExcludeState.INCLUDE -> true
+                FilterIncludeExcludeState.EXCLUDE -> false
+                FilterIncludeExcludeState.DEFAULT,
+                null,
+                -> null
+            },
+            userScore = userScoreSection?.data,
+            formats = formatSection.filterOptions,
+            averageScoreRange = averageScoreSection.data,
+            episodesRange = episodesSection.data,
+            volumesRange = null,
+            chaptersRange = null,
+            showAdult = settings.showAdult.collectAsState().value,
+            showIgnored = settings.showIgnored.collectAsState(false).value,
+            airingDate = initialParams?.year?.let { AiringDate.Basic(seasonYear = it.toString()) }
+                ?: if (airingDateIsAdvanced) airingDate.second else airingDate.first,
+            sources = sourceSection.filterOptions,
+            licensedBy = licensedBySection.children.flatMap { it.filterOptions },
+        )
+    }.debounce(500.milliseconds)
+
+    override val filterParamsStateFlow = scope.launchMolecule(RecompositionMode.Immediate) {
+        @Suppress("UNCHECKED_CAST")
+        val newState = FilterParams(
+            sort = sortSection.sortOptions,
+            sortAscending = sortSection.sortAscending,
+            genres = genreSection.filterOptions,
+            tagsByCategory = tagsByCategoryFiltered.collectAsState(emptyMap()).value,
+            tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
+            statuses = statusSection.filterOptions,
+            listStatuses = listStatusSection.filterOptions.filter { it.value != null }
+                    as List<FilterEntry<MediaListStatus>>,
+            onList = when (listStatusSection.filterOptions.find { it.value == null }?.state) {
+                FilterIncludeExcludeState.INCLUDE -> true
+                FilterIncludeExcludeState.EXCLUDE -> false
+                FilterIncludeExcludeState.DEFAULT,
+                null,
+                -> null
+            },
+            userScore = userScoreSection?.data,
+            formats = formatSection.filterOptions,
+            averageScoreRange = averageScoreSection.data,
+            episodesRange = episodesSection.data,
+            volumesRange = null,
+            chaptersRange = null,
+            showAdult = settings.showAdult.collectAsState().value,
+            showIgnored = settings.showIgnored.collectAsState(false).value,
+            airingDate = initialParams?.year?.let { AiringDate.Basic(seasonYear = it.toString()) }
+                ?: if (airingDateIsAdvanced) airingDate.second else airingDate.first,
+            sources = sourceSection.filterOptions,
+            licensedBy = licensedBySection.children.flatMap { it.filterOptions },
+        )
+        var actualState by remember { mutableStateOf(newState) }
+        LaunchedEffect(newState) {
+            delay(500.milliseconds)
+            actualState = newState
+        }
+        actualState
+    }
 
     fun onAiringDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC

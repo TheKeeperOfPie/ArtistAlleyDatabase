@@ -110,7 +110,7 @@ class AnimeActivityViewModel @Inject constructor(
     ) = viewModelScope.launch(CustomDispatchers.IO) {
         aniListApi.authedUser.flatMapLatest { viewer ->
             combine(
-                sortFilterController.filterParams(),
+                sortFilterController.filterParams,
                 refreshUptimeMillis,
                 ::Pair
             ).flatMapLatest { (filterParams) ->

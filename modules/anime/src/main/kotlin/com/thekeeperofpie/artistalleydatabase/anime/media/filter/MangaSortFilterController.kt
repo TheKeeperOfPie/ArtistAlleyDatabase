@@ -202,51 +202,50 @@ class MangaSortFilterController<SortType : SortOption>(
         }
     }
 
-    override fun filterParams() =
-        combine(
-            snapshotFlow {
-                @Suppress("UNCHECKED_CAST")
-                FilterParams(
-                    sort = sortSection.sortOptions,
-                    sortAscending = sortSection.sortAscending,
-                    genres = genreSection.filterOptions,
-                    tagsByCategory = emptyMap(),
-                    tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
-                    statuses = statusSection.filterOptions,
-                    listStatuses = listStatusSection.filterOptions.filter { it.value != null }
-                            as List<FilterEntry<MediaListStatus>>,
-                    onList = when (listStatusSection.filterOptions.find { it.value == null }?.state) {
-                        FilterIncludeExcludeState.INCLUDE -> true
-                        FilterIncludeExcludeState.EXCLUDE -> false
-                        FilterIncludeExcludeState.DEFAULT,
-                        null,
-                        -> null
-                    },
-                    userScore = userScoreSection?.data,
-                    formats = formatSection.filterOptions,
-                    averageScoreRange = averageScoreSection.data,
-                    episodesRange = null,
-                    volumesRange = volumesSection.data,
-                    chaptersRange = chaptersSection.data,
-                    showAdult = false,
-                    showIgnored = true,
-                    airingDate = initialParams?.year
-                        ?.let { AiringDate.Basic(seasonYear = it.toString()) }
-                        ?: releaseDate,
-                    sources = sourceSection.filterOptions,
-                    licensedBy = licensedBySection.children.flatMap { it.filterOptions },
-                )
-            }.flowOn(CustomDispatchers.Main),
-            settings.showAdult,
-            settings.showIgnored,
-            tagsByCategoryFiltered,
-        ) { filterParams, showAdult, showIgnored, tagsByCategory ->
-            filterParams.copy(
-                tagsByCategory = tagsByCategory,
-                showAdult = showAdult,
-                showIgnored = showIgnored,
+    override val filterParams = combine(
+        snapshotFlow {
+            @Suppress("UNCHECKED_CAST")
+            FilterParams(
+                sort = sortSection.sortOptions,
+                sortAscending = sortSection.sortAscending,
+                genres = genreSection.filterOptions,
+                tagsByCategory = emptyMap(),
+                tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
+                statuses = statusSection.filterOptions,
+                listStatuses = listStatusSection.filterOptions.filter { it.value != null }
+                        as List<FilterEntry<MediaListStatus>>,
+                onList = when (listStatusSection.filterOptions.find { it.value == null }?.state) {
+                    FilterIncludeExcludeState.INCLUDE -> true
+                    FilterIncludeExcludeState.EXCLUDE -> false
+                    FilterIncludeExcludeState.DEFAULT,
+                    null,
+                    -> null
+                },
+                userScore = userScoreSection?.data,
+                formats = formatSection.filterOptions,
+                averageScoreRange = averageScoreSection.data,
+                episodesRange = null,
+                volumesRange = volumesSection.data,
+                chaptersRange = chaptersSection.data,
+                showAdult = false,
+                showIgnored = true,
+                airingDate = initialParams?.year
+                    ?.let { AiringDate.Basic(seasonYear = it.toString()) }
+                    ?: releaseDate,
+                sources = sourceSection.filterOptions,
+                licensedBy = licensedBySection.children.flatMap { it.filterOptions },
             )
-        }.debounce(500.milliseconds)
+        }.flowOn(CustomDispatchers.Main),
+        settings.showAdult,
+        settings.showIgnored,
+        tagsByCategoryFiltered,
+    ) { filterParams, showAdult, showIgnored, tagsByCategory ->
+        filterParams.copy(
+            tagsByCategory = tagsByCategory,
+            showAdult = showAdult,
+            showIgnored = showIgnored,
+        )
+    }.debounce(500.milliseconds)
 
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC

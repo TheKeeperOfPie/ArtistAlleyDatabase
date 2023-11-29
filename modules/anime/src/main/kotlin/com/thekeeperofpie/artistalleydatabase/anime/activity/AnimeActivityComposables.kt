@@ -67,6 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
@@ -103,7 +104,10 @@ fun ActivityList(
                 )
                 Box(modifier = Modifier.fillMaxWidth()) {
                     val listState = rememberLazyListState()
-                    sortFilterController.AttachResetScroll(listState)
+                    PagingResetScrollEffect(
+                        listState = listState,
+                        currentRefreshState = refreshState,
+                    )
                     LazyColumn(
                         state = listState,
                         contentPadding = PaddingValues(

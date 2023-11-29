@@ -147,7 +147,7 @@ class ActivitySortFilterController(
     }
 
 
-    override fun filterParams() = snapshotFlow {
+    override val filterParams = snapshotFlow {
         FilterParams(
             sort = sortSection.sortOptions,
             type = typeSection.filterOptions,

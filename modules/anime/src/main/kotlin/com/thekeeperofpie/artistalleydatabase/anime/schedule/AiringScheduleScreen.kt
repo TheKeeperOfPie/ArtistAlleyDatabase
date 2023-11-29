@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -23,6 +24,7 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -43,7 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.AiringScheduleQuery.Data.Page.AiringSchedule.Media.NextAiringEpisode
+import com.anilist.AiringScheduleQuery
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -56,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import kotlinx.coroutines.launch
@@ -182,69 +185,85 @@ object AiringScheduleScreen {
                         .fillMaxSize()
                 ) { page ->
                     Box(modifier = Modifier.fillMaxSize()) {
-                        val data = viewModel.items(page)
-                        val loading = data.loadState.refresh is LoadState.Loading
+                        val content = viewModel.items(page)
+                        val refreshState = content.loadState.refresh
+                        val loading = refreshState is LoadState.Loading
                         val pullRefreshState = rememberPullRefreshState(
                             refreshing = loading,
                             onRefresh = { viewModel.refresh.tryEmit(page) },
                         )
-                        when (val refreshState = data.loadState.refresh) {
-                            LoadState.Loading -> Unit
-                            is LoadState.Error -> AnimeMediaListScreen.Error(
-                                exception = refreshState.error,
-                                modifier = Modifier.pullRefresh(pullRefreshState)
-                            )
-                            is LoadState.NotLoading -> {
-                                if (data.itemCount == 0) {
-                                    AnimeMediaListScreen.NoResults(
-                                        modifier = Modifier.pullRefresh(pullRefreshState)
-                                    )
-                                } else {
-                                    val listState = rememberLazyListState()
-                                    viewModel.sortFilterController.AttachResetScroll(listState)
-                                    LazyColumn(
-                                        state = listState,
-                                        contentPadding = PaddingValues(
-                                            start = 16.dp,
-                                            end = 16.dp,
-                                            top = 16.dp,
-                                            bottom = 72.dp,
-                                        ),
-                                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                                        modifier = Modifier.pullRefresh(pullRefreshState)
-                                    ) {
-                                        items(
-                                            count = data.itemCount,
-                                            key = data.itemKey { it.data.id },
-                                            contentType = data.itemContentType { "airingSchedule" },
-                                        ) { index ->
-                                            val schedule = data[index]
-                                            AnimeMediaListRow(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                entry = schedule?.entry,
-                                                onClickListEdit = editViewModel::initialize,
-                                                nextAiringEpisode = schedule?.data?.let {
-                                                    NextAiringEpisode(
-                                                        episode = it.episode,
-                                                        airingAt = it.airingAt,
-                                                    )
-                                                },
-                                                showDate = false,
+                        val listState = rememberLazyListState()
+                        PagingResetScrollEffect(
+                            listState = listState,
+                            currentRefreshState = refreshState,
+                        )
+                        LazyColumn(
+                            state = listState,
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 16.dp,
+                                bottom = 72.dp,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.pullRefresh(pullRefreshState)
+                        ) {
+                            when {
+                                refreshState is LoadState.Error && content.itemCount == 0 ->
+                                    item {
+                                        AnimeMediaListScreen.ErrorContent(
+                                            errorTextRes = R.string.anime_media_list_error_loading,
+                                            exception = refreshState.error,
+                                        )
+                                    }
+                                refreshState is LoadState.NotLoading && content.itemCount == 0 ->
+                                    item {
+                                        Box(
+                                            contentAlignment = Alignment.TopCenter,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(
+                                                stringResource(id = R.string.anime_media_list_no_results),
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                modifier = Modifier.padding(
+                                                    horizontal = 16.dp,
+                                                    vertical = 10.dp
+                                                ),
                                             )
                                         }
-
-                                        when (data.loadState.append) {
-                                            is LoadState.Loading -> item("load_more_append") {
-                                                AnimeMediaListScreen.LoadingMore()
-                                            }
-                                            is LoadState.Error -> item("load_more_error") {
-                                                AnimeMediaListScreen.AppendError { data.retry() }
-                                            }
-                                            is LoadState.NotLoading -> Unit
-                                        }
+                                    }
+                                else -> {
+                                    items(
+                                        count = content.itemCount,
+                                        key = content.itemKey { it.data.id },
+                                        contentType = content.itemContentType { "airingSchedule" },
+                                    ) { index ->
+                                        val schedule = content[index]
+                                        AnimeMediaListRow(
+                                            screenKey = SCREEN_KEY,
+                                            viewer = viewer,
+                                            entry = schedule?.entry,
+                                            onClickListEdit = editViewModel::initialize,
+                                            nextAiringEpisode = schedule?.data?.let {
+                                                AiringScheduleQuery.Data.Page.AiringSchedule.Media.NextAiringEpisode(
+                                                    episode = it.episode,
+                                                    airingAt = it.airingAt,
+                                                )
+                                            },
+                                            showDate = false,
+                                        )
                                     }
                                 }
+                            }
+
+                            when (content.loadState.append) {
+                                is LoadState.Loading -> item("load_more_append") {
+                                    AnimeMediaListScreen.LoadingMore()
+                                }
+                                is LoadState.Error -> item("load_more_error") {
+                                    AnimeMediaListScreen.AppendError { content.retry() }
+                                }
+                                is LoadState.NotLoading -> Unit
                             }
                         }
                         PullRefreshIndicator(

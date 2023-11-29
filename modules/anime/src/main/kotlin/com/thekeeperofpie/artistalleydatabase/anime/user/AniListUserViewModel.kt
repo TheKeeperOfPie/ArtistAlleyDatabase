@@ -328,7 +328,7 @@ class AniListUserViewModel @Inject constructor(
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (entry) ->
                     combine(
-                        activitySortFilterController.filterParams(),
+                        activitySortFilterController.filterParams,
                         refreshUptimeMillis,
                         ::Pair
                     ).flatMapLatest { (filterParams) ->

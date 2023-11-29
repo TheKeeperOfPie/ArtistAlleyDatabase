@@ -47,7 +47,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
             flowForRefreshableContent(refresh, loadingErrorTextRes) {
-                sortFilterController.filterParams()
+                sortFilterController.filterParams
                     .mapLatest(::initialRequest)
             }
                 .catch { emit(LoadingResult.error(loadingErrorTextRes, it)) }
@@ -56,7 +56,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            refresh.flatMapLatest { sortFilterController.filterParams() }
+            refresh.flatMapLatest { sortFilterController.filterParams }
                 .flatMapLatest { filterParams ->
                     AniListPager { pagedRequest(it, filterParams) }
                 }

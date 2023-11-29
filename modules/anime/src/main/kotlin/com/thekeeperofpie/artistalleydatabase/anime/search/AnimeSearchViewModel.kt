@@ -69,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExclud
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -112,6 +113,7 @@ class AnimeSearchViewModel @Inject constructor(
     private val tagId = savedStateHandle.get<String?>("tagId")
 
     val animeSortFilterController = AnimeSearchSortFilterController(
+        scope = viewModelScope,
         aniListApi = aniListApi,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
@@ -121,6 +123,7 @@ class AnimeSearchViewModel @Inject constructor(
     )
 
     class AnimeSearchSortFilterController(
+        scope: CoroutineScope,
         aniListApi: AuthedAniListApi,
         settings: AnimeSettings,
         featureOverrideProvider: FeatureOverrideProvider,
@@ -128,6 +131,7 @@ class AnimeSearchViewModel @Inject constructor(
         mediaGenresController: MediaGenresController,
         mediaLicensorsController: MediaLicensorsController,
     ) : AnimeSortFilterController<MediaSortOption>(
+        scope = scope,
         sortTypeEnumClass = MediaSortOption::class,
         aniListApi = aniListApi,
         settings = settings,
@@ -289,7 +293,7 @@ class AnimeSearchViewModel @Inject constructor(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     includeDescriptionFlow,
                     refreshUptimeMillis,
-                    animeSortFilterController.filterParams(),
+                    animeSortFilterController.filterParams,
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
             },
@@ -333,7 +337,7 @@ class AnimeSearchViewModel @Inject constructor(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     includeDescriptionFlow,
                     refreshUptimeMillis,
-                    mangaSortFilterController.filterParams(),
+                    mangaSortFilterController.filterParams,
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
             },
@@ -375,7 +379,7 @@ class AnimeSearchViewModel @Inject constructor(
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
-                    characterSortFilterController.filterParams(),
+                    characterSortFilterController.filterParams,
                     refreshUptimeMillis,
                     ::Triple
                 )
@@ -448,7 +452,7 @@ class AnimeSearchViewModel @Inject constructor(
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
-                    staffSortFilterController.filterParams(),
+                    staffSortFilterController.filterParams,
                     refreshUptimeMillis,
                     ::Triple
                 )
@@ -522,7 +526,7 @@ class AnimeSearchViewModel @Inject constructor(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     refreshUptimeMillis,
-                    studioSortFilterController.filterParams(),
+                    studioSortFilterController.filterParams,
                     ::Triple,
                 )
             },
@@ -596,7 +600,7 @@ class AnimeSearchViewModel @Inject constructor(
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
-                    userSortFilterController.filterParams(),
+                    userSortFilterController.filterParams,
                     refreshUptimeMillis,
                     ::Triple,
                 )

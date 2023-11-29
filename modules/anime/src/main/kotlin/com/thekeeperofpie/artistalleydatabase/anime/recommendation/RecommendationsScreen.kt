@@ -37,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -95,7 +96,8 @@ object RecommendationsScreen {
         editViewModel: MediaEditViewModel,
     ) {
         val recommendations = viewModel.recommendations.collectAsLazyPagingItems()
-        val refreshing = recommendations.loadState.refresh is LoadState.Loading
+        val refreshState = recommendations.loadState.refresh
+        val refreshing = refreshState is LoadState.Loading
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
             onRefresh = recommendations::refresh,
@@ -107,7 +109,10 @@ object RecommendationsScreen {
                 .pullRefresh(pullRefreshState)
         ) {
             val listState = rememberLazyListState()
-            viewModel.sortFilterController.AttachResetScroll(listState)
+            PagingResetScrollEffect(
+                listState = listState,
+                currentRefreshState = refreshState,
+            )
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(

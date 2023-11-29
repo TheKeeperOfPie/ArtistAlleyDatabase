@@ -3,11 +3,17 @@ package com.thekeeperofpie.artistalleydatabase.anime.filter
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 abstract class SortFilterController<FilterParams>(
     protected val settings: AnimeSettings,
@@ -41,7 +47,8 @@ abstract class SortFilterController<FilterParams>(
         children = listOfNotNull(showAdultSection, collapseOnCloseSection, hideIgnoredSection)
     )
 
-    abstract fun filterParams() : Flow<FilterParams>
+    abstract val filterParams: Flow<FilterParams>
+    open val filterParamsStateFlow: StateFlow<FilterParams>? = null
 
     @Composable
     open fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
@@ -52,17 +59,32 @@ abstract class SortFilterController<FilterParams>(
     }
 
     @Composable
-    fun AttachResetScroll(lazyListState: LazyListState) {
-        // TODO: Disabled as this breaks returning from details screen
-//        LaunchedEffect(filterParams().collectAsState(null).value) {
-//            lazyListState.scrollToItem(0)
-//        }
+    fun ImmediateScrollResetEffect(lazyGridState: LazyGridState) {
+        val flow = filterParamsStateFlow
+        if (flow != null) {
+            val currentValue = flow.collectAsState().value
+            var previousValue by remember { mutableStateOf(currentValue) }
+            LaunchedEffect(currentValue) {
+                if (previousValue != currentValue) {
+                    previousValue = currentValue
+                    lazyGridState.scrollToItem(0)
+                }
+            }
+        }
     }
 
     @Composable
-    fun AttachResetScroll(lazyGridState: LazyGridState) {
-//        LaunchedEffect(filterParams().collectAsState(null).value) {
-//            lazyGridState.scrollToItem(0)
-//        }
+    fun ImmediateScrollResetEffect(lazyListState: LazyListState) {
+        val flow = filterParamsStateFlow
+        if (flow != null) {
+            val currentValue = flow.collectAsState().value
+            var previousValue by remember { mutableStateOf(currentValue) }
+            LaunchedEffect(currentValue) {
+                if (previousValue != currentValue) {
+                    previousValue = currentValue
+                    lazyListState.scrollToItem(0)
+                }
+            }
+        }
     }
 }

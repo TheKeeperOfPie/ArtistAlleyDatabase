@@ -74,6 +74,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
                 plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.20")
+                plugin("app.cash.molecule").version("1.3.0")
 
                 library("androidx.activity:activity-compose:1.8.1")
                 // 1.2.0-alpha09 is last version that doesn't IndexOutOfBoundsException

@@ -71,7 +71,7 @@ class AiringScheduleViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 refresh,
-                sortFilterController.filterParams(),
+                sortFilterController.filterParams,
                 ::Pair
             )
                 .flatMapLatest { (_, filterParams) -> buildPagingData(index, filterParams) }

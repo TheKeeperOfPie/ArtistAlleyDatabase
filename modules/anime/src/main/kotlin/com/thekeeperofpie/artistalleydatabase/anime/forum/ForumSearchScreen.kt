@@ -45,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
@@ -104,7 +105,10 @@ object ForumSearchScreen {
                 } else {
                     val columns = GridCells.Adaptive(300.dp)
                     val gridState = rememberLazyGridState()
-                    sortFilterController.AttachResetScroll(gridState)
+                    PagingResetScrollEffect(
+                        gridState = gridState,
+                        currentRefreshState = refreshState,
+                    )
                     LazyVerticalGrid(
                         state = gridState,
                         columns = columns,

@@ -209,7 +209,7 @@ object AnimeUserListScreen {
                                     }
                                     Box(modifier = Modifier.fillMaxSize()) {
                                         val gridState = scrollStateSaver.lazyGridState()
-                                        sortFilterController.AttachResetScroll(gridState)
+                                        sortFilterController.ImmediateScrollResetEffect(gridState)
                                         val viewer by viewModel.viewer.collectAsState()
                                         LazyVerticalGrid(
                                             columns = columns,

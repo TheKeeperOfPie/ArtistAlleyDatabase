@@ -93,7 +93,7 @@ object UserListScreen {
                         .pullRefresh(pullRefreshState)
                 ) {
                     val gridState = rememberLazyGridState()
-                    viewModel.sortFilterController.AttachResetScroll(gridState)
+                    viewModel.sortFilterController.ImmediateScrollResetEffect(gridState)
                     when (val refreshState = users.loadState.refresh) {
                         LoadState.Loading -> Unit
                         is LoadState.Error -> AnimeMediaListScreen.Error(exception = refreshState.error)

@@ -91,6 +91,7 @@ class SeasonalViewModel @Inject constructor(
 
 
     val sortFilterController = AnimeSortFilterController(
+        scope = viewModelScope,
         sortTypeEnumClass = MediaSortOption::class,
         aniListApi = aniListApi,
         settings = settings,
@@ -146,7 +147,7 @@ class SeasonalViewModel @Inject constructor(
                 combine(
                     MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
                     refreshUptimeMillis,
-                    sortFilterController.filterParams(),
+                    sortFilterController.filterParams,
                 ) { includeDescription, requestMillis, filterParams ->
                     AnimeSearchMediaPagingSource.RefreshParams(
                         query = "",

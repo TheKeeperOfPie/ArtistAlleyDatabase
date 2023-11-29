@@ -61,7 +61,7 @@ abstract class UserListViewModel(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 aniListApi.authedUser,
-                sortFilterController.filterParams().flowOn(CustomDispatchers.Main),
+                sortFilterController.filterParams.flowOn(CustomDispatchers.Main),
                 ::Pair
             ).flatMapLatest { (viewer, filterParams) ->
                 val userId = userId ?: viewer?.id
