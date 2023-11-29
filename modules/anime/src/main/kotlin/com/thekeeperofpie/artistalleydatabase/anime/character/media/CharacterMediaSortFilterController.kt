@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character.media
 
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -11,18 +11,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class CharacterMediaSortFilterController(
+    scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     private val allowRelevanceSort: Boolean = false,
 ) : SortFilterController<CharacterMediaSortFilterController.FilterParams>(
-    settings,
-    featureOverrideProvider
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider
 ) {
 
     private val sortSection = SortFilterSection.Sort(
@@ -55,13 +56,12 @@ class CharacterMediaSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    override val filterParams = snapshotFlow {
-        FilterParams(
-            sort = sortSection.sortOptions,
-            sortAscending = sortSection.sortAscending,
-            onList = onListSection.enabled,
-        )
-    }.debounce(500.milliseconds)
+    @Composable
+    override fun filterParams() = FilterParams(
+        sort = sortSection.sortOptions,
+        sortAscending = sortSection.sortAscending,
+        onList = onListSection.enabled,
+    )
 
     data class FilterParams(
         val sort: List<SortEntry<MediaSortOption>>,

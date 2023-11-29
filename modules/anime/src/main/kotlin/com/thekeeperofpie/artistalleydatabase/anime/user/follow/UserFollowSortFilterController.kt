@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user.follow
 
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -9,15 +9,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class UserFollowSortFilterController(
+    scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController<UserFollowSortFilterController.FilterParams>(settings, featureOverrideProvider) {
+) : SortFilterController<UserFollowSortFilterController.FilterParams>(
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider,
+) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = UserSortOption::class,
@@ -33,12 +37,11 @@ class UserFollowSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    override val filterParams = snapshotFlow {
-        FilterParams(
-            sort = sortSection.sortOptions,
-            sortAscending = sortSection.sortAscending,
-        )
-    }.debounce(500.milliseconds)
+    @Composable
+    override fun filterParams() = FilterParams(
+        sort = sortSection.sortOptions,
+        sortAscending = sortSection.sortAscending,
+    )
 
     data class FilterParams(
         val sort: List<SortEntry<UserSortOption>>,

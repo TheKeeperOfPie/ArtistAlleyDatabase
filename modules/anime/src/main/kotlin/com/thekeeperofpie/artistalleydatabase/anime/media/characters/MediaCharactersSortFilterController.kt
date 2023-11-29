@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.characters
 
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.type.CharacterRole
@@ -14,17 +14,18 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class MediaCharactersSortFilterController(
+    scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : SortFilterController<MediaCharactersSortFilterController.FilterParams>(
-    settings,
-    featureOverrideProvider
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider,
 ) {
     private val sortSection = SortFilterSection.Sort(
         enumClass = CharacterSortOption::class,
@@ -58,15 +59,14 @@ class MediaCharactersSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    override val filterParams = snapshotFlow {
-        FilterParams(
-            sort = sortSection.sortOptions,
-            sortAscending = sortSection.sortAscending,
-            role = roleSection.filterOptions
-                .find { it.state == FilterIncludeExcludeState.INCLUDE }
-                ?.value,
-        )
-    }.debounce(500.milliseconds)
+    @Composable
+    override fun filterParams() = FilterParams(
+        sort = sortSection.sortOptions,
+        sortAscending = sortSection.sortAscending,
+        role = roleSection.filterOptions
+            .find { it.state == FilterIncludeExcludeState.INCLUDE }
+            ?.value,
+    )
 
     data class FilterParams(
         val sort: List<SortEntry<CharacterSortOption>>,

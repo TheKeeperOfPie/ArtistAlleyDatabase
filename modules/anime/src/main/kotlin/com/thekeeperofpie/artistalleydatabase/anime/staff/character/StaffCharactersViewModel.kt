@@ -47,7 +47,7 @@ class StaffCharactersViewModel @Inject constructor(
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
     override val sortFilterController =
-        StaffCharactersSortFilterController(settings, featureOverrideProvider)
+        StaffCharactersSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     init {
         favoritesToggleHelper.initializeTracking(

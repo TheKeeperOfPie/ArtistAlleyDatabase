@@ -1,26 +1,28 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flowOn
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class NewsSortFilterController(
+    scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController<NewsSortFilterController.FilterParams>(settings, featureOverrideProvider) {
+) : SortFilterController<NewsSortFilterController.FilterParams>(
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider
+) {
 
     private val sortSection = SortFilterSection.Sort(
         AnimeNewsSortOption::class,
@@ -71,16 +73,14 @@ class NewsSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    override val filterParams = snapshotFlow {
-        FilterParams(
-            sort = sortSection.sortOptions,
-            sortAscending = sortSection.sortAscending,
-            animeNewsNetworkRegionOptions = animeNewsNetworkRegionSection.filterOptions,
-            animeNewsNetworkCategoryOptions = animeNewsNetworkCategorySection.filterOptions,
-            crunchyrollCategoryOptions = crunchyrollCategorySection.filterOptions,
-        )
-    }.flowOn(CustomDispatchers.Main)
-        .debounce(500.milliseconds)
+    @Composable
+    override fun filterParams() = FilterParams(
+        sort = sortSection.sortOptions,
+        sortAscending = sortSection.sortAscending,
+        animeNewsNetworkRegionOptions = animeNewsNetworkRegionSection.filterOptions,
+        animeNewsNetworkCategoryOptions = animeNewsNetworkCategorySection.filterOptions,
+        crunchyrollCategoryOptions = crunchyrollCategorySection.filterOptions,
+    )
 
     data class FilterParams(
         val sort: List<SortEntry<AnimeNewsSortOption>>,

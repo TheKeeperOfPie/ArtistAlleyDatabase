@@ -34,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExclud
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -50,6 +51,7 @@ import kotlin.reflect.KClass
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class MediaSortFilterController<SortType : SortOption, ParamsType : MediaSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass: KClass<SortType>,
+    scope: CoroutineScope,
     protected val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
@@ -59,8 +61,9 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaType: MediaType,
     userScoreEnabled: Boolean,
 ) : SortFilterController<MediaSortFilterController.FilterParams<SortType>>(
-    settings,
-    featureOverrideProvider
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider
 ) {
     private var initialized = false
     protected var initialParams by mutableStateOf<ParamsType?>(null)

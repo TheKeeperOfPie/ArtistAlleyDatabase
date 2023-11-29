@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -13,8 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class RecommendationSortFilterController(
@@ -23,7 +21,11 @@ class RecommendationSortFilterController(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController<RecommendationSortFilterController.FilterParams>(settings, featureOverrideProvider) {
+) : SortFilterController<RecommendationSortFilterController.FilterParams>(
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider,
+) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = RecommendationSortOption::class,
@@ -73,16 +75,15 @@ class RecommendationSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    override val filterParams = snapshotFlow {
-        FilterParams(
-            sort = sortSection.sortOptions,
-            sortAscending = sortSection.sortAscending,
-            sourceMediaId = sourceMediaSection.selectedMedia?.id?.toString(),
-            targetMediaId = targetMediaSection.selectedMedia?.id?.toString(),
-            ratingRange = ratingSection.data,
-            onList = onListSection.enabled,
-        )
-    }.debounce(500.milliseconds)
+    @Composable
+    override fun filterParams() = FilterParams(
+        sort = sortSection.sortOptions,
+        sortAscending = sortSection.sortAscending,
+        sourceMediaId = sourceMediaSection.selectedMedia?.id?.toString(),
+        targetMediaId = targetMediaSection.selectedMedia?.id?.toString(),
+        ratingRange = ratingSection.data,
+        onList = onListSection.enabled,
+    )
 
     data class FilterParams(
         val sort: List<SortEntry<RecommendationSortOption>>,

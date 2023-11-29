@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation.media
 
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -11,15 +11,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class MediaRecommendationSortFilterController(
+    scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController<MediaRecommendationSortFilterController.FilterParams>(settings, featureOverrideProvider) {
+) : SortFilterController<MediaRecommendationSortFilterController.FilterParams>(
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider,
+) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = RecommendationSortOption::class,
@@ -41,12 +45,11 @@ class MediaRecommendationSortFilterController(
         SortFilterSection.Spacer(height = 32.dp),
     )
 
-    override val filterParams = snapshotFlow {
-        FilterParams(
-            sort = sortSection.sortOptions,
-            sortAscending = sortSection.sortAscending,
-        )
-    }.debounce(500.milliseconds)
+    @Composable
+    override fun filterParams() = FilterParams(
+        sort = sortSection.sortOptions,
+        sortAscending = sortSection.sortAscending,
+    )
 
     data class FilterParams(
         val sort: List<SortEntry<RecommendationSortOption>>,

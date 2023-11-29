@@ -53,7 +53,7 @@ class MediaRecommendationsViewModel @Inject constructor(
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 
     override val sortFilterController =
-        MediaRecommendationSortFilterController(settings, featureOverrideProvider)
+        MediaRecommendationSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     init {
         favoritesToggleHelper.initializeTracking(

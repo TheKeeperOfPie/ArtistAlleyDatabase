@@ -127,6 +127,7 @@ class AnimeUserListViewModel @Inject constructor(
         } else {
             MangaSortFilterController(
                 sortTypeEnumClass = MediaListSortOption::class,
+                scope = viewModelScope,
                 aniListApi = aniListApi,
                 settings = settings,
                 featureOverrideProvider = featureOverrideProvider,

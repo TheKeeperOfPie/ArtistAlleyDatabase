@@ -1,12 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -17,9 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flowOn
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class ForumSubsectionSortFilterController(
@@ -28,7 +24,11 @@ class ForumSubsectionSortFilterController(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController<ForumSubsectionSortFilterController.FilterParams>(settings, featureOverrideProvider) {
+) : SortFilterController<ForumSubsectionSortFilterController.FilterParams>(
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider,
+) {
 
     private val sortSection = SortFilterSection.Sort(
         ForumThreadSortOption::class,
@@ -90,17 +90,15 @@ class ForumSubsectionSortFilterController(
         )
     }
 
-    override val filterParams = snapshotFlow {
-        FilterParams(
-            sortOptions = sortSection.sortOptions,
-            sortAscending = sortSection.sortAscending,
-            subscribed = subscribedSection.enabled,
-            categories = categorySection.filterOptions,
-            mediaCategoryId = initialParams.mediaCategoryId
-                ?: mediaSection.selectedMedia?.id?.toString(),
-        )
-    }.flowOn(CustomDispatchers.Main)
-        .debounce(500.milliseconds)
+    @Composable
+    override fun filterParams() = FilterParams(
+        sortOptions = sortSection.sortOptions,
+        sortAscending = sortSection.sortAscending,
+        subscribed = subscribedSection.enabled,
+        categories = categorySection.filterOptions,
+        mediaCategoryId = initialParams.mediaCategoryId
+            ?: mediaSection.selectedMedia?.id?.toString(),
+    )
 
     data class InitialParams(
         val defaultSort: ForumThreadSortOption? = null,

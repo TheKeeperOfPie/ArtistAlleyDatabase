@@ -26,8 +26,10 @@ import androidx.compose.ui.unit.IntOffset
 import coil.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 import kotlin.reflect.KProperty
+import kotlin.time.Duration
 
 fun <T> observableStateOf(value: T, onChange: (T) -> Unit) =
     ObservableMutableStateWrapper(value, onChange)
@@ -102,6 +104,27 @@ fun Modifier.animateItemPlacementFixed() =
 context(LazyGridItemScope)
 fun Modifier.animateItemPlacementFixed() =
     animateItemPlacement(animationSpec = NotEqualAnimationSpecDelegate())
+
+@Composable
+fun <T> debounce(currentValue: T, duration: Duration): T {
+    var debounced by remember { mutableStateOf(currentValue) }
+    LaunchedEffect(currentValue) {
+        delay(duration)
+        debounced = currentValue
+    }
+    return debounced
+}
+
+@Composable
+fun <T> OnChangeEffect(currentValue: T, onChange: suspend (T) -> Unit) {
+    var previousValue by remember { mutableStateOf(currentValue) }
+    LaunchedEffect(currentValue) {
+        if (previousValue != currentValue) {
+            previousValue = currentValue
+            onChange(currentValue)
+        }
+    }
+}
 
 private class NotEqualAnimationSpecDelegate(spec: FiniteAnimationSpec<IntOffset>) :
     FiniteAnimationSpec<IntOffset> by spec {

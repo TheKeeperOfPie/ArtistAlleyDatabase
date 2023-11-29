@@ -31,7 +31,8 @@ class AnimeNewsViewModel @Inject constructor(
     featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
-    val sortFilterController = NewsSortFilterController(settings, featureOverrideProvider)
+    val sortFilterController =
+        NewsSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     var news by mutableStateOf<List<AnimeNewsArticleEntry<*>>?>(null)
         private set

@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -52,7 +51,8 @@ abstract class UserListViewModel(
 
     val viewer = aniListApi.authedUser
 
-    val sortFilterController = UserFollowSortFilterController(settings, featureOverrideProvider)
+    val sortFilterController =
+        UserFollowSortFilterController(viewModelScope, settings, featureOverrideProvider)
     val users = MutableStateFlow(PagingData.empty<UserListRow.Entry>())
 
     private val userId = savedStateHandle.get<String?>("userId")
@@ -61,7 +61,7 @@ abstract class UserListViewModel(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 aniListApi.authedUser,
-                sortFilterController.filterParams.flowOn(CustomDispatchers.Main),
+                sortFilterController.filterParams,
                 ::Pair
             ).flatMapLatest { (viewer, filterParams) ->
                 val userId = userId ?: viewer?.id

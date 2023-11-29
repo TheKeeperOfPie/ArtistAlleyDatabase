@@ -33,7 +33,7 @@ class MediaCharactersViewModel @Inject constructor(
     val mediaId = savedStateHandle.get<String>("mediaId")!!
 
     override val sortFilterController =
-        MediaCharactersSortFilterController(settings, featureOverrideProvider)
+        MediaCharactersSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)

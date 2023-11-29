@@ -41,7 +41,7 @@ class CharacterMediasViewModel @Inject constructor(
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
     override val sortFilterController =
-        CharacterMediaSortFilterController(settings, featureOverrideProvider)
+        CharacterMediaSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     init {
         favoritesToggleHelper.initializeTracking(

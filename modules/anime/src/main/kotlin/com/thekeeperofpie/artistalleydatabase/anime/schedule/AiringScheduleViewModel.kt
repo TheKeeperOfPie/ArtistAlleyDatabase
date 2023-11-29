@@ -52,7 +52,8 @@ class AiringScheduleViewModel @Inject constructor(
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
-    var sortFilterController = AiringScheduleSortFilterController(settings, featureOverrideProvider)
+    var sortFilterController =
+        AiringScheduleSortFilterController(viewModelScope, settings, featureOverrideProvider)
     var refresh = MutableStateFlow(-1)
 
     private val startDay = LocalDate.now().let {

@@ -7,12 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.type.ActivityType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -28,11 +26,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flowOn
 import java.time.Instant
 import java.time.ZoneOffset
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class ActivitySortFilterController(
@@ -42,7 +37,11 @@ class ActivitySortFilterController(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     mediaSharedElement: Boolean = true,
-) : SortFilterController<ActivitySortFilterController.FilterParams>(settings, featureOverrideProvider) {
+) : SortFilterController<ActivitySortFilterController.FilterParams>(
+    scope = scope,
+    settings = settings,
+    featureOverrideProvider = featureOverrideProvider
+) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = ActivitySortOption::class,
@@ -146,17 +145,14 @@ class ActivitySortFilterController(
         }
     }
 
-
-    override val filterParams = snapshotFlow {
-        FilterParams(
-            sort = sortSection.sortOptions,
-            type = typeSection.filterOptions,
-            hasReplies = hasRepliesSection.enabled,
-            date = date,
-            mediaId = mediaSection.selectedMedia?.id?.toString(),
-        )
-    }.flowOn(CustomDispatchers.Main)
-        .debounce(500.milliseconds)
+    @Composable
+    override fun filterParams() = FilterParams(
+        sort = sortSection.sortOptions,
+        type = typeSection.filterOptions,
+        hasReplies = hasRepliesSection.enabled,
+        date = date,
+        mediaId = mediaSection.selectedMedia?.id?.toString(),
+    )
 
     fun selectedMedia() = mediaSection.selectedMedia
 

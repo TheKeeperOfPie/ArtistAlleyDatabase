@@ -227,6 +227,7 @@ class AnimeSearchViewModel @Inject constructor(
 
     val mangaSortFilterController = MangaSortFilterController(
         sortTypeEnumClass = MediaSortOption::class,
+        scope = viewModelScope,
         aniListApi = aniListApi,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
@@ -237,13 +238,16 @@ class AnimeSearchViewModel @Inject constructor(
     )
 
     val characterSortFilterController =
-        CharacterSortFilterController(settings, featureOverrideProvider)
+        CharacterSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
-    val staffSortFilterController = StaffSortFilterController(settings, featureOverrideProvider)
+    val staffSortFilterController =
+        StaffSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
-    val studioSortFilterController = StudioSortFilterController(settings, featureOverrideProvider)
+    val studioSortFilterController =
+        StudioSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
-    val userSortFilterController = UserSortFilterController(settings, featureOverrideProvider)
+    val userSortFilterController =
+        UserSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
