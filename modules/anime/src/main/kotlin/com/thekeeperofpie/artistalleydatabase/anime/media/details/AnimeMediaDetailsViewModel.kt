@@ -648,7 +648,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     data class ActivityEntry(
         val activity: ListActivityMediaListActivityItem,
         val activityId: String = activity.id.toString(),
-        override val liked: Boolean = false,
-        override val subscribed: Boolean = false,
+        override val liked: Boolean = activity.isLiked ?: false,
+        override val subscribed: Boolean = activity.isSubscribed ?: false,
     ) : ActivityStatusAware
 }
