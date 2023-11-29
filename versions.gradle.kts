@@ -130,7 +130,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 library("com.android.billingclient:billing-ktx:6.1.0")
-                library("com.android.tools.build:gradle:8.3.0-alpha14")
+                library("com.android.tools.build:gradle:8.3.0-alpha15")
 
                 withVersion(Versions.apollo) {
                     library("com.apollographql.apollo3:apollo-runtime")
@@ -164,7 +164,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.google.truth:truth:1.1.5")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
                 library("com.neovisionaries:nv-i18n:1.29")
-                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.1.0")
+                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.1.1")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                     alias = "androidyoutubeplayer"
@@ -222,7 +222,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.mockito:mockito-core")
                 }
 
-                library("systems.manifold:manifold-graphql-rt:2023.1.30")
+                library("systems.manifold:manifold-graphql-rt:2023.1.31")
 
                 prefix("androidx") {
                     library("androidx.browser:browser:1.8.0-alpha01")
@@ -248,7 +248,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 prefix("jetBrainsCompose") {
-                    library("org.jetbrains.compose.runtime:runtime:1.5.10")
+                    library("org.jetbrains.compose.runtime:runtime:1.5.11")
                 }
 
                 prefix("junit5") {
