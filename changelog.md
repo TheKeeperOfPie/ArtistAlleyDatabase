@@ -1,6 +1,8 @@
 # Changelog
 
-### Next (11)
+### Next (12)
+
+### 0.46 (11)
 - Fix status bar icon color when using black theme
 - Hide current media header if previously no results
 - Add previous, current, and next season options to anime airing date filter
