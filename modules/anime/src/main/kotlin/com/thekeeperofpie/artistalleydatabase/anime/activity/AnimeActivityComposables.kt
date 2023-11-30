@@ -304,6 +304,7 @@ fun ColumnScope.TextActivityCardContent(
         ActivityStatusIcons(
             activityId = activity?.id?.toString(),
             replies = activity?.replyCount,
+            likes = activity?.likeCount,
             viewer = viewer,
             liked = entry?.liked ?: false,
             subscribed = entry?.subscribed ?: false,
@@ -454,6 +455,7 @@ fun ColumnScope.MessageActivityCardContent(
         ActivityStatusIcons(
             activityId = activity?.id?.toString(),
             replies = activity?.replyCount,
+            likes = activity?.likeCount,
             viewer = viewer,
             liked = entry?.liked ?: false,
             subscribed = entry?.subscribed ?: false,
@@ -738,6 +740,7 @@ fun ColumnScope.ListActivityCardContent(
         ActivityStatusIcons(
             activityId = activity?.id?.toString(),
             replies = activity?.replyCount,
+            likes = activity?.likeCount,
             viewer = viewer,
             liked = liked,
             subscribed = subscribed,
@@ -807,6 +810,7 @@ fun ActivityDetailsActionRow(
 fun ActivityStatusIcons(
     activityId: String?,
     replies: Int?,
+    likes: Int?,
     viewer: AniListViewer?,
     liked: Boolean,
     subscribed: Boolean,
@@ -841,28 +845,41 @@ fun ActivityStatusIcons(
                 .padding(8.dp)
         )
 
-        if (viewer != null) {
-            IconButton(
-                onClick = {
-                    if (activityId != null) {
-                        onActivityStatusUpdate(
-                            ActivityToggleUpdate.Liked(
-                                id = activityId.toString(),
-                                liked = !liked,
-                                subscribed = subscribed,
-                            )
-                        )
-                    }
-                }, modifier = Modifier.size(36.dp)
-            ) {
-                Icon(
-                    imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
-                    contentDescription = stringResource(
-                        R.string.anime_activity_like_icon_content_description
-                    ),
-                    modifier = Modifier.size(20.dp)
+        val likeCount = likes ?: 0
+        if (activityId == null || likeCount > 0) {
+            Text(
+                text = likeCount.toString(),
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.placeholder(
+                    visible = activityId == null,
+                    highlight = PlaceholderHighlight.shimmer(),
                 )
-            }
+            )
+        }
+        IconButton(
+            enabled = viewer != null,
+            onClick = {
+                if (activityId != null) {
+                    onActivityStatusUpdate(
+                        ActivityToggleUpdate.Liked(
+                            id = activityId.toString(),
+                            liked = !liked,
+                            subscribed = subscribed,
+                        )
+                    )
+                }
+            },
+            modifier = Modifier.size(36.dp)
+        ) {
+            Icon(
+                imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                contentDescription = stringResource(
+                    R.string.anime_activity_like_icon_content_description
+                ),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        if (viewer != null) {
             IconButton(
                 onClick = {
                     if (activityId != null) {

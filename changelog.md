@@ -6,6 +6,7 @@
 - Add previous, current, and next season options to anime airing date filter
 - Add anime search filter suggestions
 - Add search active filter count
+- Add activity like count
 - Fix user anime/manga user list status exclude filter
 - Add show more of button for some art entry fields
 - Add indicator icons for unlocked entry fields
