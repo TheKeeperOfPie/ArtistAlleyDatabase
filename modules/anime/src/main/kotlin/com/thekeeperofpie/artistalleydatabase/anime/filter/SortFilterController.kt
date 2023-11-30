@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -47,9 +48,9 @@ abstract class SortFilterController<FilterParams>(
         children = listOfNotNull(showAdultSection, collapseOnCloseSection, hideIgnoredSection)
     )
 
-    // Lazy is required here because the subclass fields are not initialized until after this
-    val filterParams by lazy {
-        scope.launchMolecule(RecompositionMode.Immediate) {
+    private val moleculeScope = CoroutineScope(scope.coroutineContext + AndroidUiDispatcher.Main)
+    val filterParams by lazy(LazyThreadSafetyMode.NONE) {
+        moleculeScope.launchMolecule(RecompositionMode.ContextClock) {
             debounce(currentValue = filterParams(), duration = 500.milliseconds)
         }
     }
