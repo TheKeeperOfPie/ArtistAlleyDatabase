@@ -53,7 +53,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -111,10 +110,7 @@ object MediaSearchScreen {
                     modifier = Modifier.padding(scaffoldPadding)
                 ) {
                     val gridState = rememberLazyGridState()
-                    PagingResetScrollEffect(
-                        gridState = gridState,
-                        currentRefreshState = refreshState,
-                    )
+                    sortFilterController.ImmediateScrollResetEffect(gridState)
                     val showWithSpoiler =
                         if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
                             viewModel.animeSortFilterController.tagShowWhenSpoiler

@@ -58,7 +58,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -245,10 +244,7 @@ object SeasonalScreen {
                 MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
             }
             val gridState = rememberLazyGridState()
-            PagingResetScrollEffect(
-                gridState = gridState,
-                currentRefreshState = refreshState,
-            )
+            sortFilterController.ImmediateScrollResetEffect(gridState)
             LazyVerticalGrid(
                 state = gridState,
                 columns = columns,

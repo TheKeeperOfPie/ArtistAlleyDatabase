@@ -8,19 +8,12 @@ import androidx.annotation.CheckResult
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -33,30 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-
-@Composable
-fun PagingResetScrollEffect(gridState: LazyGridState, currentRefreshState: LoadState) {
-    var previousRefreshState by remember { mutableStateOf(currentRefreshState) }
-    LaunchedEffect(currentRefreshState) {
-        if (previousRefreshState is LoadState.Loading
-            && currentRefreshState is LoadState.NotLoading) {
-            gridState.scrollToItem(0)
-        }
-        previousRefreshState = currentRefreshState
-    }
-}
-
-@Composable
-fun PagingResetScrollEffect(listState: LazyListState, currentRefreshState: LoadState) {
-    var previousRefreshState by remember { mutableStateOf(currentRefreshState) }
-    LaunchedEffect(currentRefreshState) {
-        if (previousRefreshState is LoadState.Loading
-            && currentRefreshState is LoadState.NotLoading) {
-            listState.scrollToItem(0)
-        }
-        previousRefreshState = currentRefreshState
-    }
-}
 
 inline fun <T : Any> Flow<PagingData<T>>.enforceUniqueIds(
     crossinline id: suspend (value: T) -> String?,

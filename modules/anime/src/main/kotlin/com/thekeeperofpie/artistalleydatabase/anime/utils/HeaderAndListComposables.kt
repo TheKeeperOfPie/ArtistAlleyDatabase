@@ -155,10 +155,7 @@ private fun <ListEntryType : Any> List(
 ) {
     val gridState = rememberLazyGridState()
     val items = viewModel.items.collectAsLazyPagingItems()
-    PagingResetScrollEffect(
-        gridState = gridState,
-        currentRefreshState = items.loadState.refresh,
-    )
+    sortFilterController.ImmediateScrollResetEffect(gridState)
     val refreshState = items.loadState.refresh
 
     val refreshing = refreshState is LoadState.Loading

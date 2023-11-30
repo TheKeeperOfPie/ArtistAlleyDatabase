@@ -62,7 +62,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
@@ -202,10 +201,7 @@ object AnimeSearchScreen {
                                 GridCells.Adaptive(300.dp)
                             }
                         val gridState = scrollStateSaver.lazyGridState()
-                        PagingResetScrollEffect(
-                            gridState = gridState,
-                            currentRefreshState = refreshState,
-                        )
+                        sortFilterController.ImmediateScrollResetEffect(gridState)
                         LazyVerticalGrid(
                             columns = columns,
                             state = gridState,

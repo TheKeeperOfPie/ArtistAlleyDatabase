@@ -58,7 +58,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingResetScrollEffect
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import kotlinx.coroutines.launch
@@ -193,10 +192,7 @@ object AiringScheduleScreen {
                             onRefresh = { viewModel.refresh.tryEmit(page) },
                         )
                         val listState = rememberLazyListState()
-                        PagingResetScrollEffect(
-                            listState = listState,
-                            currentRefreshState = refreshState,
-                        )
+                        viewModel.sortFilterController.ImmediateScrollResetEffect(listState)
                         LazyColumn(
                             state = listState,
                             contentPadding = PaddingValues(
