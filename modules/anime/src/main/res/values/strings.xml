@@ -236,7 +236,7 @@
 
     <string name="anime_media_filter_suggestions_label">Suggestions</string>
     <string name="anime_media_filter_suggestions_expand_content_description">Suggestions expand</string>
-    <string name="anime_media_filter_suggestions_recent_untracked">Recent untracked</string>
+    <string name="anime_media_filter_suggestions_recent_finished">Recent finished</string>
     <string name="anime_media_filter_suggestions_last_season">Last season</string>
     <string name="anime_media_filter_suggestions_current_season">Current season</string>
     <string name="anime_media_filter_suggestions_next_season">Next season</string>

@@ -69,7 +69,7 @@ class ForumSubsectionSortFilterController(
         sections = listOfNotNull(
             sortSection.apply {
                 if (initialParams.defaultSort != null) {
-                    changeSelected(
+                    changeDefault(
                         initialParams.defaultSort,
                         sortAscending = false,
                         lockSort = initialParams.lockSort,

@@ -157,7 +157,7 @@ open class AnimeSortFilterController<SortType : SortOption>(
                     listOfNotNull(
                         sortSection.apply {
                             if (initialParams.defaultSort != null) {
-                                changeSelected(
+                                changeDefault(
                                     initialParams.defaultSort,
                                     sortAscending = false,
                                     lockSort = initialParams.lockSort,

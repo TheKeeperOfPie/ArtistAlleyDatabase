@@ -82,16 +82,46 @@ sealed class SortFilterSection(val id: String) {
                 && sortOptions.filter { it.state != FilterIncludeExcludeState.DEFAULT }
             .map { it.value } != listOf(defaultEnabled)
 
-        fun changeSelected(defaultEnabled: SortType, sortAscending: Boolean, lockSort: Boolean) {
+        fun changeDefault(defaultEnabled: SortType, sortAscending: Boolean, lockSort: Boolean) {
             this.defaultEnabled = defaultEnabled
             sortOptions = SortEntry.options(enumClass, defaultEnabled)
             this.sortAscending = sortAscending
             clickable = !lockSort
         }
 
+        fun changeSelected(selected: SortType, sortAscending: Boolean) {
+            if (sortOptions.singleOrNull { it.state == FilterIncludeExcludeState.INCLUDE }?.value != selected) {
+                onSelected(selected)
+            }
+            this.sortAscending = sortAscending
+        }
+
         override fun clear() {
             sortOptions = SortEntry.options(enumClass, defaultEnabled)
             sortAscending = false
+        }
+
+        private fun onSelected(selected: SortOption) {
+            val list = sortOptions.toMutableList()
+            val existing = list.withIndex().first { it.value.value == selected }
+            val newOption = if (existing.value.state == FilterIncludeExcludeState.INCLUDE) {
+                list[(existing.index + 1) % list.size].value
+            } else {
+                selected
+            }
+            sortOptions = list.apply {
+                replaceAll {
+                    if (it.value == newOption) {
+                        val newState =
+                            if (it.state != FilterIncludeExcludeState.INCLUDE) {
+                                FilterIncludeExcludeState.INCLUDE
+                            } else {
+                                FilterIncludeExcludeState.DEFAULT
+                            }
+                        it.copy(state = newState)
+                    } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
+                }
+            }
         }
 
         @Composable
@@ -101,28 +131,7 @@ sealed class SortFilterSection(val id: String) {
                 expanded = { state.expandedState[id] ?: false },
                 onExpandedChange = { state.expandedState[id] = it },
                 sortOptions = { sortOptions },
-                onSortClick = { selected ->
-                    val list = sortOptions.toMutableList()
-                    val existing = list.withIndex().first { it.value.value == selected }
-                    val newOption = if (existing.value.state == FilterIncludeExcludeState.INCLUDE) {
-                        list[(existing.index + 1) % list.size].value
-                    } else {
-                        selected
-                    }
-                    sortOptions = list.apply {
-                        replaceAll {
-                            if (it.value == newOption) {
-                                val newState =
-                                    if (it.state != FilterIncludeExcludeState.INCLUDE) {
-                                        FilterIncludeExcludeState.INCLUDE
-                                    } else {
-                                        FilterIncludeExcludeState.DEFAULT
-                                    }
-                                it.copy(state = newState)
-                            } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
-                        }
-                    }
-                },
+                onSortClick = ::onSelected,
                 sortAscending = { sortAscending },
                 onSortAscendingChange = { sortAscending = it },
                 clickable = clickable,
@@ -557,7 +566,7 @@ sealed class SortFilterSection(val id: String) {
         override fun showingPreview() = false
 
         override fun clear() {
-            TODO("Not yet implemented")
+            // No state to clear
         }
 
         @Composable

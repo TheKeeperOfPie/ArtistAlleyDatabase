@@ -148,11 +148,10 @@ class AnimeSearchViewModel @Inject constructor(
             suggestions = AnimeFilterSuggestion.entries.toList(),
             onSuggestionClick = {
                 when (it) {
-                    AnimeFilterSuggestion.RECENT_UNTRACKED -> {
+                    AnimeFilterSuggestion.RECENT_FINISHED -> {
                         sortSection.changeSelected(
-                            defaultEnabled = MediaSortOption.END_DATE,
+                            selected = MediaSortOption.END_DATE,
                             sortAscending = false,
-                            lockSort = false,
                         )
                         statusSection.setIncluded(MediaStatus.FINISHED, locked = false)
                         formatSection.setIncluded(MediaFormat.TV, locked = false)
@@ -162,9 +161,8 @@ class AnimeSearchViewModel @Inject constructor(
                     }
                     AnimeFilterSuggestion.LAST_SEASON -> {
                         sortSection.changeSelected(
-                            defaultEnabled = MediaSortOption.POPULARITY,
+                            selected = MediaSortOption.POPULARITY,
                             sortAscending = false,
-                            lockSort = false,
                         )
                         statusSection.clear()
                         formatSection.setIncluded(MediaFormat.TV, locked = false)
@@ -178,9 +176,8 @@ class AnimeSearchViewModel @Inject constructor(
                     }
                     AnimeFilterSuggestion.CURRENT_SEASON -> {
                         sortSection.changeSelected(
-                            defaultEnabled = MediaSortOption.POPULARITY,
+                            selected = MediaSortOption.POPULARITY,
                             sortAscending = false,
-                            lockSort = false,
                         )
                         statusSection.clear()
                         formatSection.setIncluded(MediaFormat.TV, locked = false)
@@ -194,9 +191,8 @@ class AnimeSearchViewModel @Inject constructor(
                     }
                     AnimeFilterSuggestion.NEXT_SEASON -> {
                         sortSection.changeSelected(
-                            defaultEnabled = MediaSortOption.POPULARITY,
+                            selected = MediaSortOption.POPULARITY,
                             sortAscending = false,
-                            lockSort = false,
                         )
                         statusSection.clear()
                         formatSection.setIncluded(MediaFormat.TV, locked = false)
@@ -214,7 +210,7 @@ class AnimeSearchViewModel @Inject constructor(
 
         enum class AnimeFilterSuggestion(private val textRes: Int) :
             SortFilterSection.Suggestions.Suggestion {
-            RECENT_UNTRACKED(R.string.anime_media_filter_suggestions_recent_untracked),
+            RECENT_FINISHED(R.string.anime_media_filter_suggestions_recent_finished),
             LAST_SEASON(R.string.anime_media_filter_suggestions_last_season),
             CURRENT_SEASON(R.string.anime_media_filter_suggestions_current_season),
             NEXT_SEASON(R.string.anime_media_filter_suggestions_next_season),
