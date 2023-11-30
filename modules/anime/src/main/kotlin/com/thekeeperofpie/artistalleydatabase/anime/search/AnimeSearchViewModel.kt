@@ -547,10 +547,11 @@ class AnimeSearchViewModel @Inject constructor(
                 AnimeSearchEntry.Studio(
                     StudioListRow.Entry(
                         studio = it,
-                        media = it.main?.nodes?.filterNotNull().orEmpty()
+                        media = (it.main?.nodes?.filterNotNull().orEmpty()
                             .map(::MediaWithListStatusEntry) +
                                 it.nonMain?.nodes?.filterNotNull().orEmpty()
-                                    .map(::MediaWithListStatusEntry),
+                                    .map(::MediaWithListStatusEntry))
+                            .distinctBy { it.media.id },
                     )
                 )
             },
