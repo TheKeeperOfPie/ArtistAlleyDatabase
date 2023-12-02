@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import kotlinx.coroutines.CoroutineScope
@@ -65,7 +63,7 @@ class FavoritesToggleHelper(
     }
 
     fun <Entry> initializeTracking(
-        viewModel: ViewModel,
+        scope: CoroutineScope,
         entry: () -> Flow<Entry?>,
         entryToId: (Entry) -> String,
         entryToType: (Entry) -> FavoriteType,
@@ -73,7 +71,7 @@ class FavoritesToggleHelper(
     ) {
         if (initializedTracking) return
         initializedTracking = true
-        viewModel.viewModelScope.launch(CustomDispatchers.Main) {
+        scope.launch(CustomDispatchers.Main) {
             entry()
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)

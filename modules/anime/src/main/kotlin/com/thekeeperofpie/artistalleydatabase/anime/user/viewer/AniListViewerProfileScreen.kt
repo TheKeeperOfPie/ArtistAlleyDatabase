@@ -63,7 +63,6 @@ object AniListViewerProfileScreen {
             )
         } else {
             val viewModel = hiltViewModel<AniListUserViewModel>()
-                .apply { initialize(null) }
             val headerValues = UserHeaderValues(null) { viewModel.entry?.user }
             AniListUserScreen(
                 viewModel = viewModel,

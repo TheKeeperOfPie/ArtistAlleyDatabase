@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
@@ -63,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -347,7 +347,7 @@ class MediaHeaderValues(
                         "&type=${media.type?.name}"
             }
 
-        fun navArguments() = listOf(
+        fun navArguments() = navArguments(
             "title",
             "subtitleFormatRes",
             "subtitleStatusRes",
@@ -361,11 +361,9 @@ class MediaHeaderValues(
             "color",
             "favorite",
             "type",
-        ).map {
-            navArgument(it) {
-                type = NavType.StringType
-                nullable = true
-            }
+        ) {
+            type = NavType.StringType
+            nullable = true
         }
     }
 

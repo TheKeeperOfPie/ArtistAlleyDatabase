@@ -102,8 +102,8 @@ object ActivityDetailsScreen {
 
     @Composable
     operator fun invoke(
+        viewModel: ActivityDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption.Back,
-        viewModel: ActivityDetailsViewModel,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 

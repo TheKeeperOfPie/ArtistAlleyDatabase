@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import com.anilist.fragment.CharacterHeaderData
 import com.anilist.fragment.CharacterNavigationData
 import com.mxalbert.sharedelements.SharedElement
@@ -48,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -228,18 +228,16 @@ class CharacterHeaderValues(
                 "&imageWidthToHeightRatio=$imageWidthToHeightRatio" +
                 "&color=${color?.toArgb()}"
 
-        fun navArguments() = listOf(
+        fun navArguments() = navArguments(
             "name",
             "subtitle",
             "favorite",
             "image",
             "imageWidthToHeightRatio",
             "color",
-        ).map {
-            navArgument(it) {
-                type = NavType.StringType
-                nullable = true
-            }
+        ) {
+            type = NavType.StringType
+            nullable = true
         }
     }
 

@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -51,11 +52,12 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     private val markwon: Markwon,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
 
-    lateinit var characterId: String
+    val characterId = savedStateHandle.get<String>("characterId")!!
 
     var entry by mutableStateOf<LoadingResult<CharacterDetailsScreen.Entry>>(LoadingResult.loading())
 
@@ -66,10 +68,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    fun initialize(characterId: String) {
-        if (::characterId.isInitialized) return
-        this.characterId = characterId
-
+    init {
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
                 aniListApi.characterDetails(characterId)
@@ -178,7 +177,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
         }
 
         favoritesToggleHelper.initializeTracking(
-            viewModel = this,
+            scope = viewModelScope,
             entry = { snapshotFlow { entry.result } },
             entryToId = { it.character.id.toString() },
             entryToType = { FavoriteType.CHARACTER },

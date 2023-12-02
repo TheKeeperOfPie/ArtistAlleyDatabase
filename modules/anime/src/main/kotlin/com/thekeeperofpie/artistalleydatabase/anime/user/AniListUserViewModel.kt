@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -86,11 +87,12 @@ class AniListUserViewModel @Inject constructor(
     private val settings: AnimeSettings,
     private val markwon: Markwon,
     featureOverrideProvider: FeatureOverrideProvider,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     val screenKey = "${AnimeNavDestinations.USER.id}-${UUID.randomUUID()}"
     private var initialized = false
-    var userId: String? = null
+    val userId = savedStateHandle.get<String>("userId")
 
     var entry by mutableStateOf<AniListUserScreen.Entry?>(null)
     val viewer = aniListApi.authedUser
@@ -134,11 +136,7 @@ class AniListUserViewModel @Inject constructor(
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun initialize(userId: String?) {
-        if (initialized) return
-        initialized = true
-        this.userId = userId
-
+    init {
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(refreshUptimeMillis, aniListApi.authedUser, ::Pair)
                 .collectLatest { (_, viewer) ->

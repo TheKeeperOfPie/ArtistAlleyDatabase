@@ -40,7 +40,7 @@ class MediaCharactersViewModel @Inject constructor(
 
     init {
         favoritesToggleHelper.initializeTracking(
-            viewModel = this,
+            scope = viewModelScope,
             entry = { snapshotFlow { entry.result } },
             entryToId = { it.media.id.toString() },
             entryToType = { it.media.type.toFavoriteType() },

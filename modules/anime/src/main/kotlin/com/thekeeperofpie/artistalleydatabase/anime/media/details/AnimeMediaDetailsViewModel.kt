@@ -151,7 +151,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     init {
         favoritesToggleHelper.initializeTracking(
-            viewModel = this,
+            scope = viewModelScope,
             entry = { snapshotFlow { entry.result } },
             entryToId = { it.mediaId },
             entryToType = { it.media.type.toFavoriteType() },

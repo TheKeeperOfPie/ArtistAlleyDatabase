@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.importing
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,7 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
@@ -35,20 +36,38 @@ object ImportScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        upIconOption: UpIconOption? = UpIconOption.Back {},
-        uriString: String = "",
-        onUriStringEdit: (String) -> Unit = {},
-        onContentUriSelected: (Uri?) -> Unit = {},
-        dryRun: () -> Boolean = { false },
-        onToggleDryRun: (Boolean) -> Unit = {},
-        replaceAll: () -> Boolean = { false },
-        onToggleReplaceAll: (Boolean) -> Unit = {},
-        syncAfter: () -> Boolean = { false },
-        onToggleSyncAfter: (Boolean) -> Unit = {},
-        onClickImport: () -> Unit = {},
-        importProgress: () -> Float? = { 0.5f },
-        errorRes: () -> Pair<Int, Exception?>? = { null },
-        onErrorDismiss: () -> Unit = { },
+        viewModel: ImportViewModel = hiltViewModel(),
+        upIconOption: UpIconOption?,
+    ) {
+        Scaffolding(
+            upIconOption = upIconOption,
+            errorRes = { viewModel.errorResource },
+            onErrorDismiss = { viewModel.errorResource = null },
+        ) {
+            Content(
+                paddingValues = it,
+                uriString = viewModel.importUriString.orEmpty(),
+                onUriStringEdit = { viewModel.importUriString = it },
+                onContentUriSelected = { viewModel.importUriString = it?.toString() },
+                dryRun = { viewModel.dryRun },
+                onToggleDryRun = { viewModel.dryRun = !viewModel.dryRun },
+                replaceAll = { viewModel.replaceAll },
+                onToggleReplaceAll = { viewModel.replaceAll = !viewModel.replaceAll },
+                syncAfter = { viewModel.syncAfter },
+                onToggleSyncAfter = { viewModel.syncAfter = !viewModel.syncAfter },
+                onClickImport = viewModel::onClickImport,
+                importProgress = { viewModel.importProgress },
+            )
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun Scaffolding(
+        upIconOption: UpIconOption?,
+        errorRes: () -> Pair<Int, Exception?>?,
+        onErrorDismiss: () -> Unit,
+        content: @Composable (PaddingValues) -> Unit,
     ) {
         Scaffold(
             topBar = {
@@ -65,25 +84,12 @@ object ImportScreen {
                 )
             },
         ) {
-            Content(
-                paddingValues = it,
-                uriString = uriString,
-                onUriStringEdit = onUriStringEdit,
-                onContentUriSelected = onContentUriSelected,
-                dryRun = dryRun,
-                onToggleDryRun = onToggleDryRun,
-                replaceAll = replaceAll,
-                onToggleReplaceAll = onToggleReplaceAll,
-                syncAfter = syncAfter,
-                onToggleSyncAfter = onToggleSyncAfter,
-                onClickImport = onClickImport,
-                importProgress = importProgress,
-            )
+            content(it)
         }
     }
 
     @Composable
-    private fun Content(
+    fun Content(
         paddingValues: PaddingValues,
         uriString: String,
         onUriStringEdit: (String) -> Unit = {},
@@ -95,7 +101,7 @@ object ImportScreen {
         syncAfter: () -> Boolean = { false },
         onToggleSyncAfter: (Boolean) -> Unit = {},
         onClickImport: () -> Unit = {},
-        importProgress: () -> Float? = { 0.5f }
+        importProgress: () -> Float? = { 0.5f },
     ) {
         Column(
             Modifier
@@ -118,71 +124,23 @@ object ImportScreen {
                     onClickChoose = { launcher.launch("*/*") }
                 )
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onToggleDryRun(!dryRun())
-                        }
-                ) {
-                    Checkbox(
-                        checked = dryRun(),
-                        onCheckedChange = null,
-                        Modifier.padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 8.dp,
-                            bottom = 8.dp
-                        )
-                    )
+                OptionRow(
+                    checked = dryRun,
+                    textRes = R.string.import_dry_run,
+                    onCheckedChange = onToggleDryRun,
+                )
 
-                    Text(stringResource(R.string.import_dry_run))
-                }
+                OptionRow(
+                    checked = replaceAll,
+                    textRes = R.string.import_replace_all,
+                    onCheckedChange = onToggleReplaceAll,
+                )
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onToggleReplaceAll(!replaceAll())
-                        }
-                ) {
-                    Checkbox(
-                        checked = replaceAll(),
-                        onCheckedChange = null,
-                        Modifier.padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 8.dp,
-                            bottom = 8.dp
-                        )
-                    )
-
-                    Text(stringResource(R.string.import_replace_all))
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onToggleSyncAfter(!syncAfter())
-                        }
-                ) {
-                    Checkbox(
-                        checked = syncAfter(),
-                        onCheckedChange = null,
-                        Modifier.padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 8.dp,
-                            bottom = 8.dp
-                        )
-                    )
-
-                    Text(stringResource(R.string.import_sync_after))
-                }
+                OptionRow(
+                    checked = syncAfter,
+                    textRes = R.string.import_sync_after,
+                    onCheckedChange = onToggleSyncAfter,
+                )
 
                 LinearProgressWithIndicator(
                     text = stringResource(R.string.progress),
@@ -193,10 +151,50 @@ object ImportScreen {
             ButtonFooter(onClickImport, R.string.import_button)
         }
     }
+
+    @Composable
+    private fun OptionRow(
+        checked: () -> Boolean,
+        @StringRes textRes: Int,
+        onCheckedChange: (Boolean) -> Unit,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCheckedChange(!checked()) }
+        ) {
+            Checkbox(
+                checked = checked(),
+                onCheckedChange = onCheckedChange,
+            )
+
+            Text(stringResource(textRes))
+        }
+    }
 }
 
 @Preview
 @Composable
 fun Preview() {
-    ImportScreen()
+    ImportScreen.Scaffolding(
+        upIconOption = UpIconOption.Back {},
+        errorRes = { null },
+        onErrorDismiss = { },
+    ) {
+        ImportScreen.Content(
+            paddingValues = it,
+            uriString = "",
+            onUriStringEdit = { },
+            onContentUriSelected = { },
+            dryRun = { true },
+            onToggleDryRun = { },
+            replaceAll = { true },
+            onToggleReplaceAll = { },
+            syncAfter = { false },
+            onToggleSyncAfter = { },
+            onClickImport = { },
+            importProgress = { 0.5f },
+        )
+    }
 }

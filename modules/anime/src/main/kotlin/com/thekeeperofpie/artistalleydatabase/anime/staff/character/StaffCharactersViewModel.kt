@@ -51,7 +51,7 @@ class StaffCharactersViewModel @Inject constructor(
 
     init {
         favoritesToggleHelper.initializeTracking(
-            viewModel = this,
+            scope = viewModelScope,
             entry = { snapshotFlow { entry.result } },
             entryToId = { it.staff.id.toString() },
             entryToType = { FavoriteType.STAFF },

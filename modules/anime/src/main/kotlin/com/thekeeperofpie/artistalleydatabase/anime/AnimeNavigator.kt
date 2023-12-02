@@ -30,7 +30,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
@@ -90,6 +89,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 
 object AnimeNavigator {
@@ -126,7 +126,7 @@ object AnimeNavigator {
                     + "&mediaType={mediaType}"
                     + "&sort={sort}"
                     + "&year={year}",
-            arguments = listOf(
+            arguments = navArguments(
                 "title",
                 "titleRes",
                 "tagId",
@@ -134,11 +134,9 @@ object AnimeNavigator {
                 "mediaType",
                 "sort",
                 "year",
-            ).map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
+            ) {
+                type = NavType.StringType
+                nullable = true
             }
         ) {
             val title = it.arguments?.getString("title")
@@ -191,12 +189,15 @@ object AnimeNavigator {
                     "&userName={userName}" +
                     "&mediaType={mediaType}" +
                     "&mediaListStatus={mediaListStatus}",
-            arguments = listOf("userId", "userName", "mediaType", "mediaListStatus").map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            }
+            arguments = navArguments(
+                "userId",
+                "userName",
+                "mediaType",
+                "mediaListStatus",
+            ) {
+                type = NavType.StringType
+                nullable = true
+            },
         ) {
             val arguments = it.arguments!!
             val userId = arguments.getString("userId")
@@ -283,7 +284,6 @@ object AnimeNavigator {
             val characterId = arguments.getString("characterId")!!
 
             val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>()
-                .apply { initialize(characterId) }
             val headerValues = CharacterHeaderValues(
                 arguments,
                 character = { viewModel.entry.result?.character },
@@ -336,10 +336,7 @@ object AnimeNavigator {
             ) + StaffHeaderValues.navArguments(),
         ) {
             val arguments = it.arguments!!
-            val staffId = arguments.getString("staffId")!!
             val viewModel = hiltViewModel<StaffDetailsViewModel>()
-                .apply { initialize(staffId) }
-
             val headerValues = StaffHeaderValues(
                 arguments,
                 staff = { viewModel.entry?.staff },
@@ -384,16 +381,12 @@ object AnimeNavigator {
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
             ),
-            arguments = listOf(
-                navArgument("userId") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ) + UserHeaderValues.navArguments(),
+            arguments = navArguments("userId") {
+                type = NavType.StringType
+                nullable = true
+            } + UserHeaderValues.navArguments(),
         ) {
-            val userId = it.arguments?.getString("userId")
             val viewModel = hiltViewModel<AniListUserViewModel>()
-                .apply { initialize(userId) }
             val headerValues = UserHeaderValues(it.arguments) { viewModel.entry?.user }
             AniListUserScreen(
                 viewModel = viewModel,
@@ -404,12 +397,10 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(
             route = AnimeNavDestinations.IGNORED.id + "?mediaType={mediaType}",
-            arguments = listOf(
-                navArgument("mediaType") {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            )
+            arguments = navArguments("mediaType") {
+                type = NavType.StringType
+                nullable = true
+            },
         ) {
             AnimeIgnoreScreen(UpIconOption.Back(navHostController))
         }
@@ -422,12 +413,10 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(
             route = "${AnimeNavDestinations.SEASONAL.id}?type={type}",
-            arguments = listOf(
-                navArgument("type") {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            )
+            arguments = navArguments("type") {
+                type = NavType.StringType
+                nullable = true
+            },
         ) {
             SeasonalScreen(upIconOption = UpIconOption.Back(navHostController))
         }
@@ -578,10 +567,7 @@ object AnimeNavigator {
             ) + MediaHeaderValues.navArguments()
         ) {
             val arguments = it.arguments!!
-            val reviewId = arguments.getString("reviewId")!!
-
             val viewModel = hiltViewModel<ReviewDetailsViewModel>()
-                .apply { initialize(reviewId) }
             val headerValues = MediaHeaderValues(
                 arguments = arguments,
                 media = { viewModel.entry?.review?.media },
@@ -609,15 +595,10 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = false
                 },
-                navArgument("name") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument("favorite") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ),
+            ) + navArguments("name", "favorite") {
+                type = NavType.StringType
+                nullable = true
+            },
         ) {
             val arguments = it.arguments!!
             val name = arguments.getString("name")
@@ -654,16 +635,7 @@ object AnimeNavigator {
                 },
             ),
         ) {
-            val arguments = it.arguments!!
-            val activityId = arguments.getString("activityId")!!
-
-            val viewModel =
-                hiltViewModel<ActivityDetailsViewModel>().apply { initialize(activityId) }
-
-            ActivityDetailsScreen(
-                upIconOption = UpIconOption.Back(navHostController),
-                viewModel = viewModel,
-            )
+            ActivityDetailsScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
         navGraphBuilder.composable(route = AnimeNavDestinations.FEATURE_TIERS.id) {

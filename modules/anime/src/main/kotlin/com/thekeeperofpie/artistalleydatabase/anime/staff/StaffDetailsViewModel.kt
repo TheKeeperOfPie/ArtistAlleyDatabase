@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -58,10 +59,11 @@ class StaffDetailsViewModel @Inject constructor(
     private val mediaListStatusController: MediaListStatusController,
     val ignoreController: IgnoreController,
     private val markwon: Markwon,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
-    lateinit var staffId: String
+    val staffId = savedStateHandle.get<String>("staffId")!!
 
     var entry by mutableStateOf<StaffDetailsScreen.Entry?>(null)
     var loading by mutableStateOf(true)
@@ -83,10 +85,7 @@ class StaffDetailsViewModel @Inject constructor(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    fun initialize(staffId: String) {
-        if (::staffId.isInitialized) return
-        this.staffId = staffId
-
+    init {
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
                 val staff = aniListApi.staffDetails(staffId)
@@ -290,7 +289,7 @@ class StaffDetailsViewModel @Inject constructor(
         }
 
         favoritesToggleHelper.initializeTracking(
-            viewModel = this,
+            scope = viewModelScope,
             entry = { snapshotFlow { entry } },
             entryToId = { it.staff.id.toString() },
             entryToType = { FavoriteType.STAFF },

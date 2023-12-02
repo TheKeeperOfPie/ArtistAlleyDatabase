@@ -4,6 +4,7 @@ import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -52,9 +53,10 @@ class ActivityDetailsViewModel @Inject constructor(
     private val replyStatusController: ActivityReplyStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    lateinit var activityId: String
+    val activityId = savedStateHandle.get<String>("activityId")!!
 
     val viewer = aniListApi.authedUser
     val refresh = MutableStateFlow(-1L)
@@ -69,10 +71,7 @@ class ActivityDetailsViewModel @Inject constructor(
     val replyToggleHelper =
         ActivityReplyToggleHelper(aniListApi, replyStatusController, viewModelScope)
 
-    fun initialize(id: String) {
-        if (::activityId.isInitialized) return
-        this.activityId = id
-
+    init {
         viewModelScope.launch(CustomDispatchers.Main) {
             flowForRefreshableContent(refresh, R.string.anime_activity_details_error_loading) {
                 flowFromSuspend {

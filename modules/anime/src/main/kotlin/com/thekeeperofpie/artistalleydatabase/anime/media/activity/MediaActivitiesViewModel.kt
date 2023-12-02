@@ -82,7 +82,7 @@ class MediaActivitiesViewModel @Inject constructor(
 
     init {
         favoritesToggleHelper.initializeTracking(
-            viewModel = this,
+            scope = viewModelScope,
             entry = { snapshotFlow { entry.result }.flowOn(CustomDispatchers.Main) },
             entryToId = { it.data.media.id.toString() },
             entryToType = { it.data.media.type.toFavoriteType() },

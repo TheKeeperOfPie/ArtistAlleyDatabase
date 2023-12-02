@@ -104,9 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationSt
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
-import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
-import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalSubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
@@ -473,55 +471,11 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(AppNavDestinations.IMPORT.id) {
-                            val viewModel = hiltViewModel<ImportViewModel>()
-                            ImportScreen(
-                                upIconOption = navDrawerUpIconOption,
-                                uriString = viewModel.importUriString.orEmpty(),
-                                onUriStringEdit = {
-                                    viewModel.importUriString = it
-                                },
-                                onContentUriSelected = {
-                                    viewModel.importUriString = it?.toString()
-                                },
-                                dryRun = { viewModel.dryRun },
-                                onToggleDryRun = {
-                                    viewModel.dryRun = !viewModel.dryRun
-                                },
-                                replaceAll = { viewModel.replaceAll },
-                                onToggleReplaceAll = {
-                                    viewModel.replaceAll = !viewModel.replaceAll
-                                },
-                                syncAfter = { viewModel.syncAfter },
-                                onToggleSyncAfter = {
-                                    viewModel.syncAfter = !viewModel.syncAfter
-                                },
-                                onClickImport = viewModel::onClickImport,
-                                importProgress = { viewModel.importProgress },
-                                errorRes = { viewModel.errorResource },
-                                onErrorDismiss = {
-                                    viewModel.errorResource = null
-                                }
-                            )
+                            ImportScreen(upIconOption = navDrawerUpIconOption)
                         }
 
                         composable(AppNavDestinations.EXPORT.id) {
-                            val viewModel = hiltViewModel<ExportViewModel>()
-                            ExportScreen(
-                                upIconOption = navDrawerUpIconOption,
-                                uriString = { viewModel.exportUriString.orEmpty() },
-                                onUriStringEdit = {
-                                    viewModel.exportUriString = it
-                                },
-                                onContentUriSelected = {
-                                    viewModel.exportUriString = it?.toString()
-                                },
-                                onClickExport = viewModel::onClickExport,
-                                exportProgress = { viewModel.exportProgress },
-                                errorRes = { viewModel.errorResource },
-                                onErrorDismiss = {
-                                    viewModel.errorResource = null
-                                }
-                            )
+                            ExportScreen(upIconOption = navDrawerUpIconOption)
                         }
 
                         composable(

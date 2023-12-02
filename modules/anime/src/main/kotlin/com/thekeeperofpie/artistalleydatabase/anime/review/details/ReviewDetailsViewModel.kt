@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.ReviewRating
@@ -16,9 +17,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteT
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -30,15 +31,14 @@ import javax.inject.Inject
 class ReviewDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    var reviewId by mutableStateOf("")
-        private set
+    private val reviewId = savedStateHandle.get<String>("reviewId")!!
 
     val viewer = aniListApi.authedUser
     var loading by mutableStateOf(true)
         private set
-
 
     var entry by mutableStateOf<ReviewDetailsScreen.Entry?>(null)
 
@@ -47,46 +47,40 @@ class ReviewDetailsViewModel @Inject constructor(
     var userRating by mutableStateOf(ReviewRating.NO_VOTE)
     private val userRatingUpdates = MutableSharedFlow<ReviewRating>(1, 1)
 
+    // TODO: Refresh isn't exposed to the user
+    private val refresh = MutableStateFlow(-1L)
+
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
     init {
-        viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { reviewId }
-                .flowOn(CustomDispatchers.Main)
+        viewModelScope.launch(CustomDispatchers.Main) {
+            refresh
                 .mapLatest {
-                    aniListApi.reviewDetails(it)
+                    aniListApi.reviewDetails(reviewId)
                         .let(ReviewDetailsScreen::Entry)
                         .let(Result.Companion::success)
                 }
+                .flowOn(CustomDispatchers.IO)
                 .catch { emit(Result.failure(it)) }
                 .collectLatest {
-                    withContext(CustomDispatchers.Main) {
-                        loading = false
-                        if (it.isFailure) {
-                            error = R.string.anime_reviews_error_loading_details to
-                                    it.exceptionOrNull()
-                        } else {
-                            entry = it.getOrThrow().also {
-                                it.review.userRating?.let {
-                                    userRating = it
-                                }
+                    loading = false
+                    if (it.isFailure) {
+                        error = R.string.anime_reviews_error_loading_details to
+                                it.exceptionOrNull()
+                    } else {
+                        entry = it.getOrThrow().also {
+                            it.review.userRating?.let {
+                                userRating = it
                             }
                         }
                     }
                 }
         }
 
-        viewModelScope.launch(CustomDispatchers.IO) {
-            combine(
-                snapshotFlow { reviewId },
-                userRatingUpdates,
-                ::Pair
-            )
-                .flowOn(CustomDispatchers.Main)
-                .mapLatest { (reviewId, rating) ->
-                    Result.success(aniListApi.rateReview(reviewId, rating))
-                }
+        viewModelScope.launch(CustomDispatchers.Main) {
+            userRatingUpdates
+                .mapLatest { Result.success(aniListApi.rateReview(reviewId, it)) }
                 .catch { emit(Result.failure(it)) }
                 .collectLatest {
                     withContext(CustomDispatchers.Main) {
@@ -99,12 +93,8 @@ class ReviewDetailsViewModel @Inject constructor(
                     }
                 }
         }
-    }
-
-    fun initialize(reviewId: String) {
-        this.reviewId = reviewId
         favoritesToggleHelper.initializeTracking(
-            viewModel = this,
+            scope = viewModelScope,
             entryToId = { it.review.media?.id.toString() },
             entry = { snapshotFlow { entry } },
             entryToType = { it.review.media?.type.toFavoriteType() },
