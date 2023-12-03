@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
@@ -66,6 +67,15 @@ interface ScrollStateSaver {
 
     var position: Int
     var offset: Int
+
+    @Composable
+    fun scrollState() = rememberScrollState(
+        initial = position,
+    ).also {
+        DisposableEffect(it) {
+            onDispose { position = it.value }
+        }
+    }
 
     @Composable
     fun lazyListState() = rememberLazyListState(

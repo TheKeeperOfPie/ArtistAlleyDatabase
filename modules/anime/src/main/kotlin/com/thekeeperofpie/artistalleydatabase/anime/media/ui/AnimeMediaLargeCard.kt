@@ -7,6 +7,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -17,8 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -151,32 +149,7 @@ object AnimeMediaLargeCard {
                         )
                     }
 
-                    val description = if (entry == null) {
-                        "Some really long placeholder description for a loading media large card, "
-                            .repeat(3)
-                    } else {
-                        entry.description
-                    }
-
-                    if (description == null) {
-                        Spacer(Modifier.weight(1f))
-                    } else {
-                        CustomHtmlText(
-                            text = description,
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Black),
-                            fontWeight = FontWeight.Black,
-                            overflow = TextOverflow.Ellipsis,
-                            detectTaps = false,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                                .placeholder(
-                                    visible = entry == null,
-                                    highlight = PlaceholderHighlight.shimmer(),
-                                )
-                        )
-                    }
+                    Description(entry = entry)
 
                     Row(verticalAlignment = Alignment.Bottom) {
                         val nextAiringEpisode = entry?.nextAiringEpisode
@@ -212,36 +185,12 @@ object AnimeMediaLargeCard {
                         }
 
                         if (viewer != null && entry != null && showQuickEdit) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(end = 4.dp, bottom = 4.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                            ) {
-                                val editViewModel = hiltViewModel<MediaEditViewModel>()
-                                MediaListQuickEditIconButton(
-                                    viewer = viewer,
-                                    mediaType = entry.type,
-                                    media = entry,
-                                    maxProgress = MediaUtils.maxProgress(
-                                        type = entry.type,
-                                        chapters = entry.chapters,
-                                        episodes = entry.episodes,
-                                        nextAiringEpisode = nextAiringEpisode,
-                                    ),
-                                    maxProgressVolumes = entry.volumes,
-                                    forceListEditIcon = forceListEditIcon,
-                                    onClick = {
-                                        editViewModel.initialize(
-                                            mediaId = entry.mediaId,
-                                            coverImage = entry.image,
-                                            type = entry.type,
-                                            titleRomaji = entry.titleRomaji,
-                                            titleEnglish = entry.titleEnglish,
-                                            titleNative = entry.titleNative,
-                                        )
-                                    },
-                                )
-                            }
+                            MediaQuickEdit(
+                                viewer = viewer,
+                                entry = entry,
+                                nextAiringEpisode = nextAiringEpisode,
+                                forceListEditIcon = forceListEditIcon,
+                            )
                         }
                     }
                 }
@@ -260,14 +209,14 @@ object AnimeMediaLargeCard {
         ) {
             val foregroundColor = MaterialTheme.colorScheme.surface
             var loaded by remember(entry?.mediaId) { mutableStateOf(false) }
-            val alpha by animateFloatAsState(
-                if (loaded) 1f else 0f,
-                label = "AnimeMediaLargeCard banner image alpha",
-            )
             val appTheme = LocalAppTheme.current
             val isLightTheme = appTheme == AppThemeSetting.LIGHT
                     || (appTheme == AppThemeSetting.AUTO && !isSystemInDarkTheme())
             val colorCalculationState = LocalColorCalculationState.current
+            val alpha by animateFloatAsState(
+                if (loaded) 1f else 0f,
+                label = "AnimeMediaLargeCard banner image alpha",
+            )
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.imageBanner ?: entry?.image)
@@ -281,7 +230,6 @@ object AnimeMediaLargeCard {
                     )
                     .build(),
                 contentScale = ContentScale.Crop,
-                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 onSuccess = {
                     loaded = true
                     if (entry != null) {
@@ -363,6 +311,75 @@ object AnimeMediaLargeCard {
                     highlight = PlaceholderHighlight.shimmer(),
                 )
         )
+    }
+
+    @Composable
+    private fun ColumnScope.Description(entry: Entry?) {
+        val description = if (entry == null) {
+            "Some really long placeholder description for a loading media large card, "
+                .repeat(3)
+        } else {
+            entry.description
+        }
+
+        if (description == null) {
+            Spacer(Modifier.weight(1f))
+        } else {
+            CustomHtmlText(
+                text = description,
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Black),
+                fontWeight = FontWeight.Black,
+                overflow = TextOverflow.Ellipsis,
+                detectTaps = false,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .placeholder(
+                        visible = entry == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+        }
+    }
+
+    @Composable
+    private fun MediaQuickEdit(
+        viewer: AniListViewer?,
+        entry: Entry,
+        nextAiringEpisode: Int?,
+        forceListEditIcon: Boolean,
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(end = 4.dp, bottom = 4.dp)
+                .clip(RoundedCornerShape(12.dp))
+        ) {
+            val editViewModel = hiltViewModel<MediaEditViewModel>()
+            MediaListQuickEditIconButton(
+                viewer = viewer,
+                mediaType = entry.type,
+                media = entry,
+                maxProgress = MediaUtils.maxProgress(
+                    type = entry.type,
+                    chapters = entry.chapters,
+                    episodes = entry.episodes,
+                    nextAiringEpisode = nextAiringEpisode,
+                ),
+                maxProgressVolumes = entry.volumes,
+                forceListEditIcon = forceListEditIcon,
+                onClick = {
+                    editViewModel.initialize(
+                        mediaId = entry.mediaId,
+                        coverImage = entry.image,
+                        type = entry.type,
+                        titleRomaji = entry.titleRomaji,
+                        titleEnglish = entry.titleEnglish,
+                        titleNative = entry.titleNative,
+                    )
+                },
+            )
+        }
     }
 
     interface Entry : MediaStatusAware {

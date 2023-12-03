@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -11,6 +12,7 @@ import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,8 +22,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -31,6 +31,7 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -161,7 +162,10 @@ object AnimeHomeScreen {
     private val MEDIA_ROW_IMAGE_HEIGHT = 180.dp
     private val MEDIA_ROW_IMAGE_WIDTH = 120.dp
 
-    object FillOr450 : PageSize {
+    private val LargeMediaPagerContentPadding =
+        PaddingValues(start = 16.dp, end = 16.dp, bottom = 12.dp)
+
+    data object FillOr450 : PageSize {
         override fun Density.calculateMainAxisPageSize(availableSpace: Int, pageSpacing: Int) =
             availableSpace.coerceAtMost(450.dp.roundToPx())
     }
@@ -179,7 +183,7 @@ object AnimeHomeScreen {
             } else {
                 hiltViewModel<AnimeHomeMediaViewModel.Manga>()
             }
-        }
+        },
     ) {
         var selectedIsAnime by rememberSaveable {
             mutableStateOf(viewModel.preferredMediaType == MediaType.ANIME)
@@ -190,12 +194,16 @@ object AnimeHomeScreen {
         val activity = viewModel.activity.collectAsLazyPagingItems()
         val recommendations = viewModel.recommendations.collectAsLazyPagingItems()
         val reviews = mediaViewModel.reviews.collectAsLazyPagingItems()
-        val refreshing = viewModel.newsController.newsDateDescending() == null
-                || activity.loadState.refresh == LoadState.Loading
-                || recommendations.loadState.refresh == LoadState.Loading
-                || reviews.loadState.refresh == LoadState.Loading
-                || mediaViewModel.entry.loading
-                || mediaViewModel.currentMedia.loading
+        val refreshing by remember {
+            derivedStateOf {
+                viewModel.newsController.newsDateDescending() == null
+                        || activity.loadState.refresh == LoadState.Loading
+                        || recommendations.loadState.refresh == LoadState.Loading
+                        || reviews.loadState.refresh == LoadState.Loading
+                        || mediaViewModel.entry.loading
+                        || mediaViewModel.currentMedia.loading
+            }
+        }
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
             onRefresh = {
@@ -314,7 +322,7 @@ object AnimeHomeScreen {
                     rememberCallback(viewModel.activityToggleHelper::toggle)
 
                 Content(
-                    lazyListState = scrollStateSaver.lazyListState(),
+                    scrollState = scrollStateSaver.scrollState(),
                     bottomNavBarPadding = bottomNavigationState?.bottomNavBarPadding() ?: 0.dp,
                     viewer = viewer,
                     news = viewModel.newsController.newsDateDescending(),
@@ -343,7 +351,7 @@ object AnimeHomeScreen {
 
     @Composable
     private fun Content(
-        lazyListState: LazyListState,
+        scrollState: ScrollState,
         bottomNavBarPadding: Dp,
         viewer: AniListViewer?,
         news: ImmutableList<AnimeNewsArticleEntry<*>>?,
@@ -358,21 +366,19 @@ object AnimeHomeScreen {
         selectedItemTracker: SelectedItemTracker,
         reviews: LazyPagingItems<ReviewEntry>,
     ) {
-        val configuration = LocalConfiguration.current
-        val pageSize = remember {
-            PageSize.Fixed(420.coerceAtMost(configuration.screenWidthDp - 32).dp)
-        }
-        LazyColumn(
-            state = lazyListState,
-            contentPadding = PaddingValues(
-                bottom = 16.dp + bottomNavBarPadding
-            ),
-            modifier = Modifier.fillMaxSize()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
                 .testTag("homeColumn")
+                .verticalScroll(scrollState)
         ) {
-            newsRow(data = news, pageSize = pageSize)
+            val configuration = LocalConfiguration.current
+            val pageSize = remember {
+                PageSize.Fixed(420.coerceAtMost(configuration.screenWidthDp - 32).dp)
+            }
+            NewsRow(data = news, pageSize = pageSize)
 
-            activityRow(
+            ActivityRow(
                 viewer = viewer,
                 data = activity,
                 pageSize = pageSize,
@@ -380,14 +386,14 @@ object AnimeHomeScreen {
                 onClickListEdit = onClickListEdit,
             )
 
-            currentMediaRow(
+            CurrentMediaRow(
                 mediaViewModel = mediaViewModel,
                 viewer = viewer,
                 onClickListEdit = onClickListEdit,
                 onClickIncrementProgress = onClickIncrementProgress,
             )
 
-            recommendations(
+            Recommendations(
                 viewModel = viewModel,
                 editViewModel = editViewModel,
                 viewer = viewer,
@@ -395,75 +401,84 @@ object AnimeHomeScreen {
                 pageSize = pageSize,
             )
 
+            val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
+            val contentPadding = PaddingValues(
+                start = 16.dp,
+                end = (screenWidthDp - MEDIA_ROW_IMAGE_WIDTH).let {
+                    it - 16.dp - MEDIA_ROW_IMAGE_WIDTH
+                },
+            )
+            val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
+                .coerceAtLeast(1) + 1
             mediaViewModel.entry.result?.lists?.forEach {
-                mediaRow(
+                MediaRow(
                     data = it,
                     viewer = viewer,
                     onClickListEdit = onClickListEdit,
                     selectedItemTracker = selectedItemTracker,
+                    contentPadding = contentPadding,
+                    placeholderCount = placeholderCount,
                 )
             }
 
-            reviews(
+            Reviews(
                 viewer = viewer,
                 reviews = reviews,
                 pageSize = pageSize,
                 onClickListEdit = onClickListEdit,
             )
 
-            suggestions(
+            Suggestions(
                 mediaViewModel = mediaViewModel,
             )
         }
     }
 
-    private fun LazyListScope.newsRow(
+    @Composable
+    private fun ColumnScope.NewsRow(
         data: ImmutableList<AnimeNewsArticleEntry<*>>?,
         pageSize: PageSize,
     ) {
-        rowHeader(
+        RowHeader(
             titleRes = R.string.anime_news_home_title,
             viewAllRoute = AnimeNavDestinations.NEWS.id
         )
 
         val itemCount = data?.size ?: 3
         if (itemCount == 0) return
-        item("newsRow") {
-            val pagerState = rememberPagerState(pageCount = { itemCount })
-            HorizontalPager(
-                state = pagerState,
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-                pageSpacing = 16.dp,
-                pageSize = pageSize,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier.recomposeHighlighter()
-            ) {
-                AnimeNewsSmallCard(entry = data?.get(it))
-            }
+        val pagerState = rememberPagerState(pageCount = { itemCount })
+        HorizontalPager(
+            state = pagerState,
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+            pageSpacing = 16.dp,
+            pageSize = pageSize,
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier.recomposeHighlighter()
+        ) {
+            AnimeNewsSmallCard(entry = data?.get(it))
         }
     }
 
-    private fun LazyListScope.activityRow(
+    @Composable
+    private fun ColumnScope.ActivityRow(
         viewer: AniListViewer?,
         data: Flow<PagingData<ActivityEntry>>,
         pageSize: PageSize,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
-        rowHeader(
+        RowHeader(
             titleRes = R.string.anime_home_activity_label,
             viewAllRoute = AnimeNavDestinations.ACTIVITY.id
         )
 
-        item("activityRow", "activityRow") {
-            ActivityRow(
-                viewer = viewer,
-                data = data,
-                pageSize = pageSize,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-                onClickListEdit = onClickListEdit,
-            )
-        }
+        this@AnimeHomeScreen.ActivityRow(
+            viewer = viewer,
+            data = data,
+            pageSize = pageSize,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
+        )
     }
 
     @Composable
@@ -546,7 +561,8 @@ object AnimeHomeScreen {
     /**
      * @return true if loading shown
      */
-    private fun LazyListScope.currentMediaRow(
+    @Composable
+    private fun ColumnScope.CurrentMediaRow(
         mediaViewModel: AnimeHomeMediaViewModel,
         viewer: AniListViewer?,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -555,7 +571,7 @@ object AnimeHomeScreen {
         val media = mediaViewModel.currentMedia.result
         if (media != null && media.isEmpty()) return
         val headerTextRes = mediaViewModel.currentHeaderTextRes
-        rowHeader(
+        RowHeader(
             titleRes = headerTextRes,
             viewAllRoute = viewer?.let {
                 AnimeNavDestinations.USER_LIST.id +
@@ -564,15 +580,13 @@ object AnimeHomeScreen {
             }
         )
 
-        item("$headerTextRes-current") {
-            CurrentMediaRow(
-                viewer = viewer,
-                mediaResult = mediaViewModel::currentMedia,
-                currentMediaPreviousSize = mediaViewModel.currentMediaPreviousSize.collectAsState().value,
-                onClickListEdit = onClickListEdit,
-                onClickIncrementProgress = onClickIncrementProgress,
-            )
-        }
+        CurrentMediaRow(
+            viewer = viewer,
+            mediaResult = mediaViewModel::currentMedia,
+            currentMediaPreviousSize = mediaViewModel.currentMediaPreviousSize.collectAsState().value,
+            onClickListEdit = onClickListEdit,
+            onClickIncrementProgress = onClickIncrementProgress,
+        )
     }
 
     @Composable
@@ -609,99 +623,92 @@ object AnimeHomeScreen {
         }
     }
 
-    private fun LazyListScope.rowHeader(
+    @Composable
+    private fun ColumnScope.RowHeader(
         @StringRes titleRes: Int,
         viewAllRoute: String?,
     ) {
-        item("header_$titleRes", "navigationHeader") {
-            NavigationHeader(
-                titleRes = titleRes,
-                viewAllRoute = viewAllRoute,
-                viewAllContentDescriptionTextRes = R.string.anime_home_row_view_all_content_description,
-            )
-        }
+        NavigationHeader(
+            titleRes = titleRes,
+            viewAllRoute = viewAllRoute,
+            viewAllContentDescriptionTextRes = R.string.anime_home_row_view_all_content_description,
+        )
     }
 
-    private fun LazyListScope.mediaRow(
+    @Composable
+    private fun ColumnScope.MediaRow(
         data: AnimeHomeDataEntry.RowData,
         viewer: AniListViewer?,
         onClickListEdit: (MediaNavigationData) -> Unit,
         selectedItemTracker: SelectedItemTracker,
+        contentPadding: PaddingValues,
+        placeholderCount: Int,
     ) {
         val (rowKey, titleRes, entries, viewAllRoute) = data
-        rowHeader(
+        RowHeader(
             titleRes = titleRes,
             viewAllRoute = viewAllRoute
         )
 
-        item(key = "$titleRes-pager", contentType = "mediaRowPager") {
-            val pagerState = rememberPagerState(data = entries, placeholderCount = 3)
-            HorizontalPager(
-                state = pagerState,
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                pageSize = FillOr450,
-                pageSpacing = 8.dp,
-                modifier = Modifier.recomposeHighlighter()
-            ) {
-                val entry = entries?.getOrNull(it)
-                AnimeMediaLargeCard(
-                    screenKey = SCREEN_KEY,
+        val pagerState = rememberPagerState(data = entries, placeholderCount = 3)
+        HorizontalPager(
+            state = pagerState,
+            contentPadding = LargeMediaPagerContentPadding,
+            pageSize = FillOr450,
+            pageSpacing = 8.dp,
+            modifier = Modifier.recomposeHighlighter()
+        ) {
+            val entry = entries?.getOrNull(it)
+            AnimeMediaLargeCard(
+                screenKey = SCREEN_KEY,
+                viewer = viewer,
+                entry = entry,
+            )
+        }
+
+        selectedItemTracker.ScrollEffect(key = rowKey, pagerState = pagerState)
+
+        val listState = rememberLazyListState()
+        val snapLayoutInfoProvider =
+            remember(listState) { SnapLayoutInfoProvider(listState) { _, _, _, _, _ -> 0 } }
+        LazyRow(
+            state = listState,
+            contentPadding = contentPadding,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
+            modifier = Modifier.recomposeHighlighter()
+        ) {
+            itemsIndexed(
+                data = entries,
+                placeholderCount = placeholderCount,
+                key = { _, item -> item.media.id },
+                contentType = { _, _ -> "media" },
+            ) { index, item ->
+                val media = item?.media
+                MediaCard(
+                    media = media,
+                    mediaStatusAware = item,
+                    ignored = item?.ignored ?: false,
                     viewer = viewer,
-                    entry = entry,
+                    selected = remember {
+                        derivedStateOf {
+                            selectedItemTracker.keyToPosition[rowKey]?.second == index
+                        }
+                    }.value,
+                    onClickListEdit = onClickListEdit,
+                    modifier = Modifier.animateItemPlacement()
                 )
             }
 
-            selectedItemTracker.attachPager(key = rowKey, pagerState = pagerState)
-        }
-
-        item(key = "$titleRes-media", contentType = "mediaRowCards") {
-            val listState = rememberLazyListState()
-            val snapLayoutInfoProvider =
-                remember(listState) { SnapLayoutInfoProvider(listState) { _, _, _, _, _ -> 0 } }
-
-            val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
-            val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
-                .coerceAtLeast(1) + 1
-
-            LazyRow(
-                state = listState,
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = (screenWidthDp - MEDIA_ROW_IMAGE_WIDTH).let {
-                        it - 16.dp - MEDIA_ROW_IMAGE_WIDTH
-                    },
-                ),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
-                modifier = Modifier.recomposeHighlighter()
-            ) {
-                itemsIndexed(
-                    data = entries,
-                    placeholderCount = placeholderCount,
-                    key = { _, item -> item.media.id },
-                    contentType = { _, _ -> "media" },
-                ) { index, item ->
-                    MediaCard(
-                        media = item?.media,
-                        mediaStatusAware = item,
-                        ignored = item?.ignored ?: false,
-                        viewer = viewer,
-                        selected = selectedItemTracker.keyToPosition[rowKey]?.second == index,
-                        onClickListEdit = onClickListEdit,
-                        modifier = Modifier.animateItemPlacement()
-                    )
-                }
-
-                item("view_all") {
-                    val navigationCallback = LocalNavigationCallback.current
-                    GenericViewAllCard(onClick = {
-                        navigationCallback.navigate(viewAllRoute)
-                    })
-                }
+            item("view_all") {
+                val navigationCallback = LocalNavigationCallback.current
+                GenericViewAllCard(onClick = {
+                    navigationCallback.navigate(viewAllRoute)
+                })
             }
-
-            selectedItemTracker.attachLazyList(key = rowKey, listState = listState)
         }
+
+        selectedItemTracker.ScrollEffect(key = rowKey, listState = listState)
     }
 
     @Composable
@@ -887,23 +894,12 @@ object AnimeHomeScreen {
             english = media?.title?.english,
             native = media?.title?.native,
         )
-        val onClick = {
-            if (media != null) {
-                navigationCallback.onMediaClick(
-                    mediaId = media.id.toString(),
-                    title = title,
-                    coverImage = media.coverImage?.extraLarge,
-                    imageWidthToHeightRatio = widthToHeightRatio ?: 1f,
-                )
-            }
-        }
-
-        val fullscreenImageHandler = LocalFullscreenImageHandler.current
 
         SharedElement(
             key = "anime_media_${mediaId}_image",
             screenKey = SCREEN_KEY,
         ) {
+            val fullscreenImageHandler = LocalFullscreenImageHandler.current
             ElevatedCard(
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = containerColor,
@@ -912,7 +908,16 @@ object AnimeHomeScreen {
                     .height(MEDIA_ROW_IMAGE_HEIGHT)
                     .widthIn(min = MEDIA_ROW_IMAGE_WIDTH)
                     .combinedClickable(
-                        onClick = onClick,
+                        onClick = {
+                            if (media != null) {
+                                navigationCallback.onMediaClick(
+                                    mediaId = media.id.toString(),
+                                    title = title,
+                                    coverImage = media.coverImage?.extraLarge,
+                                    imageWidthToHeightRatio = widthToHeightRatio ?: 1f,
+                                )
+                            }
+                        },
                         onLongClick = {
                             media?.coverImage?.extraLarge?.let(fullscreenImageHandler::openImage)
                         },
@@ -931,7 +936,7 @@ object AnimeHomeScreen {
                     media = media,
                     mediaStatusAware = mediaStatusAware,
                     viewer = viewer,
-                    allowHardware = colorCalculationState.allowHardware(mediaId),
+                    allowHardware = { colorCalculationState.allowHardware(mediaId) },
                     onClickListEdit = onClickListEdit,
                     textColor = ComposeColorUtils.bestTextColor(containerColor),
                     title = title,
@@ -946,7 +951,7 @@ object AnimeHomeScreen {
         media: HomeMedia?,
         mediaStatusAware: MediaStatusAware?,
         viewer: AniListViewer?,
-        allowHardware: Boolean,
+        allowHardware: @Composable () -> Boolean,
         textColor: Color?,
         title: String?,
         onWidthToHeightChange: (Float) -> Unit,
@@ -967,8 +972,7 @@ object AnimeHomeScreen {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(media?.coverImage?.extraLarge)
-                    .crossfade(true)
-                    .allowHardware(allowHardware)
+                    .allowHardware(allowHardware())
                     .size(width = coilWidth, height = coilHeight)
                     .build(),
                 contentScale = ContentScale.Crop,
@@ -1048,133 +1052,134 @@ object AnimeHomeScreen {
         }
     }
 
-    private fun LazyListScope.recommendations(
+    @Composable
+    private fun ColumnScope.Recommendations(
         viewModel: AnimeHomeViewModel,
         editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
         recommendations: LazyPagingItems<RecommendationEntry>,
         pageSize: PageSize,
     ) {
-        rowHeader(
+        RowHeader(
             titleRes = R.string.anime_recommendations_home_title,
             viewAllRoute = AnimeNavDestinations.RECOMMENDATIONS.id,
         )
 
-        item("recommendationsRow") {
-            val pagerState = rememberPagerState(data = recommendations, placeholderCount = 3)
-            HorizontalPager(
-                state = pagerState,
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-                pageSpacing = 16.dp,
-                pageSize = pageSize,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier.recomposeHighlighter()
-            ) {
-                val entry = recommendations.getOrNull(it)
-                RecommendationCard(
-                    screenKey = SCREEN_KEY,
-                    viewer = viewer,
-                    user = entry?.user,
-                    media = entry?.media,
-                    mediaRecommendation = entry?.mediaRecommendation,
-                    recommendation = entry?.data,
-                    onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
-                    onClickListEdit = editViewModel::initialize,
-                )
-            }
+        val pagerState = rememberPagerState(data = recommendations, placeholderCount = 3)
+        HorizontalPager(
+            state = pagerState,
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+            pageSpacing = 16.dp,
+            pageSize = pageSize,
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier.recomposeHighlighter()
+        ) {
+            val entry = recommendations.getOrNull(it)
+            RecommendationCard(
+                screenKey = SCREEN_KEY,
+                viewer = viewer,
+                user = entry?.user,
+                media = entry?.media,
+                mediaRecommendation = entry?.mediaRecommendation,
+                recommendation = entry?.data,
+                onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
+                onClickListEdit = editViewModel::initialize,
+            )
         }
     }
 
-    private fun LazyListScope.reviews(
+    @Composable
+    private fun ColumnScope.Reviews(
         viewer: AniListViewer?,
         reviews: LazyPagingItems<ReviewEntry>,
         pageSize: PageSize,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
-        rowHeader(
+        RowHeader(
             titleRes = R.string.anime_reviews_home_title,
             viewAllRoute = AnimeNavDestinations.REVIEWS.id,
         )
 
-        item("reviewsRow") {
-            val pagerState = rememberPagerState(data = reviews, placeholderCount = 3)
-            HorizontalPager(
-                state = pagerState,
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-                pageSpacing = 16.dp,
-                pageSize = pageSize,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier.recomposeHighlighter()
+        val pagerState = rememberPagerState(data = reviews, placeholderCount = 3)
+        HorizontalPager(
+            state = pagerState,
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+            pageSpacing = 16.dp,
+            pageSize = pageSize,
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier.recomposeHighlighter()
+        ) {
+            val entry = reviews.getOrNull(it)
+            ReviewCard(
+                screenKey = SCREEN_KEY,
+                viewer = viewer,
+                review = entry?.review,
+                media = entry?.media,
+                onClick = {
+                    if (entry != null) {
+                        it.onReviewClick(
+                            reviewId = entry.review.id.toString(),
+                            media = null,
+                            favorite = null,
+                            imageWidthToHeightRatio = 1f,
+                        )
+                    }
+                },
+                onClickListEdit = onClickListEdit,
+            )
+        }
+    }
+
+    @Composable
+    private fun ColumnScope.Suggestions(
+        mediaViewModel: AnimeHomeMediaViewModel,
+    ) {
+        RowHeader(
+            titleRes = R.string.anime_home_suggestions_header,
+            viewAllRoute = null,
+        )
+
+        val navigationCallback = LocalNavigationCallback.current
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .recomposeHighlighter()
+        ) {
+            items(
+                items = mediaViewModel.suggestions,
+                key = { "${mediaViewModel.mediaType}-suggestion-${it.second}" },
+                contentType = { "suggestion" },
             ) {
-                val entry = reviews.getOrNull(it)
-                ReviewCard(
-                    screenKey = SCREEN_KEY,
-                    viewer = viewer,
-                    review = entry?.review,
-                    media = entry?.media,
-                    onClick = {
-                        if (entry != null) {
-                            it.onReviewClick(
-                                reviewId = entry.review.id.toString(),
-                                media = null,
-                                favorite = null,
-                                imageWidthToHeightRatio = 1f,
-                            )
-                        }
-                    },
-                    onClickListEdit = onClickListEdit,
+                SuggestionChip(
+                    onClick = { navigationCallback.navigate(it.second) },
+                    label = { Text(stringResource(it.first)) },
+                    modifier = Modifier.recomposeHighlighter()
                 )
             }
         }
     }
 
-    private fun LazyListScope.suggestions(
-        mediaViewModel: AnimeHomeMediaViewModel,
-    ) {
-        rowHeader(
-            titleRes = R.string.anime_home_suggestions_header,
-            viewAllRoute = null,
-        )
-
-        item("${mediaViewModel.mediaType}-suggestions") {
-            val navigationCallback = LocalNavigationCallback.current
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .recomposeHighlighter()
-            ) {
-                items(
-                    items = mediaViewModel.suggestions,
-                    key = { "${mediaViewModel.mediaType}-suggestion-${it.second}" },
-                    contentType = { "suggestion" },
-                ) {
-                    SuggestionChip(
-                        onClick = { navigationCallback.navigate(it.second) },
-                        label = { Text(stringResource(it.first)) },
-                        modifier = Modifier.recomposeHighlighter()
-                    )
-                }
-            }
-        }
-    }
-
-    @SuppressLint("ComposableNaming")
     class SelectedItemTracker {
         val keyToPosition = mutableStateMapOf<String, Pair<Boolean, Int>>()
 
         @Composable
-        fun attachPager(key: String, pagerState: PagerState) {
+        fun ScrollEffect(key: String, pagerState: PagerState) {
             val settledPage = pagerState.settledPage
+            val sourceAndPosition by remember { derivedStateOf { keyToPosition[key] } }
             LaunchedEffect(settledPage) {
-                val sourceAndPosition = keyToPosition[key]
-                if (sourceAndPosition == null || sourceAndPosition.second != settledPage) {
+                val currentPage = sourceAndPosition?.second
+                if (currentPage == null || currentPage != settledPage) {
                     keyToPosition[key] = true to settledPage
                 }
             }
 
-            val sourceAndPosition = keyToPosition[key]
+            ScrollEffect(pagerState = pagerState, sourceAndPosition = sourceAndPosition)
+        }
+
+        @Composable
+        private fun ScrollEffect(pagerState: PagerState, sourceAndPosition: Pair<Boolean, Int>?) {
             LaunchedEffect(sourceAndPosition) {
                 if (sourceAndPosition != null) {
                     if (!sourceAndPosition.first) {
@@ -1185,19 +1190,24 @@ object AnimeHomeScreen {
         }
 
         @Composable
-        fun attachLazyList(key: String, listState: LazyListState) {
+        fun ScrollEffect(key: String, listState: LazyListState) {
             val firstItemIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
             val isScrollInProgress = listState.isScrollInProgress
+            val sourceAndPosition by remember { derivedStateOf { keyToPosition[key] } }
             LaunchedEffect(isScrollInProgress, firstItemIndex) {
                 if (!isScrollInProgress) {
-                    val sourceAndPosition = keyToPosition[key]
-                    if (sourceAndPosition == null || sourceAndPosition.second != firstItemIndex) {
+                    val currentIndex = sourceAndPosition?.second
+                    if (currentIndex == null || currentIndex != firstItemIndex) {
                         keyToPosition[key] = false to firstItemIndex
                     }
                 }
             }
 
-            val sourceAndPosition = keyToPosition[key]
+            ScrollEffect(listState = listState, sourceAndPosition = sourceAndPosition)
+        }
+
+        @Composable
+        private fun ScrollEffect(listState: LazyListState, sourceAndPosition: Pair<Boolean, Int>?) {
             LaunchedEffect(sourceAndPosition) {
                 if (sourceAndPosition != null) {
                     if (sourceAndPosition.first) {

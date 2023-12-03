@@ -24,7 +24,7 @@ import com.thekeeperofpie.compose_proxy.BuildConfig
 import kotlinx.coroutines.delay
 import kotlin.math.min
 
-private val FORCE_ENABLE = true
+private val FORCE_ENABLE = false
 
 /**
  * A [Modifier] that draws a border around elements that are recomposing. The border increases in

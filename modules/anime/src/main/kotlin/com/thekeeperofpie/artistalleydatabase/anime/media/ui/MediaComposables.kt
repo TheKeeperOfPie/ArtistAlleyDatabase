@@ -71,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import kotlinx.collections.immutable.ImmutableList
 
 fun <T> LazyListScope.mediaListSection(
@@ -306,6 +307,7 @@ fun MediaTagRow(
                 endOpaque = 32.dp,
                 endTransparent = 16.dp,
             )
+            .recomposeHighlighter()
             .then(modifier)
     ) {
         items(tags, { it.id }) {
@@ -317,6 +319,7 @@ fun MediaTagRow(
                 textStyle = tagTextStyle,
                 modifier = Modifier
                     .height(height)
+                    .recomposeHighlighter()
                     .placeholder(
                         visible = loading,
                         shape = RoundedCornerShape(12.dp),
