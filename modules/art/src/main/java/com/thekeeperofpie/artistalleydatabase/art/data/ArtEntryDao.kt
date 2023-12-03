@@ -14,7 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchQuery
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.yield
 
 @Dao
@@ -66,14 +65,6 @@ interface ArtEntryDao {
         """
     )
     fun getEntriesSize(): Int
-
-    @Query(
-        """
-        SELECT COUNT(*)
-        FROM art_entries
-        """
-    )
-    fun getEntriesSizeFlow(): Flow<Int>
 
     @Transaction
     suspend fun iterateEntries(

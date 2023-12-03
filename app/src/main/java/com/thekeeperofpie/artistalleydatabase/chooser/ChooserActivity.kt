@@ -52,7 +52,6 @@ class ChooserActivity : ComponentActivity() {
                                 val viewModel = hiltViewModel<ChooserViewModel>()
                                 ChooserScreen(
                                     query = { viewModel.query.orEmpty() },
-                                    entriesSize = { viewModel.entriesSize },
                                     onQueryChange = viewModel::onQuery,
                                     // TODO: Migrate to section search
                                     options = { emptyList() },

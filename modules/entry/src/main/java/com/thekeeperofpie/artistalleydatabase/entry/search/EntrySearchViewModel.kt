@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -29,7 +28,6 @@ abstract class EntrySearchViewModel<SearchQuery, GridModel : EntryGridModel> :
     ViewModel(), EntryGridViewModel<GridModel> {
 
     var query by mutableStateOf("")
-    var entriesSize by mutableStateOf(0)
 
     val results = MutableStateFlow(PagingData.empty<GridModel>())
 
@@ -45,12 +43,6 @@ abstract class EntrySearchViewModel<SearchQuery, GridModel : EntryGridModel> :
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (query, options) -> mapQuery(query, options) }
                 .collect(results)
-        }
-
-        viewModelScope.launch(CustomDispatchers.Main) {
-            entriesSize()
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest { entriesSize = it }
         }
     }
 
@@ -78,8 +70,6 @@ abstract class EntrySearchViewModel<SearchQuery, GridModel : EntryGridModel> :
         }
 
     abstract fun mapQuery(query: String, options: SearchQuery): Flow<PagingData<GridModel>>
-
-    abstract fun entriesSize(): Flow<Int>
 
     abstract fun searchOptions(): Flow<SearchQuery>
 }

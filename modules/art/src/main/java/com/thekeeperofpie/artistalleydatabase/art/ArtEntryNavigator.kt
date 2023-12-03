@@ -38,7 +38,6 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 screenKey = ArtNavDestinations.HOME.id,
                 onClickNav = onClickNav,
                 query = { viewModel.query },
-                entriesSize = { viewModel.entriesSize },
                 onQueryChange = viewModel::onQuery,
                 sections = viewModel.sections,
                 entries = { viewModel.results.collectAsLazyPagingItems() },

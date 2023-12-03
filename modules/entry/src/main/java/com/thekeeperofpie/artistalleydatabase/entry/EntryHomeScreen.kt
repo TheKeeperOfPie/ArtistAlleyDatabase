@@ -37,9 +37,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
@@ -47,7 +45,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
-import kotlinx.coroutines.flow.emptyFlow
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -56,27 +53,25 @@ object EntryHomeScreen {
     @Composable
     operator fun <GridModel : EntryGridModel> invoke(
         screenKey: String,
-        onClickNav: () -> Unit = {},
-        query: () -> String = { "" },
-        entriesSize: () -> Int,
-        onQueryChange: (String) -> Unit = {},
+        onClickNav: () -> Unit,
+        query: () -> String,
+        onQueryChange: (String) -> Unit,
         sections: List<EntrySection>,
-        entries: @Composable () -> LazyPagingItems<GridModel> =
-            { emptyFlow<PagingData<GridModel>>().collectAsLazyPagingItems() },
-        selectedItems: () -> Collection<Int> = { emptyList() },
-        onClickEntry: (index: Int, entry: GridModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: GridModel) -> Unit = { _, _ -> },
-        onClickAddFab: () -> Unit = {},
-        onClickClear: () -> Unit = {},
-        onClickEdit: () -> Unit = {},
-        onConfirmDelete: () -> Unit = {},
+        entries: @Composable () -> LazyPagingItems<GridModel>,
+        selectedItems: () -> Collection<Int>,
+        onClickEntry: (index: Int, entry: GridModel) -> Unit,
+        onLongClickEntry: (index: Int, entry: GridModel) -> Unit,
+        onClickAddFab: () -> Unit,
+        onClickClear: () -> Unit,
+        onClickEdit: () -> Unit,
+        onConfirmDelete: () -> Unit,
         onNavigate: (String) -> Unit,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         Chrome(
             onClickNav = onClickNav,
             query = query,
-            entriesSize = entriesSize,
+            entries = entries,
             onQueryChange = onQueryChange,
             showFab = { selectedItems().isEmpty() },
             sections = sections,
@@ -103,7 +98,6 @@ object EntryHomeScreen {
             EntryGrid(
                 imageScreenKey = screenKey,
                 entries = entries,
-                entriesSize = { entries().itemCount.takeIf { query().isNotEmpty() } },
                 selectedItems = selectedItems,
                 onClickEntry = onClickEntry,
                 onLongClickEntry = onLongClickEntry,
@@ -117,14 +111,14 @@ object EntryHomeScreen {
     }
 
     @Composable
-    private fun Chrome(
-        onClickNav: () -> Unit = {},
-        query: () -> String = { "" },
-        entriesSize: () -> Int,
-        onQueryChange: (String) -> Unit = {},
+    private fun <GridModel : EntryGridModel> Chrome(
+        onClickNav: () -> Unit,
+        query: () -> String,
+        entries: @Composable () -> LazyPagingItems<GridModel>,
+        onQueryChange: (String) -> Unit,
         sections: List<EntrySection>,
-        showFab: () -> Boolean = { true },
-        onClickAddFab: () -> Unit = {},
+        showFab: () -> Boolean,
+        onClickAddFab: () -> Unit,
         onNavigate: (String) -> Unit,
         scrollBehavior: TopAppBarScrollBehavior,
         content: @Composable (PaddingValues) -> Unit,
@@ -159,16 +153,11 @@ object EntryHomeScreen {
                                 onQueryChange = onQueryChange,
                                 leadingIcon = { NavMenuIconButton(onClickNav) },
                                 placeholder = {
-                                    val entriesSize = entriesSize()
                                     Text(
-                                        if (entriesSize > 0) {
-                                            stringResource(
-                                                R.string.entry_search_hint_with_entry_count,
-                                                entriesSize(),
-                                            )
-                                        } else {
-                                            stringResource(R.string.entry_search_hint)
-                                        }
+                                        text = stringResource(
+                                            R.string.entry_search_hint_with_entry_count,
+                                            entries().itemCount,
+                                        ),
                                     )
                                 },
                                 trailingIcon = {
@@ -227,7 +216,7 @@ object EntryHomeScreen {
         }
         HorizontalDivider()
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            TextButton(onClick = { sections.forEach {  it.clear() } }) {
+            TextButton(onClick = { sections.forEach { it.clear() } }) {
                 Text(text = stringResource(UtilsStringR.clear))
             }
         }

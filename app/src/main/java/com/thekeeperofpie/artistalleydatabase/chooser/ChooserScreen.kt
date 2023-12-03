@@ -32,9 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
@@ -42,29 +40,26 @@ import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
-import kotlinx.coroutines.flow.emptyFlow
 
 @Suppress("NAME_SHADOWING")
 object ChooserScreen {
 
     @Composable
     operator fun invoke(
-        query: @Composable () -> String = { "" },
-        entriesSize: () -> Int,
-        onQueryChange: (String) -> Unit = {},
-        options: () -> List<EntrySearchOption> = { emptyList() },
-        onOptionChange: (EntrySearchOption) -> Unit = {},
-        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel> =
-            { emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems() },
-        selectedItems: () -> Collection<Int> = { emptyList() },
-        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
-        onClickClear: () -> Unit = {},
-        onClickSelect: () -> Unit = {},
+        query: @Composable () -> String,
+        onQueryChange: (String) -> Unit,
+        options: () -> List<EntrySearchOption>,
+        onOptionChange: (EntrySearchOption) -> Unit,
+        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel>,
+        selectedItems: () -> Collection<Int>,
+        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit,
+        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit,
+        onClickClear: () -> Unit,
+        onClickSelect: () -> Unit,
     ) {
         Chrome(
             query = query,
-            entriesSize = entriesSize,
+            entries = entries,
             onQueryChange = onQueryChange,
             options = options,
             onOptionChange = onOptionChange,
@@ -95,7 +90,7 @@ object ChooserScreen {
     @Composable
     private fun Chrome(
         query: @Composable () -> String = { "" },
-        entriesSize: () -> Int,
+        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel>,
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
         onOptionChange: (EntrySearchOption) -> Unit = {},
@@ -118,16 +113,11 @@ object ChooserScreen {
                     TextField(
                         query(),
                         placeholder = {
-                            val entriesSize = entriesSize()
                             Text(
-                                if (entriesSize > 0) {
-                                    stringResource(
-                                        EntryStringR.entry_search_hint_with_entry_count,
-                                        entriesSize(),
-                                    )
-                                } else {
-                                    stringResource(EntryStringR.entry_search_hint)
-                                }
+                                text = stringResource(
+                                    EntryStringR.entry_search_hint_with_entry_count,
+                                    entries().itemCount,
+                                ),
                             )
                         },
                         onValueChange = onQueryChange,

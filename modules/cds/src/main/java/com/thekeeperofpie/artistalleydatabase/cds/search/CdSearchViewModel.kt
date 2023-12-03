@@ -141,6 +141,4 @@ class CdSearchViewModel @Inject constructor(
                     CdEntryGridModel.buildFromEntry(application, it)
                 }
             }
-
-    override fun entriesSize() = cdEntryDao.getEntriesSizeFlow()
 }

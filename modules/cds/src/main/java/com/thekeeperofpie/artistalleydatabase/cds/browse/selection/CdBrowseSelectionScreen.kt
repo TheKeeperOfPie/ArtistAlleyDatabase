@@ -60,7 +60,6 @@ object CdBrowseSelectionScreen {
                             imageScreenKey = "selection",
                             paddingValues = paddingValues,
                             entries = entries,
-                            entriesSize = { entries().itemCount },
                             selectedItems = selectedItems,
                             onClickEntry = onClickEntry,
                             onLongClickEntry = onLongClickEntry,
