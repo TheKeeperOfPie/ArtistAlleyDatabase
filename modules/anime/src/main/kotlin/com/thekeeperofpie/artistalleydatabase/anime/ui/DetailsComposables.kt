@@ -79,7 +79,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
@@ -331,7 +330,7 @@ internal fun LazyListScope.detailsLoadingOrError(
             AnimeMediaListScreen.Error(
                 errorTextRes = errorResource?.first,
                 exception = errorResource?.second,
-                modifier = Modifier.animateItemPlacementFixed()
+                modifier = Modifier.animateItemPlacement()
             )
         }
     }

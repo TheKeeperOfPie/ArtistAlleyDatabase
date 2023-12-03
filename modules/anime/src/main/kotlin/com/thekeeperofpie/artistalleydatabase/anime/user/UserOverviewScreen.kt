@@ -48,7 +48,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class
@@ -268,7 +267,7 @@ object UserOverviewScreen {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacementFixed()
+                        .animateItemPlacement()
                 ) {
                     Text(
                         text = stringResource(UtilsStringR.view_all),

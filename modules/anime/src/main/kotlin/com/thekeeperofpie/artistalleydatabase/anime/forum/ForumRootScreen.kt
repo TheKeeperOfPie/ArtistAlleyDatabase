@@ -59,7 +59,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.ErrorSnackbar
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
@@ -186,7 +185,7 @@ object ForumRootScreen {
                     // SubcomposeLayout doesn't support fill max width, so use a really large number.
                     // The parent will clamp the actual width so all content still fits on screen.
                     .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 40.dp)
-                    .animateItemPlacementFixed()
+                    .animateItemPlacement()
             ) {
                 val categories = ForumCategoryOption.values()
                 items(items = categories, key = { it.categoryId }, contentType = { "category" }) {
@@ -208,7 +207,7 @@ object ForumRootScreen {
                 titleRes = titleRes,
                 viewAllRoute = viewAllRoute,
                 viewAllContentDescriptionTextRes = R.string.anime_forum_view_all_content_description,
-                modifier = Modifier.animateItemPlacementFixed()
+                modifier = Modifier.animateItemPlacement()
             )
         }
     }
@@ -224,7 +223,7 @@ object ForumRootScreen {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onExpandedChange(!expanded) }
-                    .animateItemPlacementFixed()
+                    .animateItemPlacement()
             ) {
                 Text(
                     text = stringResource(R.string.anime_forum_stickied_header),
@@ -257,7 +256,7 @@ object ForumRootScreen {
                             end = 16.dp,
                             bottom = if (index == stickied.lastIndex) 0.dp else 4.dp
                         )
-                        .animateItemPlacementFixed()
+                        .animateItemPlacement()
                 )
             }
         }
@@ -283,7 +282,7 @@ object ForumRootScreen {
                         end = 16.dp,
                         bottom = if (index == threads.lastIndex) 0.dp else 16.dp
                     )
-                    .animateItemPlacementFixed()
+                    .animateItemPlacement()
             )
         }
     }

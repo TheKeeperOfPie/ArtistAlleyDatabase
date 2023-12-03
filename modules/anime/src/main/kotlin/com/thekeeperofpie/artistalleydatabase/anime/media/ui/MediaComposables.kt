@@ -68,7 +68,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
@@ -109,7 +108,7 @@ fun <T> LazyListScope.mediaListSection(
         },
         onClickListEdit = onClickListEdit,
         modifier = Modifier
-            .animateItemPlacementFixed()
+            .animateItemPlacement()
             .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
     )
 }

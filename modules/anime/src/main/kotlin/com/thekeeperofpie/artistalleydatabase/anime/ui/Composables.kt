@@ -67,7 +67,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
@@ -357,7 +356,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .animateItemPlacementFixed()
+                    .animateItemPlacement()
             ) {
                 Text(
                     text = stringResource(UtilsStringR.view_all),
@@ -387,7 +386,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
-                            .animateItemPlacementFixed()
+                            .animateItemPlacement()
                     ) {
                         Text(
                             text = stringResource(UtilsStringR.show_less),
@@ -405,7 +404,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacementFixed()
+                        .animateItemPlacement()
                 ) {
                     Text(
                         text = stringResource(UtilsStringR.show_more),

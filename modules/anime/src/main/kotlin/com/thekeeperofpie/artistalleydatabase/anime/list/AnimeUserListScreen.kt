@@ -84,7 +84,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
@@ -238,7 +237,7 @@ object AnimeUserListScreen {
                                                     scoreFormat = scoreFormat
                                                         ?: viewer?.scoreFormat,
                                                     modifier = Modifier
-                                                        .animateItemPlacementFixed(),
+                                                        .animateItemPlacement(),
                                                 )
                                             }
                                         }

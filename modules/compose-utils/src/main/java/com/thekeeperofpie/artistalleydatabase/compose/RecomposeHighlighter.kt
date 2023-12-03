@@ -1,3 +1,5 @@
+@file:Suppress("MayBeConstant")
+
 package com.thekeeperofpie.artistalleydatabase.compose
 
 import androidx.compose.runtime.LaunchedEffect
@@ -22,13 +24,15 @@ import com.thekeeperofpie.compose_proxy.BuildConfig
 import kotlinx.coroutines.delay
 import kotlin.math.min
 
+private val FORCE_ENABLE = true
+
 /**
  * A [Modifier] that draws a border around elements that are recomposing. The border increases in
  * size and interpolates from red to green as more recompositions occur before a timeout.
  */
 @Stable
 fun Modifier.recomposeHighlighter(trackTimeout: Boolean = false) =
-    if (!BuildConfig.DEBUG) this else this.then(
+    if (!BuildConfig.DEBUG && !FORCE_ENABLE) this else this.then(
         Modifier.composed(
             inspectorInfo = debugInspectorInfo { name = "recomposeHighlighter" },
         ) {

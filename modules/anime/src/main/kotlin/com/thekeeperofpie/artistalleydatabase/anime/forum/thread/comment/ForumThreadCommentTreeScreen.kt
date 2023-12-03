@@ -67,7 +67,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeight
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.animateItemPlacementFixed
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import kotlinx.coroutines.launch
 
@@ -225,7 +224,7 @@ object ForumThreadCommentTreeScreen {
                             }
 
                             item("divider") {
-                                Column(modifier = Modifier.animateItemPlacementFixed()) {
+                                Column(modifier = Modifier.animateItemPlacement()) {
                                     HorizontalDivider()
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
