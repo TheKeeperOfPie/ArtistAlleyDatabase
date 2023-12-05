@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -1632,7 +1631,6 @@ object AnimeMediaDetailsScreen {
         currentIndex += 4
 
         val songsCount = songsSection?.count(viewer, expandedState.songs) ?: 0
-        Log.d("SongsDebug", "songsCount = $songsCount, songsSection = $songsSection")
         if (songsCount > 0) {
             list += SectionIndexInfo.Section.SONGS to currentIndex
             currentIndex += songsCount
