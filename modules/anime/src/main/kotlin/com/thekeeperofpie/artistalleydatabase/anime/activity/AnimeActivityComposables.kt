@@ -1,8 +1,11 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalFoundationApi::class
+)
 
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
 import android.text.format.DateUtils
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
@@ -37,6 +41,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -61,18 +67,26 @@ import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
+import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import kotlinx.collections.immutable.ImmutableList
 import java.time.Instant
 import java.time.ZoneOffset
+
+object AnimeActivityComposables {
+    const val ACTIVITIES_ABOVE_FOLD = 3
+}
 
 @Composable
 fun ActivityList(
@@ -932,4 +946,79 @@ private fun UserImage(
                 highlight = PlaceholderHighlight.shimmer(),
             )
     )
+}
+
+fun LazyListScope.activitiesSection(
+    screenKey: String,
+    viewer: AniListViewer?,
+    activityTab: AnimeMediaDetailsActivityViewModel.ActivityTab,
+    activities: ImmutableList<AnimeMediaDetailsActivityViewModel.ActivityEntry>?,
+    onActivityTabChange: (AnimeMediaDetailsActivityViewModel.ActivityTab) -> Unit,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
+) {
+    item("activitiesHeader") {
+        val navigationCallback = LocalNavigationCallback.current
+        DetailsSectionHeader(
+            text = stringResource(R.string.anime_media_details_activities_label),
+            modifier = Modifier.clickable { onClickViewAll(navigationCallback) },
+            onClickViewAll = { onClickViewAll(navigationCallback) },
+            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description
+        )
+    }
+
+    if (viewer != null) {
+        item("activitiesTabHeader") {
+            TabRow(
+                selectedTabIndex = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) 0 else 1,
+                modifier = Modifier
+                    .padding(bottom = if (activities.isNullOrEmpty()) 0.dp else 16.dp)
+                    .fillMaxWidth()
+            ) {
+                Tab(
+                    selected = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
+                    onClick = { onActivityTabChange(AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) },
+                    text = {
+                        Text(stringResource(R.string.anime_media_details_activity_following))
+                    },
+                )
+                Tab(
+                    selected = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.GLOBAL,
+                    onClick = { onActivityTabChange(AnimeMediaDetailsActivityViewModel.ActivityTab.GLOBAL) },
+                    text = {
+                        Text(stringResource(R.string.anime_media_details_activity_global))
+                    },
+                )
+            }
+        }
+    }
+
+    listSectionWithoutHeader(
+        titleRes = R.string.anime_media_details_activities_label,
+        values = activities,
+        valueToId = { it.activityId },
+        aboveFold = AnimeActivityComposables.ACTIVITIES_ABOVE_FOLD,
+        hasMoreValues = true,
+        noResultsTextRes = R.string.anime_media_details_activities_no_results,
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        onClickViewAll = onClickViewAll,
+    ) { item, paddingBottom ->
+        ListActivitySmallCard(
+            screenKey = screenKey,
+            viewer = viewer,
+            activity = item.activity,
+            entry = item,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
+            clickable = true,
+            modifier = Modifier
+                .animateItemPlacement()
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+        )
+    }
 }

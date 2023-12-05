@@ -1,8 +1,9 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -78,6 +80,7 @@ import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
@@ -87,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCo
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
@@ -94,6 +98,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.openForceExternal
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import kotlinx.collections.immutable.ImmutableList
+
+object ForumComposables {
+    const val FORUM_THREADS_ABOVE_FOLD = 3
+}
 
 @Composable
 fun ThreadCompactCard(thread: ForumThread, modifier: Modifier = Modifier) {
@@ -1157,5 +1166,36 @@ fun ThreadPageIndicator(
                 )
             )
         }
+    }
+}
+
+fun LazyListScope.forumThreadsSection(
+    viewer: AniListViewer?,
+    forumThreads: ImmutableList<ForumThreadEntry>?,
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
+    onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
+) {
+    listSection(
+        titleRes = R.string.anime_media_details_forum_threads_label,
+        values = forumThreads,
+        valueToId = { it.thread.id.toString() },
+        aboveFold = ForumComposables.FORUM_THREADS_ABOVE_FOLD,
+        hasMoreValues = true,
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        onClickViewAll = onClickViewAll,
+        viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
+    ) { item, paddingBottom ->
+        ThreadSmallCard(
+            viewer = viewer,
+            entry = item,
+            onStatusUpdate = onStatusUpdate,
+            modifier = Modifier
+                .animateItemPlacement()
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+        )
     }
 }

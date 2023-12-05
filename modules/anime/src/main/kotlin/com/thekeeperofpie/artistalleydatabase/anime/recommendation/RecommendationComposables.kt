@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ThumbDown
@@ -30,13 +34,20 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+
+object RecommendationComposables  {
+    const val RECOMMENDATIONS_ABOVE_FOLD = 3
+}
 
 @Composable
 fun RecommendationCard(
@@ -186,5 +197,43 @@ fun RecommendationCard(
                 )
             }
         }
+    }
+}
+
+fun LazyListScope.recommendationsSection(
+    screenKey: String,
+    viewer: AniListViewer?,
+    entry: AnimeMediaDetailsRecommendationsViewModel.RecommendationsEntry?,
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
+    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+    onUserRecommendationRating: (
+        recommendation: RecommendationData,
+        newRating: RecommendationRating,
+    ) -> Unit = { _, _ -> },
+) {
+    listSection(
+        titleRes = R.string.anime_media_details_recommendations_label,
+        values = entry?.recommendations,
+        valueToId = { "anime_media_${it.entry.media.id}" },
+        aboveFold = RecommendationComposables.RECOMMENDATIONS_ABOVE_FOLD,
+        hasMoreValues = entry?.hasMore ?: false,
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        onClickViewAll = onClickViewAll,
+        viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
+    ) { item, paddingBottom ->
+        AnimeMediaListRow(
+            screenKey = screenKey,
+            entry = item.entry,
+            viewer = viewer,
+            onClickListEdit = onClickListEdit,
+            recommendation = item.data,
+            onUserRecommendationRating = onUserRecommendationRating,
+            modifier = Modifier
+                .animateItemPlacement()
+                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+        )
     }
 }

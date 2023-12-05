@@ -1,54 +1,41 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
-import android.view.View
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.PauseCircleOutline
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -67,9 +54,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
@@ -88,10 +72,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -100,17 +81,11 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.util.RepeatModeUtil
-import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.size.Dimension
 import com.anilist.MediaDetails2Query
@@ -121,7 +96,6 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaType
-import com.mxalbert.sharedelements.SharedElement
 import com.neovisionaries.i18n.CountryCode
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -133,16 +107,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.orEmpty
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
-import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
-import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadSmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
@@ -157,16 +123,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusTex
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
-import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
-import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
@@ -180,10 +139,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
@@ -210,12 +167,7 @@ import kotlin.time.Duration.Companion.seconds
 object AnimeMediaDetailsScreen {
 
     private const val RELATIONS_ABOVE_FOLD = 3
-    private const val RECOMMENDATIONS_ABOVE_FOLD = 3
-    private const val SONGS_ABOVE_FOLD = 3
     private const val STREAMING_EPISODES_ABOVE_FOLD = 3
-    private const val REVIEWS_ABOVE_FOLD = 3
-    private const val ACTIVITIES_ABOVE_FOLD = 3
-    private const val FORUM_THREADS_ABOVE_FOLD = 3
 
     // Sorted by most relevant for an anime-first viewer
     val RELATION_SORT_ORDER = listOf(
@@ -240,6 +192,48 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
+        charactersCount: (Entry?) -> Int,
+        charactersSection: LazyListScope.(
+            screenKey: String,
+            entry: Entry,
+            coverImageWidthToHeightRatio: () -> Float,
+        ) -> Unit,
+        staffCount: () -> Int,
+        staffSection: LazyListScope.(screenKey: String) -> Unit,
+        songSectionMetadata: SectionIndexInfo.SectionMetadata?,
+        songsSection: LazyListScope.(
+            screenKey: String,
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+        ) -> Unit,
+        recommendationsSectionMetadata: SectionIndexInfo.SectionMetadata,
+        recommendationsSection: LazyListScope.(
+            screenKey: String,
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+            onClickListEdit: (MediaNavigationData) -> Unit,
+            coverImageWidthToHeightRatio: () -> Float,
+        ) -> Unit,
+        activitiesSectionMetadata: SectionIndexInfo.SectionMetadata,
+        activitiesSection: LazyListScope.(
+            screenKey: String,
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+            onClickListEdit: (MediaNavigationData) -> Unit,
+            coverImageWidthToHeightRatio: () -> Float,
+        ) -> Unit,
+        forumThreadsSectionMetadata: SectionIndexInfo.SectionMetadata,
+        forumThreadsSection: LazyListScope.(
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+        ) -> Unit,
+        reviewsSectionMetadata: SectionIndexInfo.SectionMetadata,
+        reviewsSection: LazyListScope.(
+            screenKey: String,
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+            coverImageWidthToHeightRatio: () -> Float,
+        ) -> Unit,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -250,45 +244,25 @@ object AnimeMediaDetailsScreen {
         var coverImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
-        val coverImageWidthToHeightRatioGetter: () -> Float =
-            rememberLambda { coverImageWidthToHeightRatio }
         var headerTransitionFinished by remember { mutableStateOf(false) }
         val entry = viewModel.entry
         val entry2 = viewModel.entry2
-        val charactersInitial = entry.result?.charactersInitial.orEmpty()
-        val charactersDeferred = viewModel.charactersDeferred.collectAsLazyPagingItems()
-        val charactersDeferredGetter = rememberLambda { charactersDeferred }
-        val staff = viewModel.staff.collectAsLazyPagingItems()
         val expandedState = rememberExpandedState()
-        val animeSongs = viewModel.animeSongs
 
         val viewer by viewModel.viewer.collectAsState()
-        val activities = viewModel.activities
-        val (activityTab, onActivityTabChange) = rememberSaveable(viewer, activities) {
-            mutableStateOf(
-                if (activities?.following.isNullOrEmpty()) {
-                    ActivityTab.GLOBAL
-                } else {
-                    ActivityTab.FOLLOWING
-                }
-            )
-        }
-
         val sectionIndexInfo = buildSectionIndexInfo(
             entry = entry.result,
             entry2 = entry2.result,
-            charactersCount = charactersDeferred.itemCount.coerceAtLeast(charactersInitial.size),
-            staff = staff,
+            charactersCount = charactersCount(entry.result),
+            staffCount = staffCount(),
             expandedState = expandedState,
-            animeSongs = animeSongs,
+            songsSection = songSectionMetadata,
             cdEntries = viewModel.cdEntries,
             viewer = viewer,
-            activities = if (activityTab == ActivityTab.FOLLOWING) {
-                activities?.following
-            } else {
-                activities?.global
-            },
-            forumThreads = viewModel.forumThreads,
+            activitiesSection = activitiesSectionMetadata,
+            recommendationsSection = recommendationsSectionMetadata,
+            forumThreadsSection = forumThreadsSectionMetadata,
+            reviewsSection = reviewsSectionMetadata,
         )
 
         var loadingThresholdPassed by remember { mutableStateOf(false) }
@@ -497,23 +471,30 @@ object AnimeMediaDetailsScreen {
                                 exception = entry.error?.second,
                             )
                         } else if (entry.result != null) {
-                            Content(
-                                scaffoldPadding = scaffoldPadding,
-                                lazyListState = lazyListState,
-                                viewModel = viewModel,
-                                viewer = viewer,
-                                entry = entry.result!!,
-                                entry2Result = entry2,
-                                charactersInitial = charactersInitial,
-                                charactersDeferred = charactersDeferredGetter,
-                                staff = staff,
-                                activityTab = activityTab,
-                                activities = if (activityTab == ActivityTab.FOLLOWING) activities?.following else activities?.global,
-                                onActivityTabChange = onActivityTabChange,
-                                onClickListEdit = onClickListEdit,
-                                expandedState = expandedState,
-                                coverImageWidthToHeightRatio = coverImageWidthToHeightRatioGetter,
-                            )
+                            LazyColumn(
+                                state = lazyListState,
+                                contentPadding = PaddingValues(bottom = 16.dp),
+                                modifier = Modifier
+                                    .padding(scaffoldPadding)
+                                    .testTag("rootColumn")
+                            ) {
+                                content(
+                                    viewModel = viewModel,
+                                    viewer = viewer,
+                                    entry = entry.result!!,
+                                    entry2Result = entry2,
+                                    onClickListEdit = onClickListEdit,
+                                    expandedState = expandedState,
+                                    coverImageWidthToHeightRatio = { coverImageWidthToHeightRatio },
+                                    charactersSection = charactersSection,
+                                    staffSection = staffSection,
+                                    songsSection = songsSection,
+                                    recommendationsSection = recommendationsSection,
+                                    activitiesSection = activitiesSection,
+                                    forumThreadsSection = forumThreadsSection,
+                                    reviewsSection = reviewsSection,
+                                )
+                            }
                         }
                     }
                 }
@@ -527,62 +508,49 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    @Composable
-    private fun Content(
-        scaffoldPadding: PaddingValues,
-        lazyListState: LazyListState,
-        viewModel: AnimeMediaDetailsViewModel,
-        viewer: AniListViewer?,
-        entry: Entry,
-        entry2Result: LoadingResult<Entry2>,
-        charactersInitial: ImmutableList<DetailsCharacter>,
-        charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
-        staff: LazyPagingItems<DetailsStaff>,
-        activityTab: ActivityTab,
-        activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
-        onActivityTabChange: (ActivityTab) -> Unit,
-        onClickListEdit: (MediaNavigationData) -> Unit,
-        expandedState: ExpandedState,
-        coverImageWidthToHeightRatio: () -> Float,
-    ) {
-        LazyColumn(
-            state = lazyListState,
-            contentPadding = PaddingValues(bottom = 16.dp),
-            modifier = Modifier.padding(scaffoldPadding)
-                .testTag("rootColumn")
-        ) {
-            content(
-                viewModel = viewModel,
-                viewer = viewer,
-                entry = entry,
-                entry2Result = entry2Result,
-                charactersInitial = charactersInitial,
-                charactersDeferred = charactersDeferred,
-                staff = staff,
-                activityTab = activityTab,
-                activities = activities,
-                onActivityTabChange = onActivityTabChange,
-                onClickListEdit = onClickListEdit,
-                expandedState = expandedState,
-                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-            )
-        }
-    }
-
     private fun LazyListScope.content(
         viewModel: AnimeMediaDetailsViewModel,
         viewer: AniListViewer?,
         entry: Entry,
         entry2Result: LoadingResult<Entry2>,
-        charactersInitial: ImmutableList<DetailsCharacter>,
-        charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
-        staff: LazyPagingItems<DetailsStaff>,
-        activityTab: ActivityTab,
-        activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
-        onActivityTabChange: (ActivityTab) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
         coverImageWidthToHeightRatio: () -> Float,
         expandedState: ExpandedState,
+        charactersSection: LazyListScope.(
+            screenKey: String,
+            entry: Entry,
+            coverImageWidthToHeightRatio: () -> Float,
+        ) -> Unit,
+        staffSection: LazyListScope.(screenKey: String) -> Unit,
+        songsSection: LazyListScope.(
+            screenKey: String,
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+        ) -> Unit,
+        recommendationsSection: LazyListScope.(
+            screenKey: String,
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+            onClickListEdit: (MediaNavigationData) -> Unit,
+            coverImageWidthToHeightRatio: () -> Float,
+        ) -> Unit,
+        activitiesSection: LazyListScope.(
+            screenKey: String,
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+            onClickListEdit: (MediaNavigationData) -> Unit,
+            coverImageWidthToHeightRatio: () -> Float,
+        ) -> Unit,
+        forumThreadsSection: LazyListScope.(
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+        ) -> Unit,
+        reviewsSection: LazyListScope.(
+            screenKey: String,
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+            coverImageWidthToHeightRatio: () -> Float,
+        ) -> Unit,
     ) {
         val screenKey = viewModel.screenKey
         if (entry.genres.isNotEmpty()) {
@@ -601,17 +569,7 @@ object AnimeMediaDetailsScreen {
             }
         }
 
-        charactersSection(
-            screenKey = screenKey,
-            titleRes = R.string.anime_media_details_characters_label,
-            charactersInitial = charactersInitial,
-            charactersDeferred = charactersDeferred,
-            mediaId = entry.mediaId,
-            media = entry.media,
-            mediaFavorite = viewModel.favoritesToggleHelper.favorite,
-            mediaCoverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-        )
+        charactersSection(screenKey, entry, coverImageWidthToHeightRatio)
 
         relationsSection(
             screenKey = screenKey,
@@ -624,23 +582,14 @@ object AnimeMediaDetailsScreen {
 
         infoSection(entry)
 
-        songsSection(
-            screenKey = screenKey,
-            viewModel = viewModel,
-            songsExpanded = expandedState::songs,
-            onSongsExpandedChange = { expandedState.songs = it },
-        )
+        songsSection(screenKey, expandedState::songs) { expandedState.songs = it }
 
         cdsSection(
             screenKey = screenKey,
             cdEntries = viewModel.cdEntries,
         )
 
-        staffSection(
-            screenKey = screenKey,
-            titleRes = R.string.anime_media_details_staff_label,
-            staffList = staff,
-        )
+        staffSection(screenKey)
 
         val entry2 = entry2Result.result
         if (entry2 != null) {
@@ -697,55 +646,28 @@ object AnimeMediaDetailsScreen {
         }
 
         recommendationsSection(
-            screenKey = screenKey,
-            viewModel = viewModel,
-            viewer = viewer,
-            entry = entry,
-            entry2 = entry2,
-            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-            expanded = expandedState::recommendations,
-            onExpandedChange = { expandedState.recommendations = it },
-            onClickListEdit = onClickListEdit,
+            screenKey,
+            expandedState::recommendations,
+            { expandedState.recommendations = it },
+            onClickListEdit,
+            coverImageWidthToHeightRatio,
         )
 
         activitiesSection(
-            screenKey = screenKey,
-            viewer = viewer,
-            viewModel = viewModel,
-            activityTab = activityTab,
-            activities = activities,
-            onActivityTabChange = onActivityTabChange,
-            expanded = expandedState::activities,
-            onExpandedChange = { expandedState.activities = it },
-            onClickListEdit = onClickListEdit,
-            onClickViewAll = {
-                it.onMediaActivitiesClick(
-                    entry,
-                    activityTab == ActivityTab.FOLLOWING,
-                    viewModel.favoritesToggleHelper.favorite,
-                    coverImageWidthToHeightRatio()
-                )
-            },
+            screenKey,
+            expandedState::activities,
+            { expandedState.activities = it },
+            onClickListEdit,
+            coverImageWidthToHeightRatio,
         )
 
-        forumThreadsSection(
-            viewer = viewer,
-            viewModel = viewModel,
-            expanded = expandedState::forumThreads,
-            onExpandedChange = { expandedState.forumThreads = it },
-            onClickViewAll = {
-                it.onForumMediaCategoryClick(entry.media.title?.userPreferred, entry.mediaId)
-            },
-            onStatusUpdate = viewModel.threadToggleHelper::toggle,
-        )
+        forumThreadsSection(expandedState::forumThreads) { expandedState.forumThreads = it }
 
         reviewsSection(
-            viewModel = viewModel,
-            entry = entry,
-            entry2 = entry2,
-            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-            expanded = expandedState::reviews,
-            onExpandedChange = { expandedState.reviews = it },
+            screenKey,
+            expandedState::reviews,
+            { expandedState.reviews = it },
+            coverImageWidthToHeightRatio,
         )
     }
 
@@ -980,394 +902,6 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.songsSection(
-        screenKey: String,
-        viewModel: AnimeMediaDetailsViewModel,
-        songsExpanded: () -> Boolean,
-        onSongsExpandedChange: (Boolean) -> Unit,
-    ) {
-        val animeSongs = viewModel.animeSongs ?: return
-        listSection(
-            titleRes = R.string.anime_media_details_songs_label,
-            values = animeSongs.entries,
-            valueToId = { it.id },
-            aboveFold = SONGS_ABOVE_FOLD,
-            expanded = songsExpanded,
-            onExpandedChange = onSongsExpandedChange,
-        ) { item, paddingBottom ->
-            AnimeThemeRow(
-                screenKey,
-                viewModel = viewModel,
-                entry = item,
-                modifier = Modifier
-                    .animateItemPlacement()
-                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-            )
-        }
-    }
-
-    @Composable
-    private fun AnimeThemeRow(
-        screenKey: String,
-        viewModel: AnimeMediaDetailsViewModel,
-        entry: AnimeSongEntry,
-        modifier: Modifier = Modifier,
-    ) {
-        val state = viewModel.getAnimeSongState(entry.id)
-        val mediaPlayer = viewModel.mediaPlayer
-        val playingState by mediaPlayer.playingState.collectAsState()
-        val active by remember {
-            derivedStateOf { playingState.first == entry.id }
-        }
-        val playing = active && playingState.second
-
-        ElevatedCard(
-            modifier = Modifier
-                .animateContentSize()
-                .then(modifier),
-        ) {
-            var hidden by remember { mutableStateOf(entry.spoiler && !active) }
-            if (hidden) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clickable { hidden = false }
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Warning,
-                        contentDescription = stringResource(
-                            R.string.anime_media_details_song_spoiler_content_description
-                        ),
-                    )
-
-                    Text(
-                        text = stringResource(R.string.anime_media_details_song_spoiler),
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .weight(1f)
-                    )
-                }
-            } else {
-                // TODO: This doesn't line up perfectly (too much space between label and title),
-                //  consider migrating to ConstraintLayout
-                Column(
-                    modifier = Modifier.clickable {
-                        viewModel.onAnimeSongExpandedToggle(entry.id, !state.expanded())
-                    },
-                ) {
-                    Row {
-                        if (entry.spoiler) {
-                            Icon(
-                                imageVector = Icons.Filled.Warning,
-                                contentDescription = stringResource(
-                                    R.string.anime_media_details_song_spoiler_content_description
-                                ),
-                                modifier = Modifier
-                                    .padding(start = 16.dp, top = 4.dp, bottom = 4.dp)
-                                    .align(Alignment.CenterVertically)
-                            )
-                        }
-
-                        val labelText = when (entry.type) {
-                            AnimeSongEntry.Type.OP -> if (entry.episodes.isNullOrBlank()) {
-                                stringResource(R.string.anime_media_details_song_opening)
-                            } else {
-                                stringResource(
-                                    R.string.anime_media_details_song_opening_episodes,
-                                    entry.episodes,
-                                )
-                            }
-                            AnimeSongEntry.Type.ED -> if (entry.episodes.isNullOrBlank()) {
-                                stringResource(R.string.anime_media_details_song_ending)
-                            } else {
-                                stringResource(
-                                    R.string.anime_media_details_song_ending_episodes,
-                                    entry.episodes,
-                                )
-                            }
-                            null -> null
-                        }
-
-                        Text(
-                            text = labelText.orEmpty(),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.surfaceTint,
-                            modifier = Modifier
-                                .wrapContentHeight()
-                                .align(Alignment.CenterVertically)
-                                .weight(1f)
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
-                        )
-
-                        if (entry.videoUrl != null || entry.audioUrl != null) {
-                            if (!state.expanded()) {
-                                IconButton(
-                                    onClick = { viewModel.onAnimeSongPlayAudioClick(entry.id) },
-                                ) {
-                                    if (playing) {
-                                        Icon(
-                                            imageVector = Icons.Filled.PauseCircleOutline,
-                                            contentDescription = stringResource(
-                                                R.string.anime_media_details_song_pause_content_description
-                                            ),
-                                        )
-                                    } else {
-                                        Icon(
-                                            imageVector = Icons.Filled.PlayCircleOutline,
-                                            contentDescription = stringResource(
-                                                R.string.anime_media_details_song_play_content_description
-                                            ),
-                                        )
-                                    }
-                                }
-                            }
-
-                            if (entry.videoUrl != null) {
-                                TrailingDropdownIconButton(
-                                    expanded = state.expanded(),
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_details_song_expand_content_description
-                                    ),
-                                    onClick = {
-                                        viewModel.onAnimeSongExpandedToggle(
-                                            entry.id,
-                                            !state.expanded(),
-                                        )
-                                    },
-                                )
-                            }
-                        }
-                    }
-
-                    if (state.expanded()) {
-                        Box {
-                            var linkButtonVisible by remember { mutableStateOf(true) }
-                            AndroidView(
-                                factory = {
-                                    @Suppress("UnsafeOptInUsageError")
-                                    PlayerView(it).apply {
-                                        resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
-                                        setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS)
-                                        setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE)
-                                        setControllerVisibilityListener(
-                                            PlayerView.ControllerVisibilityListener {
-                                                linkButtonVisible = it == View.VISIBLE
-                                            }
-                                        )
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .heightIn(min = 180.dp),
-                                update = { it.player = mediaPlayer.player },
-                                onReset = { it.player = null },
-                                onRelease = { it.player = null },
-                            )
-
-                            val uriHandler = LocalUriHandler.current
-                            val alpha by animateFloatAsState(
-                                targetValue = if (linkButtonVisible) 1f else 0f,
-                                label = "Song open link button alpha",
-                            )
-                            IconButton(
-                                onClick = { uriHandler.openUri(entry.link!!) },
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .alpha(alpha)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.OpenInBrowser,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_details_song_open_link_content_description
-                                    ),
-                                )
-                            }
-                        }
-                    } else if (active) {
-                        val progress = mediaPlayer.progress
-                        Slider(
-                            value = progress,
-                            onValueChange = { viewModel.onAnimeSongProgressUpdate(entry.id, it) },
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
-                    }
-
-                    Text(
-                        text = entry.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = if (state.expanded()) 10.dp else 0.dp,
-                                bottom = 10.dp
-                            )
-                    )
-                }
-            }
-
-            if (!hidden) {
-                val uriHandler = LocalUriHandler.current
-                val artists = entry.artists
-                if (artists.isNotEmpty()) {
-                    artists.forEachIndexed { index, artist ->
-                        val isLast = index == artists.lastIndex
-                        Divider()
-                        Row(
-                            modifier = Modifier
-                                .height(IntrinsicSize.Min)
-                                .clickable { uriHandler.openUri(artist.link) }
-                        ) {
-                            val artistImage = artist.image
-                            val characterImage = artist.character?.image
-
-                            @Composable
-                            fun ArtistImage(modifier: Modifier) {
-                                val image = @Composable {
-                                    AsyncImage(
-                                        model = artistImage,
-                                        contentScale = ContentScale.FillHeight,
-                                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                        contentDescription = stringResource(
-                                            if (artist.asCharacter) {
-                                                R.string.anime_media_voice_actor_image
-                                            } else {
-                                                R.string.anime_media_artist_image
-                                            }
-                                        ),
-                                        modifier = modifier
-                                            .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
-                                            .fillMaxHeight()
-                                    )
-                                }
-                                if (artist.aniListId != null) {
-                                    SharedElement(
-                                        key = "anime_staff_${artist.aniListId}_image",
-                                        screenKey = screenKey
-                                    ) {
-                                        image()
-                                    }
-                                } else {
-                                    image()
-                                }
-                            }
-
-                            @Composable
-                            fun CharacterImage(modifier: Modifier) {
-                                val image = @Composable { modifier: Modifier ->
-                                    AsyncImage(
-                                        model = characterImage!!,
-                                        contentScale = ContentScale.FillHeight,
-                                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                        contentDescription = stringResource(
-                                            R.string.anime_character_image_content_description
-                                        ),
-                                        modifier = modifier
-                                            .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
-                                            .fillMaxHeight()
-                                    )
-                                }
-                                if (artist.character?.aniListId != null) {
-                                    SharedElement(
-                                        key = "anime_character_${artist.character.aniListId}_image",
-                                        screenKey = screenKey
-                                    ) {
-                                        image(modifier.clickable {
-                                            // TODO: Use navigation callback
-                                            uriHandler.openUri(artist.character.link)
-                                        })
-                                    }
-                                } else {
-                                    image(modifier)
-                                }
-                            }
-
-                            val firstImage: (@Composable (modifier: Modifier) -> Unit)?
-                            val secondImage: (@Composable (modifier: Modifier) -> Unit)?
-
-                            val asCharacter = artist.asCharacter
-                            if (asCharacter) {
-                                if (characterImage == null) {
-                                    if (artistImage == null) {
-                                        firstImage = null
-                                        secondImage = null
-                                    } else {
-                                        firstImage = { ArtistImage(it) }
-                                        secondImage = null
-                                    }
-                                } else {
-                                    firstImage = { CharacterImage(it) }
-                                    secondImage = { ArtistImage(it) }
-                                }
-                            } else {
-                                firstImage = { ArtistImage(it) }
-                                secondImage = characterImage?.let { { CharacterImage(it) } }
-                            }
-
-                            if (firstImage == null) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .size(width = 44.dp, height = 64.dp)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Person,
-                                        contentDescription = stringResource(
-                                            R.string.anime_media_artist_no_image
-                                        ),
-                                    )
-                                }
-                            } else {
-                                firstImage(Modifier.conditionally(isLast) {
-                                    clip(RoundedCornerShape(bottomStart = 12.dp))
-                                })
-                            }
-
-                            val artistText = if (artist.character == null) {
-                                artist.name
-                            } else if (artist.asCharacter) {
-                                stringResource(
-                                    R.string.anime_media_details_song_artist_as_character,
-                                    artist.character.name(),
-                                    artist.name,
-                                )
-                            } else {
-                                stringResource(
-                                    R.string.anime_media_details_song_artist_with_character,
-                                    artist.name,
-                                    artist.character.name(),
-                                )
-                            }
-
-                            Text(
-                                text = artistText,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Black,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .align(Alignment.CenterVertically)
-                                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                            )
-
-                            if (secondImage != null) {
-                                secondImage(Modifier.conditionally(isLast) {
-                                    clip(RoundedCornerShape(bottomEnd = 12.dp))
-                                })
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private fun LazyListScope.cdsSection(
         screenKey: String,
         cdEntries: List<CdEntryGridModel>,
@@ -1411,49 +945,6 @@ object AnimeMediaDetailsScreen {
                     }
                 }
             }
-        }
-    }
-
-    private fun LazyListScope.recommendationsSection(
-        screenKey: String,
-        viewModel: AnimeMediaDetailsViewModel,
-        viewer: AniListViewer?,
-        entry: Entry,
-        entry2: Entry2?,
-        coverImageWidthToHeightRatio: () -> Float,
-        expanded: () -> Boolean,
-        onExpandedChange: (Boolean) -> Unit,
-        onClickListEdit: (MediaNavigationData) -> Unit,
-    ) {
-        listSection(
-            titleRes = R.string.anime_media_details_recommendations_label,
-            values = entry2?.recommendations,
-            valueToId = { "anime_media_${it.entry.media.id}" },
-            aboveFold = RECOMMENDATIONS_ABOVE_FOLD,
-            hasMoreValues = entry2?.recommendationsHasMore ?: false,
-            expanded = expanded,
-            onExpandedChange = onExpandedChange,
-            onClickViewAll = {
-                it.onMediaRecommendationsClick(
-                    entry,
-                    viewModel.favoritesToggleHelper.favorite,
-                    coverImageWidthToHeightRatio()
-                )
-            },
-            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-        ) { item, paddingBottom ->
-            val entry = item.entry
-            AnimeMediaListRow(
-                screenKey = screenKey,
-                entry = entry,
-                viewer = viewer,
-                onClickListEdit = onClickListEdit,
-                recommendation = item.data,
-                onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
-                modifier = Modifier
-                    .animateItemPlacement()
-                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-            )
         }
     }
 
@@ -1874,158 +1365,6 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.activitiesSection(
-        screenKey: String,
-        viewer: AniListViewer?,
-        activityTab: ActivityTab,
-        activities: ImmutableList<AnimeMediaDetailsViewModel.ActivityEntry>?,
-        onActivityTabChange: (ActivityTab) -> Unit,
-        viewModel: AnimeMediaDetailsViewModel,
-        expanded: () -> Boolean,
-        onExpandedChange: (Boolean) -> Unit,
-        onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
-        onClickListEdit: (MediaNavigationData) -> Unit,
-    ) {
-        item("activitiesHeader") {
-            val navigationCallback = LocalNavigationCallback.current
-            DetailsSectionHeader(
-                text = stringResource(R.string.anime_media_details_activities_label),
-                modifier = Modifier.clickable { onClickViewAll(navigationCallback) },
-                onClickViewAll = { onClickViewAll(navigationCallback) },
-                viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description
-            )
-        }
-
-        if (viewer != null) {
-            item("activitiesTabHeader") {
-                TabRow(
-                    selectedTabIndex = if (activityTab == ActivityTab.FOLLOWING) 0 else 1,
-                    modifier = Modifier
-                        .padding(bottom = if (activities.isNullOrEmpty()) 0.dp else 16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Tab(
-                        selected = activityTab == ActivityTab.FOLLOWING,
-                        onClick = { onActivityTabChange(ActivityTab.FOLLOWING) },
-                        text = {
-                            Text(stringResource(R.string.anime_media_details_activity_following))
-                        },
-                    )
-                    Tab(
-                        selected = activityTab == ActivityTab.GLOBAL,
-                        onClick = { onActivityTabChange(ActivityTab.GLOBAL) },
-                        text = {
-                            Text(stringResource(R.string.anime_media_details_activity_global))
-                        },
-                    )
-                }
-            }
-        }
-
-        listSectionWithoutHeader(
-            titleRes = R.string.anime_media_details_activities_label,
-            values = activities,
-            valueToId = { it.activityId },
-            aboveFold = ACTIVITIES_ABOVE_FOLD,
-            hasMoreValues = true,
-            noResultsTextRes = R.string.anime_media_details_activities_no_results,
-            expanded = expanded,
-            onExpandedChange = onExpandedChange,
-            onClickViewAll = onClickViewAll,
-        ) { item, paddingBottom ->
-            ListActivitySmallCard(
-                screenKey = screenKey,
-                viewer = viewer,
-                activity = item.activity,
-                entry = item,
-                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                onClickListEdit = onClickListEdit,
-                clickable = true,
-                modifier = Modifier
-                    .animateItemPlacement()
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-            )
-        }
-    }
-
-    private fun LazyListScope.forumThreadsSection(
-        viewer: AniListViewer?,
-        viewModel: AnimeMediaDetailsViewModel,
-        expanded: () -> Boolean,
-        onExpandedChange: (Boolean) -> Unit,
-        onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
-        onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
-    ) {
-        listSection(
-            titleRes = R.string.anime_media_details_forum_threads_label,
-            values = viewModel.forumThreads,
-            valueToId = { it.thread.id.toString() },
-            aboveFold = FORUM_THREADS_ABOVE_FOLD,
-            hasMoreValues = true,
-            expanded = expanded,
-            onExpandedChange = onExpandedChange,
-            onClickViewAll = onClickViewAll,
-            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-        ) { item, paddingBottom ->
-            ThreadSmallCard(
-                viewer = viewer,
-                entry = item,
-                onStatusUpdate = onStatusUpdate,
-                modifier = Modifier
-                    .animateItemPlacement()
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-            )
-        }
-    }
-
-    private fun LazyListScope.reviewsSection(
-        viewModel: AnimeMediaDetailsViewModel,
-        entry: Entry,
-        entry2: Entry2?,
-        coverImageWidthToHeightRatio: () -> Float,
-        expanded: () -> Boolean,
-        onExpandedChange: (Boolean) -> Unit,
-    ) {
-        val reviews = entry2?.reviews
-        if (reviews != null && reviews.isEmpty()) return
-        listSection(
-            titleRes = R.string.anime_media_details_reviews_label,
-            values = reviews,
-            valueToId = { it.id.toString() },
-            aboveFold = REVIEWS_ABOVE_FOLD,
-            hasMoreValues = entry2?.reviewsHasMore ?: false,
-            expanded = expanded,
-            onExpandedChange = onExpandedChange,
-            onClickViewAll = {
-                it.onMediaReviewsClick(
-                    entry,
-                    viewModel.favoritesToggleHelper.favorite,
-                    coverImageWidthToHeightRatio(),
-                )
-            },
-            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-        ) { item, paddingBottom ->
-            val navigationCallback = LocalNavigationCallback.current
-            ReviewSmallCard(
-                screenKey = viewModel.screenKey,
-                review = item,
-                onClick = {
-                    navigationCallback.onReviewClick(
-                        reviewId = item.id.toString(),
-                        media = entry.media,
-                        viewModel.favoritesToggleHelper.favorite,
-                        imageWidthToHeightRatio = coverImageWidthToHeightRatio()
-                    )
-                },
-                modifier = Modifier
-                    .animateItemPlacement()
-                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-            )
-        }
-    }
-
     @Immutable
     data class Entry(
         val mediaId: String,
@@ -2033,10 +1372,6 @@ object AnimeMediaDetailsScreen {
         val relations: ImmutableList<Relation>,
         val description: StableSpanned?,
     ) {
-        val charactersInitial =
-            CharacterUtils.toDetailsCharacters(media.characters?.edges?.filterNotNull().orEmpty())
-                .toImmutableList()
-
         val id = EntryId("media", mediaId)
         val titlesUnique = media.title
             ?.run { listOfNotNull(romaji, english, native) }
@@ -2094,10 +1429,7 @@ object AnimeMediaDetailsScreen {
     data class Entry2(
         val mediaId: String,
         val media: MediaDetails2Query.Data.Media,
-        val recommendations: ImmutableList<Recommendation>,
     ) {
-        val recommendationsHasMore = media.recommendations?.pageInfo?.hasNextPage ?: true
-
         val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
 
         private val links = media.externalLinks?.filterNotNull()?.mapNotNull {
@@ -2155,17 +1487,8 @@ object AnimeMediaDetailsScreen {
             ?.sortedBy { it.score }
             .orEmpty()
 
-        val reviews = media.reviews?.nodes?.filterNotNull()?.toImmutableList().orEmpty()
-        val reviewsHasMore = media.reviews?.pageInfo?.hasNextPage ?: true
-
         val streamingEpisodes =
             media.streamingEpisodes?.filterNotNull()?.toImmutableList().orEmpty()
-
-        data class Recommendation(
-            val id: String,
-            val data: RecommendationData,
-            val entry: MediaPreviewEntry,
-        )
 
         data class Link(
             val id: String,
@@ -2250,24 +1573,27 @@ object AnimeMediaDetailsScreen {
         entry: Entry?,
         entry2: Entry2?,
         charactersCount: Int,
-        staff: LazyPagingItems<DetailsStaff>,
+        staffCount: Int,
         expandedState: ExpandedState,
-        animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
+        songsSection: SectionIndexInfo.SectionMetadata?,
         cdEntries: List<CdEntryGridModel>,
         viewer: AniListViewer?,
-        activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
-        forumThreads: List<ForumThreadEntry>?,
+        activitiesSection: SectionIndexInfo.SectionMetadata?,
+        recommendationsSection: SectionIndexInfo.SectionMetadata?,
+        forumThreadsSection: SectionIndexInfo.SectionMetadata?,
+        reviewsSection: SectionIndexInfo.SectionMetadata?,
     ) = remember(
         entry,
         entry2,
         charactersCount,
-        staff.itemCount,
+        staffCount,
         expandedState.allValues(),
-        animeSongs,
+        songsSection,
         cdEntries,
         viewer,
-        activities,
-        forumThreads,
+        activitiesSection,
+        forumThreadsSection,
+        reviewsSection,
     ) {
         if (entry == null) return@remember SectionIndexInfo(emptyList())
         val list = mutableListOf<Pair<SectionIndexInfo.Section, Int>>()
@@ -2305,14 +1631,11 @@ object AnimeMediaDetailsScreen {
         list += SectionIndexInfo.Section.INFO to currentIndex
         currentIndex += 4
 
-        if (animeSongs != null && animeSongs.entries.isNotEmpty()) {
+        val songsCount = songsSection?.count(viewer, expandedState.songs) ?: 0
+        Log.d("SongsDebug", "songsCount = $songsCount, songsSection = $songsSection")
+        if (songsCount > 0) {
             list += SectionIndexInfo.Section.SONGS to currentIndex
-            runListSection(
-                size = animeSongs.entries.size,
-                aboveFold = SONGS_ABOVE_FOLD,
-                expanded = expandedState.songs,
-                hasMore = false,
-            )
+            currentIndex += songsCount
         }
 
         if (cdEntries.isNotEmpty()) {
@@ -2320,7 +1643,7 @@ object AnimeMediaDetailsScreen {
             currentIndex += 2
         }
 
-        if (staff.itemCount > 0) {
+        if (staffCount > 0) {
             list += SectionIndexInfo.Section.STAFF to currentIndex
             currentIndex += 2
         }
@@ -2378,56 +1701,36 @@ object AnimeMediaDetailsScreen {
             }
         }
 
-        val recommendations = entry2?.recommendations
-        if (!recommendations.isNullOrEmpty()) {
+
+        val recommendationsCount =
+            recommendationsSection?.count(viewer, expandedState.recommendations) ?: 0
+        if (recommendationsCount > 0) {
             list += SectionIndexInfo.Section.RECOMMENDATIONS to currentIndex
-            runListSection(
-                size = recommendations.size,
-                aboveFold = RECOMMENDATIONS_ABOVE_FOLD,
-                expanded = expandedState.recommendations,
-                hasMore = entry2.recommendationsHasMore,
-            )
+            currentIndex += recommendationsCount
         }
 
-        if (!activities.isNullOrEmpty()) {
+        val activitiesCount = activitiesSection?.count(viewer, expandedState.activities) ?: 0
+        if (activitiesCount > 0) {
             list += SectionIndexInfo.Section.ACTIVITIES to currentIndex
-            // Add one for tab row, only shown if there's a viewer
-            if (viewer != null) {
-                currentIndex++
-            }
-            runListSection(
-                size = activities.size,
-                aboveFold = ACTIVITIES_ABOVE_FOLD,
-                expanded = expandedState.activities,
-                hasMore = true,
-            )
+            currentIndex += activitiesCount
         }
 
-        if (!forumThreads.isNullOrEmpty()) {
+        val forumThreadsCount = forumThreadsSection?.count(viewer, expandedState.forumThreads) ?: 0
+        if (forumThreadsCount > 0) {
             list += SectionIndexInfo.Section.FORUM_THREADS to currentIndex
-            runListSection(
-                size = forumThreads.size,
-                aboveFold = FORUM_THREADS_ABOVE_FOLD,
-                expanded = expandedState.forumThreads,
-                hasMore = true,
-            )
+            currentIndex += forumThreadsCount
         }
 
-        val reviews = entry2?.reviews
-        if (!reviews.isNullOrEmpty()) {
+        val reviewsCount = reviewsSection?.count(viewer, expandedState.reviews) ?: 0
+        if (reviewsCount > 0) {
             list += SectionIndexInfo.Section.REVIEWS to currentIndex
-            runListSection(
-                size = reviews.size,
-                aboveFold = REVIEWS_ABOVE_FOLD,
-                expanded = expandedState.reviews,
-                hasMore = entry2.reviewsHasMore,
-            )
+            currentIndex += reviewsCount
         }
 
         SectionIndexInfo(list)
     }
 
-    private data class SectionIndexInfo(val sections: List<Pair<Section, Int>>) {
+    data class SectionIndexInfo(val sections: List<Pair<Section, Int>>) {
 
         enum class Section(@StringRes val titleRes: Int) {
             CHARACTERS(R.string.anime_media_details_characters_label),
@@ -2446,9 +1749,36 @@ object AnimeMediaDetailsScreen {
             ACTIVITIES(R.string.anime_media_details_activities_label),
             FORUM_THREADS(R.string.anime_media_details_forum_threads_label),
         }
-    }
 
-    private enum class ActivityTab {
-        FOLLOWING, GLOBAL
+        sealed interface SectionMetadata {
+            abstract fun count(viewer: AniListViewer?, expanded: Boolean): Int
+
+            data class ListSection<T>(
+                val items: List<T>?,
+                val aboveFold: Int,
+                val hasMore: Boolean,
+                val addOneForViewer: Boolean = false,
+            ) : SectionMetadata {
+                override fun count(viewer: AniListViewer?, expanded: Boolean): Int {
+                    if (items != null && items.isEmpty()) return 0
+                    val size = items?.size ?: 0
+                    var count = 1
+                    if (addOneForViewer && viewer != null) {
+                        count++
+                    }
+                    count += size.coerceAtMost(aboveFold)
+
+                    if (size > aboveFold) {
+                        if (expanded) {
+                            count += size - aboveFold
+                        }
+                        count += 1
+                    } else if (hasMore) {
+                        count += 1
+                    }
+                    return count
+                }
+            }
+        }
     }
 }

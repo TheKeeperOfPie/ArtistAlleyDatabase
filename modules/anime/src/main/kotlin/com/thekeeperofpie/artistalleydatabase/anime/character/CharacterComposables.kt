@@ -85,7 +85,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun CharacterSmallCard(
@@ -262,7 +261,7 @@ fun LazyListScope.charactersSection(
     mediaId: String,
     media: MediaHeaderData?,
     mediaFavorite: Boolean?,
-    charactersInitial: ImmutableList<DetailsCharacter>,
+    charactersInitial: List<DetailsCharacter>,
     charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
     mediaCoverImageWidthToHeightRatio: () -> Float,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
@@ -315,7 +314,7 @@ private fun CharactersSection(
 @Composable
 private fun CharactersSection(
     screenKey: String,
-    charactersInitial: ImmutableList<DetailsCharacter>,
+    charactersInitial: List<DetailsCharacter>,
     charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
 ) {
     LazyRow(

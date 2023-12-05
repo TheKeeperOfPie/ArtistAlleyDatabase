@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.review
 
 import android.text.format.DateUtils
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +12,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -34,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.anilist.MediaDetails2Query
 import com.anilist.fragment.MediaAndReviewsReview
 import com.anilist.fragment.MediaNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
@@ -42,11 +47,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import java.time.Instant
 import java.time.ZoneOffset
+
+object ReviewComposables  {
+    const val REVIEWS_ABOVE_FOLD = 3
+}
 
 @Composable
 fun ReviewSmallCard(
@@ -293,5 +303,37 @@ fun ReviewRatingIconsSection(
                 )
             }
         }
+    }
+}
+
+fun LazyListScope.reviewsSection(
+    screenKey: String,
+    entry: AnimeMediaDetailsReviewsViewModel.ReviewsEntry?,
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+    onReviewClick: (AnimeNavigator.NavigationCallback, MediaDetails2Query.Data.Media.Reviews.Node) -> Unit,
+) {
+    if (entry != null && entry.reviews.isEmpty()) return
+    listSection(
+        titleRes = R.string.anime_media_details_reviews_label,
+        values = entry?.reviews,
+        valueToId = { it.id.toString() },
+        aboveFold = ReviewComposables.REVIEWS_ABOVE_FOLD,
+        hasMoreValues = entry?.hasMore ?: false,
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        onClickViewAll = onClickViewAll,
+        viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
+    ) { item, paddingBottom ->
+        val navigationCallback = LocalNavigationCallback.current
+        ReviewSmallCard(
+            screenKey = screenKey,
+            review = item,
+            onClick = { onReviewClick(it, item) },
+            modifier = Modifier
+                .animateItemPlacement()
+                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+        )
     }
 }

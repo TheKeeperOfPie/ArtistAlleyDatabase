@@ -2,6 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -14,6 +18,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.fragment.CharacterHeaderData
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaHeaderData
@@ -28,15 +33,23 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
+import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.activity.activitiesSection
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.forum.AnimeForumThreadsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumComposables
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchScreen
+import com.thekeeperofpie.artistalleydatabase.anime.forum.forumThreadsSection
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumThreadCommentTreeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
@@ -55,23 +68,33 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.AnimeMediaDetailsRecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationComposables
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.recommendationsSection
+import com.thekeeperofpie.artistalleydatabase.anime.review.AnimeMediaDetailsReviewsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewComposables
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.review.reviewsSection
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
+import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
+import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.staff.AnimeStaffViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
@@ -238,27 +261,209 @@ object AnimeNavigator {
                 }
             ) + MediaHeaderValues.navArguments()
         ) {
-            val viewModel = hiltViewModel<AnimeMediaDetailsViewModel>()
+            val mediaDetailsViewModel = hiltViewModel<AnimeMediaDetailsViewModel>()
             val headerValues = MediaHeaderValues(
                 arguments = it.arguments!!,
-                media = { viewModel.entry.result?.media },
-                favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
+                media = { mediaDetailsViewModel.entry.result?.media },
+                favoriteUpdate = { mediaDetailsViewModel.favoritesToggleHelper.favorite },
             )
 
+            val charactersViewModel = hiltViewModel<AnimeCharactersViewModel>()
+                .apply { initialize(mediaDetailsViewModel) }
+            val charactersDeferred =
+                charactersViewModel.charactersDeferred.collectAsLazyPagingItems()
+
+            val staffViewModel = hiltViewModel<AnimeStaffViewModel>()
+                .apply { initialize(mediaDetailsViewModel) }
+            val staff = staffViewModel.staff.collectAsLazyPagingItems()
+
+            val songsViewModel = hiltViewModel<AnimeSongsViewModel>()
+                .apply { initialize(mediaDetailsViewModel) }
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
-                lifecycleOwner.lifecycle.addObserver(viewModel)
-                onDispose { lifecycleOwner.lifecycle.removeObserver(viewModel) }
+                lifecycleOwner.lifecycle.addObserver(songsViewModel)
+                onDispose { lifecycleOwner.lifecycle.removeObserver(songsViewModel) }
             }
 
-            DisposableEffect(LocalLifecycleOwner.current) {
-                onDispose { viewModel.animeSongsCollapseAll() }
+            DisposableEffect(lifecycleOwner) {
+                onDispose { songsViewModel.animeSongsCollapseAll() }
             }
 
+            val viewer by mediaDetailsViewModel.viewer.collectAsState()
+
+            val recommendationsViewModel = hiltViewModel<AnimeMediaDetailsRecommendationsViewModel>()
+                .apply { initialize(mediaDetailsViewModel) }
+
+            val activitiesViewModel = hiltViewModel<AnimeMediaDetailsActivityViewModel>()
+                .apply { initialize(mediaDetailsViewModel) }
+            val activities = activitiesViewModel.activities
+            val (activityTab, onActivityTabChange) = rememberSaveable(viewer, activities) {
+                mutableStateOf(
+                    if (activities?.following.isNullOrEmpty()) {
+                        AnimeMediaDetailsActivityViewModel.ActivityTab.GLOBAL
+                    } else {
+                        AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING
+                    }
+                )
+            }
+
+            val forumThreadsViewModel = hiltViewModel<AnimeForumThreadsViewModel>()
+                .apply { initialize(mediaDetailsViewModel) }
+
+            val reviewsViewModel = hiltViewModel<AnimeMediaDetailsReviewsViewModel>()
+                .apply { initialize(mediaDetailsViewModel) }
             AnimeMediaDetailsScreen(
-                viewModel = viewModel,
+                viewModel = mediaDetailsViewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
+                charactersCount = {
+                    charactersDeferred.itemCount
+                        .coerceAtLeast(charactersViewModel.charactersInitial.size)
+                },
+                charactersSection = { screenKey, entry, coverImageWidthToHeightRatio ->
+                    charactersSection(
+                        screenKey = screenKey,
+                        titleRes = R.string.anime_media_details_characters_label,
+                        charactersInitial = charactersViewModel.charactersInitial,
+                        charactersDeferred = { charactersDeferred },
+                        mediaId = entry.mediaId,
+                        media = entry.media,
+                        mediaFavorite = mediaDetailsViewModel.favoritesToggleHelper.favorite,
+                        mediaCoverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                        viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
+                    )
+                },
+                staffCount = { staff.itemCount },
+                staffSection = {
+                    staffSection(
+                        screenKey = it,
+                        titleRes = R.string.anime_media_details_staff_label,
+                        staffList = staff,
+                    )
+                },
+                songSectionMetadata = if (!songsViewModel.enabled) null else AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
+                    items = songsViewModel.animeSongs?.entries,
+                    aboveFold = AnimeSongComposables.SONGS_ABOVE_FOLD,
+                    hasMore = false,
+                ),
+                songsSection = { screenKey, expanded, onExpandedChange ->
+                    AnimeSongComposables.songsSection(
+                        screenKey = screenKey,
+                        viewModel = songsViewModel,
+                        songsExpanded = expanded,
+                        onSongsExpandedChange = onExpandedChange,
+                    )
+                },
+                recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
+                    items = recommendationsViewModel.recommendations?.recommendations,
+                    aboveFold = RecommendationComposables.RECOMMENDATIONS_ABOVE_FOLD,
+                    hasMore = recommendationsViewModel.recommendations?.hasMore ?: true,
+                ),
+                recommendationsSection = { screenKey, expanded, onExpandedChange, onClickListEdit, coverImageWidthToHeightRatio ->
+                    val entry = recommendationsViewModel.recommendations
+                    recommendationsSection(
+                        screenKey = screenKey,
+                        viewer = viewer,
+                        entry = entry,
+                        expanded = expanded,
+                        onExpandedChange = onExpandedChange,
+                        onClickListEdit = onClickListEdit,
+                        onClickViewAll = {
+                            it.onMediaRecommendationsClick(
+                                mediaDetailsViewModel.mediaId,
+                                mediaDetailsViewModel.entry.result?.media,
+                                mediaDetailsViewModel.favoritesToggleHelper.favorite,
+                                coverImageWidthToHeightRatio(),
+                            )
+                        },
+                        onUserRecommendationRating = recommendationsViewModel.recommendationToggleHelper::toggle,
+                    )
+                },
+                activitiesSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
+                    items = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
+                        activities?.following
+                    } else {
+                        activities?.global
+                    },
+                    aboveFold = AnimeActivityComposables.ACTIVITIES_ABOVE_FOLD,
+                    hasMore = true,
+                    addOneForViewer = true,
+                ),
+                activitiesSection = { screenKey, expanded, onExpandedChanged, onClickListEdit, coverImageWidthToHeightRatio ->
+                    activitiesSection(
+                        screenKey = screenKey,
+                        viewer = viewer,
+                        onActivityStatusUpdate = activitiesViewModel.activityToggleHelper::toggle,
+                        activityTab = activityTab,
+                        activities = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
+                            activities?.following
+                        } else {
+                            activities?.global
+                        },
+                        onActivityTabChange = onActivityTabChange,
+                        expanded = expanded,
+                        onExpandedChange = onExpandedChanged,
+                        onClickListEdit = onClickListEdit,
+                        onClickViewAll = {
+                            val entry = mediaDetailsViewModel.entry.result
+                            if (entry != null) {
+                                it.onMediaActivitiesClick(
+                                    entry,
+                                    activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
+                                    mediaDetailsViewModel.favoritesToggleHelper.favorite,
+                                    coverImageWidthToHeightRatio(),
+                                )
+                            }
+                        },
+                    )
+                },
+                forumThreadsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
+                    items = forumThreadsViewModel.forumThreads,
+                    aboveFold = ForumComposables.FORUM_THREADS_ABOVE_FOLD,
+                    hasMore = true,
+                ),
+                forumThreadsSection = {  expanded, onExpandedChanged ->
+                    forumThreadsSection(
+                        viewer = viewer,
+                        forumThreads = forumThreadsViewModel.forumThreads,
+                        expanded = expanded,
+                        onExpandedChange = onExpandedChanged,
+                        onClickViewAll = {
+                            val entry = mediaDetailsViewModel.entry.result
+                            it.onForumMediaCategoryClick(entry?.media?.title?.userPreferred, mediaDetailsViewModel.mediaId)
+                        },
+                        onStatusUpdate = forumThreadsViewModel.threadToggleHelper::toggle,
+                    )
+                },
+                reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
+                    items = reviewsViewModel.reviews?.reviews,
+                    aboveFold = ReviewComposables.REVIEWS_ABOVE_FOLD,
+                    hasMore = reviewsViewModel.reviews?.hasMore ?: false,
+                ),
+                reviewsSection = { screenKey, expanded, onExpandedChange, coverImageWidthToHeightRatio ->
+                    reviewsSection(
+                        screenKey = screenKey,
+                        entry = reviewsViewModel.reviews,
+                        expanded = expanded,
+                        onExpandedChange = onExpandedChange,
+                        onClickViewAll = {
+                            it.onMediaReviewsClick(
+                                mediaDetailsViewModel.mediaId,
+                                mediaDetailsViewModel.entry.result?.media,
+                                mediaDetailsViewModel.favoritesToggleHelper.favorite,
+                                coverImageWidthToHeightRatio(),
+                            )
+                        },
+                        onReviewClick = { navigationCallback, item ->
+                            navigationCallback.onReviewClick(
+                                reviewId = item.id.toString(),
+                                media = mediaDetailsViewModel.entry.result?.media,
+                                favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite,
+                                imageWidthToHeightRatio = coverImageWidthToHeightRatio()
+                            )
+                        },
+                    )
+                },
             )
         }
 
@@ -990,15 +1195,16 @@ object AnimeNavigator {
 
     fun onMediaReviewsClick(
         navHostController: NavHostController,
-        entry: AnimeMediaDetailsScreen.Entry,
+        mediaId: String,
+        media: MediaHeaderData?,
         languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_REVIEWS.id +
-                "?mediaId=${entry.mediaId}" +
+                "?mediaId=$mediaId" +
                 MediaHeaderValues.routeSuffix(
-                    media = entry.media,
+                    media = media,
                     languageOption = languageOption,
                     favorite = favorite,
                     imageWidthToHeightRatio = imageWidthToHeightRatio,
@@ -1007,15 +1213,16 @@ object AnimeNavigator {
 
     fun onMediaRecommendationsClick(
         navHostController: NavHostController,
-        entry: AnimeMediaDetailsScreen.Entry,
+        mediaId: String,
+        media: MediaHeaderData?,
         languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id +
-                "?mediaId=${entry.mediaId}" +
+                "?mediaId=$mediaId" +
                 MediaHeaderValues.routeSuffix(
-                    media = entry.media,
+                    media = media,
                     languageOption = languageOption,
                     favorite = favorite,
                     imageWidthToHeightRatio = imageWidthToHeightRatio,
@@ -1328,14 +1535,16 @@ object AnimeNavigator {
         }
 
         fun onMediaReviewsClick(
-            media: AnimeMediaDetailsScreen.Entry,
+            mediaId: String,
+            media: MediaHeaderData?,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let {
                 onMediaReviewsClick(
                     navHostController = it,
-                    entry = media,
+                    mediaId = mediaId,
+                    media = media,
                     languageOption = languageOptionMedia,
                     favorite = favorite,
                     imageWidthToHeightRatio = imageWidthToHeightRatio
@@ -1344,14 +1553,16 @@ object AnimeNavigator {
         }
 
         fun onMediaRecommendationsClick(
-            media: AnimeMediaDetailsScreen.Entry,
+            mediaId: String,
+            media: MediaHeaderData?,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let {
                 onMediaRecommendationsClick(
                     navHostController = it,
-                    entry = media,
+                    mediaId = mediaId,
+                    media = media,
                     languageOption = languageOptionMedia,
                     favorite = favorite,
                     imageWidthToHeightRatio = imageWidthToHeightRatio
