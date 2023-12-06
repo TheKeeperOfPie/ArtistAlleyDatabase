@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -33,6 +34,7 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
@@ -108,6 +110,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteSt
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.cds.CdsFromMediaViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -289,10 +293,13 @@ object AnimeNavigator {
                 onDispose { songsViewModel.animeSongsCollapseAll() }
             }
 
+            val cdsViewModel = hiltViewModel<CdsFromMediaViewModel>()
+
             val viewer by mediaDetailsViewModel.viewer.collectAsState()
 
-            val recommendationsViewModel = hiltViewModel<AnimeMediaDetailsRecommendationsViewModel>()
-                .apply { initialize(mediaDetailsViewModel) }
+            val recommendationsViewModel =
+                hiltViewModel<AnimeMediaDetailsRecommendationsViewModel>()
+                    .apply { initialize(mediaDetailsViewModel) }
 
             val activitiesViewModel = hiltViewModel<AnimeMediaDetailsActivityViewModel>()
                 .apply { initialize(mediaDetailsViewModel) }
@@ -312,6 +319,9 @@ object AnimeNavigator {
 
             val reviewsViewModel = hiltViewModel<AnimeMediaDetailsReviewsViewModel>()
                 .apply { initialize(mediaDetailsViewModel) }
+
+            val navigationCallback = LocalNavigationCallback.current
+
             AnimeMediaDetailsScreen(
                 viewModel = mediaDetailsViewModel,
                 upIconOption = UpIconOption.Back(navHostController),
@@ -341,7 +351,7 @@ object AnimeNavigator {
                         staffList = staff,
                     )
                 },
-                songSectionMetadata = if (!songsViewModel.enabled) null else AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
+                songsSectionMetadata = if (!songsViewModel.enabled) null else AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
                     items = songsViewModel.animeSongs?.entries,
                     aboveFold = AnimeSongComposables.SONGS_ABOVE_FOLD,
                     hasMore = false,
@@ -352,6 +362,24 @@ object AnimeNavigator {
                         viewModel = songsViewModel,
                         songsExpanded = expanded,
                         onSongsExpandedChange = onExpandedChange,
+                    )
+                },
+                cdsSectionMetadata = object :
+                    AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata {
+                    val hasCds = cdsViewModel.cdEntries.isNotEmpty()
+                    override fun count(viewer: AniListViewer?, expanded: Boolean) =
+                        if (hasCds) 2 else 0
+                },
+                cdsSection = { screenKey ->
+                    cdsSection(
+                        screenKey = screenKey,
+                        cdEntries = cdsViewModel.cdEntries,
+                        onClickEntry = { _, entry ->
+                            navigationCallback.onCdEntryClick(
+                                model = entry,
+                                imageCornerDp = 12.dp,
+                            )
+                        }
                     )
                 },
                 recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
@@ -422,7 +450,7 @@ object AnimeNavigator {
                     aboveFold = ForumComposables.FORUM_THREADS_ABOVE_FOLD,
                     hasMore = true,
                 ),
-                forumThreadsSection = {  expanded, onExpandedChanged ->
+                forumThreadsSection = { expanded, onExpandedChanged ->
                     forumThreadsSection(
                         viewer = viewer,
                         forumThreads = forumThreadsViewModel.forumThreads,
@@ -430,7 +458,10 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChanged,
                         onClickViewAll = {
                             val entry = mediaDetailsViewModel.entry.result
-                            it.onForumMediaCategoryClick(entry?.media?.title?.userPreferred, mediaDetailsViewModel.mediaId)
+                            it.onForumMediaCategoryClick(
+                                entry?.media?.title?.userPreferred,
+                                mediaDetailsViewModel.mediaId
+                            )
                         },
                         onStatusUpdate = forumThreadsViewModel.threadToggleHelper::toggle,
                     )

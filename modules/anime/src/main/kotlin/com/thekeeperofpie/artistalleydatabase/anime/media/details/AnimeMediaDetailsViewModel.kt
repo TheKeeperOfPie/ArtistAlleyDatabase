@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
-import android.app.Application
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +9,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaDetailsQuery
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -28,8 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
-import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
-import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
@@ -48,7 +44,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
@@ -57,10 +52,7 @@ import javax.inject.Inject
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @HiltViewModel
 class AnimeMediaDetailsViewModel @Inject constructor(
-    private val application: Application,
     private val aniListApi: AuthedAniListApi,
-    private val cdEntryDao: CdEntryDao,
-    private val appJson: AppJson,
     oAuthStore: AniListOAuthStore,
     val mediaListStatusController: MediaListStatusController,
     val ignoreController: IgnoreController,
@@ -90,8 +82,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
     var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.loading())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
-
-    var cdEntries by mutableStateOf(emptyList<CdEntryGridModel>())
 
     var trailerPlaybackPosition = 0f
 
@@ -230,14 +220,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .catch {}
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { listStatus = it }
-        }
-
-        viewModelScope.launch(CustomDispatchers.IO) {
-            val cdEntries = cdEntryDao.searchSeriesByMediaId(appJson, mediaId)
-                .map { CdEntryGridModel.buildFromEntry(application, it) }
-            withContext(CustomDispatchers.Main) {
-                this@AnimeMediaDetailsViewModel.cdEntries = cdEntries
-            }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {

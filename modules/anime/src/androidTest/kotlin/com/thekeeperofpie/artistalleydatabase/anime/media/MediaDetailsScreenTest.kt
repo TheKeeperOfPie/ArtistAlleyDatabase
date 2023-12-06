@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
-import android.app.Application
 import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -13,48 +12,26 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToKey
 import androidx.lifecycle.SavedStateHandle
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.fragment.ListActivityMediaListActivityItem
 import com.google.common.truth.Truth.assertThat
 import com.mxalbert.sharedelements.SharedElementsRoot
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.persistentListOfNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activity.activitiesSection
-import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharactersViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
-import com.thekeeperofpie.artistalleydatabase.anime.forum.AnimeForumThreadsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumComposables
-import com.thekeeperofpie.artistalleydatabase.anime.forum.forumThreadsSection
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.AnimeMediaDetailsRecommendationsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationComposables
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.recommendationsSection
-import com.thekeeperofpie.artistalleydatabase.anime.review.AnimeMediaDetailsReviewsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewComposables
-import com.thekeeperofpie.artistalleydatabase.anime.review.reviewsSection
-import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
-import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
-import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.staff.AnimeStaffViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
@@ -72,7 +49,6 @@ import org.junit.jupiter.api.parallel.ResourceAccessMode
 import org.junit.jupiter.api.parallel.ResourceLock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
-import java.util.Optional
 import javax.inject.Inject
 
 @OptIn(ExperimentalTestApi::class)
@@ -91,31 +67,13 @@ class MediaDetailsScreenTest {
     lateinit var ignoreController: IgnoreController
 
     @Inject
-    lateinit var application: Application
-
-    @Inject
     lateinit var aniListApi: AuthedAniListApi
-
-    @Inject
-    lateinit var cdEntryDao: CdEntryDao
-
-    @Inject
-    lateinit var appJson: AppJson
-
-    @Inject
-    lateinit var animeSongsProviderOptional: Optional<AnimeSongsProvider>
-
-    @Inject
-    lateinit var mediaPlayer: AppMediaPlayer
 
     @Inject
     lateinit var oAuthStore: AniListOAuthStore
 
     @Inject
     lateinit var mediaListStatusController: MediaListStatusController
-
-    @Inject
-    lateinit var recommendationStatusController: RecommendationStatusController
 
     @Inject
     lateinit var settings: AnimeSettings
@@ -125,9 +83,6 @@ class MediaDetailsScreenTest {
 
     @Inject
     lateinit var activityStatusController: ActivityStatusController
-
-    @Inject
-    lateinit var threadStatusController: ForumThreadStatusController
 
     @Inject
     lateinit var historyController: HistoryController
@@ -204,10 +159,7 @@ class MediaDetailsScreenTest {
         val savedStateHandle = SavedStateHandle().apply { set("mediaId", "1234") }
         val mediaDetailsViewModel = spy(
             AnimeMediaDetailsViewModel(
-                application = application,
                 aniListApi = aniListApi,
-                cdEntryDao = cdEntryDao,
-                appJson = appJson,
                 oAuthStore = oAuthStore,
                 mediaListStatusController = mediaListStatusController,
                 ignoreController = ignoreController,
@@ -218,50 +170,10 @@ class MediaDetailsScreenTest {
                 savedStateHandle = savedStateHandle,
             )
         )
-        val charactersViewModel = spy(
-            AnimeCharactersViewModel(
-                aniListApi = aniListApi,
-                savedStateHandle = savedStateHandle,
-            ).apply { initialize(mediaDetailsViewModel) }
-        )
-        val staffViewModel = spy(
-            AnimeStaffViewModel(
-                aniListApi = aniListApi,
-                savedStateHandle = savedStateHandle,
-            ).apply { initialize(mediaDetailsViewModel) }
-        )
-        val songsViewModel = spy(
-            AnimeSongsViewModel(
-                animeSongsProviderOptional = animeSongsProviderOptional,
-                mediaPlayer = mediaPlayer,
-            ).apply { initialize(mediaDetailsViewModel) }
-        )
-        val recommendationsViewModel = spy(
-            AnimeMediaDetailsRecommendationsViewModel(
-                aniListApi = aniListApi,
-                mediaListStatusController = mediaListStatusController,
-                recommendationStatusController = recommendationStatusController,
-                ignoreController = ignoreController,
-                settings = settings,
-                savedStateHandle = savedStateHandle,
-            ).apply { initialize(mediaDetailsViewModel) }
-        )
         val activitiesViewModel = spy(
             AnimeMediaDetailsActivityViewModel(
                 aniListApi = aniListApi,
                 activityStatusController = activityStatusController,
-            ).apply { initialize(mediaDetailsViewModel) }
-        )
-        val forumThreadsViewModel = spy(
-            AnimeForumThreadsViewModel(
-                aniListApi = aniListApi,
-                threadStatusController = threadStatusController,
-                savedStateHandle = savedStateHandle,
-            ).apply { initialize(mediaDetailsViewModel) }
-        )
-        val reviewsViewModel = spy(
-            AnimeMediaDetailsReviewsViewModel(
-                aniListApi = aniListApi,
             ).apply { initialize(mediaDetailsViewModel) }
         )
 
@@ -278,13 +190,7 @@ class MediaDetailsScreenTest {
 
         return ViewModels(
             mediaDetailsViewModel = mediaDetailsViewModel,
-            charactersViewModel = charactersViewModel,
-            staffViewModel = staffViewModel,
-            songsViewModel = songsViewModel,
-            recommendationsViewModel = recommendationsViewModel,
             activitiesViewModel = activitiesViewModel,
-            forumThreadsViewModel = forumThreadsViewModel,
-            reviewsViewModel = reviewsViewModel,
         )
     }
 
@@ -359,9 +265,6 @@ class MediaDetailsScreenTest {
             CompositionLocalProvider(
                 LocalIgnoreController.provides(ignoreController),
             ) {
-                val charactersDeferred =
-                    viewModels.charactersViewModel.charactersDeferred.collectAsLazyPagingItems()
-                val staff = viewModels.staffViewModel.staff.collectAsLazyPagingItems()
                 val viewer by viewModels.mediaDetailsViewModel.viewer.collectAsState()
                 val activities = viewModels.activitiesViewModel.activities
                 val (activityTab, onActivityTabChange) = rememberSaveable(viewer, activities) {
@@ -381,70 +284,16 @@ class MediaDetailsScreenTest {
                         media = { mock() },
                         favoriteUpdate = { false },
                     ),
-                    charactersCount = {
-                        charactersDeferred.itemCount
-                            .coerceAtLeast(viewModels.charactersViewModel.charactersInitial.size)
-                    },
-                    charactersSection = { screenKey, entry, coverImageWidthToHeightRatio ->
-                        charactersSection(
-                            screenKey = screenKey,
-                            titleRes = R.string.anime_media_details_characters_label,
-                            charactersInitial = viewModels.charactersViewModel.charactersInitial,
-                            charactersDeferred = { charactersDeferred },
-                            mediaId = entry.mediaId,
-                            media = entry.media,
-                            mediaFavorite = viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                            mediaCoverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-                            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-                        )
-                    },
-                    staffCount = { staff.itemCount },
-                    staffSection = {
-                        staffSection(
-                            screenKey = it,
-                            titleRes = R.string.anime_media_details_staff_label,
-                            staffList = staff,
-                        )
-                    },
-                    recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
-                        items = viewModels.recommendationsViewModel.recommendations?.recommendations,
-                        aboveFold = RecommendationComposables.RECOMMENDATIONS_ABOVE_FOLD,
-                        hasMore = viewModels.recommendationsViewModel.recommendations?.hasMore
-                            ?: true,
-                    ),
-                    recommendationsSection = { screenKey, expanded, onExpandedChange, onClickListEdit, coverImageWidthToHeightRatio ->
-                        val entry = viewModels.recommendationsViewModel.recommendations
-                        recommendationsSection(
-                            screenKey = screenKey,
-                            viewer = viewer,
-                            entry = entry,
-                            expanded = expanded,
-                            onExpandedChange = onExpandedChange,
-                            onClickListEdit = onClickListEdit,
-                            onClickViewAll = {
-                                it.onMediaRecommendationsClick(
-                                    viewModels.mediaDetailsViewModel.mediaId,
-                                    viewModels.mediaDetailsViewModel.entry.result?.media,
-                                    viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                                    coverImageWidthToHeightRatio(),
-                                )
-                            },
-                            onUserRecommendationRating = viewModels.recommendationsViewModel.recommendationToggleHelper::toggle,
-                        )
-                    },
-                    songSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
-                        items = viewModels.songsViewModel.animeSongs?.entries.orEmpty(),
-                        aboveFold = AnimeSongComposables.SONGS_ABOVE_FOLD,
-                        hasMore = false,
-                    ),
-                    songsSection = { screenKey, expanded, onExpandedChange ->
-                        AnimeSongComposables.songsSection(
-                            screenKey = screenKey,
-                            viewModel = viewModels.songsViewModel,
-                            songsExpanded = expanded,
-                            onSongsExpandedChange = onExpandedChange,
-                        )
-                    },
+                    charactersCount = { 0 },
+                    charactersSection = { _, _, _ -> },
+                    staffCount = { 0 },
+                    staffSection = {},
+                    recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                    recommendationsSection = { _, _, _, _, _ -> },
+                    songsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                    songsSection = { _, _, _ -> },
+                    cdsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                    cdsSection = {},
                     activitiesSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
                         items = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
                             activities?.following
@@ -483,56 +332,10 @@ class MediaDetailsScreenTest {
                             },
                         )
                     },
-                    forumThreadsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
-                        items = viewModels.forumThreadsViewModel.forumThreads,
-                        aboveFold = ForumComposables.FORUM_THREADS_ABOVE_FOLD,
-                        hasMore = true,
-                    ),
-                    forumThreadsSection = { expanded, onExpandedChanged ->
-                        forumThreadsSection(
-                            viewer = viewer,
-                            forumThreads = viewModels.forumThreadsViewModel.forumThreads,
-                            expanded = expanded,
-                            onExpandedChange = onExpandedChanged,
-                            onClickViewAll = {
-                                val entry = viewModels.mediaDetailsViewModel.entry.result
-                                it.onForumMediaCategoryClick(
-                                    entry?.media?.title?.userPreferred,
-                                    viewModels.mediaDetailsViewModel.mediaId
-                                )
-                            },
-                            onStatusUpdate = viewModels.forumThreadsViewModel.threadToggleHelper::toggle,
-                        )
-                    },
-                    reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
-                        items = viewModels.reviewsViewModel.reviews?.reviews,
-                        aboveFold = ReviewComposables.REVIEWS_ABOVE_FOLD,
-                        hasMore = viewModels.reviewsViewModel.reviews?.hasMore ?: false,
-                    ),
-                    reviewsSection = { screenKey, expanded, onExpandedChange, coverImageWidthToHeightRatio ->
-                        reviewsSection(
-                            screenKey = screenKey,
-                            entry = viewModels.reviewsViewModel.reviews,
-                            expanded = expanded,
-                            onExpandedChange = onExpandedChange,
-                            onClickViewAll = {
-                                it.onMediaReviewsClick(
-                                    viewModels.mediaDetailsViewModel.mediaId,
-                                    viewModels.mediaDetailsViewModel.entry.result?.media,
-                                    viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                                    coverImageWidthToHeightRatio(),
-                                )
-                            },
-                            onReviewClick = { navigationCallback, item ->
-                                navigationCallback.onReviewClick(
-                                    reviewId = item.id.toString(),
-                                    media = viewModels.mediaDetailsViewModel.entry.result?.media,
-                                    favorite = viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                                    imageWidthToHeightRatio = coverImageWidthToHeightRatio()
-                                )
-                            },
-                        )
-                    },
+                    forumThreadsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                    forumThreadsSection = { _, _ -> },
+                    reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                    reviewsSection = { screenKey, expanded, onExpandedChange, coverImageWidthToHeightRatio -> },
                 )
             }
         }
@@ -540,12 +343,6 @@ class MediaDetailsScreenTest {
 
     data class ViewModels(
         val mediaDetailsViewModel: AnimeMediaDetailsViewModel,
-        val charactersViewModel: AnimeCharactersViewModel,
-        val staffViewModel: AnimeStaffViewModel,
-        val songsViewModel: AnimeSongsViewModel,
-        val recommendationsViewModel: AnimeMediaDetailsRecommendationsViewModel,
         val activitiesViewModel: AnimeMediaDetailsActivityViewModel,
-        val forumThreadsViewModel: AnimeForumThreadsViewModel,
-        val reviewsViewModel: AnimeMediaDetailsReviewsViewModel,
     )
 }

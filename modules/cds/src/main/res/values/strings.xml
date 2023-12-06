@@ -52,4 +52,5 @@
     <string name="cd_entry_series_unlocked_indicator_content_description">Series unlocked</string>
     <string name="cd_entry_characters_unlocked_indicator_content_description">Characters unlocked</string>
     <string name="cd_entry_discs_unlocked_indicator_content_description">Discs unlocked</string>
+    <string name="cd_section_title">CDs</string>
 </resources>

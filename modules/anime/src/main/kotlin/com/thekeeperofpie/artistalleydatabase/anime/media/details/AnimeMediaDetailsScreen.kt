@@ -27,10 +27,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -75,18 +72,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import coil.size.Dimension
 import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.fragment.MediaNavigationData
@@ -126,7 +120,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
@@ -149,13 +142,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.rememberLambda
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("NAME_SHADOWING")
@@ -199,12 +190,14 @@ object AnimeMediaDetailsScreen {
         ) -> Unit,
         staffCount: () -> Int,
         staffSection: LazyListScope.(screenKey: String) -> Unit,
-        songSectionMetadata: SectionIndexInfo.SectionMetadata?,
+        songsSectionMetadata: SectionIndexInfo.SectionMetadata?,
         songsSection: LazyListScope.(
             screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
+        cdsSectionMetadata: SectionIndexInfo.SectionMetadata?,
+        cdsSection: LazyListScope.(screenKey: String) -> Unit,
         recommendationsSectionMetadata: SectionIndexInfo.SectionMetadata,
         recommendationsSection: LazyListScope.(
             screenKey: String,
@@ -255,8 +248,8 @@ object AnimeMediaDetailsScreen {
             charactersCount = charactersCount(entry.result),
             staffCount = staffCount(),
             expandedState = expandedState,
-            songsSection = songSectionMetadata,
-            cdEntries = viewModel.cdEntries,
+            songsSection = songsSectionMetadata,
+            cdsSection = cdsSectionMetadata,
             viewer = viewer,
             activitiesSection = activitiesSectionMetadata,
             recommendationsSection = recommendationsSectionMetadata,
@@ -488,6 +481,7 @@ object AnimeMediaDetailsScreen {
                                     charactersSection = charactersSection,
                                     staffSection = staffSection,
                                     songsSection = songsSection,
+                                    cdsSection = cdsSection,
                                     recommendationsSection = recommendationsSection,
                                     activitiesSection = activitiesSection,
                                     forumThreadsSection = forumThreadsSection,
@@ -526,6 +520,7 @@ object AnimeMediaDetailsScreen {
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
+        cdsSection: LazyListScope.(screenKey: String) -> Unit,
         recommendationsSection: LazyListScope.(
             screenKey: String,
             expanded: () -> Boolean,
@@ -583,10 +578,7 @@ object AnimeMediaDetailsScreen {
 
         songsSection(screenKey, expandedState::songs) { expandedState.songs = it }
 
-        cdsSection(
-            screenKey = screenKey,
-            cdEntries = viewModel.cdEntries,
-        )
+        cdsSection(screenKey)
 
         staffSection(screenKey)
 
@@ -897,52 +889,6 @@ object AnimeMediaDetailsScreen {
                     valueToText = { it },
                     showDividerAbove = shown,
                 )
-            }
-        }
-    }
-
-    private fun LazyListScope.cdsSection(
-        screenKey: String,
-        cdEntries: List<CdEntryGridModel>,
-    ) {
-        if (cdEntries.isEmpty()) return
-
-        item("cdsHeader") {
-            DetailsSectionHeader(
-                stringResource(R.string.anime_media_details_cds_label),
-                modifier = Modifier.animateItemPlacement()
-            )
-        }
-
-        item("cdsSection") {
-            val width = LocalDensity.current.run { Dimension.Pixels(200.dp.toPx().roundToInt()) }
-            val navigationCallback = LocalNavigationCallback.current
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.animateItemPlacement(),
-            ) {
-                itemsIndexed(cdEntries) { index, cdEntry ->
-                    var transitionProgress by remember { mutableFloatStateOf(0f) }
-                    val cornerDp = lerp(12.dp, 0.dp, transitionProgress)
-                    ElevatedCard(
-                        shape = RoundedCornerShape(cornerDp),
-                    ) {
-                        EntryGrid.Entry(
-                            imageScreenKey = screenKey,
-                            expectedWidth = width,
-                            index = index,
-                            entry = cdEntry,
-                            onClickEntry = { _, entry ->
-                                navigationCallback.onCdEntryClick(
-                                    model = entry,
-                                    imageCornerDp = 12.dp,
-                                )
-                            },
-                            onSharedElementFractionChanged = { transitionProgress = it }
-                        )
-                    }
-                }
             }
         }
     }
@@ -1575,7 +1521,7 @@ object AnimeMediaDetailsScreen {
         staffCount: Int,
         expandedState: ExpandedState,
         songsSection: SectionIndexInfo.SectionMetadata?,
-        cdEntries: List<CdEntryGridModel>,
+        cdsSection: SectionIndexInfo.SectionMetadata?,
         viewer: AniListViewer?,
         activitiesSection: SectionIndexInfo.SectionMetadata?,
         recommendationsSection: SectionIndexInfo.SectionMetadata?,
@@ -1588,7 +1534,7 @@ object AnimeMediaDetailsScreen {
         staffCount,
         expandedState.allValues(),
         songsSection,
-        cdEntries,
+        cdsSection,
         viewer,
         activitiesSection,
         forumThreadsSection,
@@ -1636,9 +1582,10 @@ object AnimeMediaDetailsScreen {
             currentIndex += songsCount
         }
 
-        if (cdEntries.isNotEmpty()) {
+        val cdsCount = cdsSection?.count(viewer, false) ?: 0
+        if (cdsCount > 0) {
             list += SectionIndexInfo.Section.CDS to currentIndex
-            currentIndex += 2
+            currentIndex += cdsCount
         }
 
         if (staffCount > 0) {
@@ -1748,8 +1695,12 @@ object AnimeMediaDetailsScreen {
             FORUM_THREADS(R.string.anime_media_details_forum_threads_label),
         }
 
-        sealed interface SectionMetadata {
+        interface SectionMetadata {
             abstract fun count(viewer: AniListViewer?, expanded: Boolean): Int
+
+            data object Empty : SectionMetadata {
+                override fun count(viewer: AniListViewer?, expanded: Boolean) = 0
+            }
 
             data class ListSection<T>(
                 val items: List<T>?,
