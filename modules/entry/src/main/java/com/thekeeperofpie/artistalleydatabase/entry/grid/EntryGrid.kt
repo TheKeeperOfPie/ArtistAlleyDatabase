@@ -5,6 +5,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +16,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
@@ -28,6 +32,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.R
+import kotlinx.coroutines.launch
 
 @Suppress("NAME_SHADOWING")
 object EntryGrid {
@@ -66,6 +72,7 @@ object EntryGrid {
     operator fun <T : EntryGridModel> invoke(
         imageScreenKey: String,
         entries: @Composable () -> LazyPagingItems<T>,
+        entriesSize: @Composable () -> Int?,
         paddingValues: PaddingValues? = null,
         contentPadding: PaddingValues? = null,
         topOffset: Dp = 0.dp,
@@ -105,6 +112,35 @@ object EntryGrid {
                         R.string.clear to onClickClear,
                     )
                 }
+            }
+
+            val scope = rememberCoroutineScope()
+            entriesSize()?.let { size ->
+                val stringRes = when (size) {
+                    0 -> R.string.entry_results_zero
+                    1 -> R.string.entry_results_one
+                    else -> R.string.entry_results_multiple
+                }
+
+                Text(
+                    text = stringResource(stringRes, size),
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .wrapContentSize()
+                        .padding(top = 8.dp + topOffset)
+                        .background(
+                            MaterialTheme.colorScheme.secondary,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.secondaryContainer,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable { scope.launch { gridState.scrollToItem(0, 0) } }
+                        .padding(8.dp)
+                )
             }
         }
 

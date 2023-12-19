@@ -98,6 +98,10 @@ object EntryHomeScreen {
             EntryGrid(
                 imageScreenKey = screenKey,
                 entries = entries,
+                entriesSize = {
+                    val isQueryNotEmpty by remember { derivedStateOf { query().isNotEmpty() } }
+                    entries().itemCount.takeIf { isQueryNotEmpty }
+                },
                 selectedItems = selectedItems,
                 onClickEntry = onClickEntry,
                 onLongClickEntry = onLongClickEntry,
