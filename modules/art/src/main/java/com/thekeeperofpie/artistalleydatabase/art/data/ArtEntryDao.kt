@@ -158,7 +158,7 @@ interface ArtEntryDao {
         )
     }
 
-    private fun filterOptionsQuery(filterOptions: ArtSearchQuery): MutableList<String> {
+    private fun filterOptionsQuery(filterOptions: ArtSearchQuery): List<String> {
         val queryPieces = mutableListOf<String>()
 
         queryPieces += filterOptions.artists.flatMap { it.split(WHITESPACE_REGEX) }
@@ -209,8 +209,10 @@ interface ArtEntryDao {
                     .orEmpty()
             }
             is SourceType.Online -> TODO()
+            SourceType.Unknown -> {
+                queryPieces += "sourceType:${source.serializedType}"
+            }
             SourceType.Different,
-            SourceType.Unknown,
             null,
             -> {
                 // Do nothing
