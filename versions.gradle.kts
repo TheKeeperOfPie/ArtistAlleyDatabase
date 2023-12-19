@@ -7,11 +7,10 @@ import org.gradle.kotlin.dsl.maven
 
 object Versions {
     const val accompanist = "0.33.2-alpha"
-    const val apollo = "4.0.0-alpha.3"
-    // 1.6.0-alpha07 is last version that doesn't IndexOutOfBoundsException
-    const val compose = "1.6.0-alpha07"
-    const val dagger = "2.48.1"
-    const val hilt = "1.1.0"
+    const val apollo = "4.0.0-beta.4"
+    const val compose = "1.6.0-beta03"
+    const val dagger = "2.49"
+    const val hilt = "1.2.0-alpha01"
 
     object junit {
         const val jupiter = "5.10.1"
@@ -19,17 +18,18 @@ object Versions {
     }
 
     object kotlin {
-        const val coroutines = "1.7.3"
+        const val coroutines = "1.8.0-RC"
     }
 
+    // TODO: Versions after don't let changing Dispatcher and breaks instrumentation tests
     const val ktor = "2.3.4"
-    const val lifecycle = "2.7.0-rc01"
-    const val room = "2.6.0"
+    const val lifecycle = "2.7.0-rc02"
+    const val room = "2.6.1"
     const val markwon = "4.6.2"
     const val media3 = "1.2.0"
-    const val mockito = "5.7.0"
+    const val mockito = "5.8.0"
     const val paging = "3.3.0-alpha02"
-    const val work = "2.9.0-rc01"
+    const val work = "2.9.0"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
@@ -65,22 +65,21 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
             create("libs") {
                 fun plugin(id: String) = plugin(id, id)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
-                plugin("com.autonomousapps.dependency-analysis").version("1.26.0")
+                plugin("com.autonomousapps.dependency-analysis").version("1.28.0")
                 plugin("com.github.ben-manes.versions").version("0.50.0")
                 plugin("com.google.dagger.hilt.android").version(Versions.dagger)
                 plugin("com.jaredsburrows.license").version("0.9.3")
-                plugin("com.netflix.dgs.codegen").version("6.1.0")
+                plugin("com.netflix.dgs.codegen").version("6.1.1")
                 plugin("de.mannodermaus.android-junit5").version("1.10.0.0")
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
-                plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.20")
-                plugin("app.cash.molecule").version("1.3.0")
+                plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.21")
+                plugin("app.cash.molecule").version("1.3.1")
 
-                library("androidx.activity:activity-compose:1.8.1")
-                // 1.2.0-alpha09 is last version that doesn't IndexOutOfBoundsException
-                library("androidx.compose.material3:material3:1.2.0-alpha09")
+                library("androidx.activity:activity-compose:1.9.0-alpha01")
+                library("androidx.compose.material3:material3:1.2.0-beta01")
                 library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
-                library("androidx.core:core-ktx:1.13.0-alpha01")
+                library("androidx.core:core-ktx:1.13.0-alpha02")
 
                 withVersion(Versions.hilt) {
                     library("androidx.hilt:hilt-navigation-compose")
@@ -121,8 +120,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("androidx.room:room-testing")
                 }
 
-                library("androidx.test.ext:junit:1.2.0-alpha01", alias = "androidx.junit.test")
-                library("androidx.test:runner:1.6.0-alpha04", alias = "androidx.test.runner")
+                library("androidx.test.ext:junit:1.2.0-alpha02", alias = "androidx.junit.test")
+                library("androidx.test:runner:1.6.0-alpha05", alias = "androidx.test.runner")
 
                 withVersion(Versions.work) {
                     library("androidx.work:work-runtime-ktx")
@@ -130,7 +129,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 library("com.android.billingclient:billing-ktx:6.1.0")
-                library("com.android.tools.build:gradle:8.3.0-alpha15")
+                library("com.android.tools.build:gradle:8.3.0-alpha18")
 
                 withVersion(Versions.apollo) {
                     library("com.apollographql.apollo3:apollo-runtime")
@@ -147,7 +146,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 library("com.google.android.gms:oss-licenses-plugin:0.10.6")
-                library("com.google.android.gms:play-services-ads:22.5.0")
+                library("com.google.android.gms:play-services-ads:22.6.0")
                 library("com.google.android.gms:play-services-oss-licenses:17.0.1")
                 library("com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1")
                 library("com.google.android.play:app-update:2.1.0")
@@ -159,25 +158,26 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.google.dagger:hilt-android-testing")
                 }
 
-                library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.20-1.0.14")
+                library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.21-1.0.16")
                 library("com.google.net.cronet:cronet-okhttp:0.1.0")
                 library("com.google.truth:truth:1.1.5")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
                 library("com.neovisionaries:nv-i18n:1.29")
-                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.1.1")
+                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.2.0")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                     alias = "androidyoutubeplayer"
                 )
                 library("com.rometools:rome:2.1.0")
                 library("com.squareup:javapoet:1.13.0")
+                library("com.squareup:kotlinpoet:1.15.3")
                 library("com.squareup.leakcanary:leakcanary-android:2.12")
                 library("com.squareup.leakcanary:leakcanary-android-release:2.12")
                 library("com.squareup.leakcanary:leakcanary-object-watcher-android:2.12")
                 library("com.squareup.moshi:moshi-kotlin:1.15.0")
-                library("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
+                library("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
                 library(
-                    "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11",
+                    "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.12",
                     prefix = "okhttp3"
                 )
                 // TODO: 4.9.2 crashes with a StorageManager error
@@ -198,8 +198,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("org.apache.commons:commons-csv:1.10.0")
                 library("org.awaitility:awaitility:4.2.0")
                 library("org.chromium.net:cronet-embedded:113.5672.61")
-                library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.9.20")
-                library("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.6")
+                library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.9.21")
+                library("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
 
                 withVersion(Versions.kotlin.coroutines) {
                     library("org.jetbrains.kotlinx:kotlinx-coroutines-android")
@@ -207,7 +207,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.jetbrains.kotlinx:kotlinx-coroutines-test")
                 }
 
-                library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
+                library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
                 withVersion(Versions.junit.jupiter) {
                     library("org.junit.jupiter:junit-jupiter-api")
@@ -215,17 +215,17 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.junit.jupiter:junit-jupiter-params")
                 }
 
-                library("org.mockito.kotlin:mockito-kotlin:5.1.0")
+                library("org.mockito.kotlin:mockito-kotlin:5.2.1")
 
                 withVersion(Versions.mockito) {
                     library("org.mockito:mockito-android")
                     library("org.mockito:mockito-core")
                 }
 
-                library("systems.manifold:manifold-graphql-rt:2023.1.31")
+                library("systems.manifold:manifold-graphql-rt:2023.1.33")
 
                 prefix("androidx") {
-                    library("androidx.browser:browser:1.8.0-alpha01")
+                    library("androidx.browser:browser:1.8.0-beta01")
                     library("androidx.security:security-crypto:1.1.0-alpha06")
                     library("androidx.tracing:tracing:1.3.0-alpha02")
                 }
@@ -244,11 +244,11 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("androidx.compose.ui:ui")
                     }
 
-                    library("androidx.compose.runtime:runtime-tracing:1.0.0-alpha05")
+                    library("androidx.compose.runtime:runtime-tracing:1.0.0-beta01")
                 }
 
                 prefix("jetBrainsCompose") {
-                    library("org.jetbrains.compose.runtime:runtime:1.5.11")
+                    library("org.jetbrains.compose.runtime:runtime:1.6.0-alpha01")
                 }
 
                 prefix("junit5") {

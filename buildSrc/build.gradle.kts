@@ -13,6 +13,7 @@ dependencies {
     implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
     implementation(libs.com.google.devtools.ksp.gradle.plugin)
     implementation(libs.javapoet)
+    implementation(libs.kotlinpoet)
     implementation(libs.oss.licenses.plugin)
     implementation(libs.secrets.gradle.plugin)
 }

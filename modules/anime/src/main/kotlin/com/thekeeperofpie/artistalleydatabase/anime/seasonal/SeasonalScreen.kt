@@ -97,6 +97,7 @@ object SeasonalScreen {
                     TopBar(
                         upIconOption = upIconOption,
                         viewModel = viewModel,
+                        initialPage = viewModel.initialPage,
                         pagerState = pagerState,
                         currentSeasonYear = currentSeasonYear,
                         scrollBehavior = scrollBehavior
@@ -125,6 +126,7 @@ object SeasonalScreen {
     private fun TopBar(
         upIconOption: UpIconOption?,
         viewModel: SeasonalViewModel,
+        initialPage: Int,
         pagerState: PagerState,
         currentSeasonYear: Pair<MediaSeason, Int>,
         scrollBehavior: TopAppBarScrollBehavior,
@@ -155,8 +157,7 @@ object SeasonalScreen {
                     }
                 )
 
-                val state =
-                    rememberLazyListState(initialFirstVisibleItemIndex = pagerState.initialPage)
+                val state = rememberLazyListState(initialFirstVisibleItemIndex = initialPage)
                 val coroutineScope = rememberCoroutineScope()
 
                 val settledPage = pagerState.settledPage

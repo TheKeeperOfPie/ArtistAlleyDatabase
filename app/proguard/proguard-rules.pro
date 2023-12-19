@@ -386,6 +386,8 @@
 -dontwarn org.tukaani.xz.XZInputStream
 -dontwarn org.tukaani.xz.XZOutputStream
 -dontwarn sun.reflect.Reflection
+-dontwarn java.lang.Module
+-dontwarn org.graalvm.nativeimage.hosted.RuntimeResourceAccess
 
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
 -dontwarn com.google.errorprone.annotations.CheckReturnValue

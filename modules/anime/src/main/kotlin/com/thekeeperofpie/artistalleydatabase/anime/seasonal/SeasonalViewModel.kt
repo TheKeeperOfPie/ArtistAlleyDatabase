@@ -89,7 +89,6 @@ class SeasonalViewModel @Inject constructor(
         Type.NEXT -> Int.MAX_VALUE / 2 + 1
     }
 
-
     val sortFilterController = AnimeSortFilterController(
         scope = viewModelScope,
         sortTypeEnumClass = MediaSortOption::class,

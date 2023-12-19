@@ -2,7 +2,7 @@ plugins {
     id("module-library")
 
     // Gradle --scan
-    id("com.gradle.build-scan") version "3.15.1" apply false
+    id("com.gradle.build-scan") version "3.16.1" apply false
 }
 
 android {
@@ -19,7 +19,7 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    val androidTools = "31.3.0-alpha15"
+    val androidTools = "31.3.0-alpha18"
     debugCompileOnly("com.android.tools.emulator:proto:$androidTools")
     debugCompileOnly("com.android.tools.utp:utp-common:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:$androidTools")
@@ -56,19 +56,4 @@ dependencies {
     debugCompileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")
     debugCompileOnly("org.codehaus.groovy:groovy-test:$groovyVersion")
     debugCompileOnly("org.codehaus.groovy:groovy-xml:$groovyVersion")
-
-    // buildHealth failure when committing during AGP 8.3.0-alpha14 upgrade
-    // Scoped to allow suppressing GradleDependency
-    @Suppress("GradleDependency")
-    fun additionalDependencies() {
-        debugCompileOnly("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.6.0")
-        debugCompileOnly("com.google.protobuf:protobuf-bom:3.21.8")
-        debugCompileOnly("com.google.protobuf:protobuf-javalite:3.21.8")
-        debugCompileOnly("com.google.protobuf:protobuf-parent:3.21.8")
-        debugCompileOnly("androidx.privacysandbox.tools:tools:1.0.0-alpha03")
-        debugCompileOnly("androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha03")
-        debugCompileOnly("androidx.privacysandbox.tools:tools-core:1.0.0-alpha0")
-    }
-
-    additionalDependencies()
 }

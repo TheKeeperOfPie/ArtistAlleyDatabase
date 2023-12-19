@@ -114,7 +114,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
+        kotlinCompilerExtensionVersion = "1.5.6"
     }
     packaging {
         resources {
@@ -151,7 +151,35 @@ ksp {
 }
 
 tasks.register("installAll") {
-    dependsOn("installDebug", "installRelease", "installInternal")
+    dependsOn("installDebugTemp", "installReleaseTemp", "installInternalTemp")
+}
+
+// TODO(b/315337463)
+tasks.register<Exec>("installDebugTemp") {
+    dependsOn("assembleDebug")
+    commandLine(
+        "adb", "install",
+        project.rootDir.resolve("app/build/outputs/apk/debug/app-debug.apk")
+    )
+    outputs.upToDateWhen { false }
+}
+
+tasks.register<Exec>("installInternalTemp") {
+    dependsOn("assembleInternal")
+    commandLine(
+        "adb", "install",
+        project.rootDir.resolve("app/build/outputs/apk/internal/app-internal.apk")
+    )
+    outputs.upToDateWhen { false }
+}
+
+tasks.register<Exec>("installReleaseTemp") {
+    dependsOn("assembleRelease")
+    commandLine(
+        "adb", "install",
+        project.rootDir.resolve("app/build/outputs/apk/release/app-release.apk")
+    )
+    outputs.upToDateWhen { false }
 }
 
 fun Exec.launchActivity(
@@ -167,8 +195,8 @@ fun Exec.launchActivity(
 }
 
 tasks.register("launchRelease") {
-    dependsOn("installRelease")
-    finalizedBy("compileAndLaunchRelease", "installDebug")
+    dependsOn("installReleaseTemp")
+    finalizedBy("compileAndLaunchRelease", "installDebugTemp")
     outputs.upToDateWhen { false }
 }
 
@@ -179,9 +207,9 @@ tasks.register("launchInternal") {
 }
 
 tasks.register<Exec>("launchDebug") {
-    dependsOn("installDebug")
+    dependsOn("installDebugTemp")
     launchActivity("com.thekeeperofpie.anichive.debug")
-    finalizedBy("installRelease", "installInternal")
+    finalizedBy("installReleaseTemp", "installInternalTemp")
     outputs.upToDateWhen { false }
 }
 

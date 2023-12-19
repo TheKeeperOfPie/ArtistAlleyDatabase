@@ -33,20 +33,20 @@ tasks.register("generateVerificationMetadata") {
 }
 
 dependencyAnalysis {
-    dependencies {
+    structure {
         bundle("kotlin-stdlib") {
             includeGroup("org.jetbrains.kotlin")
         }
         bundle("androidx-room") {
             includeGroup("androidx.room")
         }
+        ignoreKtx(true)
     }
     issues {
         all {
             onAny {
                 severity("fail")
             }
-            ignoreKtx(true)
             onUsedTransitiveDependencies {
                 severity("ignore")
             }
