@@ -48,7 +48,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
             lockStateFlow.tryEmit(value)
         }
 
-    private var wasEverDifferent = false
+    private var wasEverDifferent = initialLockState == LockState.DIFFERENT
 
     enum class LockState(val editable: Boolean) {
         LOCKED(editable = false),
