@@ -12,15 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridAppBar
 
 object CdBrowseSelectionScreen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
+        upIconOption: UpIconOption,
         title: () -> String,
         loading: () -> Boolean,
         errorRes: () -> Pair<Int, Exception?>? = { null },
@@ -34,7 +36,16 @@ object CdBrowseSelectionScreen {
         onConfirmDelete: () -> Unit = {},
     ) {
         Scaffold(
-            topBar = { AppBar(text = title()) },
+            topBar = {
+                EntryGridAppBar(
+                    title = title,
+                    upIconOption = upIconOption,
+                    selectedItems = selectedItems,
+                    onClickClear = onClickClear,
+                    onClickEdit = onClickEdit,
+                    onConfirmDelete = onConfirmDelete,
+                )
+            },
             snackbarHost = {
                 SnackbarErrorText(
                     errorRes()?.first,
@@ -64,9 +75,6 @@ object CdBrowseSelectionScreen {
                             selectedItems = selectedItems,
                             onClickEntry = onClickEntry,
                             onLongClickEntry = onLongClickEntry,
-                            onClickClear = onClickClear,
-                            onClickEdit = onClickEdit,
-                            onConfirmDelete = onConfirmDelete,
                         )
                     }
                 }

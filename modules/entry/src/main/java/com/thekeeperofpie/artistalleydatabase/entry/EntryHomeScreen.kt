@@ -17,6 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -24,14 +26,20 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
@@ -44,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 
 @Suppress("NAME_SHADOWING")
@@ -73,11 +82,14 @@ object EntryHomeScreen {
             query = query,
             entries = entries,
             onQueryChange = onQueryChange,
-            showFab = { selectedItems().isEmpty() },
             sections = sections,
             onClickAddFab = onClickAddFab,
             onNavigate = onNavigate,
             scrollBehavior = scrollBehavior,
+            onClickClear = onClickClear,
+            onClickEdit = onClickEdit,
+            onConfirmDelete = onConfirmDelete,
+            selectedItems = selectedItems,
         ) {
             val density = LocalDensity.current
             val topBarPadding by remember {
@@ -105,9 +117,6 @@ object EntryHomeScreen {
                 selectedItems = selectedItems,
                 onClickEntry = onClickEntry,
                 onLongClickEntry = onLongClickEntry,
-                onClickClear = onClickClear,
-                onClickEdit = onClickEdit,
-                onConfirmDelete = onConfirmDelete,
                 contentPadding = topBarPadding,
                 topOffset = topOffset,
             )
@@ -121,13 +130,22 @@ object EntryHomeScreen {
         entries: @Composable () -> LazyPagingItems<GridModel>,
         onQueryChange: (String) -> Unit,
         sections: List<EntrySection>,
-        showFab: () -> Boolean,
         onClickAddFab: () -> Unit,
         onNavigate: (String) -> Unit,
         scrollBehavior: TopAppBarScrollBehavior,
+        selectedItems: () -> Collection<Int>,
+        onClickClear: () -> Unit,
+        onClickEdit: () -> Unit,
+        onConfirmDelete: () -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
         BottomSheetScaffold(
+            scaffoldState = rememberBottomSheetScaffoldState(
+                bottomSheetState = rememberStandardBottomSheetState(
+                    confirmValueChange = { it != SheetValue.Hidden },
+                    skipHiddenState = true,
+                )
+            ),
             sheetContent = {
                 SearchFilterSheet(sections = sections, onNavigate = onNavigate)
             },
@@ -138,6 +156,7 @@ object EntryHomeScreen {
                 )
             ),
         ) {
+            val isEditMode by derivedStateOf { selectedItems().isNotEmpty() }
             Scaffold(
                 topBar = {
                     EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
@@ -155,12 +174,33 @@ object EntryHomeScreen {
                             StaticSearchBar(
                                 query = query(),
                                 onQueryChange = onQueryChange,
-                                leadingIcon = { NavMenuIconButton(onClickNav) },
+                                leadingIcon = {
+                                    if (isEditMode) {
+                                        IconButton(onClick = onClickClear) {
+                                            Icon(
+                                                imageVector = Icons.Default.Clear,
+                                                contentDescription = stringResource(
+                                                    R.string.entry_search_edit_mode_clear
+                                                ),
+                                            )
+                                        }
+                                    } else {
+                                        NavMenuIconButton(onClickNav)
+                                    }
+                                },
                                 placeholder = {
                                     Text(
                                         text = stringResource(
-                                            R.string.entry_search_hint_with_entry_count,
-                                            entries().itemCount,
+                                            if (isEditMode) {
+                                                R.string.entry_search_hint_edit_mode_selected
+                                            } else {
+                                                R.string.entry_search_hint_with_entry_count
+                                            },
+                                            if (isEditMode) {
+                                                selectedItems().size
+                                            } else {
+                                                entries().itemCount
+                                            },
                                         ),
                                     )
                                 },
@@ -168,27 +208,57 @@ object EntryHomeScreen {
                                     val showClear by remember {
                                         derivedStateOf { query().isNotEmpty() }
                                     }
-                                    AnimatedVisibility(showClear) {
-                                        IconButton(onClick = { onQueryChange("") }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Clear,
-                                                contentDescription = stringResource(
-                                                    R.string.entry_search_clear
-                                                ),
-                                            )
+                                    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+                                    if (isEditMode) {
+                                        Row {
+                                            IconButton(onClick = { showDeleteDialog = true }) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Delete,
+                                                    contentDescription = stringResource(
+                                                        R.string.entry_search_edit_mode_delete
+                                                    )
+                                                )
+                                            }
+
+                                            if (showDeleteDialog) {
+                                                EntryGridDeleteDialog(
+                                                    { showDeleteDialog = false },
+                                                    onConfirmDelete
+                                                )
+                                            }
+
+                                            IconButton(onClick = onClickEdit) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Edit,
+                                                    contentDescription = stringResource(
+                                                        R.string.entry_search_edit_mode_edit
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        AnimatedVisibility(showClear) {
+                                            IconButton(onClick = { onQueryChange("") }) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Clear,
+                                                    contentDescription = stringResource(
+                                                        R.string.entry_search_clear
+                                                    ),
+                                                )
+                                            }
                                         }
                                     }
                                 },
                                 onSearch = {},
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp)
+                                    .padding(top = 4.dp)
                             )
                         }
                     }
                 },
                 floatingActionButton = {
-                    if (showFab()) {
+                    if (!isEditMode) {
                         FloatingActionButton(
                             onClick = onClickAddFab,
                             modifier = Modifier.padding(bottom = 56.dp)

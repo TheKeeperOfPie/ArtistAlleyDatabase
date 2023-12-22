@@ -24,17 +24,11 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -58,8 +52,6 @@ import com.mxalbert.sharedelements.FadeMode
 import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.R
@@ -76,15 +68,10 @@ object EntryGrid {
         paddingValues: PaddingValues? = null,
         contentPadding: PaddingValues? = null,
         topOffset: Dp = 0.dp,
-        selectedItems: () -> Collection<Int> = { emptyList() },
-        onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
-        onClickClear: () -> Unit = {},
-        onClickEdit: () -> Unit = {},
-        onConfirmDelete: () -> Unit = {},
+        selectedItems: () -> Collection<Int>,
+        onClickEntry: (index: Int, entry: T) -> Unit,
+        onLongClickEntry: (index: Int, entry: T) -> Unit,
     ) {
-        var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
-
         val gridState = rememberLazyStaggeredGridState()
         Box(
             modifier = Modifier
@@ -104,14 +91,6 @@ object EntryGrid {
                     modifier = Modifier
                         .weight(1f, true)
                 )
-
-                if (selectedItems().isNotEmpty()) {
-                    ButtonFooter(
-                        R.string.delete to { showDeleteDialog = true },
-                        R.string.edit to onClickEdit,
-                        R.string.clear to onClickClear,
-                    )
-                }
             }
 
             val scope = rememberCoroutineScope()
@@ -142,13 +121,6 @@ object EntryGrid {
                         .padding(8.dp)
                 )
             }
-        }
-
-        if (showDeleteDialog) {
-            DeleteDialog(
-                { showDeleteDialog = false },
-                onConfirmDelete
-            )
         }
     }
 
@@ -311,29 +283,5 @@ object EntryGrid {
                 entry.ErrorIcons(modifier = Modifier.align(Alignment.BottomEnd))
             }
         }
-    }
-
-    @Composable
-    fun DeleteDialog(
-        onDismiss: () -> Unit,
-        onConfirmDelete: () -> Unit,
-    ) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text(stringResource(R.string.delete_dialog_title)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    onDismiss()
-                    onConfirmDelete()
-                }) {
-                    Text(stringResource(UtilsStringR.confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(UtilsStringR.cancel))
-                }
-            },
-        )
     }
 }

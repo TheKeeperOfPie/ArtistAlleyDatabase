@@ -12,10 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridAppBar
 
 object ArtBrowseSelectionScreen {
 
@@ -36,7 +36,16 @@ object ArtBrowseSelectionScreen {
         onConfirmDelete: () -> Unit = {},
     ) {
         Scaffold(
-            topBar = { AppBar(text = title(), upIconOption = upIconOption) },
+            topBar = {
+                EntryGridAppBar(
+                    title = title,
+                    upIconOption = upIconOption,
+                    selectedItems = selectedItems,
+                    onClickClear = onClickClear,
+                    onClickEdit = onClickEdit,
+                    onConfirmDelete = onConfirmDelete,
+                )
+            },
             snackbarHost = {
                 SnackbarErrorText(
                     errorRes()?.first,
@@ -66,9 +75,6 @@ object ArtBrowseSelectionScreen {
                             selectedItems = selectedItems,
                             onClickEntry = onClickEntry,
                             onLongClickEntry = onLongClickEntry,
-                            onClickClear = onClickClear,
-                            onClickEdit = onClickEdit,
-                            onConfirmDelete = onConfirmDelete,
                         )
                     }
                 }

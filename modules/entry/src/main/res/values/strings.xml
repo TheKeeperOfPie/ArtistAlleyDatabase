@@ -40,7 +40,11 @@
 
     <string name="entry_search_hint">Search…</string>
     <string name="entry_search_hint_with_entry_count">Search %1$d entries…</string>
+    <string name="entry_search_hint_edit_mode_selected">%1$d selected</string>
     <string name="entry_search_clear">Clear search</string>
+    <string name="entry_search_edit_mode_clear">Clear entries</string>
+    <string name="entry_search_edit_mode_edit">Edit entries</string>
+    <string name="entry_search_edit_mode_delete">Delete entries</string>
     <string name="entry_search_options_collapse">Collapse search options</string>
     <string name="entry_search_options_expand">Expand search options</string>
     <string name="entry_search_add_entry">Add new entry</string>

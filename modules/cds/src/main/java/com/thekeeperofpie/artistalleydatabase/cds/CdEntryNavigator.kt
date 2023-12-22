@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
 import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -100,6 +101,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
 
             viewModel.initialize(column, query)
             CdBrowseSelectionScreen(
+                upIconOption = UpIconOption.Back(navHostController),
                 title = { title },
                 loading = { viewModel.loading },
                 entries = { viewModel.entries.collectAsLazyPagingItems() },

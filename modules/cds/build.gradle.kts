@@ -13,7 +13,7 @@ dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:anilist"))
     api(project(":modules:browse"))
-    implementation(project(":modules:compose-utils"))
+    api(project(":modules:compose-utils"))
     api(project(":modules:data"))
     api(project(":modules:entry"))
     api(project(":modules:musical-artists"))

@@ -71,7 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
-import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -270,7 +270,7 @@ object EntryDetailsScreen {
             }
 
             if (showDeleteDialog) {
-                EntryGrid.DeleteDialog(
+                EntryGridDeleteDialog(
                     { showDeleteDialog = false },
                     onConfirmDelete
                 )
