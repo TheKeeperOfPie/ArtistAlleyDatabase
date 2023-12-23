@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -47,7 +48,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.request.ImageRequest
 import coil.size.Dimension
@@ -87,7 +87,7 @@ object Anime2AnimeScreen {
     ) = this(
         upIconOption = upIconOption,
         viewer = { viewModel.viewer.collectAsState().value },
-        startingMedia = { viewModel.startingMedia },
+        startAndTargetMedia = { viewModel.startAndTargetMedia },
         continuations = { viewModel.continuations },
         text = { viewModel.text },
         onTextChange = { viewModel.text = it },
@@ -102,7 +102,7 @@ object Anime2AnimeScreen {
     operator fun invoke(
         upIconOption: UpIconOption?,
         viewer: @Composable () -> AniListViewer?,
-        startingMedia: () -> LoadingResult<Anime2AnimeContinuation>,
+        startAndTargetMedia: () -> LoadingResult<Anime2AnimeStartAndTargetMedia>,
         continuations: () -> List<Anime2AnimeContinuation>,
         text: () -> String,
         onTextChange: (String) -> Unit,
@@ -131,8 +131,8 @@ object Anime2AnimeScreen {
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             Box {
-                val startingMedia = startingMedia()
-                val refreshing = startingMedia.loading
+                val startAndTargetMedia = startAndTargetMedia()
+                val refreshing = startAndTargetMedia.loading
                 val pullRefreshState = rememberPullRefreshState(
                     refreshing = refreshing,
                     onRefresh = onRefresh,
@@ -146,20 +146,72 @@ object Anime2AnimeScreen {
                     val listState = rememberLazyListState()
                     val continuations = continuations()
                     LaunchedEffect(continuations.size) {
-                        listState.animateScrollToItem(0, 0)
+                        if (continuations.isNotEmpty()) {
+                            listState.animateScrollToItem(continuations.size - 1)
+                        }
                     }
                     LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(vertical = 12.dp),
-                        reverseLayout = true,
                         state = listState,
                         modifier = Modifier
                             .weight(1f)
                             .pullRefresh(pullRefreshState)
                     ) {
+                        item(key = "instructions") {
+                            Text(
+                                text = stringResource(R.string.anime2anime_instructions),
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.widthIn(max = 300.dp)
+                                    .align(Alignment.CenterHorizontally)
+                            )
+                        }
+
+                        item(key = "targetMediaHeader") {
+                            Text(
+                                text = stringResource(R.string.anime2anime_target_media_header),
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                            )
+                        }
+                        item(key = "targetMedia") {
+                            AnimeMediaListRow(
+                                screenKey = SCREEN_KEY,
+                                entry = startAndTargetMedia.result?.targetMedia?.media,
+                                viewer = viewer,
+                                onClickListEdit = editViewModel::initialize,
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                                    .padding(start = 16.dp, end = 16.dp)
+                            )
+                        }
+
+                        item(key = "startingMediaHeader") {
+                            Text(
+                                text = stringResource(R.string.anime2anime_starting_media_header),
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                            )
+                        }
+                        item(key = "startingMedia") {
+                            AnimeMediaListRow(
+                                screenKey = SCREEN_KEY,
+                                entry = startAndTargetMedia.result?.startMedia?.media,
+                                viewer = viewer,
+                                onClickListEdit = editViewModel::initialize,
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                                    .padding(start = 16.dp, end = 16.dp)
+                            )
+                        }
+
                         // TODO: Filter/handle duplicates
                         continuations.forEach {
+                            connections(it.connections)
                             item {
                                 AnimeMediaListRow(
                                     screenKey = SCREEN_KEY,
@@ -171,23 +223,6 @@ object Anime2AnimeScreen {
                                         .padding(start = 16.dp, end = 16.dp)
                                 )
                             }
-                            connections(it.connections)
-                        }
-
-                        item(key = "startingMedia") {
-                            AnimeMediaListRow(
-                                screenKey = SCREEN_KEY,
-                                entry = startingMedia.result?.media,
-                                viewer = viewer,
-                                onClickListEdit = editViewModel::initialize,
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(start = 16.dp, end = 16.dp)
-                            )
-                        }
-
-                        item(key = "instructions") {
-                            Text("Insert instructions here")
                         }
                     }
 
@@ -233,7 +268,7 @@ object Anime2AnimeScreen {
     }
 
     private fun LazyListScope.connections(connections: List<Anime2AnimeContinuation.Connection>) {
-        connections.fastForEachReversed {
+        connections.forEach {
             when (it) {
                 // TODO: Key with ID (scoped to parent media with uniqueness)
                 is Anime2AnimeContinuation.Connection.Character -> item {

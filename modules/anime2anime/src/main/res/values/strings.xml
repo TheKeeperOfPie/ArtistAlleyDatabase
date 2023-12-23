@@ -6,4 +6,8 @@
     <string name="anime2anime_error_media_not_found">Anime not found</string>
     <string name="anime2anime_error_loading_media">Error loading media</string>
     <string name="anime2anime_error_no_connection">No connection found</string>
+    <string name="anime2anime_instructions">Find a path between 2 anime through characters/staff
+        that appear in both (only Japanese voice actors supported)</string>
+    <string name="anime2anime_target_media_header">Your target</string>
+    <string name="anime2anime_starting_media_header">Starting at</string>
 </resources>

@@ -7,6 +7,7 @@ import com.anilist.MediaWithCharactersQuery
 import com.anilist.SimpleMediaByIdsQuery
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
+import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
@@ -123,12 +124,13 @@ class AniListApi(
             }
     }
 
-    fun searchSeries(query: String) =
+    fun searchSeries(query: String, type: MediaType?) =
         apolloClient.query(
             MediaSearchQuery(
                 search = Optional.Present(query),
                 page = Optional.Present(0),
                 perPage = Optional.Present(10),
+                type = Optional.presentIfNotNull(type),
             )
         ).toFlow().map {
             val data = it.data

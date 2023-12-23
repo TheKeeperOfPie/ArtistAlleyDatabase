@@ -1,3 +1,34 @@
+query Anime2AnimeCountQuery {
+    SiteStatistics {
+        anime(sort: DATE_DESC, perPage: 1) {
+            nodes {
+                count
+                date
+            }
+        }
+    }
+}
+
+query Anime2AnimeRandomAnimeQuery($page: Int!, $minStaffAndCharactersCount: Int!) {
+    Page(perPage: 25, page: $page) {
+        media(type: ANIME) {
+            id
+            popularity
+            favourites
+            characters(perPage: $minStaffAndCharactersCount) {
+                pageInfo {
+                    hasNextPage
+                }
+            }
+            staff(perPage: $minStaffAndCharactersCount) {
+                pageInfo {
+                    hasNextPage
+                }
+            }
+        }
+    }
+}
+
 query Anime2AnimeMediaQuery($mediaId: Int!) {
     Media(id: $mediaId) {
         ...MediaPreview

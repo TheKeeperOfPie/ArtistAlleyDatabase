@@ -4,6 +4,7 @@ package com.thekeeperofpie.artistalleydatabase.entry
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -123,7 +124,8 @@ fun EntryPrefilledAutocompleteDropdown(
                                     Text(
                                         text = titleText(),
                                         maxLines = 1,
-                                        style = MaterialTheme.typography.labelLarge
+                                        style = MaterialTheme.typography.labelLarge,
+                                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                                     )
 
                                     @Suppress("NAME_SHADOWING")
@@ -158,7 +160,8 @@ fun EntryPrefilledAutocompleteDropdown(
                                 }
                             }
                         },
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

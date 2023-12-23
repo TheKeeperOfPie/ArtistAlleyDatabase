@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 import android.util.Log
 import androidx.annotation.WorkerThread
 import com.anilist.fragment.AniListMedia
+import com.anilist.type.MediaType
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -55,8 +56,8 @@ class AniListAutocompleter @Inject constructor(
         }
     }
 
-    fun querySeriesNetwork(query: String): Flow<List<Entry.Prefilled<AniListMedia>>> {
-        val search = aniListApi.searchSeries(query).mapNotNull {
+    fun querySeriesNetwork(query: String, type: MediaType? = null): Flow<List<Entry.Prefilled<AniListMedia>>> {
+        val search = aniListApi.searchSeries(query, type).mapNotNull {
             it?.page?.media
                 ?.filterNotNull()
                 ?.map(aniListDataConverter::seriesEntry)

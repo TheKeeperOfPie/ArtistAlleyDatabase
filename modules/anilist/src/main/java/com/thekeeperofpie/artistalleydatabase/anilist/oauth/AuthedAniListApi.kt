@@ -8,7 +8,9 @@ import com.anilist.ActivityDetailsRepliesQuery
 import com.anilist.AiringScheduleQuery
 import com.anilist.Anime2AnimeConnectionDetailsQuery
 import com.anilist.Anime2AnimeConnectionsQuery
+import com.anilist.Anime2AnimeCountQuery
 import com.anilist.Anime2AnimeMediaQuery
+import com.anilist.Anime2AnimeRandomAnimeQuery
 import com.anilist.AuthedUserQuery
 import com.anilist.CharacterAdvancedSearchQuery
 import com.anilist.CharacterAndMediasPaginationQuery
@@ -1206,8 +1208,14 @@ open class AuthedAniListApi(
             )
         )
 
+    open suspend fun anime2AnimeCount() =
+        queryResult(Anime2AnimeCountQuery()) { it.siteStatistics?.anime?.nodes?.firstOrNull() }
+
+    open suspend fun anime2AnimeRandomAnime(page: Int) =
+        queryResult(Anime2AnimeRandomAnimeQuery(page = page, minStaffAndCharactersCount = 10)) { it.page?.media }
+
     open suspend fun anime2AnimeMedia(mediaId: String) =
-        query(Anime2AnimeMediaQuery(mediaId = mediaId.toInt()))
+        queryResult(Anime2AnimeMediaQuery(mediaId = mediaId.toInt())) { it.media }
 
     open suspend fun anime2AnimeConnections(mediaId: String) =
         query(Anime2AnimeConnectionsQuery(mediaId = mediaId.toInt()))
@@ -1230,8 +1238,25 @@ open class AuthedAniListApi(
     )
 
     // TODO: Use queryCacheAndNetwork for everything
+    // TODO: Use a result object to avoid throwing
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkFirst).execute().dataOrThrow()
+
+    private suspend fun <Data : Query.Data, Output> queryResult(
+        query: Query<Data>,
+        transform: (Data) -> Output,
+    ) = try {
+        Result.success(
+            transform(
+                apolloClient.query(query)
+                    .fetchPolicy(FetchPolicy.NetworkFirst)
+                    .execute()
+                    .dataOrThrow()
+            )
+        )
+    } catch (t: Throwable) {
+        Result.failure(t)
+    }
 
     private suspend fun <D : Mutation.Data> mutate(mutation: Mutation<D>) =
         apolloClient.mutation(mutation).execute().dataOrThrow()
