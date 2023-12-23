@@ -1,0 +1,104 @@
+query Anime2AnimeMediaQuery($mediaId: Int!) {
+    Media(id: $mediaId) {
+        ...MediaPreview
+        ...Anime2AnimeConnectionsMedia
+    }
+}
+
+fragment Anime2AnimeConnectionsMedia on Media {
+    id
+    characters(perPage: 25, sort: [RELEVANCE, ROLE, FAVOURITES_DESC]) {
+        pageInfo {
+            hasNextPage
+        }
+        edges {
+            node {
+                # Querying this field is necessary to load voiceActors
+                id
+            }
+            id
+            voiceActors(language: JAPANESE, sort: [RELEVANCE, ROLE, FAVOURITES_DESC]) {
+                id
+                staffMedia(perPage: 25, sort: [POPULARITY_DESC]) {
+                    pageInfo {
+                        hasNextPage
+                    }
+                    nodes {
+                        id
+                    }
+                }
+                characterMedia(perPage: 25, sort: [POPULARITY_DESC]) {
+                    pageInfo {
+                        hasNextPage
+                    }
+                    nodes {
+                        id
+                    }
+                }
+            }
+        }
+    }
+    staff(perPage: 25, sort: [RELEVANCE, ROLE, FAVOURITES_DESC]) {
+        pageInfo {
+            hasNextPage
+        }
+        edges {
+            role
+            node {
+                id
+                staffMedia(perPage: 25, sort: [POPULARITY_DESC]) {
+                    pageInfo {
+                        hasNextPage
+                    }
+                    nodes {
+                        id
+                    }
+                }
+                characterMedia(perPage: 25, sort: [POPULARITY_DESC]) {
+                    pageInfo {
+                        hasNextPage
+                    }
+                    nodes {
+                        id
+                    }
+                }
+            }
+        }
+    }
+}
+
+query Anime2AnimeConnectionsQuery($mediaId: Int!) {
+    Media(id: $mediaId) {
+        ...Anime2AnimeConnectionsMedia
+    }
+}
+
+query Anime2AnimeConnectionDetailsQuery(
+    $mediaId: Int!,
+    $includeCharacter: Boolean!,
+    $characterIds: [Int]!,
+    $includeVoiceActor: Boolean!,
+    $voiceActorIds: [Int]!,
+    $includeStaff: Boolean!,
+    $staffIds: [Int]!,
+) {
+    Media(id: $mediaId) {
+        ...MediaPreview
+        ...Anime2AnimeConnectionsMedia
+    }
+    characters: Page {
+        characters(id_in: $characterIds) @include(if: $includeCharacter) {
+            ...CharacterNavigationData
+        }
+    }
+    voiceActors: Page {
+        staff(id_in: $voiceActorIds) @include(if: $includeVoiceActor) {
+            ...StaffNavigationData
+        }
+    }
+    staff: Page {
+        staff(id_in: $staffIds) @include(if: $includeStaff) {
+            ...StaffNavigationData
+        }
+    }
+}

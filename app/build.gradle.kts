@@ -257,6 +257,7 @@ tasks.register("debugTask") {
 dependencies {
     implementation(project(":modules:android-utils"))
     implementation(project(":modules:anime"))
+    implementation(project(":modules:anime2anime"))
     implementation(project(":modules:anilist"))
     implementation(project(":modules:art"))
     implementation(project(":modules:browse"))

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Games
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
@@ -34,6 +35,11 @@ enum class NavDrawerItems(
         com.thekeeperofpie.artistalleydatabase.settings.R.string.settings_nav_drawer,
         Icons.Default.Settings,
         route = "settings?root=true"
+    ),
+    ANIME_2_ANIME(
+        AppNavDestinations.ANIME_2_ANIME.id,
+        R.string.nav_drawer_anime_2_anime,
+        Icons.Default.Games,
     ),
     ;
 }

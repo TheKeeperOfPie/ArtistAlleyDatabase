@@ -13,6 +13,7 @@
     <string name="nav_drawer_browse">Browse</string>
     <string name="nav_drawer_import">Import</string>
     <string name="nav_drawer_export">Export</string>
+    <string name="nav_drawer_anime_2_anime">Anime 2 Anime</string>
     <string name="import_button">Import</string>
     <string name="import_source">Import source</string>
     <string name="invalid_import_source">Invalid import source</string>

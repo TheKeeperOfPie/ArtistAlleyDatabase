@@ -921,4 +921,23 @@ class AuthedAniListApiWrapper(
         mediaId: String,
         includeFollowing: Boolean,
     ) = super.mediaDetailsActivity(mediaId, includeFollowing)
+
+    override suspend fun anime2AnimeMedia(mediaId: String) = super.anime2AnimeMedia(mediaId).also {
+        if (it.media?.isAdult == true) {
+            throw IOException("Cannot load this media")
+        }
+    }
+
+    override suspend fun anime2AnimeConnections(mediaId: String) = super.anime2AnimeConnections(mediaId)
+
+    override suspend fun anime2AnimeConnectionDetails(
+        mediaId: String,
+        characterIds: List<String>,
+        voiceActorIds: List<String>,
+        staffIds: List<String>,
+    ) = super.anime2AnimeConnectionDetails(mediaId, characterIds, voiceActorIds, staffIds).also {
+        if (it.media?.isAdult == true) {
+            throw IOException("Cannot load this media")
+        }
+    }
 }

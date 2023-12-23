@@ -30,6 +30,7 @@ include(
     ":modules:anilist",
     ":modules:anilist-data",
     ":modules:anime",
+    ":modules:anime2anime",
     ":modules:animethemes",
     ":modules:art",
     ":modules:browse",

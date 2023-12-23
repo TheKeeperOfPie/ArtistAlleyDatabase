@@ -40,6 +40,7 @@ class AniListApi(
         private const val TAG = "AniListApi"
     }
 
+    // TODO: Merge clients
     private val apolloClient = ApolloClient.Builder()
         .serverUrl(AniListUtils.GRAPHQL_API_URL)
         .httpEngine(DefaultHttpEngine(okHttpClient))

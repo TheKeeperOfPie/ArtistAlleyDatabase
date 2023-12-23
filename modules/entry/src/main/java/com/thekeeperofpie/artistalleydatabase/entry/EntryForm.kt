@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -127,7 +126,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -365,10 +363,15 @@ private fun MultiTextSection(
         enter = expandVertically(),
         exit = shrinkVertically(),
     ) {
-        var expanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-            val bringIntoViewRequester = remember { BringIntoViewRequester() }
-            val coroutineScope = rememberCoroutineScope()
+        EntryPrefilledAutocompleteDropdown(
+            text = { section.pendingValue.text },
+            predictions = section.predictions,
+            showPredictions = {
+                section.lockState?.editable != false
+                        && section.pendingValue.text.isNotBlank()
+            },
+            onPredictionChosen = section::onPredictionChosen,
+        ) { bringIntoViewRequester ->
             OpenSectionField(
                 section = section,
                 onFocusPrevious = onFocusPrevious,
@@ -378,123 +381,6 @@ private fun MultiTextSection(
                 onFocusChanged = { focused = it },
                 modifier = Modifier.menuAnchor(),
             )
-
-            if (section.lockState?.editable != false
-                && section.pendingValue.text.isNotBlank()
-                && section.predictions.isNotEmpty()
-            ) {
-                LaunchedEffect(section.pendingValue.text, section.predictions) {
-                    expanded = true
-                }
-                // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
-                val uriHandler = LocalUriHandler.current
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 240.dp)
-                ) {
-                    section.predictions.forEachIndexed { index, entry ->
-                        DropdownMenuItem(
-                            onClick = {
-                                section.onPredictionChosen(index)
-                                coroutineScope.launch {
-                                    // TODO: Delay is necessary or column won't scroll
-                                    delay(500)
-                                    bringIntoViewRequester.bringIntoView()
-                                }
-                            },
-                            text = {
-                                val titleText: @Composable () -> String
-                                var subtitleText: () -> String? = { null }
-                                var image: () -> String? = { null }
-                                var imageLink: () -> String? = { null }
-                                var secondaryImage: (() -> String?)? = null
-                                var secondaryImageLink: () -> String? = { null }
-                                when (entry) {
-                                    is EntrySection.MultiText.Entry.Custom -> {
-                                        titleText = { entry.text }
-                                    }
-                                    is EntrySection.MultiText.Entry.Prefilled<*> -> {
-                                        titleText = { entry.titleText }
-                                        subtitleText = { entry.subtitleText }
-                                        image = { entry.image }
-                                        imageLink = { entry.imageLink }
-                                        secondaryImage = entry.secondaryImage?.let { { it } }
-                                        secondaryImageLink = { entry.secondaryImageLink }
-                                    }
-                                    EntrySection.MultiText.Entry.Different -> {
-                                        titleText = { stringResource(R.string.different) }
-                                    }
-                                }.run { /*exhaust*/ }
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.animateContentSize(),
-                                ) {
-                                    EntryImage(
-                                        image = image,
-                                        link = imageLink,
-                                        uriHandler = uriHandler,
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .heightIn(min = 54.dp)
-                                            .width(42.dp)
-                                    )
-                                    Column(
-                                        Modifier
-                                            .weight(1f, true)
-                                            .padding(
-                                                start = 16.dp,
-                                                end = 16.dp,
-                                                top = 8.dp,
-                                                bottom = 8.dp,
-                                            )
-                                    ) {
-                                        Text(
-                                            text = titleText(),
-                                            maxLines = 1,
-                                            style = MaterialTheme.typography.labelLarge
-                                        )
-
-                                        @Suppress("NAME_SHADOWING")
-                                        val subtitleText = subtitleText()
-                                        if (subtitleText != null) {
-                                            Text(
-                                                text = subtitleText,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                modifier = Modifier.padding(start = 24.dp)
-                                            )
-                                        }
-                                    }
-
-                                    entry.trailingIcon?.let { imageVector ->
-                                        Icon(
-                                            imageVector = imageVector,
-                                            contentDescription = entry.trailingIconContentDescription
-                                                ?.let { stringResource(it) },
-                                        )
-                                    }
-
-                                    if (secondaryImage != null) {
-                                        EntryImage(
-                                            image = secondaryImage,
-                                            link = secondaryImageLink,
-                                            uriHandler = uriHandler,
-                                            modifier = Modifier
-                                                .fillMaxHeight()
-                                                .heightIn(min = 54.dp)
-                                                .width(42.dp)
-                                        )
-                                    }
-                                }
-                            },
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
         }
     }
 }

@@ -18,7 +18,7 @@ class AniListDataConverter @Inject constructor(
     private val aniListJson: AniListJson
 ) {
 
-    fun seriesEntry(media: AniListMedia): Entry {
+    fun seriesEntry(media: AniListMedia): Entry.Prefilled<AniListMedia> {
         val title = media.title?.romaji ?: media.id.toString()
         val serializedValue =
             aniListJson.toJson(MediaColumnEntry(media.id.toString(), title.trim()))

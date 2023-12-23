@@ -6,6 +6,9 @@ import android.util.Log
 import com.anilist.ActivityDetailsQuery
 import com.anilist.ActivityDetailsRepliesQuery
 import com.anilist.AiringScheduleQuery
+import com.anilist.Anime2AnimeConnectionDetailsQuery
+import com.anilist.Anime2AnimeConnectionsQuery
+import com.anilist.Anime2AnimeMediaQuery
 import com.anilist.AuthedUserQuery
 import com.anilist.CharacterAdvancedSearchQuery
 import com.anilist.CharacterAndMediasPaginationQuery
@@ -1202,6 +1205,29 @@ open class AuthedAniListApi(
                 includeFollowing = includeFollowing,
             )
         )
+
+    open suspend fun anime2AnimeMedia(mediaId: String) =
+        query(Anime2AnimeMediaQuery(mediaId = mediaId.toInt()))
+
+    open suspend fun anime2AnimeConnections(mediaId: String) =
+        query(Anime2AnimeConnectionsQuery(mediaId = mediaId.toInt()))
+
+    open suspend fun anime2AnimeConnectionDetails(
+        mediaId: String,
+        characterIds: List<String>,
+        voiceActorIds: List<String>,
+        staffIds: List<String>,
+    ) = query(
+        Anime2AnimeConnectionDetailsQuery(
+            mediaId = mediaId.toInt(),
+            includeCharacter = characterIds.isNotEmpty(),
+            characterIds = characterIds.map(String::toInt),
+            includeVoiceActor = voiceActorIds.isNotEmpty(),
+            voiceActorIds = voiceActorIds.map(String::toInt),
+            includeStaff = staffIds.isNotEmpty(),
+            staffIds = staffIds.map(String::toInt),
+        )
+    )
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

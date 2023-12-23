@@ -94,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaTagPreview
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
@@ -192,7 +193,7 @@ class MainActivity : ComponentActivity() {
         val startDestination = (startDestinationFromIntent
             ?: startDestinationFromSettings)
             ?.let { startId -> NavDrawerItems.values().find { it.id == startId }?.id }
-            ?: AnimeNavDestinations.HOME.id
+            ?: NavDrawerItems.ANIME.id
         val monetizationProvider = monetizationProviderOptional.getOrNull()
         monetizationProvider?.initialize(this)
         val subscriptionProvider = subscriptionProviderOptional.getOrNull()
@@ -541,6 +542,10 @@ class MainActivity : ComponentActivity() {
                                     navigationCallback.onClickViewIgnored()
                                 },
                             )
+                        }
+
+                        composable(AppNavDestinations.ANIME_2_ANIME.id) {
+                            Anime2AnimeScreen(upIconOption = navDrawerUpIconOption)
                         }
 
                         composable(

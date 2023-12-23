@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime2anime_app_bar_title">Anime2Anime</string>
+    <string name="anime2anime_media_name_placeholder">Type name of anime</string>
+    <string name="anime2anime_submit_media_content_description">Submit anime</string>
+    <string name="anime2anime_error_media_not_found">Anime not found</string>
+    <string name="anime2anime_error_loading_media">Error loading media</string>
+    <string name="anime2anime_error_no_connection">No connection found</string>
+</resources>

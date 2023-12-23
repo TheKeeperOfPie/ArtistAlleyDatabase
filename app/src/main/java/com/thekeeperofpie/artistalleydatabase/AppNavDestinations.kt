@@ -8,4 +8,5 @@ enum class AppNavDestinations(val id: String) {
     SETTINGS("settings"),
     SEARCH_RESULTS("search_results"),
     CRASH("crash"),
+    ANIME_2_ANIME("anime_2_anime"),
 }

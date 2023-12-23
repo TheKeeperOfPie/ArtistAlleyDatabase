@@ -295,6 +295,44 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
     }
 }
 
+fun <T> Flow<List<T>>.applyMediaStatusChangesForList(
+    statusController: MediaListStatusController,
+    ignoreController: IgnoreController,
+    settings: AnimeSettings,
+    media: (T) -> MediaWithListStatus?,
+    mediaStatusAware: (T) -> MediaStatusAware,
+    forceShowIgnored: Boolean = false,
+    copy: T.(MediaListStatus?, progress: Int?, progressVolumes: Int?, scoreRaw: Double?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> T,
+) = flatMapLatest { data ->
+    combine(
+        statusController.allChanges(),
+        ignoreController.updates(),
+        settings.showIgnored,
+        settings.showAdult,
+        settings.showLessImportantTags,
+        settings.showSpoilerTags,
+        ::MediaStatusParams,
+    ).mapLatest {
+        val (statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags) = it
+        data.mapNotNull {
+            val mediaPreview = media(it)
+            applyMediaFiltering(
+                statuses = statuses,
+                ignoreController = ignoreController,
+                showAdult = showAdult,
+                showIgnored = showIgnored,
+                showLessImportantTags = showLessImportantTags,
+                showSpoilerTags = showSpoilerTags,
+                entry = it,
+                transform = { mediaStatusAware(it) },
+                media = mediaPreview,
+                forceShowIgnored = forceShowIgnored,
+                copy = copy,
+            )
+        }
+    }
+}
+
 private data class MediaStatusParams(
     val statuses: Map<String, MediaListStatusController.Update>,
     val ignoredCount: Int,
