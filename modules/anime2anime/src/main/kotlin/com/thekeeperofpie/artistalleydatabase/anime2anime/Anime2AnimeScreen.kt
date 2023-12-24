@@ -1,11 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.anime2anime
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -30,6 +33,7 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +47,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -78,7 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalMaterialApi::class
+    ExperimentalMaterialApi::class, ExperimentalLayoutApi::class
 )
 object Anime2AnimeScreen {
 
@@ -91,9 +100,11 @@ object Anime2AnimeScreen {
     ) = this(
         upIconOption = upIconOption,
         viewer = { viewModel.viewer.collectAsState().value },
-        startAndTargetMedia = { viewModel.startAndTargetMedia },
-        continuations = { viewModel.continuations },
-        lastSubmitResult = { viewModel.lastSubmitResult },
+        selectedTab = { viewModel.selectedTab },
+        onSelectedTabChange = { viewModel.selectedTab = it },
+        startAndTargetMedia = { viewModel.currentGameState().startAndTargetMedia },
+        continuations = { viewModel.currentGameState().continuations },
+        lastSubmitResult = { viewModel.currentGameState().lastSubmitResult },
         text = { viewModel.text },
         onTextChange = { viewModel.text = it },
         predictions = { viewModel.predictions },
@@ -108,6 +119,8 @@ object Anime2AnimeScreen {
     operator fun invoke(
         upIconOption: UpIconOption?,
         viewer: @Composable () -> AniListViewer?,
+        selectedTab: () -> GameTab,
+        onSelectedTabChange: (GameTab) -> Unit,
         startAndTargetMedia: () -> LoadingResult<Anime2AnimeStartAndTargetMedia>,
         continuations: () -> List<Anime2AnimeContinuation>,
         lastSubmitResult: () -> Anime2AnimeSubmitResult,
@@ -166,7 +179,10 @@ object Anime2AnimeScreen {
                         state = listState,
                         modifier = Modifier
                             .weight(1f)
-                            .pullRefresh(pullRefreshState)
+                            .pullRefresh(
+                                state = pullRefreshState,
+                                enabled = !startAndTargetMedia.success,
+                            )
                     ) {
                         lastSubmitResultText(lastSubmitResult, onRestart)
 
@@ -184,6 +200,15 @@ object Anime2AnimeScreen {
                                 )
                             }
                             connections(it.connections)
+                        }
+
+                        if (!startAndTargetMedia.success) {
+                            item(key = "initialError") {
+                                Text(text = stringResource(R.string.anime2anime_error_loading_media))
+                                Button(onClick = onRefresh) {
+                                    Text(text = stringResource(R.string.anime2anime_retry))
+                                }
+                            }
                         }
 
                         item(key = "startingMedia") {
@@ -204,7 +229,7 @@ object Anime2AnimeScreen {
                                 modifier = Modifier
                                     .animateItemPlacement()
                                     .align(Alignment.CenterHorizontally)
-                                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp)
                             )
                         }
 
@@ -226,7 +251,15 @@ object Anime2AnimeScreen {
                                 modifier = Modifier
                                     .animateItemPlacement()
                                     .align(Alignment.CenterHorizontally)
-                                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp)
+                            )
+                        }
+
+                        item(key = "options") {
+                            OptionsRow(
+                                selectedTab = selectedTab,
+                                onSelectedTabChange = onSelectedTabChange,
+                                modifier = Modifier.animateItemPlacement()
                             )
                         }
 
@@ -248,7 +281,10 @@ object Anime2AnimeScreen {
                     EntryPrefilledAutocompleteDropdown(
                         text = text,
                         predictions = predictions,
-                        showPredictions = { textFieldText.isNotEmpty() },
+                        showPredictions = {
+                            textFieldText.isNotEmpty()
+                                    && lastSubmitResult() != Anime2AnimeSubmitResult.Loading
+                        },
                         onPredictionChosen = { onChooseMedia(predictions[it].value) },
                     ) {
                         TextField(
@@ -275,6 +311,12 @@ object Anime2AnimeScreen {
                             modifier = Modifier
                                 .menuAnchor()
                                 .fillMaxWidth()
+                                .onKeyEvent {
+                                    if (it.type == KeyEventType.KeyUp && it.key == Key.Enter) {
+                                        onSubmitMedia()
+                                        true
+                                    } else false
+                                }
                         )
                     }
                 }
@@ -585,5 +627,33 @@ object Anime2AnimeScreen {
                 }
             }
         }
+    }
+
+    @Composable
+    private fun OptionsRow(
+        selectedTab: () -> GameTab,
+        onSelectedTabChange: (GameTab) -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        @Suppress("NAME_SHADOWING")
+        val selectedTab = selectedTab()
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier.padding(vertical = 8.dp)
+        ) {
+            GameTab.entries.forEach {
+                FilterChip(
+                    selected = selectedTab == it,
+                    onClick = { onSelectedTabChange(it) },
+                    label = { Text(text = stringResource(it.textRes)) },
+                )
+            }
+        }
+    }
+
+    enum class GameTab(@StringRes val textRes: Int) {
+        DAILY(R.string.anime2anime_game_tab_daily),
+        RANDOM(R.string.anime2anime_game_tab_random),
+//        CUSTOM(R.string.anime2anime_game_tab_custom),
     }
 }

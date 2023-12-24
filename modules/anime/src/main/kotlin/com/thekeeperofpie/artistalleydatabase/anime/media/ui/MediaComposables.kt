@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -35,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -293,7 +295,12 @@ fun MediaTagRow(
     bottomPadding: Dp = 10.dp,
 ) {
     if (tags.isEmpty()) return
+    val listState = rememberLazyListState()
+    LaunchedEffect(tags) {
+        listState.scrollToItem(0, 0)
+    }
     LazyRow(
+        state = listState,
         contentPadding = PaddingValues(start = startPadding, end = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier

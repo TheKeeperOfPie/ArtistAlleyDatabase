@@ -924,6 +924,10 @@ class AuthedAniListApiWrapper(
 
     override suspend fun anime2AnimeCount() = super.anime2AnimeCount()
 
+    override suspend fun anime2AnimeRandomAnime(page: Int) = super.anime2AnimeRandomAnime(page).let {
+        it.map { it?.filter { it?.isAdult != true } }
+    }
+
     override suspend fun anime2AnimeMedia(mediaId: String) = super.anime2AnimeMedia(mediaId).also {
         if (it.getOrNull()?.isAdult == true) {
             throw IOException("Cannot load this media")

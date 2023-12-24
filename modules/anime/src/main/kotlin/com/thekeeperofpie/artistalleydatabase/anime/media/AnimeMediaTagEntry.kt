@@ -52,7 +52,7 @@ data class AnimeMediaTagEntry(
             tag: AnimeMediaTagEntry,
             modifier: Modifier = Modifier,
             title: @Composable () -> String = { tag.name },
-            onTagClick: (mediatagId: String, tagName: String) -> Unit = { _, _ -> },
+            onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
             containerColor: Color,
             textColor: Color,
             textStyle: TextStyle? = null,
