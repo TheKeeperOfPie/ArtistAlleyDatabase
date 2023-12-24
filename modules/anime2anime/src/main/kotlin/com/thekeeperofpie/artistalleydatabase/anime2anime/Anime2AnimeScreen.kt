@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +50,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.request.ImageRequest
 import coil.size.Dimension
@@ -59,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeStringR
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -89,12 +93,14 @@ object Anime2AnimeScreen {
         viewer = { viewModel.viewer.collectAsState().value },
         startAndTargetMedia = { viewModel.startAndTargetMedia },
         continuations = { viewModel.continuations },
+        lastSubmitResult = { viewModel.lastSubmitResult },
         text = { viewModel.text },
         onTextChange = { viewModel.text = it },
         predictions = { viewModel.predictions },
         onRefresh = viewModel::onRefresh,
         onSubmitMedia = viewModel::onSubmit,
         onChooseMedia = viewModel::onChooseMedia,
+        onRestart = viewModel::onRestart,
     )
 
     @Suppress("NAME_SHADOWING")
@@ -104,12 +110,14 @@ object Anime2AnimeScreen {
         viewer: @Composable () -> AniListViewer?,
         startAndTargetMedia: () -> LoadingResult<Anime2AnimeStartAndTargetMedia>,
         continuations: () -> List<Anime2AnimeContinuation>,
+        lastSubmitResult: () -> Anime2AnimeSubmitResult,
         text: () -> String,
         onTextChange: (String) -> Unit,
         predictions: () -> List<EntrySection.MultiText.Entry.Prefilled<AniListMedia>>,
         onRefresh: () -> Unit,
         onSubmitMedia: () -> Unit,
         onChooseMedia: (AniListMedia) -> Unit,
+        onRestart: () -> Unit,
     ) {
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
@@ -145,73 +153,25 @@ object Anime2AnimeScreen {
                     val viewer = viewer()
                     val listState = rememberLazyListState()
                     val continuations = continuations()
-                    LaunchedEffect(continuations.size) {
+                    LaunchedEffect(lastSubmitResult(), continuations.size) {
                         if (continuations.isNotEmpty()) {
-                            listState.animateScrollToItem(continuations.size - 1)
+                            listState.animateScrollToItem(0, 0)
                         }
                     }
                     LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(vertical = 12.dp),
+                        reverseLayout = true,
                         state = listState,
                         modifier = Modifier
                             .weight(1f)
                             .pullRefresh(pullRefreshState)
                     ) {
-                        item(key = "instructions") {
-                            Text(
-                                text = stringResource(R.string.anime2anime_instructions),
-                                style = MaterialTheme.typography.bodyMedium,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.widthIn(max = 300.dp)
-                                    .align(Alignment.CenterHorizontally)
-                            )
-                        }
-
-                        item(key = "targetMediaHeader") {
-                            Text(
-                                text = stringResource(R.string.anime2anime_target_media_header),
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-                            )
-                        }
-                        item(key = "targetMedia") {
-                            AnimeMediaListRow(
-                                screenKey = SCREEN_KEY,
-                                entry = startAndTargetMedia.result?.targetMedia?.media,
-                                viewer = viewer,
-                                onClickListEdit = editViewModel::initialize,
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(start = 16.dp, end = 16.dp)
-                            )
-                        }
-
-                        item(key = "startingMediaHeader") {
-                            Text(
-                                text = stringResource(R.string.anime2anime_starting_media_header),
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-                            )
-                        }
-                        item(key = "startingMedia") {
-                            AnimeMediaListRow(
-                                screenKey = SCREEN_KEY,
-                                entry = startAndTargetMedia.result?.startMedia?.media,
-                                viewer = viewer,
-                                onClickListEdit = editViewModel::initialize,
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(start = 16.dp, end = 16.dp)
-                            )
-                        }
+                        lastSubmitResultText(lastSubmitResult, onRestart)
 
                         // TODO: Filter/handle duplicates
-                        continuations.forEach {
-                            connections(it.connections)
+                        continuations.fastForEachReversed {
                             item {
                                 AnimeMediaListRow(
                                     screenKey = SCREEN_KEY,
@@ -223,6 +183,63 @@ object Anime2AnimeScreen {
                                         .padding(start = 16.dp, end = 16.dp)
                                 )
                             }
+                            connections(it.connections)
+                        }
+
+                        item(key = "startingMedia") {
+                            AnimeMediaListRow(
+                                screenKey = SCREEN_KEY,
+                                entry = startAndTargetMedia.result?.startMedia?.media,
+                                viewer = viewer,
+                                onClickListEdit = editViewModel::initialize,
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                                    .padding(start = 16.dp, end = 16.dp)
+                            )
+                        }
+                        item(key = "startingMediaHeader") {
+                            Text(
+                                text = stringResource(R.string.anime2anime_starting_media_header),
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                            )
+                        }
+
+                        item(key = "targetMedia") {
+                            AnimeMediaListRow(
+                                screenKey = SCREEN_KEY,
+                                entry = startAndTargetMedia.result?.targetMedia?.media,
+                                viewer = viewer,
+                                onClickListEdit = editViewModel::initialize,
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                                    .padding(start = 16.dp, end = 16.dp)
+                            )
+                        }
+                        item(key = "targetMediaHeader") {
+                            Text(
+                                text = stringResource(R.string.anime2anime_target_media_header),
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                            )
+                        }
+
+                        item(key = "instructions") {
+                            Text(
+                                text = stringResource(R.string.anime2anime_instructions),
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                                    .widthIn(max = 300.dp)
+                                    .align(Alignment.CenterHorizontally)
+                            )
                         }
                     }
 
@@ -236,13 +253,17 @@ object Anime2AnimeScreen {
                     ) {
                         TextField(
                             value = textFieldText,
+                            enabled = lastSubmitResult() != Anime2AnimeSubmitResult.Finished,
                             onValueChange = onTextChange,
                             placeholder = {
                                 Text(stringResource(R.string.anime2anime_media_name_placeholder))
                             },
                             maxLines = 1,
                             trailingIcon = {
-                                IconButton(onClick = onSubmitMedia) {
+                                IconButton(
+                                    onClick = onSubmitMedia,
+                                    enabled = lastSubmitResult() != Anime2AnimeSubmitResult.Finished,
+                                ) {
                                     Icon(
                                         imageVector = Icons.Default.Done,
                                         contentDescription = stringResource(
@@ -268,7 +289,7 @@ object Anime2AnimeScreen {
     }
 
     private fun LazyListScope.connections(connections: List<Anime2AnimeContinuation.Connection>) {
-        connections.forEach {
+        connections.fastForEachReversed {
             when (it) {
                 // TODO: Key with ID (scoped to parent media with uniqueness)
                 is Anime2AnimeContinuation.Connection.Character -> item {
@@ -504,6 +525,63 @@ object Anime2AnimeScreen {
                             modifier = Modifier.align(Alignment.End)
                         )
                     }
+                }
+            }
+        }
+    }
+
+    private fun LazyListScope.lastSubmitResultText(
+        lastSubmitResult: () -> Anime2AnimeSubmitResult,
+        onRestart: () -> Unit,
+    ) {
+        item(key = "lastSubmitResult") {
+            val modifier = Modifier
+                .animateItemPlacement()
+                .padding(horizontal = 24.dp)
+            @Suppress("NAME_SHADOWING")
+            when (val lastSubmitResult = lastSubmitResult()) {
+                Anime2AnimeSubmitResult.None,
+                Anime2AnimeSubmitResult.Success,
+                -> Unit
+                Anime2AnimeSubmitResult.Loading -> CircularProgressIndicator()
+                is Anime2AnimeSubmitResult.FailedToLoad -> {
+                    Text(
+                        text = stringResource(
+                            R.string.anime2anime_submit_error_failed_to_load,
+                            lastSubmitResult.media.title?.primaryTitle().orEmpty(),
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = modifier
+                    )
+                }
+                Anime2AnimeSubmitResult.Finished -> {
+                    Button(onClick = onRestart, modifier = modifier) {
+                        Text(
+                            text = stringResource(
+                                R.string.anime2anime_submit_restart_button,
+                            ),
+                        )
+                    }
+                }
+                is Anime2AnimeSubmitResult.NoConnection -> {
+                    Text(
+                        text = stringResource(
+                            R.string.anime2anime_submit_error_no_connection,
+                            lastSubmitResult.media.title?.primaryTitle().orEmpty(),
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = modifier
+                    )
+                }
+                is Anime2AnimeSubmitResult.MediaNotFound -> {
+                    Text(
+                        text = stringResource(
+                            R.string.anime2anime_submit_error_media_not_found,
+                            lastSubmitResult.text,
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = modifier
+                    )
                 }
             }
         }

@@ -1,9 +1,7 @@
 fragment AniListMedia on Media {
     id
     title {
-        english
-        romaji
-        native
+        ...MediaTitleFragment
     }
     type
     isAdult
@@ -410,7 +408,7 @@ query MediaByIds($ids: [Int]!, $includeDescription: Boolean!) {
 
 query MediaSearch($search: String, $perPage: Int, $page: Int, $type: MediaType) {
     Page(perPage: $perPage, page: $page) @nonnull {
-        media(search: $search, type: $type) @nonnull {
+        media(search: $search, type: $type, sort: [SEARCH_MATCH, POPULARITY_DESC]) @nonnull {
             ...AniListMedia
         }
     }

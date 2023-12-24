@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.Anime2AnimeConnectionsQuery
 import com.anilist.Anime2AnimeRandomAnimeQuery
 import com.anilist.fragment.AniListMedia
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
@@ -63,15 +64,13 @@ class Anime2AnimeViewModel @Inject constructor(
     val viewer = api.authedUser
     var text by mutableStateOf("")
     var predictions by mutableStateOf(emptyList<EntrySection.MultiText.Entry.Prefilled<AniListMedia>>())
-    var error by mutableStateOf<Pair<Int, Exception?>?>(null)
-        private set
 
     var startAndTargetMedia by mutableStateOf(LoadingResult.loading<Anime2AnimeStartAndTargetMedia>())
 
     var continuations by mutableStateOf(emptyList<Anime2AnimeContinuation>())
         private set
 
-    var lastSubmitResult by mutableStateOf(LastSubmitResult.None)
+    var lastSubmitResult by mutableStateOf<Anime2AnimeSubmitResult>(Anime2AnimeSubmitResult.None)
 
     private val refresh = MutableStateFlow(-1L)
     private var continuationsPrivate by mutableStateOf(emptyList<Anime2AnimeContinuation>())
@@ -98,7 +97,9 @@ class Anime2AnimeViewModel @Inject constructor(
             snapshotFlow { text }
                 .debounce(500.milliseconds)
                 .filter(String::isNotBlank)
-                .flatMapLatest(aniListAutocompleter::querySeriesNetwork)
+                .flatMapLatest {
+                    aniListAutocompleter.querySeriesNetwork(it, type = MediaType.ANIME)
+                }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { predictions = it }
         }
@@ -137,7 +138,7 @@ class Anime2AnimeViewModel @Inject constructor(
     fun onSubmit() {
         val entry = predictions.firstOrNull()
         if (entry == null) {
-            error = R.string.anime2anime_error_media_not_found to null
+            lastSubmitResult = Anime2AnimeSubmitResult.MediaNotFound(text)
             return
         }
 
@@ -147,6 +148,11 @@ class Anime2AnimeViewModel @Inject constructor(
     fun onChooseMedia(aniListMedia: AniListMedia) {
         text = ""
         submitMedia(aniListMedia)
+    }
+
+    fun onRestart() {
+        continuationsPrivate = emptyList()
+        lastSubmitResult = Anime2AnimeSubmitResult.None
     }
 
     private suspend fun loadDaily(): Pair<Int, Int>? {
@@ -278,25 +284,29 @@ class Anime2AnimeViewModel @Inject constructor(
         return randomAnime
     }
 
-    private fun submitMedia(aniListMedia: AniListMedia) {
+    private fun submitMedia(media: AniListMedia) {
         // TODO: Filter/handle duplicates
+        val startAndTargetMedia = startAndTargetMedia.result ?: return
+        lastSubmitResult = Anime2AnimeSubmitResult.Loading
         continuationsJob?.cancel()
         continuationsJob = viewModelScope.launch(CustomDispatchers.IO) {
-            val startingMedia = startAndTargetMedia?.result?.startMedia
-            val targetMediaId = continuationsPrivate.lastOrNull()?.media?.media?.id
-                ?: startingMedia?.media?.media?.id
-                ?: return@launch
+            val startingMedia = startAndTargetMedia.startMedia
+            val lastTargetMedia = startAndTargetMedia.targetMedia
+            val nextTargetMediaId = continuationsPrivate.lastOrNull()?.media?.media?.id
+                ?: startingMedia.media.media.id
             val previousMedia = continuationsPrivate.lastOrNull()
                 ?.media
-                ?: startingMedia?.media
+                ?: startingMedia.media
             val previousMediaConnections = continuationsPrivate.lastOrNull()
                 ?.characterAndStaffMetadata
-                ?: startingMedia?.characterAndStaffMetadata
+                ?: startingMedia.characterAndStaffMetadata
             try {
                 val (voiceActorConnections, staffConnections) =
-                    checkConnectionExists(targetMediaId, aniListMedia)
+                    checkConnectionExists(nextTargetMediaId, media)
                 if (voiceActorConnections.isEmpty() && staffConnections.isEmpty()) {
-                    error = R.string.anime2anime_error_no_connection to null
+                    withContext(CustomDispatchers.Main) {
+                        lastSubmitResult = Anime2AnimeSubmitResult.NoConnection(media)
+                    }
                     return@launch
                 }
 
@@ -306,13 +316,19 @@ class Anime2AnimeViewModel @Inject constructor(
                     .orEmpty()
 
                 val nextMedia = api.anime2AnimeConnectionDetails(
-                    mediaId = aniListMedia.id.toString(),
-                    characterIds = previousCharacterIds + voiceActorConnections.map { it.character.id.toString() },
+                    mediaId = media.id.toString(),
+                    characterIds = previousCharacterIds + voiceActorConnections.mapNotNull { it.character.node?.id?.toString() },
                     voiceActorIds = voiceActorConnections.map { it.voiceActor.id.toString() },
                     staffIds = staffConnections.map { it.node?.id.toString() },
                 )
                 val nextMediaMedia = nextMedia.media
-                val nextMediaEntry = nextMediaMedia?.let(::MediaPreviewEntry)
+                if (nextMediaMedia == null) {
+                    withContext(CustomDispatchers.Main) {
+                        lastSubmitResult = Anime2AnimeSubmitResult.FailedToLoad(media)
+                    }
+                    return@launch
+                }
+                val nextMediaEntry = MediaPreviewEntry(nextMediaMedia)
 
                 val connections =
                     voiceActorConnections.mapNotNull { (characterTarget, voiceActorTarget) ->
@@ -321,8 +337,8 @@ class Anime2AnimeViewModel @Inject constructor(
                         val previousCharacter =
                             nextMedia.characters?.characters?.find { it?.id == previousCharacterId }
                         val character =
-                            nextMedia.characters?.characters?.find { it?.id == characterTarget.id }
-                                ?: return@mapNotNull null
+                            nextMedia.characters?.characters?.find { it?.id == characterTarget.node?.id }
+                        character ?: return@mapNotNull null
                         val voiceActor =
                             nextMedia.voiceActors?.staff?.find { it?.id == voiceActorTarget.id }
                                 ?: return@mapNotNull null
@@ -342,13 +358,23 @@ class Anime2AnimeViewModel @Inject constructor(
                             role = staffTarget.role,
                         )
                     }
-                if (nextMediaMedia != null && nextMediaEntry != null) {
+                if (connections.isEmpty()) {
                     withContext(CustomDispatchers.Main) {
-                        continuationsPrivate += Anime2AnimeContinuation(
-                            connections = connections,
-                            media = nextMediaEntry,
-                            characterAndStaffMetadata = nextMediaMedia,
-                        )
+                        lastSubmitResult = Anime2AnimeSubmitResult.NoConnection(media)
+                    }
+                    return@launch
+                }
+                val hitLastTarget = media.id == lastTargetMedia.media.media.id
+                withContext(CustomDispatchers.Main) {
+                    continuationsPrivate += Anime2AnimeContinuation(
+                        connections = connections,
+                        media = nextMediaEntry,
+                        characterAndStaffMetadata = nextMediaMedia,
+                    )
+                    lastSubmitResult = if (hitLastTarget) {
+                        Anime2AnimeSubmitResult.Finished
+                    } else {
+                        Anime2AnimeSubmitResult.Success
                     }
                 }
             } catch (e: Exception) {
@@ -395,9 +421,5 @@ class Anime2AnimeViewModel @Inject constructor(
             val character: Anime2AnimeConnectionsQuery.Data.Media.Characters.Edge,
             val voiceActor: Anime2AnimeConnectionsQuery.Data.Media.Characters.Edge.VoiceActor,
         )
-    }
-
-    sealed interface LastSubmitResult {
-        data object None : LastSubmitResult
     }
 }

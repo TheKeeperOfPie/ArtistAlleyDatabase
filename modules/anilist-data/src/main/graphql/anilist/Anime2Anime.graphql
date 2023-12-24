@@ -1,4 +1,4 @@
-query Anime2AnimeCountQuery {
+query Anime2AnimeCount {
     SiteStatistics {
         anime(sort: DATE_DESC, perPage: 1) {
             nodes {
@@ -9,9 +9,9 @@ query Anime2AnimeCountQuery {
     }
 }
 
-query Anime2AnimeRandomAnimeQuery($page: Int!, $minStaffAndCharactersCount: Int!) {
+query Anime2AnimeRandomAnime($page: Int!, $minStaffAndCharactersCount: Int!) {
     Page(perPage: 25, page: $page) {
-        media(type: ANIME) {
+        media(type: ANIME, sort: [ID_DESC]) {
             id
             popularity
             favourites
@@ -29,7 +29,7 @@ query Anime2AnimeRandomAnimeQuery($page: Int!, $minStaffAndCharactersCount: Int!
     }
 }
 
-query Anime2AnimeMediaQuery($mediaId: Int!) {
+query Anime2AnimeMedia($mediaId: Int!) {
     Media(id: $mediaId) {
         ...MediaPreview
         ...Anime2AnimeConnectionsMedia
@@ -98,13 +98,13 @@ fragment Anime2AnimeConnectionsMedia on Media {
     }
 }
 
-query Anime2AnimeConnectionsQuery($mediaId: Int!) {
+query Anime2AnimeConnections($mediaId: Int!) {
     Media(id: $mediaId) {
         ...Anime2AnimeConnectionsMedia
     }
 }
 
-query Anime2AnimeConnectionDetailsQuery(
+query Anime2AnimeConnectionDetails(
     $mediaId: Int!,
     $includeCharacter: Boolean!,
     $characterIds: [Int]!,
