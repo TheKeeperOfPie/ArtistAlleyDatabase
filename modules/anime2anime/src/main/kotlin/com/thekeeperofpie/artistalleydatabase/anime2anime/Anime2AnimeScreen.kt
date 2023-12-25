@@ -715,41 +715,46 @@ object Anime2AnimeScreen {
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp)
                 )
 
-                if (continuation != null) {
+                if (continuation != null && (continuation.hasCharacters || continuation.hasStaff)) {
                     Row(
                         modifier = Modifier
                             .align(Alignment.End)
                             .padding(horizontal = 16.dp)
                     ) {
-                        IconButton(onClick = {
-                            continuation.charactersExpanded = !continuation.charactersExpanded
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.PeopleAlt,
-                                contentDescription = stringResource(
-                                    R.string.anime2anime_media_show_characters_content_description
-                                ),
-                                tint = if (continuation.charactersExpanded) {
-                                    MaterialTheme.colorScheme.tertiary
-                                } else {
-                                    LocalContentColor.current
-                                },
-                            )
+                        if (continuation.hasCharacters) {
+                            IconButton(onClick = {
+                                continuation.charactersExpanded = !continuation.charactersExpanded
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.PeopleAlt,
+                                    contentDescription = stringResource(
+                                        R.string.anime2anime_media_show_characters_content_description
+                                    ),
+                                    tint = if (continuation.charactersExpanded) {
+                                        MaterialTheme.colorScheme.tertiary
+                                    } else {
+                                        LocalContentColor.current
+                                    },
+                                )
+                            }
                         }
-                        IconButton(onClick = {
-                            continuation.staffExpanded = !continuation.staffExpanded
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Movie,
-                                contentDescription = stringResource(
-                                    R.string.anime2anime_media_show_staff_content_description
-                                ),
-                                tint = if (continuation.staffExpanded) {
-                                    MaterialTheme.colorScheme.tertiary
-                                } else {
-                                    LocalContentColor.current
-                                },
-                            )
+
+                        if (continuation.hasStaff) {
+                            IconButton(onClick = {
+                                continuation.staffExpanded = !continuation.staffExpanded
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Movie,
+                                    contentDescription = stringResource(
+                                        R.string.anime2anime_media_show_staff_content_description
+                                    ),
+                                    tint = if (continuation.staffExpanded) {
+                                        MaterialTheme.colorScheme.tertiary
+                                    } else {
+                                        LocalContentColor.current
+                                    },
+                                )
+                            }
                         }
                     }
                 }

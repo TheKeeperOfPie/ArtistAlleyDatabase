@@ -24,6 +24,8 @@ data class Anime2AnimeContinuation(
     val scope: CoroutineScope,
     val aniListApi: AuthedAniListApi,
 ) {
+    val hasCharacters = characterAndStaffMetadata.characters?.edges
+        ?.any { it?.voiceActors?.isNotEmpty() ?: false } ?: false
     var charactersExpanded by mutableStateOf(false)
     val characters = Pager(config = PagingConfig(5)) {
         AniListPagingSource(perPage = 5) {
@@ -44,6 +46,7 @@ data class Anime2AnimeContinuation(
         .enforceUniqueIds { it.id }
         .cachedIn(scope)
 
+    val hasStaff = characterAndStaffMetadata.staff?.edges?.isNotEmpty() ?: false
     var staffExpanded by mutableStateOf(false)
     val staff = Pager(config = PagingConfig(5)) {
         AniListPagingSource(perPage = 5) {

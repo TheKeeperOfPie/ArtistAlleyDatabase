@@ -1213,11 +1213,12 @@ open class AuthedAniListApi(
     open suspend fun anime2AnimeCount() =
         queryResult(Anime2AnimeCountQuery()) { it.siteStatistics?.anime?.nodes?.firstOrNull() }
 
-    open suspend fun anime2AnimeRandomAnime(page: Int) =
+    open suspend fun anime2AnimeRandomAnime(page: Int, minStaffAndCharactersCount: Int) =
         queryResult(
             Anime2AnimeRandomAnimeQuery(
                 page = page,
-                minStaffAndCharactersCount = 10
+                // TODO: This technically forces count + 1
+                minStaffAndCharactersCount = minStaffAndCharactersCount,
             )
         ) { it.page?.media }
 

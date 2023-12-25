@@ -8,6 +8,7 @@ import com.anilist.Anime2AnimeConnectionsQuery
 import com.anilist.Anime2AnimeCountQuery
 import com.anilist.Anime2AnimeRandomAnimeQuery
 import com.anilist.fragment.AniListMedia
+import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -50,6 +51,7 @@ class Anime2AnimeGameState(
     companion object {
         private const val TAG = "Anime2AnimeGameState"
         private const val MIN_MEDIA_POPULARITY = 10000
+        private const val DAILY_END_TRIM = 500
     }
 
     var startAndTargetMedia by mutableStateOf(LoadingResult.loading<Anime2AnimeStartAndTargetMedia>())
@@ -103,7 +105,15 @@ class Anime2AnimeGameState(
                 .flatMapLatest {
                     val result = when (type) {
                         Type.DAILY -> loadDaily()
-                        Type.RANDOM -> loadRandom(Random)
+                        Type.RANDOM -> loadRandom(
+                            random = Random,
+                            totalAnimeCount = animeCountAndDate().first,
+                            // TODO: Difficulty levels
+                            applyPopularityFilter = false,
+                            applyFinishedFilter = false,
+                            applyMinCharacterFilter = false,
+                            applyMinStaffFilter = false,
+                        )
                         Type.CUSTOM -> TODO()
                     }
                     if (!result.success) {
@@ -135,33 +145,68 @@ class Anime2AnimeGameState(
 
     private suspend fun loadDaily(): LoadingResult<Pair<Int, Int>> {
         val (animeCount, seed) = animeCountAndDate()
-        return loadRandom(Random(seed))
+        // Trim the last DAILY_END_TRIM entries so nothing too new is used
+        return loadRandom(
+            Random(seed = seed),
+            totalAnimeCount = animeCount - DAILY_END_TRIM,
+            applyPopularityFilter = true,
+            applyFinishedFilter = true,
+            applyMinCharacterFilter = true,
+            applyMinStaffFilter = true,
+        )
     }
 
-    private suspend fun loadRandom(random: Random): LoadingResult<Pair<Int, Int>> {
-        val (animeCount) = animeCountAndDate()
+    private suspend fun loadRandom(
+        random: Random,
+        totalAnimeCount: Int,
+        applyPopularityFilter: Boolean,
+        applyFinishedFilter: Boolean,
+        applyMinCharacterFilter: Boolean,
+        applyMinStaffFilter: Boolean,
+    ): LoadingResult<Pair<Int, Int>> {
         // TODO: Error handling if no anime returned
-        val startAnime = randomAnime(random, animeCount)
+        val startAndEndAnime = (0 until 2).map {
+            randomAnime(
+                random = random,
+                totalAnimeCount = totalAnimeCount,
+                applyPopularityFilter = applyPopularityFilter,
+                applyFinishedFilter = applyFinishedFilter,
+                applyMinCharacterFilter = applyMinCharacterFilter,
+                applyMinStaffFilter = applyMinStaffFilter,
+            )
+        }
+        val startAnime = startAndEndAnime.getOrNull(0)
             ?: return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
-        val targetAnime = randomAnime(random, animeCount)
+        val targetAnime = startAndEndAnime.getOrNull(1)
             ?: return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
 
         // TODO: Handle really rare occurrence of getting the same show
-        if (startAnime.id == targetAnime.id) return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
+        if (startAnime.id == targetAnime.id) {
+            return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
+        }
         return LoadingResult.success(startAnime.id to targetAnime.id)
     }
 
     private suspend fun randomAnime(
         random: Random,
         totalAnimeCount: Int,
+        applyPopularityFilter: Boolean,
+        applyFinishedFilter: Boolean,
+        applyMinCharacterFilter: Boolean,
+        applyMinStaffFilter: Boolean,
     ): Anime2AnimeRandomAnimeQuery.Data.Page.Medium? {
         var attempts = 0
         var randomAnime: Anime2AnimeRandomAnimeQuery.Data.Page.Medium? = null
         while (randomAnime == null && attempts++ < 5) {
             val randomPage = random.nextInt(1, totalAnimeCount / 25)
-            randomAnime = api.anime2AnimeRandomAnime(randomPage).getOrNull()
+            randomAnime = api.anime2AnimeRandomAnime(randomPage, 5).getOrNull()
+                ?.asSequence()
                 ?.filterNotNull()
-                ?.find { (it.popularity ?: 0) >= MIN_MEDIA_POPULARITY }
+                ?.filter { !applyPopularityFilter || (it.popularity ?: 0) >= MIN_MEDIA_POPULARITY }
+                ?.filter { !applyFinishedFilter || it.status == MediaStatus.FINISHED }
+                ?.filter { !applyMinCharacterFilter || (it.characters?.pageInfo?.hasNextPage ?: false) }
+                ?.filter { !applyMinStaffFilter || (it.staff?.pageInfo?.hasNextPage ?: false)}
+                ?.firstOrNull()
         }
         return randomAnime
     }

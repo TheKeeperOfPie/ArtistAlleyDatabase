@@ -14,7 +14,7 @@ query Anime2AnimeRandomAnime($page: Int!, $minStaffAndCharactersCount: Int!) {
         media(type: ANIME, sort: [ID_DESC]) {
             id
             popularity
-            favourites
+            status
             isAdult
             characters(perPage: $minStaffAndCharactersCount) {
                 pageInfo {

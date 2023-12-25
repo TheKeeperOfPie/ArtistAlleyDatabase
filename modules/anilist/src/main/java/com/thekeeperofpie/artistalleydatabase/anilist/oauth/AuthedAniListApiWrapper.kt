@@ -924,7 +924,10 @@ class AuthedAniListApiWrapper(
 
     override suspend fun anime2AnimeCount() = super.anime2AnimeCount()
 
-    override suspend fun anime2AnimeRandomAnime(page: Int) = super.anime2AnimeRandomAnime(page).let {
+    override suspend fun anime2AnimeRandomAnime(
+        page: Int,
+        minStaffAndCharactersCount: Int,
+    ) = super.anime2AnimeRandomAnime(page, minStaffAndCharactersCount).let {
         it.map { it?.filter { it?.isAdult != true } }
     }
 
