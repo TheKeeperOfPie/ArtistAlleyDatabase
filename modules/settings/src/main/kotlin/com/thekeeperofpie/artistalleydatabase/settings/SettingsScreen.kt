@@ -65,16 +65,14 @@ object SettingsScreen {
             topBar = {
                 AppBar(
                     text = stringResource(R.string.settings_nav_drawer),
-                    upIconOption = if (upIconOption is UpIconOption.Back) {
+                    upIconOption = if (currentSubsection == null) {
+                        upIconOption
+                    } else {
                         UpIconOption.Back {
-                            if (currentSubsection == null) {
-                                upIconOption.onClick()
-                            } else {
-                                currentSubsectionId =
-                                    currentSubsection.let { sections.findParent(it) }?.id
-                            }
+                            currentSubsectionId =
+                                currentSubsection.let { sections.findParent(it) }?.id
                         }
-                    } else upIconOption,
+                    }
                 )
             },
         ) {
