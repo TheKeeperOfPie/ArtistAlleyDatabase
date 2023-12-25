@@ -37,6 +37,37 @@ query Anime2AnimeMedia($mediaId: Int!) {
     }
 }
 
+query Anime2AnimeMediaCharacters($mediaId: Int!, $page: Int!, $perPage: Int!) {
+    Media(id: $mediaId) {
+        isAdult
+        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: $page, perPage: $perPage) {
+            pageInfo {
+                ...PaginationInfo
+            }
+            edges {
+                ...DetailsCharacterEdge
+            }
+        }
+    }
+}
+
+query Anime2AnimeMediaStaff($mediaId: Int!, $page: Int!, $perPage: Int!) {
+    Media(id: $mediaId) {
+        isAdult
+        staff(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: $page, perPage: $perPage) {
+            pageInfo {
+                ...PaginationInfo
+            }
+            edges {
+                role
+                node @nonnull {
+                    ...StaffNavigationData
+                }
+            }
+        }
+    }
+}
+
 fragment Anime2AnimeConnectionsMedia on Media {
     id
     characters(perPage: 25, sort: [RELEVANCE, ROLE, FAVOURITES_DESC]) {

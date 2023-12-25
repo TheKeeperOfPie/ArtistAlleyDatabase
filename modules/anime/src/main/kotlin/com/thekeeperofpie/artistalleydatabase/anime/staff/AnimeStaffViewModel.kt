@@ -42,6 +42,7 @@ class AnimeStaffViewModel @Inject constructor(
                 .take(1)
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest {
+                    // TODO: Use Pager refresh instead
                     mediaDetailsViewModel.refresh.flatMapLatest {
                         AniListPager {
                             val result =

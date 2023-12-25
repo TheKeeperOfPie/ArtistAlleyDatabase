@@ -9,7 +9,9 @@ import com.anilist.AiringScheduleQuery
 import com.anilist.Anime2AnimeConnectionDetailsQuery
 import com.anilist.Anime2AnimeConnectionsQuery
 import com.anilist.Anime2AnimeCountQuery
+import com.anilist.Anime2AnimeMediaCharactersQuery
 import com.anilist.Anime2AnimeMediaQuery
+import com.anilist.Anime2AnimeMediaStaffQuery
 import com.anilist.Anime2AnimeRandomAnimeQuery
 import com.anilist.AuthedUserQuery
 import com.anilist.CharacterAdvancedSearchQuery
@@ -1212,7 +1214,12 @@ open class AuthedAniListApi(
         queryResult(Anime2AnimeCountQuery()) { it.siteStatistics?.anime?.nodes?.firstOrNull() }
 
     open suspend fun anime2AnimeRandomAnime(page: Int) =
-        queryResult(Anime2AnimeRandomAnimeQuery(page = page, minStaffAndCharactersCount = 10)) { it.page?.media }
+        queryResult(
+            Anime2AnimeRandomAnimeQuery(
+                page = page,
+                minStaffAndCharactersCount = 10
+            )
+        ) { it.page?.media }
 
     open suspend fun anime2AnimeMedia(mediaId: String) =
         queryResult(Anime2AnimeMediaQuery(mediaId = mediaId.toInt())) { it.media }
@@ -1236,6 +1243,24 @@ open class AuthedAniListApi(
             staffIds = staffIds.map(String::toInt),
         )
     )
+
+    open suspend fun anime2AnimeMediaCharacters(mediaId: String, page: Int, perPage: Int) =
+        queryResult(
+            Anime2AnimeMediaCharactersQuery(
+                mediaId = mediaId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ) { it.media }
+
+    open suspend fun anime2AnimeMediaStaff(mediaId: String, page: Int, perPage: Int) =
+        queryResult(
+            Anime2AnimeMediaStaffQuery(
+                mediaId = mediaId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ) { it.media }
 
     // TODO: Use queryCacheAndNetwork for everything
     // TODO: Use a result object to avoid throwing

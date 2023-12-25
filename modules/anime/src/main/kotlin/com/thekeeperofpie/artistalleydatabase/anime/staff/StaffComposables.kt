@@ -54,90 +54,115 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 fun LazyListScope.staffSection(
     screenKey: String,
-    @StringRes titleRes: Int,
+    @StringRes titleRes: Int?,
     staffList: LazyPagingItems<DetailsStaff>,
     roleLines: Int = 1,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {
     if (staffList.itemCount == 0) return
-    item("staffHeader-$titleRes") {
-        val navigationCallback = LocalNavigationCallback.current
-        DetailsSectionHeader(
-            stringResource(titleRes),
-            onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
-            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
-        )
+    if (titleRes != null) {
+        item(key = "staffHeader-$titleRes") {
+            val navigationCallback = LocalNavigationCallback.current
+            DetailsSectionHeader(
+                stringResource(titleRes),
+                onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
+                viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            )
+        }
     }
 
-    item("$titleRes-section") {
-        val navigationCallback = LocalNavigationCallback.current
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+    item(key = "$titleRes-section") {
+        StaffListRow(screenKey = screenKey, staffList = { staffList }, roleLines = roleLines)
+    }
+}
+
+fun LazyListScope.staffSection(
+    screenKey: String,
+    sectionKey: String?,
+    @StringRes titleRes: Int?,
+    staffList: @Composable () -> LazyPagingItems<DetailsStaff>,
+    roleLines: Int = 1,
+    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
+) {
+}
+
+@Composable
+fun StaffListRow(
+    screenKey: String,
+    staffList: @Composable () -> LazyPagingItems<DetailsStaff>,
+    roleLines: Int = 1,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
+) {
+    @Suppress("NAME_SHADOWING")
+    val staffList = staffList()
+    val navigationCallback = LocalNavigationCallback.current
+    LazyRow(
+        contentPadding = contentPadding,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        items(
+            count = staffList.itemCount,
+            key = staffList.itemKey { it.idWithRole },
+            contentType = staffList.itemContentType { "staff" },
         ) {
-            items(
-                count = staffList.itemCount,
-                key = staffList.itemKey { it.idWithRole },
-                contentType = staffList.itemContentType { "staff" },
-            ) {
-                val staff = staffList[it]
-                var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-                val colorCalculationState = LocalColorCalculationState.current
-                StaffSmallCard(
-                    screenKey = screenKey,
-                    id = EntryId("anime_staff", staff?.id.orEmpty()),
-                    image = staff?.image,
-                    onClick = {
-                        if (staff != null) {
-                            navigationCallback.onStaffClick(
-                                staff.staff,
-                                null,
-                                imageWidthToHeightRatio,
-                                colorCalculationState.getColorsNonComposable(staff.id).first,
-                            )
-                        }
-                    },
-                    onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() }
-                ) { textColor ->
-                    staff?.role?.let {
-                        AutoHeightText(
-                            text = it,
-                            color = textColor,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                lineBreak = LineBreak(
-                                    strategy = LineBreak.Strategy.Simple,
-                                    strictness = LineBreak.Strictness.Strict,
-                                    wordBreak = LineBreak.WordBreak.Default,
-                                )
-                            ),
-                            minLines = roleLines,
-                            maxLines = roleLines,
-                            minTextSizeSp = 8f,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 12.dp, end = 12.dp, top = 8.dp)
+            val staff = staffList[it]
+            var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+            val colorCalculationState = LocalColorCalculationState.current
+            StaffSmallCard(
+                screenKey = screenKey,
+                id = EntryId("anime_staff", staff?.id.orEmpty()),
+                image = staff?.image,
+                onClick = {
+                    if (staff != null) {
+                        navigationCallback.onStaffClick(
+                            staff.staff,
+                            null,
+                            imageWidthToHeightRatio,
+                            colorCalculationState.getColorsNonComposable(staff.id).first,
                         )
                     }
-
+                },
+                onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() }
+            ) { textColor ->
+                staff?.role?.let {
                     AutoHeightText(
-                        text = staff?.name?.primaryName().orEmpty(),
+                        text = it,
                         color = textColor,
-                        style = MaterialTheme.typography.bodyMedium.copy(
+                        style = MaterialTheme.typography.bodySmall.copy(
                             lineBreak = LineBreak(
-                                strategy = LineBreak.Strategy.Balanced,
+                                strategy = LineBreak.Strategy.Simple,
                                 strictness = LineBreak.Strictness.Strict,
                                 wordBreak = LineBreak.WordBreak.Default,
                             )
                         ),
+                        minLines = roleLines,
+                        maxLines = roleLines,
                         minTextSizeSp = 8f,
-                        minLines = 2,
-                        maxLines = 2,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .padding(start = 12.dp, end = 12.dp, top = 8.dp)
                     )
                 }
+
+                AutoHeightText(
+                    text = staff?.name?.primaryName().orEmpty(),
+                    color = textColor,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        lineBreak = LineBreak(
+                            strategy = LineBreak.Strategy.Balanced,
+                            strictness = LineBreak.Strictness.Strict,
+                            wordBreak = LineBreak.WordBreak.Default,
+                        )
+                    ),
+                    minTextSizeSp = 8f,
+                    minLines = 2,
+                    maxLines = 2,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                )
             }
         }
     }

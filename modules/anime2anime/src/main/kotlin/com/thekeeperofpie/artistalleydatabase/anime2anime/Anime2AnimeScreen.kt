@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime2anime
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -24,9 +25,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -36,6 +41,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -43,7 +49,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,29 +62,35 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.fragment.AniListMedia
 import com.anilist.fragment.CharacterNavigationData
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeStringR
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
@@ -166,14 +177,15 @@ object Anime2AnimeScreen {
                     val viewer = viewer()
                     val listState = rememberLazyListState()
                     val continuations = continuations()
-                    LaunchedEffect(lastSubmitResult(), continuations.size) {
+                    OnChangeEffect(lastSubmitResult() to continuations.size) {
                         if (continuations.isNotEmpty()) {
                             listState.animateScrollToItem(0, 0)
                         }
                     }
+
                     LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(vertical = 12.dp),
                         reverseLayout = true,
                         state = listState,
@@ -202,26 +214,27 @@ object Anime2AnimeScreen {
                             connections(it.connections)
                         }
 
-                        if (!startAndTargetMedia.success) {
+                        val error = startAndTargetMedia.error
+                        if (!startAndTargetMedia.loading && error != null) {
                             item(key = "initialError") {
-                                Text(text = stringResource(R.string.anime2anime_error_loading_media))
-                                Button(onClick = onRefresh) {
-                                    Text(text = stringResource(R.string.anime2anime_retry))
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = stringResource(error.first))
+                                    error.second?.let {
+                                        Text(text = it.stackTraceToString())
+                                    }
+                                    Button(onClick = onRefresh) {
+                                        Text(text = stringResource(R.string.anime2anime_retry))
+                                    }
                                 }
                             }
                         }
 
-                        item(key = "startingMedia") {
-                            AnimeMediaListRow(
-                                screenKey = SCREEN_KEY,
-                                entry = startAndTargetMedia.result?.startMedia?.media,
-                                viewer = viewer,
-                                onClickListEdit = editViewModel::initialize,
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(start = 16.dp, end = 16.dp)
-                            )
-                        }
+                        mediaRow(
+                            key = "startingMedia",
+                            viewer = viewer,
+                            continuation = startAndTargetMedia.result?.startMedia,
+                            onClickListEdit = editViewModel::initialize,
+                        )
                         item(key = "startingMediaHeader") {
                             Text(
                                 text = stringResource(R.string.anime2anime_starting_media_header),
@@ -233,17 +246,13 @@ object Anime2AnimeScreen {
                             )
                         }
 
-                        item(key = "targetMedia") {
-                            AnimeMediaListRow(
-                                screenKey = SCREEN_KEY,
-                                entry = startAndTargetMedia.result?.targetMedia?.media,
-                                viewer = viewer,
-                                onClickListEdit = editViewModel::initialize,
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(start = 16.dp, end = 16.dp)
-                            )
-                        }
+                        mediaRow(
+                            key = "targetMedia",
+                            viewer = viewer,
+                            continuation = startAndTargetMedia.result?.targetMedia,
+                            onClickListEdit = editViewModel::initialize,
+                        )
+
                         item(key = "targetMediaHeader") {
                             Text(
                                 text = stringResource(R.string.anime2anime_target_media_header),
@@ -308,6 +317,8 @@ object Anime2AnimeScreen {
                                     )
                                 }
                             },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = { onSubmitMedia() }),
                             modifier = Modifier
                                 .menuAnchor()
                                 .fillMaxWidth()
@@ -647,6 +658,101 @@ object Anime2AnimeScreen {
                     onClick = { onSelectedTabChange(it) },
                     label = { Text(text = stringResource(it.textRes)) },
                 )
+            }
+        }
+    }
+
+    private fun LazyListScope.mediaRow(
+        key: String?,
+        viewer: AniListViewer?,
+        continuation: Anime2AnimeContinuation?,
+        onClickListEdit: (MediaNavigationData) -> Unit,
+    ) {
+        if (continuation?.staffExpanded == true) {
+            item(key = key?.let { "$it-staff" }) {
+                OutlinedCard(
+                    modifier = Modifier
+                        .animateItemPlacement()
+                        .animateContentSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    StaffListRow(
+                        screenKey = SCREEN_KEY,
+                        staffList = { continuation.staff.collectAsLazyPagingItems() },
+                        contentPadding = PaddingValues(0.dp),
+                        // TODO: View all staff
+                    )
+                }
+            }
+        }
+        if (continuation?.charactersExpanded == true) {
+            item(key = key?.let { "$it-characters" }) {
+                OutlinedCard(
+                    modifier = Modifier
+                        .animateItemPlacement()
+                        .animateContentSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    CharactersSection(
+                        screenKey = SCREEN_KEY,
+                        charactersInitial = emptyList(),
+                        charactersDeferred = { continuation.characters.collectAsLazyPagingItems() },
+                        contentPadding = PaddingValues(0.dp),
+                        showVoiceActorAsMain = true,
+                        // TODO: View all characters
+                    )
+                }
+            }
+        }
+
+        item(key = key) {
+            Column(modifier = Modifier.animateItemPlacement()) {
+                AnimeMediaListRow(
+                    screenKey = SCREEN_KEY,
+                    entry = continuation?.media,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                )
+
+                if (continuation != null) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        IconButton(onClick = {
+                            continuation.charactersExpanded = !continuation.charactersExpanded
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.PeopleAlt,
+                                contentDescription = stringResource(
+                                    R.string.anime2anime_media_show_characters_content_description
+                                ),
+                                tint = if (continuation.charactersExpanded) {
+                                    MaterialTheme.colorScheme.tertiary
+                                } else {
+                                    LocalContentColor.current
+                                },
+                            )
+                        }
+                        IconButton(onClick = {
+                            continuation.staffExpanded = !continuation.staffExpanded
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Movie,
+                                contentDescription = stringResource(
+                                    R.string.anime2anime_media_show_staff_content_description
+                                ),
+                                tint = if (continuation.staffExpanded) {
+                                    MaterialTheme.colorScheme.tertiary
+                                } else {
+                                    LocalContentColor.current
+                                },
+                            )
+                        }
+                    }
+                }
             }
         }
     }

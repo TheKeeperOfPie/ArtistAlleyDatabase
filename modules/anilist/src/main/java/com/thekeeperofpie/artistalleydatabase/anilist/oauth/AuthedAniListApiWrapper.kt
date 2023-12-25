@@ -946,4 +946,24 @@ class AuthedAniListApiWrapper(
             throw IOException("Cannot load this media")
         }
     }
+
+    override suspend fun anime2AnimeMediaCharacters(
+        mediaId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.anime2AnimeMediaCharacters(mediaId, page, perPage).also {
+        if (it.getOrNull()?.isAdult == true) {
+            throw IOException("Cannot load this media")
+        }
+    }
+
+    override suspend fun anime2AnimeMediaStaff(
+        mediaId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.anime2AnimeMediaStaff(mediaId, page, perPage).also {
+        if (it.getOrNull()?.isAdult == true) {
+            throw IOException("Cannot load this media")
+        }
+    }
 }

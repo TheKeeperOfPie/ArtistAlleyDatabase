@@ -30,7 +30,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
 import kotlin.random.Random
 
@@ -92,6 +93,7 @@ class Anime2AnimeGameState(
         }
     }
 
+    // TODO: Use by lazy instead
     fun initialize() {
         if (initialized) return
         initialized = true
@@ -99,13 +101,17 @@ class Anime2AnimeGameState(
             refresh
                 .onEach { startAndTargetMedia = LoadingResult.loading() }
                 .flatMapLatest {
-                    val (startId, targetId) = when (type) {
+                    val result = when (type) {
                         Type.DAILY -> loadDaily()
                         Type.RANDOM -> loadRandom(Random)
                         Type.CUSTOM -> TODO()
-                    } ?: return@flatMapLatest flowOf(
-                        LoadingResult.error(R.string.anime2anime_error_loading_media)
-                    )
+                    }
+                    if (!result.success) {
+                        return@flatMapLatest flowOf(
+                            result.transformResult<Anime2AnimeStartAndTargetMedia> { null }
+                        )
+                    }
+                    val (startId, targetId) = result.result!!
                     loadStartAndTargetMedia(startId.toString(), targetId.toString())
                 }
                 .catch { emit(LoadingResult.error(R.string.anime2anime_error_loading_media, it)) }
@@ -122,24 +128,27 @@ class Anime2AnimeGameState(
         val countResponse = animeCountResponse()
         // There was ~19000 anime when this was written, so use that if it can't be read
         val animeCount = countResponse?.count ?: 19000
-        val seed = countResponse?.date ?: Instant.now().get(ChronoField.DAY_OF_YEAR)
+        val seed = /*countResponse?.date ?: */
+            ZonedDateTime.now(ZoneId.of("UTC")).get(ChronoField.DAY_OF_YEAR)
         return animeCount to seed
     }
 
-    private suspend fun loadDaily(): Pair<Int, Int>? {
+    private suspend fun loadDaily(): LoadingResult<Pair<Int, Int>> {
         val (animeCount, seed) = animeCountAndDate()
         return loadRandom(Random(seed))
     }
 
-    private suspend fun loadRandom(random: Random): Pair<Int, Int>? {
+    private suspend fun loadRandom(random: Random): LoadingResult<Pair<Int, Int>> {
         val (animeCount) = animeCountAndDate()
         // TODO: Error handling if no anime returned
-        val startAnime = randomAnime(random, animeCount) ?: return null
-        val targetAnime = randomAnime(random, animeCount) ?: return null
+        val startAnime = randomAnime(random, animeCount)
+            ?: return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
+        val targetAnime = randomAnime(random, animeCount)
+            ?: return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
 
         // TODO: Handle really rare occurrence of getting the same show
-        if (startAnime.id == targetAnime.id) return null
-        return startAnime.id to targetAnime.id
+        if (startAnime.id == targetAnime.id) return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
+        return LoadingResult.success(startAnime.id to targetAnime.id)
     }
 
     private suspend fun randomAnime(
@@ -166,6 +175,8 @@ class Anime2AnimeGameState(
                 connections = emptyList(),
                 media = MediaPreviewEntry(it),
                 characterAndStaffMetadata = it,
+                scope = scope,
+                aniListApi = api,
             )
         }
         val targetMedia = api.anime2AnimeMedia(targetId).getOrNull()?.let {
@@ -173,6 +184,8 @@ class Anime2AnimeGameState(
                 connections = emptyList(),
                 media = MediaPreviewEntry(it),
                 characterAndStaffMetadata = it,
+                scope = scope,
+                aniListApi = api,
             )
         }
         if (startMedia == null || targetMedia == null) {
@@ -286,6 +299,8 @@ class Anime2AnimeGameState(
                     ?.mapNotNull { it?.node?.id?.toString() }
                     .orEmpty()
 
+                // TODO: When traversing back to a media already loaded, re-add the same entry
+                //  (to re-use Pager state/data)
                 val nextMedia = api.anime2AnimeConnectionDetails(
                     mediaId = media.id.toString(),
                     characterIds = previousCharacterIds + voiceActorConnections.mapNotNull { it.character.node?.id?.toString() },
@@ -342,6 +357,8 @@ class Anime2AnimeGameState(
                         connections = connections,
                         media = nextMediaEntry,
                         characterAndStaffMetadata = nextMediaMedia,
+                        scope = scope,
+                        aniListApi = api,
                     )
                     lastSubmitResult = if (hitLastTarget) {
                         Anime2AnimeSubmitResult.Finished

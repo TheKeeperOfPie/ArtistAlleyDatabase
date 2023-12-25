@@ -5,6 +5,7 @@
     <string name="anime2anime_submit_media_content_description">Submit anime</string>
     <string name="anime2anime_error_media_not_found">Anime not found</string>
     <string name="anime2anime_error_loading_media">Error loading media</string>
+    <string name="anime2anime_error_could_not_fetch_media">Error finding media</string>
     <string name="anime2anime_error_no_connection">No connection found</string>
     <string name="anime2anime_instructions">Find a path between 2 anime through characters/staff
         that appear in the same anime (only Japanese voice actors supported)</string>
@@ -19,4 +20,6 @@
     <string name="anime2anime_game_tab_random">Random</string>
     <string name="anime2anime_game_tab_custom">Custom</string>
     <string name="anime2anime_retry">Retry</string>
+    <string name="anime2anime_media_show_characters_content_description">Show characters</string>
+    <string name="anime2anime_media_show_staff_content_description">Show staff</string>
 </resources>

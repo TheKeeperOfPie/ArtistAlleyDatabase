@@ -7,7 +7,6 @@ import com.anilist.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import kotlinx.collections.immutable.toImmutableMap
 
 object CharacterUtils {
 
@@ -36,8 +35,7 @@ object CharacterUtils {
                 }
             }
             ?.associate { it }
-            .orEmpty()
-            .toImmutableMap(),
+            .orEmpty(),
         character = edge.node,
         roleTextRes = role?.invoke(edge)?.toTextRes(),
     )

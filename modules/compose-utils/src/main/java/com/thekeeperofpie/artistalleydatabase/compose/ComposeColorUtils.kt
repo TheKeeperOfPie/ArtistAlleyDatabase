@@ -94,3 +94,9 @@ fun Color.multiplyCoerceSaturation(
     ColorUtils.colorToHSL(this.toArgb(), array)
     return Color.hsl(array[0], (array[1] * multiplier).coerceAtMost(maxSaturation), array[2], alpha)
 }
+
+fun Color.withSaturation(saturation: Float = 1f): Color {
+    val array = FloatArray(3)
+    ColorUtils.colorToHSL(this.toArgb(), array)
+    return Color.hsl(array[0], saturation, array[2], alpha)
+}
