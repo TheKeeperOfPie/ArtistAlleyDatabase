@@ -1,6 +1,7 @@
 # Changelog
 
 ### Next (12)
+- Fix activity notification click handling
 
 ### 0.46 (11)
 - Fix status bar icon color when using black theme

@@ -123,7 +123,8 @@ fun ActivityMentionNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = { activityEntry?.id?.let(navigationCallback::onActivityDetailsClick) }) {
         ContextHeader(
             screenKey = screenKey,
             user = notification.user,
@@ -151,7 +152,8 @@ fun ActivityMessageNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = { activityEntry?.id?.let(navigationCallback::onActivityDetailsClick) }) {
         ContextHeader(
             screenKey = screenKey,
             user = notification.user,
@@ -180,7 +182,10 @@ fun ActivityReplyNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.activityId.toString().let(navigationCallback::onActivityDetailsClick)
+    }) {
         ContextHeader(
             screenKey = screenKey,
             user = notification.user,
@@ -209,7 +214,10 @@ fun ActivityReplySubscribedNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.activityId.toString().let(navigationCallback::onActivityDetailsClick)
+    }) {
         ContextHeader(
             screenKey = screenKey,
             user = notification.user,
@@ -238,7 +246,10 @@ fun ActivityLikedNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.activityId.toString().let(navigationCallback::onActivityDetailsClick)
+    }) {
         ContextHeader(
             screenKey = screenKey,
             user = notification.user,
@@ -267,7 +278,10 @@ fun ActivityReplyLikedNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.activityId.toString().let(navigationCallback::onActivityDetailsClick)
+    }) {
         ContextHeader(
             screenKey = screenKey,
             user = notification.user,
@@ -752,6 +766,8 @@ private fun ActivityCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
+    // TODO: Load activity manually if notification doesn't provide it
+    val activity = activityEntry?.activity ?: return
     val navigationCallback = LocalNavigationCallback.current
     OutlinedCard(
         onClick = {
@@ -759,7 +775,7 @@ private fun ActivityCard(
         },
         modifier = Modifier.padding(8.dp)
     ) {
-        when (val activity = activityEntry?.activity) {
+        when (activity) {
             is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> ListActivityCardContent(
                 screenKey = screenKey,
                 viewer = viewer,
@@ -790,7 +806,6 @@ private fun ActivityCard(
                 clickable = true,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
-            null,
             -> TextActivityCardContent(
                 screenKey = screenKey,
                 activity = null,
