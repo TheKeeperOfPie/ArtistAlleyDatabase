@@ -3,8 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.ui
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.BiasAbsoluteAlignment
 import androidx.compose.ui.Modifier
- import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -16,6 +17,8 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+
+val UpperHalfBiasAlignment = BiasAbsoluteAlignment(0f, -0.5f)
 
 @Composable
 fun MediaCoverImage(
@@ -34,6 +37,7 @@ fun MediaCoverImage(
         AsyncImage(
             model = image,
             contentScale = contentScale,
+            alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
             onSuccess = onSuccess,
             onError = onError,
@@ -54,6 +58,7 @@ fun MediaCoverImageNoSharedElement(
     AsyncImage(
         model = image,
         contentScale = contentScale,
+        alignment = UpperHalfBiasAlignment,
         fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
         onSuccess = onSuccess,
         onError = onError,
@@ -79,6 +84,7 @@ fun MediaCoverImage(
         AsyncImage(
             model = image,
             contentScale = contentScale,
+            alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
             onSuccess = onSuccess,
             onError = onError,
@@ -104,6 +110,7 @@ fun CharacterCoverImage(
         AsyncImage(
             model = image,
             contentScale = contentScale,
+            alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
             onSuccess = onSuccess,
             contentDescription = stringResource(R.string.anime_character_image_content_description),
@@ -130,6 +137,7 @@ fun StaffCoverImage(
             model = image,
             contentDescription = stringResource(contentDescriptionTextRes),
             contentScale = contentScale,
+            alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
             onSuccess = onSuccess,
             modifier = modifier.blurForScreenshotMode(),
@@ -155,6 +163,7 @@ fun UserAvatarImage(
             model = image,
             contentDescription = stringResource(contentDescriptionTextRes),
             contentScale = contentScale,
+            alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
             onSuccess = onSuccess,
             modifier = modifier.blurForScreenshotMode(),
@@ -180,6 +189,7 @@ fun UserAvatarImage(
             model = image,
             contentDescription = stringResource(contentDescriptionTextRes),
             contentScale = contentScale,
+            alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
             onSuccess = onSuccess,
             modifier = modifier.blurForScreenshotMode(),

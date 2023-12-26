@@ -73,6 +73,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UpperHalfBiasAlignment
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
@@ -218,6 +219,7 @@ fun CharacterSmallCard(
                                     .size(width = size, height = size)
                                     .build(),
                                 contentScale = ContentScale.Crop,
+                                alignment = UpperHalfBiasAlignment,
                                 contentDescription = stringResource(
                                     // TODO: Swap based on innerImageKey
                                     if (isStaffMain) {
