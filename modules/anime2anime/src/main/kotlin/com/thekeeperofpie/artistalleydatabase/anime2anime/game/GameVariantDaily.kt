@@ -22,7 +22,7 @@ class GameVariantDaily(
     refresh: Flow<Long>,
     animeCountResponse: suspend () -> Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node?,
     onClearText: () -> Unit
-) : GameVariant(
+) : GameVariant<Unit>(
     api,
     mediaListStatusController,
     userMediaListController,
@@ -37,10 +37,12 @@ class GameVariantDaily(
         private const val DAILY_END_TRIM = 500
     }
 
-    override suspend fun loadStartAndTargetIds(): LoadingResult<Pair<Int, Int>> {
+    override fun options() = Unit
+
+    override suspend fun loadStartAndTargetIds(options: Unit): LoadingResult<Pair<Int, Int>> {
         val (animeCount, seed) = animeCountAndDate()
         // Trim the last DAILY_END_TRIM entries so nothing too new is used
-        return with(this as GameVariant) {
+        return with(this) {
             loadRandom(
                 Random(seed = seed),
                 totalAnimeCount = animeCount - DAILY_END_TRIM,

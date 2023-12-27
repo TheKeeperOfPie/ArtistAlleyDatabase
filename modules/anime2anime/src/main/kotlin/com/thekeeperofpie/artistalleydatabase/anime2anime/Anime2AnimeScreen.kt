@@ -80,6 +80,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeStringR
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -105,6 +106,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 object Anime2AnimeScreen {
 
     private const val SCREEN_KEY = "Anime2Anime"
+    private val COLUMN_MAX_WIDTH = 460.dp
 
     @Composable
     operator fun invoke(
@@ -115,6 +117,8 @@ object Anime2AnimeScreen {
         viewer = { viewModel.viewer.collectAsState().value },
         selectedTab = { viewModel.selectedTab },
         onSelectedTabChange = { viewModel.selectedTab = it },
+        options = { viewModel.currentGame().options },
+        optionsState = { viewModel.currentGame().optionsState },
         startAndTargetMedia = { viewModel.currentGame().state.startAndTargetMedia },
         continuations = { viewModel.currentGame().state.continuations },
         lastSubmitResult = { viewModel.currentGame().state.lastSubmitResult },
@@ -134,6 +138,8 @@ object Anime2AnimeScreen {
         viewer: @Composable () -> AniListViewer?,
         selectedTab: () -> GameTab,
         onSelectedTabChange: (GameTab) -> Unit,
+        options: () -> List<SortFilterSection>,
+        optionsState: () -> SortFilterSection.ExpandedState,
         startAndTargetMedia: () -> LoadingResult<GameStartAndTargetMedia>,
         continuations: () -> List<GameContinuation>,
         lastSubmitResult: () -> Anime2AnimeSubmitResult,
@@ -266,8 +272,26 @@ object Anime2AnimeScreen {
                             )
                         }
 
-                        item(key = "options") {
-                            OptionsRow(
+                        val options = options()
+                        if (options.isNotEmpty()) {
+                            item(key = "options") {
+                                OutlinedCard(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp)
+                                        .width(COLUMN_MAX_WIDTH)
+                                ) {
+                                    val state = optionsState()
+                                    Column {
+                                        options.forEach {
+                                            it.Content(state, showDivider = true)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        item(key = "gameVariant") {
+                            GameVariantRow(
                                 viewer = viewer,
                                 selectedTab = selectedTab,
                                 onSelectedTabChange = onSelectedTabChange,
@@ -282,7 +306,7 @@ object Anime2AnimeScreen {
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .animateItemPlacement()
-                                    .widthIn(max = 300.dp)
+                                    .widthIn(max = COLUMN_MAX_WIDTH)
                                     .align(Alignment.CenterHorizontally)
                             )
                         }
@@ -644,7 +668,7 @@ object Anime2AnimeScreen {
     }
 
     @Composable
-    private fun OptionsRow(
+    private fun GameVariantRow(
         viewer: AniListViewer?,
         selectedTab: () -> GameTab,
         onSelectedTabChange: (GameTab) -> Unit,
@@ -681,6 +705,7 @@ object Anime2AnimeScreen {
                         .animateItemPlacement()
                         .animateContentSize()
                         .padding(horizontal = 16.dp)
+                        .widthIn(max = COLUMN_MAX_WIDTH)
                 ) {
                     StaffListRow(
                         screenKey = SCREEN_KEY,
@@ -698,6 +723,7 @@ object Anime2AnimeScreen {
                         .animateItemPlacement()
                         .animateContentSize()
                         .padding(horizontal = 16.dp)
+                        .widthIn(max = COLUMN_MAX_WIDTH)
                 ) {
                     CharactersSection(
                         screenKey = SCREEN_KEY,
@@ -712,20 +738,22 @@ object Anime2AnimeScreen {
         }
 
         item(key = key) {
-            Column(modifier = Modifier.animateItemPlacement()) {
+            Column(
+                modifier = Modifier
+                    .animateItemPlacement()
+                    .padding(start = 16.dp, end = 16.dp)
+                    .widthIn(max = COLUMN_MAX_WIDTH)
+            ) {
                 AnimeMediaListRow(
                     screenKey = SCREEN_KEY,
                     entry = continuation?.media,
                     viewer = viewer,
                     onClickListEdit = onClickListEdit,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp)
                 )
 
                 if (continuation != null && (continuation.hasCharacters || continuation.hasStaff)) {
                     Row(
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(horizontal = 16.dp)
+                        modifier = Modifier.align(Alignment.End)
                     ) {
                         if (continuation.hasCharacters) {
                             IconButton(onClick = {

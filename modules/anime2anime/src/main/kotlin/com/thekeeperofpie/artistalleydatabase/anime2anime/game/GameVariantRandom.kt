@@ -24,7 +24,7 @@ class GameVariantRandom(
     refresh: Flow<Long>,
     animeCountResponse: suspend () -> Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node?,
     onClearText: () -> Unit
-) : GameVariant(
+) : GameVariant<Unit>(
     api,
     mediaListStatusController,
     userMediaListController,
@@ -38,7 +38,7 @@ class GameVariantRandom(
     companion object {
         private const val MIN_MEDIA_POPULARITY = 10000
 
-        context (GameVariant)
+        context (GameVariant<*>)
         suspend fun loadRandom(
             random: Random,
             totalAnimeCount: Int,
@@ -70,7 +70,7 @@ class GameVariantRandom(
             return LoadingResult.success(startAnime.id to targetAnime.id)
         }
 
-        context (GameVariant)
+        context (GameVariant<*>)
         private suspend fun randomAnime(
             random: Random,
             totalAnimeCount: Int,
@@ -98,7 +98,9 @@ class GameVariantRandom(
         }
     }
 
-    override suspend fun loadStartAndTargetIds(): LoadingResult<Pair<Int, Int>> {
+    override fun options() = Unit
+
+    override suspend fun loadStartAndTargetIds(options: Unit): LoadingResult<Pair<Int, Int>> {
         return loadRandom(
             random = Random,
             totalAnimeCount = animeCountAndDate().first,

@@ -4,6 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.platform.AndroidUiDispatcher
+import app.cash.molecule.RecompositionMode
+import app.cash.molecule.launchMolecule
 import com.anilist.Anime2AnimeConnectionsQuery
 import com.anilist.Anime2AnimeCountQuery
 import com.anilist.fragment.AniListMedia
@@ -11,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
@@ -19,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChangesForList
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResult
 import com.thekeeperofpie.artistalleydatabase.anime2anime.R
+import com.thekeeperofpie.artistalleydatabase.compose.debounce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -35,9 +40,10 @@ import kotlinx.coroutines.withContext
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class GameVariant(
+abstract class GameVariant<Options>(
     val api: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,
     protected val userMediaListController: UserMediaListController,
@@ -50,6 +56,16 @@ abstract class GameVariant(
 ) {
 
     val state = GameState()
+
+    open val options: List<SortFilterSection> = emptyList()
+    val optionsState = SortFilterSection.ExpandedState()
+
+    private val moleculeScope = CoroutineScope(scope.coroutineContext + AndroidUiDispatcher.Main)
+    private val optionsFlow by lazy(LazyThreadSafetyMode.NONE) {
+        moleculeScope.launchMolecule(RecompositionMode.ContextClock) {
+            debounce(currentValue = options(), duration = 500.milliseconds)
+        }
+    }
 
     private var continuations by mutableStateOf(emptyList<GameContinuation>())
     private var continuationsJob: Job? = null
@@ -82,10 +98,10 @@ abstract class GameVariant(
         }
 
         scope.launch(CustomDispatchers.Main) {
-            refresh
+            combine(refresh, optionsFlow) { _, options -> options }
                 .onEach { state.startAndTargetMedia = LoadingResult.loading() }
                 .flatMapLatest {
-                    val result = loadStartAndTargetIds()
+                    val result = loadStartAndTargetIds(it)
                     if (!result.success) {
                         return@flatMapLatest flowOf(
                             result.transformResult<GameStartAndTargetMedia> { null }
@@ -98,6 +114,10 @@ abstract class GameVariant(
                 .collectLatest { state.startAndTargetMedia = it }
         }
     }
+
+    abstract fun options(): Options
+
+    abstract suspend fun loadStartAndTargetIds(options: Options): LoadingResult<Pair<Int, Int>>
 
     private suspend fun loadStartAndTargetMedia(
         startId: String,
@@ -200,8 +220,6 @@ abstract class GameVariant(
             }
         }
     }
-
-    abstract suspend fun loadStartAndTargetIds(): LoadingResult<Pair<Int, Int>>
 
     protected suspend fun animeCountAndDate(): Pair<Int, Int> {
         val countResponse = animeCountResponse()
