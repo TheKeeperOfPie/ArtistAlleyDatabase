@@ -89,6 +89,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameContinuation
+import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameStartAndTargetMedia
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
@@ -113,9 +115,9 @@ object Anime2AnimeScreen {
         viewer = { viewModel.viewer.collectAsState().value },
         selectedTab = { viewModel.selectedTab },
         onSelectedTabChange = { viewModel.selectedTab = it },
-        startAndTargetMedia = { viewModel.currentGameState().startAndTargetMedia },
-        continuations = { viewModel.currentGameState().continuations },
-        lastSubmitResult = { viewModel.currentGameState().lastSubmitResult },
+        startAndTargetMedia = { viewModel.currentGame().state.startAndTargetMedia },
+        continuations = { viewModel.currentGame().state.continuations },
+        lastSubmitResult = { viewModel.currentGame().state.lastSubmitResult },
         text = { viewModel.text },
         onTextChange = { viewModel.text = it },
         predictions = { viewModel.predictions },
@@ -132,8 +134,8 @@ object Anime2AnimeScreen {
         viewer: @Composable () -> AniListViewer?,
         selectedTab: () -> GameTab,
         onSelectedTabChange: (GameTab) -> Unit,
-        startAndTargetMedia: () -> LoadingResult<Anime2AnimeStartAndTargetMedia>,
-        continuations: () -> List<Anime2AnimeContinuation>,
+        startAndTargetMedia: () -> LoadingResult<GameStartAndTargetMedia>,
+        continuations: () -> List<GameContinuation>,
         lastSubmitResult: () -> Anime2AnimeSubmitResult,
         text: () -> String,
         onTextChange: (String) -> Unit,
@@ -266,6 +268,7 @@ object Anime2AnimeScreen {
 
                         item(key = "options") {
                             OptionsRow(
+                                viewer = viewer,
                                 selectedTab = selectedTab,
                                 onSelectedTabChange = onSelectedTabChange,
                                 modifier = Modifier.animateItemPlacement()
@@ -341,11 +344,11 @@ object Anime2AnimeScreen {
         }
     }
 
-    private fun LazyListScope.connections(connections: List<Anime2AnimeContinuation.Connection>) {
+    private fun LazyListScope.connections(connections: List<GameContinuation.Connection>) {
         connections.fastForEachReversed {
             when (it) {
                 // TODO: Key with ID (scoped to parent media with uniqueness)
-                is Anime2AnimeContinuation.Connection.Character -> item {
+                is GameContinuation.Connection.Character -> item {
                     CharacterRow(
                         previousCharacter = it.previousCharacter,
                         character = it.character,
@@ -353,7 +356,7 @@ object Anime2AnimeScreen {
                         modifier = Modifier.animateItemPlacement()
                     )
                 }
-                is Anime2AnimeContinuation.Connection.Staff -> item {
+                is GameContinuation.Connection.Staff -> item {
                     StaffRow(
                         staff = it.staff,
                         previousRole = it.previousRole,
@@ -642,6 +645,7 @@ object Anime2AnimeScreen {
 
     @Composable
     private fun OptionsRow(
+        viewer: AniListViewer?,
         selectedTab: () -> GameTab,
         onSelectedTabChange: (GameTab) -> Unit,
         modifier: Modifier = Modifier,
@@ -652,20 +656,22 @@ object Anime2AnimeScreen {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = modifier.padding(vertical = 8.dp)
         ) {
-            GameTab.entries.forEach {
-                FilterChip(
-                    selected = selectedTab == it,
-                    onClick = { onSelectedTabChange(it) },
-                    label = { Text(text = stringResource(it.textRes)) },
-                )
-            }
+            GameTab.entries
+                .filter { it != GameTab.USER_LIST || viewer != null }
+                .forEach {
+                    FilterChip(
+                        selected = selectedTab == it,
+                        onClick = { onSelectedTabChange(it) },
+                        label = { Text(text = stringResource(it.textRes)) },
+                    )
+                }
         }
     }
 
     private fun LazyListScope.mediaRow(
         key: String?,
         viewer: AniListViewer?,
-        continuation: Anime2AnimeContinuation?,
+        continuation: GameContinuation?,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         if (continuation?.staffExpanded == true) {
@@ -765,6 +771,7 @@ object Anime2AnimeScreen {
     enum class GameTab(@StringRes val textRes: Int) {
         DAILY(R.string.anime2anime_game_tab_daily),
         RANDOM(R.string.anime2anime_game_tab_random),
+        USER_LIST(R.string.anime2anime_game_tab_user_list),
 //        CUSTOM(R.string.anime2anime_game_tab_custom),
     }
 }

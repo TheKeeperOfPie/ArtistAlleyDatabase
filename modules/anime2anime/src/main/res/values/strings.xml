@@ -18,6 +18,7 @@
 
     <string name="anime2anime_game_tab_daily">Daily</string>
     <string name="anime2anime_game_tab_random">Random</string>
+    <string name="anime2anime_game_tab_user_list">My list</string>
     <string name="anime2anime_game_tab_custom">Custom</string>
     <string name="anime2anime_retry">Retry</string>
     <string name="anime2anime_media_show_characters_content_description">Show characters</string>

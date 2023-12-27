@@ -16,6 +16,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
+import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantDaily
+import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantRandom
+import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantUserList
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -36,6 +40,7 @@ class Anime2AnimeViewModel @Inject constructor(
     private val api: AuthedAniListApi,
     private val aniListAutocompleter: AniListAutocompleter,
     private val mediaListStatusController: MediaListStatusController,
+    private val userMediaListController: UserMediaListController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
 ) : ViewModel() {
@@ -54,29 +59,47 @@ class Anime2AnimeViewModel @Inject constructor(
     private val refresh = MutableStateFlow(-1L)
     private var animeCountResponse: Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node? = null
 
-    private val gameStateDaily = Anime2AnimeGameState(
-        api,
-        mediaListStatusController,
-        ignoreController,
-        settings,
-        viewModelScope,
-        refresh,
-        Anime2AnimeGameState.Type.DAILY,
-        animeCountResponse = ::fetchAnimeCount,
-        onClearText = { text = "" },
-    )
+    private val gameDaily by lazy {
+        GameVariantDaily(
+            api,
+            mediaListStatusController,
+            userMediaListController,
+            ignoreController,
+            settings,
+            viewModelScope,
+            refresh,
+            animeCountResponse = ::fetchAnimeCount,
+            onClearText = { text = "" },
+        )
+    }
 
-    private val gameStateRandom = Anime2AnimeGameState(
-        api,
-        mediaListStatusController,
-        ignoreController,
-        settings,
-        viewModelScope,
-        refresh,
-        Anime2AnimeGameState.Type.RANDOM,
-        animeCountResponse = ::fetchAnimeCount,
-        onClearText = { text = "" },
-    )
+    private val gameRandom by lazy {
+        GameVariantRandom(
+            api,
+            mediaListStatusController,
+            userMediaListController,
+            ignoreController,
+            settings,
+            viewModelScope,
+            refresh,
+            animeCountResponse = ::fetchAnimeCount,
+            onClearText = { text = "" },
+        )
+    }
+
+    private val gameUserList by lazy {
+        GameVariantUserList(
+            api,
+            mediaListStatusController,
+            userMediaListController,
+            ignoreController,
+            settings,
+            viewModelScope,
+            refresh,
+            animeCountResponse = ::fetchAnimeCount,
+            onClearText = { text = "" },
+        )
+    }
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
@@ -98,19 +121,19 @@ class Anime2AnimeViewModel @Inject constructor(
     fun onSubmit() {
         val entry = predictions.firstOrNull()
         if (entry == null) {
-            currentGameState().lastSubmitResult = Anime2AnimeSubmitResult.MediaNotFound(text)
+            currentGame().state.lastSubmitResult = Anime2AnimeSubmitResult.MediaNotFound(text)
             return
         }
 
-        currentGameState().submitMedia(entry.value)
+        currentGame().submitMedia(entry.value)
     }
 
     fun onChooseMedia(aniListMedia: AniListMedia) {
-        currentGameState().submitMedia(aniListMedia)
+        currentGame().submitMedia(aniListMedia)
     }
 
     fun onRestart() {
-        currentGameState().restart()
+        currentGame().restart()
     }
 
     private suspend fun fetchAnimeCount(): Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node? {
@@ -120,8 +143,9 @@ class Anime2AnimeViewModel @Inject constructor(
         return animeCountResponse
     }
 
-    fun currentGameState() = when (selectedTab) {
-        Anime2AnimeScreen.GameTab.DAILY -> gameStateDaily
-        Anime2AnimeScreen.GameTab.RANDOM -> gameStateRandom
-    }.also(Anime2AnimeGameState::initialize)
+    fun currentGame() = when (selectedTab) {
+        Anime2AnimeScreen.GameTab.DAILY -> gameDaily
+        Anime2AnimeScreen.GameTab.RANDOM -> gameRandom
+        Anime2AnimeScreen.GameTab.USER_LIST -> gameUserList
+    }
 }

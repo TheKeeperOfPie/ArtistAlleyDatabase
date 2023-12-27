@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime2anime
+package com.thekeeperofpie.artistalleydatabase.anime2anime.game
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import kotlinx.coroutines.CoroutineScope
 
-data class Anime2AnimeContinuation(
+data class GameContinuation(
     val connections: List<Connection>,
     val media: MediaPreviewEntry,
     val characterAndStaffMetadata: Anime2AnimeConnectionsMedia,
