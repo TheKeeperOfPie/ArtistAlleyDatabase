@@ -114,7 +114,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.6"
+        kotlinCompilerExtensionVersion = "1.5.7"
     }
     packaging {
         resources {
@@ -151,35 +151,7 @@ ksp {
 }
 
 tasks.register("installAll") {
-    dependsOn("installDebugTemp", "installReleaseTemp", "installInternalTemp")
-}
-
-// TODO(b/315337463)
-tasks.register<Exec>("installDebugTemp") {
-    dependsOn("assembleDebug")
-    commandLine(
-        "adb", "install",
-        project.rootDir.resolve("app/build/outputs/apk/debug/app-debug.apk")
-    )
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("installInternalTemp") {
-    dependsOn("assembleInternal")
-    commandLine(
-        "adb", "install",
-        project.rootDir.resolve("app/build/outputs/apk/internal/app-internal.apk")
-    )
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("installReleaseTemp") {
-    dependsOn("assembleRelease")
-    commandLine(
-        "adb", "install",
-        project.rootDir.resolve("app/build/outputs/apk/release/app-release.apk")
-    )
-    outputs.upToDateWhen { false }
+    dependsOn("installDebug", "installRelease", "installInternal")
 }
 
 fun Exec.launchActivity(
@@ -195,21 +167,21 @@ fun Exec.launchActivity(
 }
 
 tasks.register("launchRelease") {
-    dependsOn("installReleaseTemp")
-    finalizedBy("compileAndLaunchRelease", "installDebugTemp")
+    dependsOn("installRelease")
+    finalizedBy("compileAndLaunchRelease", "installDebug")
     outputs.upToDateWhen { false }
 }
 
 tasks.register("launchInternal") {
-    dependsOn("installInternalTemp")
+    dependsOn("installInternal")
     finalizedBy("compileAndLaunchInternal")
     outputs.upToDateWhen { false }
 }
 
 tasks.register<Exec>("launchDebug") {
-    dependsOn("installDebugTemp")
+    dependsOn("installDebug")
     launchActivity("com.thekeeperofpie.anichive.debug")
-    finalizedBy("installReleaseTemp", "installInternalTemp")
+    finalizedBy("installRelease", "installInternal")
     outputs.upToDateWhen { false }
 }
 
