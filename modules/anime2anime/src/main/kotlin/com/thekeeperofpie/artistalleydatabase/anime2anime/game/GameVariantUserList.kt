@@ -26,7 +26,6 @@ class GameVariantUserList(
     ignoreController: IgnoreController,
     settings: AnimeSettings,
     scope: CoroutineScope,
-    refresh: Flow<Long>,
     animeCountResponse: suspend () -> Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node?,
     onClearText: () -> Unit,
 ) : GameVariant<GameVariantUserList.Options>(
@@ -36,7 +35,6 @@ class GameVariantUserList(
     ignoreController,
     settings,
     scope,
-    refresh,
     animeCountResponse,
     onClearText
 ) {
@@ -70,7 +68,13 @@ class GameVariantUserList(
         listStatuses = listStatusSection.filterOptions,
     )
 
-    override suspend fun loadStartAndTargetIds(options: Options): LoadingResult<Pair<Int, Int>> {
+    override suspend fun loadStartId(options: Options) = loadRandomUserMediaId(options)
+    override suspend fun loadTargetId(options: Options) = loadRandomUserMediaId(options)
+
+    override fun resetStartMedia() = refreshStart()
+    override fun resetTargetMedia() = refreshTarget()
+
+    private suspend fun loadRandomUserMediaId(options: Options): LoadingResult<Int> {
         // TODO: Using only first() will force the cache response if one exists
         val userListResult = userMediaListController.anime(false)
             .first { it.success && it.result?.isNotEmpty() == true }
@@ -87,12 +91,9 @@ class GameVariantUserList(
                 mustContainAll = false,
             )
         }
-        val startId = media.random().media.id
-            ?: return LoadingResult.error(R.string.anime2anime_error_could_not_find_media)
-        val targetId = media.filterNot { it.media.id == startId }
-            .randomOrNull()?.media?.id
-            ?: return LoadingResult.error(R.string.anime2anime_error_could_not_find_media)
-        return LoadingResult.success(startId to targetId)
+        // TODO: Handle same start/target media
+        return media.randomOrNull()?.media?.id?.let(LoadingResult.Companion::success)
+            ?: LoadingResult.error(R.string.anime2anime_error_could_not_find_media)
     }
 
     data class Options(

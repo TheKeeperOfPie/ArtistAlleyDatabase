@@ -352,6 +352,7 @@ fun CharactersSection(
     val charactersDeferred = charactersDeferred()
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = contentPadding,
         modifier = Modifier.recomposeHighlighter()
     ) {
         if (charactersDeferred.itemCount > 0) {

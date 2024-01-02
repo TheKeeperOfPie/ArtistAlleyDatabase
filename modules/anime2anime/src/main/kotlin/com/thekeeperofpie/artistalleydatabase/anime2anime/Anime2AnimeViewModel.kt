@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
+import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantCustom
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantDaily
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantRandom
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantUserList
@@ -56,7 +57,6 @@ class Anime2AnimeViewModel @Inject constructor(
     // TODO: Handle revival
     var selectedTab by mutableStateOf(Anime2AnimeScreen.GameTab.DAILY)
 
-    private val refresh = MutableStateFlow(-1L)
     private var animeCountResponse: Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node? = null
 
     private val gameDaily by lazy {
@@ -67,7 +67,6 @@ class Anime2AnimeViewModel @Inject constructor(
             ignoreController,
             settings,
             viewModelScope,
-            refresh,
             animeCountResponse = ::fetchAnimeCount,
             onClearText = { text = "" },
         )
@@ -81,9 +80,22 @@ class Anime2AnimeViewModel @Inject constructor(
             ignoreController,
             settings,
             viewModelScope,
-            refresh,
             animeCountResponse = ::fetchAnimeCount,
             onClearText = { text = "" },
+        )
+    }
+
+    private val gameCustom by lazy {
+        GameVariantCustom(
+            api,
+            mediaListStatusController,
+            userMediaListController,
+            ignoreController,
+            settings,
+            viewModelScope,
+            animeCountResponse = ::fetchAnimeCount,
+            onClearText = { text = "" },
+            aniListAutocompleter = aniListAutocompleter,
         )
     }
 
@@ -95,7 +107,6 @@ class Anime2AnimeViewModel @Inject constructor(
             ignoreController,
             settings,
             viewModelScope,
-            refresh,
             animeCountResponse = ::fetchAnimeCount,
             onClearText = { text = "" },
         )
@@ -115,7 +126,14 @@ class Anime2AnimeViewModel @Inject constructor(
     }
 
     fun onRefresh() {
-        refresh.value = SystemClock.uptimeMillis()
+        currentGame().run {
+            refreshStart()
+            refreshTarget()
+        }
+    }
+
+    fun onSwitchStartTargetClick() {
+        currentGame().switchStartTarget()
     }
 
     fun onSubmit() {
@@ -146,6 +164,7 @@ class Anime2AnimeViewModel @Inject constructor(
     fun currentGame() = when (selectedTab) {
         Anime2AnimeScreen.GameTab.DAILY -> gameDaily
         Anime2AnimeScreen.GameTab.RANDOM -> gameRandom
+        Anime2AnimeScreen.GameTab.CUSTOM -> gameCustom
         Anime2AnimeScreen.GameTab.USER_LIST -> gameUserList
     }
 }

@@ -30,7 +30,12 @@ query Anime2AnimeRandomAnime($page: Int!, $minStaffAndCharactersCount: Int!) {
     }
 }
 
-query Anime2AnimeMedia($mediaId: Int!) {
+query Anime2AnimeMedia(
+    $mediaId: Int!,
+    $firstPage: Int = 1,
+    $secondPage: Int = 2,
+    $thirdPage: Int = 3,
+) {
     Media(id: $mediaId) {
         ...MediaPreview
         ...Anime2AnimeConnectionsMedia
@@ -68,6 +73,58 @@ query Anime2AnimeMediaStaff($mediaId: Int!, $page: Int!, $perPage: Int!) {
     }
 }
 
+fragment Anime2AnimeConnectionsStaffMediaConnection on MediaConnection {
+    pageInfo {
+        hasNextPage
+    }
+    nodes {
+        id
+    }
+}
+
+fragment Anime2AnimeConnectionsStaffMedia on Staff {
+    characters0: characterMedia(perPage: 25, sort: [POPULARITY_DESC], page: $firstPage) {
+        ...Anime2AnimeConnectionsStaffMediaConnection
+    }
+    characters1: characterMedia(perPage: 25, sort: [POPULARITY_DESC], page: $secondPage) {
+        ...Anime2AnimeConnectionsStaffMediaConnection
+    }
+    characters2: characterMedia(perPage: 25, sort: [POPULARITY_DESC], page: $thirdPage) {
+        ...Anime2AnimeConnectionsStaffMediaConnection
+    }
+    staff0: staffMedia(perPage: 25, sort: [POPULARITY_DESC], page: $firstPage) {
+        ...Anime2AnimeConnectionsStaffMediaConnection
+    }
+    staff1: staffMedia(perPage: 25, sort: [POPULARITY_DESC], page: $secondPage) {
+        ...Anime2AnimeConnectionsStaffMediaConnection
+    }
+    staff2: staffMedia(perPage: 25, sort: [POPULARITY_DESC], page: $thirdPage) {
+        ...Anime2AnimeConnectionsStaffMediaConnection
+    }
+}
+
+query Anime2AnimeConnectionsStaffMediaPage(
+    $staffIds: [Int]!,
+    $firstPage: Int = 1,
+    $secondPage: Int = 2,
+    $thirdPage: Int = 3,
+) {
+    Page(perPage: 25) {
+        staff(id_in: $staffIds) {
+            id
+            characters0: characterMedia(perPage: 25, sort: [POPULARITY_DESC], page: $firstPage) {
+                ...Anime2AnimeConnectionsStaffMediaConnection
+            }
+            characters1: characterMedia(perPage: 25, sort: [POPULARITY_DESC], page: $secondPage) {
+                ...Anime2AnimeConnectionsStaffMediaConnection
+            }
+            characters2: characterMedia(perPage: 25, sort: [POPULARITY_DESC], page: $thirdPage) {
+                ...Anime2AnimeConnectionsStaffMediaConnection
+            }
+        }
+    }
+}
+
 fragment Anime2AnimeConnectionsMedia on Media {
     id
     characters(perPage: 25, sort: [RELEVANCE, ROLE, FAVOURITES_DESC]) {
@@ -82,22 +139,7 @@ fragment Anime2AnimeConnectionsMedia on Media {
             id
             voiceActors(language: JAPANESE, sort: [RELEVANCE, ROLE, FAVOURITES_DESC]) {
                 id
-                staffMedia(perPage: 25, sort: [POPULARITY_DESC]) {
-                    pageInfo {
-                        hasNextPage
-                    }
-                    nodes {
-                        id
-                    }
-                }
-                characterMedia(perPage: 25, sort: [POPULARITY_DESC]) {
-                    pageInfo {
-                        hasNextPage
-                    }
-                    nodes {
-                        id
-                    }
-                }
+                ...Anime2AnimeConnectionsStaffMedia
             }
         }
     }
@@ -109,28 +151,18 @@ fragment Anime2AnimeConnectionsMedia on Media {
             role
             node {
                 id
-                staffMedia(perPage: 25, sort: [POPULARITY_DESC]) {
-                    pageInfo {
-                        hasNextPage
-                    }
-                    nodes {
-                        id
-                    }
-                }
-                characterMedia(perPage: 25, sort: [POPULARITY_DESC]) {
-                    pageInfo {
-                        hasNextPage
-                    }
-                    nodes {
-                        id
-                    }
-                }
+                ...Anime2AnimeConnectionsStaffMedia
             }
         }
     }
 }
 
-query Anime2AnimeConnections($mediaId: Int!) {
+query Anime2AnimeConnections(
+    $mediaId: Int!,
+    $firstPage: Int = 1,
+    $secondPage: Int = 2,
+    $thirdPage: Int = 3,
+) {
     Media(id: $mediaId) {
         ...Anime2AnimeConnectionsMedia
     }
@@ -144,6 +176,9 @@ query Anime2AnimeConnectionDetails(
     $voiceActorIds: [Int]!,
     $includeStaff: Boolean!,
     $staffIds: [Int]!,
+    $firstPage: Int = 1,
+    $secondPage: Int = 2,
+    $thirdPage: Int = 3,
 ) {
     Media(id: $mediaId) {
         ...MediaPreview

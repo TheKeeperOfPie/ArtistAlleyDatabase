@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime2anime.game
 
+import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,7 +11,9 @@ import app.cash.molecule.launchMolecule
 import com.anilist.Anime2AnimeConnectionsQuery
 import com.anilist.Anime2AnimeCountQuery
 import com.anilist.fragment.AniListMedia
+import com.anilist.fragment.Anime2AnimeConnectionsStaffMedia
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.android_utils.LogUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -22,12 +25,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChangesForList
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResult
+import com.thekeeperofpie.artistalleydatabase.anime2anime.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anime2anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.debounce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -49,17 +54,21 @@ abstract class GameVariant<Options>(
     protected val userMediaListController: UserMediaListController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
-    private val scope: CoroutineScope,
-    private val refresh: Flow<Long>,
+    protected val scope: CoroutineScope,
     private val animeCountResponse: suspend () -> Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node?,
     private val onClearText: () -> Unit,
 ) {
+    companion object {
+        private const val TAG = "GameVariant"
+    }
 
     val state = GameState()
 
     open val options: List<SortFilterSection> = emptyList()
     val optionsState = SortFilterSection.ExpandedState()
 
+    protected val refreshStart = MutableStateFlow(-1L)
+    protected val refreshTarget = MutableStateFlow(-1L)
     private val moleculeScope = CoroutineScope(scope.coroutineContext + AndroidUiDispatcher.Main)
     private val optionsFlow by lazy(LazyThreadSafetyMode.NONE) {
         moleculeScope.launchMolecule(RecompositionMode.ContextClock) {
@@ -98,32 +107,57 @@ abstract class GameVariant<Options>(
         }
 
         scope.launch(CustomDispatchers.Main) {
-            combine(refresh, optionsFlow) { _, options -> options }
-                .onEach { state.startAndTargetMedia = LoadingResult.loading() }
+            combine(refreshStart, optionsFlow) { _, options -> options }
+                .onEach { state.startMedia.media = LoadingResult.loading() }
                 .flatMapLatest {
-                    val result = loadStartAndTargetIds(it)
+                    val result = loadStartId(it)
                     if (!result.success) {
-                        return@flatMapLatest flowOf(
-                            result.transformResult<GameStartAndTargetMedia> { null }
-                        )
+                        return@flatMapLatest flowOf(result.transformResult<GameContinuation> { null })
                     }
-                    val (startId, targetId) = result.result!!
-                    loadStartAndTargetMedia(startId.toString(), targetId.toString())
+                    loadMedia(result.result!!.toString())
                 }
+                .flowOn(CustomDispatchers.IO)
                 .catch { emit(LoadingResult.error(R.string.anime2anime_error_loading_media, it)) }
-                .collectLatest { state.startAndTargetMedia = it }
+                .collectLatest { state.startMedia.media = it }
+        }
+
+        scope.launch(CustomDispatchers.Main) {
+            combine(refreshTarget, optionsFlow) { _, options -> options }
+                .onEach { state.targetMedia.media = LoadingResult.loading() }
+                .flatMapLatest {
+                    val result = loadTargetId(it)
+                    if (!result.success) {
+                        return@flatMapLatest flowOf(result.transformResult<GameContinuation> { null })
+                    }
+                    loadMedia(result.result!!.toString())
+                }
+                .flowOn(CustomDispatchers.IO)
+                .catch { emit(LoadingResult.error(R.string.anime2anime_error_loading_media, it)) }
+                .collectLatest { state.targetMedia.media = it }
         }
     }
 
     abstract fun options(): Options
 
-    abstract suspend fun loadStartAndTargetIds(options: Options): LoadingResult<Pair<Int, Int>>
+    abstract suspend fun loadStartId(options: Options): LoadingResult<Int>
+    abstract suspend fun loadTargetId(options: Options): LoadingResult<Int>
 
-    private suspend fun loadStartAndTargetMedia(
-        startId: String,
-        targetId: String,
-    ): Flow<LoadingResult<GameStartAndTargetMedia>> {
-        val startMedia = api.anime2AnimeMedia(startId).getOrNull()?.let {
+    protected abstract fun resetStartMedia()
+    protected abstract fun resetTargetMedia()
+
+    fun resetStart() {
+        restart()
+        resetStartMedia()
+    }
+
+    fun resetTarget() {
+        restart()
+        resetStartMedia()
+    }
+
+    private suspend fun loadMedia(mediaId: String): Flow<LoadingResult<GameContinuation>> {
+        val response = api.anime2AnimeMedia(mediaId)
+        val media = response.getOrNull()?.let {
             GameContinuation(
                 connections = emptyList(),
                 media = MediaPreviewEntry(it),
@@ -132,66 +166,33 @@ abstract class GameVariant<Options>(
                 aniListApi = api,
             )
         }
-        val targetMedia = api.anime2AnimeMedia(targetId).getOrNull()?.let {
-            GameContinuation(
-                connections = emptyList(),
-                media = MediaPreviewEntry(it),
-                characterAndStaffMetadata = it,
-                scope = scope,
-                aniListApi = api,
+
+        if (media == null) {
+            return flowOf(
+                LoadingResult.error(
+                    R.string.anime2anime_error_loading_media,
+                    response.exceptionOrNull(),
+                )
             )
-        }
-        if (startMedia == null || targetMedia == null) {
-            return flowOf(LoadingResult.error(R.string.anime2anime_error_loading_media))
         }
 
         return combine(
-            mediaListStatusController.allChanges(
-                setOfNotNull(
-                    startMedia.media.media.id.toString(),
-                    targetMedia.media.media.id.toString()
-                )
-            ),
+            mediaListStatusController.allChanges(setOf(media.media.media.id.toString())),
             ignoreController.updates(),
             settings.showAdult,
             settings.showLessImportantTags,
             settings.showSpoilerTags,
         ) { mediaListUpdates, _, showAdult, showLessImportantTags, showSpoilerTags ->
-            val startMediaUpdated = applyMediaFiltering(
+            val mediaUpdated = applyMediaFiltering(
                 statuses = mediaListUpdates,
                 ignoreController = ignoreController,
                 showAdult = showAdult,
                 showIgnored = true,
                 showLessImportantTags = showLessImportantTags,
                 showSpoilerTags = showSpoilerTags,
-                entry = startMedia,
-                transform = { startMedia.media },
-                media = startMedia.media.media,
-                forceShowIgnored = true,
-                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                    copy(
-                        media = this.media.copy(
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    )
-                }
-            )
-            val targetMediaUpdated = applyMediaFiltering(
-                statuses = mediaListUpdates,
-                ignoreController = ignoreController,
-                showAdult = showAdult,
-                showIgnored = true,
-                showLessImportantTags = showLessImportantTags,
-                showSpoilerTags = showSpoilerTags,
-                entry = targetMedia,
-                transform = { targetMedia.media },
-                media = targetMedia.media.media,
+                entry = media,
+                transform = { media.media },
+                media = media.media.media,
                 forceShowIgnored = true,
                 copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                     copy(
@@ -208,13 +209,8 @@ abstract class GameVariant<Options>(
                 }
             )
 
-            if (startMediaUpdated != null && targetMediaUpdated != null) {
-                LoadingResult.success(
-                    GameStartAndTargetMedia(
-                        startMedia = startMediaUpdated,
-                        targetMedia = targetMediaUpdated,
-                    )
-                )
+            if (mediaUpdated != null) {
+                LoadingResult.success(mediaUpdated)
             } else {
                 LoadingResult.error(R.string.anime2anime_error_loading_media)
             }
@@ -225,9 +221,17 @@ abstract class GameVariant<Options>(
         val countResponse = animeCountResponse()
         // There was ~19000 anime when this was written, so use that if it can't be read
         val animeCount = countResponse?.count ?: 19000
-        val seed = countResponse?.date ?:
-            ZonedDateTime.now(ZoneId.of("UTC")).get(ChronoField.DAY_OF_YEAR)
+        val seed =
+            countResponse?.date ?: ZonedDateTime.now(ZoneId.of("UTC")).get(ChronoField.DAY_OF_YEAR)
         return animeCount to seed
+    }
+
+    fun refreshStart() {
+        refreshStart.value = SystemClock.uptimeMillis()
+    }
+
+    fun refreshTarget() {
+        refreshTarget.value = SystemClock.uptimeMillis()
     }
 
     fun restart() {
@@ -235,14 +239,23 @@ abstract class GameVariant<Options>(
         state.lastSubmitResult = Anime2AnimeSubmitResult.None
     }
 
+    fun onChooseStartMedia(media: AniListMedia) {
+        state.startMedia.customMediaId.value = media.id.toString()
+    }
+
+    fun onChooseTargetMedia(media: AniListMedia) {
+        state.targetMedia.customMediaId.value = media.id.toString()
+    }
+
     fun submitMedia(media: AniListMedia) {
         // TODO: Filter/handle duplicates
-        val startAndTargetMedia = state.startAndTargetMedia.result ?: return
+        val startMedia = state.startMedia.media.result ?: return
+        val targetMedia = state.targetMedia.media.result ?: return
         state.lastSubmitResult = Anime2AnimeSubmitResult.Loading
         continuationsJob?.cancel()
         continuationsJob = scope.launch(CustomDispatchers.IO) {
             try {
-                val result = submit(startAndTargetMedia, media)
+                val result = submit(startMedia, targetMedia, media)
                 withContext(CustomDispatchers.Main) {
                     if (result.newContinuation != null) {
                         continuations += result.newContinuation
@@ -257,19 +270,21 @@ abstract class GameVariant<Options>(
     }
 
     private suspend fun submit(
-        startAndTargetMedia: GameStartAndTargetMedia,
+        startMedia: GameContinuation,
+        targetMedia: GameContinuation,
         media: AniListMedia,
     ): SubmitResult {
-        val startingMedia = startAndTargetMedia.startMedia
-        val lastTargetMedia = startAndTargetMedia.targetMedia
         val nextTargetMediaId = continuations.lastOrNull()?.media?.media?.id
-            ?: startingMedia.media.media.id
+            ?: startMedia.media.media.id
         val previousMedia = continuations.lastOrNull()
             ?.media
-            ?: startingMedia.media
+            ?: startMedia.media
         val previousMediaConnections = continuations.lastOrNull()
             ?.characterAndStaffMetadata
-            ?: startingMedia.characterAndStaffMetadata
+            ?: startMedia.characterAndStaffMetadata
+        if (media.id == previousMedia.media.id) {
+            return SubmitResult(Anime2AnimeSubmitResult.SameMedia(media))
+        }
 
         val (voiceActorConnections, staffConnections) =
             checkConnectionExists(nextTargetMediaId, media)
@@ -277,7 +292,7 @@ abstract class GameVariant<Options>(
             return SubmitResult(Anime2AnimeSubmitResult.NoConnection(media))
         }
 
-        val previousCharacterIds = previousMediaConnections?.characters?.edges
+        val previousCharacterIds = previousMediaConnections.characters?.edges
             ?.filter { it?.voiceActors?.any { previousVoiceActor -> voiceActorConnections.any { it.voiceActor.id == previousVoiceActor?.id } } == true }
             ?.mapNotNull { it?.node?.id?.toString() }
             .orEmpty()
@@ -325,7 +340,7 @@ abstract class GameVariant<Options>(
         if (connections.isEmpty()) {
             return SubmitResult(Anime2AnimeSubmitResult.NoConnection(media))
         }
-        val hitLastTarget = media.id == lastTargetMedia.media.media.id
+        val hitLastTarget = media.id == targetMedia.media.media.id
         return SubmitResult(
             result = if (hitLastTarget) {
                 Anime2AnimeSubmitResult.Finished
@@ -342,19 +357,42 @@ abstract class GameVariant<Options>(
         )
     }
 
+    private fun Anime2AnimeConnectionsStaffMedia?.allCharacterMediaIds() =
+        this?.characters0?.nodes?.filterNotNull()?.map { it.id }.orEmpty() +
+                this?.characters1?.nodes?.filterNotNull()?.map { it.id }.orEmpty() +
+                this?.characters2?.nodes?.filterNotNull()?.map { it.id }.orEmpty()
+
+    private fun Anime2AnimeConnectionsStaffMedia?.allStaffMediaIds() =
+        this?.staff0?.nodes?.filterNotNull()?.map { it.id }.orEmpty() +
+                this?.staff1?.nodes?.filterNotNull()?.map { it.id }.orEmpty() +
+                this?.staff2?.nodes?.filterNotNull()?.map { it.id }.orEmpty()
+
     private suspend fun checkConnectionExists(
         targetMediaId: Int,
         aniListMedia: AniListMedia,
     ): ConnectionResult {
         val nextMediaConnections = api.anime2AnimeConnections(aniListMedia.id.toString())
             .media
+
+        if (BuildConfig.DEBUG) {
+            val voiceActors = nextMediaConnections?.characters?.edges
+                ?.flatMap { it?.voiceActors.orEmpty() }
+                ?.mapNotNull {
+                    it?.id to (it.allCharacterMediaIds() + it.allStaffMediaIds())
+                }
+            val staff = nextMediaConnections?.staff?.edges?.mapNotNull { it?.node?.id }
+            LogUtils.d(
+                TAG,
+                "Checking ${aniListMedia.id} for connection with $targetMediaId, " +
+                        "considering voice actors $voiceActors and staff $staff"
+            )
+        }
         // TODO: Ignore the narrator character
         val voiceActorConnections = nextMediaConnections?.characters?.edges
             ?.mapNotNull { character ->
                 character?.voiceActors?.find {
-                    (it?.characterMedia?.nodes?.any { it?.id == targetMediaId } ?: false)
-                            || (it?.staffMedia?.nodes?.any { it?.id == targetMediaId }
-                        ?: false)
+                    it.allCharacterMediaIds().contains(targetMediaId)
+                            || it.allStaffMediaIds().contains(targetMediaId)
                 }?.let {
                     ConnectionResult.VoiceActorConnection(character, it)
                 }
@@ -363,13 +401,21 @@ abstract class GameVariant<Options>(
         val staffConnections = nextMediaConnections?.staff?.edges
             ?.filterNotNull()
             ?.filter {
-                (it.node?.characterMedia?.nodes?.any { it?.id == targetMediaId } ?: false)
-                        || (it.node?.staffMedia?.nodes?.any { it?.id == targetMediaId }
-                    ?: false)
+                it.node.allCharacterMediaIds().contains(targetMediaId)
+                        || it.node.allStaffMediaIds().contains(targetMediaId)
             }
             .orEmpty()
 
         return ConnectionResult(voiceActorConnections, staffConnections)
+    }
+
+    fun switchStartTarget() {
+        val startMedia = state.startMedia
+        state.startMedia.media = state.targetMedia.media
+        state.targetMedia.media = startMedia.media
+
+        continuations = emptyList()
+        state.lastSubmitResult = Anime2AnimeSubmitResult.None
     }
 
     data class SubmitResult(

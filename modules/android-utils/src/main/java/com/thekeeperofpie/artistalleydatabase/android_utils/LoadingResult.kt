@@ -19,6 +19,8 @@ data class LoadingResult<T>(
         fun <T> success(value: T) = LoadingResult(loading = false, success = true, result = value)
     }
 
+    fun isEmpty() = !loading && !success && result == null && error == null
+
     suspend fun <Output> transformResult(transform: suspend (T) -> Output?): LoadingResult<Output> {
         val newResult = result?.let { transform(it) }
         return LoadingResult(

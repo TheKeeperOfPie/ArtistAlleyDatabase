@@ -16,6 +16,7 @@
     <string name="anime2anime_submit_restart_button">Restart</string>
     <string name="anime2anime_submit_error_no_connection">No shared staff with %1$s</string>
     <string name="anime2anime_submit_error_media_not_found">Could not find %1$s</string>
+    <string name="anime2anime_submit_error_same_media">Can\'t submit same media twice</string>
 
     <string name="anime2anime_game_tab_daily">Daily</string>
     <string name="anime2anime_game_tab_random">Random</string>
@@ -28,4 +29,8 @@
     <string name="anime2anime_filter_list_status_label">User list status</string>
     <string name="anime2anime_filter_list_status_content_description">User list status filter expand</string>
     <string name="anime2anime_filter_list_status_chip_state_content_description">User list status chip state</string>
+    <string name="anime2anime_swap_start_target_content_description">Swap start and target media</string>
+    <string name="anime2anime_media_reset_random">Cycle random media</string>
+    <string name="anime2anime_media_reset_custom">Reset custom media</string>
+    <string name="anime2anime_media_reset_user_list">Cycle media</string>
 </resources>

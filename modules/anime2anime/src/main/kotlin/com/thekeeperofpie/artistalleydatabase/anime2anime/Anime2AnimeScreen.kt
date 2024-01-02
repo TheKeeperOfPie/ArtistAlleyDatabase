@@ -32,6 +32,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.PeopleAlt
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -50,6 +52,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -91,7 +96,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameContinuation
-import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameStartAndTargetMedia
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
@@ -117,9 +121,25 @@ object Anime2AnimeScreen {
         viewer = { viewModel.viewer.collectAsState().value },
         selectedTab = { viewModel.selectedTab },
         onSelectedTabChange = { viewModel.selectedTab = it },
+        onSwitchStartTargetClick = viewModel::onSwitchStartTargetClick,
         options = { viewModel.currentGame().options },
         optionsState = { viewModel.currentGame().optionsState },
-        startAndTargetMedia = { viewModel.currentGame().state.startAndTargetMedia },
+        startMedia = { viewModel.currentGame().state.startMedia.media },
+        startMediaCustomText = { viewModel.currentGame().state.startMedia.customText },
+        onStartMediaCustomTextChange = { viewModel.currentGame().state.startMedia.customText = it },
+        startMediaCustomPredictions = { viewModel.currentGame().state.startMedia.customPredictions },
+        onStartMediaRefresh = { viewModel.currentGame().refreshStart() },
+        onStartMediaReset = { viewModel.currentGame().resetStart() },
+        onStartMediaChooseCustomMedia = { viewModel.currentGame().onChooseStartMedia(it) },
+        targetMedia = { viewModel.currentGame().state.targetMedia.media },
+        targetMediaCustomText = { viewModel.currentGame().state.targetMedia.customText },
+        onTargetMediaCustomTextChange = {
+            viewModel.currentGame().state.targetMedia.customText = it
+        },
+        targetMediaCustomPredictions = { viewModel.currentGame().state.targetMedia.customPredictions },
+        onTargetMediaRefresh = { viewModel.currentGame().refreshTarget() },
+        onTargetMediaReset = { viewModel.currentGame().resetTarget() },
+        onTargetMediaChooseCustomMedia = { viewModel.currentGame().onChooseTargetMedia(it) },
         continuations = { viewModel.currentGame().state.continuations },
         lastSubmitResult = { viewModel.currentGame().state.lastSubmitResult },
         text = { viewModel.text },
@@ -138,9 +158,23 @@ object Anime2AnimeScreen {
         viewer: @Composable () -> AniListViewer?,
         selectedTab: () -> GameTab,
         onSelectedTabChange: (GameTab) -> Unit,
+        onSwitchStartTargetClick: () -> Unit,
         options: () -> List<SortFilterSection>,
         optionsState: () -> SortFilterSection.ExpandedState,
-        startAndTargetMedia: () -> LoadingResult<GameStartAndTargetMedia>,
+        startMedia: () -> LoadingResult<GameContinuation>,
+        startMediaCustomText: () -> String,
+        onStartMediaCustomTextChange: (String) -> Unit,
+        startMediaCustomPredictions: () -> List<EntrySection.MultiText.Entry.Prefilled<AniListMedia>>,
+        onStartMediaRefresh: () -> Unit,
+        onStartMediaReset: () -> Unit,
+        onStartMediaChooseCustomMedia: (AniListMedia) -> Unit,
+        targetMedia: () -> LoadingResult<GameContinuation>,
+        targetMediaCustomText: () -> String,
+        onTargetMediaCustomTextChange: (String) -> Unit,
+        targetMediaCustomPredictions: () -> List<EntrySection.MultiText.Entry.Prefilled<AniListMedia>>,
+        onTargetMediaRefresh: () -> Unit,
+        onTargetMediaReset: () -> Unit,
+        onTargetMediaChooseCustomMedia: (AniListMedia) -> Unit,
         continuations: () -> List<GameContinuation>,
         lastSubmitResult: () -> Anime2AnimeSubmitResult,
         text: () -> String,
@@ -171,8 +205,7 @@ object Anime2AnimeScreen {
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             Box {
-                val startAndTargetMedia = startAndTargetMedia()
-                val refreshing = startAndTargetMedia.loading
+                val refreshing by remember { derivedStateOf { startMedia().loading || targetMedia().loading } }
                 val pullRefreshState = rememberPullRefreshState(
                     refreshing = refreshing,
                     onRefresh = onRefresh,
@@ -191,6 +224,7 @@ object Anime2AnimeScreen {
                         }
                     }
 
+                    val canRefresh by remember { derivedStateOf { !startMedia().success || !targetMedia().success } }
                     LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -201,7 +235,7 @@ object Anime2AnimeScreen {
                             .weight(1f)
                             .pullRefresh(
                                 state = pullRefreshState,
-                                enabled = !startAndTargetMedia.success,
+                                enabled = canRefresh,
                             )
                     ) {
                         lastSubmitResultText(lastSubmitResult, onRestart)
@@ -222,26 +256,18 @@ object Anime2AnimeScreen {
                             connections(it.connections)
                         }
 
-                        val error = startAndTargetMedia.error
-                        if (!startAndTargetMedia.loading && error != null) {
-                            item(key = "initialError") {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(text = stringResource(error.first))
-                                    error.second?.let {
-                                        Text(text = it.stackTraceToString())
-                                    }
-                                    Button(onClick = onRefresh) {
-                                        Text(text = stringResource(R.string.anime2anime_retry))
-                                    }
-                                }
-                            }
-                        }
-
                         mediaRow(
                             key = "startingMedia",
+                            selectedTab = selectedTab,
                             viewer = viewer,
-                            continuation = startAndTargetMedia.result?.startMedia,
+                            continuationResult = startMedia(),
                             onClickListEdit = editViewModel::initialize,
+                            customText = startMediaCustomText,
+                            onCustomTextChange = onStartMediaCustomTextChange,
+                            onRefresh = onStartMediaRefresh,
+                            customPredictions = startMediaCustomPredictions,
+                            onClickReset = onStartMediaReset,
+                            onChooseCustomMedia = onStartMediaChooseCustomMedia,
                         )
                         item(key = "startingMediaHeader") {
                             Text(
@@ -256,9 +282,16 @@ object Anime2AnimeScreen {
 
                         mediaRow(
                             key = "targetMedia",
+                            selectedTab = selectedTab,
                             viewer = viewer,
-                            continuation = startAndTargetMedia.result?.targetMedia,
+                            continuationResult = targetMedia(),
                             onClickListEdit = editViewModel::initialize,
+                            customText = targetMediaCustomText,
+                            onCustomTextChange = onTargetMediaCustomTextChange,
+                            onRefresh = onTargetMediaRefresh,
+                            customPredictions = targetMediaCustomPredictions,
+                            onClickReset = onTargetMediaReset,
+                            onChooseCustomMedia = onTargetMediaChooseCustomMedia,
                         )
 
                         item(key = "targetMediaHeader") {
@@ -277,6 +310,7 @@ object Anime2AnimeScreen {
                             item(key = "options") {
                                 OutlinedCard(
                                     modifier = Modifier
+                                        .animateItemPlacement()
                                         .padding(horizontal = 16.dp)
                                         .width(COLUMN_MAX_WIDTH)
                                 ) {
@@ -295,6 +329,7 @@ object Anime2AnimeScreen {
                                 viewer = viewer,
                                 selectedTab = selectedTab,
                                 onSelectedTabChange = onSelectedTabChange,
+                                onSwitchStartTargetClick = onSwitchStartTargetClick,
                                 modifier = Modifier.animateItemPlacement()
                             )
                         }
@@ -624,16 +659,6 @@ object Anime2AnimeScreen {
                 Anime2AnimeSubmitResult.Success,
                 -> Unit
                 Anime2AnimeSubmitResult.Loading -> CircularProgressIndicator()
-                is Anime2AnimeSubmitResult.FailedToLoad -> {
-                    Text(
-                        text = stringResource(
-                            R.string.anime2anime_submit_error_failed_to_load,
-                            lastSubmitResult.media.title?.primaryTitle().orEmpty(),
-                        ),
-                        textAlign = TextAlign.Center,
-                        modifier = modifier
-                    )
-                }
                 Anime2AnimeSubmitResult.Finished -> {
                     Button(onClick = onRestart, modifier = modifier) {
                         Text(
@@ -653,11 +678,28 @@ object Anime2AnimeScreen {
                         modifier = modifier
                     )
                 }
+                is Anime2AnimeSubmitResult.SameMedia -> {
+                    Text(
+                        text = stringResource( R.string.anime2anime_submit_error_same_media),
+                        textAlign = TextAlign.Center,
+                        modifier = modifier
+                    )
+                }
                 is Anime2AnimeSubmitResult.MediaNotFound -> {
                     Text(
                         text = stringResource(
                             R.string.anime2anime_submit_error_media_not_found,
                             lastSubmitResult.text,
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = modifier
+                    )
+                }
+                is Anime2AnimeSubmitResult.FailedToLoad -> {
+                    Text(
+                        text = stringResource(
+                            R.string.anime2anime_submit_error_failed_to_load,
+                            lastSubmitResult.media.title?.primaryTitle().orEmpty(),
                         ),
                         textAlign = TextAlign.Center,
                         modifier = modifier
@@ -672,32 +714,57 @@ object Anime2AnimeScreen {
         viewer: AniListViewer?,
         selectedTab: () -> GameTab,
         onSelectedTabChange: (GameTab) -> Unit,
+        onSwitchStartTargetClick: () -> Unit,
         modifier: Modifier = Modifier,
     ) {
         @Suppress("NAME_SHADOWING")
         val selectedTab = selectedTab()
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier.padding(vertical = 8.dp)
-        ) {
-            GameTab.entries
-                .filter { it != GameTab.USER_LIST || viewer != null }
-                .forEach {
-                    FilterChip(
-                        selected = selectedTab == it,
-                        onClick = { onSelectedTabChange(it) },
-                        label = { Text(text = stringResource(it.textRes)) },
+        Row(verticalAlignment = Alignment.Top, modifier = modifier.padding(vertical = 8.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 64.dp, end = 8.dp)
+            ) {
+                GameTab.entries
+                    .filter { it != GameTab.USER_LIST || viewer != null }
+                    .forEach {
+                        FilterChip(
+                            selected = selectedTab == it,
+                            onClick = { onSelectedTabChange(it) },
+                            label = { Text(text = stringResource(it.textRes)) },
+                        )
+                    }
+            }
+
+            IconButton(
+                onClick = onSwitchStartTargetClick,
+                modifier = Modifier.padding(end = 16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SwapVert,
+                    contentDescription = stringResource(
+                        R.string.anime2anime_swap_start_target_content_description
                     )
-                }
+                )
+            }
         }
     }
 
     private fun LazyListScope.mediaRow(
         key: String?,
+        selectedTab: () -> GameTab,
         viewer: AniListViewer?,
-        continuation: GameContinuation?,
+        continuationResult: LoadingResult<GameContinuation>,
+        onRefresh: () -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
+        onClickReset: () -> Unit,
+        customText: () -> String,
+        onCustomTextChange: (String) -> Unit,
+        customPredictions: () -> List<EntrySection.MultiText.Entry.Prefilled<AniListMedia>>,
+        onChooseCustomMedia: (AniListMedia) -> Unit,
     ) {
+        val continuation = continuationResult.result
         if (continuation?.staffExpanded == true) {
             item(key = key?.let { "$it-staff" }) {
                 OutlinedCard(
@@ -737,6 +804,21 @@ object Anime2AnimeScreen {
             }
         }
 
+        val error = continuationResult.error
+        if (!continuationResult.loading && error != null) {
+            item(key = "$key-error") {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = stringResource(error.first))
+                    error.second?.let {
+                        Text(text = it.stackTraceToString())
+                    }
+                    Button(onClick = onRefresh) {
+                        Text(text = stringResource(R.string.anime2anime_retry))
+                    }
+                }
+            }
+        }
+
         item(key = key) {
             Column(
                 modifier = Modifier
@@ -744,52 +826,133 @@ object Anime2AnimeScreen {
                     .padding(start = 16.dp, end = 16.dp)
                     .widthIn(max = COLUMN_MAX_WIDTH)
             ) {
-                AnimeMediaListRow(
-                    screenKey = SCREEN_KEY,
-                    entry = continuation?.media,
-                    viewer = viewer,
-                    onClickListEdit = onClickListEdit,
+                when (selectedTab()) {
+                    GameTab.DAILY,
+                    GameTab.RANDOM,
+                    GameTab.USER_LIST,
+                    -> AnimeMediaListRow(
+                        screenKey = SCREEN_KEY,
+                        entry = continuation?.media,
+                        viewer = viewer,
+                        onClickListEdit = onClickListEdit,
+                    )
+                    GameTab.CUSTOM -> {
+                        if (continuationResult.isEmpty()) {
+                            val textFieldText = customText()
+                            val predictions = customPredictions()
+                            EntryPrefilledAutocompleteDropdown(
+                                text = customText,
+                                predictions = predictions,
+                                showPredictions = textFieldText::isNotEmpty,
+                                onPredictionChosen = { onChooseCustomMedia(predictions[it].value) },
+                            ) {
+                                TextField(
+                                    value = textFieldText,
+                                    onValueChange = onCustomTextChange,
+                                    placeholder = {
+                                        Text(stringResource(R.string.anime2anime_media_name_placeholder))
+                                    },
+                                    maxLines = 1,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        predictions.firstOrNull()?.value
+                                            ?.let(onChooseCustomMedia)
+                                    }),
+                                    modifier = Modifier
+                                        .menuAnchor()
+                                        .fillMaxWidth()
+                                        .onKeyEvent {
+                                            if (it.type == KeyEventType.KeyUp && it.key == Key.Enter) {
+                                                predictions.firstOrNull()?.value
+                                                    ?.let(onChooseCustomMedia)
+                                                true
+                                            } else false
+                                        }
+                                )
+                            }
+                        } else {
+                            AnimeMediaListRow(
+                                screenKey = SCREEN_KEY,
+                                entry = continuation?.media,
+                                viewer = viewer,
+                                onClickListEdit = onClickListEdit,
+                            )
+                        }
+                    }
+                }
+
+                MediaActions(
+                    continuation = continuation,
+                    resetButtonContentDescription = when (selectedTab()) {
+                        GameTab.DAILY -> null
+                        GameTab.USER_LIST -> R.string.anime2anime_media_reset_user_list
+                        GameTab.RANDOM -> R.string.anime2anime_media_reset_random
+                        GameTab.CUSTOM -> R.string.anime2anime_media_reset_custom
+                            .takeUnless { continuationResult.isEmpty() }
+                    },
+                    onClickReset = onClickReset,
+                    modifier = Modifier.align(Alignment.End)
                 )
+            }
+        }
+    }
 
-                if (continuation != null && (continuation.hasCharacters || continuation.hasStaff)) {
-                    Row(
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        if (continuation.hasCharacters) {
-                            IconButton(onClick = {
-                                continuation.charactersExpanded = !continuation.charactersExpanded
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.PeopleAlt,
-                                    contentDescription = stringResource(
-                                        R.string.anime2anime_media_show_characters_content_description
-                                    ),
-                                    tint = if (continuation.charactersExpanded) {
-                                        MaterialTheme.colorScheme.tertiary
-                                    } else {
-                                        LocalContentColor.current
-                                    },
-                                )
-                            }
-                        }
+    @Composable
+    private fun MediaActions(
+        continuation: GameContinuation?,
+        @StringRes resetButtonContentDescription: Int?,
+        onClickReset: () -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        if (resetButtonContentDescription != null
+            || continuation != null
+            && (continuation.hasCharacters || continuation.hasStaff)
+        ) {
+            Row(modifier = modifier) {
+                if (resetButtonContentDescription != null) {
+                    IconButton(onClick = onClickReset) {
+                        Icon(
+                            imageVector = Icons.Default.RestartAlt,
+                            contentDescription = stringResource(
+                                resetButtonContentDescription
+                            ),
+                        )
+                    }
+                }
 
-                        if (continuation.hasStaff) {
-                            IconButton(onClick = {
-                                continuation.staffExpanded = !continuation.staffExpanded
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Movie,
-                                    contentDescription = stringResource(
-                                        R.string.anime2anime_media_show_staff_content_description
-                                    ),
-                                    tint = if (continuation.staffExpanded) {
-                                        MaterialTheme.colorScheme.tertiary
-                                    } else {
-                                        LocalContentColor.current
-                                    },
-                                )
-                            }
-                        }
+                if (continuation?.hasCharacters == true) {
+                    IconButton(onClick = {
+                        continuation.charactersExpanded = !continuation.charactersExpanded
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.PeopleAlt,
+                            contentDescription = stringResource(
+                                R.string.anime2anime_media_show_characters_content_description
+                            ),
+                            tint = if (continuation.charactersExpanded) {
+                                MaterialTheme.colorScheme.tertiary
+                            } else {
+                                LocalContentColor.current
+                            },
+                        )
+                    }
+                }
+
+                if (continuation?.hasStaff == true) {
+                    IconButton(onClick = {
+                        continuation.staffExpanded = !continuation.staffExpanded
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Movie,
+                            contentDescription = stringResource(
+                                R.string.anime2anime_media_show_staff_content_description
+                            ),
+                            tint = if (continuation.staffExpanded) {
+                                MaterialTheme.colorScheme.tertiary
+                            } else {
+                                LocalContentColor.current
+                            },
+                        )
                     }
                 }
             }
@@ -799,7 +962,7 @@ object Anime2AnimeScreen {
     enum class GameTab(@StringRes val textRes: Int) {
         DAILY(R.string.anime2anime_game_tab_daily),
         RANDOM(R.string.anime2anime_game_tab_random),
+        CUSTOM(R.string.anime2anime_game_tab_custom),
         USER_LIST(R.string.anime2anime_game_tab_user_list),
-//        CUSTOM(R.string.anime2anime_game_tab_custom),
     }
 }

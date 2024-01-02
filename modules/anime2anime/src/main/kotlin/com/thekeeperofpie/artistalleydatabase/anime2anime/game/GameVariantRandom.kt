@@ -21,9 +21,8 @@ class GameVariantRandom(
     ignoreController: IgnoreController,
     settings: AnimeSettings,
     scope: CoroutineScope,
-    refresh: Flow<Long>,
     animeCountResponse: suspend () -> Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node?,
-    onClearText: () -> Unit
+    onClearText: () -> Unit,
 ) : GameVariant<Unit>(
     api,
     mediaListStatusController,
@@ -31,7 +30,6 @@ class GameVariantRandom(
     ignoreController,
     settings,
     scope,
-    refresh,
     animeCountResponse,
     onClearText
 ) {
@@ -46,28 +44,17 @@ class GameVariantRandom(
             applyFinishedFilter: Boolean,
             applyMinCharacterFilter: Boolean,
             applyMinStaffFilter: Boolean,
-        ): LoadingResult<Pair<Int, Int>> {
-            // TODO: Error handling if no anime returned
-            val startAndEndAnime = (0 until 2).map {
-                randomAnime(
-                    random = random,
-                    totalAnimeCount = totalAnimeCount,
-                    applyPopularityFilter = applyPopularityFilter,
-                    applyFinishedFilter = applyFinishedFilter,
-                    applyMinCharacterFilter = applyMinCharacterFilter,
-                    applyMinStaffFilter = applyMinStaffFilter,
-                )
-            }
-            val startAnime = startAndEndAnime.getOrNull(0)
-                ?: return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
-            val targetAnime = startAndEndAnime.getOrNull(1)
-                ?: return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
-
+        ): LoadingResult<Int> {
             // TODO: Handle really rare occurrence of getting the same show
-            if (startAnime.id == targetAnime.id) {
-                return LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
-            }
-            return LoadingResult.success(startAnime.id to targetAnime.id)
+            return randomAnime(
+                random = random,
+                totalAnimeCount = totalAnimeCount,
+                applyPopularityFilter = applyPopularityFilter,
+                applyFinishedFilter = applyFinishedFilter,
+                applyMinCharacterFilter = applyMinCharacterFilter,
+                applyMinStaffFilter = applyMinStaffFilter,
+            )?.id?.let(LoadingResult.Companion::success)
+                ?: LoadingResult.error(R.string.anime2anime_error_could_not_fetch_media)
         }
 
         context (GameVariant<*>)
@@ -86,7 +73,9 @@ class GameVariantRandom(
                 randomAnime = api.anime2AnimeRandomAnime(randomPage, 5).getOrNull()
                     ?.asSequence()
                     ?.filterNotNull()
-                    ?.filter { !applyPopularityFilter || (it.popularity ?: 0) >= MIN_MEDIA_POPULARITY }
+                    ?.filter {
+                        !applyPopularityFilter || (it.popularity ?: 0) >= MIN_MEDIA_POPULARITY
+                    }
                     ?.filter { !applyFinishedFilter || it.status == MediaStatus.FINISHED }
                     ?.filter {
                         !applyMinCharacterFilter || (it.characters?.pageInfo?.hasNextPage ?: false)
@@ -100,15 +89,26 @@ class GameVariantRandom(
 
     override fun options() = Unit
 
-    override suspend fun loadStartAndTargetIds(options: Unit): LoadingResult<Pair<Int, Int>> {
-        return loadRandom(
-            random = Random,
-            totalAnimeCount = animeCountAndDate().first,
-            // TODO: Difficulty levels
-            applyPopularityFilter = false,
-            applyFinishedFilter = false,
-            applyMinCharacterFilter = false,
-            applyMinStaffFilter = false,
-        )
-    }
+    override suspend fun loadStartId(options: Unit) = loadRandom(
+        random = Random,
+        totalAnimeCount = animeCountAndDate().first,
+        // TODO: Difficulty levels
+        applyPopularityFilter = false,
+        applyFinishedFilter = false,
+        applyMinCharacterFilter = false,
+        applyMinStaffFilter = false,
+    )
+
+    override suspend fun loadTargetId(options: Unit) = loadRandom(
+        random = Random,
+        totalAnimeCount = animeCountAndDate().first,
+        // TODO: Difficulty levels
+        applyPopularityFilter = false,
+        applyFinishedFilter = false,
+        applyMinCharacterFilter = false,
+        applyMinStaffFilter = false,
+    )
+
+    override fun resetStartMedia() = refreshStart()
+    override fun resetTargetMedia() = refreshTarget()
 }

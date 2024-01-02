@@ -19,7 +19,6 @@ class GameVariantDaily(
     ignoreController: IgnoreController,
     settings: AnimeSettings,
     scope: CoroutineScope,
-    refresh: Flow<Long>,
     animeCountResponse: suspend () -> Anime2AnimeCountQuery.Data.SiteStatistics.Anime.Node?,
     onClearText: () -> Unit
 ) : GameVariant<Unit>(
@@ -29,7 +28,6 @@ class GameVariantDaily(
     ignoreController,
     settings,
     scope,
-    refresh,
     animeCountResponse,
     onClearText
 ) {
@@ -39,7 +37,7 @@ class GameVariantDaily(
 
     override fun options() = Unit
 
-    override suspend fun loadStartAndTargetIds(options: Unit): LoadingResult<Pair<Int, Int>> {
+    override suspend fun loadStartId(options: Unit): LoadingResult<Int> {
         val (animeCount, seed) = animeCountAndDate()
         // Trim the last DAILY_END_TRIM entries so nothing too new is used
         return with(this) {
@@ -53,4 +51,26 @@ class GameVariantDaily(
             )
         }
     }
+
+    override suspend fun loadTargetId(options: Unit): LoadingResult<Int> {
+        val (animeCount, seed) = animeCountAndDate()
+        // Trim the last DAILY_END_TRIM entries so nothing too new is used
+        return with(this) {
+            loadRandom(
+                Random(seed = seed).also {
+                    // Skip one value so it doesn't overlap with start
+                    // TODO: Can still overlap if the random returns the same value twice in a row
+                    it.nextInt()
+                },
+                totalAnimeCount = animeCount - DAILY_END_TRIM,
+                applyPopularityFilter = true,
+                applyFinishedFilter = true,
+                applyMinCharacterFilter = true,
+                applyMinStaffFilter = true,
+            )
+        }
+    }
+
+    override fun resetStartMedia() = Unit // Not applicable
+    override fun resetTargetMedia() = Unit // Not applicable
 }
