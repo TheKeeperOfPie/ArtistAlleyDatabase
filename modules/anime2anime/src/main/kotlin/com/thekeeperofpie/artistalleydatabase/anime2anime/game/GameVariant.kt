@@ -410,9 +410,9 @@ abstract class GameVariant<Options>(
     }
 
     fun switchStartTarget() {
-        val startMedia = state.startMedia
+        val startMedia = state.startMedia.media
         state.startMedia.media = state.targetMedia.media
-        state.targetMedia.media = startMedia.media
+        state.targetMedia.media = startMedia
 
         continuations = emptyList()
         state.lastSubmitResult = Anime2AnimeSubmitResult.None
