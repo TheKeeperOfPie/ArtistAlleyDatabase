@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.art.test
+package com.thekeeperofpie.artistalleydatabase.settings
 
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import java.time.Instant

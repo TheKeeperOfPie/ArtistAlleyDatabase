@@ -38,14 +38,10 @@ dependencies {
     api(libs.work.runtime)
     api(libs.work.runtime.ktx)
 
-    testCompileOnly(testFixtures(project(":modules:art")))
-    testImplementation(project(":modules:art", "_testFixtures"))
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
 
     androidTestImplementation(project(":modules:test-utils"))
-    androidTestCompileOnly(testFixtures(project(":modules:art")))
-    androidTestImplementation(project(":modules:art", "_testFixtures"))
     androidTestImplementation(libs.androidx.junit.test)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.junit.jupiter.api)

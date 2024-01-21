@@ -45,10 +45,6 @@ android {
                 ).toTypedArray()
             )
         }
-
-        create("_testFixtures") {
-            matchingFallbacks += "debug"
-        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -77,12 +73,6 @@ android {
             pickFirsts += "mockito-extensions/org.mockito.plugins.MockMaker"
         }
     }
-    testFixtures {
-        enable = true
-    }
-
-    sourceSets.findByName("_testFixtures")!!.kotlin
-        .srcDir("${project.projectDir}/src/testFixtures/kotlin")
 }
 
 kotlin {
@@ -101,39 +91,6 @@ dependencies {
     modules {
         module("com.google.guava:listenablefuture") {
             replacedBy("com.google.guava:guava")
-        }
-    }
-}
-
-/**
- * Temporary hack to support Kotlin testFixtures as it's currently
- * [unsupported](https://issuetracker.google.com/issues/139438142)
- * ```kotlin
- * dependencies {
- *    // Include the original testFixtures feature to support IDE syntax highlighting
- *    testCompileOnly(testFixtures(project(":module")))
- *    // Then use the actual configuration to link the runtime compiled Kotlin classes
- *    testImplementation(project(":module", "_testFixtures"))
- * }
- * ```
- */
-val testFixturesJar = tasks.create<Jar>("testFixturesJar") {
-    dependsOn("compile_testFixturesKotlin")
-    from("$buildDir/tmp/kotlin-classes/_testFixtures")
-    include("**/test/*.*")
-    outputs.cacheIf { true }
-}
-
-configurations.create("_testFixtures")
-artifacts {
-    add("_testFixtures", testFixturesJar)
-}
-
-configurations.all {
-    resolutionStrategy.capabilitiesResolution {
-        all {
-            // Choose the real runtime variant (testImplementation from explanation above)
-            select(candidates.find { it.variantName == "_testFixtures" } ?: candidates.first())
         }
     }
 }
