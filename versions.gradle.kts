@@ -8,7 +8,7 @@ import org.gradle.kotlin.dsl.maven
 object Versions {
     const val accompanist = "0.33.2-alpha"
     const val apollo = "4.0.0-beta.4"
-    const val compose = "1.6.0-beta03"
+    const val compose = "1.6.0-rc01"
     const val dagger = "2.50"
     const val hilt = "1.2.0-alpha01"
 
@@ -23,11 +23,11 @@ object Versions {
 
     // TODO: Versions after don't let changing Dispatcher and breaks instrumentation tests
     const val ktor = "2.3.4"
-    const val lifecycle = "2.7.0-rc02"
+    const val lifecycle = "2.7.0"
     const val room = "2.6.1"
     const val markwon = "4.6.2"
-    const val media3 = "1.2.0"
-    const val mockito = "5.8.0"
+    const val media3 = "1.3.0-alpha01"
+    const val mockito = "5.9.0"
     const val paging = "3.3.0-alpha02"
     const val work = "2.9.0"
 }
@@ -69,17 +69,17 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.github.ben-manes.versions").version("0.50.0")
                 plugin("com.google.dagger.hilt.android").version(Versions.dagger)
                 plugin("com.jaredsburrows.license").version("0.9.3")
-                plugin("com.netflix.dgs.codegen").version("6.1.1")
+                plugin("com.netflix.dgs.codegen").version("6.1.3")
                 plugin("de.mannodermaus.android-junit5").version("1.10.0.0")
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
-                plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.21")
+                plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.22")
                 plugin("app.cash.molecule").version("1.3.1")
 
                 library("androidx.activity:activity-compose:1.9.0-alpha01")
-                library("androidx.compose.material3:material3:1.2.0-beta01")
+                library("androidx.compose.material3:material3:1.2.0-beta02")
                 library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
-                library("androidx.core:core-ktx:1.13.0-alpha02")
+                library("androidx.core:core-ktx:1.13.0-alpha03")
 
                 withVersion(Versions.hilt) {
                     library("androidx.hilt:hilt-navigation-compose")
@@ -129,7 +129,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 library("com.android.billingclient:billing-ktx:6.1.0")
-                library("com.android.tools.build:gradle:8.4.0-alpha01")
+                library("com.android.tools.build:gradle:8.4.0-alpha03")
 
                 withVersion(Versions.apollo) {
                     library("com.apollographql.apollo3:apollo-runtime")
@@ -158,12 +158,12 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.google.dagger:hilt-android-testing")
                 }
 
-                library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.21-1.0.16")
+                library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.22-1.0.16")
                 library("com.google.net.cronet:cronet-okhttp:0.1.0")
-                library("com.google.truth:truth:1.2.0")
+                library("com.google.truth:truth:1.3.0")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
                 library("com.neovisionaries:nv-i18n:1.29")
-                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.2.0")
+                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.2.2")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                     alias = "androidyoutubeplayer"
@@ -171,9 +171,9 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.rometools:rome:2.1.0")
                 library("com.squareup:javapoet:1.13.0")
                 library("com.squareup:kotlinpoet:1.15.3")
-                library("com.squareup.leakcanary:leakcanary-android:2.12")
-                library("com.squareup.leakcanary:leakcanary-android-release:2.12")
-                library("com.squareup.leakcanary:leakcanary-object-watcher-android:2.12")
+                library("com.squareup.leakcanary:leakcanary-android:3.0-alpha-1")
+                library("com.squareup.leakcanary:leakcanary-android-release:3.0-alpha-1")
+                library("com.squareup.leakcanary:leakcanary-object-watcher-android:3.0-alpha-1")
                 library("com.squareup.moshi:moshi-kotlin:1.15.0")
                 library("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
                 library(
@@ -197,8 +197,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("org.apache.commons:commons-compress:1.25.0")
                 library("org.apache.commons:commons-csv:1.10.0")
                 library("org.awaitility:awaitility:4.2.0")
-                library("org.chromium.net:cronet-embedded:113.5672.61")
-                library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.9.21")
+                library("org.chromium.net:cronet-embedded:119.6045.31")
+                library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.9.22")
                 library("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
 
                 withVersion(Versions.kotlin.coroutines) {
@@ -222,7 +222,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.mockito:mockito-core")
                 }
 
-                library("systems.manifold:manifold-graphql-rt:2023.1.33")
+                library("systems.manifold:manifold-graphql-rt:2024.1.1")
 
                 prefix("androidx") {
                     library("androidx.browser:browser:1.8.0-beta01")
