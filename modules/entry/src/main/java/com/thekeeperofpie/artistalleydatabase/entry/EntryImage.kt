@@ -17,4 +17,6 @@ data class EntryImage(
     val finalWidth get() = croppedWidth ?: width
     val finalHeight get() = croppedHeight ?: height
     val widthToHeightRatio = finalHeight / finalWidth.toFloat()
+
+    val finalUri get() = croppedUri ?: uri
 }

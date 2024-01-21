@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.app.Application
+import android.net.Uri
 import androidx.activity.OnBackPressedDispatcher
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
@@ -12,12 +13,15 @@ import androidx.navigation.NavHostController
 import com.github.difflib.text.DiffRowGenerator
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 
@@ -80,6 +84,8 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
      */
     private var initialEntryHashCode: Int? = null
     private var initialEntrySerializedForm: String? = null
+    private var initialImagesHashCode: Int? = null
+    private var initialImagesSerializedForm: String? = null
     var entrySerializedFormDiff by mutableStateOf("" to "")
 
     fun initialize(entryIds: List<EntryId>) {
@@ -91,6 +97,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
             else -> Type.MULTI_EDIT
         }
 
+        entryImageController.initialize(entryIds)
         viewModelScope.launch(CustomDispatchers.IO) {
             val model = when (type) {
                 Type.ADD -> buildAddModel()
@@ -103,21 +110,18 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
                 }
                 Type.MULTI_EDIT -> buildMultiEditModel()
             }
-            withContext(CustomDispatchers.Main) {
+            val (initialEntry, initialImages) = withContext(CustomDispatchers.Main) {
                 model?.run(::initializeForm)
-
-                val entry = entry()
-                initialEntryHashCode = entry.hashCode()
-
-                val serializer =
-                    appJson.json.serializersModule.serializer(entryClass, emptyList(), true)
-                initialEntrySerializedForm = appJson.json.encodeToString(serializer, entry)
-
                 sectionsLoading = false
+                entry() to entryImageController.images.toList()
             }
-        }
 
-        entryImageController.initialize(entryIds)
+            initialEntryHashCode = initialEntry.hashCode()
+            initialImagesHashCode = initialImages.hashCode()
+
+            initialEntrySerializedForm = serializedEntryString(initialEntry)
+            initialImagesSerializedForm = serializedImagesString(initialImages)
+        }
     }
 
     protected open fun onImageSizeResult(widthToHeightRatio: Float) {
@@ -137,21 +141,29 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
      * @return if navigation allowed
      */
     fun onNavigateBack(): Boolean {
+        if (initialEntryHashCode == null) return true
         val entry = entry()
         val currentEntryHashCode = entry.hashCode()
-        if (initialEntryHashCode == null || initialEntryHashCode == currentEntryHashCode) {
+        val images = entryImageController.images.toList()
+        val currentImageHashCode = images.hashCode()
+        if (initialEntryHashCode == currentEntryHashCode
+            && initialImagesHashCode == currentImageHashCode) {
             return true
         }
 
-        val serializer = appJson.json.serializersModule.serializer(entryClass, emptyList(), true)
-        val newEntryString = appJson.json.encodeToString(serializer, entry)
-        val rows = diffGenerator.generateDiffRows(
+        val entryDiffRows = diffGenerator.generateDiffRows(
             initialEntrySerializedForm?.lines().orEmpty(),
-            newEntryString.lines()
+            serializedEntryString(entry).lines()
         )
 
-        entrySerializedFormDiff = rows.joinToString(separator = "\n") { it.oldLine } to
-                rows.joinToString(separator = "\n") { it.newLine }
+        val imagesDiffRows = diffGenerator.generateDiffRows(
+            initialImagesSerializedForm?.lines().orEmpty(),
+            serializedImagesString(images).lines(),
+        )
+
+        val allRows = imagesDiffRows + entryDiffRows
+        entrySerializedFormDiff = allRows.joinToString(separator = "\n") { it.oldLine } to
+                allRows.joinToString(separator = "\n") { it.newLine }
 
         showExitPrompt = true
         return false
@@ -160,6 +172,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     fun onExitConfirm(onBackPressedDispatcher: OnBackPressedDispatcher) {
         showExitPrompt = false
         initialEntryHashCode = null
+        initialImagesHashCode = null
         onBackPressedDispatcher.onBackPressed()
     }
 
@@ -182,6 +195,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
             deleteEntry(entryId)
             withContext(CustomDispatchers.Main) {
                 initialEntryHashCode = null
+                initialImagesHashCode = null
                 navHostController.navigateUp()
             }
         }
@@ -204,6 +218,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
             withContext(CustomDispatchers.Main) {
                 if (success) {
                     initialEntryHashCode = null
+                    initialImagesHashCode = null
                     navHostController.navigateUp()
                 } else {
                     saving = false
@@ -239,4 +254,26 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     ): Boolean
 
     abstract suspend fun deleteEntry(entryId: EntryId)
+
+    private fun serializedEntryString(entry: Entry?): String {
+        val serializer = appJson.json.serializersModule.serializer(entryClass, emptyList(), true)
+        return appJson.json.encodeToString(serializer, entry)
+    }
+
+    private fun serializedImagesString(entryImages: List<EntryImage>) =
+        appJson.json.encodeToString(entryImages.map(::EntryImageTriple))
+
+    @Serializable
+    data class EntryImageTriple(
+        val width: Int,
+        val height: Int,
+        @Serializable(with = Converters.UriConverter::class)
+        val uri: Uri?,
+    ) {
+        constructor(entryImage: EntryImage) : this(
+            width = entryImage.finalWidth,
+            height = entryImage.finalHeight,
+            uri = entryImage.finalUri,
+        )
+    }
 }

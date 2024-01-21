@@ -41,6 +41,7 @@
 
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
+-dontwarn java.lang.reflect.AnnotatedType
 -dontwarn com.github.luben.zstd.BufferPool
 -dontwarn com.github.luben.zstd.ZstdInputStream
 -dontwarn com.github.luben.zstd.ZstdOutputStream
