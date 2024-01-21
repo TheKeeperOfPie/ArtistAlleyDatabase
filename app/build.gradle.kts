@@ -241,12 +241,8 @@ dependencies {
 //    debugImplementation(project(":modules:monetization:debug"))
 
     debugImplementation(project(":modules:animethemes"))
-    configurations["internalImplementation"].dependencies.addAll(
-        listOf(
-            create(project(":modules:monetization:debug")),
-            create(project(":modules:animethemes")),
-        )
-    )
+    "internalImplementation"(project(":modules:monetization:debug"))
+    "internalImplementation"(project(":modules:animethemes"))
 
     releaseImplementation(project(":modules:play"))
     releaseImplementation(project(":modules:monetization:unity"))

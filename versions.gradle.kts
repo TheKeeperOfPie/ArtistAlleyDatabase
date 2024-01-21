@@ -198,6 +198,10 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("org.apache.commons:commons-csv:1.10.0")
                 library("org.awaitility:awaitility:4.2.0")
                 library("org.chromium.net:cronet-embedded:119.6045.31")
+                library(
+                    "com.google.android.gms:play-services-cronet:18.0.1",
+                    alias = "cronet.play",
+                )
                 library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.9.22")
                 library("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
 

@@ -6,13 +6,21 @@ plugins {
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.network_utils"
+
+    buildTypes {
+        create("internal") {
+            isMinifyEnabled = true
+        }
+    }
 }
 
 dependencies {
     api(libs.okhttp)
     implementation(libs.okhttp3.logging.interceptor)
 
-    runtimeOnly(libs.cronet.embedded)
+    releaseRuntimeOnly(libs.cronet.play)
+    "internalRuntimeOnly"(libs.cronet.embedded)
+    debugRuntimeOnly(libs.cronet.embedded)
     implementation(libs.cronet.okhttp)
 
     api(libs.hilt.android)
