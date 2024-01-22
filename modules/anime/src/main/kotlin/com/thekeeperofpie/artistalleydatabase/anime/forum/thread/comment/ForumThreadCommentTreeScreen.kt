@@ -15,12 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Reply
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -67,14 +63,14 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeight
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import kotlinx.coroutines.launch
 
 // TODO: Dedupe this with the full thread screen
-@OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalFoundationApi::class
-)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object ForumThreadCommentTreeScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.FORUM_THREAD_COMMENT.id

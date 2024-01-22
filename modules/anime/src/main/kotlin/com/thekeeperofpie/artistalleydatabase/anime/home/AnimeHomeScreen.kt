@@ -33,7 +33,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Forum
@@ -41,9 +40,6 @@ import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlusOne
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CardDefaults
@@ -144,6 +140,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -151,10 +150,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 @Suppress("NAME_SHADOWING")
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterialApi::class
-)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 object AnimeHomeScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.HOME.id

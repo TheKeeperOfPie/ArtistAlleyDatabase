@@ -22,12 +22,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -87,12 +83,15 @@ import com.thekeeperofpie.artistalleydatabase.compose.VerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
-    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class
+    ExperimentalFoundationApi::class,
 )
 object AnimeUserListScreen {
 

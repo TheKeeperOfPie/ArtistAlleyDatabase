@@ -16,12 +16,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,10 +55,12 @@ import com.thekeeperofpie.artistalleydatabase.compose.ErrorSnackbar
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalMaterialApi::class
 )
 object ForumRootScreen {
 

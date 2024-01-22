@@ -86,7 +86,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -96,7 +97,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -257,16 +258,22 @@ fun SnackbarErrorText(
                 SnackbarErrorTextInner(errorRes = errorRes, exception = exception)
             }
         } else {
-            val dismissState = rememberDismissState(errorRes, onErrorDismiss)
-            SwipeToDismiss(state = dismissState, background = {
-                Surface(
-                    color = MaterialTheme.colorScheme.secondary,
-                    contentColor = contentColorFor(MaterialTheme.colorScheme.secondary),
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
+            val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = {
+                if (it != SwipeToDismissBoxValue.Settled) {
+                    onErrorDismiss()
                 }
-            }) {
+                true
+            })
+            SwipeToDismissBox(
+                state = dismissState,
+                backgroundContent = {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.secondary)
+                    )
+                },
+            ) {
                 SnackbarErrorTextInner(errorRes = errorRes, exception = exception)
             }
         }

@@ -28,14 +28,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -136,6 +132,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 import com.thekeeperofpie.artistalleydatabase.compose.rememberLambda
@@ -149,10 +148,9 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration.Companion.seconds
 
-@Suppress("NAME_SHADOWING")
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
-    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class
+    ExperimentalFoundationApi::class,
 )
 object AnimeMediaDetailsScreen {
 

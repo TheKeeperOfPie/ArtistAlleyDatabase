@@ -68,8 +68,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
-import com.thekeeperofpie.artistalleydatabase.compose.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import kotlinx.coroutines.delay
@@ -109,11 +109,13 @@ object EntryDetailsScreen {
                 ?.onBackPressedDispatcher
             val pullRefreshState = rememberPullRefreshState(
                 refreshing = false,
-                onRefresh = { backPressedDispatcher?.onBackPressed() }
+                onRefresh = { backPressedDispatcher?.onBackPressed() },
+                resetAfterPull = false,
             )
 
             val context = LocalContext.current
             val alphaAnimation = remember { Animatable(1f) }
+            val offsetYAnimation = remember { Animatable(1f) }
             AddBackPressInvokeTogether(terminal = true, label = "Form sections alpha") {
                 it.launch {
                     delay(AnimationUtils.multipliedByAnimatorScale(context, 150L))

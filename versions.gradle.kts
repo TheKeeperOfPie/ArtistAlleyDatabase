@@ -239,7 +239,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("androidx.compose.animation:animation")
                         library("androidx.compose.material:material-icons-core")
                         library("androidx.compose.material:material-icons-extended")
-                        library("androidx.compose.material:material")
                         library("androidx.compose.runtime:runtime")
                         library("androidx.compose.ui:ui-test-junit4")
                         library("androidx.compose.ui:ui-test-manifest")

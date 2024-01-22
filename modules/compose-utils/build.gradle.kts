@@ -17,7 +17,6 @@ dependencies {
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
-    api(libs.compose.material)
     api(libs.material3)
     api(libs.compose.ui)
     api(libs.compose.ui.tooling.preview)

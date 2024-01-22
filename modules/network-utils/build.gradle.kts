@@ -8,9 +8,7 @@ android {
     namespace = "com.thekeeperofpie.artistalleydatabase.network_utils"
 
     buildTypes {
-        create("internal") {
-            isMinifyEnabled = true
-        }
+        create("internal")
     }
 }
 

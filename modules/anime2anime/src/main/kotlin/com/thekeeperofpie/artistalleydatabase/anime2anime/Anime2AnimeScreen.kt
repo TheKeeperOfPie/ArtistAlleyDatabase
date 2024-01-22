@@ -27,16 +27,12 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.SwapVert
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -100,12 +96,15 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeight
 import com.thekeeperofpie.artistalleydatabase.compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalMaterialApi::class, ExperimentalLayoutApi::class
+    ExperimentalLayoutApi::class,
 )
 object Anime2AnimeScreen {
 
