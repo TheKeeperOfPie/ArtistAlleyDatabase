@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import android.os.SystemClock
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,6 +39,10 @@ class AnimeNewsController(
     private val okHttpClient: OkHttpClient,
     private val settings: AnimeSettings,
 ) {
+    companion object {
+        private const val TAG = "AnimeNewsController"
+    }
+
     private var job: Job? = null
     private val news = MutableStateFlow<ImmutableList<AnimeNewsArticleEntry<*>>?>(null)
     private var newsDateDescending by mutableStateOf<ImmutableList<AnimeNewsArticleEntry<*>>?>(null)
@@ -85,7 +90,10 @@ class AnimeNewsController(
                         }
                     }
                     .map { it?.getOrNull() }
-                    .catch {}
+                    .catch {
+                        Log.e(TAG, "Error fetching animeNewsNetwork", it)
+                        emit(null)
+                    }
 
             val crunchyroll = refreshUptimeMillis
                 .flatMapLatest {
@@ -114,7 +122,10 @@ class AnimeNewsController(
                     }
                 }
                 .map { it?.getOrNull() }
-                .catch {}
+                .catch {
+                    Log.e(TAG, "Error fetching crunchyroll", it)
+                    emit(null)
+                }
 
             val animeNewsNetworkFiltered = combine(
                 animeNewsNetwork,

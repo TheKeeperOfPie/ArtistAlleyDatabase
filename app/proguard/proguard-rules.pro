@@ -23,7 +23,7 @@
 -dontobfuscate
 
 # TODO: Shrinking is broken
--dontshrink
+#-dontshrink
 
 # AGPBI META-INF/services warnings
 -dontwarn org.apache.xalan.extensions.bsf.BSFManager
@@ -38,6 +38,8 @@
 
 # For RSS/Atom parsing, does not ship Proguard rules
 -keep class com.rometools.rome.** { *; }
+-keep class javax.xml.parsers.SAXParser { *; }
+-keep class org.apache.xerces.jaxp.** { *; }
 
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
