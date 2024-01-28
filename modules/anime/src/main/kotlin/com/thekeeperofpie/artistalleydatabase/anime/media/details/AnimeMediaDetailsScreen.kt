@@ -105,6 +105,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
@@ -392,6 +393,7 @@ object AnimeMediaDetailsScreen {
 
                                 val listStatus = viewModel.listStatus
                                 val status = listStatus?.entry?.status
+                                val mediaTitle = media.title?.primaryTitle()
                                 ExtendedFloatingActionButton(
                                     text = {
                                         val progress = if (media.type == MediaType.ANIME) {
@@ -434,8 +436,8 @@ object AnimeMediaDetailsScreen {
                                         if (showFloatingActionButton) {
                                             editViewModel.initialize(
                                                 mediaId = media.id.toString(),
-                                                coverImage = null,
-                                                title = null,
+                                                coverImage = media.coverImage?.extraLarge,
+                                                title = mediaTitle,
                                                 mediaListEntry = listStatus?.entry,
                                                 mediaType = media.type,
                                                 status = listStatus?.entry?.status,
