@@ -336,7 +336,6 @@ fun ChooseUriRow(
             modifier = Modifier
                 .weight(1f, true)
                 .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
-                .clickable(false) {}
         )
 
         IconButton(
@@ -533,7 +532,6 @@ fun <T> ItemDropdown(
             modifier = Modifier
                 .wrapWidthIfRequested()
                 .menuAnchor()
-                .clickable(false) {},
         )
         ExposedDropdownMenu(
             expanded = expanded,

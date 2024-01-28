@@ -308,7 +308,17 @@ fun AiringNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.mediaId?.let {
+            navigationCallback.onMediaClick(
+                mediaId = it,
+                title = null,
+                coverImage = null,
+                imageWidthToHeightRatio = 1f,
+            )
+        }
+    }) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp)
@@ -322,16 +332,13 @@ fun AiringNotificationCard(
             )
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-
-        mediaEntry?.let {
-            AnimeMediaCompactListRow(
-                screenKey = screenKey,
-                viewer = viewer,
-                entry = mediaEntry,
-                onClickListEdit = onClickListEdit,
-                modifier = Modifier.padding(8.dp)
-            )
-        }
+        AnimeMediaCompactListRow(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = mediaEntry,
+            onClickListEdit = onClickListEdit,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
 
@@ -363,7 +370,17 @@ fun RelatedMediaAdditionNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.mediaId.takeIf { it > 0 }?.toString()?.let {
+            navigationCallback.onMediaClick(
+                mediaId = it,
+                title = null,
+                coverImage = null,
+                imageWidthToHeightRatio = 1f,
+            )
+        }
+    }) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp)
@@ -374,15 +391,13 @@ fun RelatedMediaAdditionNotificationCard(
             )
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        mediaEntry?.let {
-            AnimeMediaCompactListRow(
-                screenKey = screenKey,
-                viewer = viewer,
-                entry = mediaEntry,
-                onClickListEdit = onClickListEdit,
-                modifier = Modifier.padding(8.dp)
-            )
-        }
+        AnimeMediaCompactListRow(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = mediaEntry,
+            onClickListEdit = onClickListEdit,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
 
@@ -394,7 +409,17 @@ fun MediaDataChangeNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.mediaId.takeIf { it > 0 }?.toString()?.let {
+            navigationCallback.onMediaClick(
+                mediaId = it,
+                title = null,
+                coverImage = null,
+                imageWidthToHeightRatio = 1f,
+            )
+        }
+    }) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp)
@@ -415,15 +440,13 @@ fun MediaDataChangeNotificationCard(
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        mediaEntry?.let {
-            AnimeMediaCompactListRow(
-                screenKey = screenKey,
-                viewer = viewer,
-                entry = mediaEntry,
-                onClickListEdit = onClickListEdit,
-                modifier = Modifier.padding(8.dp)
-            )
-        }
+        AnimeMediaCompactListRow(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = mediaEntry,
+            onClickListEdit = onClickListEdit,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
 
@@ -459,15 +482,13 @@ fun MediaDeletionNotificationCard(
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        mediaEntry?.let {
-            AnimeMediaCompactListRow(
-                screenKey = screenKey,
-                viewer = viewer,
-                entry = mediaEntry,
-                onClickListEdit = onClickListEdit,
-                modifier = Modifier.padding(8.dp)
-            )
-        }
+        AnimeMediaCompactListRow(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = mediaEntry,
+            onClickListEdit = onClickListEdit,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
 
@@ -479,7 +500,17 @@ fun MediaMergeNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    ElevatedCard {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.mediaId.takeIf { it > 0 }?.toString()?.let {
+            navigationCallback.onMediaClick(
+                mediaId = it,
+                title = null,
+                coverImage = null,
+                imageWidthToHeightRatio = 1f,
+            )
+        }
+    }) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp)
@@ -500,15 +531,13 @@ fun MediaMergeNotificationCard(
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        mediaEntry?.let {
-            AnimeMediaCompactListRow(
-                screenKey = screenKey,
-                viewer = viewer,
-                entry = mediaEntry,
-                onClickListEdit = onClickListEdit,
-                modifier = Modifier.padding(8.dp)
-            )
-        }
+        AnimeMediaCompactListRow(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = mediaEntry,
+            onClickListEdit = onClickListEdit,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
 

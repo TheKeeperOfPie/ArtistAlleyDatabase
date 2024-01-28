@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -127,7 +126,6 @@ sealed class SettingsSection(open val id: String) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor()
-                            .clickable(false) {},
                     )
                     ExposedDropdownMenu(
                         expanded = expanded,
