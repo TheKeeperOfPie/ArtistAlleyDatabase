@@ -1,6 +1,6 @@
 
-import gradle.kotlin.dsl.accessors._4a18f8e30691389e0583de30bf7ecc54.androidTestImplementation
-import gradle.kotlin.dsl.accessors._4a18f8e30691389e0583de30bf7ecc54.androidTestRuntimeOnly
+import gradle.kotlin.dsl.accessors._d77737fb63c02bd0af3daccce5f88495.androidTestImplementation
+import gradle.kotlin.dsl.accessors._d77737fb63c02bd0af3daccce5f88495.androidTestRuntimeOnly
 
 val Project.libs: VersionCatalog
     get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")

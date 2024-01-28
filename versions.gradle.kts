@@ -6,11 +6,11 @@ import org.gradle.api.initialization.resolve.RepositoriesMode
 import org.gradle.kotlin.dsl.maven
 
 object Versions {
-    const val accompanist = "0.33.2-alpha"
+    const val accompanist = "0.34.0"
     const val apollo = "4.0.0-beta.4"
-    const val compose = "1.6.0-rc01"
+    const val compose = "1.7.0-alpha01"
     const val dagger = "2.50"
-    const val hilt = "1.2.0-alpha01"
+    const val hilt = "1.2.0-beta01"
 
     object junit {
         const val jupiter = "5.10.1"
@@ -23,13 +23,13 @@ object Versions {
 
     // TODO: Versions after don't let changing Dispatcher and breaks instrumentation tests
     const val ktor = "2.3.4"
-    const val lifecycle = "2.7.0"
+    const val lifecycle = "2.8.0-alpha01"
     const val room = "2.6.1"
     const val markwon = "4.6.2"
     const val media3 = "1.3.0-alpha01"
-    const val mockito = "5.9.0"
+    const val mockito = "5.10.0"
     const val paging = "3.3.0-alpha02"
-    const val work = "2.9.0"
+    const val work = "2.10.0-alpha01"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
@@ -66,20 +66,21 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 fun plugin(id: String) = plugin(id, id)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
                 plugin("com.autonomousapps.dependency-analysis").version("1.28.0")
-                plugin("com.github.ben-manes.versions").version("0.50.0")
+                plugin("com.github.ben-manes.versions").version("0.51.0")
                 plugin("com.google.dagger.hilt.android").version(Versions.dagger)
-                plugin("com.jaredsburrows.license").version("0.9.3")
-                plugin("com.netflix.dgs.codegen").version("6.1.3")
+                plugin("com.jaredsburrows.license").version("0.9.4")
+                plugin("com.netflix.dgs.codegen").version("6.1.4")
                 plugin("de.mannodermaus.android-junit5").version("1.10.0.0")
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
                 plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.22")
-                plugin("app.cash.molecule").version("1.3.1")
+                plugin("app.cash.molecule").version("1.3.2")
 
-                library("androidx.activity:activity-compose:1.9.0-alpha01")
-                library("androidx.compose.material3:material3:1.2.0-beta02")
+                library("androidx.activity:activity-compose:1.9.0-alpha02")
+                // TODO: Delete material-ripple workaround once material3:1.3.0-alpha01 is released
+                library("androidx.compose.material3:material3:1.2.0-rc01")
                 library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
-                library("androidx.core:core-ktx:1.13.0-alpha03")
+                library("androidx.core:core-ktx:1.13.0-alpha04")
 
                 withVersion(Versions.hilt) {
                     library("androidx.hilt:hilt-navigation-compose")
@@ -129,7 +130,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 library("com.android.billingclient:billing-ktx:6.1.0")
-                library("com.android.tools.build:gradle:8.4.0-alpha03")
+                library("com.android.tools.build:gradle:8.4.0-alpha06")
 
                 withVersion(Versions.apollo) {
                     library("com.apollographql.apollo3:apollo-runtime")
@@ -151,7 +152,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1")
                 library("com.google.android.play:app-update:2.1.0")
                 library("com.google.android.play:app-update-ktx:2.1.0")
-                library("com.google.android.ump:user-messaging-platform:2.1.0")
+                library("com.google.android.ump:user-messaging-platform:2.2.0")
 
                 withVersion(Versions.dagger) {
                     library("com.google.dagger:hilt-android")
@@ -163,7 +164,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.google.truth:truth:1.3.0")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
                 library("com.neovisionaries:nv-i18n:1.29")
-                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.2.2")
+                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.2.4")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                     alias = "androidyoutubeplayer"
@@ -251,7 +252,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 prefix("jetBrainsCompose") {
-                    library("org.jetbrains.compose.runtime:runtime:1.6.0-alpha01")
+                    library("org.jetbrains.compose.runtime:runtime:1.6.0-beta01")
                 }
 
                 prefix("junit5") {

@@ -242,6 +242,7 @@ fun Surface(
         LocalContentColor provides contentColor,
         LocalAbsoluteTonalElevation provides absoluteElevation
     ) {
+        @Suppress("DEPRECATION_ERROR")
         Box(
             modifier = modifier
                 .minimumInteractiveComponentSize()

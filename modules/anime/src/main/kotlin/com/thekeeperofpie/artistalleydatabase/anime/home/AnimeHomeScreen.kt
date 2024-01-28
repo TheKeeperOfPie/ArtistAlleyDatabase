@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -668,8 +669,18 @@ object AnimeHomeScreen {
         selectedItemTracker.ScrollEffect(key = rowKey, pagerState = pagerState)
 
         val listState = rememberLazyListState()
-        val snapLayoutInfoProvider =
-            remember(listState) { SnapLayoutInfoProvider(listState) { _, _, _, _, _ -> 0 } }
+        val snapLayoutInfoProvider = remember(listState) {
+            SnapLayoutInfoProvider(listState, object : SnapPosition {
+                override fun position(
+                    layoutSize: Int,
+                    itemSize: Int,
+                    beforeContentPadding: Int,
+                    afterContentPadding: Int,
+                    itemIndex: Int,
+                    itemCount: Int,
+                ) = 0
+            })
+        }
         LazyRow(
             state = listState,
             contentPadding = contentPadding,

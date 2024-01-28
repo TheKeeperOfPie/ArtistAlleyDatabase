@@ -2,7 +2,7 @@ plugins {
     id("module-library")
 
     // Gradle --scan
-    id("com.gradle.build-scan") version "3.16.1" apply false
+    id("com.gradle.build-scan") version "3.16.2" apply false
 }
 
 android {
@@ -19,7 +19,7 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    val androidTools = "31.4.0-alpha04"
+    val androidTools = "31.4.0-alpha07"
     debugCompileOnly("com.android.tools.emulator:proto:$androidTools")
     debugCompileOnly("com.android.tools.utp:utp-common:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:$androidTools")
