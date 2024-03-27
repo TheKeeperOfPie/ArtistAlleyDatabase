@@ -174,6 +174,7 @@ class MediaEditViewModel @Inject constructor(
     fun initialize(
         mediaId: String,
         coverImage: String?,
+        // TODO: Pass all translations so that UI can react to language changes down the line
         title: String?,
         mediaListEntry: MediaDetailsListEntry?,
         mediaType: MediaType?,

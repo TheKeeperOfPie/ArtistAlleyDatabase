@@ -832,10 +832,12 @@ fun ActivityStatusIcons(
             Text(
                 text = replyCount.toString(),
                 style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.placeholder(
-                    visible = activityId == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
+                modifier = Modifier
+                    .placeholder(
+                        visible = activityId == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .padding(start = 4.dp)
             )
         }
         Icon(
@@ -849,18 +851,20 @@ fun ActivityStatusIcons(
             ),
             modifier = Modifier
                 .size(36.dp)
-                .padding(8.dp)
+                .padding(6.dp)
         )
 
         val likeCount = likes ?: 0
         if (activityId == null || likeCount > 0) {
             Text(
                 text = likeCount.toString(),
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.placeholder(
-                    visible = activityId == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
+                style = MaterialTheme.typography.labelMedium.copy(),
+                modifier = Modifier
+                    .placeholder(
+                        visible = activityId == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .padding(start = 4.dp)
             )
         }
         IconButton(
@@ -883,9 +887,10 @@ fun ActivityStatusIcons(
                 contentDescription = stringResource(
                     R.string.anime_activity_like_icon_content_description
                 ),
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
+
         if (viewer != null) {
             IconButton(
                 onClick = {
@@ -909,7 +914,7 @@ fun ActivityStatusIcons(
                     contentDescription = stringResource(
                         R.string.anime_activity_subscribe_icon_content_description
                     ),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
