@@ -9,7 +9,9 @@ import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.api.Optional
+import com.apollographql.apollo3.network.NetworkMonitor
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -42,7 +44,15 @@ class AniListApi(
     }
 
     // TODO: Merge clients
+    @OptIn(ApolloExperimental::class)
     private val apolloClient = ApolloClient.Builder()
+        // TODO: Remove on next Apollo release:
+        //  https://github.com/apollographql/apollo-kotlin/issues/5760
+        .networkMonitor(object : NetworkMonitor {
+            override val isOnline = true
+            override fun close() {}
+            override suspend fun waitForNetwork() {}
+        })
         .serverUrl(AniListUtils.GRAPHQL_API_URL)
         .httpEngine(DefaultHttpEngine(okHttpClient))
         .addLoggingInterceptors(TAG, networkSettings)

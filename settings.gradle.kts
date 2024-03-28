@@ -32,6 +32,7 @@ include(
     ":modules:anime",
     ":modules:anime2anime",
     ":modules:animethemes",
+    ":modules:apollo",
     ":modules:art",
     ":modules:browse",
     ":modules:compose-utils",

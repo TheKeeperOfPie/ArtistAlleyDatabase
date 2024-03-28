@@ -108,6 +108,7 @@ dependencyAnalysis {
                     ":modules:anilist-data",
                     ":modules:anime",
                     ":modules:animethemes",
+                    ":modules:apollo",
                     ":modules:art",
                     ":modules:browse",
                     ":modules:compose-utils",
@@ -231,9 +232,9 @@ subprojects {
                 "-P",
                 "plugin:androidx.compose.compiler.plugins.kotlin:experimentalStrongSkipping=true",
 
-                // TODO: Figure out why build infers 1.5.4 when 1.5.8 is declared
+                // TODO: Figure out why build infers 1.5.8.1 when 1.5.11 is declared
                 "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
+                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.9.23",
             )
         }
     }

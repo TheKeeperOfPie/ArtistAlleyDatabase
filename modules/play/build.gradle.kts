@@ -22,8 +22,6 @@ dependencies {
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
-    implementation(libs.lifecycle.runtime.ktx)
-
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material.icons.core)

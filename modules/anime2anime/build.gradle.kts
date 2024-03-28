@@ -19,8 +19,6 @@ dependencies {
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
-    implementation(libs.lifecycle.viewmodel.ktx)
-
     api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     runtimeOnly(libs.compose.ui.tooling)

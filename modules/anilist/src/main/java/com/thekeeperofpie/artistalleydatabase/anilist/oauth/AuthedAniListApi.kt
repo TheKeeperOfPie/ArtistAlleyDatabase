@@ -136,6 +136,7 @@ import com.anilist.type.StudioSort
 import com.anilist.type.ThreadSort
 import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.api.Mutation
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
@@ -144,6 +145,7 @@ import com.apollographql.apollo3.cache.normalized.api.MemoryCacheFactory
 import com.apollographql.apollo3.cache.normalized.fetchPolicy
 import com.apollographql.apollo3.cache.normalized.normalizedCache
 import com.apollographql.apollo3.cache.normalized.sql.SqlNormalizedCacheFactory
+import com.apollographql.apollo3.network.NetworkMonitor
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
@@ -210,7 +212,16 @@ open class AuthedAniListApi(
                 )
             }
         }
+
+    @OptIn(ApolloExperimental::class)
     private val apolloClient = ApolloClient.Builder()
+        // TODO: Remove on next Apollo release:
+        //  https://github.com/apollographql/apollo-kotlin/issues/5760
+        .networkMonitor(object : NetworkMonitor {
+            override val isOnline = true
+            override fun close() {}
+            override suspend fun waitForNetwork() {}
+        })
         .serverUrl(AniListUtils.GRAPHQL_API_URL)
         .httpEngine(DefaultHttpEngine(okHttpClient))
         .addLoggingInterceptors(TAG, networkSettings)

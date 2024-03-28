@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ColorScheme
@@ -39,6 +38,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.ripple
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -341,7 +341,6 @@ private fun Surface(
         LocalContentColor provides contentColor,
         LocalAbsoluteTonalElevation provides absoluteElevation
     ) {
-        @Suppress("DEPRECATION_ERROR")
         Box(
             modifier = modifier
                 .minimumInteractiveComponentSize()
@@ -356,7 +355,7 @@ private fun Surface(
                 )
                 .combinedClickable(
                     interactionSource = interactionSource,
-                    indication = rememberRipple(),
+                    indication = ripple(),
                     enabled = enabled,
                     onClick = onClick,
                     onLongClickLabel = onLongClickLabel,
