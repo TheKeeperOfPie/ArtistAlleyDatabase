@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreDao
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListSpoilerPlugin
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListTempPlugin
+import com.thekeeperofpie.artistalleydatabase.anime.markdown.CoilImagesMarkwonPlugin
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
@@ -38,7 +39,6 @@ import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TableAwareMovementMethod
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
-import io.noties.markwon.image.coil.CoilImagesPlugin
 import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.movement.MovementMethodPlugin
 import okhttp3.OkHttpClient
@@ -172,7 +172,7 @@ object AnimeHiltModule {
         .usePlugin(StrikethroughPlugin.create())
         .usePlugin(AniListTempPlugin)
         .usePlugin(AniListSpoilerPlugin)
-        .usePlugin(CoilImagesPlugin.create(application))
+        .usePlugin(CoilImagesMarkwonPlugin.create(application))
         .build()
 
     @Singleton

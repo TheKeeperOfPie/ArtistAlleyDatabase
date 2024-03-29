@@ -54,8 +54,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.mxalbert.sharedelements.FadeMode
 import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement
@@ -346,7 +348,7 @@ object EntryDetailsScreen {
         )
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
     @Composable
     private fun HeaderImage(
         screenKey: String,
@@ -403,8 +405,8 @@ object EntryDetailsScreen {
                                     )
                                     .listener { _, result ->
                                         imageState().onSizeResult(
-                                            result.drawable.intrinsicWidth,
-                                            result.drawable.intrinsicHeight,
+                                            result.image.width,
+                                            result.image.height,
                                         )
                                     }
                                     .build(),

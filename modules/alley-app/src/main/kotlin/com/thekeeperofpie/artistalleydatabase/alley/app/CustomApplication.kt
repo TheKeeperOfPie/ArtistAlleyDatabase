@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import android.app.Application
-import coil.ImageLoader
-import coil.ImageLoaderFactory
-import coil.disk.DiskCache
-import coil.memory.MemoryCache
+import coil3.ImageLoader
+import coil3.ImageLoaderFactory
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope

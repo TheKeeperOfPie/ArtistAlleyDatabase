@@ -169,8 +169,9 @@ import androidx.compose.ui.util.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.os.BuildCompat
 import androidx.core.text.HtmlCompat
-import coil.Coil
-import coil.request.ImageRequest
+import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
+import coil3.request.ImageRequest
 import com.thekeeperofpie.compose_proxy.R
 import de.charlex.compose.toAnnotatedString
 import kotlinx.coroutines.CoroutineScope
@@ -1027,17 +1028,17 @@ private fun HtmlText(
 
 private class CoilImageGetter(
     private val context: Context,
-    maxWidth: Int,
+    var maxWidth: Int,
     private val onUpdate: (String) -> Unit,
 ) : Html.ImageGetter {
-    var maxWidth = maxWidth
 
-    private val loader = Coil.imageLoader(context)
+    private val loader = SingletonImageLoader.get(context)
 
     private val sourceToDrawable = mutableMapOf<String, Drawable>()
 
     private val brokenDrawable = context.getDrawable(R.drawable.baseline_broken_image_24)
 
+    @OptIn(ExperimentalCoilApi::class)
     override fun getDrawable(source: String?): Drawable {
         if (source == null) return CustomDrawableWrapper.EMPTY
         val drawable = sourceToDrawable[source]
@@ -1051,7 +1052,7 @@ private class CoilImageGetter(
                 .data(source)
                 .listener(
                     onSuccess = { request, result ->
-                        val newDrawable = result.drawable.apply {
+                        val newDrawable = result.image.asDrawable(context.resources).apply {
                             val widthToHeightRatio = intrinsicHeight / intrinsicWidth
                             val width = intrinsicWidth.coerceAtMost(maxWidth)
                             setBounds(0, 0, width, width * widthToHeightRatio)

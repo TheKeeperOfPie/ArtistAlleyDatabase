@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 
 @Composable

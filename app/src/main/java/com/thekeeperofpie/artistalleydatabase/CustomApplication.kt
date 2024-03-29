@@ -9,10 +9,13 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import coil.ImageLoader
-import coil.ImageLoaderFactory
-import coil.disk.DiskCache
-import coil.memory.MemoryCache
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.disk.DiskCache
+import coil3.disk.directory
+import coil3.memory.MemoryCache
+import coil3.request.crossfade
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
@@ -27,7 +30,7 @@ import javax.inject.Inject
 
 @HiltAndroidApp
 class CustomApplication : Application(), Configuration.Provider, ScopedApplication,
-    ImageLoaderFactory {
+    SingletonImageLoader.Factory {
 
     @Inject
     lateinit var okHttpClient: OkHttpClient
@@ -116,10 +119,10 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
             )
     }
 
-    override fun newImageLoader() = ImageLoader.Builder(this)
+    override fun newImageLoader(context: PlatformContext) = ImageLoader.Builder(context)
         .memoryCache {
-            MemoryCache.Builder(this)
-                .maxSizePercent(0.25)
+            MemoryCache.Builder()
+                .maxSizePercent(context, 0.25)
                 .build()
         }
         .diskCache {

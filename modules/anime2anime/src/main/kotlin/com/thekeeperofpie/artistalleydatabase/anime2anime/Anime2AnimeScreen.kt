@@ -69,8 +69,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.request.ImageRequest
-import coil.size.Dimension
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.size.Dimension
 import com.anilist.fragment.AniListMedia
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData

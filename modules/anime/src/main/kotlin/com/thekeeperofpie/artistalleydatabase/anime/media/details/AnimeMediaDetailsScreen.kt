@@ -76,7 +76,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.fragment.MediaNavigationData

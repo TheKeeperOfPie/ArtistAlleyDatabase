@@ -15,7 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
-import coil.compose.AsyncImagePainter
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import kotlinx.coroutines.delay
@@ -58,8 +59,9 @@ fun LazyListState.showFloatingActionButtonOnVerticalScroll(firstIndexToHide: Int
     }.value
 }
 
-fun AsyncImagePainter.State.Success.widthToHeightRatio() = result.drawable.intrinsicWidth /
-        result.drawable.intrinsicHeight.coerceAtLeast(0).toFloat()
+@OptIn(ExperimentalCoilApi::class)
+fun AsyncImagePainter.State.Success.widthToHeightRatio() = result.image.width /
+        result.image.height.coerceAtLeast(0).toFloat()
 
 @Composable
 fun LoadingResult<*>.ErrorSnackbar(snackbarHostState: SnackbarHostState) {

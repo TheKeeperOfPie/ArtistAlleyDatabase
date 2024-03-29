@@ -55,10 +55,12 @@ import androidx.core.graphics.ColorUtils
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
-import coil.request.ImageRequest
-import coil.size.Dimension
+import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.request.crossfade
+import coil3.size.Dimension
 import com.anilist.fragment.MediaHeaderData
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle

@@ -32,7 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar

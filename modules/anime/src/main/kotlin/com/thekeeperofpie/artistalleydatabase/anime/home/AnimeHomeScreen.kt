@@ -87,8 +87,10 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.size.Dimension
 import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.HomeMedia
 import com.anilist.fragment.MediaNavigationData
@@ -783,10 +785,10 @@ object AnimeHomeScreen {
         val mediaId = media?.id?.toString()
         Box(modifier = Modifier.recomposeHighlighter()) {
             val density = LocalDensity.current
-            val coilWidth = coil.size.Dimension.Pixels(
+            val coilWidth = Dimension.Pixels(
                 density.run { CURRENT_ROW_IMAGE_WIDTH.roundToPx() / 4 * 3 }
             )
-            val coilHeight = coil.size.Dimension.Pixels(
+            val coilHeight = Dimension.Pixels(
                 density.run { CURRENT_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
             )
             val colorCalculationState = LocalColorCalculationState.current
@@ -970,10 +972,10 @@ object AnimeHomeScreen {
         Box(modifier = Modifier.recomposeHighlighter()) {
             var showTitle by remember(media) { mutableStateOf(false) }
             val density = LocalDensity.current
-            val coilWidth = coil.size.Dimension.Pixels(
+            val coilWidth = Dimension.Pixels(
                 density.run { MEDIA_ROW_IMAGE_WIDTH.roundToPx() / 2 }
             )
-            val coilHeight = coil.size.Dimension.Pixels(
+            val coilHeight = Dimension.Pixels(
                 density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() / 2 }
             )
 

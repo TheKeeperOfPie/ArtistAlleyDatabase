@@ -27,7 +27,8 @@ dependencies {
     runtimeOnly(libs.compose.ui.tooling)
     implementation(libs.accompanist.flowlayout)
 
-    implementation(libs.coil.compose)
+    implementation(libs.coil3.coil.compose)
+    implementation(libs.coil3.coil.network.okhttp)
     implementation(libs.material.icons.extended)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.compose.ui)

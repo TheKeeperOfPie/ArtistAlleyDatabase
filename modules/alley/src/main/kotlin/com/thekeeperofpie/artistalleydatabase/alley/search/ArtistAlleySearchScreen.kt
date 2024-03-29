@@ -88,7 +88,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.ImageGrid

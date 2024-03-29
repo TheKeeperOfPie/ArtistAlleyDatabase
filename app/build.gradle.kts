@@ -299,7 +299,7 @@ dependencies {
     ksp(kspProcessors.moshi.kotlin.codegen)
 
     implementation(libs.commons.compress)
-    implementation(libs.coil.compose)
+    implementation(libs.coil3.coil.network.okhttp)
 
     implementation(libs.play.services.oss.licenses)
 

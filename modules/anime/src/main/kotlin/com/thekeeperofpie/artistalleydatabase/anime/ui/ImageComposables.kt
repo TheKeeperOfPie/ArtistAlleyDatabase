@@ -10,9 +10,9 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R

@@ -117,8 +117,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanState

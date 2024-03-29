@@ -36,8 +36,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.request.ImageRequest
-import coil.size.Dimension
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.request.crossfade
+import coil3.size.Dimension
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType

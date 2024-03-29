@@ -30,7 +30,8 @@ dependencies {
     runtimeOnly(libs.compose.ui.tooling)
     implementation(libs.accompanist.flowlayout)
 
-    implementation(libs.coil.compose)
+    implementation(libs.coil3.coil.compose)
+    implementation(libs.coil3.coil.network.okhttp)
     implementation(libs.compose.material.icons.extended)
 
     implementation(libs.hilt.navigation.compose)
@@ -55,7 +56,6 @@ dependencies {
     implementation(libs.markwon.ext.strikethrough)
     implementation(libs.markwon.ext.tables)
     api(libs.markwon.html)
-    implementation(libs.markwon.image.coil)
     implementation(libs.markwon.linkify)
 
     runtimeOnly(libs.room.runtime)

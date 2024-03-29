@@ -54,9 +54,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import coil.size.Dimension
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Dimension
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.R

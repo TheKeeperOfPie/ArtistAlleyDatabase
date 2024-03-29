@@ -45,9 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import coil.size.Dimension
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.size.Dimension
 import com.mxalbert.sharedelements.FadeMode
 import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement

@@ -24,7 +24,8 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.compose.material.icons.extended)
 
-    api(libs.coil.compose)
+    api(libs.coil3.coil.compose)
+    api(libs.coil3.coil.network.okhttp)
     implementation(libs.palette.ktx)
     implementation(libs.html.text)
 }

@@ -45,7 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally

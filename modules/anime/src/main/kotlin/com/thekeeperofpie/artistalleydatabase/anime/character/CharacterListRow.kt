@@ -43,8 +43,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.request.ImageRequest
-import coil.size.Dimension
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.request.crossfade
+import coil3.size.Dimension
 import com.anilist.CharacterAdvancedSearchQuery.Data.Page.Character
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.CharacterWithRoleAndFavorites

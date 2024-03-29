@@ -29,8 +29,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue

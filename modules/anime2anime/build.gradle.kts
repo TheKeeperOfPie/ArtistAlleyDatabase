@@ -24,7 +24,6 @@ dependencies {
     runtimeOnly(libs.compose.ui.tooling)
     implementation(libs.accompanist.flowlayout)
 
-    implementation(libs.coil.compose)
     implementation(libs.compose.material.icons.extended)
 
     implementation(libs.hilt.navigation.compose)

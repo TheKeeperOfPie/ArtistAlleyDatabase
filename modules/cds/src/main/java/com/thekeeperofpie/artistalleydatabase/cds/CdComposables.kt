@@ -19,7 +19,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import coil.size.Dimension
+import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid

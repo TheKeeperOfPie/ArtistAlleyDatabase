@@ -8,6 +8,7 @@ import org.gradle.kotlin.dsl.maven
 object Versions {
     const val accompanist = "0.35.0-alpha"
     const val apollo = "4.0.0-beta.5"
+    const val coil = "3.0.0-alpha06"
     const val compose = "1.7.0-alpha05"
     const val dagger = "2.51"
     const val hilt = "1.2.0"
@@ -183,7 +184,14 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 )
                 library("com.unity3d.ads:unity-ads:4.10.0")
                 library("de.charlex.compose:html-text:1.6.0")
-                library("io.coil-kt:coil-compose:2.6.0")
+
+                prefix("coil3") {
+                    withVersion(Versions.coil) {
+                        library("io.coil-kt.coil3:coil-compose")
+                        library("io.coil-kt.coil3:coil-network-okhttp")
+                    }
+                }
+
                 library("io.github.hoc081098:FlowExt:0.8.1-Beta")
                 library("io.github.java-diff-utils:java-diff-utils:4.12")
 
@@ -269,7 +277,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("io.noties.markwon:ext-strikethrough")
                         library("io.noties.markwon:ext-tables")
                         library("io.noties.markwon:html")
-                        library("io.noties.markwon:image-coil")
                         library("io.noties.markwon:linkify")
                         library("io.noties.markwon:simple-ext")
                     }

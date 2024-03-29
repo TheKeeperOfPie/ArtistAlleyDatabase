@@ -56,7 +56,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection

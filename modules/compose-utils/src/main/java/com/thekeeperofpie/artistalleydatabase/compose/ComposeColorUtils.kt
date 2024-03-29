@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.compose
 
-import android.graphics.drawable.BitmapDrawable
 import androidx.annotation.FloatRange
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -8,7 +7,9 @@ import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import androidx.palette.graphics.Target
 import androidx.palette.graphics.get
-import coil.compose.AsyncImagePainter
+import coil3.BitmapImage
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
 
@@ -33,6 +34,7 @@ object ComposeColorUtils {
     /**
      * Requires non-hardware bitmaps.
      */
+    @OptIn(ExperimentalCoilApi::class)
     fun calculatePalette(
         id: String,
         success: AsyncImagePainter.State.Success,
@@ -42,7 +44,7 @@ object ComposeColorUtils {
         selectMaxPopulation: Boolean = false,
     ) {
         if (colorCalculationState.shouldCalculate(id)) {
-            (success.result.drawable as? BitmapDrawable)?.bitmap?.let {
+            (success.result.image as? BitmapImage)?.bitmap?.let {
                 colorCalculationState.scope.launch(CustomDispatchers.IO) {
                     try {
                         val palette = Palette.from(it)
