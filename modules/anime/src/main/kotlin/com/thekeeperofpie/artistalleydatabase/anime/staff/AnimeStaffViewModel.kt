@@ -44,9 +44,9 @@ class AnimeStaffViewModel @Inject constructor(
                 .flatMapLatest {
                     // TODO: Use Pager refresh instead
                     mediaDetailsViewModel.refresh.flatMapLatest {
-                        AniListPager {
+                        AniListPager(perPage = 6, prefetchDistance = 1) { page ->
                             val result =
-                                aniListApi.mediaDetailsStaffPage(mediaId, it).staff
+                                aniListApi.mediaDetailsStaffPage(mediaId, page, perPage = 6).staff
                             result.pageInfo to result.edges.filterNotNull().map {
                                 DetailsStaff(
                                     id = it.node.id.toString(),

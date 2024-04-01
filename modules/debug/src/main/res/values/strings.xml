@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_network_graphql_tab_query">Query</string>
+    <string name="debug_network_graphql_tab_variables">Variables</string>
+    <string name="debug_network_graphql_tab_response">Response</string>
+    <string name="debug_network_graphql_tab_errors">Errors</string>
+    <string name="debug_network_button_clear">Clear</string>
+    <string name="debug_network_graphql_header_dropdown_content_description">Expand/collapse GraphQL request</string>
+</resources>

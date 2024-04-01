@@ -38,6 +38,7 @@ include(
     ":modules:compose-utils",
     ":modules:cds",
     ":modules:data",
+    ":modules:debug",
     ":modules:dependencies",
     ":modules:entry",
     ":modules:monetization",

@@ -2,6 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.app.Application
 import androidx.security.crypto.MasterKey
+import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.annotations.ApolloExperimental
+import com.apollographql.apollo3.cache.normalized.api.MemoryCacheFactory
+import com.apollographql.apollo3.cache.normalized.normalizedCache
+import com.apollographql.apollo3.cache.normalized.sql.SqlNormalizedCacheFactory
+import com.apollographql.apollo3.network.NetworkMonitor
+import com.apollographql.apollo3.network.http.DefaultHttpEngine
+import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
@@ -18,14 +26,63 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ElementsIntoSet
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
 import okhttp3.OkHttpClient
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 class AniListHiltModule {
+    companion object {
+        private const val MEMORY_CACHE_BYTE_SIZE = 100 * 1024 * 1024 // 100 MB
+    }
+
+    @Provides
+    @ElementsIntoSet
+    fun bindEmptyApolloHttpInterceptorsSet(): Set<HttpInterceptor> = emptySet()
+
+    @Named("AniList")
+    @Singleton
+    @Provides
+    fun provideAniListApolloClient(
+        application: Application,
+        masterKey: MasterKey,
+        networkSettings: NetworkSettings,
+        okHttpClient: OkHttpClient,
+        apolloHttpInterceptors: @JvmSuppressWildcards Set<HttpInterceptor>,
+    ): ApolloClient {
+        val memoryThenDiskCache = MemoryCacheFactory(MEMORY_CACHE_BYTE_SIZE)
+            .apply {
+                if (networkSettings.enableNetworkCaching.value) {
+                    chain(
+                        SqlNormalizedCacheFactory(
+                            application,
+                            "apollo.db",
+                            useNoBackupDirectory = true,
+                        )
+                    )
+                }
+            }
+
+        @OptIn(ApolloExperimental::class)
+        return ApolloClient.Builder()
+            // TODO: Remove on next Apollo release:
+            //  https://github.com/apollographql/apollo-kotlin/issues/5760
+            .networkMonitor(object : NetworkMonitor {
+                override val isOnline = true
+                override fun close() {}
+                override suspend fun waitForNetwork() {}
+            })
+            .serverUrl(AniListUtils.GRAPHQL_API_URL)
+            .httpEngine(DefaultHttpEngine(okHttpClient))
+            .addLoggingInterceptors("AniListApi", networkSettings)
+            .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
+            .apply { apolloHttpInterceptors.forEach(::addHttpInterceptor) }
+            .build()
+    }
 
     @Singleton
     @Provides
@@ -36,34 +93,33 @@ class AniListHiltModule {
     @Provides
     fun provideAniListApi(
         application: ScopedApplication,
-        networkSettings: NetworkSettings,
-        okHttpClient: OkHttpClient,
-    ) = AniListApi(application, networkSettings, okHttpClient)
+        @Named("AniList") apolloClient: ApolloClient,
+    ) = AniListApi(application, apolloClient)
 
     @Singleton
     @Provides
     fun provideAuthedAniListApi(
         scopedApplication: ScopedApplication,
         aniListOAuthStore: AniListOAuthStore,
-        networkSettings: NetworkSettings,
         aniListSettings: AniListSettings,
         okHttpClient: OkHttpClient,
+        @Named("AniList") apolloClient: ApolloClient,
         featureOverrideProvider: FeatureOverrideProvider,
     ) = if (featureOverrideProvider.isReleaseBuild) {
         AuthedAniListApiWrapper(
             scopedApplication,
             aniListOAuthStore,
-            networkSettings,
             aniListSettings,
             okHttpClient,
+            apolloClient,
         )
     } else {
         AuthedAniListApi(
             scopedApplication,
             aniListOAuthStore,
-            networkSettings,
             aniListSettings,
             okHttpClient,
+            apolloClient,
         )
     }
 

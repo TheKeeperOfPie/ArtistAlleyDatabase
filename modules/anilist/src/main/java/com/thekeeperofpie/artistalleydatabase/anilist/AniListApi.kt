@@ -9,14 +9,10 @@ import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
-import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.api.Optional
-import com.apollographql.apollo3.network.NetworkMonitor
-import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.chunked
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -30,33 +26,16 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
-import okhttp3.OkHttpClient
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class AniListApi(
     application: ScopedApplication,
-    networkSettings: NetworkSettings,
-    okHttpClient: OkHttpClient,
+    private val apolloClient: ApolloClient,
 ) {
     companion object {
         private const val TAG = "AniListApi"
     }
-
-    // TODO: Merge clients
-    @OptIn(ApolloExperimental::class)
-    private val apolloClient = ApolloClient.Builder()
-        // TODO: Remove on next Apollo release:
-        //  https://github.com/apollographql/apollo-kotlin/issues/5760
-        .networkMonitor(object : NetworkMonitor {
-            override val isOnline = true
-            override fun close() {}
-            override suspend fun waitForNetwork() {}
-        })
-        .serverUrl(AniListUtils.GRAPHQL_API_URL)
-        .httpEngine(DefaultHttpEngine(okHttpClient))
-        .addLoggingInterceptors(TAG, networkSettings)
-        .build()
 
     private data class Request<T>(
         val id: String,

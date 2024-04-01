@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.outlined.PeopleAlt
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ElevatedCard
@@ -46,6 +47,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,7 +74,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHig
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
-import kotlinx.collections.immutable.ImmutableList
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -258,7 +259,7 @@ fun StartEndDateDialog(
 
 fun <T> LazyListScope.listSection(
     @StringRes titleRes: Int,
-    values: ImmutableList<T>?,
+    values: List<T>?,
     valueToId: (T) -> String?,
     aboveFold: Int,
     hasMoreValues: Boolean = false,
@@ -268,8 +269,16 @@ fun <T> LazyListScope.listSection(
     hiddenContent: @Composable () -> Unit = {},
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
+    loading: Boolean = false,
+    headerSideEffect: (() -> Unit)? = null,
     itemContent: @Composable LazyItemScope.(T, paddingBottom: Dp) -> Unit,
 ) {
+    // TODO: There must be a better way to do this
+    if (headerSideEffect != null) {
+        item {
+            SideEffect(headerSideEffect)
+        }
+    }
     if (values != null && values.isEmpty()) return
     item("$titleRes-header") {
         val navigationCallback = LocalNavigationCallback.current
@@ -279,6 +288,14 @@ fun <T> LazyListScope.listSection(
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
         )
     }
+    if (loading) {
+        item {
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                CircularProgressIndicator()
+            }
+        }
+    }
+
     if (values == null) return
     listSectionWithoutHeader(
         titleRes = titleRes,
@@ -297,7 +314,7 @@ fun <T> LazyListScope.listSection(
 
 fun <T> LazyListScope.listSectionWithoutHeader(
     @StringRes titleRes: Int,
-    values: ImmutableList<T>?,
+    values: List<T>?,
     valueToId: (T) -> String?,
     aboveFold: Int,
     hasMoreValues: Boolean = false,

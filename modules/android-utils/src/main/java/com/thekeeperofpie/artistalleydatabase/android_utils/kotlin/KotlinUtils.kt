@@ -226,3 +226,19 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R> combin
 
 inline fun <T> T.transformIf(shouldRun: Boolean, block: T.() -> T) =
     if (shouldRun) run(block) else this
+
+fun <T> MutableSet<T>.toggle(value: T) {
+    if (contains(value)) {
+        remove(value)
+    } else {
+        add(value)
+    }
+}
+
+fun <T> MutableList<T>.toggle(value: T) {
+    if (contains(value)) {
+        remove(value)
+    } else {
+        add(value)
+    }
+}

@@ -382,6 +382,7 @@ object AnimeNavigator {
                         }
                     )
                 },
+                requestLoadMedia2 = mediaDetailsViewModel::requestLoadMedia2,
                 recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
                     items = recommendationsViewModel.recommendations?.recommendations,
                     aboveFold = RecommendationComposables.RECOMMENDATIONS_ABOVE_FOLD,
@@ -446,14 +447,14 @@ object AnimeNavigator {
                     )
                 },
                 forumThreadsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
-                    items = forumThreadsViewModel.forumThreads,
+                    items = forumThreadsViewModel.forumThreads.result,
                     aboveFold = ForumComposables.FORUM_THREADS_ABOVE_FOLD,
                     hasMore = true,
                 ),
                 forumThreadsSection = { expanded, onExpandedChanged ->
                     forumThreadsSection(
                         viewer = viewer,
-                        forumThreads = forumThreadsViewModel.forumThreads,
+                        forumThreads = forumThreadsViewModel.forumThreads.result,
                         expanded = expanded,
                         onExpandedChange = onExpandedChanged,
                         onClickViewAll = {
@@ -464,6 +465,8 @@ object AnimeNavigator {
                             )
                         },
                         onStatusUpdate = forumThreadsViewModel.threadToggleHelper::toggle,
+                        requestLoad = forumThreadsViewModel::requestLoad,
+                        loading = forumThreadsViewModel.forumThreads.loading,
                     )
                 },
                 reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(

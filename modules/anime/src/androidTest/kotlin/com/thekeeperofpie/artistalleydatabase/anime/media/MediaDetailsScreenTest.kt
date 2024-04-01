@@ -288,6 +288,7 @@ class MediaDetailsScreenTest {
                     charactersSection = { _, _, _ -> },
                     staffCount = { 0 },
                     staffSection = {},
+                    requestLoadMedia2 = {},
                     recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
                     recommendationsSection = { _, _, _, _, _ -> },
                     songsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,

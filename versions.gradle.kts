@@ -163,6 +163,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.23-1.0.19")
                 library("com.google.net.cronet:cronet-okhttp:0.1.0")
                 library("com.google.truth:truth:1.4.2")
+                library("com.graphql-java:graphql-java:21.3")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
                 library("com.neovisionaries:nv-i18n:1.29")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.4.2")
@@ -171,6 +172,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     alias = "androidyoutubeplayer"
                 )
                 library("com.rometools:rome:2.1.0")
+                library("com.sebastianneubauer.jsontree:jsontree:2.1.1")
                 library("com.squareup:javapoet:1.13.0")
                 library("com.squareup:kotlinpoet:1.15.3")
                 library("com.squareup.leakcanary:leakcanary-android:3.0-alpha-1")

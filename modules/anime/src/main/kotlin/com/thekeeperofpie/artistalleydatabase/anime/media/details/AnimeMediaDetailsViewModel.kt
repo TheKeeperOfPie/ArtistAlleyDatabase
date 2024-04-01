@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -78,9 +79,10 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     val refresh = MutableStateFlow(-1L)
     private val refreshSecondary = MutableStateFlow(-1L)
+    private val barrierMedia2 = MutableStateFlow(false)
 
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
-    var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.loading())
+    var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.empty())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
 
     var trailerPlaybackPosition = 0f
@@ -226,6 +228,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             snapshotFlow { entry.result }
                 .filterNotNull()
                 .take(1)
+                .flatMapLatest { barrierMedia2.filter { it } }
                 .flatMapLatest {
                     combine(refresh, refreshSecondary, ::Pair)
                         .flatMapLatest { aniListApi.mediaDetails2(mediaId) }
@@ -238,7 +241,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                             }
                         }
                 }
-                .foldPreviousResult()
+                .foldPreviousResult(initialResult = LoadingResult.empty())
                 .collectLatest { entry2 = it }
         }
     }
@@ -250,4 +253,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     fun refreshSecondary() {
         refreshSecondary.value = SystemClock.uptimeMillis()
     }
+
+    fun requestLoadMedia2() = barrierMedia2.tryEmit(true)
 }

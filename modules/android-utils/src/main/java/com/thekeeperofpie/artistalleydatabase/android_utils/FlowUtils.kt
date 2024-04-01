@@ -63,8 +63,10 @@ fun <T> flowForRefreshableContent(
         }
     }
 
-fun <T> Flow<LoadingResult<T>>.foldPreviousResult() =
-    runningFold(LoadingResult.loading<T>()) { accumulator, value ->
+fun <T> Flow<LoadingResult<T>>.foldPreviousResult(
+    initialResult: LoadingResult<T> = LoadingResult.loading<T>(),
+) =
+    runningFold(initialResult) { accumulator, value ->
         value.transformIf(value.loading && value.result == null) {
             copy(result = accumulator.result)
         }

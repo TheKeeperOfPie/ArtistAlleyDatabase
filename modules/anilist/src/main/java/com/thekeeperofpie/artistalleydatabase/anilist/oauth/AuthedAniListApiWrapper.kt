@@ -25,9 +25,9 @@ import com.anilist.type.StaffSort
 import com.anilist.type.StudioSort
 import com.anilist.type.ThreadSort
 import com.anilist.type.UserSort
+import com.apollographql.apollo3.ApolloClient
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
 import java.io.IOException
@@ -39,15 +39,15 @@ import java.time.LocalDate
 class AuthedAniListApiWrapper(
     scopedApplication: ScopedApplication,
     oAuthStore: AniListOAuthStore,
-    networkSettings: NetworkSettings,
     aniListSettings: AniListSettings,
     okHttpClient: OkHttpClient,
+    apolloClient: ApolloClient,
 ) : AuthedAniListApi(
     scopedApplication,
     oAuthStore,
-    networkSettings,
     aniListSettings,
     okHttpClient,
+    apolloClient,
 ) {
 
     override suspend fun viewerMediaList(

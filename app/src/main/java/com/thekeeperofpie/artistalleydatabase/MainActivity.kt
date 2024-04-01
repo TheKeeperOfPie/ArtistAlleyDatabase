@@ -22,17 +22,14 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LibraryBooks
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -99,9 +96,11 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
@@ -122,6 +121,7 @@ import io.noties.markwon.Markwon
 import kotlinx.coroutines.launch
 import java.util.Optional
 import javax.inject.Inject
+import kotlin.enums.EnumEntries
 import kotlin.jvm.optionals.getOrNull
 
 @AndroidEntryPoint
@@ -242,9 +242,9 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {
-                        val drawerState = rememberDrawerState(DrawerValue.Closed)
+                        val drawerState = rememberDrawerState(DoubleDrawerValue.Closed)
                         val scope = rememberCoroutineScope()
-                        val navDrawerItems = NavDrawerItems.values()
+                        val navDrawerItems = NavDrawerItems.entries
 
                         fun onClickNav() = scope.launch { drawerState.open() }
                         val unlockDatabaseFeatures by monetizationController.unlockDatabaseFeatures
@@ -252,25 +252,30 @@ class MainActivity : ComponentActivity() {
 
                         if (unlockDatabaseFeatures) {
                             var gesturesEnabled by remember { mutableStateOf(true) }
-                            DisposableEffect(navHostController) {
-                                val listener =
-                                    NavController.OnDestinationChangedListener { controller, destination, arguments ->
-                                        gesturesEnabled = NavDrawerItems.entries
-                                            .any { it.route == destination.route }
+                            @Suppress("KotlinConstantConditions")
+                            if (BuildConfig.BUILD_TYPE == "release") {
+                                DisposableEffect(navHostController) {
+                                    val listener =
+                                        NavController.OnDestinationChangedListener { controller, destination, arguments ->
+                                            gesturesEnabled = NavDrawerItems.entries
+                                                .any { it.route == destination.route }
+                                        }
+                                    navHostController.addOnDestinationChangedListener(listener)
+                                    onDispose {
+                                        navHostController.removeOnDestinationChangedListener(
+                                            listener
+                                        )
                                     }
-                                navHostController.addOnDestinationChangedListener(listener)
-                                onDispose {
-                                    navHostController.removeOnDestinationChangedListener(listener)
                                 }
                             }
-                            ModalNavigationDrawer(
+                            DebugDoubleDrawer(
                                 drawerState = drawerState,
                                 gesturesEnabled = gesturesEnabled,
                                 drawerContent = {
                                     // TODO: This is not a good way to to infer the selected root
                                     var selectedRouteIndex by rememberSaveable {
                                         mutableIntStateOf(
-                                            NavDrawerItems.values()
+                                            NavDrawerItems.entries
                                                 .indexOfFirst { it.id == startDestination })
                                     }
 
@@ -354,7 +359,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun StartDrawer(
-        navDrawerItems: () -> Array<NavDrawerItems>,
+        navDrawerItems: () -> EnumEntries<NavDrawerItems>,
         selectedIndex: () -> Int,
         onSelectIndex: (Int) -> Unit,
         onCloseDrawer: () -> Unit,

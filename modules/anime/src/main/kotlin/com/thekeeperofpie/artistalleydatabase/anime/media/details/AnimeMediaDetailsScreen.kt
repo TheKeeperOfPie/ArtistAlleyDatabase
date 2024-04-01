@@ -197,6 +197,7 @@ object AnimeMediaDetailsScreen {
         ) -> Unit,
         cdsSectionMetadata: SectionIndexInfo.SectionMetadata?,
         cdsSection: LazyListScope.(screenKey: String) -> Unit,
+        requestLoadMedia2: () -> Unit,
         recommendationsSectionMetadata: SectionIndexInfo.SectionMetadata,
         recommendationsSection: LazyListScope.(
             screenKey: String,
@@ -463,6 +464,22 @@ object AnimeMediaDetailsScreen {
                                 exception = entry.error?.second,
                             )
                         } else if (entry.result != null) {
+                            val hasReachedLinks by remember {
+                                derivedStateOf {
+                                    val threshold = sectionIndexInfo.linksSectionIndex
+                                        ?: return@derivedStateOf false
+                                    val lastVisibleIndex = lazyListState.layoutInfo
+                                        .visibleItemsInfo.lastOrNull()?.index
+                                        ?: return@derivedStateOf false
+                                    lastVisibleIndex >= threshold
+                                }
+                            }
+                            LaunchedEffect(hasReachedLinks) {
+                                if (hasReachedLinks) {
+                                    requestLoadMedia2()
+                                }
+                            }
+
                             LazyColumn(
                                 state = lazyListState,
                                 contentPadding = PaddingValues(bottom = 16.dp),
@@ -1540,7 +1557,7 @@ object AnimeMediaDetailsScreen {
         forumThreadsSection,
         reviewsSection,
     ) {
-        if (entry == null) return@remember SectionIndexInfo(emptyList())
+        if (entry == null) return@remember SectionIndexInfo(emptyList(), null)
         val list = mutableListOf<Pair<SectionIndexInfo.Section, Int>>()
         var currentIndex = 0
         if (entry.genres.isNotEmpty()) currentIndex += 1
@@ -1595,6 +1612,8 @@ object AnimeMediaDetailsScreen {
 
         list += SectionIndexInfo.Section.STATS to currentIndex
         currentIndex += 2
+
+        val linksSectionIndex = currentIndex
 
         if (entry2 == null) {
             currentIndex++
@@ -1672,10 +1691,13 @@ object AnimeMediaDetailsScreen {
             currentIndex += reviewsCount
         }
 
-        SectionIndexInfo(list)
+        SectionIndexInfo(list, linksSectionIndex = linksSectionIndex)
     }
 
-    data class SectionIndexInfo(val sections: List<Pair<Section, Int>>) {
+    data class SectionIndexInfo(
+        val sections: List<Pair<Section, Int>>,
+        val linksSectionIndex: Int?,
+    ) {
 
         enum class Section(@StringRes val titleRes: Int) {
             CHARACTERS(R.string.anime_media_details_characters_label),

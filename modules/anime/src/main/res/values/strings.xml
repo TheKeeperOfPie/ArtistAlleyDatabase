@@ -376,6 +376,7 @@
     <string name="anime_media_details_activities_no_results">No activity</string>
 
     <string name="anime_media_details_forum_threads_label">Forum threads</string>
+    <string name="anime_media_details_forum_threads_error_loading">Error loading threads</string>
 
     <string name="anime_media_details_reviews_label">Reviews</string>
     <string name="anime_media_details_reviews_user_avatar_content_description">Review author avatar</string>

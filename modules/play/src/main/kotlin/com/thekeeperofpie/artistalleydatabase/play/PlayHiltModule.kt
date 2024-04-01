@@ -9,17 +9,20 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object PlayHiltModule {
 
+    @Singleton
     @Provides
     fun provideSubscriptionProvider(
         scopedApplication: ScopedApplication,
         settings: MonetizationSettings,
     ): SubscriptionProvider = PlaySubscriptionProvider(scopedApplication, settings)
 
+    @Singleton
     @Provides
     fun provideAppUpdateChecker(application: Application): AppUpdateChecker =
         PlayAppUpdateChecker(application)

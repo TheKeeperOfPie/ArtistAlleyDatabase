@@ -136,17 +136,11 @@ import com.anilist.type.StudioSort
 import com.anilist.type.ThreadSort
 import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
-import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.api.Mutation
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.cache.normalized.FetchPolicy
-import com.apollographql.apollo3.cache.normalized.api.MemoryCacheFactory
 import com.apollographql.apollo3.cache.normalized.fetchPolicy
-import com.apollographql.apollo3.cache.normalized.normalizedCache
-import com.apollographql.apollo3.cache.normalized.sql.SqlNormalizedCacheFactory
-import com.apollographql.apollo3.network.NetworkMonitor
-import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
@@ -155,8 +149,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.addLoggingInterceptors
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -191,42 +183,13 @@ import kotlin.coroutines.resumeWithException
 open class AuthedAniListApi(
     private val scopedApplication: ScopedApplication,
     private val oAuthStore: AniListOAuthStore,
-    networkSettings: NetworkSettings,
     aniListSettings: AniListSettings,
     private val okHttpClient: OkHttpClient,
+    private val apolloClient: ApolloClient,
 ) {
     companion object {
         private const val TAG = "AuthedAniListApi"
-        private const val MEMORY_CACHE_BYTE_SIZE = 100 * 1024 * 1024 // 100 MB
     }
-
-    private val memoryThenDiskCache = MemoryCacheFactory(MEMORY_CACHE_BYTE_SIZE)
-        .apply {
-            if (networkSettings.enableNetworkCaching.value) {
-                chain(
-                    SqlNormalizedCacheFactory(
-                        scopedApplication.app,
-                        "apollo.db",
-                        useNoBackupDirectory = true,
-                    )
-                )
-            }
-        }
-
-    @OptIn(ApolloExperimental::class)
-    private val apolloClient = ApolloClient.Builder()
-        // TODO: Remove on next Apollo release:
-        //  https://github.com/apollographql/apollo-kotlin/issues/5760
-        .networkMonitor(object : NetworkMonitor {
-            override val isOnline = true
-            override fun close() {}
-            override suspend fun waitForNetwork() {}
-        })
-        .serverUrl(AniListUtils.GRAPHQL_API_URL)
-        .httpEngine(DefaultHttpEngine(okHttpClient))
-        .addLoggingInterceptors(TAG, networkSettings)
-        .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
-        .build()
 
     val authedUser = MutableStateFlow<AniListViewer?>(null)
 

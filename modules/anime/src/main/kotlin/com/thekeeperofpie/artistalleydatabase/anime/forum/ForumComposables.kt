@@ -98,7 +98,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.openForceExternal
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import kotlinx.collections.immutable.ImmutableList
 
 object ForumComposables {
     const val FORUM_THREADS_ABOVE_FOLD = 3
@@ -1171,13 +1170,17 @@ fun ThreadPageIndicator(
 
 fun LazyListScope.forumThreadsSection(
     viewer: AniListViewer?,
-    forumThreads: ImmutableList<ForumThreadEntry>?,
+    forumThreads: List<ForumThreadEntry>?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
     onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
+    loading: Boolean,
+    requestLoad: () -> Unit,
 ) {
     listSection(
+        headerSideEffect = requestLoad,
+        loading = loading,
         titleRes = R.string.anime_media_details_forum_threads_label,
         values = forumThreads,
         valueToId = { it.thread.id.toString() },

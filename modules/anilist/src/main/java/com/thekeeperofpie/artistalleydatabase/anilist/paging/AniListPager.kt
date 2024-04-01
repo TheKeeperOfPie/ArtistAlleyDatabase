@@ -12,6 +12,7 @@ object AniListPager {
 
     operator fun <T : Any> invoke(
         perPage: Int = 10,
+        prefetchDistance: Int = perPage,
         apiCall: suspend (page: Int) -> Pair<PaginationInfo?, List<T?>?>,
     ): Flow<PagingData<T>> {
         val cache = LruCache<Int, PagingSource.LoadResult.Page<Int, T>>(20)
@@ -19,6 +20,7 @@ object AniListPager {
             config = PagingConfig(
                 pageSize = perPage,
                 initialLoadSize = perPage,
+                prefetchDistance = prefetchDistance,
                 jumpThreshold = perPage * 2,
                 enablePlaceholders = true,
             ),

@@ -7,9 +7,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
@@ -18,11 +20,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -35,7 +40,9 @@ class AnimeForumThreadsViewModel @Inject constructor(
     private val threadStatusController: ForumThreadStatusController,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    var forumThreads by mutableStateOf<ImmutableList<ForumThreadEntry>?>(null)
+    var forumThreads by mutableStateOf<LoadingResult<ImmutableList<ForumThreadEntry>>>(
+        LoadingResult.loading()
+    )
         private set
 
     val threadToggleHelper =
@@ -43,6 +50,8 @@ class AnimeForumThreadsViewModel @Inject constructor(
 
     private val mediaId = savedStateHandle.get<String>("mediaId")!!
     private var initialized = false
+
+    private var barrier = MutableStateFlow(false)
 
     fun initialize(mediaDetailsViewModel: AnimeMediaDetailsViewModel) {
         if (initialized) return
@@ -53,6 +62,7 @@ class AnimeForumThreadsViewModel @Inject constructor(
                 .filterNotNull()
                 .take(1)
                 .flowOn(CustomDispatchers.Main)
+                .flatMapLatest { barrier.filter { it } }
                 .flatMapLatest {
                     mediaDetailsViewModel.refresh.mapLatest {
                         aniListApi.forumThreadSearch(
@@ -80,8 +90,18 @@ class AnimeForumThreadsViewModel @Inject constructor(
                             }.toImmutableList()
                         }
                 }
-                .catch {}
+                .map(LoadingResult.Companion::success)
+                .catch {
+                    emit(
+                        LoadingResult.error(
+                            R.string.anime_media_details_forum_threads_error_loading,
+                            it
+                        )
+                    )
+                }
                 .collectLatest { forumThreads = it }
         }
     }
+
+    fun requestLoad() = barrier.tryEmit(true)
 }

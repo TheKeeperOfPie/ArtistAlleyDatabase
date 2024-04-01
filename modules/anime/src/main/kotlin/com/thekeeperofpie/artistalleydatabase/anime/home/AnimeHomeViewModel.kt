@@ -81,11 +81,11 @@ class AnimeHomeViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(refresh, aniListApi.authedUser, ::Pair)
                 .flatMapLatest { (_, viewer) ->
-                    AniListPager {
+                    AniListPager(perPage = 6, prefetchDistance = 1) {
                         val result = aniListApi.userSocialActivity(
                             isFollowing = viewer != null,
                             page = it,
-                            perPage = 3,
+                            perPage = 6,
                             userIdNot = viewer?.id,
                         )
                         result.page?.pageInfo to
@@ -152,9 +152,9 @@ class AnimeHomeViewModel @Inject constructor(
     private fun collectRecommendations() {
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
-                AniListPager(perPage = 3) {
+                AniListPager(perPage = 6, prefetchDistance = 1) {
                     val result =
-                        aniListApi.homeRecommendations(onList = true, page = it, perPage = 3)
+                        aniListApi.homeRecommendations(onList = true, page = it, perPage = 6)
                     result.page.pageInfo to result.page.recommendations.filterNotNull()
                 }
             }

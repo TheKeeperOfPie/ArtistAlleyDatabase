@@ -227,9 +227,9 @@ abstract class AnimeHomeMediaViewModel(
     private fun collectReviews() {
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.flatMapLatest {
-                AniListPager(perPage = 3) {
+                AniListPager(perPage = 6, prefetchDistance = 1) {
                     val result =
-                        aniListApi.homeReviews(mediaType = mediaType, page = it, perPage = 5)
+                        aniListApi.homeReviews(mediaType = mediaType, page = it, perPage = 6)
                     result.page.pageInfo to result.page.reviews.filterNotNull()
                 }
             }

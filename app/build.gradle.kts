@@ -241,6 +241,8 @@ dependencies {
 //    debugImplementation(project(":modules:monetization:debug"))
 
     debugImplementation(project(":modules:animethemes"))
+    debugImplementation(project(":modules:debug"))
+    "internalImplementation"(project(":modules:debug"))
     "internalImplementation"(project(":modules:monetization:debug"))
     "internalImplementation"(project(":modules:animethemes"))
 

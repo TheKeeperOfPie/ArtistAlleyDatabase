@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class AnimeCharactersViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
@@ -56,7 +58,7 @@ class AnimeCharactersViewModel @Inject constructor(
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { characters ->
-                    AniListPager(perPage = 5) { page ->
+                    AniListPager(perPage = 6, prefetchDistance = 1) { page ->
                         if (page == 1) {
                             characters.run { pageInfo to edges }
                         } else {
