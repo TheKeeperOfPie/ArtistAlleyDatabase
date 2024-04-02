@@ -315,7 +315,10 @@ object AnimeMediaDetailsScreen {
                             menuContent = {
                                 Box {
                                     var showMenu by remember { mutableStateOf(false) }
-                                    IconButton(onClick = { showMenu = true }) {
+                                    IconButton(onClick = {
+                                        requestLoadMedia2()
+                                        showMenu = true
+                                    }) {
                                         Icon(
                                             imageVector = Icons.Filled.MoreVert,
                                             contentDescription = stringResource(
@@ -362,6 +365,20 @@ object AnimeMediaDetailsScreen {
                                                     }
                                                 }
                                             )
+                                        }
+
+                                        if (entry2.loading) {
+                                            Row(
+                                                horizontalArrangement = Arrangement.Center,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    strokeWidth = 2.dp,
+                                                    modifier = Modifier
+                                                        .size(24.dp, 24.dp)
+                                                        .padding(4.dp)
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -1616,53 +1633,53 @@ object AnimeMediaDetailsScreen {
         val linksSectionIndex = currentIndex
 
         if (entry2 == null) {
-            currentIndex++
-        } else {
-            // TODO: If entry2 values are null, show/mock header
-            if (entry2.tags.isNotEmpty()) {
-                list += SectionIndexInfo.Section.TAGS to currentIndex
+            return@remember SectionIndexInfo(list, linksSectionIndex = linksSectionIndex)
+        }
+
+        // TODO: If entry2 values are null, show/mock header
+        if (entry2.tags.isNotEmpty()) {
+            list += SectionIndexInfo.Section.TAGS to currentIndex
+            currentIndex += 2
+        }
+
+        val trailer = entry2.media.trailer
+        if (trailer != null && (trailer.site == "youtube" || trailer.site == "dailymotion")) {
+            list += SectionIndexInfo.Section.TRAILER to currentIndex
+            currentIndex += 2
+        }
+
+        val streamingEpisodes = entry2.media.streamingEpisodes?.filterNotNull().orEmpty()
+        if (streamingEpisodes.isNotEmpty()) {
+            list += SectionIndexInfo.Section.EPISODES to currentIndex
+            if (expandedState.streamingEpisodesHidden) {
                 currentIndex += 2
+            } else {
+                runListSection(
+                    size = streamingEpisodes.size,
+                    aboveFold = STREAMING_EPISODES_ABOVE_FOLD,
+                    expanded = expandedState.streamingEpisodes,
+                    hasMore = false,
+                )
             }
+        }
 
-            val trailer = entry2.media.trailer
-            if (trailer != null && (trailer.site == "youtube" || trailer.site == "dailymotion")) {
-                list += SectionIndexInfo.Section.TRAILER to currentIndex
-                currentIndex += 2
-            }
+        if (entry2.socialLinks.isNotEmpty()
+            || entry2.streamingLinks.isNotEmpty()
+            || entry2.otherLinks.isNotEmpty()
+        ) {
+            list += SectionIndexInfo.Section.LINKS to currentIndex
+        }
 
-            val streamingEpisodes = entry2.media.streamingEpisodes?.filterNotNull().orEmpty()
-            if (streamingEpisodes.isNotEmpty()) {
-                list += SectionIndexInfo.Section.EPISODES to currentIndex
-                if (expandedState.streamingEpisodesHidden) {
-                    currentIndex += 2
-                } else {
-                    runListSection(
-                        size = streamingEpisodes.size,
-                        aboveFold = STREAMING_EPISODES_ABOVE_FOLD,
-                        expanded = expandedState.streamingEpisodes,
-                        hasMore = false,
-                    )
-                }
-            }
+        if (entry2.socialLinks.isNotEmpty()) {
+            currentIndex += 2
+        }
 
-            if (entry2.socialLinks.isNotEmpty()
-                || entry2.streamingLinks.isNotEmpty()
-                || entry2.otherLinks.isNotEmpty()
-            ) {
-                list += SectionIndexInfo.Section.LINKS to currentIndex
-            }
+        if (entry2.streamingLinks.isNotEmpty()) {
+            currentIndex += 2
+        }
 
-            if (entry2.socialLinks.isNotEmpty()) {
-                currentIndex += 2
-            }
-
-            if (entry2.streamingLinks.isNotEmpty()) {
-                currentIndex += 2
-            }
-
-            if (entry2.otherLinks.isNotEmpty()) {
-                currentIndex += 2
-            }
+        if (entry2.otherLinks.isNotEmpty()) {
+            currentIndex += 2
         }
 
 

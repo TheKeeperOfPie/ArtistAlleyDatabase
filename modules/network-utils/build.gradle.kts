@@ -25,4 +25,6 @@ dependencies {
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
     ksp(kspProcessors.hilt.compiler)
+
+    api(libs.apollo.runtime)
 }

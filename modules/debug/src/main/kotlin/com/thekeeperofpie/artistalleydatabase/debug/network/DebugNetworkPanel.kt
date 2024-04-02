@@ -103,8 +103,8 @@ object DebugNetworkPanel {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = data.operationName,
-                color = if (data.errors.isEmpty()) {
+                text = data.request.operationName,
+                color = if (data.response?.errors.isNullOrEmpty()) {
                     Color.Unspecified
                 } else {
                     MaterialTheme.colorScheme.error
@@ -135,7 +135,7 @@ object DebugNetworkPanel {
             modifier = Modifier.fillMaxWidth()
         ) {
             Tab.entries.fastForEachIndexed { index, tab ->
-                if (tab == Tab.Errors && data.errors.isEmpty()) {
+                if (tab == Tab.Errors && data.response?.errors.isNullOrEmpty()) {
                     return@fastForEachIndexed
                 }
 
@@ -168,16 +168,27 @@ object DebugNetworkPanel {
             },
         ) {
             when (it) {
-                Tab.Query -> Column(Modifier.padding(vertical = 8.dp)) {
-                    TimestampText(data.requestTimestamp)
-                    RegularText(data.query)
+                Tab.Query -> Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    TimestampText(data.request.timestamp)
+                    RegularText(data.request.query)
                 }
-                Tab.Variables -> JsonText(data.variablesJson)
-                Tab.Response -> Column(Modifier.padding(vertical = 8.dp)) {
-                    TimestampText(data.responseTimestamp)
-                    JsonText(data.responseJson)
+                Tab.Variables -> JsonText(data.request.variablesJson)
+                Tab.Response -> Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    if (data.response == null) {
+                        CircularProgressIndicator()
+                    } else {
+                        TimestampText(data.response.timestamp)
+                        JsonText(data.response.bodyJson)
+                    }
                 }
-                Tab.Errors -> RegularText(text = data.errors.toString())
+                Tab.Errors -> RegularText(text = data.response?.errors.toString())
             }
         }
     }
@@ -191,6 +202,7 @@ object DebugNetworkPanel {
             text = datetime,
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier
+                .fillMaxWidth()
                 .heightIn(max = 400.dp)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
@@ -221,15 +233,16 @@ object DebugNetworkPanel {
                 showItemCount = true,
                 onError = { error = it.stackTraceToString() },
                 textStyle = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.heightIn(max = 400.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
             )
         } else {
             Text(
                 text = error.orEmpty(),
-                modifier = Modifier.padding(
-                    horizontal = 16.dp,
-                    vertical = 8.dp
-                )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
     }

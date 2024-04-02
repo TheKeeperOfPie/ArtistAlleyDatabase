@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.debug.network
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import com.apollographql.apollo3.api.http.HttpRequest
 import com.apollographql.apollo3.api.http.HttpResponse
@@ -12,6 +13,8 @@ import graphql.parser.Parser
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -23,23 +26,34 @@ import java.util.UUID
 
 class DebugNetworkController(scopedApplication: ScopedApplication) {
 
+    companion object {
+        private const val TAG = "DebugNetworkController"
+    }
+
     val apolloHttpInterceptor = object : HttpInterceptor {
         override suspend fun intercept(
             request: HttpRequest,
             chain: HttpInterceptorChain,
         ): HttpResponse {
             val requestTimestamp = Instant.now()
+            val id = UUID.randomUUID().toString()
+            graphQlRequests.trySend(
+                GraphQlRequest(
+                    id = id,
+                    timestamp = requestTimestamp,
+                    request = request,
+                )
+            )
             return chain.proceed(request).let {
                 val responseBody = it.body
                 val responseBodyString =
                     responseBody?.readString(Charset.defaultCharset()).toString()
                 graphQlResponses.trySend(
                     GraphQlResponse(
-                        requestTimestamp = requestTimestamp,
-                        request = request,
-                        responseHeaders = it.headers.associate { it.name to it.value },
-                        responseBodyString = responseBodyString,
-                        responseTimestamp = Instant.now(),
+                        id = id,
+                        headers = it.headers.associate { it.name to it.value },
+                        bodyString = responseBodyString,
+                        timestamp = Instant.now(),
                     )
                 )
 
@@ -58,6 +72,12 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
     }
 
     val graphQlData = mutableStateListOf<GraphQlData>()
+    private val graphQlDataMutex = Mutex()
+
+    private val graphQlRequests = Channel<GraphQlRequest>(
+        capacity = 20,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
 
     private val graphQlResponses = Channel<GraphQlResponse>(
         capacity = 20,
@@ -71,41 +91,67 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
 
     init {
         scopedApplication.scope.launch(CustomDispatchers.IO) {
-            for (graphQlResponse in graphQlResponses) {
-                val (requestTimestamp, request, responseTimestamp, responseHeaders, responseBodyString) = graphQlResponse
+            for (graphQlRequest in graphQlRequests) {
                 val requestBodyBuffer = Buffer()
-                request.body?.writeTo(requestBodyBuffer)
+                graphQlRequest.request.body?.writeTo(requestBodyBuffer)
                 val requestBodyString = requestBodyBuffer.readByteString().utf8()
                 val queryBody = json.decodeFromString<GraphQlQueryBody>(requestBodyString)
+                val operationName = queryBody.operationName.orEmpty()
+                val query = AstPrinter.printAst(Parser().parseDocument(queryBody.query))
+                val variablesJson = queryBody.variables?.let(json::encodeToString).orEmpty()
+                graphQlDataMutex.withLock {
+                    graphQlData += GraphQlData(
+                        id = graphQlRequest.id,
+                        request = GraphQlData.Request(
+                            timestamp = graphQlRequest.timestamp,
+                            operationName = operationName,
+                            query = query,
+                            variablesJson = variablesJson,
+                        )
+                    )
+                }
+            }
+        }
 
-                val responseBody = responseBodyString.takeIf(String::isNotBlank)
+        scopedApplication.scope.launch(CustomDispatchers.IO) {
+            for (graphQlResponse in graphQlResponses) {
+                val responseBody = graphQlResponse.bodyString.takeIf(String::isNotBlank)
                     ?.let<String, GraphQlResponseBody>(json::decodeFromString)
                 val responseJson = GraphQlResponseWithHeaders(
-                    headers = responseHeaders,
+                    headers = graphQlResponse.headers,
                     body = responseBody?.data,
                 ).let(json::encodeToString)
-
-                graphQlData += GraphQlData(
-                    requestTimestamp = requestTimestamp,
-                    responseTimestamp = responseTimestamp,
-                    operationName = queryBody.operationName.orEmpty(),
-                    query = AstPrinter.printAst(Parser().parseDocument(queryBody.query)),
-                    variablesJson = queryBody.variables?.let(json::encodeToString).orEmpty(),
-                    responseJson = responseJson,
-                    errors = responseBody?.errors.orEmpty(),
-                )
+                val errors = responseBody?.errors?.map(json::encodeToString).orEmpty()
+                graphQlDataMutex.withLock {
+                    val index = graphQlData.indexOfFirst { it.id == graphQlResponse.id }
+                    if (index == -1) {
+                        Log.d(TAG, "Error associating response with request: $graphQlResponse")
+                    }
+                    graphQlData[index] = graphQlData[index].copy(
+                        response = GraphQlData.Response(
+                            timestamp = graphQlResponse.timestamp,
+                            bodyJson = responseJson,
+                            errors = errors,
+                        )
+                    )
+                }
             }
         }
     }
 
     fun clear() = graphQlData.clear()
 
-    data class GraphQlResponse(
-        val requestTimestamp: Instant,
+    data class GraphQlRequest(
+        val id: String,
+        val timestamp: Instant,
         val request: HttpRequest,
-        val responseTimestamp: Instant,
-        val responseHeaders: Map<String, String>,
-        val responseBodyString: String,
+    )
+
+    data class GraphQlResponse(
+        val id: String,
+        val timestamp: Instant,
+        val headers: Map<String, String>,
+        val bodyString: String,
     )
 
     @Serializable
@@ -115,15 +161,23 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
     )
 
     data class GraphQlData(
-        val requestTimestamp: Instant,
-        val responseTimestamp: Instant,
-        val operationName: String,
-        val query: String,
-        val variablesJson: String,
-        val responseJson: String,
-        val errors: List<String>,
-        val id: String = UUID.randomUUID().toString(),
-    )
+        val id: String,
+        val request: Request,
+        val response: Response? = null,
+    ) {
+        data class Request(
+            val timestamp: Instant,
+            val operationName: String,
+            val query: String,
+            val variablesJson: String,
+        )
+
+        data class Response(
+            val timestamp: Instant,
+            val bodyJson: String,
+            val errors: List<String>,
+        )
+    }
 
     @Serializable
     data class GraphQlQueryBody(
@@ -135,6 +189,6 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
     @Serializable
     data class GraphQlResponseBody(
         val data: JsonObject? = null,
-        val errors: List<String> = emptyList(),
+        val errors: List<JsonObject> = emptyList(),
     )
 }
