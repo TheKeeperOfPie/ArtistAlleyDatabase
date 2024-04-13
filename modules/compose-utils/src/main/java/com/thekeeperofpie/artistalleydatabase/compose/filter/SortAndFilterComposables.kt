@@ -548,7 +548,10 @@ fun RangeDataFilterSection(
                     value = range.startString,
                     onValueChange = { onRangeChange("0", range.endString) },
                     textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                    ),
                     contentPadding = OutlinedTextFieldDefaults.contentPadding(
                         start = 12.dp,
                         top = 8.dp,
@@ -581,7 +584,10 @@ fun RangeDataFilterSection(
                     value = range.endString,
                     onValueChange = { onRangeChange(range.startString, it) },
                     textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                    ),
                     contentPadding = OutlinedTextFieldDefaults.contentPadding(
                         start = 12.dp,
                         top = 8.dp,

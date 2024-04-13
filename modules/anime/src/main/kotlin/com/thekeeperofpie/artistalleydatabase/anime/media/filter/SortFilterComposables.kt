@@ -209,7 +209,9 @@ private fun SheetDragHandle(
 
             val showExpandAll by remember { derivedStateOf { expandedState.none { it.value } } }
 
-            Row(modifier = Modifier.align(Alignment.CenterEnd).padding(end = 8.dp)) {
+            Row(modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp)) {
                 val activatedCount by remember {
                     derivedStateOf { sortFilterController.sections.count { it.nonDefault() } }
                 }
@@ -422,7 +424,10 @@ private fun AiringDateBasicSection(
             value = data.seasonYear,
             onValueChange = onSeasonYearChange,
             label = { Text(stringResource(R.string.anime_media_filter_airing_date_season_year)) },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number,
+                autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+            ),
             leadingIcon = leadingIcon.takeIf { data.seasonYear.isNotBlank() },
             trailingIcon = {
                 Row {
@@ -640,7 +645,10 @@ fun TagSection(
                         value = tagRank,
                         onValueChange = { onTagRankChange(it) },
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                        ),
                         contentPadding = OutlinedTextFieldDefaults.contentPadding(
                             start = 12.dp,
                             top = 8.dp,

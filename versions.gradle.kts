@@ -9,8 +9,8 @@ object Versions {
     const val accompanist = "0.35.0-alpha"
     const val apollo = "4.0.0-beta.5"
     const val coil = "3.0.0-alpha06"
-    const val compose = "1.7.0-alpha05"
-    const val dagger = "2.51"
+    const val compose = "1.7.0-alpha06"
+    const val dagger = "2.51.1"
     const val hilt = "1.2.0"
 
     object junit {
@@ -24,12 +24,12 @@ object Versions {
 
     // TODO: Versions after don't let changing Dispatcher and breaks instrumentation tests
     const val ktor = "2.3.4"
-    const val lifecycle = "2.8.0-alpha03"
+    const val lifecycle = "2.8.0-alpha04"
     const val room = "2.6.1"
     const val markwon = "4.6.2"
-    const val media3 = "1.3.0"
+    const val media3 = "1.3.1"
     const val mockito = "5.11.0"
-    const val paging = "3.3.0-alpha05"
+    const val paging = "3.3.0-beta01"
     const val work = "2.10.0-alpha01"
 }
 
@@ -66,7 +66,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
             create("libs") {
                 fun plugin(id: String) = plugin(id, id)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
-                plugin("com.autonomousapps.dependency-analysis").version("1.30.0")
+                plugin("com.autonomousapps.dependency-analysis").version("1.31.0")
                 plugin("com.github.ben-manes.versions").version("0.51.0")
                 plugin("com.google.dagger.hilt.android").version(Versions.dagger)
                 plugin("com.jaredsburrows.license").version("0.9.7")
@@ -75,12 +75,12 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.2.0")
                 plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.23")
-                plugin("app.cash.molecule").version("1.4.1")
+                plugin("app.cash.molecule").version("1.4.2")
 
-                library("androidx.activity:activity-compose:1.9.0-beta01")
-                library("androidx.compose.material3:material3:1.3.0-alpha03")
+                library("androidx.activity:activity-compose:1.9.0-rc01")
+                library("androidx.compose.material3:material3:1.3.0-alpha04")
                 library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
-                library("androidx.core:core-ktx:1.13.0-beta01")
+                library("androidx.core:core-ktx:1.13.0-rc01")
 
                 withVersion(Versions.hilt) {
                     library("androidx.hilt:hilt-navigation-compose")
@@ -130,7 +130,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 library("com.android.billingclient:billing-ktx:6.2.0")
-                library("com.android.tools.build:gradle:8.5.0-alpha02")
+                library("com.android.tools.build:gradle:8.5.0-alpha05")
 
                 withVersion(Versions.apollo) {
                     library("com.apollographql.apollo3:apollo-compiler")
@@ -166,7 +166,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.graphql-java:graphql-java:21.3")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
                 library("com.neovisionaries:nv-i18n:1.29")
-                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.4.2")
+                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.5.5")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                     alias = "androidyoutubeplayer"
@@ -229,14 +229,14 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.junit.jupiter:junit-jupiter-params")
                 }
 
-                library("org.mockito.kotlin:mockito-kotlin:5.2.1")
+                library("org.mockito.kotlin:mockito-kotlin:5.3.1")
 
                 withVersion(Versions.mockito) {
                     library("org.mockito:mockito-android")
                     library("org.mockito:mockito-core")
                 }
 
-                library("systems.manifold:manifold-graphql-rt:2024.1.10")
+                library("systems.manifold:manifold-graphql-rt:2024.1.12")
 
                 prefix("androidx") {
                     library("androidx.browser:browser:1.8.0")
@@ -261,7 +261,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 prefix("jetBrainsCompose") {
-                    library("org.jetbrains.compose.runtime:runtime:1.6.1")
+                    library("org.jetbrains.compose.runtime:runtime:1.6.2")
                 }
 
                 prefix("junit5") {

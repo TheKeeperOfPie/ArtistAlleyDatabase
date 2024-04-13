@@ -173,7 +173,8 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
                     },
                     readOnly = lockState?.editable == false,
                     keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number
+                        keyboardType = KeyboardType.Number,
+                        autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
                     ),
                     onValueChange = { year = it },
                     modifier = Modifier

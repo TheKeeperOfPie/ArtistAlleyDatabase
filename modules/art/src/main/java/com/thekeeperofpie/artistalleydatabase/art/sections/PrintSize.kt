@@ -109,7 +109,8 @@ class PrintSizeCustomTextFields : EntrySection.Dropdown.Item {
                 onValueChange = { width = it },
                 readOnly = lockState?.editable == false,
                 keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
                 ),
                 modifier = Modifier
                     .focusable(lockState?.editable != false)
@@ -121,7 +122,8 @@ class PrintSizeCustomTextFields : EntrySection.Dropdown.Item {
                 onValueChange = { height = it },
                 readOnly = lockState?.editable == false,
                 keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
                 ),
                 modifier = Modifier
                     .focusable(lockState?.editable != false)

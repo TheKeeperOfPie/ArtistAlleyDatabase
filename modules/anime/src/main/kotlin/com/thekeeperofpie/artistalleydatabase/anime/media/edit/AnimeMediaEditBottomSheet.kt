@@ -401,7 +401,10 @@ object AnimeMediaEditBottomSheet {
                     onValueChange = { editData.priority = it },
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                    ),
                     leadingIcon = {
                         val visible = priority.isNotBlank()
                                 && priority.toIntOrNull()?.let { it > 0 } == true
@@ -456,7 +459,10 @@ object AnimeMediaEditBottomSheet {
                     onValueChange = { editData.repeat = it },
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                    ),
                     leadingIcon = {
                         val visible = repeat.isNotBlank()
                                 && repeat.toIntOrNull()?.let { it > 0 } == true
@@ -616,7 +622,10 @@ object AnimeMediaEditBottomSheet {
             singleLine = true,
             placeholder = placeholder,
             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number,
+                autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+            ),
             leadingIcon = {
                 val visible = progress.isNotBlank()
                         && progress.toIntOrNull()?.let { it > 0 } == true
@@ -871,7 +880,10 @@ object AnimeMediaEditBottomSheet {
                         },
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                        ),
                         modifier = Modifier
                             .widthIn(min = 40.dp),
                     )

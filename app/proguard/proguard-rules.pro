@@ -391,6 +391,7 @@
 -dontwarn sun.reflect.Reflection
 -dontwarn java.lang.Module
 -dontwarn org.graalvm.nativeimage.hosted.RuntimeResourceAccess
+-dontwarn java.lang.invoke.MethodHandleProxies
 
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
 -dontwarn com.google.errorprone.annotations.CheckReturnValue
