@@ -1,8 +1,12 @@
 # Changelog
 
-### Next (12)
+### Next (13)
+
+### 0.47 (12)
 - Fix activity notification click handling
 - Add season quick increment/decrement
+- Network and performance adjustments
+- Add rate limit throttle (might make requests take longer)
 
 ### 0.46 (11)
 - Fix status bar icon color when using black theme

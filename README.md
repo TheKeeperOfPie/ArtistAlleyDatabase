@@ -102,7 +102,7 @@ build can be tested, where Gradle cannot reference anything it used previously.
 ### Regenerate verification-metadata.xml
 
 This must be done each time a dependency is added/changed. Disabling dependency verification can be
-done by deleting `./gradle/verification-metadata.xml`.
+done by deleting [`./gradle/verification-metadata.xml`](gradle/verification-metadata.xml).
 
 [//]: # (TODO: Full clean build is starting to get annoying, need better way to regenerate metadata)
 
@@ -113,6 +113,13 @@ done by deleting `./gradle/verification-metadata.xml`.
 This module serves as a way to generate verification metadata for artifacts which are used by
 Android Studio but aren't used in the app build. For things like instrumentation testing that
 require additional dependencies.
+
+## Releasing
+1. Rename the top entry of [`changelog.md`](changelog.md) to the next release version name
+2. Create a new entry in [`changelog.md`](changelog.md) for the `Next ($versionCode)` release
+3. Increment the version code and name in [`app/build.gradle.kts`](app/build.gradle.kts)
+4. Studio toolbar > Build > Generate Signed App Bundle > auth for keystore > create `release`
+5. Upload release from [`/app/release`](app/release)
 
 ## Licensing
 
