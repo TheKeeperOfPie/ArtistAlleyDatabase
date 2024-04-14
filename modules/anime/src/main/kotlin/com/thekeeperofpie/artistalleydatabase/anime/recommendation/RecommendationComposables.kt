@@ -232,7 +232,7 @@ fun LazyListScope.recommendationsSection(
             recommendation = item.data,
             onUserRecommendationRating = onUserRecommendationRating,
             modifier = Modifier
-                .animateItemPlacement()
+                .animateItem()
                 .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
         )
     }

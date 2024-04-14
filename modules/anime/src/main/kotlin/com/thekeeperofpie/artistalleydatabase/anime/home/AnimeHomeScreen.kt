@@ -619,7 +619,7 @@ object AnimeHomeScreen {
                     viewer = viewer,
                     onClickListEdit = onClickListEdit,
                     onClickIncrementProgress = onClickIncrementProgress,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier.animateItem()
                 )
             }
         }
@@ -708,7 +708,7 @@ object AnimeHomeScreen {
                         }
                     }.value,
                     onClickListEdit = onClickListEdit,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier.animateItem()
                 )
             }
 

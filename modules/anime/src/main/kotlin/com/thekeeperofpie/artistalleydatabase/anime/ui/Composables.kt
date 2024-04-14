@@ -23,11 +23,11 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
@@ -374,7 +374,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .animateItemPlacement()
+                    .animateItem()
             ) {
                 Text(
                     text = stringResource(UtilsStringR.view_all),
@@ -404,7 +404,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
-                            .animateItemPlacement()
+                            .animateItem()
                     ) {
                         Text(
                             text = stringResource(UtilsStringR.show_less),
@@ -422,7 +422,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                        .animateItem()
                 ) {
                     Text(
                         text = stringResource(UtilsStringR.show_more),
@@ -451,7 +451,7 @@ fun GenericViewAllCard(
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(
-                imageVector = Icons.Filled.OpenInNew,
+                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                 contentDescription = stringResource(
                     R.string.anime_generic_view_all_content_description
                 )
@@ -574,8 +574,8 @@ fun FavoriteIconButton(
 fun NavigationHeader(
     @StringRes titleRes: Int,
     viewAllRoute: String?,
-    @StringRes viewAllContentDescriptionTextRes: Int? = null,
     modifier: Modifier = Modifier,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {
     val navigationCallback = LocalNavigationCallback.current
     DetailsSectionHeader(

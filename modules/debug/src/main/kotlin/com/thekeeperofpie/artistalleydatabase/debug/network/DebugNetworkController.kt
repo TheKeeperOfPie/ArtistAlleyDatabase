@@ -126,6 +126,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
                     val index = graphQlData.indexOfFirst { it.id == graphQlResponse.id }
                     if (index == -1) {
                         Log.d(TAG, "Error associating response with request: $graphQlResponse")
+                        return@withLock
                     }
                     graphQlData[index] = graphQlData[index].copy(
                         response = GraphQlData.Response(

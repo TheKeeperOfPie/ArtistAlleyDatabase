@@ -183,7 +183,7 @@ object ForumRootScreen {
                     // SubcomposeLayout doesn't support fill max width, so use a really large number.
                     // The parent will clamp the actual width so all content still fits on screen.
                     .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 40.dp)
-                    .animateItemPlacement()
+                    .animateItem()
             ) {
                 val categories = ForumCategoryOption.values()
                 items(items = categories, key = { it.categoryId }, contentType = { "category" }) {
@@ -205,7 +205,7 @@ object ForumRootScreen {
                 titleRes = titleRes,
                 viewAllRoute = viewAllRoute,
                 viewAllContentDescriptionTextRes = R.string.anime_forum_view_all_content_description,
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
     }
@@ -221,7 +221,7 @@ object ForumRootScreen {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onExpandedChange(!expanded) }
-                    .animateItemPlacement()
+                    .animateItem()
             ) {
                 Text(
                     text = stringResource(R.string.anime_forum_stickied_header),
@@ -254,7 +254,7 @@ object ForumRootScreen {
                             end = 16.dp,
                             bottom = if (index == stickied.lastIndex) 0.dp else 4.dp
                         )
-                        .animateItemPlacement()
+                        .animateItem()
                 )
             }
         }
@@ -280,7 +280,7 @@ object ForumRootScreen {
                         end = 16.dp,
                         bottom = if (index == threads.lastIndex) 0.dp else 16.dp
                     )
-                    .animateItemPlacement()
+                    .animateItem()
             )
         }
     }

@@ -1018,7 +1018,7 @@ fun LazyListScope.activitiesSection(
             onClickListEdit = onClickListEdit,
             clickable = true,
             modifier = Modifier
-                .animateItemPlacement()
+                .animateItem()
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
         )

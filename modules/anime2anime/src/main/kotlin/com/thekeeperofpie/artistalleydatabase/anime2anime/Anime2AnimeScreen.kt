@@ -249,7 +249,7 @@ object Anime2AnimeScreen {
                                     viewer = viewer,
                                     onClickListEdit = editViewModel::initialize,
                                     modifier = Modifier
-                                        .animateItemPlacement()
+                                        .animateItem()
                                         .padding(start = 16.dp, end = 16.dp)
                                 )
                             }
@@ -274,7 +274,7 @@ object Anime2AnimeScreen {
                                 text = stringResource(R.string.anime2anime_starting_media_header),
                                 style = MaterialTheme.typography.labelMedium,
                                 modifier = Modifier
-                                    .animateItemPlacement()
+                                    .animateItem()
                                     .align(Alignment.CenterHorizontally)
                                     .padding(start = 16.dp, end = 16.dp, top = 4.dp)
                             )
@@ -299,7 +299,7 @@ object Anime2AnimeScreen {
                                 text = stringResource(R.string.anime2anime_target_media_header),
                                 style = MaterialTheme.typography.labelMedium,
                                 modifier = Modifier
-                                    .animateItemPlacement()
+                                    .animateItem()
                                     .align(Alignment.CenterHorizontally)
                                     .padding(start = 16.dp, end = 16.dp, top = 4.dp)
                             )
@@ -310,7 +310,7 @@ object Anime2AnimeScreen {
                             item(key = "options") {
                                 OutlinedCard(
                                     modifier = Modifier
-                                        .animateItemPlacement()
+                                        .animateItem()
                                         .padding(horizontal = 16.dp)
                                         .width(COLUMN_MAX_WIDTH)
                                 ) {
@@ -330,7 +330,7 @@ object Anime2AnimeScreen {
                                 selectedTab = selectedTab,
                                 onSelectedTabChange = onSelectedTabChange,
                                 onSwitchStartTargetClick = onSwitchStartTargetClick,
-                                modifier = Modifier.animateItemPlacement()
+                                modifier = Modifier.animateItem()
                             )
                         }
 
@@ -340,7 +340,7 @@ object Anime2AnimeScreen {
                                 style = MaterialTheme.typography.bodyMedium,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
-                                    .animateItemPlacement()
+                                    .animateItem()
                                     .widthIn(max = COLUMN_MAX_WIDTH)
                                     .align(Alignment.CenterHorizontally)
                             )
@@ -412,7 +412,7 @@ object Anime2AnimeScreen {
                         previousCharacter = it.previousCharacter,
                         character = it.character,
                         voiceActor = it.voiceActor,
-                        modifier = Modifier.animateItemPlacement()
+                        modifier = Modifier.animateItem()
                     )
                 }
                 is GameContinuation.Connection.Staff -> item {
@@ -420,7 +420,7 @@ object Anime2AnimeScreen {
                         staff = it.staff,
                         previousRole = it.previousRole,
                         role = it.role,
-                        modifier = Modifier.animateItemPlacement()
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -651,7 +651,7 @@ object Anime2AnimeScreen {
     ) {
         item(key = "lastSubmitResult") {
             val modifier = Modifier
-                .animateItemPlacement()
+                .animateItem()
                 .padding(horizontal = 24.dp)
             @Suppress("NAME_SHADOWING")
             when (val lastSubmitResult = lastSubmitResult()) {
@@ -769,7 +769,7 @@ object Anime2AnimeScreen {
             item(key = key?.let { "$it-staff" }) {
                 OutlinedCard(
                     modifier = Modifier
-                        .animateItemPlacement()
+                        .animateItem()
                         .animateContentSize()
                         .padding(horizontal = 16.dp)
                         .widthIn(max = COLUMN_MAX_WIDTH)
@@ -787,7 +787,7 @@ object Anime2AnimeScreen {
             item(key = key?.let { "$it-characters" }) {
                 OutlinedCard(
                     modifier = Modifier
-                        .animateItemPlacement()
+                        .animateItem()
                         .animateContentSize()
                         .padding(horizontal = 16.dp)
                         .widthIn(max = COLUMN_MAX_WIDTH)
@@ -822,7 +822,7 @@ object Anime2AnimeScreen {
         item(key = key) {
             Column(
                 modifier = Modifier
-                    .animateItemPlacement()
+                    .animateItem()
                     .padding(start = 16.dp, end = 16.dp)
                     .widthIn(max = COLUMN_MAX_WIDTH)
             ) {

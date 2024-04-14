@@ -135,6 +135,10 @@ android {
             pickFirsts += "mockito-extensions/org.mockito.plugins.MockMaker"
         }
     }
+
+    lint {
+        checkDependencies = true
+    }
 }
 
 kotlin {

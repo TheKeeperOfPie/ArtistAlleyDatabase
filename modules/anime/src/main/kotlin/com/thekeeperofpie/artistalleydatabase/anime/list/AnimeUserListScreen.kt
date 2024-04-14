@@ -81,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
@@ -427,9 +428,10 @@ object AnimeUserListScreen {
         } else {
             authorData?.let {
                 authorData.status.toStatusText(
+                    locale = LocalConfiguration.currentLocale,
                     mediaType = viewModel.mediaType,
                     progress = authorData.progress ?: 0,
-                    progressMax = entry?.entry?.media?.let(MediaUtils::maxProgress),
+                    progressMax = MediaUtils.maxProgress(entry.entry.media),
                     score = authorData.rawScore,
                     scoreFormat = scoreFormat,
                 )

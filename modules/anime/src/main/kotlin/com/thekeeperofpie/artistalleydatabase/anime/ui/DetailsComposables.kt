@@ -332,7 +332,7 @@ internal fun LazyListScope.detailsLoadingOrError(
             AnimeMediaListScreen.Error(
                 errorTextRes = errorResource?.first,
                 exception = errorResource?.second,
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
     }

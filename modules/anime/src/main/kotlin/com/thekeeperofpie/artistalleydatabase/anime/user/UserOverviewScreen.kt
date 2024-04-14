@@ -267,7 +267,7 @@ object UserOverviewScreen {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                        .animateItem()
                 ) {
                     Text(
                         text = stringResource(UtilsStringR.view_all),

@@ -35,7 +35,7 @@ fun LazyListScope.cdsSection(
     item("cdsHeader") {
         DetailsSectionHeader(
             stringResource(R.string.cd_section_title),
-            modifier = Modifier.animateItemPlacement()
+            modifier = Modifier.animateItem()
         )
     }
 
@@ -44,7 +44,7 @@ fun LazyListScope.cdsSection(
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.animateItemPlacement(),
+            modifier = Modifier.animateItem(),
         ) {
             itemsIndexed(cdEntries) { index, cdEntry ->
                 var transitionProgress by remember { mutableFloatStateOf(0f) }

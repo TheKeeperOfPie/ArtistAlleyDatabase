@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.android_utils.notification
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.pm.PackageManager
@@ -49,6 +50,7 @@ abstract class NotificationProgressWorker(
         Log.d(TAG, "Error running ${this.javaClass.name}", e)
         Result.failure()
     }.also {
+        @SuppressLint("RestrictedApi")
         when (it) {
             is Result.Success -> notifyComplete(successTitle)
             is Result.Failure -> notifyComplete(failureTitle)

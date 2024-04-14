@@ -156,7 +156,7 @@ object EntryHomeScreen {
                 )
             ),
         ) {
-            val isEditMode by derivedStateOf { selectedItems().isNotEmpty() }
+            val isEditMode by remember { derivedStateOf { selectedItems().isNotEmpty() } }
             Scaffold(
                 topBar = {
                     EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {

@@ -1196,7 +1196,7 @@ fun LazyListScope.forumThreadsSection(
             entry = item,
             onStatusUpdate = onStatusUpdate,
             modifier = Modifier
-                .animateItemPlacement()
+                .animateItem()
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
         )

@@ -25,10 +25,10 @@ fun MediaCoverImage(
     screenKey: String,
     mediaId: String?,
     image: String?,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     onError: ((AsyncImagePainter.State.Error) -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
     SharedElement(
         key = "anime_media_${mediaId}_image",
@@ -50,10 +50,10 @@ fun MediaCoverImage(
 @Composable
 fun MediaCoverImageNoSharedElement(
     image: String?,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     onError: ((AsyncImagePainter.State.Error) -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
     AsyncImage(
         model = image,
@@ -72,10 +72,10 @@ fun MediaCoverImage(
     screenKey: String,
     mediaId: String?,
     image: ImageRequest,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     onError: ((AsyncImagePainter.State.Error) -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
     SharedElement(
         key = "anime_media_${mediaId}_image",
@@ -99,9 +99,9 @@ fun CharacterCoverImage(
     screenKey: String,
     characterId: String?,
     image: ImageRequest,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
     SharedElement(
         key = "anime_character_${characterId}_image",
@@ -124,10 +124,10 @@ fun StaffCoverImage(
     screenKey: String,
     staffId: String?,
     image: ImageRequest,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     contentDescriptionTextRes: Int = R.string.anime_staff_image,
-    modifier: Modifier = Modifier,
 ) {
     SharedElement(
         key = "anime_staff_${staffId}_image",
@@ -150,10 +150,10 @@ fun UserAvatarImage(
     screenKey: String,
     userId: String?,
     image: String?,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     contentDescriptionTextRes: Int = R.string.anime_user_image,
-    modifier: Modifier = Modifier,
 ) {
     SharedElement(
         key = "anime_user_${userId}_image",
@@ -176,10 +176,10 @@ fun UserAvatarImage(
     screenKey: String,
     userId: String?,
     image: ImageRequest,
+    modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     contentDescriptionTextRes: Int = R.string.anime_user_image,
-    modifier: Modifier = Modifier,
 ) {
     SharedElement(
         key = "anime_user_${userId}_image",

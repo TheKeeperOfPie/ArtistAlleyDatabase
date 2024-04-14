@@ -220,7 +220,7 @@ object ForumThreadCommentTreeScreen {
                             }
 
                             item("divider") {
-                                Column(modifier = Modifier.animateItemPlacement()) {
+                                Column(modifier = Modifier.animateItem()) {
                                     HorizontalDivider()
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,

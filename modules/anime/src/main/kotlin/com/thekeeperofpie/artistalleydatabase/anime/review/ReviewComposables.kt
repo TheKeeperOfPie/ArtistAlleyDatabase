@@ -171,8 +171,8 @@ fun ReviewCard(
     media: AnimeMediaCompactListRow.Entry?,
     onClick: (AnimeNavigator.NavigationCallback) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
-    showMedia: Boolean = true,
     modifier: Modifier = Modifier,
+    showMedia: Boolean = true,
 ) {
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(
@@ -326,13 +326,12 @@ fun LazyListScope.reviewsSection(
         onClickViewAll = onClickViewAll,
         viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
     ) { item, paddingBottom ->
-        val navigationCallback = LocalNavigationCallback.current
         ReviewSmallCard(
             screenKey = screenKey,
             review = item,
             onClick = { onReviewClick(it, item) },
             modifier = Modifier
-                .animateItemPlacement()
+                .animateItem()
                 .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
         )
     }

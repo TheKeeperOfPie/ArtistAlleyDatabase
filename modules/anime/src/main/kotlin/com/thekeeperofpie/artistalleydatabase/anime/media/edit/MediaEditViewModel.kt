@@ -35,6 +35,7 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.Locale
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterial3Api::class)
@@ -105,7 +106,10 @@ class MediaEditViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(scoreFormat, rawScore, ::Pair)
                 .collectLatest { (format, score) ->
-                    editData.score = score?.let { MediaUtils.scoreFormatToText(it, format) } ?: ""
+                    // TODO: Move locale to view layer
+                    editData.score = score?.let {
+                        MediaUtils.scoreFormatToText(Locale.getDefault(), it, format)
+                    }.orEmpty()
                 }
         }
     }

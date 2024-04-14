@@ -67,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
@@ -130,6 +131,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
@@ -428,6 +430,7 @@ object AnimeMediaDetailsScreen {
 
                                         Text(
                                             status.toStatusText(
+                                                locale = LocalConfiguration.currentLocale,
                                                 mediaType = media.type,
                                                 progress = progress,
                                                 progressMax = progressMax,
@@ -709,7 +712,7 @@ object AnimeMediaDetailsScreen {
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                 .animateContentSize()
-                .animateItemPlacement()
+                .animateItem()
                 .recomposeHighlighter()
         ) {
             genres.forEach {
@@ -761,7 +764,7 @@ object AnimeMediaDetailsScreen {
         item("infoHeader") {
             DetailsSectionHeader(
                 stringResource(R.string.anime_media_details_information_label),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
 
@@ -771,7 +774,7 @@ object AnimeMediaDetailsScreen {
             ElevatedCard(
                 modifier = Modifier
                     .animateContentSize()
-                    .animateItemPlacement()
+                    .animateItem()
                     .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
             ) {
                 twoColumnInfoText(
@@ -827,7 +830,7 @@ object AnimeMediaDetailsScreen {
             ElevatedCard(
                 modifier = Modifier
                     .animateContentSize()
-                    .animateItemPlacement()
+                    .animateItem()
                     .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 2.dp)
             ) {
                 var shown = twoColumnInfoText(
@@ -872,7 +875,7 @@ object AnimeMediaDetailsScreen {
                         top = if (showTopPadding) 16.dp else 0.dp,
                         bottom = 2.dp,
                     )
-                    .animateItemPlacement(),
+                    .animateItem(),
             ) {
                 var shown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_licensed_label),
@@ -947,7 +950,7 @@ object AnimeMediaDetailsScreen {
         item("statsHeader") {
             DetailsSectionHeader(
                 stringResource(R.string.anime_media_details_stats_label),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
 
@@ -955,7 +958,7 @@ object AnimeMediaDetailsScreen {
             ElevatedCard(
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
-                    .animateItemPlacement()
+                    .animateItem()
             ) {
                 expandableListInfoText(
                     labelTextRes = R.string.anime_media_details_rankings_label,
@@ -1054,7 +1057,7 @@ object AnimeMediaDetailsScreen {
             item("tagsHeader") {
                 DetailsSectionHeader(
                     stringResource(R.string.anime_media_details_tags_label),
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier.animateItem()
                 )
             }
 
@@ -1065,7 +1068,7 @@ object AnimeMediaDetailsScreen {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                        .animateItem()
                 ) {
                     entry.tags.forEach {
                         val (containerColor, textColor) =
@@ -1113,7 +1116,7 @@ object AnimeMediaDetailsScreen {
         item("trailerHeader") {
             DetailsSectionHeader(
                 stringResource(R.string.anime_media_details_trailer_label),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
 
@@ -1123,7 +1126,7 @@ object AnimeMediaDetailsScreen {
                 ElevatedCard(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                        .animateItem()
                 ) {
                     val player = remember { AtomicReference<YouTubePlayer>(null) }
                     AndroidView(
@@ -1167,7 +1170,7 @@ object AnimeMediaDetailsScreen {
                     onClick = { uriHandler.openUri(MediaUtils.dailymotionUrl(videoId)) },
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                        .animateItem()
                 ) {
                     AsyncImage(
                         model = trailer.thumbnail,
@@ -1230,7 +1233,7 @@ object AnimeMediaDetailsScreen {
             val uriHandler = LocalUriHandler.current
             ElevatedCard(
                 modifier = Modifier
-                    .animateItemPlacement()
+                    .animateItem()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
                     .optionalClickable(onClick = item.url?.let { { uriHandler.openUri(it) } }),
             ) {
@@ -1300,7 +1303,7 @@ object AnimeMediaDetailsScreen {
         item("linksHeader-$headerRes") {
             DetailsSectionHeader(
                 stringResource(headerRes),
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
 
@@ -1310,7 +1313,7 @@ object AnimeMediaDetailsScreen {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
-                    .animateItemPlacement()
+                    .animateItem()
             ) {
                 links.forEach {
                     androidx.compose.material3.AssistChip(

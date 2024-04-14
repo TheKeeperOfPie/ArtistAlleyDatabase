@@ -55,6 +55,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneOffset
+import java.util.Locale
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -139,9 +140,9 @@ object MediaUtils {
         null -> R.string.anime_media_list_status_none
     }
 
-    fun scoreFormatToText(score: Double, format: ScoreFormat) =
+    fun scoreFormatToText(locale: Locale, score: Double, format: ScoreFormat) =
         if (score == 0.0) "" else when (format) {
-            ScoreFormat.POINT_10_DECIMAL -> String.format("%.1f", score / 10f)
+            ScoreFormat.POINT_10_DECIMAL -> String.format(locale, "%.1f", score / 10f)
             ScoreFormat.POINT_10 -> (score.roundToInt() / 10).toString()
             ScoreFormat.POINT_100,
             ScoreFormat.POINT_5,
@@ -152,6 +153,7 @@ object MediaUtils {
 
     @Composable
     fun MediaListStatus?.toStatusText(
+        locale: Locale,
         mediaType: MediaType?,
         progress: Int,
         progressMax: Int?,
@@ -192,7 +194,7 @@ object MediaUtils {
         )
         MediaListStatus.COMPLETED -> {
             val scoreText = if (score != null && scoreFormat != null) {
-                scoreFormatToText(score, scoreFormat)
+                scoreFormatToText(locale, score, scoreFormat)
             } else null
 
             if (scoreText.isNullOrEmpty()) {

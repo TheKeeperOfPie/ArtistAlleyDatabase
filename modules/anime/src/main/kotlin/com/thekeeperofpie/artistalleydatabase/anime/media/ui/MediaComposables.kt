@@ -70,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
@@ -111,7 +112,7 @@ fun <T> LazyListScope.mediaListSection(
         },
         onClickListEdit = onClickListEdit,
         modifier = Modifier
-            .animateItemPlacement()
+            .animateItem()
             .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
     )
 }
@@ -429,7 +430,11 @@ fun MediaListQuickEditIconButton(
                 } else null
             }
             listStatus == MediaListStatus.COMPLETED && scoreRaw != null && scoreFormat != null -> {
-                MediaUtils.scoreFormatToText(scoreRaw, scoreFormat)
+                MediaUtils.scoreFormatToText(
+                    LocalConfiguration.currentLocale,
+                    scoreRaw,
+                    scoreFormat,
+                )
             }
             else -> null
         }

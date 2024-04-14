@@ -58,6 +58,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -87,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -822,6 +824,7 @@ object AnimeMediaEditBottomSheet {
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.padding(horizontal = 16.dp),
                 ) {
+                    val locale = LocalConfiguration.currentLocale
                     val value: Float
                     val maxRange: Float
                     val steps: Int
@@ -837,7 +840,7 @@ object AnimeMediaEditBottomSheet {
                             value = score().toFloatOrNull() ?: 0f
                             maxRange = 10f
                             steps = 100
-                            onValueChange = { onScoreChange(String.format("%.1f", it)) }
+                            onValueChange = { onScoreChange(String.format(locale, "%.1f", it)) }
                         }
                         ScoreFormat.POINT_10 -> {
                             value = score().toFloatOrNull() ?: 0f

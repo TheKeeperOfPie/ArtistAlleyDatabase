@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -41,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -151,6 +153,7 @@ object UserStatsDetailScreen {
                 valueToCount(value).toString() to R.string.anime_user_statistics_count,
                 if (isAnime) {
                     String.format(
+                        LocalConfiguration.currentLocale,
                         "%.1f",
                         valueToMinutesWatched(value).minutes.toDouble(DurationUnit.DAYS)
                     ) to R.string.anime_user_statistics_anime_days_watched
@@ -158,7 +161,7 @@ object UserStatsDetailScreen {
                     valueToChaptersRead(value).toString() to
                             R.string.anime_user_statistics_manga_chapters_read
                 },
-                String.format("%.1f", valueToMeanScore(value)) to
+                String.format(LocalConfiguration.currentLocale, "%.1f", valueToMeanScore(value)) to
                         R.string.anime_user_statistics_mean_score,
             )
 
