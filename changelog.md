@@ -2,6 +2,7 @@
 
 ### Next (12)
 - Fix activity notification click handling
+- Add season quick increment/decrement
 
 ### 0.46 (11)
 - Fix status bar icon color when using black theme

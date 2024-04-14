@@ -179,6 +179,8 @@
     <string name="anime_media_filter_airing_date_season_next">Next (%1$s)</string>
 
     <string name="anime_media_filter_airing_date_season_year">Year</string>
+    <string name="anime_media_filter_airing_date_season_decrement_content_description">Decrement season</string>
+    <string name="anime_media_filter_airing_date_season_increment_content_description">Increment season</string>
     <string name="anime_media_filter_airing_date_season_year_decrement_content_description">Decrement year</string>
     <string name="anime_media_filter_airing_date_season_year_increment_content_description">Increment year</string>
     <string name="anime_media_filter_airing_date_season_year_clear_content_description">Clear year</string>

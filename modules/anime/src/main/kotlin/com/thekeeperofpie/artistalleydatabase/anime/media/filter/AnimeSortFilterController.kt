@@ -122,7 +122,12 @@ open class AnimeSortFilterController<SortType : SortOption>(
                     )
                 },
                 onSeasonYearChange = {
-                    airingDate = airingDate.copy(first = airingDate.first.copy(seasonYear = it))
+                    airingDate = airingDate.copy(
+                        first = airingDate.first.copy(
+                            season = airingDate.first.season?.makeAbsolute(it.toIntOrNull()),
+                            seasonYear = it
+                        )
+                    )
                 },
                 onIsAdvancedToggle = { airingDateIsAdvanced = it },
                 onRequestDatePicker = { airingDateShown = it },

@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -69,6 +71,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
@@ -389,96 +392,146 @@ private fun AiringDateBasicSection(
     onSeasonYearChange: (String) -> Unit,
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .height(IntrinsicSize.Min)
+            .fillMaxWidth()
     ) {
-        ItemDropdown(
-            label = R.string.anime_media_filter_airing_date_season,
-            value = data.season,
-            iconContentDescription = R.string.anime_media_filter_airing_date_season_dropdown_content_description,
-            values = { listOf(null) + AiringDate.SeasonOption.entries },
-            textForValue = { it?.text().orEmpty() },
-            onSelectItem = onSeasonChange,
-            maxLines = 1,
-            modifier = Modifier.weight(1f),
-        )
-
-        val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-        val minWidth = screenWidth / 2 - 32.dp
-        val leadingIcon = @Composable {
-            IconButton(onClick = {
-                data.seasonYear.toIntOrNull()?.let {
-                    onSeasonYearChange((it - 1).toString())
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.RemoveCircleOutline,
-                    contentDescription = stringResource(
-                        R.string.anime_media_filter_airing_date_season_year_decrement_content_description
-                    ),
+        IconButton(
+            onClick = {
+                val previousSeason = data.previousSeason()
+                onSeasonChange(previousSeason.first)
+                onSeasonYearChange(previousSeason.second.toString())
+            },
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            Icon(
+                imageVector = Icons.Default.RemoveCircleOutline,
+                contentDescription = stringResource(
+                    id = R.string.anime_media_filter_airing_date_season_decrement_content_description
                 )
-            }
+            )
         }
 
-        MinWidthTextField(
-            value = data.seasonYear,
-            onValueChange = onSeasonYearChange,
-            label = { Text(stringResource(R.string.anime_media_filter_airing_date_season_year)) },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number,
-                autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
-            ),
-            leadingIcon = leadingIcon.takeIf { data.seasonYear.isNotBlank() },
-            trailingIcon = {
-                Row {
-                    val isYearBlank = data.seasonYear.isBlank()
-                    if (!isYearBlank) {
+        FlowRow(
+            horizontalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.weight(1f, fill = false)
+        ) {
+            ItemDropdown(
+                label = R.string.anime_media_filter_airing_date_season,
+                value = data.season,
+                iconContentDescription = R.string.anime_media_filter_airing_date_season_dropdown_content_description,
+                values = { listOf(null) + AiringDate.SeasonOption.entries },
+                textForValue = { it?.text().orEmpty() },
+                onSelectItem = onSeasonChange,
+                maxLines = 1,
+                wrapWidth = true,
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+            )
+
+            val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+            val minWidth = screenWidth / 2 - 32.dp
+            val leadingIcon = @Composable {
+                IconButton(onClick = {
+                    data.seasonYear.toIntOrNull()?.let {
+                        onSeasonYearChange((it - 1).toString())
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.RemoveCircleOutline,
+                        contentDescription = stringResource(
+                            R.string.anime_media_filter_airing_date_season_year_decrement_content_description
+                        ),
+                    )
+                }
+            }
+
+            MinWidthTextField(
+                value = data.seasonYear,
+                onValueChange = onSeasonYearChange,
+                label = { Text(stringResource(R.string.anime_media_filter_airing_date_season_year)) },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number,
+                    autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                ),
+                leadingIcon = leadingIcon.takeIf { data.seasonYear.isNotBlank() },
+                trailingIcon = {
+                    Row {
+                        val isYearBlank = data.seasonYear.isBlank()
+                        if (!isYearBlank) {
+                            IconButton(onClick = {
+                                data.seasonYear.toIntOrNull()?.let {
+                                    onSeasonYearChange((it + 1).toString())
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.AddCircleOutline,
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_filter_airing_date_season_year_increment_content_description
+                                    ),
+                                )
+                            }
+                        }
+
                         IconButton(onClick = {
-                            data.seasonYear.toIntOrNull()?.let {
-                                onSeasonYearChange((it + 1).toString())
+                            if (isYearBlank) {
+                                onSeasonYearChange(
+                                    Calendar.getInstance()[Calendar.YEAR].toString()
+                                )
+                            } else {
+                                onSeasonYearChange("")
                             }
                         }) {
                             Icon(
-                                imageVector = Icons.Filled.AddCircleOutline,
+                                imageVector = if (isYearBlank) {
+                                    Icons.Filled.CalendarToday
+                                } else {
+                                    Icons.Filled.Clear
+                                },
                                 contentDescription = stringResource(
-                                    R.string.anime_media_filter_airing_date_season_year_increment_content_description
+                                    if (isYearBlank) {
+                                        R.string.anime_media_filter_airing_date_season_year_today_content_description
+                                    } else {
+                                        R.string.anime_media_filter_airing_date_season_year_clear_content_description
+                                    },
                                 ),
                             )
                         }
                     }
+                },
+                minWidth = minWidth,
+                modifier = Modifier
+                    .width(IntrinsicSize.Min)
+                    .widthIn(max = (screenWidth - 160.dp).coerceAtLeast(minWidth))
+                    .padding(horizontal = 8.dp)
+            )
+        }
 
-                    IconButton(onClick = {
-                        if (isYearBlank) {
-                            onSeasonYearChange(
-                                Calendar.getInstance()[Calendar.YEAR].toString()
-                            )
-                        } else {
-                            onSeasonYearChange("")
-                        }
-                    }) {
-                        Icon(
-                            imageVector = if (isYearBlank) {
-                                Icons.Filled.CalendarToday
-                            } else {
-                                Icons.Filled.Clear
-                            },
-                            contentDescription = stringResource(
-                                if (isYearBlank) {
-                                    R.string.anime_media_filter_airing_date_season_year_today_content_description
-                                } else {
-                                    R.string.anime_media_filter_airing_date_season_year_clear_content_description
-                                },
-                            ),
-                        )
-                    }
-                }
+        IconButton(
+            onClick = {
+                val nextSeason = data.nextSeason()
+                onSeasonChange(nextSeason.first)
+                onSeasonYearChange(nextSeason.second.toString())
             },
-            minWidth = minWidth,
-            modifier = Modifier
-                .width(IntrinsicSize.Min)
-                .widthIn(max = (screenWidth - 160.dp).coerceAtLeast(minWidth)),
-        )
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            Icon(
+                imageVector = Icons.Default.AddCircleOutline,
+                contentDescription = stringResource(
+                    id = R.string.anime_media_filter_airing_date_season_increment_content_description
+                )
+            )
+        }
     }
+}
+
+@Preview
+@Composable
+fun AiringDateBasicSectionPreview() {
+    AiringDateBasicSection(data = AiringDate.Basic(), onSeasonChange = {}, onSeasonYearChange = {})
 }
 
 @Composable

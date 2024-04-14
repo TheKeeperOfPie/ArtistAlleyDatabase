@@ -15,7 +15,30 @@ sealed interface AiringDate {
     data class Basic(
         val season: SeasonOption? = null,
         val seasonYear: String = "",
-    ) : AiringDate
+    ) : AiringDate {
+
+        fun previousSeason(): Pair<SeasonOption, Int> {
+            val currentSeasonYear by lazy { AniListUtils.getCurrentSeasonYear() }
+            val (previousSeason, previousSeasonYear) = AniListUtils.getPreviousSeasonYear(
+                (season?.toAniListSeason()
+                    ?: currentSeasonYear.first) to (seasonYear.toIntOrNull()
+                    ?: currentSeasonYear.second)
+            )
+            return AiringDate.SeasonOption.fromAniListSeason(previousSeason, previousSeasonYear) to
+                    previousSeasonYear
+        }
+
+        fun nextSeason(): Pair<SeasonOption, Int> {
+            val currentSeasonYear by lazy { AniListUtils.getCurrentSeasonYear() }
+            val (nextSeason, nextSeasonYear) = AniListUtils.getNextSeasonYear(
+                (season?.toAniListSeason()
+                    ?: currentSeasonYear.first) to (seasonYear.toIntOrNull()
+                    ?: currentSeasonYear.second)
+            )
+            return AiringDate.SeasonOption.fromAniListSeason(nextSeason, nextSeasonYear) to
+                    nextSeasonYear
+        }
+    }
 
     data class Advanced(
         val startDate: LocalDate? = null,
@@ -81,6 +104,65 @@ sealed interface AiringDate {
             PREVIOUS -> AniListUtils.getPreviousSeasonYear().first
             CURRENT -> AniListUtils.getCurrentSeasonYear().first
             NEXT -> AniListUtils.getNextSeasonYear().first
+        }
+
+        fun makeAbsolute(seasonYear: Int?): SeasonOption {
+            if (seasonYear == null) return this
+            val currentSeason by lazy { AniListUtils.getCurrentSeasonYear() }
+            return when (this) {
+                PREVIOUS -> {
+                    val (previousSeason, previousSeasonYear) =
+                        AniListUtils.getPreviousSeasonYear(currentSeason)
+                    return if (seasonYear == previousSeasonYear) {
+                        this
+                    } else {
+                        fromAniListSeasonAbsolute(toAniListSeason())
+                    }
+                }
+                CURRENT -> {
+                    return if (seasonYear == currentSeason.second) {
+                        this
+                    } else {
+                        fromAniListSeasonAbsolute(toAniListSeason())
+                    }
+                }
+                NEXT -> {
+                    val (nextSeason, nextSeasonYear) =
+                        AniListUtils.getNextSeasonYear(currentSeason)
+                    return if (seasonYear == nextSeasonYear) {
+                        this
+                    } else {
+                        fromAniListSeasonAbsolute(toAniListSeason())
+                    }
+                }
+                WINTER,
+                SPRING,
+                SUMMER,
+                FALL -> this
+            }
+        }
+
+        companion object {
+            fun fromAniListSeason(
+                mediaSeason: MediaSeason,
+                seasonYear: Int,
+                currentSeasonYear: Pair<MediaSeason, Int> = AniListUtils.getCurrentSeasonYear(),
+            ) = when (mediaSeason to seasonYear) {
+                currentSeasonYear -> CURRENT
+                AniListUtils.getPreviousSeasonYear(currentSeasonYear) -> PREVIOUS
+                AniListUtils.getNextSeasonYear(currentSeasonYear) -> NEXT
+                else -> fromAniListSeasonAbsolute(mediaSeason)
+            }
+
+            fun fromAniListSeasonAbsolute(
+                mediaSeason: MediaSeason,
+            ) = when (mediaSeason) {
+                MediaSeason.WINTER -> WINTER
+                MediaSeason.SPRING -> SPRING
+                MediaSeason.SUMMER -> SUMMER
+                MediaSeason.FALL -> FALL
+                MediaSeason.UNKNOWN__ -> CURRENT
+            }
         }
     }
 }
