@@ -9,7 +9,7 @@ object Versions {
     const val accompanist = "0.35.0-alpha"
     const val apollo = "4.0.0-beta.5"
     const val coil = "3.0.0-alpha06"
-    const val compose = "1.7.0-alpha06"
+    const val compose = "1.7.0-alpha07"
     const val dagger = "2.51.1"
     const val hilt = "1.2.0"
 
@@ -24,13 +24,13 @@ object Versions {
 
     // TODO: Versions after don't let changing Dispatcher and breaks instrumentation tests
     const val ktor = "2.3.4"
-    const val lifecycle = "2.8.0-alpha04"
+    const val lifecycle = "2.8.0-beta01"
     const val room = "2.6.1"
     const val markwon = "4.6.2"
-    const val media3 = "1.3.1"
+    const val media3 = "1.4.0-alpha01"
     const val mockito = "5.11.0"
     const val paging = "3.3.0-beta01"
-    const val work = "2.10.0-alpha01"
+    const val work = "2.10.0-alpha02"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
@@ -70,17 +70,17 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.github.ben-manes.versions").version("0.51.0")
                 plugin("com.google.dagger.hilt.android").version(Versions.dagger)
                 plugin("com.jaredsburrows.license").version("0.9.7")
-                plugin("com.netflix.dgs.codegen").version("6.1.5")
+                plugin("com.netflix.dgs.codegen").version("6.1.6")
                 plugin("de.mannodermaus.android-junit5").version("1.10.0.0")
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.2.0")
                 plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.23")
                 plugin("app.cash.molecule").version("1.4.2")
 
-                library("androidx.activity:activity-compose:1.9.0-rc01")
-                library("androidx.compose.material3:material3:1.3.0-alpha04")
+                library("androidx.activity:activity-compose:1.9.0")
+                library("androidx.compose.material3:material3:1.3.0-alpha05")
                 library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
-                library("androidx.core:core-ktx:1.13.0-rc01")
+                library("androidx.core:core-ktx:1.13.0")
 
                 withVersion(Versions.hilt) {
                     library("androidx.hilt:hilt-navigation-compose")
@@ -129,7 +129,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("androidx.work:work-runtime")
                 }
 
-                library("com.android.billingclient:billing-ktx:6.2.0")
+                library("com.android.billingclient:billing-ktx:6.2.1")
                 library("com.android.tools.build:gradle:8.5.0-alpha05")
 
                 withVersion(Versions.apollo) {
@@ -166,22 +166,22 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.graphql-java:graphql-java:21.3")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:2.28.3")
                 library("com.neovisionaries:nv-i18n:1.29")
-                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.5.5")
+                library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:8.5.6")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                     alias = "androidyoutubeplayer"
                 )
                 library("com.rometools:rome:2.1.0")
-                library("com.sebastianneubauer.jsontree:jsontree:2.1.1")
+                library("com.sebastianneubauer.jsontree:jsontree:2.2.0")
                 library("com.squareup:javapoet:1.13.0")
                 library("com.squareup:kotlinpoet:1.15.3")
                 library("com.squareup.leakcanary:leakcanary-android:3.0-alpha-1")
                 library("com.squareup.leakcanary:leakcanary-android-release:3.0-alpha-1")
                 library("com.squareup.leakcanary:leakcanary-object-watcher-android:3.0-alpha-1")
                 library("com.squareup.moshi:moshi-kotlin:1.15.1")
-                library("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
+                library("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
                 library(
-                    "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.12",
+                    "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.14",
                     prefix = "okhttp3"
                 )
                 library("com.unity3d.ads:unity-ads:4.10.0")
@@ -261,7 +261,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 prefix("jetBrainsCompose") {
-                    library("org.jetbrains.compose.runtime:runtime:1.6.2")
+                    library("org.jetbrains.compose.runtime:runtime:1.6.10-beta01")
                 }
 
                 prefix("junit5") {

@@ -14,7 +14,7 @@ dependencies {
     api(project(":modules:entry"))
     api(project(":modules:network-utils"))
 
-    implementation(libs.okhttp)
+    api(libs.okhttp)
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)

@@ -19,5 +19,5 @@ dependencies {
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
-    implementation(libs.okhttp)
+    api(libs.okhttp)
 }
