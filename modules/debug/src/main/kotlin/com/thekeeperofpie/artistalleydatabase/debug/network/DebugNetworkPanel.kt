@@ -180,10 +180,12 @@ object DebugNetworkPanel {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(vertical = 8.dp)
+                        .fillMaxWidth()
                 ) {
-                    if (data.response == null) {
+                    if (data.response?.final != true) {
                         CircularProgressIndicator()
-                    } else {
+                    }
+                    if (data.response != null) {
                         TimestampText(data.response.timestamp)
                         JsonText(data.response.bodyJson)
                     }

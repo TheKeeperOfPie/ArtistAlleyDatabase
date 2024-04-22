@@ -22,7 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApiWrapper
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
-import com.thekeeperofpie.artistalleydatabase.network_utils.RateLimitHandler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -82,7 +81,6 @@ class AniListHiltModule {
             .addLoggingInterceptors("AniListApi", networkSettings)
             .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
             .apply { apolloHttpInterceptors.forEach(::addHttpInterceptor) }
-            .addHttpInterceptor(RateLimitHandler.apolloHttpInterceptor)
             .build()
     }
 

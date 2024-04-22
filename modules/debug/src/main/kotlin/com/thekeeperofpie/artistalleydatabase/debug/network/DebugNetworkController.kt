@@ -8,6 +8,7 @@ import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.network_utils.RateLimitUtils
 import graphql.language.AstPrinter
 import graphql.parser.Parser
 import kotlinx.coroutines.channels.BufferOverflow
@@ -44,29 +45,43 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
                     request = request,
                 )
             )
-            return chain.proceed(request).let {
-                val responseBody = it.body
+
+            val response = RateLimitUtils.rateLimit(request, chain) { (response, _) ->
+                val responseBody = response.body
                 val responseBodyString =
                     responseBody?.readString(Charset.defaultCharset()).toString()
                 graphQlResponses.trySend(
                     GraphQlResponse(
                         id = id,
-                        headers = it.headers.associate { it.name to it.value },
+                        headers = response.headers.associate { it.name to it.value },
                         bodyString = responseBodyString,
                         timestamp = Instant.now(),
+                        final = false,
                     )
                 )
+            }
 
-                if (responseBody == null) {
-                    it
-                } else {
-                    val buffer = Buffer()
-                    buffer.writeString(responseBodyString, Charset.defaultCharset())
-                    HttpResponse.Builder(statusCode = it.statusCode)
-                        .addHeaders(it.headers)
-                        .body(buffer)
-                        .build()
-                }
+            val responseBody = response.body
+            val responseBodyString = responseBody?.readString(Charset.defaultCharset()).toString()
+            graphQlResponses.trySend(
+                GraphQlResponse(
+                    id = id,
+                    headers = response.headers.associate { it.name to it.value },
+                    bodyString = responseBodyString,
+                    timestamp = Instant.now(),
+                    final = true,
+                )
+            )
+
+            return if (responseBody == null) {
+                response
+            } else {
+                val buffer = Buffer()
+                buffer.writeString(responseBodyString, Charset.defaultCharset())
+                HttpResponse.Builder(statusCode = response.statusCode)
+                    .addHeaders(response.headers)
+                    .body(buffer)
+                    .build()
             }
         }
     }
@@ -133,6 +148,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
                             timestamp = graphQlResponse.timestamp,
                             bodyJson = responseJson,
                             errors = errors,
+                            final = graphQlResponse.final,
                         )
                     )
                 }
@@ -153,6 +169,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
         val timestamp: Instant,
         val headers: Map<String, String>,
         val bodyString: String,
+        val final: Boolean,
     )
 
     @Serializable
@@ -177,6 +194,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
             val timestamp: Instant,
             val bodyJson: String,
             val errors: List<String>,
+            val final: Boolean,
         )
     }
 
