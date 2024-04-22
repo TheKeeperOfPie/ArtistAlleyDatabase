@@ -419,7 +419,7 @@ fun CharactersSectionItem(
         id = if (showVoiceActorAsMain) {
             EntryId("anime_staff", voiceActor?.id.orEmpty())
         } else {
-            EntryId("anime_character", voiceActor?.id.orEmpty())
+            EntryId("anime_character", character?.id.orEmpty())
         },
         image = if (showVoiceActorAsMain) {
             voiceActor?.image
