@@ -12,7 +12,8 @@
         <trusted-artifacts>
             <trust file=".*-javadoc[.]jar" regex="true" />
             <trust file=".*-sources[.]jar" regex="true" />
-            <trust file="aapt2-8.2.0-alpha06-10154469-windows.jar" />
+            <trust file="aapt2-8.5.0-alpha05-11315950.pom" />
+            <trust file="aapt2-8.5.0-alpha05-11315950-windows.jar" />
 
             <!-- buildHealth failure when committing during AGP 8.3.0-alpha14 upgrade -->
             <trust file="kotlin-.*-1.*" regex="true" />

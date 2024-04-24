@@ -13,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
@@ -43,7 +43,7 @@ class ChooserActivity : ComponentActivity() {
             val navController = rememberNavController()
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navController) {
                 Surface {
-                    SharedElementsRoot {
+                    AutoSharedElementsRoot {
                         NavHost(
                             navController = navController,
                             startDestination = NavDestinations.HOME

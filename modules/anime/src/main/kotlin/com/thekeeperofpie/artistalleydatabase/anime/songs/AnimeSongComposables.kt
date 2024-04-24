@@ -57,9 +57,9 @@ import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 
@@ -336,7 +336,7 @@ object AnimeSongComposables {
                                     )
                                 }
                                 if (artist.aniListId != null) {
-                                    SharedElement(
+                                    AutoSharedElement(
                                         key = "anime_staff_${artist.aniListId}_image",
                                         screenKey = screenKey
                                     ) {
@@ -363,7 +363,7 @@ object AnimeSongComposables {
                                     )
                                 }
                                 if (artist.character?.aniListId != null) {
-                                    SharedElement(
+                                    AutoSharedElement(
                                         key = "anime_character_${artist.character.aniListId}_image",
                                         screenKey = screenKey
                                     ) {

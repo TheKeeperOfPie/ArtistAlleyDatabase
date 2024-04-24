@@ -295,9 +295,6 @@ dependencies {
     debugRuntimeOnly(libs.compose.ui.tooling)
     debugRuntimeOnly(libs.compose.ui.test.manifest)
 
-//    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
-    implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
-
     implementation(libs.work.runtime)
     implementation(libs.work.runtime.ktx)
 

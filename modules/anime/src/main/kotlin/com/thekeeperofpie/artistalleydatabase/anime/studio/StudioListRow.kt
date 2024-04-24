@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StudioListRowFragment
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -35,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
@@ -135,7 +135,7 @@ object StudioListRow {
                 media,
                 key = { index, item -> item?.media?.id ?: "placeholder_$index" },
             ) { index, item ->
-                SharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
+                AutoSharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
                     Box {
                         val navigationCallback = LocalNavigationCallback.current
                         ListRowSmallImage(

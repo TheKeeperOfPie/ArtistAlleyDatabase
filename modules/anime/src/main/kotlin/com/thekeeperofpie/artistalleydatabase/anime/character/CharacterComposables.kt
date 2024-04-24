@@ -62,7 +62,6 @@ import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaHeaderData
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -78,6 +77,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UpperHalfBiasAlignment
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
@@ -207,7 +207,7 @@ fun CharacterSmallCard(
                     val clipShape = RoundedCornerShape(topStart = 8.dp)
                     val size = LocalDensity.current.run { 40.dp.roundToPx() }
                     Box(modifier = Modifier.align(Alignment.BottomEnd)) {
-                        SharedElement(
+                        AutoSharedElement(
                             key = innerImageKey,
                             screenKey = screenKey,
                         ) {

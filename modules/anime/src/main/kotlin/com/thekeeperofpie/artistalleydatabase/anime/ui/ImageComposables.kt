@@ -13,9 +13,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 
 val UpperHalfBiasAlignment = BiasAbsoluteAlignment(0f, -0.5f)
@@ -30,7 +30,7 @@ fun MediaCoverImage(
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     onError: ((AsyncImagePainter.State.Error) -> Unit)? = null,
 ) {
-    SharedElement(
+    AutoSharedElement(
         key = "anime_media_${mediaId}_image",
         screenKey = screenKey,
     ) {
@@ -77,7 +77,7 @@ fun MediaCoverImage(
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     onError: ((AsyncImagePainter.State.Error) -> Unit)? = null,
 ) {
-    SharedElement(
+    AutoSharedElement(
         key = "anime_media_${mediaId}_image",
         screenKey = screenKey,
     ) {
@@ -103,7 +103,7 @@ fun CharacterCoverImage(
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
 ) {
-    SharedElement(
+    AutoSharedElement(
         key = "anime_character_${characterId}_image",
         screenKey = screenKey,
     ) {
@@ -129,7 +129,7 @@ fun StaffCoverImage(
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     contentDescriptionTextRes: Int = R.string.anime_staff_image,
 ) {
-    SharedElement(
+    AutoSharedElement(
         key = "anime_staff_${staffId}_image",
         screenKey = screenKey,
     ) {
@@ -155,7 +155,7 @@ fun UserAvatarImage(
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     contentDescriptionTextRes: Int = R.string.anime_user_image,
 ) {
-    SharedElement(
+    AutoSharedElement(
         key = "anime_user_${userId}_image",
         screenKey = screenKey,
     ) {
@@ -181,7 +181,7 @@ fun UserAvatarImage(
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     contentDescriptionTextRes: Int = R.string.anime_user_image,
 ) {
-    SharedElement(
+    AutoSharedElement(
         key = "anime_user_${userId}_image",
         screenKey = screenKey,
     ) {

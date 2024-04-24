@@ -19,9 +19,9 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.type.MediaType
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -143,7 +143,7 @@ class MediaEditBottomSheetTest {
 
     @Composable
     private fun Content() {
-        SharedElementsRoot {
+        AutoSharedElementsRoot {
             MediaEditBottomSheetScaffold(
                 screenKey = "test",
                 topBar = { TopAppBar(title = { Text(text = "Top bar title") }) }) {

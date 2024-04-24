@@ -60,12 +60,12 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.mxalbert.sharedelements.FadeMode
 import com.mxalbert.sharedelements.ProgressThresholds
-import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
@@ -378,7 +378,7 @@ object EntryDetailsScreen {
                 if (uri != null) {
                     var transitionProgress by remember { mutableStateOf(1f) }
                     val cornerDp = imageCornerDp?.let { lerp(it, 0.dp, transitionProgress) }
-                    SharedElement(
+                    AutoSharedElement(
                         key = "${entryImage.entryId?.scopedId}_image",
                         screenKey = screenKey,
                         // Try to disable the fade animation

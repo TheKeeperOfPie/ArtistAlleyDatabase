@@ -64,7 +64,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import com.anilist.type.MediaType
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
@@ -96,6 +95,7 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -427,7 +427,7 @@ class MainActivity : ComponentActivity() {
             Box(
                 modifier = Modifier.weight(1f)
             ) {
-                SharedElementsRoot {
+                AutoSharedElementsRoot {
                     NavHost(
                         navController = navHostController,
                         startDestination = startDestination,

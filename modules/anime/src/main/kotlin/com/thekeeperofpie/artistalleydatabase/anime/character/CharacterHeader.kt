@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import com.anilist.fragment.CharacterHeaderData
 import com.anilist.fragment.CharacterNavigationData
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -43,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.sub
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
@@ -62,7 +62,7 @@ fun CharacterHeader(
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
     onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
 ) {
-    SharedElement(
+    AutoSharedElement(
         key = "anime_character_${characterId}_header",
         screenKey = screenKey,
     ) {

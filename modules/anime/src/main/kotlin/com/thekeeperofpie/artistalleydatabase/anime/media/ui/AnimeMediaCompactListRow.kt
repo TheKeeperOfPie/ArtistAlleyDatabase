@@ -43,7 +43,6 @@ import coil3.size.Dimension
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -57,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
@@ -81,7 +81,7 @@ object AnimeMediaCompactListRow {
         showQuickEdit: Boolean = true,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-        SharedElement(key = "anime_media_compact_row_${entry?.media?.id}", screenKey = screenKey) {
+        AutoSharedElement(key = "anime_media_compact_row_${entry?.media?.id}", screenKey = screenKey) {
             OutlinedCard(
                 modifier = modifier
                     .fillMaxWidth()

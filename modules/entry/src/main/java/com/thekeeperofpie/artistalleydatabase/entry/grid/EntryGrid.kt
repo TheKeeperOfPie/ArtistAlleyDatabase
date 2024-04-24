@@ -51,8 +51,8 @@ import coil3.request.crossfade
 import coil3.size.Dimension
 import com.mxalbert.sharedelements.FadeMode
 import com.mxalbert.sharedelements.ProgressThresholds
-import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.R
@@ -224,7 +224,7 @@ object EntryGrid {
                         )
                     }
                 } else {
-                    SharedElement(
+                    AutoSharedElement(
                         key = "${entry.id.scopedId}_image",
                         screenKey = imageScreenKey,
                         // Try to disable the fade animation

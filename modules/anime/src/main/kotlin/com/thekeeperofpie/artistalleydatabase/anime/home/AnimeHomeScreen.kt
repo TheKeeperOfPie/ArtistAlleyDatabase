@@ -97,7 +97,6 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -132,6 +131,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.anime.utils.itemsIndexed
 import com.thekeeperofpie.artistalleydatabase.anime.utils.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
@@ -907,7 +907,7 @@ object AnimeHomeScreen {
             native = media?.title?.native,
         )
 
-        SharedElement(
+        AutoSharedElement(
             key = "anime_media_${mediaId}_image",
             screenKey = SCREEN_KEY,
         ) {

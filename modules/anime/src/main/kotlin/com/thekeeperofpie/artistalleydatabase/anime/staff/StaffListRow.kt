@@ -48,7 +48,6 @@ import com.anilist.UserFavoritesStaffQuery
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -63,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
@@ -256,7 +256,7 @@ object StaffListRow {
                 .size(width = LocalConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
         ) {
             items(characters, key = { it.id }) {
-                SharedElement(key = "anime_character_${it.id}_image", screenKey = screenKey) {
+                AutoSharedElement(key = "anime_character_${it.id}_image", screenKey = screenKey) {
                     val navigationCallback = LocalNavigationCallback.current
                     ListRowSmallImage(
                         context = context,
@@ -279,7 +279,7 @@ object StaffListRow {
             }
 
             items(media, key = { it.media.id }) {
-                SharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
+                AutoSharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
                     Box {
                         val navigationCallback = LocalNavigationCallback.current
                         ListRowSmallImage(

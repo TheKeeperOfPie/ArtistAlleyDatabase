@@ -39,7 +39,6 @@ import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -54,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
@@ -227,7 +227,7 @@ object UserListRow {
                 key = { it.media.id },
                 contentType = { "media" },
             ) {
-                SharedElement(key = "anime_media_${it?.media?.id}_image", screenKey = screenKey) {
+                AutoSharedElement(key = "anime_media_${it?.media?.id}_image", screenKey = screenKey) {
                     Box {
                         ListRowSmallImage(
                             context = context,

@@ -52,7 +52,6 @@ import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -63,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
@@ -205,7 +205,7 @@ object AnimeMediaLargeCard {
         screenKey: String,
         entry: Entry?,
     ) {
-        SharedElement(
+        AutoSharedElement(
             key = "anime_media_${entry?.mediaId}_banner_image",
             screenKey = screenKey,
         ) {

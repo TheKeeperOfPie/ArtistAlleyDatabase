@@ -53,7 +53,6 @@ import com.anilist.fragment.CharacterWithRoleAndFavorites
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
 import com.anilist.type.CharacterRole
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -70,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
@@ -315,7 +315,7 @@ object CharacterListRow {
             if (voiceActor?.image?.large != null) {
                 val staffId = voiceActor.id
                 item(staffId) {
-                    SharedElement(key = "anime_staff_${staffId}_image", screenKey = screenKey) {
+                    AutoSharedElement(key = "anime_staff_${staffId}_image", screenKey = screenKey) {
                         ListRowSmallImage(
                             context = context,
                             density = density,
@@ -342,7 +342,7 @@ object CharacterListRow {
                 media,
                 key = { index, item -> item?.media?.id ?: "placeholder_$index" },
             ) { index, item ->
-                SharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
+                AutoSharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
                     Box {
                         ListRowSmallImage(
                             context = context,

@@ -14,7 +14,6 @@ import androidx.compose.ui.test.performScrollToKey
 import androidx.lifecycle.SavedStateHandle
 import com.anilist.fragment.ListActivityMediaListActivityItem
 import com.google.common.truth.Truth.assertThat
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.persistentListOfNotNull
@@ -32,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
@@ -261,7 +261,7 @@ class MediaDetailsScreenTest {
     private fun ScreenContent(
         viewModels: ViewModels,
     ) {
-        SharedElementsRoot {
+        AutoSharedElementsRoot {
             CompositionLocalProvider(
                 LocalIgnoreController.provides(ignoreController),
             ) {

@@ -20,6 +20,7 @@ dependencies {
     api(libs.material3)
     api(libs.compose.ui)
     api(libs.compose.ui.tooling.preview)
+    api(libs.compose.animation)
     implementation(libs.activity.compose)
     implementation(libs.navigation.compose)
     implementation(libs.compose.material.icons.extended)
@@ -28,4 +29,6 @@ dependencies {
     api(libs.coil3.coil.network.okhttp)
     implementation(libs.palette.ktx)
     implementation(libs.html.text)
+
+    api(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 }

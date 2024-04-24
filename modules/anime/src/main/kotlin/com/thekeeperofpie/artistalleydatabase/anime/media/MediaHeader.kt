@@ -48,7 +48,6 @@ import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -59,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaRatingIconsSec
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -92,7 +92,7 @@ fun MediaHeader(
             titles?.indexOf(defaultTitle)?.coerceAtLeast(0) ?: 0
         )
     }
-    SharedElement(
+    AutoSharedElement(
         key = "anime_media_${mediaId}_header",
         screenKey = screenKey,
     ) {

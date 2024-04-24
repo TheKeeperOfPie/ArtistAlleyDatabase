@@ -10,7 +10,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.paging.PagingData
 import com.anilist.type.MediaType
 import com.google.common.truth.Truth.assertThat
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -24,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
@@ -318,7 +318,7 @@ class HomeScreenTest {
         viewModel: AnimeHomeViewModel,
         mediaViewModel: AnimeHomeMediaViewModel,
     ) {
-        SharedElementsRoot {
+        AutoSharedElementsRoot {
             CompositionLocalProvider(
                 LocalIgnoreController.provides(ignoreController),
             ) {

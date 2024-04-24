@@ -71,13 +71,13 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -216,7 +216,7 @@ internal fun CoverAndBannerHeader(
                     .height(rowHeight)
             ) {
                 Box(modifier = Modifier.padding(vertical = 10.dp)) {
-                    SharedElement(
+                    AutoSharedElement(
                         key = "${entryId?.scopedId}_image",
                         screenKey = screenKey,
                         onFractionChanged = onCoverImageSharedElementFractionChanged,
