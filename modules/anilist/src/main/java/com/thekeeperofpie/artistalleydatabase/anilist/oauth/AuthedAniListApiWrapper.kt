@@ -154,33 +154,35 @@ class AuthedAniListApiWrapper(
         })
     }
 
-    override suspend fun mediaDetails(id: String) = super.mediaDetails(id).map {
-        val media = it.result?.media
-        if (media != null && media.isAdult != false) throw IOException("Cannot load this media")
-        it.transformResult {
-            it.copy(
-                media = it.media?.copy(
-                    relations = it.media?.relations?.copy(
-                        edges = it.media?.relations?.edges?.filter { it?.node?.isAdult == false }),
+    override suspend fun mediaDetails(id: String, skipCache: Boolean) =
+        super.mediaDetails(id, skipCache).let {
+            val media = it.result?.media
+            if (media != null && media.isAdult != false) throw IOException("Cannot load this media")
+            it.transformResult {
+                it.copy(
+                    media = it.media?.copy(
+                        relations = it.media?.relations?.copy(
+                            edges = it.media?.relations?.edges?.filter { it?.node?.isAdult == false }),
+                    )
                 )
-            )
+            }
         }
-    }
 
-    override suspend fun mediaDetails2(id: String) = super.mediaDetails2(id).map {
-        val media = it.result?.media
-        if (media != null && media.isAdult != false) throw IOException("Cannot load this media")
-        it.transformResult {
-            it.copy(
-                media = it.media?.copy(
-                    recommendations = it.media?.recommendations?.copy(
-                        edges = it.media?.recommendations?.edges?.filter {
-                            it?.node?.mediaRecommendation?.isAdult == false
-                        }),
+    override suspend fun mediaDetails2(id: String, skipCache: Boolean) =
+        super.mediaDetails2(id, skipCache).let {
+            val media = it.result?.media
+            if (media != null && media.isAdult != false) throw IOException("Cannot load this media")
+            it.transformResult {
+                it.copy(
+                    media = it.media?.copy(
+                        recommendations = it.media?.recommendations?.copy(
+                            edges = it.media?.recommendations?.edges?.filter {
+                                it?.node?.mediaRecommendation?.isAdult == false
+                            }),
+                    )
                 )
-            )
+            }
         }
-    }
 
     override suspend fun mediaDetailsCharactersPage(
         mediaId: String,
@@ -265,17 +267,18 @@ class AuthedAniListApiWrapper(
         }))
     }
 
-    override suspend fun characterDetails(id: String) = super.characterDetails(id).map {
-        it.transformResult {
-            it.copy(
-                character = it.character?.copy(
-                    media = it.character?.media?.copy(
-                        edges = it.character?.media?.edges?.filter { it?.node?.isAdult == false }
+    override suspend fun characterDetails(id: String, skipCache: Boolean) =
+        super.characterDetails(id, skipCache).let {
+            it.transformResult {
+                it.copy(
+                    character = it.character?.copy(
+                        media = it.character?.media?.copy(
+                            edges = it.character?.media?.edges?.filter { it?.node?.isAdult == false }
+                        )
                     )
                 )
-            )
+            }
         }
-    }
 
     override suspend fun characterDetailsMediaPage(
         characterId: String,

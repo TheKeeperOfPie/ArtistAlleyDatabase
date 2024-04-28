@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -70,9 +71,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest {
-                aniListApi.characterDetails(characterId)
-            }
+            refresh.mapLatest { aniListApi.characterDetails(characterId, it > 0) }
                 .flatMapLatest { result ->
                     val media = result.result?.character?.media?.edges
                         ?.distinctBy { it?.node?.id }

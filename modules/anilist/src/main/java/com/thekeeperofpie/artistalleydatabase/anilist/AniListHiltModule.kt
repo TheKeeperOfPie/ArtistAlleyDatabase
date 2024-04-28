@@ -32,6 +32,7 @@ import dagger.multibindings.StringKey
 import okhttp3.OkHttpClient
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -54,18 +55,20 @@ class AniListHiltModule {
         okHttpClient: OkHttpClient,
         apolloHttpInterceptors: @JvmSuppressWildcards Set<HttpInterceptor>,
     ): ApolloClient {
-        val memoryThenDiskCache = MemoryCacheFactory(MEMORY_CACHE_BYTE_SIZE)
-            .apply {
-                if (networkSettings.enableNetworkCaching.value) {
-                    chain(
-                        SqlNormalizedCacheFactory(
-                            application,
-                            "apollo.db",
-                            useNoBackupDirectory = true,
-                        )
+        val memoryThenDiskCache = MemoryCacheFactory(
+            maxSizeBytes = MEMORY_CACHE_BYTE_SIZE,
+            expireAfterMillis = 10.minutes.inWholeMilliseconds,
+        ).apply {
+            if (networkSettings.enableNetworkCaching.value) {
+                chain(
+                    SqlNormalizedCacheFactory(
+                        application,
+                        "apollo.db",
+                        useNoBackupDirectory = true,
                     )
-                }
+                )
             }
+        }
 
         @OptIn(ApolloExperimental::class)
         return ApolloClient.Builder()

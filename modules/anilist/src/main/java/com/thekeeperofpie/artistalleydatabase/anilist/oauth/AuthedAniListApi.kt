@@ -323,10 +323,11 @@ open class AuthedAniListApi(
 
     open suspend fun tags() = query(MediaTagsQuery())
 
-    open suspend fun mediaDetails(id: String) = queryCacheAndNetwork(MediaDetailsQuery(id.toInt()))
+    open suspend fun mediaDetails(id: String, skipCache: Boolean) =
+        queryLoadingResult(MediaDetailsQuery(id.toInt()), skipCache)
 
-    open suspend fun mediaDetails2(id: String) =
-        queryCacheAndNetwork(MediaDetails2Query(id.toInt()))
+    open suspend fun mediaDetails2(id: String, skipCache: Boolean) =
+        queryLoadingResult(MediaDetails2Query(id.toInt()), skipCache)
 
     open suspend fun mediaDetailsCharactersPage(mediaId: String, page: Int, perPage: Int = 5) =
         query(
@@ -433,8 +434,8 @@ open class AuthedAniListApi(
         )
     )
 
-    open suspend fun characterDetails(id: String) =
-        queryCacheAndNetwork(CharacterDetailsQuery(id.toInt()))
+    open suspend fun characterDetails(id: String, skipCache: Boolean) =
+        queryLoadingResult(CharacterDetailsQuery(id.toInt()), skipCache)
 
     open suspend fun characterDetailsMediaPage(characterId: String, page: Int, perPage: Int = 5) =
         query(
@@ -1242,14 +1243,31 @@ open class AuthedAniListApi(
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkFirst).execute().dataOrThrow()
 
+    private suspend fun <Data : Query.Data> queryLoadingResult(
+        query: Query<Data>,
+        skipCache: Boolean,
+    ): LoadingResult<Data> {
+        val fetchPolicy = if (skipCache) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst
+        val result = queryResult(query, fetchPolicy = fetchPolicy) { it }
+        val data = result.getOrNull()
+        if (result.isFailure || data == null) {
+            return LoadingResult.error(
+                errorTextRes = UtilsStringR.error_loading_from_network,
+                throwable = result.exceptionOrNull()
+            )
+        }
+        return LoadingResult.success(data)
+    }
+
     private suspend fun <Data : Query.Data, Output> queryResult(
         query: Query<Data>,
+        fetchPolicy: FetchPolicy = FetchPolicy.CacheFirst,
         transform: (Data) -> Output,
     ) = try {
         Result.success(
             transform(
                 apolloClient.query(query)
-                    .fetchPolicy(FetchPolicy.NetworkFirst)
+                    .fetchPolicy(fetchPolicy)
                     .execute()
                     .dataOrThrow()
             )

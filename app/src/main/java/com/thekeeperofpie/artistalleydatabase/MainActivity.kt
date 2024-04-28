@@ -246,7 +246,7 @@ class MainActivity : ComponentActivity() {
                         val scope = rememberCoroutineScope()
                         val navDrawerItems = NavDrawerItems.entries
 
-                        fun onClickNav() = scope.launch { drawerState.open() }
+                        fun onClickNav() = scope.launch { drawerState.openStart() }
                         val unlockDatabaseFeatures by monetizationController.unlockDatabaseFeatures
                             .collectAsState(false)
 
@@ -318,6 +318,9 @@ class MainActivity : ComponentActivity() {
                                     unlockDatabaseFeatures = true,
                                     onClickNav = ::onClickNav,
                                     startDestination = startDestination,
+                                    onVariantBannerClick = {
+                                        scope.launch { drawerState.openEnd() }
+                                    },
                                 )
                             }
                         } else {
@@ -326,6 +329,7 @@ class MainActivity : ComponentActivity() {
                                 unlockDatabaseFeatures = false,
                                 onClickNav = ::onClickNav,
                                 startDestination = startDestination,
+                                onVariantBannerClick = { scope.launch { drawerState.openEnd() } },
                             )
                         }
                     }
@@ -401,6 +405,7 @@ class MainActivity : ComponentActivity() {
         unlockDatabaseFeatures: Boolean,
         onClickNav: () -> Unit,
         startDestination: String,
+        onVariantBannerClick: () -> Unit,
     ) {
         val navDrawerUpIconOption =
             UpIconOption.NavDrawer(onClickNav).takeIf { unlockDatabaseFeatures }
@@ -596,7 +601,7 @@ class MainActivity : ComponentActivity() {
                         .background(colorResource(R.color.launcher_background))
                         .fillMaxWidth()
                         .height(48.dp)
-                        .clickable { /* Consume touches */ }
+                        .clickable(onClick = onVariantBannerClick)
                 ) {
                     Text(
                         text = BuildConfig.BUILD_TYPE.toUpperCase(Locale.current),

@@ -97,7 +97,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         )
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest { aniListApi.mediaDetails(mediaId) }
+            refresh.mapLatest { aniListApi.mediaDetails(mediaId, it > 0) }
                 .mapLatest {
                     val result = it.result
                     if (result != null && result.media?.isAdult != false
@@ -231,7 +231,12 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .flatMapLatest { barrierMedia2.filter { it } }
                 .flatMapLatest {
                     combine(refresh, refreshSecondary, ::Pair)
-                        .flatMapLatest { aniListApi.mediaDetails2(mediaId) }
+                        .mapLatest {
+                            aniListApi.mediaDetails2(
+                                id = mediaId,
+                                skipCache = it.first > 0 || it.second > 0,
+                            )
+                        }
                         .flowOn(CustomDispatchers.IO)
                         .mapLatest { result ->
                             result.transformResult {

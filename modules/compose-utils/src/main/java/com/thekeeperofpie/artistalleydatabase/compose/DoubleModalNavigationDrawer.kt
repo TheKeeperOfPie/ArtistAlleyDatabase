@@ -229,7 +229,8 @@ class DrawerState(
             return anchoredDraggableState.isAnimationRunning
         }
 
-    suspend fun open() = animateTo(DoubleDrawerValue.Start)
+    suspend fun openStart() = animateTo(DoubleDrawerValue.Start)
+    suspend fun openEnd() = animateTo(DoubleDrawerValue.End)
     suspend fun close() = animateTo(DoubleDrawerValue.Closed)
 
     /**
