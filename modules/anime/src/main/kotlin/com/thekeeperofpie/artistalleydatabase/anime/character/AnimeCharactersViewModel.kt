@@ -11,7 +11,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager2
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
@@ -19,6 +19,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -54,15 +55,25 @@ class AnimeCharactersViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { mediaDetailsViewModel.entry.result?.media?.characters }
-                .filterNotNull()
+            combine(
+                mediaDetailsViewModel.refresh,
+                snapshotFlow { mediaDetailsViewModel.entry.result?.media?.characters }
+                    .filterNotNull(),
+                ::Pair,
+            )
                 .flowOn(CustomDispatchers.Main)
-                .flatMapLatest { characters ->
-                    AniListPager(perPage = 6, prefetchDistance = 1) { page ->
+                .flatMapLatest { (refresh, characters) ->
+                    val perPage = 6
+                    AniListPager2(
+                        perPage = perPage,
+                        prefetchDistance = 1,
+                        skipCache = refresh > 0,
+                    ) { (page, skipCache) ->
                         if (page == 1) {
                             characters.run { pageInfo to edges }
                         } else {
-                            aniListApi.mediaDetailsCharactersPage(mediaId, page).characters
+                            aniListApi.mediaDetailsCharactersPage(mediaId, page, perPage, skipCache)
+                                .characters
                                 .run { pageInfo to edges }
                         }
                     }

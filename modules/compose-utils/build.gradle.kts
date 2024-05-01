@@ -30,5 +30,7 @@ dependencies {
     implementation(libs.palette.ktx)
     implementation(libs.html.text)
 
+    api(libs.paging.compose)
+
     api(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 }

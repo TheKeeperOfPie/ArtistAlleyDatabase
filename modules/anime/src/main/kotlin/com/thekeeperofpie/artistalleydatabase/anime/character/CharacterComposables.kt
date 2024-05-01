@@ -82,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
@@ -377,6 +378,12 @@ fun CharactersSection(
                     character = it,
                     showVoiceActorAsMain = showVoiceActorAsMain,
                 )
+            }
+        }
+
+        if (charactersDeferred.loadState.hasError) {
+            item("error") {
+                PagingErrorItem(charactersDeferred)
             }
         }
     }

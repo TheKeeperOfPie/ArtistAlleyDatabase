@@ -188,14 +188,19 @@ class AuthedAniListApiWrapper(
         mediaId: String,
         page: Int,
         perPage: Int,
-    ) = super.mediaDetailsCharactersPage(mediaId, page, perPage).also {
+        skipCache: Boolean,
+    ) = super.mediaDetailsCharactersPage(mediaId, page, perPage, skipCache).also {
         if (it.isAdult != false) throw IOException("Cannot load this media")
     }
 
-    override suspend fun mediaDetailsStaffPage(mediaId: String, page: Int, perPage: Int) =
-        super.mediaDetailsStaffPage(mediaId, page, perPage).also {
-            if (it.isAdult != false) throw IOException("Cannot load this media")
-        }
+    override suspend fun mediaDetailsStaffPage(
+        mediaId: String,
+        page: Int,
+        perPage: Int,
+        skipCache: Boolean,
+    ) = super.mediaDetailsStaffPage(mediaId, page, perPage, skipCache).also {
+        if (it.isAdult != false) throw IOException("Cannot load this media")
+    }
 
     override suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
         super.mediaTitlesAndImages(mediaIds).let {
@@ -940,7 +945,8 @@ class AuthedAniListApiWrapper(
         }
     }
 
-    override suspend fun anime2AnimeConnections(mediaId: String) = super.anime2AnimeConnections(mediaId)
+    override suspend fun anime2AnimeConnections(mediaId: String) =
+        super.anime2AnimeConnections(mediaId)
 
     override suspend fun anime2AnimeConnectionDetails(
         mediaId: String,

@@ -51,6 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -165,6 +166,12 @@ fun StaffListRow(
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 )
+            }
+        }
+
+        if (staffList.loadState.hasError) {
+            item("error") {
+                PagingErrorItem(staffList)
             }
         }
     }

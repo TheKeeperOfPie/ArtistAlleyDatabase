@@ -329,23 +329,33 @@ open class AuthedAniListApi(
     open suspend fun mediaDetails2(id: String, skipCache: Boolean) =
         queryLoadingResult(MediaDetails2Query(id.toInt()), skipCache)
 
-    open suspend fun mediaDetailsCharactersPage(mediaId: String, page: Int, perPage: Int = 5) =
-        query(
-            MediaDetailsCharactersPageQuery(
-                mediaId = mediaId.toInt(),
-                page = page,
-                perPage = perPage,
-            )
-        ).media
+    open suspend fun mediaDetailsCharactersPage(
+        mediaId: String,
+        page: Int,
+        perPage: Int = 5,
+        skipCache: Boolean,
+    ) = query(
+        MediaDetailsCharactersPageQuery(
+            mediaId = mediaId.toInt(),
+            page = page,
+            perPage = perPage,
+        ),
+        skipCache = skipCache,
+    ).media
 
-    open suspend fun mediaDetailsStaffPage(mediaId: String, page: Int, perPage: Int = 10) =
-        query(
-            MediaDetailsStaffPageQuery(
-                mediaId = mediaId.toInt(),
-                page = page,
-                perPage = perPage,
-            )
-        ).media
+    open suspend fun mediaDetailsStaffPage(
+        mediaId: String,
+        page: Int,
+        perPage: Int = 10,
+        skipCache: Boolean,
+    ) = query(
+        MediaDetailsStaffPageQuery(
+            mediaId = mediaId.toInt(),
+            page = page,
+            perPage = perPage,
+        ),
+        skipCache = skipCache,
+    ).media
 
     open suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
         query(MediaTitlesAndImagesQuery(ids = Optional.present(mediaIds)))
@@ -1240,8 +1250,11 @@ open class AuthedAniListApi(
 
     // TODO: Use queryCacheAndNetwork for everything
     // TODO: Use a result object to avoid throwing
-    private suspend fun <D : Query.Data> query(query: Query<D>) =
-        apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkFirst).execute().dataOrThrow()
+    private suspend fun <D : Query.Data> query(query: Query<D>, skipCache: Boolean = false) =
+        apolloClient.query(query)
+            .fetchPolicy(if (skipCache) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .execute()
+            .dataOrThrow()
 
     private suspend fun <Data : Query.Data> queryLoadingResult(
         query: Query<Data>,
