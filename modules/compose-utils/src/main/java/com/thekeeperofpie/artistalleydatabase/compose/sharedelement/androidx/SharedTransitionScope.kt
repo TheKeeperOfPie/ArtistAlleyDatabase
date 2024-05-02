@@ -82,7 +82,7 @@ import kotlin.math.roundToInt
 @Composable
 fun SharedTransitionLayout(
     modifier: Modifier = Modifier,
-    content: @Composable SharedTransitionScope.() -> Unit
+    content: @Composable SharedTransitionScope.() -> Unit,
 ) {
     SharedTransitionScope {
         Box(it.then(modifier)) {
@@ -107,7 +107,7 @@ fun SharedTransitionLayout(
 @ExperimentalSharedTransitionApi
 @Composable
 fun SharedTransitionScope(
-    content: @Composable SharedTransitionScope.(Modifier) -> Unit
+    content: @Composable SharedTransitionScope.(Modifier) -> Unit,
 ) {
     LookaheadScope {
         val coroutineScope = rememberCoroutineScope()
@@ -177,7 +177,7 @@ fun interface BoundsTransform {
 @Stable
 class SharedTransitionScope internal constructor(
     lookaheadScope: LookaheadScope,
-    val coroutineScope: CoroutineScope
+    val coroutineScope: CoroutineScope,
 ) : LookaheadScope by lookaheadScope {
 
     /**
@@ -252,7 +252,7 @@ class SharedTransitionScope internal constructor(
      */
     fun scaleInSharedContentToBounds(
         contentScale: ContentScale = ContentScale.Fit,
-        alignment: Alignment = Alignment.Center
+        alignment: Alignment = Alignment.Center,
     ): EnterTransition =
         EnterTransition.None withEffect ContentScaleTransitionEffect(contentScale, alignment)
 
@@ -277,7 +277,7 @@ class SharedTransitionScope internal constructor(
      */
     fun scaleOutSharedContentToBounds(
         contentScale: ContentScale = ContentScale.Fit,
-        alignment: Alignment = Alignment.Center
+        alignment: Alignment = Alignment.Center,
     ): ExitTransition =
         ExitTransition.None withEffect ContentScaleTransitionEffect(contentScale, alignment)
 
@@ -320,7 +320,7 @@ class SharedTransitionScope internal constructor(
         renderInOverlay: () -> Boolean = defaultRenderInOverlay,
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: (LayoutDirection, Density) -> Path? =
-            DefaultClipInOverlayDuringTransition
+            DefaultClipInOverlayDuringTransition,
     ): Modifier =
         this.then(
             RenderInTransitionOverlayNodeElement(
@@ -353,7 +353,7 @@ class SharedTransitionScope internal constructor(
             state: SharedContentState,
             bounds: Rect,
             layoutDirection: LayoutDirection,
-            density: Density
+            density: Density,
         ): Path?
     }
 
@@ -424,7 +424,7 @@ class SharedTransitionScope internal constructor(
         placeHolderSize: PlaceHolderSize = contentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
-        clipInOverlayDuringTransition: OverlayClip = ParentClip
+        clipInOverlayDuringTransition: OverlayClip = ParentClip,
     ) = this.sharedBoundsImpl(
         state,
         parentTransition = animatedVisibilityScope.transition,
@@ -518,7 +518,7 @@ class SharedTransitionScope internal constructor(
         placeHolderSize: PlaceHolderSize = contentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
-        clipInOverlayDuringTransition: OverlayClip = ParentClip
+        clipInOverlayDuringTransition: OverlayClip = ParentClip,
     ) =
         this
             .sharedBoundsImpl(
@@ -646,7 +646,7 @@ class SharedTransitionScope internal constructor(
         placeHolderSize: PlaceHolderSize = contentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
-        clipInOverlayDuringTransition: OverlayClip = ParentClip
+        clipInOverlayDuringTransition: OverlayClip = ParentClip,
     ) = this.sharedBoundsImpl<Unit>(
         sharedContentState,
         null,
@@ -737,7 +737,7 @@ class SharedTransitionScope internal constructor(
         placeHolderSize: PlaceHolderSize = contentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
-        clipInOverlayDuringTransition: OverlayClip = ParentClip
+        clipInOverlayDuringTransition: OverlayClip = ParentClip,
     ) = this.sharedBoundsImpl<Unit>(
         sharedContentState,
         null,
@@ -800,7 +800,7 @@ class SharedTransitionScope internal constructor(
         private val nonNullInternalState: SharedElementInternalState
             get() = requireNotNull(internalState) {
                 "Error: SharedContentState has not been added to a sharedElement/sharedBounds" +
-                    "modifier yet. Therefore the internal state has not bee initialized."
+                        "modifier yet. Therefore the internal state has not bee initialized."
             }
     }
 
@@ -916,7 +916,7 @@ class SharedTransitionScope internal constructor(
         sharedContentState: SharedContentState,
         clipInOverlayDuringTransition: OverlayClip,
         zIndexInOverlay: Float,
-        renderInOverlayDuringTransition: Boolean
+        renderInOverlayDuringTransition: Boolean,
     ): SharedElementInternalState =
         remember {
             SharedElementInternalState(
@@ -1000,7 +1000,7 @@ class SharedTransitionScope internal constructor(
             )
             val id = renderers.indexOfFirst {
                 (it as? SharedElementInternalState)?.sharedElement ==
-                    sharedElementState.sharedElement
+                        sharedElementState.sharedElement
             }
             if (id == renderers.size - 1 || id == -1) {
                 renderers.add(sharedElementState)
@@ -1019,7 +1019,7 @@ class SharedTransitionScope internal constructor(
     }
 
     private class ShapeBasedClip(
-        val clipShape: Shape
+        val clipShape: Shape,
     ) : OverlayClip {
         private val path = Path()
 
@@ -1027,7 +1027,7 @@ class SharedTransitionScope internal constructor(
             state: SharedContentState,
             bounds: Rect,
             layoutDirection: LayoutDirection,
-            density: Density
+            density: Density,
         ): Path {
             path.reset()
             path.addOutline(
@@ -1047,7 +1047,7 @@ private val DefaultEnabled: () -> Boolean = { true }
 
 private fun Modifier.createContentScaleModifier(
     contentScaleTransitionEffect: ContentScaleTransitionEffect,
-    isEnabled: () -> Boolean
+    isEnabled: () -> Boolean,
 ): Modifier =
     this.then(
         if (contentScaleTransitionEffect.contentScale == ContentScale.Crop) {
@@ -1081,7 +1081,7 @@ private data class SkipToLookaheadElement(
 
 private class SkipToLookaheadNode(
     contentScaleTransitionEffect: ContentScaleTransitionEffect?,
-    isEnabled: () -> Boolean
+    isEnabled: () -> Boolean,
 ) : LayoutModifierNode,
     Modifier.Node() {
     var lookaheadConstraints: Constraints? = null
@@ -1092,7 +1092,7 @@ private class SkipToLookaheadNode(
 
     override fun MeasureScope.measure(
         measurable: Measurable,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureResult {
         if (isLookingAhead) {
             lookaheadConstraints = constraints
@@ -1151,7 +1151,7 @@ private val ParentClip: SharedTransitionScope.OverlayClip =
             state: SharedTransitionScope.SharedContentState,
             bounds: Rect,
             layoutDirection: LayoutDirection,
-            density: Density
+            density: Density,
         ): Path? {
             return state.parentSharedContentState?.clipPathInOverlay
         }

@@ -159,7 +159,7 @@ internal class SharedElementInternalState(
     overlayClip: SharedTransitionScope.OverlayClip,
     renderInOverlayDuringTransition: Boolean,
     userState: SharedTransitionScope.SharedContentState,
-    zIndex: Float
+    zIndex: Float,
 ) : LayerRenderer, RememberObserver {
 
     override var zIndex: Float by mutableFloatStateOf(zIndex)
@@ -219,7 +219,7 @@ internal class SharedElementInternalState(
 
     internal val shouldRenderInOverlay: Boolean
         get() = shouldRenderBasedOnTarget && sharedElement.foundMatch &&
-            renderInOverlayDuringTransition
+                renderInOverlayDuringTransition
 
     val shouldRenderInPlace: Boolean
         get() = !sharedElement.foundMatch || (!shouldRenderInOverlay && shouldRenderBasedOnTarget)

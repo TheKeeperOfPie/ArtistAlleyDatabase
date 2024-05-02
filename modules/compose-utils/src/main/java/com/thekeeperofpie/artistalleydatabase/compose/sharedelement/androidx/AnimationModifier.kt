@@ -56,10 +56,10 @@ fun Modifier.animateContentSize(
         stiffness = Spring.StiffnessMediumLow,
         visibilityThreshold = IntSize.VisibilityThreshold
     ),
-    finishedListener: ((initialValue: IntSize, targetValue: IntSize) -> Unit)? = null
+    finishedListener: ((initialValue: IntSize, targetValue: IntSize) -> Unit)? = null,
 ): Modifier =
     this.clipToBounds() then
-        SizeAnimationModifierElement(animationSpec, Alignment.TopStart, finishedListener)
+            SizeAnimationModifierElement(animationSpec, Alignment.TopStart, finishedListener)
 
 /**
  * This modifier animates its own size when its child modifier (or the child composable if it
@@ -94,12 +94,12 @@ fun Modifier.animateContentSize(
     finishedListener: ((initialValue: IntSize, targetValue: IntSize) -> Unit)? = null,
 ): Modifier =
     this.clipToBounds() then
-        SizeAnimationModifierElement(animationSpec, alignment, finishedListener)
+            SizeAnimationModifierElement(animationSpec, alignment, finishedListener)
 
 private data class SizeAnimationModifierElement(
     val animationSpec: FiniteAnimationSpec<IntSize>,
     val alignment: Alignment,
-    val finishedListener: ((initialValue: IntSize, targetValue: IntSize) -> Unit)?
+    val finishedListener: ((initialValue: IntSize, targetValue: IntSize) -> Unit)?,
 ) : ModifierNodeElement<SizeAnimationModifierNode>() {
     override fun create(): SizeAnimationModifierNode =
         SizeAnimationModifierNode(animationSpec, alignment, finishedListener)
@@ -129,7 +129,7 @@ internal val IntSize.isValid: Boolean
 private class SizeAnimationModifierNode(
     var animationSpec: AnimationSpec<IntSize>,
     var alignment: Alignment = Alignment.TopStart,
-    var listener: ((startSize: IntSize, endSize: IntSize) -> Unit)? = null
+    var listener: ((startSize: IntSize, endSize: IntSize) -> Unit)? = null,
 ) : LayoutModifierNodeWithPassThroughIntrinsics() {
     private var lookaheadSize: IntSize = InvalidSize
     private var lookaheadConstraints: Constraints = Constraints()
@@ -148,7 +148,7 @@ private class SizeAnimationModifierNode(
 
     data class AnimData(
         val anim: Animatable<IntSize, AnimationVector2D>,
-        var startSize: IntSize
+        var startSize: IntSize,
     )
 
     var animData: AnimData? by mutableStateOf(null)
@@ -168,7 +168,7 @@ private class SizeAnimationModifierNode(
 
     override fun MeasureScope.measure(
         measurable: Measurable,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureResult {
         val placeable = if (isLookingAhead) {
             lookaheadConstraints = constraints
@@ -230,43 +230,43 @@ internal abstract class LayoutModifierNodeWithPassThroughIntrinsics :
     LayoutModifierNode, Modifier.Node() {
     override fun IntrinsicMeasureScope.minIntrinsicWidth(
         measurable: IntrinsicMeasurable,
-        height: Int
+        height: Int,
     ) = measurable.minIntrinsicWidth(height)
 
     override fun IntrinsicMeasureScope.minIntrinsicHeight(
         measurable: IntrinsicMeasurable,
-        width: Int
+        width: Int,
     ) = measurable.minIntrinsicHeight(width)
 
     override fun IntrinsicMeasureScope.maxIntrinsicWidth(
         measurable: IntrinsicMeasurable,
-        height: Int
+        height: Int,
     ) = measurable.maxIntrinsicWidth(height)
 
     override fun IntrinsicMeasureScope.maxIntrinsicHeight(
         measurable: IntrinsicMeasurable,
-        width: Int
+        width: Int,
     ) = measurable.maxIntrinsicHeight(width)
 }
 
 internal abstract class LayoutModifierWithPassThroughIntrinsics : LayoutModifier {
     final override fun IntrinsicMeasureScope.minIntrinsicWidth(
         measurable: IntrinsicMeasurable,
-        height: Int
+        height: Int,
     ) = measurable.minIntrinsicWidth(height)
 
     final override fun IntrinsicMeasureScope.minIntrinsicHeight(
         measurable: IntrinsicMeasurable,
-        width: Int
+        width: Int,
     ) = measurable.minIntrinsicHeight(width)
 
     final override fun IntrinsicMeasureScope.maxIntrinsicWidth(
         measurable: IntrinsicMeasurable,
-        height: Int
+        height: Int,
     ) = measurable.maxIntrinsicWidth(height)
 
     final override fun IntrinsicMeasureScope.maxIntrinsicHeight(
         measurable: IntrinsicMeasurable,
-        width: Int
+        width: Int,
     ) = measurable.maxIntrinsicHeight(width)
 }

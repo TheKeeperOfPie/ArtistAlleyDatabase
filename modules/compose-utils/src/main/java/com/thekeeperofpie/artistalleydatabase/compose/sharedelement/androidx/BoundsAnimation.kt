@@ -20,10 +20,10 @@ internal class BoundsAnimation(
     val transitionScope: SharedTransitionScope,
     val transition: Transition<Boolean>,
     animation: Transition<Boolean>.DeferredAnimation<Rect, AnimationVector4D>,
-    boundsTransform: BoundsTransform
+    boundsTransform: BoundsTransform,
 ) {
     var animation: Transition<Boolean>.DeferredAnimation<Rect, AnimationVector4D>
-        by mutableStateOf(animation)
+            by mutableStateOf(animation)
         private set
 
     fun updateAnimation(

@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.roundToIntSize
 import androidx.compose.ui.util.fastRoundToInt
 
 internal data class SharedBoundsNodeElement(
-    val sharedElementState: SharedElementInternalState
+    val sharedElementState: SharedElementInternalState,
 ) : ModifierNodeElement<SharedBoundsNode>() {
     override fun create(): SharedBoundsNode =
         SharedBoundsNode(sharedElementState)
@@ -126,7 +126,7 @@ internal class SharedBoundsNode(
 
     override fun MeasureScope.measure(
         measurable: Measurable,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureResult {
         // Lookahead pass: Record lookahead size and lookahead coordinates
         val placeable = measurable.measure(constraints)
@@ -201,7 +201,7 @@ internal class SharedBoundsNode(
     @ExperimentalComposeUiApi
     override fun ApproachMeasureScope.approachMeasure(
         measurable: Measurable,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureResult {
         // Approach pass. Animation may not have started, or if the animation isn't
         // running, we'll measure with current bounds.
@@ -212,11 +212,11 @@ internal class SharedBoundsNode(
                 val (width, height) = it.size.roundToIntSize()
                 require(
                     width != Constraints.Infinity &&
-                        height != Constraints.Infinity
+                            height != Constraints.Infinity
                 ) {
                     "Error: Infinite width/height is invalid. " +
-                        "animated bounds: ${boundsAnimation.value}," +
-                        " current bounds: ${sharedElement.currentBounds}"
+                            "animated bounds: ${boundsAnimation.value}," +
+                            " current bounds: ${sharedElement.currentBounds}"
                 }
                 Constraints.fixed(width.coerceAtLeast(0), height.coerceAtLeast(0))
             } ?: constraints
@@ -243,7 +243,7 @@ internal class SharedBoundsNode(
         )
         val layer = requireNotNull(state.layer) {
             "Error: Layer is null when accessed for shared bounds/element : ${sharedElement.key}," +
-                "target: ${state.boundsAnimation.target}, is attached: $isAttached"
+                    "target: ${state.boundsAnimation.target}, is attached: $isAttached"
         }
 
         layer.record {

@@ -29,7 +29,7 @@ internal data class RenderInTransitionOverlayNodeElement(
     var sharedTransitionScope: SharedTransitionScope,
     var renderInOverlay: () -> Boolean,
     val zIndexInOverlay: Float,
-    val clipInOverlay: (LayoutDirection, Density) -> Path?
+    val clipInOverlay: (LayoutDirection, Density) -> Path?,
 ) : ModifierNodeElement<RenderInTransitionOverlayNode>() {
     override fun create(): RenderInTransitionOverlayNode {
         return RenderInTransitionOverlayNode(
@@ -46,14 +46,14 @@ internal data class RenderInTransitionOverlayNodeElement(
 
     override fun hashCode(): Int =
         ((sharedTransitionScope.hashCode() * 31 + renderInOverlay.hashCode()) * 31 +
-            zIndexInOverlay.hashCode()) * 31 + clipInOverlay.hashCode()
+                zIndexInOverlay.hashCode()) * 31 + clipInOverlay.hashCode()
 
     override fun equals(other: Any?): Boolean {
         if (other is RenderInTransitionOverlayNodeElement) {
             return sharedTransitionScope == other.sharedTransitionScope &&
-                renderInOverlay === other.renderInOverlay &&
-                zIndexInOverlay == other.zIndexInOverlay &&
-                clipInOverlay === other.clipInOverlay
+                    renderInOverlay === other.renderInOverlay &&
+                    zIndexInOverlay == other.zIndexInOverlay &&
+                    clipInOverlay === other.clipInOverlay
         }
         return false
     }

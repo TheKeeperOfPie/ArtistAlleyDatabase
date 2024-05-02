@@ -1,4 +1,5 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalAnimationApi::class,
+@file:OptIn(
+    ExperimentalSharedTransitionApi::class, ExperimentalAnimationApi::class,
     androidx.compose.animation.ExperimentalAnimationApi::class
 )
 
@@ -112,8 +113,8 @@ sealed class EnterTransition {
         } else {
             data.run {
                 "EnterTransition: \n" + "Fade - " + fade?.toString() + ",\nSlide - " +
-                    slide?.toString() + ",\nShrink - " + changeSize?.toString() +
-                    ",\nScale - " + scale?.toString()
+                        slide?.toString() + ",\nShrink - " + changeSize?.toString() +
+                        ",\nScale - " + scale?.toString()
             }
         }
 
@@ -203,9 +204,9 @@ sealed class ExitTransition {
             KeepUntilTransitionsFinished -> "ExitTransition.KeepUntilTransitionsFinished"
             else -> data.run {
                 "ExitTransition: \n" + "Fade - " + fade?.toString() + ",\nSlide - " +
-                    slide?.toString() + ",\nShrink - " + changeSize?.toString() +
-                    ",\nScale - " + scale?.toString() +
-                    ",\nKeepUntilTransitionsFinished - " + hold
+                        slide?.toString() + ",\nShrink - " + changeSize?.toString() +
+                        ",\nScale - " + scale?.toString() +
+                        ",\nKeepUntilTransitionsFinished - " + hold
             }
         }
 
@@ -272,7 +273,7 @@ internal infix fun ExitTransition.withEffect(effect: TransitionEffect): ExitTran
 @Stable
 fun fadeIn(
     animationSpec: FiniteAnimationSpec<Float> = spring(stiffness = Spring.StiffnessMediumLow),
-    initialAlpha: Float = 0f
+    initialAlpha: Float = 0f,
 ): EnterTransition {
     return EnterTransitionImpl(TransitionData(fade = Fade(initialAlpha, animationSpec)))
 }
@@ -411,7 +412,7 @@ fun scaleIn(
 fun scaleOut(
     animationSpec: FiniteAnimationSpec<Float> = spring(stiffness = Spring.StiffnessMediumLow),
     targetScale: Float = 0f,
-    transformOrigin: TransformOrigin = TransformOrigin.Center
+    transformOrigin: TransformOrigin = TransformOrigin.Center,
 ): ExitTransition {
     return ExitTransitionImpl(
         TransitionData(scale = Scale(targetScale, transformOrigin, animationSpec))
@@ -615,7 +616,7 @@ fun shrinkHorizontally(
         ),
     shrinkTowards: Alignment.Horizontal = Alignment.End,
     clip: Boolean = true,
-    targetWidth: (fullWidth: Int) -> Int = { 0 }
+    targetWidth: (fullWidth: Int) -> Int = { 0 },
 ): ExitTransition {
     // TODO: Support different animation types
     return shrinkOut(animationSpec, shrinkTowards.toAlignment(), clip) {
@@ -792,7 +793,7 @@ internal data class Fade(val alpha: Float, val animationSpec: FiniteAnimationSpe
 @Immutable
 internal data class Slide(
     val slideOffset: (fullSize: IntSize) -> IntOffset,
-    val animationSpec: FiniteAnimationSpec<IntOffset>
+    val animationSpec: FiniteAnimationSpec<IntOffset>,
 )
 
 @Immutable
@@ -800,14 +801,14 @@ internal data class ChangeSize(
     val alignment: Alignment,
     val size: (fullSize: IntSize) -> IntSize = { IntSize(0, 0) },
     val animationSpec: FiniteAnimationSpec<IntSize>,
-    val clip: Boolean = true
+    val clip: Boolean = true,
 )
 
 @Immutable
 internal data class Scale(
     val scale: Float,
     val transformOrigin: TransformOrigin,
-    val animationSpec: FiniteAnimationSpec<Float>
+    val animationSpec: FiniteAnimationSpec<Float>,
 )
 
 @Immutable
@@ -837,7 +838,7 @@ internal data class TransitionData(
     val changeSize: ChangeSize? = null,
     val scale: Scale? = null,
     val hold: Boolean = false,
-    val effectsMap: Map<TransitionEffectKey<*>, TransitionEffect> = emptyMap()
+    val effectsMap: Map<TransitionEffectKey<*>, TransitionEffect> = emptyMap(),
 )
 
 @Suppress("UNCHECKED_CAST")
@@ -856,7 +857,7 @@ internal fun Transition<EnterExitState>.createModifier(
     enter: EnterTransition,
     exit: ExitTransition,
     isEnabled: () -> Boolean = { true },
-    label: String
+    label: String,
 ): Modifier {
     val activeEnter = trackActiveEnter(enter = enter)
     val activeExit = trackActiveExit(exit = exit)
@@ -882,7 +883,7 @@ internal fun Transition<EnterExitState>.createModifier(
     } else null
 
     val disableClip = (activeEnter.data.changeSize?.clip == false ||
-        activeExit.data.changeSize?.clip == false) || !shouldAnimateSizeChange
+            activeExit.data.changeSize?.clip == false) || !shouldAnimateSizeChange
 
     val graphicsLayerBlock = createGraphicsLayerBlock(activeEnter, activeExit, label)
     return Modifier
@@ -901,7 +902,7 @@ internal fun Transition<EnterExitState>.createModifier(
 @Composable
 internal fun Transition<EnterExitState>.trackActiveContentScaleEffect(
     enter: EnterTransition,
-    exit: ExitTransition
+    exit: ExitTransition,
 ): ContentScaleTransitionEffect? {
     // Track the active content scale. Only reset it when the animation is finished
     // to avoid sudden change of content scale.
@@ -974,7 +975,7 @@ internal fun interface GraphicsLayerBlockForEnterExit {
 private fun Transition<EnterExitState>.createGraphicsLayerBlock(
     enter: EnterTransition,
     exit: ExitTransition,
-    label: String
+    label: String,
 ): GraphicsLayerBlockForEnterExit {
 
     val shouldAnimateAlpha = enter.data.fade != null || exit.data.fade != null
@@ -1093,7 +1094,7 @@ private class EnterExitTransitionModifierNode(
     var enter: EnterTransition,
     var exit: ExitTransition,
     var isEnabled: () -> Boolean,
-    var graphicsLayerBlock: GraphicsLayerBlockForEnterExit
+    var graphicsLayerBlock: GraphicsLayerBlockForEnterExit,
 ) : LayoutModifierNodeWithPassThroughIntrinsics() {
 
     private var lookaheadConstraintsAvailable = false
@@ -1169,7 +1170,7 @@ private class EnterExitTransitionModifierNode(
 
     override fun MeasureScope.measure(
         measurable: Measurable,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureResult {
         if (transition.currentState == transition.targetState) {
             currentAlignment = null
@@ -1260,7 +1261,7 @@ private data class EnterExitTransitionElement(
     var enter: EnterTransition,
     var exit: ExitTransition,
     var isEnabled: () -> Boolean,
-    var graphicsLayerBlock: GraphicsLayerBlockForEnterExit
+    var graphicsLayerBlock: GraphicsLayerBlockForEnterExit,
 ) : ModifierNodeElement<EnterExitTransitionModifierNode>() {
     override fun create(): EnterExitTransitionModifierNode =
         EnterExitTransitionModifierNode(
