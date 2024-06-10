@@ -27,6 +27,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateObserver
 import androidx.compose.ui.Alignment
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import com.thekeeperofpie.artistalleydatabase.compose.sharedelement.androidx.SharedTransitionScope.PlaceHolderSize
 import com.thekeeperofpie.artistalleydatabase.compose.sharedelement.androidx.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
@@ -80,11 +82,15 @@ import kotlin.math.roundToInt
  */
 @ExperimentalSharedTransitionApi
 @Composable
-fun SharedTransitionLayout(
+internal fun SharedTransitionLayout(
     modifier: Modifier = Modifier,
+    keyToId: (Any) -> Any,
+    matcher: (List<SharedElementInternalState>) -> Boolean = { states ->
+        states.size > 1 && states.fastAny { it.boundsAnimation.target }
+    },
     content: @Composable SharedTransitionScope.() -> Unit,
 ) {
-    SharedTransitionScope {
+    SharedTransitionScope(keyToId, matcher) {
         Box(it.then(modifier)) {
             content()
         }
@@ -106,12 +112,25 @@ fun SharedTransitionLayout(
  */
 @ExperimentalSharedTransitionApi
 @Composable
-fun SharedTransitionScope(
+internal fun SharedTransitionScope(
+    keyToId: (Any) -> Any,
+    matcher: (List<SharedElementInternalState>) -> Boolean = { states ->
+        states.size > 1 && states.fastAny { it.boundsAnimation.target }
+    },
     content: @Composable SharedTransitionScope.(Modifier) -> Unit,
 ) {
     LookaheadScope {
         val coroutineScope = rememberCoroutineScope()
-        val sharedScope = remember { SharedTransitionScope(this, coroutineScope) }
+        val currentKeyToId by rememberUpdatedState(keyToId)
+        val currentMatcher by rememberUpdatedState(matcher)
+        val sharedScope = remember {
+            SharedTransitionScope(
+                lookaheadScope = this,
+                coroutineScope = coroutineScope,
+                keyToId = { currentKeyToId(it) },
+                matcher = { currentMatcher(it) },
+            )
+        }
         sharedScope.content(
             Modifier
                 .layout { measurable, constraints ->
@@ -178,6 +197,8 @@ fun interface BoundsTransform {
 class SharedTransitionScope internal constructor(
     lookaheadScope: LookaheadScope,
     val coroutineScope: CoroutineScope,
+    private val keyToId: (Any) -> Any,
+    private val matcher: (List<SharedElementInternalState>) -> Boolean,
 ) : LookaheadScope by lookaheadScope {
 
     /**
@@ -893,6 +914,7 @@ class SharedTransitionScope internal constructor(
                 }.also { it.updateAnimation(animation, boundsTransform) }
             }
             rememberSharedElementState(
+                originalKey = key,
                 sharedElement = sharedElement,
                 boundsAnimation = boundsAnimation,
                 placeHolderSize = placeHolderSize,
@@ -909,6 +931,7 @@ class SharedTransitionScope internal constructor(
 
     @Composable
     private fun rememberSharedElementState(
+        originalKey: Any,
         sharedElement: SharedElement,
         boundsAnimation: BoundsAnimation,
         placeHolderSize: PlaceHolderSize,
@@ -920,6 +943,7 @@ class SharedTransitionScope internal constructor(
     ): SharedElementInternalState =
         remember {
             SharedElementInternalState(
+                originalKey,
                 sharedElement,
                 boundsAnimation,
                 placeHolderSize,
@@ -952,8 +976,9 @@ class SharedTransitionScope internal constructor(
     private val defaultRenderInOverlay: () -> Boolean = { isTransitionActive }
 
     private fun sharedElementsFor(key: Any): SharedElement {
-        return sharedElements[key] ?: SharedElement(key, this).also {
-            sharedElements[key] = it
+        val sharedElementId = keyToId(key)
+        return sharedElements[sharedElementId] ?: SharedElement(sharedElementId, this, matcher).also {
+            sharedElements[sharedElementId] = it
         }
     }
 
@@ -979,10 +1004,10 @@ class SharedTransitionScope internal constructor(
                 observeAnimatingBlock
             )
             renderers.remove(sharedElementState)
-            if (states.isEmpty()) {
+            if (states.active.isEmpty()) {
                 scope.coroutineScope.launch {
-                    if (states.isEmpty()) {
-                        scope.sharedElements.remove(key)
+                    if (states.active.isEmpty()) {
+                        scope.sharedElements.remove(keyToId(key))
                     }
                 }
             }

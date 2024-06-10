@@ -5,7 +5,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
@@ -19,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
 import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -32,7 +32,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder,
     ) {
-        navGraphBuilder.composable(ArtNavDestinations.HOME.id) {
+        navGraphBuilder.sharedElementComposable(ArtNavDestinations.HOME.id) {
             val viewModel = hiltViewModel<ArtSearchViewModel>()
             EntryHomeScreen(
                 screenKey = ArtNavDestinations.HOME.id,
@@ -71,7 +71,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             ArtNavDestinations.BROWSE_SELECTION.id +
                     "?queryType={queryType}" +
                     "&title={title}" +

@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.compose.sharedelement.androidx
 
+import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -171,6 +172,7 @@ internal class SharedBoundsNode(
                     )
                 }
                 val animatedBounds = boundsAnimation.value
+                Log.d("SharedElementDebug", "key = ${sharedElement.key}, animatedBounds = $animatedBounds")
                 val positionInScope =
                     coordinates?.let { rootCoords.localPositionOf(it, Offset.Zero) }
                 val topLeft: Offset

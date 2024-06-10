@@ -103,7 +103,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 // Upgrading past 2.6.0 will break shared element transitions
-                library("androidx.navigation:navigation-compose:2.6.0")
+                library("androidx.navigation:navigation-compose:2.8.0-alpha08")
 
                 withVersion(Versions.paging) {
                     library("androidx.paging:paging-compose")

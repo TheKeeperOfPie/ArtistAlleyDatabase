@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.compose.sharedelement.androidx
 
+import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.getValue
@@ -21,11 +22,18 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastDistinctBy
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
+import com.thekeeperofpie.artistalleydatabase.compose.SharedElementKey
 
-internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
-    fun isAnimating(): Boolean = states.fastAny { it.boundsAnimation.isRunning } && foundMatch
+internal class SharedElement(
+    val key: Any,
+    val scope: SharedTransitionScope,
+    private val matcher: (List<SharedElementInternalState>) -> Boolean,
+) {
+    fun isAnimating(): Boolean =
+        states.active.fastAny { it.boundsAnimation.isRunning } && foundMatch
 
     private var _targetBounds: Rect? by mutableStateOf(null)
 
@@ -42,9 +50,20 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
             return _targetBounds
         }
 
+    private fun calculateMatch(states: List<SharedElementInternalState>): Boolean {
+        val foundAcrossScreens =
+            states.fastDistinctBy { (it.originalKey as SharedElementKey).screenKey }.size > 1
+        val hasVisible = states.fastAny { it.boundsAnimation.target }
+        Log.d(
+            "SharedElementDebug",
+            "calculateFoundMatch() called with: states = ${states.map { it.sharedElement.key }}, foundAcrossScreens = $foundAcrossScreens, hasVisible = $hasVisible"
+        )
+        return foundAcrossScreens && hasVisible
+    }
+
     fun updateMatch() {
         val hasVisibleContent = hasVisibleContent()
-        if (states.size > 1 && hasVisibleContent) {
+        if (states.active.size > 1 && hasVisibleContent) {
             foundMatch = true
         } else if (scope.isTransitionActive) {
             // Unrecoverable state when the shared element/bound that is becoming visible
@@ -56,7 +75,7 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
             // Transition not active
             foundMatch = false
         }
-        if (states.isNotEmpty()) {
+        if (states.active.isNotEmpty()) {
             SharedTransitionObserver.observeReads(this, updateMatch, observingVisibilityChange)
         }
     }
@@ -71,6 +90,10 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
         private set
 
     fun onLookaheadResult(state: SharedElementInternalState, lookaheadSize: Size, topLeft: Offset) {
+        Log.d(
+            "SharedElementDebug",
+            "onLookaheadResult() called with: active = ${states.active.map { it.originalKey }}, inactive = ${states.inactive.map { it.originalKey }}, lookaheadSize = $lookaheadSize, topLeft = $topLeft"
+        )
         if (state.boundsAnimation.target) {
             targetBoundsProvider = state
 
@@ -79,7 +102,7 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
             if (_targetBounds?.topLeft != topLeft || _targetBounds?.size != lookaheadSize) {
                 val target = Rect(topLeft, lookaheadSize)
                 _targetBounds = target
-                states.fastForEach {
+                states.active.fastForEach {
                     it.boundsAnimation.animate(currentBounds!!, target)
                 }
             }
@@ -95,9 +118,9 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
      * is becoming visible, then we consider this an error case for the lack of target, and
      * consequently animate none of them.
      */
-    val states = mutableStateListOf<SharedElementInternalState>()
+    val states = StatesList()
 
-    private fun hasVisibleContent(): Boolean = states.fastAny { it.boundsAnimation.target }
+    private fun hasVisibleContent(): Boolean = states.active.fastAny { it.boundsAnimation.target }
 
     /**
      * This gets called to update the target bounds. The 3 scenarios where
@@ -109,7 +132,7 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
      */
     fun updateTargetBoundsProvider() {
         var targetProvider: SharedElementInternalState? = null
-        states.fastForEachReversed {
+        states.active.fastForEachReversed {
             if (it.boundsAnimation.target) {
                 targetProvider = it
                 return@fastForEachReversed
@@ -123,7 +146,7 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
     }
 
     fun onSharedTransitionFinished() {
-        foundMatch = states.size > 1 && hasVisibleContent()
+        foundMatch = states.active.size > 1 && hasVisibleContent()
         _targetBounds = null
     }
 
@@ -136,13 +159,17 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
     }
 
     fun addState(sharedElementState: SharedElementInternalState) {
+        Log.d(
+            "SharedElementDebug",
+            "active = ${states.active.map { it.originalKey }}, inactive = ${states.inactive.map { it.originalKey }}"
+        )
         states.add(sharedElementState)
         SharedTransitionObserver.observeReads(this, updateMatch, observingVisibilityChange)
     }
 
     fun removeState(sharedElementState: SharedElementInternalState) {
         states.remove(sharedElementState)
-        if (states.isEmpty()) {
+        if (states.active.isEmpty()) {
             updateMatch()
             SharedTransitionObserver.clear(this)
         } else {
@@ -152,6 +179,7 @@ internal class SharedElement(val key: Any, val scope: SharedTransitionScope) {
 }
 
 internal class SharedElementInternalState(
+    val originalKey: Any,
     sharedElement: SharedElement,
     boundsAnimation: BoundsAnimation,
     placeHolderSize: SharedTransitionScope.PlaceHolderSize,
@@ -161,6 +189,8 @@ internal class SharedElementInternalState(
     userState: SharedTransitionScope.SharedContentState,
     zIndex: Float,
 ) : LayerRenderer, RememberObserver {
+
+    var active by mutableStateOf(false)
 
     override var zIndex: Float by mutableFloatStateOf(zIndex)
 
@@ -208,21 +238,21 @@ internal class SharedElementInternalState(
         return sharedElement.scope.lookaheadRoot.localPositionOf(c, Offset.Zero)
     }
 
-    val target: Boolean get() = boundsAnimation.target
+    val target: Boolean get() = active && boundsAnimation.target
 
     // Delegate the property to a mutable state, so that when layer is updated, the rendering
     // gets invalidated.
     var layer: GraphicsLayer? by mutableStateOf(null)
 
     private val shouldRenderBasedOnTarget: Boolean
-        get() = sharedElement.targetBoundsProvider == this || !renderOnlyWhenVisible
+        get() = active && sharedElement.targetBoundsProvider == this || !renderOnlyWhenVisible
 
     internal val shouldRenderInOverlay: Boolean
-        get() = shouldRenderBasedOnTarget && sharedElement.foundMatch &&
+        get() = active && shouldRenderBasedOnTarget && sharedElement.foundMatch &&
                 renderInOverlayDuringTransition
 
     val shouldRenderInPlace: Boolean
-        get() = !sharedElement.foundMatch || (!shouldRenderInOverlay && shouldRenderBasedOnTarget)
+        get() = !active || !sharedElement.foundMatch || (!shouldRenderInOverlay && shouldRenderBasedOnTarget)
 
     override fun onRemembered() {
         sharedElement.scope.onStateAdded(this)
@@ -235,4 +265,32 @@ internal class SharedElementInternalState(
     }
 
     override fun onAbandoned() {}
+}
+
+internal class StatesList() {
+    val active = mutableStateListOf<SharedElementInternalState>()
+    val inactive = mutableListOf<SharedElementInternalState>()
+
+    fun add(state: SharedElementInternalState) {
+        if (active.any { it.originalKey == state.originalKey }) {
+            inactive += state
+        } else {
+            active += state
+            state.active = true
+        }
+    }
+
+    fun remove(state: SharedElementInternalState) {
+        state.active = false
+        inactive -= state
+        if (active.remove(state) && inactive.isNotEmpty()) {
+            val nextState = inactive.firstOrNull { inactiveState ->
+                active.none { it.originalKey == inactiveState.originalKey }
+            }
+            if (nextState != null) {
+                active += nextState
+                nextState.active = true
+            }
+        }
+    }
 }

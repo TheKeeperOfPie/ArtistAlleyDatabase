@@ -3,65 +3,57 @@
 package com.thekeeperofpie.artistalleydatabase.compose
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.SizeTransform
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.util.fastAny
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDeepLink
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.mxalbert.sharedelements.DefaultSharedElementsTransitionSpec
 import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
+import com.thekeeperofpie.artistalleydatabase.compose.sharedelement.androidx.SharedTransitionLayout
+import com.thekeeperofpie.artistalleydatabase.compose.sharedelement.androidx.SharedTransitionScope
 
-private val LocalSharedTransitionScope =
-    staticCompositionLocalOf<Pair<SharedTransitionScope, AnimatedVisibilityScope>> {
-        throw IllegalStateException("SharedTransitionScope not provided")
-    }
-
-private val LocalSharedTransitionKeys = compositionLocalOf<Pair<String, String>> {
-    throw IllegalStateException("SharedTransition keys not provided")
+private val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope> {
+    throw IllegalStateException("SharedTransitionScope not provided")
 }
 
-object SharedTransitionSignal {
-    var navigating by mutableStateOf(false)
+private val LocalAnimatedVisibilityScope = staticCompositionLocalOf<AnimatedVisibilityScope> {
+    throw IllegalStateException("AnimatedVisibilityScope not provided")
 }
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun AutoSharedElementsRoot(content: @Composable () -> Unit) {
     if (SharedTransition.USE_ANDROIDX) {
-        AnimatedVisibility(visible = true) {
-            SharedTransitionLayout {
-                CompositionLocalProvider(
-                    LocalSharedTransitionScope provides (this@SharedTransitionLayout to this@AnimatedVisibility),
-                ) {
-                    content()
-                }
-                val isTransitionActive = this.isTransitionActive
-                val navigating = SharedTransitionSignal.navigating
-                var disableOnNext by remember { mutableStateOf(false) }
-                LaunchedEffect(isTransitionActive, navigating) {
-                    if (navigating && isTransitionActive) {
-                        disableOnNext = true
-                    }
-
-                    if (!isTransitionActive && disableOnNext) {
-                        disableOnNext = false
-                        SharedTransitionSignal.navigating = false
-                    }
-                }
+        SharedTransitionLayout(
+            keyToId = { (it as? SharedElementKey)?.id ?: it },
+            matcher = { states ->
+                states/*
+                    .fastDistinctBy { (it.sharedElement.key as? SharedElementKey)?.screenKey ?: it }
+                    */.size > 1
+                        && states.fastAny { it.boundsAnimation.target }
+            }
+        ) {
+            CompositionLocalProvider(
+                LocalSharedTransitionScope provides this@SharedTransitionLayout,
+            ) {
+                content()
             }
         }
     } else {
@@ -80,12 +72,8 @@ fun AutoSharedElement(
     content: @Composable () -> Unit,
 ) {
     if (SharedTransition.USE_ANDROIDX) {
-        CompositionLocalProvider(
-            LocalSharedTransitionKeys provides (key to screenKey)
-        ) {
-            Box(modifier = Modifier.autoSharedElement(key)) {
-                content()
-            }
+        Box(modifier = Modifier.autoSharedElement(key, screenKey)) {
+            content()
         }
     } else {
         SharedElement(
@@ -99,22 +87,61 @@ fun AutoSharedElement(
 }
 
 @Composable
-fun Modifier.autoSharedElement(key: String? = null) = if (SharedTransitionSignal.navigating && key?.contains("media") == true) {
-    composed {
-        val (sharedTransitionScope, animatedVisibilityScope) = LocalSharedTransitionScope.current
-        val (localKey, screenKey) = LocalSharedTransitionKeys.current
-
-        // Freezes with duplicate keys, works if given UUID.randomUuid().toString()
-        val sharedElementKey = key ?: localKey
+fun Modifier.autoSharedElement(key: String, screenKey: String): Modifier {
+    val sharedTransitionScope = LocalSharedTransitionScope.current
+    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
+    if (key != "anime_media_136804_image") return this
+    return composed {
         with(sharedTransitionScope) {
             sharedElement(
-                rememberSharedContentState(key = sharedElementKey),
+                rememberSharedContentState(key = SharedElementKey(key, screenKey)),
                 animatedVisibilityScope,
             )
         }
     }
-} else this
+}
+
+fun NavGraphBuilder.sharedElementComposable(
+    route: String,
+    arguments: List<NamedNavArgument> = emptyList(),
+    deepLinks: List<NavDeepLink> = emptyList(),
+    enterTransition: (@JvmSuppressWildcards
+    AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+    exitTransition: (@JvmSuppressWildcards
+    AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+    popEnterTransition: (@JvmSuppressWildcards
+    AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
+        enterTransition,
+    popExitTransition: (@JvmSuppressWildcards
+    AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? =
+        exitTransition,
+    sizeTransform: (@JvmSuppressWildcards
+    AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? = null,
+    content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit,
+) {
+    composable(
+        route = route,
+        arguments = arguments,
+        deepLinks = deepLinks,
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition,
+        sizeTransform = sizeTransform,
+    ) {
+        CompositionLocalProvider(
+            LocalAnimatedVisibilityScope provides this,
+        ) {
+            content(it)
+        }
+    }
+}
+
+data class SharedElementKey(
+    val id: String,
+    val screenKey: String,
+)
 
 object SharedTransition {
-    const val USE_ANDROIDX = false
+    const val USE_ANDROIDX = true
 }

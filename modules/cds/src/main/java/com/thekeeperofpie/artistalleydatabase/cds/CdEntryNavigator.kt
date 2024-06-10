@@ -6,7 +6,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
@@ -20,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
 import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -33,7 +33,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder
     ) {
-        navGraphBuilder.composable(CdNavDestinations.HOME.id) {
+        navGraphBuilder.sharedElementComposable(CdNavDestinations.HOME.id) {
             val viewModel = hiltViewModel<CdSearchViewModel>()
             EntryHomeScreen(
                 screenKey = CdNavDestinations.HOME.id,
@@ -64,7 +64,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             CdNavDestinations.BROWSE_SELECTION.id +
                     "?queryType={queryType}" +
                     "&title={title}" +

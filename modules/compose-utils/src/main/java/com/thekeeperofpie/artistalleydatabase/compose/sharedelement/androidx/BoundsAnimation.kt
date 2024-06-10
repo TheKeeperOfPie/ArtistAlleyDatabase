@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.compose.sharedelement.androidx
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.AnimationVector4D
 import androidx.compose.animation.core.FiniteAnimationSpec
@@ -62,12 +63,25 @@ internal class BoundsAnimation(
         }
 
     fun animate(currentBounds: Rect, targetBounds: Rect) {
-        if (transitionScope.isTransitionActive) {
+        Log.d(
+            "SharedElementDebug",
+            "animate() called with: currentBounds = $currentBounds, targetBounds = $targetBounds"
+        )
+        val active = transitionScope.isTransitionActive
+        Log.d(
+            "SharedElementDebug",
+            "animate() called with: active = $active"
+        )
+        if (active) {
             if (animationState == null) {
                 // Only invoke bounds transform when animation is initialized. This means
                 // boundsTransform will not participate in interruption-handling animations.
                 animationSpec = boundsTransform.transform(currentBounds, targetBounds)
             }
+            Log.d(
+                "SharedElementDebug",
+                "animate() called with: animationState = $animationState"
+            )
             animationState = animation.animate(transitionSpec = { animationSpec }) {
                 if (it == transition.targetState) {
                     // its own bounds
@@ -77,6 +91,10 @@ internal class BoundsAnimation(
                 }
             }
         }
+        Log.d(
+            "SharedElementDebug",
+            "animate() called with done"
+        )
     }
 
     val target: Boolean get() = transition.targetState

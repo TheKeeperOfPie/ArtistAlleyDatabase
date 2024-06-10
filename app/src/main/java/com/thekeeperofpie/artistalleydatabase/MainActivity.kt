@@ -55,7 +55,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
@@ -101,6 +100,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
@@ -465,7 +465,7 @@ class MainActivity : ComponentActivity() {
                             navGraphBuilder = this
                         )
 
-                        composable(AppNavDestinations.BROWSE.id) {
+                        sharedElementComposable(AppNavDestinations.BROWSE.id) {
                             val viewModel = hiltViewModel<BrowseViewModel>()
                             BrowseScreen(
                                 upIconOption = navDrawerUpIconOption,
@@ -481,15 +481,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable(AppNavDestinations.IMPORT.id) {
+                        sharedElementComposable(AppNavDestinations.IMPORT.id) {
                             ImportScreen(upIconOption = navDrawerUpIconOption)
                         }
 
-                        composable(AppNavDestinations.EXPORT.id) {
+                        sharedElementComposable(AppNavDestinations.EXPORT.id) {
                             ExportScreen(upIconOption = navDrawerUpIconOption)
                         }
 
-                        composable(
+                        sharedElementComposable(
                             route = "${AppNavDestinations.SETTINGS.id}?root={root}",
                             arguments = listOf(
                                 navArgument("root") {
@@ -554,11 +554,11 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable(AppNavDestinations.ANIME_2_ANIME.id) {
+                        sharedElementComposable(AppNavDestinations.ANIME_2_ANIME.id) {
                             Anime2AnimeScreen(upIconOption = navDrawerUpIconOption)
                         }
 
-                        composable(
+                        sharedElementComposable(
                             route = AppNavDestinations.CRASH.id,
                             deepLinks = listOf(
                                 navDeepLink {
