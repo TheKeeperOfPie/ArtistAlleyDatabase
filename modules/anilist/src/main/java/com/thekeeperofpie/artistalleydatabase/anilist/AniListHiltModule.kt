@@ -7,7 +7,6 @@ import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.cache.normalized.api.MemoryCacheFactory
 import com.apollographql.apollo3.cache.normalized.normalizedCache
 import com.apollographql.apollo3.cache.normalized.sql.SqlNormalizedCacheFactory
-import com.apollographql.apollo3.network.NetworkMonitor
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
@@ -72,13 +71,6 @@ class AniListHiltModule {
 
         @OptIn(ApolloExperimental::class)
         return ApolloClient.Builder()
-            // TODO: Remove on next Apollo release:
-            //  https://github.com/apollographql/apollo-kotlin/issues/5760
-            .networkMonitor(object : NetworkMonitor {
-                override val isOnline = true
-                override fun close() {}
-                override suspend fun waitForNetwork() {}
-            })
             .serverUrl(AniListUtils.GRAPHQL_API_URL)
             .httpEngine(DefaultHttpEngine(okHttpClient))
             .addLoggingInterceptors("AniListApi", networkSettings)

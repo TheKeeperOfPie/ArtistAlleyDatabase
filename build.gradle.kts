@@ -15,7 +15,12 @@ tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
 tasks.register("copyGitHooks", Copy::class) {
     from(File(rootProject.rootDir, "scripts/git/pre-commit"))
     into(File(rootProject.rootDir, ".git/hooks"))
-    fileMode = 777
+    filePermissions {
+        user {
+            read = true
+            execute = true
+        }
+    }
 }
 
 val verificationMetadataFile = File(rootProject.rootDir, "gradle/verification-metadata.xml")
