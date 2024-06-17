@@ -38,3 +38,11 @@
 -dontwarn com.google.errorprone.annotations.InlineMe
 -dontwarn com.google.errorprone.annotations.RestrictedApi
 -dontwarn org.joda.time.Instant
+
+-dontwarn com.oracle.svm.core.annotate.Delete
+-dontwarn com.oracle.svm.core.annotate.Substitute
+-dontwarn com.oracle.svm.core.annotate.TargetClass
+-dontwarn java.lang.Module
+-dontwarn org.graalvm.nativeimage.hosted.Feature$BeforeAnalysisAccess
+-dontwarn org.graalvm.nativeimage.hosted.Feature
+-dontwarn org.graalvm.nativeimage.hosted.RuntimeResourceAccess

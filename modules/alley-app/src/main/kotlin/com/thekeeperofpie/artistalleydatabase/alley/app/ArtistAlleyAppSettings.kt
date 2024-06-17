@@ -41,14 +41,6 @@ class ArtistAlleyAppSettings(application: Application) : ArtistAlleySettings {
                 .apply()
         }
 
-    override var showRegion: Boolean
-        get() = sharedPrefs.getBoolean("showRegion", false)
-        set(value) {
-            sharedPrefs.edit()
-                .putBoolean("showRegion", value)
-                .apply()
-        }
-
     override var showGridByDefault: Boolean
         get() = sharedPrefs.getBoolean("showGridByDefault", false)
         set(value) {

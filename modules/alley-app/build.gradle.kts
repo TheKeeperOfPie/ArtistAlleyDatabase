@@ -13,7 +13,7 @@ android {
     compileSdkPreview = "UpsideDownCake"
 
     defaultConfig {
-        applicationId = "com.thekeeperofpie.artistalley"
+        applicationId = "com.thekeeperofpie.artistalley2024"
         minSdk = 28
         targetSdk = 33
         versionCode = 1
@@ -84,7 +84,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4-dev-k1.9.20-RC-1edce5fd625"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -170,13 +170,12 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)
 
-    implementation(libs.navigation.compose)
+    implementation("androidx.navigation:navigation-compose:2.8.0-beta03")
 
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
-    implementation(libs.accompanist.navigation.animation)
 
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
@@ -189,9 +188,6 @@ dependencies {
     implementation(libs.room.ktx)
     testImplementation(libs.room.testing)
     implementation(libs.room.paging)
-
-//    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
-    implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 }
 
 afterEvaluate {

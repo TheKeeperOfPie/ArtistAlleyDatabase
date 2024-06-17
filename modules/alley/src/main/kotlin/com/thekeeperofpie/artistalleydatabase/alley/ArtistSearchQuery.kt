@@ -1,15 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchQuery
+import com.thekeeperofpie.artistalleydatabase.alley.search.ArtistAlleySearchSortOption
 
 data class ArtistSearchQuery(
-    override val query: String = "",
-    val includeBooth: Boolean = false,
-    val includeTableName: Boolean = false,
-    val includeArtistNames: Boolean = false,
-    val includeRegion: Boolean = false,
-    val includeDescription: Boolean = false,
-) : EntrySearchQuery {
-    val includeAll = !includeBooth && !includeTableName && !includeArtistNames
-            && !includeRegion && !includeDescription
-}
+    val booth: String?,
+    val artist: String?,
+    val description: String?,
+    val series: List<String>,
+    val seriesById: List<String>,
+    val sortOption: ArtistAlleySearchSortOption,
+    val sortAscending: Boolean,
+    val showOnlyFavorites: Boolean,
+    val showOnlyWithCatalog: Boolean,
+    val showIgnored: Boolean,
+    val showOnlyIgnored: Boolean,
+    val randomSeed: Int,
+)

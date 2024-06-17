@@ -11,6 +11,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -65,6 +66,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.skipToLookaheadSize
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -99,15 +103,25 @@ object ArtistDetailsScreen {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(
-                            text = stringResource(
-                                R.string.alley_artist_details_booth_and_table_name,
-                                artist.booth,
-                                artist.tableName.orEmpty(),
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = artist.booth,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.sharedBounds("booth" to artist.id)
+                            )
+
+                            Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
+
+                            Text(
+                                text = artist.name,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .sharedBounds("name" to artist.id)
+                            )
+                        }
                     },
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
                     actions = {
@@ -121,9 +135,12 @@ object ArtistDetailsScreen {
                                 contentDescription = stringResource(
                                     R.string.alley_artist_favorite_icon_content_description
                                 ),
+                                modifier = Modifier.sharedElement("favorite" to artist.favorite)
                             )
                         }
-                    }
+                    },
+                    modifier = Modifier.skipToLookaheadSize()
+                        .sharedBounds("container" to artist.id)
                 )
             }
         ) {
@@ -207,7 +224,9 @@ object ArtistDetailsScreen {
                                                         showFullImagesIndex = page
                                                     },
                                                     onDoubleTap = {
-                                                        zoomPanState.toggleZoom(it, size)
+                                                        coroutineScope.launch {
+                                                            zoomPanState.toggleZoom(it, size)
+                                                        }
                                                     }
                                                 )
                                             }
@@ -265,39 +284,14 @@ object ArtistDetailsScreen {
                 ElevatedCard(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp)
                 ) {
-                    var shown = false
-                    if (!artist.tableName.isNullOrBlank()) {
-                        InfoText(
-                            stringResource(R.string.alley_artist_details_table_name),
-                            artist.tableName,
-                            showDividerAbove = false,
-                        )
-                        shown = true
-                    }
-
-                    if (!artist.region.isNullOrBlank()) {
-                        InfoText(
-                            stringResource(R.string.alley_artist_details_region),
-                            artist.region,
-                            showDividerAbove = shown,
-                        )
-                        shown = true
-                    }
-
-                    expandableListInfoText(
-                        labelTextRes = R.string.alley_artist_details_artist_names,
-                        contentDescriptionTextRes = R.string.alley_artist_details_artist_names_expand_content_description,
-                        values = artist.artistNames.map {
-                            it.split("\n")
-                                .mapIndexed { index, name -> if (index == 0) name else "\t\t\t$name" }
-                                .joinToString(separator = "\n")
-                        },
-                        valueToText = { it },
-                        showDividerAbove = shown,
+                    InfoText(
+                        stringResource(R.string.alley_artist_details_artist_name),
+                        artist.name,
+                        showDividerAbove = false,
                     )
                 }
 
-                if (!artist.description.isNullOrBlank()) {
+                if (!artist.summary.isNullOrBlank()) {
                     ElevatedCard(
                         modifier = Modifier
                             .padding(start = 16.dp, end = 16.dp)
@@ -305,7 +299,7 @@ object ArtistDetailsScreen {
                     ) {
                         InfoText(
                             stringResource(R.string.alley_artist_details_description),
-                            artist.description,
+                            artist.summary,
                             showDividerAbove = false
                         )
                     }
@@ -322,28 +316,6 @@ object ArtistDetailsScreen {
                             labelTextRes = R.string.alley_artist_details_links,
                             contentDescriptionTextRes = R.string.alley_artist_details_links_expand_content_description,
                             values = entry.links,
-                            valueToText = { it },
-                            onClick = {
-                                try {
-                                    uriHandler.openUri(it)
-                                } catch (ignored: Throwable) {
-                                }
-                            },
-                            showDividerAbove = false,
-                        )
-                    }
-                }
-
-                if (entry.catalogLinks.isNotEmpty()) {
-                    ElevatedCard(
-                        modifier = Modifier
-                            .padding(start = 16.dp, end = 16.dp)
-                            .animateContentSize()
-                    ) {
-                        expandableListInfoText(
-                            labelTextRes = R.string.alley_artist_details_catalog_links,
-                            contentDescriptionTextRes = R.string.alley_artist_details_catalog_links_expand_content_description,
-                            values = entry.catalogLinks,
                             valueToText = { it },
                             onClick = {
                                 try {
@@ -417,7 +389,9 @@ object ArtistDetailsScreen {
                                                 // Consume click events so that tapping image doesn't dismiss
                                                 onTap = {},
                                                 onDoubleTap = {
-                                                    zoomPanState.toggleZoom(it, size)
+                                                    coroutineScope.launch {
+                                                        zoomPanState.toggleZoom(it, size)
+                                                    }
                                                 }
                                             )
                                         }

@@ -45,8 +45,6 @@
     <string name="entry_search_edit_mode_clear">Clear entries</string>
     <string name="entry_search_edit_mode_edit">Edit entries</string>
     <string name="entry_search_edit_mode_delete">Delete entries</string>
-    <string name="entry_search_options_collapse">Collapse search options</string>
-    <string name="entry_search_options_expand">Expand search options</string>
     <string name="entry_search_add_entry">Add new entry</string>
 
     <string name="entry_image_menu_option_open">Open</string>

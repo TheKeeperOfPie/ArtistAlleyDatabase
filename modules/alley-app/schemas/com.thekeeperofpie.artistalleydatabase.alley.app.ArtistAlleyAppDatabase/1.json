@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "92c34135007150879da6fcca3611e816",
+    "identityHash": "e6383553bcf315b144b6cf23299a0ea1",
     "entities": [
       {
         "tableName": "artist_entries",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `booth` TEXT NOT NULL COLLATE NOCASE, `tableName` TEXT COLLATE NOCASE, `artistNames` TEXT NOT NULL COLLATE NOCASE, `region` TEXT, `description` TEXT, `contactLink` TEXT, `links` TEXT NOT NULL, `catalogLink` TEXT NOT NULL, `favorite` INTEGER NOT NULL, `notes` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `booth` TEXT NOT NULL COLLATE NOCASE, `name` TEXT NOT NULL COLLATE NOCASE, `summary` TEXT, `links` TEXT NOT NULL, `store` TEXT, `catalog` TEXT, `favorite` INTEGER NOT NULL, `ignored` INTEGER NOT NULL, `notes` TEXT, `seriesInferredSerialized` TEXT NOT NULL, `seriesInferredSearchable` TEXT NOT NULL, `seriesConfirmedSerialized` TEXT NOT NULL, `seriesConfirmedSearchable` TEXT NOT NULL, `merchInferred` TEXT NOT NULL, `merchConfirmed` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -21,34 +21,15 @@
             "notNull": true
           },
           {
-            "fieldPath": "tableName",
-            "columnName": "tableName",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "artistNames",
-            "columnName": "artistNames",
+            "fieldPath": "name",
+            "columnName": "name",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "region",
-            "columnName": "region",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "contactLink",
-            "columnName": "contactLink",
-            "affinity": "TEXT",
-            "notNull": false
+            "fieldPath": "summary",
+            "columnName": "summary",
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "links",
@@ -57,10 +38,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "catalogLink",
-            "columnName": "catalogLink",
-            "affinity": "TEXT",
-            "notNull": true
+            "fieldPath": "store",
+            "columnName": "store",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "catalog",
+            "columnName": "catalog",
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "favorite",
@@ -69,10 +54,51 @@
             "notNull": true
           },
           {
+            "fieldPath": "ignored",
+            "columnName": "ignored",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "notes",
             "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "seriesInferredSerialized",
+            "columnName": "seriesInferredSerialized",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesInferredSearchable",
+            "columnName": "seriesInferredSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesConfirmedSerialized",
+            "columnName": "seriesConfirmedSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesConfirmedSearchable",
+            "columnName": "seriesConfirmedSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "merchInferred",
+            "columnName": "merchInferred",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "merchConfirmed",
+            "columnName": "merchConfirmed",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -80,11 +106,111 @@
           "columnNames": [
             "id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
+        "tableName": "artist_entries_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`id` TEXT NOT NULL, `booth` TEXT NOT NULL COLLATE NOCASE, `name` TEXT NOT NULL COLLATE NOCASE, `summary` TEXT, `links` TEXT NOT NULL, `store` TEXT, `catalog` TEXT, `favorite` INTEGER NOT NULL, `ignored` INTEGER NOT NULL, `notes` TEXT, `seriesInferredSerialized` TEXT NOT NULL, `seriesInferredSearchable` TEXT NOT NULL, `seriesConfirmedSerialized` TEXT NOT NULL, `seriesConfirmedSearchable` TEXT NOT NULL, `merchInferred` TEXT NOT NULL, `merchConfirmed` TEXT NOT NULL, content=`artist_entries`)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "booth",
+            "columnName": "booth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "summary",
+            "columnName": "summary",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "links",
+            "columnName": "links",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "store",
+            "columnName": "store",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "catalog",
+            "columnName": "catalog",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "favorite",
+            "columnName": "favorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ignored",
+            "columnName": "ignored",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "seriesInferredSerialized",
+            "columnName": "seriesInferredSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesInferredSearchable",
+            "columnName": "seriesInferredSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesConfirmedSerialized",
+            "columnName": "seriesConfirmedSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesConfirmedSearchable",
+            "columnName": "seriesConfirmedSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "merchInferred",
+            "columnName": "merchInferred",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "merchConfirmed",
+            "columnName": "merchConfirmed",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "rowid"
+          ]
+        },
         "ftsVersion": "FTS4",
         "ftsOptions": {
           "tokenizer": "simple",
@@ -99,93 +225,14 @@
         "contentSyncTriggers": [
           "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_BEFORE_UPDATE BEFORE UPDATE ON `artist_entries` BEGIN DELETE FROM `artist_entries_fts` WHERE `docid`=OLD.`rowid`; END",
           "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_BEFORE_DELETE BEFORE DELETE ON `artist_entries` BEGIN DELETE FROM `artist_entries_fts` WHERE `docid`=OLD.`rowid`; END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_AFTER_UPDATE AFTER UPDATE ON `artist_entries` BEGIN INSERT INTO `artist_entries_fts`(`docid`, `id`, `booth`, `tableName`, `artistNames`, `region`, `description`, `contactLink`, `links`, `catalogLink`, `favorite`, `notes`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`booth`, NEW.`tableName`, NEW.`artistNames`, NEW.`region`, NEW.`description`, NEW.`contactLink`, NEW.`links`, NEW.`catalogLink`, NEW.`favorite`, NEW.`notes`); END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_AFTER_INSERT AFTER INSERT ON `artist_entries` BEGIN INSERT INTO `artist_entries_fts`(`docid`, `id`, `booth`, `tableName`, `artistNames`, `region`, `description`, `contactLink`, `links`, `catalogLink`, `favorite`, `notes`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`booth`, NEW.`tableName`, NEW.`artistNames`, NEW.`region`, NEW.`description`, NEW.`contactLink`, NEW.`links`, NEW.`catalogLink`, NEW.`favorite`, NEW.`notes`); END"
-        ],
-        "tableName": "artist_entries_fts",
-        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`id` TEXT NOT NULL, `booth` TEXT NOT NULL, `tableName` TEXT NOT NULL, `artistNames` TEXT NOT NULL, `region` TEXT, `description` TEXT NOT NULL, `contactLink` TEXT NOT NULL, `links` TEXT NOT NULL, `catalogLink` TEXT NOT NULL, `favorite` INTEGER NOT NULL, `notes` TEXT, content=`artist_entries`)",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "booth",
-            "columnName": "booth",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "tableName",
-            "columnName": "tableName",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "artistNames",
-            "columnName": "artistNames",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "region",
-            "columnName": "region",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "contactLink",
-            "columnName": "contactLink",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "links",
-            "columnName": "links",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "catalogLink",
-            "columnName": "catalogLink",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "favorite",
-            "columnName": "favorite",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "notes",
-            "columnName": "notes",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "rowid"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_AFTER_UPDATE AFTER UPDATE ON `artist_entries` BEGIN INSERT INTO `artist_entries_fts`(`docid`, `id`, `booth`, `name`, `summary`, `links`, `store`, `catalog`, `favorite`, `ignored`, `notes`, `seriesInferredSerialized`, `seriesInferredSearchable`, `seriesConfirmedSerialized`, `seriesConfirmedSearchable`, `merchInferred`, `merchConfirmed`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`booth`, NEW.`name`, NEW.`summary`, NEW.`links`, NEW.`store`, NEW.`catalog`, NEW.`favorite`, NEW.`ignored`, NEW.`notes`, NEW.`seriesInferredSerialized`, NEW.`seriesInferredSearchable`, NEW.`seriesConfirmedSerialized`, NEW.`seriesConfirmedSearchable`, NEW.`merchInferred`, NEW.`merchConfirmed`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_AFTER_INSERT AFTER INSERT ON `artist_entries` BEGIN INSERT INTO `artist_entries_fts`(`docid`, `id`, `booth`, `name`, `summary`, `links`, `store`, `catalog`, `favorite`, `ignored`, `notes`, `seriesInferredSerialized`, `seriesInferredSearchable`, `seriesConfirmedSerialized`, `seriesConfirmedSearchable`, `merchInferred`, `merchConfirmed`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`booth`, NEW.`name`, NEW.`summary`, NEW.`links`, NEW.`store`, NEW.`catalog`, NEW.`favorite`, NEW.`ignored`, NEW.`notes`, NEW.`seriesInferredSerialized`, NEW.`seriesInferredSearchable`, NEW.`seriesConfirmedSerialized`, NEW.`seriesConfirmedSearchable`, NEW.`merchInferred`, NEW.`merchConfirmed`); END"
+        ]
       }
     ],
-    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '92c34135007150879da6fcca3611e816')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e6383553bcf315b144b6cf23299a0ea1')"
     ]
   }
 }

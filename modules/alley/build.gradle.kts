@@ -10,8 +10,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":modules:android-utils"))
+    implementation(project(":modules:anilist"))
     api(project(":modules:compose-utils"))
+    api(project(":modules:data"))
     api(project(":modules:entry"))
 
     implementation(libs.kotlinx.serialization.json)
@@ -20,7 +21,7 @@ dependencies {
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
-    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.viewmodel.compose)
 
     api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
@@ -29,7 +30,7 @@ dependencies {
 
     implementation(libs.coil3.coil.compose)
     implementation(libs.coil3.coil.network.okhttp)
-    implementation(libs.material.icons.extended)
+    implementation(libs.compose.material.icons.extended)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)

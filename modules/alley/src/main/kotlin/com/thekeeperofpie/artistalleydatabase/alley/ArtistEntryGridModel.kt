@@ -24,16 +24,6 @@ class ArtistEntryGridModel(
     var favorite by mutableStateOf(value.favorite)
     var ignored by mutableStateOf(value.ignored)
 
-    private val artistNames = value.artistNames.map { it.split("\n").first() }
-
-    val artistNamesText = artistNames.joinToString()
-    val tableName = value.tableName ?: artistNamesText
-
-    val showArtistNames = String.CASE_INSENSITIVE_ORDER
-            .compare(tableName, artistNamesText) != 0
-                && !tableName.startsWith(artistNamesText, ignoreCase = true)
-                && artistNames != tableName.split("+", "&").map(String::trim)
-
     companion object {
         @WorkerThread
         fun buildFromEntry(application: Application, entry: ArtistEntry): ArtistEntryGridModel {

@@ -6,6 +6,5 @@ interface ArtistAlleySettings {
     var displayType: String
     var artistsSortOption: String
     var artistsSortAscending: Boolean
-    var showRegion: Boolean
     var showGridByDefault: Boolean
 }

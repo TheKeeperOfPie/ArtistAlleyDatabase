@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.details
 
 import android.app.Application
-import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -64,12 +63,9 @@ class ArtistDetailsViewModel @Inject constructor(
     ) {
         var favorite by mutableStateOf(artist.favorite)
 
-        val links = (artist.links.flatMap { it.split("\n") } + artist.contactLink)
+        val links = listOf(artist.store + artist.catalog)
+            .plus(artist.links)
             .filterNotNull()
-            .filterNot(String::isBlank)
-            .distinct()
-
-        val catalogLinks = artist.catalogLink.flatMap { it.split("\n") }
             .filterNot(String::isBlank)
             .distinct()
     }

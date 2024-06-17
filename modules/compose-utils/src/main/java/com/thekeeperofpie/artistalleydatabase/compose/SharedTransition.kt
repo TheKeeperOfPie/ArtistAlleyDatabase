@@ -25,10 +25,13 @@ import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 
-private val LocalSharedTransitionScope =
-    staticCompositionLocalOf<Pair<SharedTransitionScope, AnimatedVisibilityScope>> {
-        throw IllegalStateException("SharedTransitionScope not provided")
-    }
+val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope> {
+    throw IllegalStateException("SharedTransitionScope not provided")
+}
+
+val LocalAnimatedVisibilityScope = staticCompositionLocalOf<AnimatedVisibilityScope> {
+    throw IllegalStateException("AnimatedVisibilityScope not provided")
+}
 
 private val LocalSharedTransitionKeys = compositionLocalOf<Pair<String, String>> {
     throw IllegalStateException("SharedTransition keys not provided")
@@ -45,7 +48,8 @@ fun AutoSharedElementsRoot(content: @Composable () -> Unit) {
         AnimatedVisibility(visible = true) {
             SharedTransitionLayout {
                 CompositionLocalProvider(
-                    LocalSharedTransitionScope provides (this@SharedTransitionLayout to this@AnimatedVisibility),
+                    LocalSharedTransitionScope provides this@SharedTransitionLayout,
+                    LocalAnimatedVisibilityScope provides this@AnimatedVisibility,
                 ) {
                     content()
                 }
@@ -99,21 +103,42 @@ fun AutoSharedElement(
 }
 
 @Composable
-fun Modifier.autoSharedElement(key: String? = null) = if (SharedTransitionSignal.navigating && key?.contains("media") == true) {
-    composed {
-        val (sharedTransitionScope, animatedVisibilityScope) = LocalSharedTransitionScope.current
-        val (localKey, screenKey) = LocalSharedTransitionKeys.current
+fun Modifier.autoSharedElement(key: String? = null) =
+    if (SharedTransitionSignal.navigating && key?.contains("media") == true) {
+        composed {
+            val (localKey, screenKey) = LocalSharedTransitionKeys.current
 
-        // Freezes with duplicate keys, works if given UUID.randomUuid().toString()
-        val sharedElementKey = key ?: localKey
-        with(sharedTransitionScope) {
-            sharedElement(
-                rememberSharedContentState(key = sharedElementKey),
-                animatedVisibilityScope,
-            )
+            // Freezes with duplicate keys, works if given UUID.randomUuid().toString()
+            val sharedElementKey = key ?: localKey
+            with(LocalSharedTransitionScope.current) {
+                sharedElement(
+                    rememberSharedContentState(key = sharedElementKey),
+                    LocalAnimatedVisibilityScope.current,
+                )
+            }
         }
-    }
-} else this
+    } else this
+
+@Composable
+fun Modifier.sharedElement(key: Any) = with(LocalSharedTransitionScope.current) {
+    sharedElement(
+        rememberSharedContentState(key = key),
+        LocalAnimatedVisibilityScope.current,
+    )
+}
+
+@Composable
+fun Modifier.sharedBounds(key: Any) = with(LocalSharedTransitionScope.current) {
+    sharedBounds(
+        rememberSharedContentState(key = key),
+        LocalAnimatedVisibilityScope.current,
+    )
+}
+
+@Composable
+fun Modifier.skipToLookaheadSize() = with(LocalSharedTransitionScope.current) {
+    skipToLookaheadSize()
+}
 
 object SharedTransition {
     const val USE_ANDROIDX = false

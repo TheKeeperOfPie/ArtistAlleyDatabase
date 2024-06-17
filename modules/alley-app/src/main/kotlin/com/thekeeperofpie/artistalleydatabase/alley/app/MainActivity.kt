@@ -6,7 +6,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -22,6 +26,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,19 +36,23 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalley.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.alley.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.search.ArtistAlleySearchScreen
+import com.thekeeperofpie.artistalleydatabase.compose.LocalAnimatedVisibilityScope
+import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
 import dagger.hilt.android.AndroidEntryPoint
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -56,14 +65,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             Theme {
                 Surface {
-                    val navController = rememberAnimatedNavController()
+                    val navController = rememberNavController()
                     Column(modifier = Modifier.fillMaxSize()) {
-                        Box(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            SharedElementsRoot {
-                                AnimatedNavHost(navController, Destinations.HOME.name) {
-                                    composable(Destinations.HOME.name) {
+                        SharedTransitionLayout(modifier = Modifier.weight(1f)) {
+                            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                                NavHost(navController, Destinations.HOME.name) {
+                                    sharedElementComposable(Destinations.HOME.name) {
                                         ArtistAlleySearchScreen(
                                             onEntryClick = { entry, imageIndex ->
                                                 navController.navigate(
@@ -75,7 +82,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    composable(
+                                    sharedElementComposable(
                                         route = "${Destinations.ARTIST_DETAILS.name}/{id}"
                                                 + "?imageIndex={imageIndex}",
                                         arguments = listOf(
@@ -139,7 +146,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Theme(
         darkTheme: Boolean = isSystemInDarkTheme(),
-        content: @Composable () -> Unit
+        content: @Composable () -> Unit,
     ) {
         val context = LocalContext.current
 
@@ -164,5 +171,21 @@ class MainActivity : ComponentActivity() {
             colorScheme = colorScheme,
             content = content
         )
+    }
+
+    private fun NavGraphBuilder.sharedElementComposable(
+        route: String,
+        arguments: List<NamedNavArgument> = emptyList(),
+        enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+        exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+        content: @Composable (NavBackStackEntry) -> Unit,
+    ) = composable(
+        route = route,
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+    ) {
+        CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+            content(it)
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.search
 
 import android.app.Application
-import androidx.annotation.MainThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,11 +8,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryDao
@@ -21,16 +18,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -51,24 +47,20 @@ class ArtistAlleySearchViewModel @Inject constructor(
 ) : EntrySearchViewModel<ArtistSearchQuery, ArtistEntryGridModel>() {
 
     companion object {
-        private const val CSV_NAME = "artist-alley.csv"
+        private const val CSV_NAME = "artists.csv"
     }
 
-    private val boothOption = EntrySearchOption(R.string.alley_search_option_booth)
-    private val tableNameOption = EntrySearchOption(R.string.alley_search_option_table_name)
-    private val artistNamesOption = EntrySearchOption(R.string.alley_search_option_artist_names)
-    private val regionOption = EntrySearchOption(R.string.alley_search_option_region)
-    private val descriptionOption = EntrySearchOption(R.string.alley_search_option_description)
-    private val ignoredOption = EntrySearchOption(R.string.alley_search_option_ignored)
-
-    override val options = listOf(
-        boothOption,
-        tableNameOption,
-        artistNamesOption,
-        regionOption,
-        descriptionOption,
-        ignoredOption,
+    val boothSection = EntrySection.LongText(headerRes = R.string.alley_search_option_booth)
+    val artistSection = EntrySection.LongText(headerRes = R.string.alley_search_option_artist)
+    val descriptionSection =
+        EntrySection.LongText(headerRes = R.string.alley_search_option_description)
+    val seriesSection = EntrySection.MultiText(
+        R.string.alley_series_header_zero,
+        R.string.alley_series_header_one,
+        R.string.alley_series_header_many,
     )
+
+    override val sections = listOf(boothSection, artistSection, descriptionSection, seriesSection)
 
     var sortOptions by mutableStateOf(run {
         val values = ArtistAlleySearchSortOption.values()
@@ -93,13 +85,15 @@ class ArtistAlleySearchViewModel @Inject constructor(
 
     var showOnlyFavorites by mutableStateOf(false)
     var showOnlyWithCatalog by mutableStateOf(false)
-    var showRegion by mutableStateOf(settings.showRegion)
-        private set
     var showGridByDefault by mutableStateOf(settings.showGridByDefault)
         private set
     var showIgnored by mutableStateOf(true)
+    var showOnlyIgnored by mutableStateOf(false)
 
     var updateAppUrl by mutableStateOf<String?>(null)
+
+    var entriesSize by mutableStateOf(0)
+        private set
 
     private val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
@@ -131,43 +125,42 @@ class ArtistAlleySearchViewModel @Inject constructor(
                             .asSequence()
                             .mapNotNull {
                                 try {
-                                    // Booth,Table name,Artist names,Region,Summary,Contact,Links,Catalog link,Commissions?,Catalog
+                                    // Booth,Artist,Summary,Links,Store,Catalog / table,
+                                    // Series - Inferred,Merch - Inferred,Notes,Series - Confirmed,
+                                    // Merch - Confirmed,Catalog images
                                     val booth = it["Booth"]
-                                    val tableName = it["Table name"]
-                                    val artistNames = it["Artist names"]
-                                        .split("\n\n")
-                                    val region = it["Region"]
-                                    val description = it["Summary"]
-                                    val contactLink = it["Contact"]
-                                    val links = it["Links"]
-                                    val catalogLink = it["Catalog link"]
-                                    val catalog = it["Catalog"]
+                                    val artist = it["Artist"]
+                                    val summary = it["Summary"]
+                                    val links = it["Links"].split("\n")
+                                    val store = it["Store"]
+                                    val catalog = it["Catalog / table"]
+
+                                    val regex = Regex(",\\s?")
+                                    val seriesInferred = it["Series - Inferred"].split(regex)
+                                    val merchInferred = it["Series - Inferred"].split(regex)
+                                    val seriesConfirmed = it["Merch - Confirmed"].split(regex)
+                                    val merchConfirmed = it["Merch - Confirmed"].split(regex)
                                     ArtistEntry(
                                         id = booth,
                                         booth = booth,
-                                        tableName = tableName,
-                                        artistNames = artistNames,
-                                        region = region,
-                                        description = description,
-                                        contactLink = contactLink,
-                                        links = links.split("\n\n").flatMap { it.split("\n") },
-                                        catalogLink = catalogLink.split("\n\n")
-                                            .flatMap { it.split("\n") } + catalog,
+                                        name = artist,
+                                        summary = summary,
+                                        links = links,
+                                        store = store,
+                                        catalog = catalog,
+                                        seriesInferredSerialized = seriesInferred,
+                                        seriesInferredSearchable = seriesInferred,
+                                        seriesConfirmedSerialized = seriesConfirmed,
+                                        seriesConfirmedSearchable = seriesConfirmed,
+                                        merchInferred = merchInferred,
+                                        merchConfirmed = merchConfirmed,
                                     )
                                 } catch (ignored: Throwable) {
                                     null
                                 }
                             }
                             .chunked(20)
-                            .forEach {
-                                artistEntryDao.insertEntries(it.map {
-                                    val existingEntry = artistEntryDao.getEntry(it.id)
-                                    it.copy(
-                                        favorite = existingEntry?.favorite ?: false,
-                                        ignored = existingEntry?.ignored ?: false,
-                                    )
-                                })
-                            }
+                            .forEach { artistEntryDao.insertUpdatedEntries(it) }
                     }
                 }
             }
@@ -201,55 +194,51 @@ class ArtistAlleySearchViewModel @Inject constructor(
             } catch (ignored: Throwable) {
             }
         }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            artistEntryDao.getEntriesSizeFlow()
+                .collect { entriesSize = entriesSize }
+        }
     }
 
-    @MainThread
-    override fun buildQueryWrapper(query: String?) = ArtistSearchQuery(
-        query = query.orEmpty(),
-        includeBooth = boothOption.enabled,
-        includeTableName = tableNameOption.enabled,
-        includeArtistNames = artistNamesOption.enabled,
-        includeRegion = regionOption.enabled,
-        includeDescription = descriptionOption.enabled,
-    )
-
-    override fun mapQuery(query: ArtistSearchQuery?): Flow<PagingData<ArtistEntryGridModel>> =
-        combine(
-            snapshotFlow { sortOptions },
-            snapshotFlow { sortAscending },
-            snapshotFlow { showOnlyFavorites },
-            snapshotFlow { showOnlyWithCatalog },
-            snapshotFlow { showIgnored },
-            snapshotFlow { ignoredOption.enabled },
-            ::FilterParams
+    override fun searchOptions() = snapshotFlow {
+        val sortOption = sortOptions.firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
+            ?.value
+            ?: ArtistAlleySearchSortOption.RANDOM
+        val seriesContents = seriesSection.finalContents()
+        ArtistSearchQuery(
+            booth = boothSection.value.trim(),
+            artist = artistSection.value.trim(),
+            description = descriptionSection.value.trim(),
+            series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                .map { it.serializedValue }
+                .filterNot(String::isBlank),
+            seriesById = seriesContents
+                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
+                .mapNotNull(AniListUtils::mediaId),
+            sortOption = sortOption,
+            sortAscending = sortAscending,
+            showOnlyFavorites = showOnlyFavorites,
+            showOnlyWithCatalog = showOnlyWithCatalog,
+            showIgnored = showIgnored,
+            showOnlyIgnored = showOnlyIgnored,
+            randomSeed = randomSeed,
         )
-            .flowOn(CustomDispatchers.Main)
-            .flatMapLatest { filterParams ->
-                val sort =
-                    filterParams.sortOptions.firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
-                        ?.value
-                        ?: ArtistAlleySearchSortOption.BOOTH
-                Pager(PagingConfig(pageSize = 20)) {
-                    trackPagingSource {
-                        artistEntryDao.getEntries(
-                            query = query ?: ArtistSearchQuery(),
-                            sort = sort,
-                            sortAscending = filterParams.sortAscending,
-                            showOnlyFavorites = showOnlyFavorites,
-                            showOnlyWithCatalog = showOnlyWithCatalog,
-                            randomSeed = randomSeed,
-                        )
-                    }
-                }.flow.flowOn(CustomDispatchers.IO)
-                    .map {
-                        it.filter { !it.ignored || filterParams.showIgnored }
-                            .filter { it.ignored || !filterParams.showOnlyIgnored }
-                    }
-            }
-            .map { it.map { ArtistEntryGridModel.buildFromEntry(application, it) } }
-            .cachedIn(viewModelScope)
+    }
 
-    override fun entriesSize() = artistEntryDao.getEntriesSizeFlow()
+    override fun mapQuery(
+        query: String,
+        options: ArtistSearchQuery,
+    ) = Pager(PagingConfig(pageSize = 20)) {
+        trackPagingSource { artistEntryDao.search(query, options) }
+    }.flow
+        .flowOn(CustomDispatchers.IO)
+        .map {
+            it.filter { !it.ignored || options.showIgnored }
+                .filter { it.ignored || !options.showOnlyIgnored }
+        }
+        .map { it.map { ArtistEntryGridModel.buildFromEntry(application, it) } }
+        .cachedIn(viewModelScope)
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {
         mutationUpdates.tryEmit(entry.value.copy(favorite = favorite))
@@ -289,11 +278,6 @@ class ArtistAlleySearchViewModel @Inject constructor(
     fun onSortAscendingToggle(ascending: Boolean) {
         sortAscending = ascending
         settings.artistsSortAscending = ascending
-    }
-
-    fun onShowRegionToggle(show: Boolean) {
-        showRegion = show
-        settings.showRegion = show
     }
 
     fun onShowGridByDefaultToggle(show: Boolean) {

@@ -18,5 +18,5 @@ interface EntryGridModel {
      * term to use here, but "indicator" isn't, either.
      */
     @Composable
-    fun ErrorIcons(modifier: Modifier)
+    fun ErrorIcons(modifier: Modifier) = Unit
 }

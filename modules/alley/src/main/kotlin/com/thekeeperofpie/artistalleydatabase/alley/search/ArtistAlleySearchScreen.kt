@@ -36,29 +36,30 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.ViewAgenda
-import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -93,15 +94,15 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.R
-import com.thekeeperofpie.artistalleydatabase.compose.BottomSheetScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
-import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffoldState
-import com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import kotlinx.coroutines.launch
 
@@ -133,7 +134,7 @@ object ArtistAlleySearchScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val listState = rememberLazyListState()
         var seen by remember { mutableStateOf(false) }
-        LaunchedEffect(viewModel.query?.query, viewModel.sortOptions, viewModel.sortAscending) {
+        LaunchedEffect(viewModel.query, viewModel.sortOptions, viewModel.sortAscending) {
             if (seen) {
                 listState.animateScrollToItem(0, 0)
             } else {
@@ -158,7 +159,7 @@ object ArtistAlleySearchScreen {
             }
         }
 
-        BottomSheetScaffoldNoAppBarOffset(
+        BottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetPeekHeight = 72.dp,
             sheetDragHandle = {
@@ -205,7 +206,7 @@ object ArtistAlleySearchScreen {
                         )
                     }
 
-                    Divider()
+                    HorizontalDivider()
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -227,29 +228,7 @@ object ArtistAlleySearchScreen {
                         )
                     }
 
-                    Divider()
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.alley_filter_show_region),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .weight(1f)
-                        )
-
-                        Switch(
-                            checked = viewModel.showRegion,
-                            onCheckedChange = viewModel::onShowRegionToggle,
-                            modifier = Modifier.padding(end = 16.dp),
-                        )
-                    }
-
-                    Divider()
+                    HorizontalDivider()
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -271,7 +250,7 @@ object ArtistAlleySearchScreen {
                         )
                     }
 
-                    Divider()
+                    HorizontalDivider()
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -293,132 +272,9 @@ object ArtistAlleySearchScreen {
                         )
                     }
 
-                    Divider()
+                    HorizontalDivider()
 
                     Spacer(Modifier.height(80.dp))
-                }
-            },
-            topBar = {
-                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth()
-                            .padding(bottom = 8.dp)
-                    ) {
-                        val isNotEmpty by remember {
-                            derivedStateOf { viewModel.query?.query.orEmpty().isNotEmpty() }
-                        }
-                        BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
-                            viewModel.onQuery("")
-                        }
-
-                        val query = viewModel.query?.query.orEmpty()
-                        var active by remember { mutableStateOf(false) }
-                        DockedSearchBar(
-                            query = query,
-                            onQueryChange = viewModel::onQuery,
-                            active = active,
-                            onActiveChange = {},
-                            placeholder = {
-                                val entriesSize = viewModel.entriesSize
-                                Text(
-                                    if (entriesSize > 0) {
-                                        stringResource(
-                                            EntryStringR.entry_search_hint_with_entry_count,
-                                            entriesSize,
-                                        )
-                                    } else {
-                                        stringResource(EntryStringR.entry_search_hint)
-                                    }
-                                )
-                            },
-                            trailingIcon = {
-                                Row {
-                                    AnimatedVisibility(isNotEmpty) {
-                                        IconButton(onClick = { viewModel.onQuery("") }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Clear,
-                                                contentDescription = stringResource(
-                                                    EntryStringR.entry_search_clear
-                                                ),
-                                            )
-                                        }
-                                    }
-
-                                    val displayType = viewModel.displayType
-                                    IconButton(onClick = {
-                                        viewModel.onDisplayTypeToggle(
-                                            when (displayType) {
-                                                DisplayType.LIST -> DisplayType.CARD
-                                                DisplayType.CARD -> DisplayType.LIST
-                                            }
-                                        )
-                                    }) {
-                                        Icon(
-                                            imageVector = when (displayType) {
-                                                DisplayType.LIST -> DisplayType.CARD.icon
-                                                DisplayType.CARD -> DisplayType.LIST.icon
-                                            },
-                                            contentDescription = stringResource(
-                                                R.string.alley_display_type_icon_content_description,
-                                            ),
-                                        )
-                                    }
-
-                                    IconButton(onClick = { active = !active }) {
-                                        Icon(
-                                            imageVector = if (active) {
-                                                Icons.Filled.ExpandLess
-                                            } else {
-                                                Icons.Filled.ExpandMore
-                                            },
-                                            contentDescription = stringResource(
-                                                if (active) {
-                                                    EntryStringR.entry_search_options_collapse
-                                                } else {
-                                                    EntryStringR.entry_search_options_expand
-                                                }
-                                            ),
-                                        )
-                                    }
-                                }
-                            },
-                            onSearch = { active = false },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp, end = 16.dp, top = 4.dp)
-                        ) {
-                            val options = viewModel.options
-                            options.forEachIndexed { index, option ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .conditionally(index == options.lastIndex) {
-                                            padding(bottom = 8.dp)
-                                        }
-                                        .clickable {
-                                            option.enabled = !option.enabled
-                                            viewModel.refreshQuery()
-                                        }
-                                ) {
-                                    Checkbox(
-                                        checked = option.enabled,
-                                        onCheckedChange = null,
-                                        Modifier.padding(
-                                            start = 16.dp,
-                                            end = 16.dp,
-                                            top = 8.dp,
-                                            bottom = 8.dp
-                                        )
-                                    )
-
-                                    Text(stringResource(option.textRes))
-                                }
-                            }
-                        }
-                    }
                 }
             },
             modifier = Modifier.nestedScroll(
@@ -428,115 +284,188 @@ object ArtistAlleySearchScreen {
                 )
             ),
         ) {
-            val density = LocalDensity.current
-            val topBarPadding by remember {
-                derivedStateOf {
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { density.run { -it.toDp() } }
-                        ?: 0.dp
-                }
-            }
-            val topOffset by remember {
-                derivedStateOf {
-                    topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() }
-                }
-            }
-
-            Box {
-                val entries = viewModel.results.collectAsLazyPagingItems()
-                val coroutineScope = rememberCoroutineScope()
-                val displayType = viewModel.displayType
-                val showRegion = viewModel.showRegion
-                val showGridByDefault = viewModel.showGridByDefault
-                LazyColumn(
-                    state = listState,
-                    contentPadding = PaddingValues(top = 8.dp + topBarPadding, bottom = 80.dp),
-                    verticalArrangement = when (displayType) {
-                        DisplayType.LIST -> Arrangement.Top
-                        DisplayType.CARD -> Arrangement.spacedBy(16.dp)
-                    },
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(
-                        count = entries.itemCount,
-                        key = entries.itemKey { it.id.scopedId },
-                        contentType = entries.itemContentType { "artist_entry" },
-                    ) { index ->
-                        val entry = entries[index] ?: return@items
-                        val onFavoriteToggle: (Boolean) -> Unit = {
-                            entry.favorite = it
-                            viewModel.onFavoriteToggle(entry, it)
-                        }
-                        val onIgnoredToggle: (Boolean) -> Unit = {
-                            entry.ignored = it
-                            viewModel.onIgnoredToggle(entry, it)
-                        }
-
-                        when (displayType) {
-                            DisplayType.LIST -> {
-                                val ignored = entry.ignored
-                                ArtistListRow(
-                                    entry,
-                                    showRegion = showRegion,
-                                    onFavoriteToggle = onFavoriteToggle,
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onClick = { onEntryClick(entry, 1) },
-                                            onLongClick = { onIgnoredToggle(!ignored) }
-                                        )
-                                        .alpha(if (entry.ignored) 0.38f else 1f)
-                                )
-
-                                Divider()
+            Scaffold(
+                topBar = {
+                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
+                            val isNotEmpty by remember {
+                                derivedStateOf { viewModel.query.isNotEmpty() }
                             }
-                            DisplayType.CARD -> ArtistCard(
-                                entry,
-                                showRegion = showRegion,
-                                showGridByDefault = showGridByDefault,
-                                onFavoriteToggle = onFavoriteToggle,
-                                onIgnoredToggle = onIgnoredToggle,
-                                onClick = onEntryClick,
+                            BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                                viewModel.onQuery("")
+                            }
+
+                            StaticSearchBar(
+                                query = viewModel.query,
+                                onQueryChange = viewModel::onQuery,
+                                placeholder = {
+                                    val entriesSize = viewModel.entriesSize
+                                    Text(
+                                        if (entriesSize > 0) {
+                                            stringResource(
+                                                EntryStringR.entry_search_hint_with_entry_count,
+                                                entriesSize,
+                                            )
+                                        } else {
+                                            stringResource(EntryStringR.entry_search_hint)
+                                        }
+                                    )
+                                },
+                                trailingIcon = {
+                                    Row {
+                                        AnimatedVisibility(isNotEmpty) {
+                                            IconButton(onClick = { viewModel.onQuery("") }) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Clear,
+                                                    contentDescription = stringResource(
+                                                        EntryStringR.entry_search_clear
+                                                    ),
+                                                )
+                                            }
+                                        }
+
+                                        val displayType = viewModel.displayType
+                                        IconButton(onClick = {
+                                            viewModel.onDisplayTypeToggle(
+                                                when (displayType) {
+                                                    DisplayType.LIST -> DisplayType.CARD
+                                                    DisplayType.CARD -> DisplayType.LIST
+                                                }
+                                            )
+                                        }) {
+                                            Icon(
+                                                imageVector = when (displayType) {
+                                                    DisplayType.LIST -> DisplayType.CARD.icon
+                                                    DisplayType.CARD -> DisplayType.LIST.icon
+                                                },
+                                                contentDescription = stringResource(
+                                                    R.string.alley_display_type_icon_content_description,
+                                                ),
+                                            )
+                                        }
+                                    }
+                                },
+                                onSearch = {},
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp),
                             )
                         }
                     }
                 }
-
-                if (viewModel.query?.query.orEmpty().isNotEmpty()
-                    || viewModel.showOnlyFavorites
-                    || viewModel.showOnlyWithCatalog
-                ) {
-                    val entriesSize = entries.itemCount
-                    val stringRes = when (entriesSize) {
-                        0 -> EntryStringR.entry_results_zero
-                        1 -> EntryStringR.entry_results_one
-                        else -> EntryStringR.entry_results_multiple
+            ) {
+                val density = LocalDensity.current
+                val topBarPadding by remember {
+                    derivedStateOf {
+                        scrollBehavior.state.heightOffsetLimit
+                            .takeUnless { it == -Float.MAX_VALUE }
+                            ?.let { density.run { -it.toDp() } }
+                            ?: 0.dp
                     }
+                }
+                val topOffset by remember {
+                    derivedStateOf {
+                        topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() }
+                    }
+                }
 
-                    Text(
-                        text = stringResource(stringRes, entriesSize),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .wrapContentSize()
-                            .padding(top = 8.dp + topOffset)
-                            .background(
-                                MaterialTheme.colorScheme.secondary,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .border(
-                                1.dp,
-                                MaterialTheme.colorScheme.secondaryContainer,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .clickable {
-                                coroutineScope.launch {
-                                    listState.animateScrollToItem(0, 0)
+                Box {
+                    val entries = viewModel.results.collectAsLazyPagingItems()
+                    val coroutineScope = rememberCoroutineScope()
+                    val displayType = viewModel.displayType
+                    val showGridByDefault = viewModel.showGridByDefault
+                    LazyColumn(
+                        state = listState,
+                        contentPadding = PaddingValues(top = 8.dp + topBarPadding, bottom = 80.dp),
+                        verticalArrangement = when (displayType) {
+                            DisplayType.LIST -> Arrangement.Top
+                            DisplayType.CARD -> Arrangement.spacedBy(16.dp)
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(
+                            count = entries.itemCount,
+                            key = entries.itemKey { it.id.scopedId },
+                            contentType = entries.itemContentType { "artist_entry" },
+                        ) { index ->
+                            val entry = entries[index] ?: return@items
+                            val onFavoriteToggle: (Boolean) -> Unit = {
+                                entry.favorite = it
+                                viewModel.onFavoriteToggle(entry, it)
+                            }
+                            val onIgnoredToggle: (Boolean) -> Unit = {
+                                entry.ignored = it
+                                viewModel.onIgnoredToggle(entry, it)
+                            }
+
+                            when (displayType) {
+                                DisplayType.LIST -> {
+                                    val ignored = entry.ignored
+                                    ArtistListRow(
+                                        entry,
+                                        onFavoriteToggle = onFavoriteToggle,
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                onClick = { onEntryClick(entry, 1) },
+                                                onLongClick = { onIgnoredToggle(!ignored) }
+                                            )
+                                            .alpha(if (entry.ignored) 0.38f else 1f)
+                                    )
+
+                                    HorizontalDivider()
                                 }
+                                DisplayType.CARD -> ArtistCard(
+                                    entry,
+                                    showGridByDefault = showGridByDefault,
+                                    onFavoriteToggle = onFavoriteToggle,
+                                    onIgnoredToggle = onIgnoredToggle,
+                                    onClick = onEntryClick,
+                                )
                             }
-                            .padding(8.dp)
-                    )
+                        }
+                    }
+
+                    if (viewModel.query.isNotEmpty()
+                        || viewModel.showOnlyFavorites
+                        || viewModel.showOnlyWithCatalog
+                    ) {
+                        val entriesSize = entries.itemCount
+                        val stringRes = when (entriesSize) {
+                            0 -> EntryStringR.entry_results_zero
+                            1 -> EntryStringR.entry_results_one
+                            else -> EntryStringR.entry_results_multiple
+                        }
+
+                        Text(
+                            text = stringResource(stringRes, entriesSize),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .wrapContentSize()
+                                .padding(top = 8.dp + topOffset)
+                                .background(
+                                    MaterialTheme.colorScheme.secondary,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .clickable {
+                                    coroutineScope.launch {
+                                        listState.animateScrollToItem(0, 0)
+                                    }
+                                }
+                                .padding(8.dp)
+                        )
+                    }
                 }
             }
         }
@@ -545,48 +474,34 @@ object ArtistAlleySearchScreen {
     @Composable
     private fun ArtistListRow(
         entry: ArtistEntryGridModel,
-        showRegion: Boolean,
         onFavoriteToggle: (Boolean) -> Unit,
         modifier: Modifier = Modifier,
     ) {
+        val artist = entry.value
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier
+                .fillMaxWidth()
+                .sharedBounds("container" to artist.id)
         ) {
-            val artist = entry.value
             Text(
                 text = artist.booth,
                 style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
+                modifier = Modifier
+                    .sharedBounds("booth" to artist.id)
+                    .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
             )
 
-            Column(
+            Text(
+                text = artist.name,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .weight(1f)
+                    .sharedBounds("name" to artist.id)
                     .padding(vertical = 12.dp)
-            ) {
-                Text(
-                    text = entry.tableName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-
-                if (entry.showArtistNames) {
-                    Text(
-                        text = entry.artistNamesText,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-
-                if (showRegion && !artist.region.isNullOrBlank()) {
-                    Text(
-                        text = artist.region,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
+            )
 
             val favorite = entry.favorite
             IconButton(onClick = { onFavoriteToggle(!favorite) }) {
@@ -599,6 +514,7 @@ object ArtistAlleySearchScreen {
                     contentDescription = stringResource(
                         R.string.alley_artist_favorite_icon_content_description
                     ),
+                    modifier = Modifier.sharedElement("favorite" to artist.id)
                 )
             }
         }
@@ -607,7 +523,6 @@ object ArtistAlleySearchScreen {
     @Composable
     private fun ArtistCard(
         entry: ArtistEntryGridModel,
-        showRegion: Boolean,
         showGridByDefault: Boolean,
         onFavoriteToggle: (Boolean) -> Unit,
         onIgnoredToggle: (Boolean) -> Unit,
@@ -695,7 +610,9 @@ object ArtistAlleySearchScreen {
                                                         onClick(entry, pagerState.settledPage)
                                                     },
                                                     onDoubleTap = {
-                                                        zoomPanState.toggleZoom(it, size)
+                                                        coroutineScope.launch {
+                                                            zoomPanState.toggleZoom(it, size)
+                                                        }
                                                     }
                                                 )
                                             }
@@ -741,16 +658,12 @@ object ArtistAlleySearchScreen {
                 }
             }
 
-            ArtistListRow(
-                entry = entry,
-                showRegion = showRegion,
-                onFavoriteToggle = onFavoriteToggle,
-            )
+            ArtistListRow(entry = entry, onFavoriteToggle = onFavoriteToggle)
         }
     }
 
     enum class DisplayType(val icon: ImageVector) {
-        LIST(Icons.Filled.ViewList),
+        LIST(Icons.AutoMirrored.Filled.ViewList),
         CARD(Icons.Filled.ViewAgenda),
     }
 }
