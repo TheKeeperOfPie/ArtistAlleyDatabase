@@ -21,7 +21,7 @@
 #-renamesourcefileattribute SourceFile
 
 -dontobfuscate
--dontshrink
+#-dontshrink
 
 # This is generated automatically by the Android Gradle plugin.
 -dontwarn com.google.api.client.http.GenericUrl

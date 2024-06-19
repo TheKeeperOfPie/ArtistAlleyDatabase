@@ -196,7 +196,7 @@ object StampRallySearchScreen {
         ) {
             Text(
                 text = stampRally.hostTable,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier
                     .sharedBounds("hostTable", stampRally.id, zIndexInOverlay = 1f)
                     .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)

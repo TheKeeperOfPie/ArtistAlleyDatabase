@@ -232,7 +232,7 @@ object ArtistSearchScreen {
         ) {
             Text(
                 text = artist.booth,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier
                     .sharedBounds("booth", artist.id, zIndexInOverlay = 1f)
                     .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)

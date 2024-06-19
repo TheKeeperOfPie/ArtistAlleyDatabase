@@ -97,7 +97,7 @@ object ArtistAlleyScreen {
         ) {
             when (currentDestination) {
                 Destinations.ARTISTS -> ArtistSearchScreen(
-                    onClickBack = onClickBack,
+                    onClickBack = null,
                     onEntryClick = onArtistClick,
                     scaffoldState = artistsScaffoldState,
                     scrollStateSaver = ScrollStateSaver.fromMap(
@@ -106,7 +106,6 @@ object ArtistAlleyScreen {
                     ),
                 )
                 Destinations.BROWSE -> BrowseScreen(
-                    onClickBack = onClickBack,
                     onSeriesClick = onSeriesClick,
                     onMerchClick = onMerchClick,
                 )
