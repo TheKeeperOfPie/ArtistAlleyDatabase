@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -67,7 +68,10 @@ interface ArtistEntryDao {
     fun search(query: String, filterOptions: ArtistSearchQuery): PagingSource<Int, ArtistEntry> {
         val booleanOptions = mutableListOf<String>().apply {
             if (filterOptions.showOnlyFavorites) this += "favorite:1"
-            if (filterOptions.showOnlyWithCatalog) this += "catalogLinks:*drive*"
+
+            // Search for "http" as a simplification of logic, since checking
+            // not empty would require a separate query template
+            if (filterOptions.showOnlyWithCatalog) this += "driveLink:*http*"
         }
 
         val filterOptionsQueryPieces = filterOptionsQuery(filterOptions)
@@ -91,14 +95,16 @@ interface ArtistEntryDao {
         val sortSuffix = when (filterOptions.sortOption) {
             ArtistSearchSortOption.BOOTH -> basicSortSuffix.replace("FIELD", "booth")
             ArtistSearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "name")
-            ArtistSearchSortOption.RANDOM -> {
-                "\nORDER BY substr(hex(artist_entries.id) * 0.${filterOptions.randomSeed}," +
-                        " length(hex(artist_entries.id)) + 2) $ascending"
-            }
+            ArtistSearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
         }
+        val selectSuffix = (", substr(artist_entries.rowid * 0.${filterOptions.randomSeed}," +
+                " length(artist_entries.rowid) + 2) as orderIndex")
+            .takeIf { filterOptions.sortOption == ArtistSearchSortOption.RANDOM }
+            .orEmpty()
+
         if (options.isEmpty() && filterOptionsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
-                SELECT *
+                SELECT *$selectSuffix
                 FROM artist_entries
                 JOIN artist_entries_fts ON artist_entries.id = artist_entries_fts.id
                 """.trimIndent() + sortSuffix
@@ -113,9 +119,10 @@ interface ArtistEntryDao {
         }
         val bindArguments = (optionsArguments + separator + booleanArguments)
             .filterNot { it.isNullOrEmpty() }
+
         val statement = (bindArguments + filterOptionsQueryPieces).joinToString("\nINTERSECT\n") {
             """
-                SELECT *
+                SELECT *$selectSuffix
                 FROM artist_entries
                 JOIN artist_entries_fts ON artist_entries.id = artist_entries_fts.id
                 WHERE artist_entries_fts MATCH ?
@@ -126,7 +133,9 @@ interface ArtistEntryDao {
             SimpleSQLiteQuery(
                 statement,
                 bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray(),
-            )
+            ).also {
+                Log.d("QueryDebug", "sql = ${it.sql}, options = ${(bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray()).contentToString()}")
+            }
         )
     }
 
@@ -144,7 +153,6 @@ interface ArtistEntryDao {
             it.copy(
                 favorite = existingEntry?.favorite ?: false,
                 ignored = existingEntry?.ignored ?: false,
-                notes = existingEntry?.notes,
             )
         })
     }

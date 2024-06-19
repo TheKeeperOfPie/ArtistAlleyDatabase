@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -36,9 +35,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StampRallySearchScreen {
@@ -47,13 +50,20 @@ object StampRallySearchScreen {
     @Composable
     operator fun invoke(
         onEntryClick: (StampRallyEntryGridModel, Int) -> Unit,
+        scrollStateSaver: ScrollStateSaver,
     ) {
         val viewModel = hiltViewModel<StampRallySearchViewModel>()
-        val listState = rememberLazyListState()
+        val listState = scrollStateSaver.lazyListState()
         var seen by remember { mutableStateOf(false) }
-        LaunchedEffect(viewModel.query, viewModel.sortOptions, viewModel.sortAscending) {
+        LaunchedEffect(
+            viewModel.query,
+            viewModel.sortOptions.selectedOption(StampRallySearchSortOption.RANDOM),
+            viewModel.sortAscending,
+        ) {
             if (seen) {
-                listState.animateScrollToItem(0, 0)
+                // TODO: There must be a better way to do this
+                delay(500.milliseconds)
+                listState.scrollToItem(0, 0)
             } else {
                 seen = true
             }
@@ -99,28 +109,6 @@ object StampRallySearchScreen {
                         Switch(
                             checked = viewModel.showOnlyFavorites,
                             onCheckedChange = { viewModel.showOnlyFavorites = it },
-                            modifier = Modifier.padding(end = 16.dp),
-                        )
-                    }
-
-                    HorizontalDivider()
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.alley_filter_only_catalogs),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .weight(1f)
-                        )
-
-                        Switch(
-                            checked = viewModel.showOnlyWithCatalog,
-                            onCheckedChange = { viewModel.showOnlyWithCatalog = it },
                             modifier = Modifier.padding(end = 16.dp),
                         )
                     }
@@ -184,8 +172,8 @@ object StampRallySearchScreen {
             shouldShowCount = {
                 viewModel.query.isNotEmpty()
                         || viewModel.showOnlyFavorites
-                        || viewModel.showOnlyWithCatalog
             },
+            itemToSharedElementId = { it.value.id },
             itemRow = { entry, onFavoriteToggle, modifier ->
                 StampRallyListRow(entry, onFavoriteToggle, modifier)
             }
@@ -225,7 +213,14 @@ object StampRallySearchScreen {
             )
 
             val favorite = entry.favorite
-            IconButton(onClick = { onFavoriteToggle(!favorite) }) {
+            IconButton(
+                onClick = { onFavoriteToggle(!favorite) },
+                modifier = Modifier.sharedElement(
+                    "favorite",
+                    stampRally.id,
+                    zIndexInOverlay = 1f,
+                )
+            ) {
                 Icon(
                     imageVector = if (favorite) {
                         Icons.Filled.Favorite
@@ -235,7 +230,6 @@ object StampRallySearchScreen {
                     contentDescription = stringResource(
                         R.string.alley_stamp_rally_favorite_icon_content_description
                     ),
-                    modifier = Modifier.sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
                 )
             }
         }

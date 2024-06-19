@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -120,9 +121,6 @@ class ArtistSearchViewModel @Inject constructor(
     }
 
     override fun searchOptions() = snapshotFlow {
-        val sortOption = sortOptions.firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
-            ?.value
-            ?: ArtistSearchSortOption.RANDOM
         val seriesContents = seriesSection.finalContents()
         ArtistSearchQuery(
             booth = boothSection.value.trim(),
@@ -136,7 +134,7 @@ class ArtistSearchViewModel @Inject constructor(
                 .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                 .mapNotNull(AniListUtils::mediaId),
             merch = merchSection.finalContents().map { it.serializedValue },
-            sortOption = sortOption,
+            sortOption = sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
             sortAscending = sortAscending,
             showOnlyFavorites = showOnlyFavorites,
             showOnlyWithCatalog = showOnlyWithCatalog,

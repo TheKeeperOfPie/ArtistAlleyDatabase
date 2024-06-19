@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
+import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
@@ -42,6 +43,7 @@ abstract class EntrySearchViewModel<SearchQuery, GridModel : EntryGridModel> :
             combine(snapshotFlow { query }, searchOptions(), ::Pair)
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (query, options) -> mapQuery(query, options) }
+                .cachedIn(viewModelScope)
                 .collect(results)
         }
     }

@@ -1575,7 +1575,8 @@ fun <T> expandableListInfoText(
                         .padding(
                             start = 16.dp,
                             end = 16.dp,
-                            top = 8.dp,
+                            // If only 1 value, mirror InfoText
+                            top = if (values.size == 1) 0.dp else 8.dp,
                             bottom = bottomPadding,
                         )
                 )

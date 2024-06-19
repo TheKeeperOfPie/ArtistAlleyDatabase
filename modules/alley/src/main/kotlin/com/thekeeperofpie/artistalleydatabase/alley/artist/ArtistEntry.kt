@@ -27,6 +27,7 @@ data class ArtistEntry(
     val storeLinks: List<String> = emptyList(),
     @ColumnInfo(defaultValue = "")
     val catalogLinks: List<String> = emptyList(),
+    val driveLink: String? = null,
     val favorite: Boolean = false,
     val ignored: Boolean = false,
     val notes: String? = null,
@@ -80,10 +81,9 @@ data class ArtistEntryFts(
     val name: String,
     val summary: String?,
     val links: List<String>,
-    @ColumnInfo(defaultValue = "")
-    val storeLinks: List<String> = emptyList(),
-    @ColumnInfo(defaultValue = "")
-    val catalogLinks: List<String> = emptyList(),
+    val storeLinks: List<String>,
+    val catalogLinks: List<String>,
+    val driveLink: String?,
     val favorite: Boolean,
     val ignored: Boolean,
     val notes: String?,

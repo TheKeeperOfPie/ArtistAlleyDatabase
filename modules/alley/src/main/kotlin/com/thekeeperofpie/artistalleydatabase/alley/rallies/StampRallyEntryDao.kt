@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -88,21 +89,25 @@ interface StampRallyEntryDao {
         val ascending = if (filterOptions.sortAscending) "ASC" else "DESC"
         val basicSortSuffix = "\nORDER BY stamp_rally_entries_fts.FIELD COLLATE NOCASE $ascending"
         val sortSuffix = when (filterOptions.sortOption) {
-            StampRallySearchSortOption.MAIN_TABLE -> basicSortSuffix.replace("FIELD", "mainTable")
+            StampRallySearchSortOption.MAIN_TABLE -> basicSortSuffix.replace("FIELD", "hostTable")
             StampRallySearchSortOption.FANDOM -> basicSortSuffix.replace("FIELD", "fandom")
-            StampRallySearchSortOption.RANDOM -> {
-                "\nORDER BY substr(hex(stamp_rally_entries.id) * 0.${filterOptions.randomSeed}," +
-                        " length(hex(stamp_rally_entries.id)) + 2) $ascending"
-            }
+            StampRallySearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
         }
+        val selectSuffix = (", substr(stamp_rally_entries.rowid * 0.${filterOptions.randomSeed}," +
+                " length(stamp_rally_entries.rowid) + 2) as orderIndex")
+            .takeIf { filterOptions.sortOption == StampRallySearchSortOption.RANDOM }
+            .orEmpty()
+
         if (options.isEmpty() && filterOptionsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
-                SELECT *
+                SELECT *$selectSuffix
                 FROM stamp_rally_entries
                 JOIN stamp_rally_entries_fts ON stamp_rally_entries.id = stamp_rally_entries_fts.id
                 """.trimIndent() + sortSuffix
 
-            return getEntries(SimpleSQLiteQuery(statement))
+            return getEntries(SimpleSQLiteQuery(statement).also {
+                Log.d("QueryDebug", "sql = ${it.sql}")
+            })
         }
 
         val optionsArguments = options.map { it.joinToString(separator = " OR ") }
@@ -114,7 +119,7 @@ interface StampRallyEntryDao {
             .filterNot { it.isNullOrEmpty() }
         val statement = (bindArguments + filterOptionsQueryPieces).joinToString("\nINTERSECT\n") {
             """
-                SELECT *
+                SELECT *$selectSuffix
                 FROM stamp_rally_entries
                 JOIN stamp_rally_entries_fts ON stamp_rally_entries.id = stamp_rally_entries_fts.id
                 WHERE stamp_rally_entries_fts MATCH ?
@@ -125,7 +130,9 @@ interface StampRallyEntryDao {
             SimpleSQLiteQuery(
                 statement,
                 bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray(),
-            )
+            ).also {
+                Log.d("QueryDebug", "sql = ${it.sql}, options = ${(bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray()).contentToString()}")
+            }
         )
     }
 
@@ -152,7 +159,6 @@ interface StampRallyEntryDao {
             entry.copy(
                 favorite = existingEntry?.favorite ?: false,
                 ignored = existingEntry?.ignored ?: false,
-                notes = existingEntry?.notes,
             )
         }
 

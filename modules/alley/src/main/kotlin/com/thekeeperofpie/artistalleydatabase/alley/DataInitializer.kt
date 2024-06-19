@@ -55,7 +55,7 @@ class DataInitializer @Inject constructor(
                     .mapNotNull {
                         // Booth,Artist,Summary,Links,Store,Catalog / table,
                         // Series - Inferred,Merch - Inferred,Notes,Series - Confirmed,
-                        // Merch - Confirmed,Catalog images
+                        // Merch - Confirmed,Drive,Catalog images
                         val booth = it["Booth"]
                         val artist = it["Artist"]
                         val summary = it["Summary"]
@@ -67,6 +67,7 @@ class DataInitializer @Inject constructor(
                             .filter(String::isNotBlank)
                         val catalogLinks = it["Catalog / table"].split(newLineRegex)
                             .filter(String::isNotBlank)
+                        val driveLink = it["Drive"]
 
                         val commaRegex = Regex(",\\s?")
                         val seriesInferred = it["Series - Inferred"].split(commaRegex)
@@ -79,6 +80,8 @@ class DataInitializer @Inject constructor(
                         val merchConfirmed = it["Merch - Confirmed"].split(commaRegex)
                             .filter(String::isNotBlank)
 
+                        val notes = it["Notes"]
+
                         ArtistEntry(
                             id = booth,
                             booth = booth,
@@ -87,12 +90,14 @@ class DataInitializer @Inject constructor(
                             links = links,
                             storeLinks = storeLinks,
                             catalogLinks = catalogLinks,
+                            driveLink = driveLink,
                             seriesInferredSerialized = seriesInferred,
                             seriesInferredSearchable = seriesInferred,
                             seriesConfirmedSerialized = seriesConfirmed,
                             seriesConfirmedSearchable = seriesConfirmed,
                             merchInferred = merchInferred,
                             merchConfirmed = merchConfirmed,
+                            notes = notes,
                         )
                     }
                     .chunked(20)
@@ -115,12 +120,13 @@ class DataInitializer @Inject constructor(
                     .mapNotNull {
                         // Theme,Link,Tables,Minimum per table,Notes,Images
                         val theme = it["Theme"]
-                        val link = it["Link"]
+                        val links = it["Link"].split("\n")
                         val tables = it["Tables"].split("\n").filter(String::isNotBlank)
                         val hostTable = tables.firstOrNull { it.contains("-") }
                             ?.substringBefore("-")
                             ?.trim() ?: return@mapNotNull null
                         val minimumPerTable = it["Minimum per table"]
+                        val notes = it["Notes"]
 
                         val stampRallyId = "$hostTable-$theme"
                         val connections = tables
@@ -134,7 +140,9 @@ class DataInitializer @Inject constructor(
                             fandom = theme,
                             tables = tables,
                             hostTable = hostTable,
+                            links = links,
                             minimumPerTable = minimumPerTable,
+                            notes = notes,
                         ) to connections
                     }
                     .chunked(20)

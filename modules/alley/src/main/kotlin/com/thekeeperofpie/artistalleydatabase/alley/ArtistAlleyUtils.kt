@@ -10,12 +10,13 @@ object ArtistAlleyUtils {
     @WorkerThread
     fun getImages(application: Application, folder: String, file: String): List<CatalogImage> {
         val assetManager = application.assets
-        val targetFolder = assetManager.list(folder)?.find { it.startsWith(file) }
+        val targetName = file.replace("'", "_")
+        val targetFolder = assetManager.list(folder)?.find { it.startsWith(targetName) }
         return assetManager.list("$folder/$targetFolder")
             ?.flatMap {
                 if (it.endsWith(".pdf")) {
                     emptyList()
-                } else if (it.startsWith(file)) {
+                } else if (it.startsWith(targetName)) {
                     try {
                         val subFolder = it
                         application.assets.list("$folder/$targetFolder/$subFolder")?.map {

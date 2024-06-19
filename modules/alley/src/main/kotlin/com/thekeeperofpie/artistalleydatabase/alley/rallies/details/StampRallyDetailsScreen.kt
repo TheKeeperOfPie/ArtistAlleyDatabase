@@ -134,6 +134,20 @@ object StampRallyDetailsScreen {
                     )
                 }
             }
+
+            if (entry.otherTables.isNotEmpty()) {
+                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                    expandableListInfoText(
+                        labelTextRes = R.string.alley_stamp_rally_details_other_tables,
+                        contentDescriptionTextRes = null,
+                        values = entry.otherTables,
+                        valueToText = { it },
+                        onClick = null,
+                        allowExpand = false,
+                        showDividerAbove = false,
+                    )
+                }
+            }
         }
     }
 }

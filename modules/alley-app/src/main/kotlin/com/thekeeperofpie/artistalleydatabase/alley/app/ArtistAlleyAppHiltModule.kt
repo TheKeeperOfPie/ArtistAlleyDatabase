@@ -23,7 +23,9 @@ class ArtistAlleyAppHiltModule {
             application,
             ArtistAlleyAppDatabase::class.java,
             "artistAlleyAppDatabase"
-        ).build()
+        )
+            .fallbackToDestructiveMigration(true)
+            .build()
 
     @Singleton
     @Provides

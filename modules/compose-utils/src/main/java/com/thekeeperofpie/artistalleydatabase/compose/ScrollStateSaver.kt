@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
@@ -30,8 +30,8 @@ interface ScrollStateSaver {
 
         @Composable
         operator fun invoke(): ScrollStateSaver {
-            val position = rememberSaveable { mutableStateOf(0) }
-            val offset = rememberSaveable { mutableStateOf(0) }
+            val position = rememberSaveable { mutableIntStateOf(0) }
+            val offset = rememberSaveable { mutableIntStateOf(0) }
             return remember { ScrollStateSaverImpl(position, offset) }
         }
 

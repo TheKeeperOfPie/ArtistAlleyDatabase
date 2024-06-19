@@ -52,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import dagger.hilt.android.AndroidEntryPoint
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class,
@@ -170,6 +171,7 @@ class MainActivity : ComponentActivity() {
                                         ArtistSearchScreen(
                                             onClickBack = navController::navigateUp,
                                             onEntryClick = onArtistClick,
+                                            scrollStateSaver = ScrollStateSaver(),
                                         )
                                     }
                                 }

@@ -31,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -54,6 +55,7 @@ object ArtistAlleyScreen {
                 skipHiddenState = true,
             )
         )
+
         LaunchedEffect(updateAppUrl) {
             if (updateAppUrl != null) {
                 val result = artistsScaffoldState.snackbarHostState.showSnackbar(
@@ -66,6 +68,7 @@ object ArtistAlleyScreen {
                 }
             }
         }
+        val scrollPositions = ScrollStateSaver.scrollPositions()
 
         var currentIndex by rememberSaveable { mutableIntStateOf(0) }
         var currentDestination by rememberSaveable { mutableStateOf(Destinations.ARTISTS) }
@@ -88,12 +91,22 @@ object ArtistAlleyScreen {
         ) {
             when (currentDestination) {
                 Destinations.ARTISTS -> ArtistSearchScreen(
-                    onClickBack,
-                    onArtistClick,
-                    artistsScaffoldState,
+                    onClickBack = onClickBack,
+                    onEntryClick = onArtistClick,
+                    scaffoldState = artistsScaffoldState,
+                    scrollStateSaver = ScrollStateSaver.fromMap(
+                        Destinations.ARTISTS.name,
+                        scrollPositions,
+                    ),
                 )
-                Destinations.MAP -> TODO()
-                Destinations.STAMP_RALLIES -> StampRallySearchScreen(onStampRallyClick)
+                Destinations.MAP -> Text("TODO")
+                Destinations.STAMP_RALLIES -> StampRallySearchScreen(
+                    onEntryClick = onStampRallyClick,
+                    scrollStateSaver = ScrollStateSaver.fromMap(
+                        Destinations.STAMP_RALLIES.name,
+                        scrollPositions,
+                    ),
+                )
             }
         }
     }

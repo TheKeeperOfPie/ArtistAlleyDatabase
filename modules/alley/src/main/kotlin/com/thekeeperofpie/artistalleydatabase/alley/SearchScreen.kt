@@ -35,8 +35,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.ViewAgenda
@@ -83,7 +81,6 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
 import com.google.accompanist.pager.HorizontalPagerIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
@@ -92,7 +89,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
@@ -126,6 +122,7 @@ object SearchScreen {
         shouldShowCount: () -> Boolean,
         onClickBack: (() -> Unit)? = null,
         title: () -> String? = { null },
+        itemToSharedElementId: (EntryModel) -> Any,
         itemRow: @Composable (
             entry: EntryModel,
             onFavoriteToggle: (Boolean) -> Unit,
@@ -277,6 +274,7 @@ object SearchScreen {
                         },
                         modifier = Modifier.fillMaxSize()
                     ) {
+                        entries.itemSnapshotList
                         items(
                             count = entries.itemCount,
                             key = entries.itemKey { it.id.scopedId },
@@ -313,7 +311,8 @@ object SearchScreen {
                                     HorizontalDivider()
                                 }
                                 DisplayType.CARD -> ItemCard(
-                                    entry,
+                                    entry = entry,
+                                    sharedElementId = itemToSharedElementId(entry),
                                     showGridByDefault = showGridByDefault,
                                     onFavoriteToggle = onFavoriteToggle,
                                     onIgnoredToggle = onIgnoredToggle,
@@ -363,57 +362,9 @@ object SearchScreen {
     }
 
     @Composable
-    private fun ArtistListRow(
-        entry: ArtistEntryGridModel,
-        onFavoriteToggle: (Boolean) -> Unit,
-        modifier: Modifier = Modifier,
-    ) {
-        val artist = entry.value
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = modifier
-                .fillMaxWidth()
-                .sharedBounds("container", artist.id, zIndexInOverlay = 1f)
-        ) {
-            Text(
-                text = artist.booth,
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier
-                    .sharedBounds("booth", artist.id, zIndexInOverlay = 1f)
-                    .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
-            )
-
-            Text(
-                text = artist.name,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .weight(1f)
-                    .sharedBounds("name", artist.id, zIndexInOverlay = 1f)
-                    .padding(vertical = 12.dp)
-            )
-
-            val favorite = entry.favorite
-            IconButton(onClick = { onFavoriteToggle(!favorite) }) {
-                Icon(
-                    imageVector = if (favorite) {
-                        Icons.Filled.Favorite
-                    } else {
-                        Icons.Filled.FavoriteBorder
-                    },
-                    contentDescription = stringResource(
-                        R.string.alley_artist_favorite_icon_content_description
-                    ),
-                    modifier = Modifier.sharedElement("favorite", artist.id, zIndexInOverlay = 1f)
-                )
-            }
-        }
-    }
-
-    @Composable
     private fun <EntryModel : SearchEntryModel> ItemCard(
         entry: EntryModel,
+        sharedElementId: Any,
         showGridByDefault: Boolean,
         onFavoriteToggle: (Boolean) -> Unit,
         onIgnoredToggle: (Boolean) -> Unit,
@@ -495,11 +446,6 @@ object SearchScreen {
                                         fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                                         contentDescription = stringResource(R.string.alley_artist_catalog_image),
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                                            .conditionally(image.width != null && image.height != null) {
-                                                heightIn(min = (image.height!! / image.width!!.toFloat()) * maxWidth)
-                                            }
                                             .pointerInput(zoomPanState) {
                                                 detectTapGestures(
                                                     onTap = {
@@ -513,6 +459,11 @@ object SearchScreen {
                                                 )
                                             }
                                             .sharedBounds("image", image.uri)
+                                            .fillMaxWidth()
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .conditionally(image.width != null && image.height != null) {
+                                                heightIn(min = (image.height!! / image.width!!.toFloat()) * maxWidth)
+                                            }
                                     )
                                 }
                             }
@@ -520,7 +471,7 @@ object SearchScreen {
                     }
 
                     androidx.compose.animation.AnimatedVisibility(
-                        visible = zoomPanState.canPanExternal(),
+                        visible = images.size > 1 && zoomPanState.canPanExternal(),
                         enter = fadeIn(),
                         exit = fadeOut(),
                         modifier = Modifier.align(Alignment.BottomCenter)
@@ -529,6 +480,7 @@ object SearchScreen {
                             pagerState = pagerState,
                             pageCount = pagerState.pageCount,
                             modifier = Modifier
+                                .sharedBounds("pagerIndicator", sharedElementId, zIndexInOverlay = 1f)
                                 .padding(8.dp)
                         )
                     }

@@ -32,15 +32,28 @@ class StampRallyDetailsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            val (stampRallyEntry, artists) = stampRallyEntryDao.getEntryWithArtists(id) ?: return@launch
+            val (stampRallyEntry, artists) = stampRallyEntryDao.getEntryWithArtists(id)
+                ?: return@launch
             val catalogImages = ArtistAlleyUtils.getImages(
                 application,
                 "rallies",
                 stampRallyEntry.id.replace("-", " - "),
             )
 
+            // Some stamp rallies have artists in non-AA regions, try and show those
+            val otherTables = stampRallyEntry.tables
+                .filter { table ->
+                    artists.none { artist ->
+                        artist.booth == table.substringBefore("-").trim()
+                    }
+                }
+
             withContext(CustomDispatchers.Main) {
-                entry = Entry(stampRallyEntry, artists)
+                entry = Entry(
+                    stampRally = stampRallyEntry,
+                    artists = artists,
+                    otherTables = otherTables,
+                )
                 images = catalogImages
             }
         }
@@ -57,6 +70,7 @@ class StampRallyDetailsViewModel @Inject constructor(
     data class Entry(
         val stampRally: StampRallyEntry,
         val artists: List<ArtistEntry>,
+        val otherTables: List<String>,
     ) {
         var favorite by mutableStateOf(stampRally.favorite)
     }

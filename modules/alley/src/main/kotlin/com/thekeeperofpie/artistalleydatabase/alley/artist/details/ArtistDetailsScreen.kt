@@ -71,8 +71,8 @@ object ArtistDetailsScreen {
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .weight(1f)
                             .sharedBounds("name", artist.id, zIndexInOverlay = 1f)
+                            .weight(1f)
                     )
                 }
             },

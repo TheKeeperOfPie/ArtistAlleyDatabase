@@ -86,7 +86,14 @@ object DetailsScreen {
                     title = title,
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
                     actions = {
-                        IconButton(onClick = { onFavoriteToggle(!favorite()) }) {
+                        IconButton(
+                            onClick = { onFavoriteToggle(!favorite()) },
+                            modifier = Modifier.sharedElement(
+                                "favorite",
+                                sharedElementId,
+                                zIndexInOverlay = 1f,
+                            )
+                        ) {
                             Icon(
                                 imageVector = if (favorite()) {
                                     Icons.Filled.Favorite
@@ -96,7 +103,6 @@ object DetailsScreen {
                                 contentDescription = stringResource(
                                     R.string.alley_artist_favorite_icon_content_description
                                 ),
-                                modifier = Modifier.sharedElement("favorite", sharedElementId)
                             )
                         }
                     },
@@ -215,7 +221,7 @@ object DetailsScreen {
                         }
 
                         androidx.compose.animation.AnimatedVisibility(
-                            visible = zoomPanState.canPanExternal(),
+                            visible = images.size > 1 && zoomPanState.canPanExternal(),
                             enter = fadeIn(),
                             exit = fadeOut(),
                             modifier = Modifier.align(Alignment.BottomCenter)
@@ -224,6 +230,7 @@ object DetailsScreen {
                                 pagerState = pagerState,
                                 pageCount = pagerState.pageCount,
                                 modifier = Modifier
+                                    .sharedBounds("pagerIndicator", sharedElementId, zIndexInOverlay = 1f)
                                     .padding(8.dp)
                             )
                         }

@@ -51,5 +51,6 @@
     <string name="alley_stamp_rally_details_fandom">Fandom</string>
     <string name="alley_stamp_rally_details_links">Links</string>
     <string name="alley_stamp_rally_details_artists">Artists</string>
+    <string name="alley_stamp_rally_details_other_tables">Other tables</string>
     <string name="alley_stamp_rally_favorite_icon_content_description">Mark stamp rally as favorite</string>
 </resources>

@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridM
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -72,7 +73,6 @@ class StampRallySearchViewModel @Inject constructor(
         private set
 
     var showOnlyFavorites by mutableStateOf(false)
-    var showOnlyWithCatalog by mutableStateOf(false)
     var showGridByDefault by mutableStateOf(settings.showGridByDefault)
         private set
     var showIgnored by mutableStateOf(true)
@@ -106,13 +106,10 @@ class StampRallySearchViewModel @Inject constructor(
     }
 
     override fun searchOptions() = snapshotFlow {
-        val sortOption = sortOptions.firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
-            ?.value
-            ?: StampRallySearchSortOption.RANDOM
         StampRallySearchQuery(
             fandom = fandomSection.value.trim(),
             tables = tablesSection.value.trim(),
-            sortOption = sortOption,
+            sortOption = sortOptions.selectedOption(StampRallySearchSortOption.RANDOM),
             sortAscending = sortAscending,
             showOnlyFavorites = showOnlyFavorites,
             showIgnored = showIgnored,

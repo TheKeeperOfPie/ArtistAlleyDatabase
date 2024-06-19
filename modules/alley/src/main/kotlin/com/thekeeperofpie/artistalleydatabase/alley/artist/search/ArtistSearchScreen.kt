@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -40,9 +39,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ArtistSearchScreen {
@@ -58,13 +61,19 @@ object ArtistSearchScreen {
                 skipHiddenState = true,
             )
         ),
+        scrollStateSaver: ScrollStateSaver,
     ) {
         val viewModel = hiltViewModel<ArtistSearchViewModel>()
-        val listState = rememberLazyListState()
+        val listState = scrollStateSaver.lazyListState()
         var seen by remember { mutableStateOf(false) }
-        LaunchedEffect(viewModel.query, viewModel.sortOptions, viewModel.sortAscending) {
+        LaunchedEffect(
+            viewModel.query,
+            viewModel.sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
+            viewModel.sortAscending,
+        ) {
             if (seen) {
-                listState.animateScrollToItem(0, 0)
+                delay(500.milliseconds)
+                listState.scrollToItem(0, 0)
             } else {
                 seen = true
             }
@@ -200,6 +209,7 @@ object ArtistSearchScreen {
                         || viewModel.showOnlyFavorites
                         || viewModel.showOnlyWithCatalog
             },
+            itemToSharedElementId = { it.value.id },
             itemRow = { entry, onFavoriteToggle, modifier ->
                 ArtistListRow(entry, onFavoriteToggle, modifier)
             }
@@ -217,8 +227,8 @@ object ArtistSearchScreen {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = modifier
-                .fillMaxWidth()
                 .sharedBounds("container", artist.id, zIndexInOverlay = 1f)
+                .fillMaxWidth()
         ) {
             Text(
                 text = artist.booth,
@@ -233,13 +243,20 @@ object ArtistSearchScreen {
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
-                    .weight(1f)
                     .sharedBounds("name", artist.id, zIndexInOverlay = 1f)
+                    .weight(1f)
                     .padding(vertical = 12.dp)
             )
 
             val favorite = entry.favorite
-            IconButton(onClick = { onFavoriteToggle(!favorite) }) {
+            IconButton(
+                onClick = { onFavoriteToggle(!favorite) },
+                modifier = Modifier.sharedElement(
+                    "favorite",
+                    artist.id,
+                    zIndexInOverlay = 1f,
+                )
+            ) {
                 Icon(
                     imageVector = if (favorite) {
                         Icons.Filled.Favorite
@@ -249,7 +266,6 @@ object ArtistSearchScreen {
                     contentDescription = stringResource(
                         R.string.alley_artist_favorite_icon_content_description
                     ),
-                    modifier = Modifier.sharedElement("favorite", artist.id, zIndexInOverlay = 1f)
                 )
             }
         }
