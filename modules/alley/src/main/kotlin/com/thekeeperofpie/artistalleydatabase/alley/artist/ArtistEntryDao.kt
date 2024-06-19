@@ -96,8 +96,8 @@ interface ArtistEntryDao {
             ArtistSearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "name")
             ArtistSearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
         }
-        val selectSuffix = (", substr(artist_entries.rowid * 0.${filterOptions.randomSeed}," +
-                " length(artist_entries.rowid) + 2) as orderIndex")
+        val selectSuffix = (", substr(artist_entries.counter * 0.${filterOptions.randomSeed}," +
+                " length(artist_entries.counter) + 2) as orderIndex")
             .takeIf { filterOptions.sortOption == ArtistSearchSortOption.RANDOM }
             .orEmpty()
 

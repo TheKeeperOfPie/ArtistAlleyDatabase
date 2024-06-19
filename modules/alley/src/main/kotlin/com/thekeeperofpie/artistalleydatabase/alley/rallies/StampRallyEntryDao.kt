@@ -93,8 +93,8 @@ interface StampRallyEntryDao {
             StampRallySearchSortOption.FANDOM -> basicSortSuffix.replace("FIELD", "fandom")
             StampRallySearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
         }
-        val selectSuffix = (", substr(stamp_rally_entries.rowid * 0.${filterOptions.randomSeed}," +
-                " length(stamp_rally_entries.rowid) + 2) as orderIndex")
+        val selectSuffix = (", substr(stamp_rally_entries.counter * 0.${filterOptions.randomSeed}," +
+                " length(stamp_rally_entries.counter) + 2) as orderIndex")
             .takeIf { filterOptions.sortOption == StampRallySearchSortOption.RANDOM }
             .orEmpty()
 

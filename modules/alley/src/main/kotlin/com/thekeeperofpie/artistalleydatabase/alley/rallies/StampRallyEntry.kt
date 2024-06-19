@@ -20,6 +20,9 @@ data class StampRallyEntry(
     val favorite: Boolean = false,
     val ignored: Boolean = false,
     val notes: String? = null,
+    // Used fo random ordering while maintaining a stable key
+    @ColumnInfo(defaultValue = "1")
+    val counter: Int = 1,
 )
 
 @Entity(tableName = "stamp_rally_entries_fts")

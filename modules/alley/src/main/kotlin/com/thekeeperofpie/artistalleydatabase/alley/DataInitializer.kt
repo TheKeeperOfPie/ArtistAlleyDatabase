@@ -54,6 +54,7 @@ class DataInitializer @Inject constructor(
     private suspend fun parseArtists() {
         scopedApplication.app.assets.open(ARTISTS_CSV_NAME).use { input ->
             input.reader().use { reader ->
+                var counter = 1
                 csvReader(reader)
                     .mapNotNull {
                         // Booth,Artist,Summary,Links,Store,Catalog / table,
@@ -101,6 +102,7 @@ class DataInitializer @Inject constructor(
                             merchInferred = merchInferred,
                             merchConfirmed = merchConfirmed,
                             notes = notes,
+                            counter = counter++
                         )
                     }
                     .chunked(20)
@@ -143,6 +145,7 @@ class DataInitializer @Inject constructor(
         stampRallyEntryDao.clearConnections()
         scopedApplication.app.assets.open(STAMP_RALLIES_CSV_NAME).use { input ->
             input.reader().use { reader ->
+                var counter = 1
                 csvReader(reader)
                     .mapNotNull {
                         // Theme,Link,Tables,Minimum per table,Notes,Images
@@ -170,6 +173,7 @@ class DataInitializer @Inject constructor(
                             links = links,
                             minimumPerTable = minimumPerTable,
                             notes = notes,
+                            counter = counter++
                         ) to connections
                     }
                     .chunked(20)

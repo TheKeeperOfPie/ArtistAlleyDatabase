@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -26,7 +27,12 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
         MerchEntry::class,
     ],
     exportSchema = true,
-    version = 2,
+    version = 3,
+    autoMigrations = [
+        AutoMigration(1, 2),
+        AutoMigration(2, 3),
+        AutoMigration(1, 3),
+    ]
 )
 @TypeConverters(
     value = [

@@ -39,6 +39,9 @@ data class ArtistEntry(
     val seriesConfirmedSearchable: List<String> = emptyList(),
     val merchInferred: List<String> = emptyList(),
     val merchConfirmed: List<String> = emptyList(),
+    // Used fo random ordering while maintaining a stable key
+    @ColumnInfo(defaultValue = "1")
+    val counter: Int = 1,
 ) {
 
     @Ignore
