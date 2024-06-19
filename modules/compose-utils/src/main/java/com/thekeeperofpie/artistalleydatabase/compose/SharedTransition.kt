@@ -120,20 +120,24 @@ fun Modifier.autoSharedElement(key: String? = null) =
     } else this
 
 @Composable
-fun Modifier.sharedElement(key: Any) = with(LocalSharedTransitionScope.current) {
-    sharedElement(
-        rememberSharedContentState(key = key),
-        LocalAnimatedVisibilityScope.current,
-    )
-}
+fun Modifier.sharedElement(vararg keys: Any, zIndexInOverlay: Float = 0f) =
+    with(LocalSharedTransitionScope.current) {
+        sharedElement(
+            rememberSharedContentState(key = keys.toList()),
+            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            zIndexInOverlay = zIndexInOverlay,
+        )
+    }
 
 @Composable
-fun Modifier.sharedBounds(key: Any) = with(LocalSharedTransitionScope.current) {
-    sharedBounds(
-        rememberSharedContentState(key = key),
-        LocalAnimatedVisibilityScope.current,
-    )
-}
+fun Modifier.sharedBounds(vararg keys: Any, zIndexInOverlay: Float = 0f) =
+    with(LocalSharedTransitionScope.current) {
+        sharedBounds(
+            rememberSharedContentState(key = keys.toList()),
+            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            zIndexInOverlay = zIndexInOverlay,
+        )
+    }
 
 @Composable
 fun Modifier.skipToLookaheadSize() = with(LocalSharedTransitionScope.current) {

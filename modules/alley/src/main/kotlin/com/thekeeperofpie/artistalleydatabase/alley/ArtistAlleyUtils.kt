@@ -8,17 +8,17 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 object ArtistAlleyUtils {
 
     @WorkerThread
-    fun getImages(application: Application, booth: String): List<CatalogImage> {
+    fun getImages(application: Application, folder: String, file: String): List<CatalogImage> {
         val assetManager = application.assets
-        val boothFolder = assetManager.list("catalogs")?.find { it.startsWith(booth) }
-        return assetManager.list("catalogs/$boothFolder")
+        val targetFolder = assetManager.list(folder)?.find { it.startsWith(file) }
+        return assetManager.list("$folder/$targetFolder")
             ?.flatMap {
                 if (it.endsWith(".pdf")) {
                     emptyList()
-                } else if (it.startsWith(booth)) {
+                } else if (it.startsWith(file)) {
                     try {
                         val subFolder = it
-                        application.assets.list("catalogs/$boothFolder/$subFolder")?.map {
+                        application.assets.list("$folder/$targetFolder/$subFolder")?.map {
                             "$subFolder/$it"
                         }.orEmpty()
                     } catch (ignored: Throwable) {
@@ -31,7 +31,7 @@ object ArtistAlleyUtils {
             .orEmpty()
             .sortedBy { it.substringAfter("/") }
             .map {
-                Uri.parse("file:///android_asset/catalogs/$boothFolder/$it")
+                Uri.parse("file:///android_asset/$folder/$targetFolder/$it")
             }
             .map {
                 val (width, height) = ImageUtils.getImageWidthHeight(application, it)

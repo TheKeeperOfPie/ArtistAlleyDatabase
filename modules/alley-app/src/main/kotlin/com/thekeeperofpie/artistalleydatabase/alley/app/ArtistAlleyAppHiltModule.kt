@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,4 +43,8 @@ class ArtistAlleyAppHiltModule {
     @Singleton
     @Provides
     fun provideMasterKey(application: Application) = CryptoUtils.masterKey(application)
+
+    @Singleton
+    @Provides
+    fun provideScopedApplication(application: Application) = application as ScopedApplication
 }

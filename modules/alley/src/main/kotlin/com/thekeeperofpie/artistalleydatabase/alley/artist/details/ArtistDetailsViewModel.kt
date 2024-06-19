@@ -1,19 +1,20 @@
-package com.thekeeperofpie.artistalleydatabase.alley.details
+package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
 import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.data.Series
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -22,30 +23,24 @@ import javax.inject.Inject
 class ArtistDetailsViewModel @Inject constructor(
     private val application: Application,
     private val artistEntryDao: ArtistEntryDao,
+    private val appJson: AppJson,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+    val id = savedStateHandle.get<String>("id")!!
+    val initialImageIndex = savedStateHandle.get<String>("imageIndex")?.toIntOrNull() ?: 0
 
     var entry by mutableStateOf<Entry?>(null)
     var images by mutableStateOf<List<CatalogImage>>(emptyList())
 
-    private val favoriteUpdates = MutableSharedFlow<ArtistEntry>(1, 1)
-
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            favoriteUpdates.collectLatest {
-            }
-        }
-    }
-
-    fun initialize(id: String) {
-        if (entry == null) {
-            viewModelScope.launch(CustomDispatchers.IO) {
-                val artistEntry = artistEntryDao.getEntry(id) ?: return@launch
-                val catalogImages = ArtistAlleyUtils.getImages(application, artistEntry.booth)
-
-                withContext(CustomDispatchers.Main) {
-                    entry = Entry(artistEntry)
-                    images = catalogImages
-                }
+            val artistEntry = artistEntryDao.getEntry(id) ?: return@launch
+            val catalogImages = ArtistAlleyUtils.getImages(application,"catalogs", artistEntry.booth)
+            val series = artistEntry.seriesConfirmed(appJson)
+                .ifEmpty { artistEntry.seriesInferred(appJson) }
+            withContext(CustomDispatchers.Main) {
+                entry = Entry(artistEntry, series)
+                images = catalogImages
             }
         }
     }
@@ -60,13 +55,8 @@ class ArtistDetailsViewModel @Inject constructor(
 
     data class Entry(
         val artist: ArtistEntry,
+        val series: List<Series>,
     ) {
         var favorite by mutableStateOf(artist.favorite)
-
-        val links = listOf(artist.store + artist.catalog)
-            .plus(artist.links)
-            .filterNotNull()
-            .filterNot(String::isBlank)
-            .distinct()
     }
 }

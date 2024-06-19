@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alley_search_option_booth">Booth</string>
-    <string name="alley_search_option_table_name">Table name</string>
     <string name="alley_search_option_artist">Artist</string>
     <string name="alley_search_option_region">Region</string>
-    <string name="alley_search_option_description">Description</string>
+    <string name="alley_search_option_summary">Summary</string>
+    <string name="alley_search_option_fandom">Fandom</string>
+    <string name="alley_search_option_tables">Tables</string>
+
+    <string name="alley_search_option_merch_zero">Merch</string>
+    <string name="alley_search_option_merch_one">Merch</string>
+    <string name="alley_search_option_merch_many">Merch</string>
+
     <string name="alley_artist_favorite_icon_content_description">Mark artist as favorite</string>
     <string name="alley_artist_catalog_image">Artist catalog image</string>
     <string name="alley_display_type_icon_content_description">Change display type</string>
@@ -12,14 +18,20 @@
     <string name="alley_artist_details_booth">Booth</string>
     <string name="alley_artist_details_artist_name">Name</string>
     <string name="alley_artist_details_description">Description</string>
+    <string name="alley_artist_details_store">Store</string>
+    <string name="alley_artist_details_catalog">Catalog</string>
     <string name="alley_artist_details_links">Links</string>
     <string name="alley_artist_details_links_expand_content_description">Expand links</string>
+    <string name="alley_artist_details_series">Series</string>
+    <string name="alley_artist_details_merch">Merch</string>
     <string name="alley_artist_catalog_image_none">No catalog image</string>
     <string name="alley_sort_label">Sort</string>
     <string name="alley_sort_booth">Booth</string>
+    <string name="alley_sort_host_table">Host table</string>
     <string name="alley_sort_table">Table name</string>
     <string name="alley_sort_artist">Artist name</string>
     <string name="alley_sort_random">Random</string>
+    <string name="alley_sort_fandom">Fandom</string>
     <string name="alley_filter_favorites">Show only favorites</string>
     <string name="alley_filter_only_catalogs">Show only with catalog</string>
     <string name="alley_update_notice">New app version may be available</string>
@@ -31,4 +43,13 @@
     <string name="alley_series_header_zero">Series</string>
     <string name="alley_series_header_one">Series</string>
     <string name="alley_series_header_many">Series</string>
+
+    <string name="alley_nav_bar_artists">Artists</string>
+    <string name="alley_nav_bar_map">Map</string>
+    <string name="alley_nav_bar_stamp_rallies">Stamp rallies</string>
+
+    <string name="alley_stamp_rally_details_fandom">Fandom</string>
+    <string name="alley_stamp_rally_details_links">Links</string>
+    <string name="alley_stamp_rally_details_artists">Artists</string>
+    <string name="alley_stamp_rally_favorite_icon_content_description">Mark stamp rally as favorite</string>
 </resources>

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,7 +36,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
@@ -45,19 +45,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.thekeeperofpie.artistalley.BuildConfig
-import com.thekeeperofpie.artistalleydatabase.alley.details.ArtistDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.alley.details.ArtistDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.search.ArtistAlleySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
 import dagger.hilt.android.AndroidEntryPoint
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class,
+    ExperimentalMaterial3Api::class
+)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     enum class Destinations {
-        HOME, ARTIST_DETAILS
+        HOME, ARTIST_DETAILS, SERIES, STAMP_RALLY_DETAILS
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,19 +70,28 @@ class MainActivity : ComponentActivity() {
             Theme {
                 Surface {
                     val navController = rememberNavController()
+                    val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
+                        navController.navigate(
+                            "${Destinations.ARTIST_DETAILS.name}/"
+                                    + entry.id.valueId
+                                    + "?imageIndex=${imageIndex}"
+                        )
+                    }
                     Column(modifier = Modifier.fillMaxSize()) {
                         SharedTransitionLayout(modifier = Modifier.weight(1f)) {
                             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                                 NavHost(navController, Destinations.HOME.name) {
                                     sharedElementComposable(Destinations.HOME.name) {
-                                        ArtistAlleySearchScreen(
-                                            onEntryClick = { entry, imageIndex ->
+                                        ArtistAlleyScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onArtistClick = onArtistClick,
+                                            onStampRallyClick = { entry, imageIndex ->
                                                 navController.navigate(
-                                                    "${Destinations.ARTIST_DETAILS.name}/"
+                                                    "${Destinations.STAMP_RALLY_DETAILS.name}/"
                                                             + entry.id.valueId
                                                             + "?imageIndex=${imageIndex}"
                                                 )
-                                            }
+                                            },
                                         )
                                     }
 
@@ -100,24 +113,63 @@ class MainActivity : ComponentActivity() {
                                                 AnimatedContentTransitionScope.SlideDirection.Up
                                             )
                                         },
-                                        exitTransition = {
-                                            slideOutOfContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Down
+                                    ) {
+                                        ArtistDetailsScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onSeriesClick = {
+                                                navController.navigate(
+                                                    "${Destinations.SERIES.name}/${it.text}"
+                                                )
+                                            },
+                                        )
+                                    }
+
+                                    sharedElementComposable(
+                                        route = "${Destinations.STAMP_RALLY_DETAILS.name}/{id}"
+                                                + "?imageIndex={imageIndex}",
+                                        arguments = listOf(
+                                            navArgument("id") {
+                                                type = NavType.StringType
+                                                nullable = false
+                                            },
+                                            navArgument("imageIndex") {
+                                                type = NavType.StringType
+                                                nullable = true
+                                            },
+                                        ),
+                                        enterTransition = {
+                                            slideIntoContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Up
                                             )
                                         },
                                     ) {
-                                        val arguments = it.arguments!!
-                                        val id = arguments.getString("id")!!
-                                        val imageIndex = arguments.getString("imageIndex", null)
-                                            .toIntOrNull() ?: 0
-                                        val viewModel =
-                                            hiltViewModel<ArtistDetailsViewModel>().apply {
-                                                initialize(id)
-                                            }
-                                        ArtistDetailsScreen(
-                                            viewModel,
-                                            onClickBack = { navController.navigateUp() },
-                                            initialImageIndex = imageIndex,
+                                        StampRallyDetailsScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onArtistClick = {
+                                                navController.navigate(
+                                                    "${Destinations.ARTIST_DETAILS.name}/${it.id}"
+                                                )
+                                            },
+                                        )
+                                    }
+
+                                    sharedElementComposable(
+                                        route = "${Destinations.SERIES.name}/{series}",
+                                        arguments = listOf(
+                                            navArgument("series") {
+                                                type = NavType.StringType
+                                                nullable = false
+                                            },
+                                        ),
+                                        enterTransition = {
+                                            slideIntoContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Up
+                                            )
+                                        },
+                                    ) {
+                                        ArtistSearchScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onEntryClick = onArtistClick,
                                         )
                                     }
                                 }

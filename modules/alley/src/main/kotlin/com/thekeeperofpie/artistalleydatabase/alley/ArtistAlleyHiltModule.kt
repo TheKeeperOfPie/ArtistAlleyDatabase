@@ -13,4 +13,8 @@ class ArtistAlleyHiltModule {
     @Provides
     @Singleton
     fun provideArtistEntryDao(database: ArtistAlleyDatabase) = database.artistEntryDao()
+
+    @Provides
+    @Singleton
+    fun provideStampRallyEntryDao(database: ArtistAlleyDatabase) = database.stampRallyEntryDao()
 }

@@ -3,10 +3,15 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.alley"
+}
+
+secrets {
+    propertiesFileName = project.file("secrets.properties").absolutePath
 }
 
 dependencies {
@@ -35,6 +40,7 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material3)
+    implementation(libs.material3.adaptive.navigation.suite)
     implementation(libs.paging.compose)
 
     runtimeOnly(libs.room.runtime)

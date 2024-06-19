@@ -1,6 +1,5 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -10,7 +9,8 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.thekeeperofpie.artistalleydatabase.alley.search.ArtistAlleySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 import kotlinx.coroutines.flow.Flow
 
@@ -67,7 +67,7 @@ interface ArtistEntryDao {
     fun search(query: String, filterOptions: ArtistSearchQuery): PagingSource<Int, ArtistEntry> {
         val booleanOptions = mutableListOf<String>().apply {
             if (filterOptions.showOnlyFavorites) this += "favorite:1"
-            if (filterOptions.showOnlyWithCatalog) this += "catalogLink:*drive*"
+            if (filterOptions.showOnlyWithCatalog) this += "catalogLinks:*drive*"
         }
 
         val filterOptionsQueryPieces = filterOptionsQuery(filterOptions)
@@ -77,19 +77,21 @@ interface ArtistEntryDao {
             .map {
                 listOf(
                     "booth:$it",
-                    "artistNames:$it",
-                    "description:$it",
-                    // TODO
-//                    "seriesSearchable:$it",
+                    "name:$it",
+                    "summary:$it",
+                    "seriesInferredSearchable:$it",
+                    "seriesConfirmedSearchable:$it",
+                    "merchInferredSearchable:$it",
+                    "merchConfirmedSearchable:$it",
                 )
             }
 
         val ascending = if (filterOptions.sortAscending) "ASC" else "DESC"
         val basicSortSuffix = "\nORDER BY artist_entries_fts.FIELD COLLATE NOCASE $ascending"
         val sortSuffix = when (filterOptions.sortOption) {
-            ArtistAlleySearchSortOption.BOOTH -> basicSortSuffix.replace("FIELD", "booth")
-            ArtistAlleySearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "artist")
-            ArtistAlleySearchSortOption.RANDOM -> {
+            ArtistSearchSortOption.BOOTH -> basicSortSuffix.replace("FIELD", "booth")
+            ArtistSearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "name")
+            ArtistSearchSortOption.RANDOM -> {
                 "\nORDER BY substr(hex(artist_entries.id) * 0.${filterOptions.randomSeed}," +
                         " length(hex(artist_entries.id)) + 2) $ascending"
             }
@@ -104,11 +106,14 @@ interface ArtistEntryDao {
             return getEntries(SimpleSQLiteQuery(statement))
         }
 
-        val bindArguments = (options.ifEmpty { listOf(listOf("")) }).map {
-            it.joinToString(separator = " OR ") + " " +
-                    booleanOptions.joinToString(separator = " ")
+        val optionsArguments = options.map { it.joinToString(separator = " OR ") }
+        val booleanArguments = booleanOptions.joinToString(separator = " ")
+        val separator = " ".takeIf {
+            optionsArguments.isNotEmpty() && booleanArguments.isNotEmpty()
         }
-        val statement = bindArguments.joinToString("\nINTERSECT\n") {
+        val bindArguments = (optionsArguments + separator + booleanArguments)
+            .filterNot { it.isNullOrEmpty() }
+        val statement = (bindArguments + filterOptionsQueryPieces).joinToString("\nINTERSECT\n") {
             """
                 SELECT *
                 FROM artist_entries
@@ -116,9 +121,6 @@ interface ArtistEntryDao {
                 WHERE artist_entries_fts MATCH ?
                 """.trimIndent()
         } + sortSuffix
-
-        Log.d("DataDebug", "filterOptions = $filterOptions")
-        Log.d("DataDebug", "sortSuffix = $sortSuffix")
 
         return getEntries(
             SimpleSQLiteQuery(
@@ -158,14 +160,28 @@ interface ArtistEntryDao {
             queryPieces += it.split(WHITESPACE_REGEX)
                 .map { "booth:${RoomUtils.wrapMatchQuery(it)}" }
         }
-        filterOptions.description.takeUnless(String?::isNullOrBlank)?.let {
+        filterOptions.summary.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
                 .map { "description:${RoomUtils.wrapMatchQuery(it)}" }
         }
         queryPieces += filterOptions.series.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "seriesSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+            .map {
+                "seriesInferredSearchable:${RoomUtils.wrapMatchQuery(it)} OR "
+                    .takeUnless { filterOptions.showOnlyWithCatalog } +
+                        "seriesConfirmedSearchable:${RoomUtils.wrapMatchQuery(it)}"
+            }
         queryPieces += filterOptions.seriesById
-            .map { "seriesSerialized:${RoomUtils.wrapMatchQuery(it)}" }
+            .map {
+                "seriesInferredSerialized:${RoomUtils.wrapMatchQuery(it)} OR "
+                    .takeUnless { filterOptions.showOnlyWithCatalog } +
+                        "seriesConfirmedSerialized:${RoomUtils.wrapMatchQuery(it)}"
+            }
+        queryPieces += filterOptions.merch
+            .map {
+                "merchInferred:${RoomUtils.wrapMatchQuery(it)} OR "
+                    .takeUnless { filterOptions.showOnlyWithCatalog } +
+                        "merchConfirmed:${RoomUtils.wrapMatchQuery(it)}"
+            }
 
         return queryPieces
     }

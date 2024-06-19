@@ -1,14 +1,13 @@
-package com.thekeeperofpie.artistalleydatabase.alley
-
-import com.thekeeperofpie.artistalleydatabase.alley.search.ArtistAlleySearchSortOption
+package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 data class ArtistSearchQuery(
     val booth: String?,
     val artist: String?,
-    val description: String?,
+    val summary: String?,
     val series: List<String>,
     val seriesById: List<String>,
-    val sortOption: ArtistAlleySearchSortOption,
+    val merch: List<String>,
+    val sortOption: ArtistSearchSortOption,
     val sortAscending: Boolean,
     val showOnlyFavorites: Boolean,
     val showOnlyWithCatalog: Boolean,

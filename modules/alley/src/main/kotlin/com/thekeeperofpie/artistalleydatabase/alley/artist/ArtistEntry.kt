@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import androidx.annotation.Discouraged
 import androidx.room.ColumnInfo
@@ -23,8 +23,10 @@ data class ArtistEntry(
     val name: String,
     val summary: String? = null,
     val links: List<String> = emptyList(),
-    val store: String? = null,
-    val catalog: String? = null,
+    @ColumnInfo(defaultValue = "")
+    val storeLinks: List<String> = emptyList(),
+    @ColumnInfo(defaultValue = "")
+    val catalogLinks: List<String> = emptyList(),
     val favorite: Boolean = false,
     val ignored: Boolean = false,
     val notes: String? = null,
@@ -78,8 +80,10 @@ data class ArtistEntryFts(
     val name: String,
     val summary: String?,
     val links: List<String>,
-    val store: String?,
-    val catalog: String?,
+    @ColumnInfo(defaultValue = "")
+    val storeLinks: List<String> = emptyList(),
+    @ColumnInfo(defaultValue = "")
+    val catalogLinks: List<String> = emptyList(),
     val favorite: Boolean,
     val ignored: Boolean,
     val notes: String?,

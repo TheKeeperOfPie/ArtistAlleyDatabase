@@ -28,6 +28,7 @@ object Versions {
     const val leakCanary = "3.0-alpha-8"
     const val room = "2.7.0-alpha03"
     const val markwon = "4.6.2"
+    const val material3 = "1.3.0-beta02"
     const val media3 = "1.4.0-alpha02"
     const val mockito = "5.12.0"
     const val paging = "3.3.0"
@@ -79,7 +80,12 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("app.cash.molecule").version("1.4.3")
 
                 library("androidx.activity:activity-compose:1.9.0")
-                library("androidx.compose.material3:material3:1.3.0-beta02")
+
+                withVersion(Versions.material3) {
+                    library("androidx.compose.material3:material3")
+                    library("androidx.compose.material3:material3-adaptive-navigation-suite")
+                }
+
                 library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
                 library("androidx.core:core-ktx:1.14.0-alpha01")
 

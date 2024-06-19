@@ -9,11 +9,19 @@ class ArtistAlleyAppSettings(application: Application) : ArtistAlleySettings {
     private val sharedPrefs =
         application.getSharedPreferences("shared_prefs", Context.MODE_PRIVATE)
 
-    override var lastKnownCsvSize: Long
-        get() = sharedPrefs.getLong("lastKnownCsvSize", -1)
+    override var lastKnownArtistsCsvSize: Long
+        get() = sharedPrefs.getLong("lastKnownArtistsCsvSize", -1)
         set(value) {
             sharedPrefs.edit()
-                .putLong("lastKnownCsvSize", value)
+                .putLong("lastKnownArtistsCsvSize", value)
+                .apply()
+        }
+
+    override var lastKnownStampRalliesCsvSize: Long
+        get() = sharedPrefs.getLong("lastKnownStampRalliesCsvSize", -1)
+        set(value) {
+            sharedPrefs.edit()
+                .putLong("lastKnownStampRalliesCsvSize", value)
                 .apply()
         }
 
@@ -38,6 +46,22 @@ class ArtistAlleyAppSettings(application: Application) : ArtistAlleySettings {
         set(value) {
             sharedPrefs.edit()
                 .putBoolean("artistsSortAscending", value)
+                .apply()
+        }
+
+    override var stampRalliesSortOption: String
+        get() = sharedPrefs.getString("stampRalliesSortOption", null).orEmpty()
+        set(value) {
+            sharedPrefs.edit()
+                .putString("stampRalliesSortOption", value)
+                .apply()
+        }
+
+    override var stampRalliesSortAscending: Boolean
+        get() = sharedPrefs.getBoolean("stampRalliesSortAscending", true)
+        set(value) {
+            sharedPrefs.edit()
+                .putBoolean("stampRalliesSortAscending", value)
                 .apply()
         }
 

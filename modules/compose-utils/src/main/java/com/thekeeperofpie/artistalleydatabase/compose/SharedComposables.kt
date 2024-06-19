@@ -1523,7 +1523,7 @@ fun ColumnScope.InfoText(
 @Composable
 fun <T> expandableListInfoText(
     @StringRes labelTextRes: Int,
-    @StringRes contentDescriptionTextRes: Int,
+    @StringRes contentDescriptionTextRes: Int?,
     values: List<T>,
     valueToText: @Composable (T) -> String,
     onClick: ((T) -> Unit)? = null,
@@ -1585,7 +1585,7 @@ fun <T> expandableListInfoText(
         if (showExpand) {
             TrailingDropdownIconButton(
                 expanded = expanded,
-                contentDescription = stringResource(contentDescriptionTextRes),
+                contentDescription = contentDescriptionTextRes?.let { stringResource(it) },
                 onClick = { expanded = !expanded },
                 modifier = Modifier.align(Alignment.TopEnd),
             )

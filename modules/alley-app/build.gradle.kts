@@ -175,10 +175,8 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
 
     implementation(libs.core.ktx)
-    implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.activity.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
