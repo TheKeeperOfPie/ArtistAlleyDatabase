@@ -274,11 +274,10 @@ object SearchScreen {
                         },
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        entries.itemSnapshotList
                         items(
                             count = entries.itemCount,
                             key = entries.itemKey { it.id.scopedId },
-                            contentType = entries.itemContentType { "artist_entry" },
+                            contentType = entries.itemContentType { "search_entry" },
                         ) { index ->
                             val entry = entries[index] ?: return@items
 

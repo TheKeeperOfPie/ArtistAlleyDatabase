@@ -46,6 +46,7 @@
 
     <string name="alley_nav_bar_artists">Artists</string>
     <string name="alley_nav_bar_map">Map</string>
+    <string name="alley_nav_bar_browse">Browse</string>
     <string name="alley_nav_bar_stamp_rallies">Stamp rallies</string>
 
     <string name="alley_stamp_rally_details_fandom">Fandom</string>
@@ -53,4 +54,8 @@
     <string name="alley_stamp_rally_details_artists">Artists</string>
     <string name="alley_stamp_rally_details_other_tables">Other tables</string>
     <string name="alley_stamp_rally_favorite_icon_content_description">Mark stamp rally as favorite</string>
+
+    <string name="alley_browse_tab_series">Series</string>
+    <string name="alley_browse_tab_merch">Merch</string>
+    <string name="alley_browse_title">Browse</string>
 </resources>

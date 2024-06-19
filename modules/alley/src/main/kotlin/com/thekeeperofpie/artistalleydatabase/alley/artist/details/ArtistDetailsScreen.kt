@@ -77,7 +77,7 @@ object ArtistDetailsScreen {
                 }
             },
             sharedElementId = artist.id,
-            favorite = { artist.favorite },
+            favorite = { entry.favorite },
             onFavoriteToggle = viewModel::onFavoriteToggle,
             images = viewModel::images,
             onClickBack = onClickBack,

@@ -81,7 +81,7 @@ object ArtistSearchScreen {
 
         SearchScreen(
             viewModel = viewModel,
-            title = { viewModel.lockedSeries },
+            title = { viewModel.lockedSeries ?: viewModel.lockedMerch },
             onClickBack = onClickBack,
             entriesSize = { viewModel.entriesSize },
             scaffoldState = scaffoldState,

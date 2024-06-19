@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Approval
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Map
@@ -28,8 +29,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import kotlinx.coroutines.launch
@@ -44,6 +48,8 @@ object ArtistAlleyScreen {
         onClickBack: () -> Unit,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         onStampRallyClick: (StampRallyEntryGridModel, Int) -> Unit,
+        onSeriesClick: (SeriesEntry) -> Unit,
+        onMerchClick: (MerchEntry) -> Unit,
     ) {
         val updateNotice = stringResource(R.string.alley_update_notice)
         val updateOpenUpdate = stringResource(R.string.alley_open_update)
@@ -99,6 +105,11 @@ object ArtistAlleyScreen {
                         scrollPositions,
                     ),
                 )
+                Destinations.BROWSE -> BrowseScreen(
+                    onClickBack = onClickBack,
+                    onSeriesClick = onSeriesClick,
+                    onMerchClick = onMerchClick,
+                )
                 Destinations.MAP -> Text("TODO")
                 Destinations.STAMP_RALLIES -> StampRallySearchScreen(
                     onEntryClick = onStampRallyClick,
@@ -113,6 +124,7 @@ object ArtistAlleyScreen {
 
     enum class Destinations(val icon: ImageVector, @StringRes val textRes: Int) {
         ARTISTS(Icons.Default.Brush, R.string.alley_nav_bar_artists),
+        BROWSE(Icons.AutoMirrored.Default.List, R.string.alley_nav_bar_browse),
         MAP(Icons.Default.Map, R.string.alley_nav_bar_map),
         STAMP_RALLIES(Icons.Default.Approval, R.string.alley_nav_bar_stamp_rallies),
     }

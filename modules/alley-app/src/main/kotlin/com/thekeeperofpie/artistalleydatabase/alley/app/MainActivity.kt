@@ -55,14 +55,15 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import dagger.hilt.android.AndroidEntryPoint
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class,
+@OptIn(
+    ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class,
     ExperimentalMaterial3Api::class
 )
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     enum class Destinations {
-        HOME, ARTIST_DETAILS, SERIES, STAMP_RALLY_DETAILS
+        HOME, ARTIST_DETAILS, MERCH, SERIES, STAMP_RALLY_DETAILS
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,6 +94,16 @@ class MainActivity : ComponentActivity() {
                                                             + "?imageIndex=${imageIndex}"
                                                 )
                                             },
+                                            onSeriesClick = {
+                                                navController.navigate(
+                                                    "${Destinations.SERIES.name}/${it.name}"
+                                                )
+                                            },
+                                            onMerchClick = {
+                                                navController.navigate(
+                                                    "${Destinations.MERCH.name}/${it.name}"
+                                                )
+                                            },
                                         )
                                     }
 
@@ -112,6 +123,11 @@ class MainActivity : ComponentActivity() {
                                         enterTransition = {
                                             slideIntoContainer(
                                                 AnimatedContentTransitionScope.SlideDirection.Up
+                                            )
+                                        },
+                                        exitTransition = {
+                                            slideOutOfContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Down
                                             )
                                         },
                                     ) {
@@ -143,6 +159,11 @@ class MainActivity : ComponentActivity() {
                                                 AnimatedContentTransitionScope.SlideDirection.Up
                                             )
                                         },
+                                        exitTransition = {
+                                            slideOutOfContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Down
+                                            )
+                                        },
                                     ) {
                                         StampRallyDetailsScreen(
                                             onClickBack = navController::navigateUp,
@@ -165,6 +186,37 @@ class MainActivity : ComponentActivity() {
                                         enterTransition = {
                                             slideIntoContainer(
                                                 AnimatedContentTransitionScope.SlideDirection.Up
+                                            )
+                                        },
+                                        exitTransition = {
+                                            slideOutOfContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Down
+                                            )
+                                        },
+                                    ) {
+                                        ArtistSearchScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onEntryClick = onArtistClick,
+                                            scrollStateSaver = ScrollStateSaver(),
+                                        )
+                                    }
+
+                                    sharedElementComposable(
+                                        route = "${Destinations.MERCH.name}/{merch}",
+                                        arguments = listOf(
+                                            navArgument("merch") {
+                                                type = NavType.StringType
+                                                nullable = false
+                                            },
+                                        ),
+                                        enterTransition = {
+                                            slideIntoContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Up
+                                            )
+                                        },
+                                        exitTransition = {
+                                            slideOutOfContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Down
                                             )
                                         },
                                     ) {

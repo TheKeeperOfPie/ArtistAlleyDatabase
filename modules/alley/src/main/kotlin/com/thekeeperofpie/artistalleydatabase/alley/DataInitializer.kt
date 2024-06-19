@@ -6,21 +6,28 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyArtistConnection
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
 import org.apache.commons.csv.CSVFormat
+import java.io.Reader
 import javax.inject.Inject
 
 class DataInitializer @Inject constructor(
-    val scopedApplication: ScopedApplication,
-    val artistEntryDao: ArtistEntryDao,
-    val stampRallyEntryDao: StampRallyEntryDao,
-    val settings: ArtistAlleySettings,
+    private val scopedApplication: ScopedApplication,
+    private val artistEntryDao: ArtistEntryDao,
+    private val stampRallyEntryDao: StampRallyEntryDao,
+    private val tagEntryDao: TagEntryDao,
+    private val settings: ArtistAlleySettings,
 ) {
     companion object {
         private const val ARTISTS_CSV_NAME = "artists.csv"
         private const val STAMP_RALLIES_CSV_NAME = "rallies.csv"
+        private const val SERIES_CSV_NAME = "series.csv"
+        private const val MERCH_CSV_NAME = "merch.csv"
     }
 
     fun init() {
@@ -31,6 +38,7 @@ class DataInitializer @Inject constructor(
                 || artistEntryDao.getEntriesSize() == 0
             ) {
                 parseArtists()
+                parseTags()
                 settings.lastKnownArtistsCsvSize = artistsCsvSize
             }
             val ralliesCsvSize = parseSize(application, STAMP_RALLIES_CSV_NAME)
@@ -46,12 +54,7 @@ class DataInitializer @Inject constructor(
     private suspend fun parseArtists() {
         scopedApplication.app.assets.open(ARTISTS_CSV_NAME).use { input ->
             input.reader().use { reader ->
-                CSVFormat.RFC4180.builder()
-                    .setHeader()
-                    .setSkipHeaderRecord(true)
-                    .build()
-                    .parse(reader)
-                    .asSequence()
+                csvReader(reader)
                     .mapNotNull {
                         // Booth,Artist,Summary,Links,Store,Catalog / table,
                         // Series - Inferred,Merch - Inferred,Notes,Series - Confirmed,
@@ -106,17 +109,41 @@ class DataInitializer @Inject constructor(
         }
     }
 
+    private suspend fun parseTags() {
+        scopedApplication.app.assets.open(SERIES_CSV_NAME).use { input ->
+            input.reader().use { reader ->
+                csvReader(reader)
+                    .mapNotNull {
+                        // Series, Notes
+                        val name = it["Series"]
+                        val notes = it["Notes"]
+                        SeriesEntry(name = name, notes = notes)
+                    }
+                    .chunked(20)
+                    .forEach { tagEntryDao.insertSeries(it) }
+            }
+        }
+        scopedApplication.app.assets.open(MERCH_CSV_NAME).use { input ->
+            input.reader().use { reader ->
+                csvReader(reader)
+                    .mapNotNull {
+                        // Merch, Notes
+                        val name = it["Merch"]
+                        val notes = it["Notes"]
+                        MerchEntry(name = name, notes = notes)
+                    }
+                    .chunked(20)
+                    .forEach { tagEntryDao.insertMerch(it) }
+            }
+        }
+    }
+
     private suspend fun parseStampRallies() {
         stampRallyEntryDao.clearEntries()
         stampRallyEntryDao.clearConnections()
         scopedApplication.app.assets.open(STAMP_RALLIES_CSV_NAME).use { input ->
             input.reader().use { reader ->
-                CSVFormat.RFC4180.builder()
-                    .setHeader()
-                    .setSkipHeaderRecord(true)
-                    .build()
-                    .parse(reader)
-                    .asSequence()
+                csvReader(reader)
                     .mapNotNull {
                         // Theme,Link,Tables,Minimum per table,Notes,Images
                         val theme = it["Theme"]
@@ -150,6 +177,14 @@ class DataInitializer @Inject constructor(
             }
         }
     }
+
+    private fun csvReader(reader: Reader) =
+        CSVFormat.RFC4180.builder()
+            .setHeader()
+            .setSkipHeaderRecord(true)
+            .build()
+            .parse(reader)
+            .asSequence()
 
     private fun parseSize(application: Application, csvName: String) = try {
         application.assets.open(csvName).use { it.available().toLong() }

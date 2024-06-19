@@ -77,7 +77,7 @@ object StampRallyDetailsScreen {
                 }
             },
             sharedElementId = stampRally.id,
-            favorite = { stampRally.favorite },
+            favorite = { entry.favorite },
             onFavoriteToggle = viewModel::onFavoriteToggle,
             images = viewModel::images,
             onClickBack = onClickBack,

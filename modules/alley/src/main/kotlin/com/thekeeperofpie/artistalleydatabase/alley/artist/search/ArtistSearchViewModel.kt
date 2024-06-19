@@ -47,6 +47,7 @@ class ArtistSearchViewModel @Inject constructor(
 ) : EntrySearchViewModel<ArtistSearchQuery, ArtistEntryGridModel>() {
 
     val lockedSeries = savedStateHandle.get<String>("series")
+    val lockedMerch = savedStateHandle.get<String>("merch")
 
     val boothSection = EntrySection.LongText(headerRes = R.string.alley_search_option_booth)
     val artistSection = EntrySection.LongText(headerRes = R.string.alley_search_option_artist)
@@ -133,7 +134,8 @@ class ArtistSearchViewModel @Inject constructor(
             seriesById = seriesContents
                 .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                 .mapNotNull(AniListUtils::mediaId),
-            merch = merchSection.finalContents().map { it.serializedValue },
+            merch = merchSection.finalContents().map { it.serializedValue }
+                    + listOfNotNull(lockedMerch),
             sortOption = sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
             sortAscending = sortAscending,
             showOnlyFavorites = showOnlyFavorites,

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -133,9 +132,7 @@ interface ArtistEntryDao {
             SimpleSQLiteQuery(
                 statement,
                 bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray(),
-            ).also {
-                Log.d("QueryDebug", "sql = ${it.sql}, options = ${(bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray()).contentToString()}")
-            }
+            )
         )
     }
 
