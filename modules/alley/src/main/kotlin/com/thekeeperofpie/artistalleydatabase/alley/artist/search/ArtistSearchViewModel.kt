@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import javax.inject.Inject
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -46,8 +48,15 @@ class ArtistSearchViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : EntrySearchViewModel<ArtistSearchQuery, ArtistEntryGridModel>() {
 
-    val lockedSeries = savedStateHandle.get<String>("series")
-    val lockedMerch = savedStateHandle.get<String>("merch")
+    @Serializable
+    data class InternalRoute(
+        val series: String? = null,
+        val merch: String? = null,
+    )
+
+    private val route = savedStateHandle.toRoute<InternalRoute>()
+    val lockedSeries = route.series
+    val lockedMerch = route.merch
 
     val boothSection = EntrySection.LongText(headerRes = R.string.alley_search_option_booth)
     val artistSection = EntrySection.LongText(headerRes = R.string.alley_search_option_artist)
@@ -129,13 +138,11 @@ class ArtistSearchViewModel @Inject constructor(
             summary = summarySection.value.trim(),
             series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
                 .map { it.serializedValue }
-                .filterNot(String::isBlank)
-                    + listOfNotNull(lockedSeries),
+                .filterNot(String::isBlank),
             seriesById = seriesContents
                 .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                 .mapNotNull(AniListUtils::mediaId),
-            merch = merchSection.finalContents().map { it.serializedValue }
-                    + listOfNotNull(lockedMerch),
+            merch = merchSection.finalContents().map { it.serializedValue },
             sortOption = sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
             sortAscending = sortAscending,
             showOnlyFavorites = showOnlyFavorites,
@@ -143,6 +150,8 @@ class ArtistSearchViewModel @Inject constructor(
             showIgnored = showIgnored,
             showOnlyIgnored = showOnlyIgnored,
             randomSeed = randomSeed,
+            lockedSeries = lockedSeries,
+            lockedMerch = lockedMerch,
         )
     }
 

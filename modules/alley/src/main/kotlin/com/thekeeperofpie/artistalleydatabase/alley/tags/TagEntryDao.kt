@@ -9,10 +9,10 @@ import androidx.room.Query
 @Dao
 interface TagEntryDao {
 
-    @Query("""SELECT * FROM series_entries ORDER BY name""")
+    @Query("""SELECT * FROM series_entries ORDER BY name COLLATE NOCASE""")
     fun getSeries(): PagingSource<Int, SeriesEntry>
 
-    @Query("""SELECT * FROM merch_entries ORDER BY name""")
+    @Query("""SELECT * FROM merch_entries ORDER BY name COLLATE NOCASE""")
     fun getMerch(): PagingSource<Int, MerchEntry>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

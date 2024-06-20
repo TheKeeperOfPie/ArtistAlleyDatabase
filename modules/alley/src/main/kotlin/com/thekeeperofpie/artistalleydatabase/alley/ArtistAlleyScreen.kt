@@ -45,7 +45,6 @@ object ArtistAlleyScreen {
 
     @Composable
     operator fun invoke(
-        onClickBack: () -> Unit,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         onStampRallyClick: (StampRallyEntryGridModel, Int) -> Unit,
         onSeriesClick: (SeriesEntry) -> Unit,

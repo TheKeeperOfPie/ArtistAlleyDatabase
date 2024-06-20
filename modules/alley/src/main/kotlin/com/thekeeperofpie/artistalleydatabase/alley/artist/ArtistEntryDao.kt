@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import android.database.DatabaseUtils
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -11,6 +12,8 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistMerchConnection
+import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 import kotlinx.coroutines.flow.Flow
 
@@ -101,11 +104,23 @@ interface ArtistEntryDao {
             .takeIf { filterOptions.sortOption == ArtistSearchSortOption.RANDOM }
             .orEmpty()
 
+        val lockedSuffix = if (filterOptions.lockedSeries != null) {
+
+            "artist_entries.id IN (SELECT artistId from artist_series_connections WHERE artist_series_connections.seriesId == " +
+                    "${DatabaseUtils.sqlEscapeString(filterOptions.lockedSeries)})"
+        } else if (filterOptions.lockedMerch != null) {
+            "artist_entries.id IN (SELECT artistId from artist_merch_connections WHERE artist_merch_connections.merchId == " +
+                    "${DatabaseUtils.sqlEscapeString(filterOptions.lockedMerch)})"
+        } else {
+            null
+        }
+
         if (options.isEmpty() && filterOptionsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
                 SELECT *$selectSuffix
                 FROM artist_entries
                 JOIN artist_entries_fts ON artist_entries.id = artist_entries_fts.id
+                ${if (lockedSuffix == null) "" else "WHERE $lockedSuffix"}
                 """.trimIndent() + sortSuffix
 
             return getEntries(SimpleSQLiteQuery(statement))
@@ -125,6 +140,7 @@ interface ArtistEntryDao {
                 FROM artist_entries
                 JOIN artist_entries_fts ON artist_entries.id = artist_entries_fts.id
                 WHERE artist_entries_fts MATCH ?
+                ${if (lockedSuffix == null) "" else "AND $lockedSuffix"}
                 """.trimIndent()
         } + sortSuffix
 
@@ -142,16 +158,26 @@ interface ArtistEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(entries: List<ArtistEntry>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSeriesConnections(entries: List<ArtistSeriesConnection>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMerchConnections(entries: List<ArtistMerchConnection>)
+
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUpdatedEntries(entries: Collection<ArtistEntry>) {
-        insertEntries(entries.map {
-            val existingEntry = getEntry(it.id)
-            it.copy(
+    suspend fun insertUpdatedEntries(entries: Collection<Triple<ArtistEntry, List<ArtistSeriesConnection>, List<ArtistMerchConnection>>>) {
+        val mergedEntries = entries.map { (entry, _) ->
+            val existingEntry = getEntry(entry.id)
+            entry.copy(
                 favorite = existingEntry?.favorite ?: false,
                 ignored = existingEntry?.ignored ?: false,
             )
-        })
+        }
+
+        insertEntries(mergedEntries)
+        insertSeriesConnections(entries.flatMap { it.second })
+        insertMerchConnections(entries.flatMap { it.third })
     }
 
     private fun filterOptionsQuery(filterOptions: ArtistSearchQuery): MutableList<String> {

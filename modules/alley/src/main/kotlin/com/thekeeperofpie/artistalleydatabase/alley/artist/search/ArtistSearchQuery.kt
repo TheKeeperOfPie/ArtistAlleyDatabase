@@ -14,4 +14,6 @@ data class ArtistSearchQuery(
     val showIgnored: Boolean,
     val showOnlyIgnored: Boolean,
     val randomSeed: Int,
+    val lockedSeries: String?,
+    val lockedMerch: String?,
 )

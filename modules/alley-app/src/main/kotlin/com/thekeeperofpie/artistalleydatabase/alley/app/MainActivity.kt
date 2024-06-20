@@ -39,13 +39,12 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.thekeeperofpie.artistalley.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyScreen
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
@@ -62,10 +61,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    enum class Destinations {
-        HOME, ARTIST_DETAILS, MERCH, SERIES, STAMP_RALLY_DETAILS
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -74,52 +69,38 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
                         navController.navigate(
-                            "${Destinations.ARTIST_DETAILS.name}/"
-                                    + entry.id.valueId
-                                    + "?imageIndex=${imageIndex}"
+                            Destinations.ArtistDetails(entry.id.valueId, imageIndex.toString())
                         )
                     }
                     Column(modifier = Modifier.fillMaxSize()) {
                         SharedTransitionLayout(modifier = Modifier.weight(1f)) {
                             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                                NavHost(navController, Destinations.HOME.name) {
-                                    sharedElementComposable(Destinations.HOME.name) {
+                                NavHost(navController, Destinations.Home) {
+                                    sharedElementComposable<Destinations.Home> {
                                         ArtistAlleyScreen(
-                                            onClickBack = navController::navigateUp,
                                             onArtistClick = onArtistClick,
                                             onStampRallyClick = { entry, imageIndex ->
                                                 navController.navigate(
-                                                    "${Destinations.STAMP_RALLY_DETAILS.name}/"
-                                                            + entry.id.valueId
-                                                            + "?imageIndex=${imageIndex}"
+                                                    Destinations.StampRallyDetails(
+                                                        entry.value.id,
+                                                        imageIndex.toString(),
+                                                    )
                                                 )
                                             },
                                             onSeriesClick = {
                                                 navController.navigate(
-                                                    "${Destinations.SERIES.name}/${it.name}"
+                                                    Destinations.Series(it.name)
                                                 )
                                             },
                                             onMerchClick = {
                                                 navController.navigate(
-                                                    "${Destinations.MERCH.name}/${it.name}"
+                                                    Destinations.Merch(it.name)
                                                 )
                                             },
                                         )
                                     }
 
-                                    sharedElementComposable(
-                                        route = "${Destinations.ARTIST_DETAILS.name}/{id}"
-                                                + "?imageIndex={imageIndex}",
-                                        arguments = listOf(
-                                            navArgument("id") {
-                                                type = NavType.StringType
-                                                nullable = false
-                                            },
-                                            navArgument("imageIndex") {
-                                                type = NavType.StringType
-                                                nullable = true
-                                            },
-                                        ),
+                                    sharedElementComposable<Destinations.ArtistDetails>(
                                         enterTransition = {
                                             slideIntoContainer(
                                                 AnimatedContentTransitionScope.SlideDirection.Up
@@ -135,25 +116,13 @@ class MainActivity : ComponentActivity() {
                                             onClickBack = navController::navigateUp,
                                             onSeriesClick = {
                                                 navController.navigate(
-                                                    "${Destinations.SERIES.name}/${it.text}"
+                                                    Destinations.Series(it.text)
                                                 )
                                             },
                                         )
                                     }
 
-                                    sharedElementComposable(
-                                        route = "${Destinations.STAMP_RALLY_DETAILS.name}/{id}"
-                                                + "?imageIndex={imageIndex}",
-                                        arguments = listOf(
-                                            navArgument("id") {
-                                                type = NavType.StringType
-                                                nullable = false
-                                            },
-                                            navArgument("imageIndex") {
-                                                type = NavType.StringType
-                                                nullable = true
-                                            },
-                                        ),
+                                    sharedElementComposable<Destinations.StampRallyDetails>(
                                         enterTransition = {
                                             slideIntoContainer(
                                                 AnimatedContentTransitionScope.SlideDirection.Up
@@ -169,20 +138,13 @@ class MainActivity : ComponentActivity() {
                                             onClickBack = navController::navigateUp,
                                             onArtistClick = {
                                                 navController.navigate(
-                                                    "${Destinations.ARTIST_DETAILS.name}/${it.id}"
+                                                    Destinations.ArtistDetails(it.id)
                                                 )
                                             },
                                         )
                                     }
 
-                                    sharedElementComposable(
-                                        route = "${Destinations.SERIES.name}/{series}",
-                                        arguments = listOf(
-                                            navArgument("series") {
-                                                type = NavType.StringType
-                                                nullable = false
-                                            },
-                                        ),
+                                    sharedElementComposable<Destinations.Series>(
                                         enterTransition = {
                                             slideIntoContainer(
                                                 AnimatedContentTransitionScope.SlideDirection.Up
@@ -201,14 +163,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable(
-                                        route = "${Destinations.MERCH.name}/{merch}",
-                                        arguments = listOf(
-                                            navArgument("merch") {
-                                                type = NavType.StringType
-                                                nullable = false
-                                            },
-                                        ),
+                                    sharedElementComposable<Destinations.Merch>(
                                         enterTransition = {
                                             slideIntoContainer(
                                                 AnimatedContentTransitionScope.SlideDirection.Up
@@ -279,14 +234,12 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun NavGraphBuilder.sharedElementComposable(
-        route: String,
+    private inline fun <reified T : kotlin.Any>  NavGraphBuilder.sharedElementComposable(
         arguments: List<NamedNavArgument> = emptyList(),
-        enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
-        exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
-        content: @Composable (NavBackStackEntry) -> Unit,
-    ) = composable(
-        route = route,
+        noinline enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+        noinline exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+        noinline content: @Composable (NavBackStackEntry) -> Unit,
+    ) = composable<T>(
         enterTransition = enterTransition,
         exitTransition = exitTransition,
     ) {

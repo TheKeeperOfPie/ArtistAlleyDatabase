@@ -7,8 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
@@ -24,8 +26,9 @@ class StampRallyDetailsViewModel @Inject constructor(
     private val stampRallyEntryDao: StampRallyEntryDao,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    val id = savedStateHandle.get<String>("id")!!
-    val initialImageIndex = savedStateHandle.get<String>("imageIndex")?.toIntOrNull() ?: 0
+    private val route = savedStateHandle.toRoute<Destinations.StampRallyDetails>()
+    val id = route.id
+    val initialImageIndex = route.imageIndex?.toIntOrNull() ?: 0
 
     var entry by mutableStateOf<Entry?>(null)
     var images by mutableStateOf<List<CatalogImage>>(emptyList())

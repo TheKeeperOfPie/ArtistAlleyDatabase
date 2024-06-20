@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -70,7 +69,10 @@ interface StampRallyEntryDao {
     )
     fun getEntriesSizeFlow(): Flow<Int>
 
-    fun search(query: String, filterOptions: StampRallySearchQuery): PagingSource<Int, StampRallyEntry> {
+    fun search(
+        query: String,
+        filterOptions: StampRallySearchQuery,
+    ): PagingSource<Int, StampRallyEntry> {
         val booleanOptions = mutableListOf<String>().apply {
             if (filterOptions.showOnlyFavorites) this += "favorite:1"
         }
@@ -93,10 +95,11 @@ interface StampRallyEntryDao {
             StampRallySearchSortOption.FANDOM -> basicSortSuffix.replace("FIELD", "fandom")
             StampRallySearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
         }
-        val selectSuffix = (", substr(stamp_rally_entries.counter * 0.${filterOptions.randomSeed}," +
-                " length(stamp_rally_entries.counter) + 2) as orderIndex")
-            .takeIf { filterOptions.sortOption == StampRallySearchSortOption.RANDOM }
-            .orEmpty()
+        val selectSuffix =
+            (", substr(stamp_rally_entries.counter * 0.${filterOptions.randomSeed}," +
+                    " length(stamp_rally_entries.counter) + 2) as orderIndex")
+                .takeIf { filterOptions.sortOption == StampRallySearchSortOption.RANDOM }
+                .orEmpty()
 
         if (options.isEmpty() && filterOptionsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
@@ -105,9 +108,7 @@ interface StampRallyEntryDao {
                 JOIN stamp_rally_entries_fts ON stamp_rally_entries.id = stamp_rally_entries_fts.id
                 """.trimIndent() + sortSuffix
 
-            return getEntries(SimpleSQLiteQuery(statement).also {
-                Log.d("QueryDebug", "sql = ${it.sql}")
-            })
+            return getEntries(SimpleSQLiteQuery(statement))
         }
 
         val optionsArguments = options.map { it.joinToString(separator = " OR ") }
@@ -130,9 +131,7 @@ interface StampRallyEntryDao {
             SimpleSQLiteQuery(
                 statement,
                 bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray(),
-            ).also {
-                Log.d("QueryDebug", "sql = ${it.sql}, options = ${(bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray()).contentToString()}")
-            }
+            )
         )
     }
 

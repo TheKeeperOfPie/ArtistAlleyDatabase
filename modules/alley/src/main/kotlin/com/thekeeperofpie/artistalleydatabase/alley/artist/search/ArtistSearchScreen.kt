@@ -208,6 +208,8 @@ object ArtistSearchScreen {
                 viewModel.query.isNotEmpty()
                         || viewModel.showOnlyFavorites
                         || viewModel.showOnlyWithCatalog
+                        || viewModel.lockedSeries != null
+                        || viewModel.lockedMerch != null
             },
             itemToSharedElementId = { it.value.id },
             itemRow = { entry, onFavoriteToggle, modifier ->

@@ -65,7 +65,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -414,6 +413,7 @@ object SearchScreen {
                         pageSpacing = 16.dp,
                         userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
                         modifier = Modifier
+                            .sharedBounds("imageContainer", sharedElementId)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .heightIn(min = density.run { minHeight.toDp() })
                             .onSizeChanged {
@@ -421,7 +421,6 @@ object SearchScreen {
                                     minHeight = it.height
                                 }
                             }
-                            .clipToBounds()
                     ) {
                         if (it == 0 && images.size > 1) {
                             ImageGrid(
@@ -457,7 +456,6 @@ object SearchScreen {
                                                     }
                                                 )
                                             }
-                                            .sharedBounds("image", image.uri)
                                             .fillMaxWidth()
                                             .background(MaterialTheme.colorScheme.surfaceVariant)
                                             .conditionally(image.width != null && image.height != null) {

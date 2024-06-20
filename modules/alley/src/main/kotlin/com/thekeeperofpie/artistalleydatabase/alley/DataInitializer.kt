@@ -6,6 +6,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyArtistConnection
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistMerchConnection
+import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
@@ -86,7 +88,7 @@ class DataInitializer @Inject constructor(
 
                         val notes = it["Notes"]
 
-                        ArtistEntry(
+                        val artistEntry = ArtistEntry(
                             id = booth,
                             booth = booth,
                             name = artist,
@@ -104,6 +106,15 @@ class DataInitializer @Inject constructor(
                             notes = notes,
                             counter = counter++
                         )
+
+                        val seriesConnections = (seriesInferred + seriesConfirmed)
+                            .map { ArtistSeriesConnection(artistId = booth, seriesId = it) }
+                            .distinct()
+                        val merchConnections = (merchInferred + merchConfirmed)
+                            .map { ArtistMerchConnection(artistId = booth, merchId = it) }
+                            .distinct()
+
+                        Triple(artistEntry, seriesConnections, merchConnections)
                     }
                     .chunked(20)
                     .forEach { artistEntryDao.insertUpdatedEntries(it) }
