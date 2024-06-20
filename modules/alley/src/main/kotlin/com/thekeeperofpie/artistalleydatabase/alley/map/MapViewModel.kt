@@ -1,0 +1,79 @@
+package com.thekeeperofpie.artistalleydatabase.alley.map
+
+import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class MapViewModel @Inject constructor(
+    private val application: Application,
+    private val artistEntryDao: ArtistEntryDao,
+) : ViewModel() {
+    var gridData by mutableStateOf(LoadingResult.loading<GridData>())
+    private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
+
+    init {
+        viewModelScope.launch(CustomDispatchers.IO) {
+            val booths = artistEntryDao.getBooths()
+            val letterToBooths = booths.groupBy { it.take(1) }.toSortedMap()
+            val maxRow = letterToBooths.size
+            val maxColumn =
+                letterToBooths.maxOf {
+                    it.value.mapNotNull { it.drop(1).toIntOrNull() }.maxOrNull() ?: 0
+                }
+            val tables = letterToBooths.values.mapIndexed { index, booths ->
+                booths.map {
+                    Table(
+                        booth = it,
+                        gridX = index,
+                        gridY = it.drop(1).toIntOrNull() ?: 0,
+                    )
+                }
+            }.flatten()
+            gridData = LoadingResult.success(
+                GridData(
+                    maxRow = maxRow,
+                    maxColumn = maxColumn,
+                    tables = tables,
+                )
+            )
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            mutationUpdates.collectLatest {
+                artistEntryDao.insertEntries(it)
+            }
+        }
+    }
+
+    fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {
+        mutationUpdates.tryEmit(entry.value.copy(favorite = favorite))
+    }
+
+    fun onIgnoredToggle(entry: ArtistEntryGridModel, ignored: Boolean) {
+        mutationUpdates.tryEmit(entry.value.copy(ignored = ignored))
+    }
+
+    suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.booth)?.let {
+        ArtistEntryGridModel.buildFromEntry(application, it)
+    }
+
+    data class GridData(
+        val maxRow: Int,
+        val maxColumn: Int,
+        val tables: List<Table>,
+    )
+}

@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,14 +10,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Switch
@@ -39,11 +33,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.ui.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
-import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -216,60 +209,5 @@ object ArtistSearchScreen {
                 ArtistListRow(entry, onFavoriteToggle, modifier)
             }
         )
-    }
-
-    @Composable
-    private fun ArtistListRow(
-        entry: ArtistEntryGridModel,
-        onFavoriteToggle: (Boolean) -> Unit,
-        modifier: Modifier = Modifier,
-    ) {
-        val artist = entry.value
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = modifier
-                .sharedBounds("container", artist.id, zIndexInOverlay = 1f)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = artist.booth,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-                    .sharedBounds("booth", artist.id, zIndexInOverlay = 1f)
-                    .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
-            )
-
-            Text(
-                text = artist.name,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .sharedBounds("name", artist.id, zIndexInOverlay = 1f)
-                    .weight(1f)
-                    .padding(vertical = 12.dp)
-            )
-
-            val favorite = entry.favorite
-            IconButton(
-                onClick = { onFavoriteToggle(!favorite) },
-                modifier = Modifier.sharedElement(
-                    "favorite",
-                    artist.id,
-                    zIndexInOverlay = 1f,
-                )
-            ) {
-                Icon(
-                    imageVector = if (favorite) {
-                        Icons.Filled.Favorite
-                    } else {
-                        Icons.Filled.FavoriteBorder
-                    },
-                    contentDescription = stringResource(
-                        R.string.alley_artist_favorite_icon_content_description
-                    ),
-                )
-            }
-        }
     }
 }

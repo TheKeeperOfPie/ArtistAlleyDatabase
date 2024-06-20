@@ -1605,9 +1605,9 @@ class ZoomPanState(
     initialTranslationX: Float = 0f,
     initialTranslationY: Float = 0f,
     initialScale: Float = 1f,
+    var maxTranslationX: Float = 0f,
+    var maxTranslationY: Float = 0f,
 ) {
-    var maxTranslationX = 0f
-    var maxTranslationY = 0f
     var transformableState = TransformableState { zoomChange, panChange, _ ->
         val translation = translation + panChange
         val scale = this.scale

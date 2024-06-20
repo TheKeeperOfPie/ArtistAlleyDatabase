@@ -17,7 +17,6 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -30,6 +29,7 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
+import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
@@ -74,8 +74,7 @@ object ArtistAlleyScreen {
             }
         }
         val scrollPositions = ScrollStateSaver.scrollPositions()
-
-        var currentIndex by rememberSaveable { mutableIntStateOf(0) }
+        val mapTransformState = MapScreen.rememberTransformState()
         var currentDestination by rememberSaveable { mutableStateOf(Destinations.ARTISTS) }
         NavigationSuiteScaffold(
             navigationSuiteItems = {
@@ -108,7 +107,10 @@ object ArtistAlleyScreen {
                     onSeriesClick = onSeriesClick,
                     onMerchClick = onMerchClick,
                 )
-                Destinations.MAP -> Text("TODO")
+                Destinations.MAP -> MapScreen(
+                    transformState = mapTransformState,
+                    onArtistClick = onArtistClick,
+                )
                 Destinations.STAMP_RALLIES -> StampRallySearchScreen(
                     onEntryClick = onStampRallyClick,
                     scrollStateSaver = ScrollStateSaver.fromMap(

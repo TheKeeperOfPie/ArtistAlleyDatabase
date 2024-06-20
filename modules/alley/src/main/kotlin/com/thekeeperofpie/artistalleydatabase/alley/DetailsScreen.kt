@@ -43,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -201,7 +202,7 @@ object DetailsScreen {
                             state = pagerState,
                             pageSpacing = 16.dp,
                             userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             if (it == 0 && images.size > 1) {
                                 ImageGrid(
@@ -307,6 +308,7 @@ object DetailsScreen {
                     .height(IMAGE_HEIGHT)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clipToBounds()
             ) { page ->
                 if (page == 0 && images.size > 1) {
                     ImageGrid(

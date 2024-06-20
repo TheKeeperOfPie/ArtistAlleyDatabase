@@ -67,6 +67,14 @@ interface ArtistEntryDao {
     )
     fun getEntriesSizeFlow(): Flow<Int>
 
+    @Query(
+        """
+        SELECT booth
+        from artist_entries
+        """
+    )
+    fun getBooths(): List<String>
+
     fun search(query: String, filterOptions: ArtistSearchQuery): PagingSource<Int, ArtistEntry> {
         val booleanOptions = mutableListOf<String>().apply {
             if (filterOptions.showOnlyFavorites) this += "favorite:1"
