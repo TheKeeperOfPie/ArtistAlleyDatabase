@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -37,10 +38,15 @@ class MapViewModel @Inject constructor(
                 }
             val tables = letterToBooths.values.mapIndexed { index, booths ->
                 booths.map {
+                    val tableNumber = it.filter { it.isDigit() }.toInt()
                     Table(
                         booth = it,
+                        section = Table.Section.fromTableNumber(tableNumber),
+                        image = ArtistAlleyUtils.getImages(application, "catalogs", it)
+                            .firstOrNull(),
                         gridX = index,
-                        gridY = it.drop(1).toIntOrNull() ?: 0,
+                        // There's a physical gap not accounted for in the numbers between 41 and 42
+                        gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
                     )
                 }
             }.flatten()

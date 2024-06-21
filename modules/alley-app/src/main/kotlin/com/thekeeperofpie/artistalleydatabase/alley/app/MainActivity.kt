@@ -121,6 +121,11 @@ class MainActivity : ComponentActivity() {
                                                     Destinations.Series(it.text)
                                                 )
                                             },
+                                            onStampRallyClick = {
+                                                navController.navigate(
+                                                    Destinations.StampRallyDetails(it.id)
+                                                )
+                                            },
                                         )
                                     }
 

@@ -10,6 +10,7 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistMerchConnection
@@ -26,6 +27,9 @@ interface ArtistEntryDao {
 
     @Query("""SELECT * FROM artist_entries WHERE id = :id""")
     suspend fun getEntry(id: String): ArtistEntry?
+
+    @Query("""SELECT * FROM artist_entries WHERE id = :id""")
+    suspend fun getEntryWithStampRallies(id: String): ArtistWithStampRalliesEntry?
 
     @Query(
         """

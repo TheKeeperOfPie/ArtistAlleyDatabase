@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -64,10 +65,19 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 @Composable
 fun TableCell(
     table: Table,
-    background: Color = MaterialTheme.colorScheme.surface,
+    background: Color = if (table.image != null) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        table.section.color.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface)
+    },
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    textColor: Color = if (table.image != null) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        table.section.textColor.copy(alpha = 0.33f)
+            .compositeOver(MaterialTheme.colorScheme.onSurface)
+    },
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
     var showPopup by remember { mutableStateOf(false) }
@@ -84,6 +94,22 @@ fun TableCell(
             )
             .clickable { showPopup = true }
     ) {
+        val imageUri = table.image?.uri
+        if (imageUri != null) {
+            BoxWithConstraints {
+                val minSize = LocalDensity.current.run { 80.dp }
+                if (maxWidth > minSize && maxHeight > minSize) {
+                    AsyncImage(
+                        model = imageUri,
+                        contentScale = ContentScale.FillWidth,
+                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                        contentDescription = stringResource(R.string.alley_artist_catalog_image),
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
+
         val viewModel = hiltViewModel<MapViewModel>()
         if (showPopup) {
             BackHandler { showPopup = false }

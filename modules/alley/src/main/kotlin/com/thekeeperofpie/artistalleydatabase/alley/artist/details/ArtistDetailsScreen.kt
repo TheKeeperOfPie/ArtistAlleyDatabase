@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.R
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
@@ -33,6 +34,7 @@ object ArtistDetailsScreen {
     operator fun invoke(
         onClickBack: () -> Unit,
         onSeriesClick: (Series) -> Unit,
+        onStampRallyClick: (StampRallyEntry) -> Unit,
     ) {
         val viewModel = hiltViewModel<ArtistDetailsViewModel>()
         val entry = viewModel.entry
@@ -83,7 +85,7 @@ object ArtistDetailsScreen {
             onClickBack = onClickBack,
             initialImageIndex = viewModel.initialImageIndex,
         ) {
-            ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 InfoText(
                     stringResource(R.string.alley_artist_details_artist_name),
                     artist.name,
@@ -92,7 +94,7 @@ object ArtistDetailsScreen {
             }
 
             if (!artist.summary.isNullOrBlank()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     InfoText(
                         stringResource(R.string.alley_artist_details_description),
                         artist.summary,
@@ -110,7 +112,7 @@ object ArtistDetailsScreen {
             }
 
             if (artist.links.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = R.string.alley_artist_details_links,
                         contentDescriptionTextRes = R.string.alley_artist_details_links_expand_content_description,
@@ -123,7 +125,7 @@ object ArtistDetailsScreen {
                 }
             }
             if (artist.storeLinks.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = R.string.alley_artist_details_store,
                         contentDescriptionTextRes = null,
@@ -137,7 +139,7 @@ object ArtistDetailsScreen {
             }
 
             if (artist.catalogLinks.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = R.string.alley_artist_details_catalog,
                         contentDescriptionTextRes = null,
@@ -150,8 +152,22 @@ object ArtistDetailsScreen {
                 }
             }
 
+            if (entry.stampRallies.isNotEmpty()) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    expandableListInfoText(
+                        labelTextRes = R.string.alley_artist_details_stamp_rallies,
+                        contentDescriptionTextRes = null,
+                        values = entry.stampRallies,
+                        valueToText = { it.fandom },
+                        onClick = onStampRallyClick,
+                        allowExpand = false,
+                        showDividerAbove = false,
+                    )
+                }
+            }
+
             if (entry.series.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = R.string.alley_artist_details_series,
                         contentDescriptionTextRes = null,
@@ -166,7 +182,7 @@ object ArtistDetailsScreen {
 
             val merch = artist.merchConfirmed.ifEmpty { artist.merchInferred }
             if (merch.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = R.string.alley_artist_details_merch,
                         contentDescriptionTextRes = null,

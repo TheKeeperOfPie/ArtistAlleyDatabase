@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.data.Series
@@ -37,12 +38,13 @@ class ArtistDetailsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            val artistEntry = artistEntryDao.getEntry(id) ?: return@launch
-            val catalogImages = ArtistAlleyUtils.getImages(application,"catalogs", artistEntry.booth)
-            val series = artistEntry.seriesConfirmed(appJson)
-                .ifEmpty { artistEntry.seriesInferred(appJson) }
+            val (artist, stampRallies) = artistEntryDao.getEntryWithStampRallies(id)
+                ?: return@launch
+            val catalogImages = ArtistAlleyUtils.getImages(application, "catalogs", artist.booth)
+            val series = artist.seriesConfirmed(appJson)
+                .ifEmpty { artist.seriesInferred(appJson) }
             withContext(CustomDispatchers.Main) {
-                entry = Entry(artistEntry, series)
+                entry = Entry(artist, series, stampRallies)
                 images = catalogImages
             }
         }
@@ -59,6 +61,7 @@ class ArtistDetailsViewModel @Inject constructor(
     data class Entry(
         val artist: ArtistEntry,
         val series: List<Series>,
+        val stampRallies: List<StampRallyEntry>,
     ) {
         var favorite by mutableStateOf(artist.favorite)
     }

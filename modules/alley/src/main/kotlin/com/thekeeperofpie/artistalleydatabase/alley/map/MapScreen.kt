@@ -1,11 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.alley.map
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.TransformableState
-import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
+import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -16,9 +20,11 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
@@ -42,6 +48,50 @@ object MapScreen {
     ) {
         val viewModel = hiltViewModel<MapViewModel>()
         val gridData = viewModel.gridData.result
+        Box(modifier = Modifier.fillMaxSize()) {
+            Map(
+                viewModel = viewModel,
+                gridData = gridData,
+                transformState = transformState,
+                onArtistClick = onArtistClick,
+                modifier = modifier,
+                content = content,
+            )
+
+            Slider(
+                value = (transformState.scale - transformState.scaleRange.start) /
+                        (transformState.scaleRange.endInclusive - transformState.scaleRange.start),
+                onValueChange = {
+                    val newScale =
+                        (transformState.scaleRange.endInclusive - transformState.scaleRange.start) *
+                                it + transformState.scaleRange.start
+                    transformState.onTransform(
+                        centroid = Offset(
+                            transformState.size.width / 2f,
+                            transformState.size.height / 2f,
+                        ),
+                        translate = Offset.Zero,
+                        newRawScale = newScale,
+                    )
+                },
+                modifier = Modifier
+                    .widthIn(max = 200.dp)
+                    .clickable(interactionSource = null, indication = null) { /* Consume events */ }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+
+    @Composable
+    private fun Map(
+        viewModel: MapViewModel,
+        gridData: MapViewModel.GridData?,
+        transformState: TransformState,
+        onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
+        modifier: Modifier = Modifier,
+        content: @Composable (Table) -> Unit,
+    ) {
         if (gridData != null) {
             val onArtistClickState by rememberUpdatedState(onArtistClick)
             val contentState by rememberUpdatedState(content)
@@ -61,8 +111,10 @@ object MapScreen {
                 LocalDensity.current.run { itemHeight.toPx() } * transformState.scale
             val width = transformState.size.width
             val height = transformState.size.height
-            val maxX = ((gridData.maxRow + 1) * itemWidthPixels).coerceAtLeast(width.toFloat())
-            val maxY = ((gridData.maxColumn + 1) * itemHeightPixels).coerceAtLeast(height.toFloat())
+            val maxX = ((gridData.maxRow + 1) * itemWidthPixels)
+                .coerceAtLeast(width.toFloat()) + contentPaddingPixels
+            val maxY = ((gridData.maxColumn + 1) * itemHeightPixels)
+                .coerceAtLeast(height.toFloat()) + contentPaddingPixels
 
             transformState.xRange = 0f..maxX - width
             transformState.yRange = -maxY..-height.toFloat()
@@ -72,7 +124,15 @@ object MapScreen {
                 itemProvider = { itemProvider },
                 modifier = modifier
                     .onSizeChanged { transformState.onSizeChange(it) }
-                    .transformable(transformState.transformableState)
+                    .pointerInput(Unit) {
+                        detectTransformGestures { centroid, pan, zoom, _ ->
+                            transformState.onTransform(
+                                centroid = centroid,
+                                translate = pan,
+                                newRawScale = transformState.scale * zoom,
+                            )
+                        }
+                    }
                     .fillMaxSize()
                     .clipToBounds()
             ) { constraints ->
@@ -191,18 +251,24 @@ object MapScreen {
             }
         }
 
-        val transformableState = TransformableState { zoomChange, panChange, _ ->
-            val translation = translation - panChange
-            val scale = this.scale
-            val newScale = scale * zoomChange
-            val direction = if (newScale > scale) 1f else -1f
-            val extraOffsetX = (scale - newScale) * layoutSize.width * direction
-            val extraOffsetY = (scale - newScale) * layoutSize.height * direction
-            this.translation = translation.copy(
-                x = (translation.x + extraOffsetX).coerceIn(xRange),
-                y = (translation.y + extraOffsetY).coerceIn(yRange),
-            )
-            this.scale = (scale * zoomChange).coerceIn(scaleRange)
+        fun onTransform(centroid: Offset, translate: Offset, newRawScale: Float) {
+            val newScale = newRawScale.coerceIn(scaleRange)
+
+            val centroidInGridSpace = Offset(translation.x + centroid.x, translation.y + centroid.y)
+            val scaleDiff = scale / newScale
+            val newCentroidInGridSpace = centroidInGridSpace * scaleDiff
+            val centroidDiffInGridSpace =
+                centroidInGridSpace - newCentroidInGridSpace
+            val newTranslation =
+                (translation + centroidDiffInGridSpace - translate).run {
+                    copy(
+                        x = x.coerceIn(xRange),
+                        y = y.coerceIn(yRange),
+                    )
+                }
+
+            translation = newTranslation
+            scale = newScale
         }
 
         companion object {

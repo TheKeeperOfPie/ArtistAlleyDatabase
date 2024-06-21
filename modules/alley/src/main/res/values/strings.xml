@@ -24,6 +24,7 @@
     <string name="alley_artist_details_links_expand_content_description">Expand links</string>
     <string name="alley_artist_details_series">Series</string>
     <string name="alley_artist_details_merch">Merch</string>
+    <string name="alley_artist_details_stamp_rallies">Stamp rallies</string>
     <string name="alley_artist_catalog_image_none">No catalog image</string>
     <string name="alley_sort_label">Sort</string>
     <string name="alley_sort_booth">Booth</string>
