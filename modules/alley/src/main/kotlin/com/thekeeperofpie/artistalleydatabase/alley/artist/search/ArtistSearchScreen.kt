@@ -63,6 +63,8 @@ object ArtistSearchScreen {
             viewModel.query,
             viewModel.sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
             viewModel.sortAscending,
+            viewModel.showOnlyFavorites,
+            viewModel.showOnlyWithCatalog,
         ) {
             if (seen) {
                 delay(500.milliseconds)

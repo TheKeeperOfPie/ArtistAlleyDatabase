@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,8 +35,10 @@ class StampRallyMapViewModel @Inject constructor(
             val tables = entry.artists
                 .map { it.booth }
                 .toSet()
-            stampRally = entry.stampRally
-            artistTables = tables
+            withContext(CustomDispatchers.Main) {
+                stampRally = entry.stampRally
+                artistTables = tables
+            }
         }
     }
 }

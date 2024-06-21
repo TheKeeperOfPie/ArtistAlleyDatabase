@@ -114,7 +114,7 @@ object MapScreen {
             val maxX = ((gridData.maxRow + 1) * itemWidthPixels)
                 .coerceAtLeast(width.toFloat()) + contentPaddingPixels
             val maxY = ((gridData.maxColumn + 1) * itemHeightPixels)
-                .coerceAtLeast(height.toFloat()) + contentPaddingPixels
+                .coerceAtLeast(height.toFloat()) + 2 * contentPaddingPixels
 
             transformState.xRange = 0f..maxX - width
             transformState.yRange = -maxY..-height.toFloat()

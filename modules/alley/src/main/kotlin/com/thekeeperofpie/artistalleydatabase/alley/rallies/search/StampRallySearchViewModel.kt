@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import android.app.Application
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -45,6 +47,7 @@ class StampRallySearchViewModel @Inject constructor(
 ) : EntrySearchViewModel<StampRallySearchQuery, StampRallyEntryGridModel>() {
 
     val fandomSection = EntrySection.LongText(headerRes = R.string.alley_search_option_fandom)
+
     // TODO: Multi-option
     val tablesSection = EntrySection.LongText(headerRes = R.string.alley_search_option_tables)
     val artistsSection = EntrySection.LongText(headerRes = R.string.alley_search_option_artist)
@@ -78,7 +81,7 @@ class StampRallySearchViewModel @Inject constructor(
     var showIgnored by mutableStateOf(true)
     var showOnlyIgnored by mutableStateOf(false)
 
-    var entriesSize by mutableStateOf(0)
+    var entriesSize by mutableIntStateOf(0)
         private set
 
     private val randomSeed = Random.nextInt().absoluteValue
@@ -101,7 +104,11 @@ class StampRallySearchViewModel @Inject constructor(
 
         viewModelScope.launch(CustomDispatchers.IO) {
             stampRallyEntryDao.getEntriesSizeFlow()
-                .collect { entriesSize = it }
+                .collect {
+                    withContext(CustomDispatchers.Main) {
+                        entriesSize = it
+                    }
+                }
         }
     }
 

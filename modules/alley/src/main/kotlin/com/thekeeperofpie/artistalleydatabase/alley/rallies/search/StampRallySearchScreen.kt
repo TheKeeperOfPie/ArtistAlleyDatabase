@@ -59,6 +59,7 @@ object StampRallySearchScreen {
             viewModel.query,
             viewModel.sortOptions.selectedOption(StampRallySearchSortOption.RANDOM),
             viewModel.sortAscending,
+            viewModel.showOnlyFavorites,
         ) {
             if (seen) {
                 // TODO: There must be a better way to do this
