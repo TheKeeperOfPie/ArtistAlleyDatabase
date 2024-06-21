@@ -17,4 +17,7 @@ sealed interface Destinations {
 
     @Serializable
     data class StampRallyDetails(val id: String, val imageIndex: String? = null) : Destinations
+
+    @Serializable
+    data class StampRallyMap(val id: String) : Destinations
 }

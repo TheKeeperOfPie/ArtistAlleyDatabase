@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +34,7 @@ object StampRallyDetailsScreen {
     operator fun invoke(
         onClickBack: () -> Unit,
         onArtistClick: (ArtistEntry) -> Unit,
+        onStampRallyMapClick: () -> Unit,
     ) {
         val viewModel = hiltViewModel<StampRallyDetailsViewModel>()
         val entry = viewModel.entry
@@ -147,6 +149,10 @@ object StampRallyDetailsScreen {
                         showDividerAbove = false,
                     )
                 }
+            }
+
+            FilledTonalButton(onClick = onStampRallyMapClick, modifier = Modifier.padding(16.dp)) {
+                Text(stringResource(R.string.alley_stamp_rally_open_in_map))
             }
         }
     }

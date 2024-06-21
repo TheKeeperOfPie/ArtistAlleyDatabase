@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,13 +44,15 @@ class MapViewModel @Inject constructor(
                     )
                 }
             }.flatten()
-            gridData = LoadingResult.success(
-                GridData(
-                    maxRow = maxRow,
-                    maxColumn = maxColumn,
-                    tables = tables,
+            withContext(CustomDispatchers.Main) {
+                gridData = LoadingResult.success(
+                    GridData(
+                        maxRow = maxRow,
+                        maxColumn = maxColumn,
+                        tables = tables,
+                    )
                 )
-            )
+            }
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {

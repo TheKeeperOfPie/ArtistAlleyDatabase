@@ -42,6 +42,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalley.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyScreen
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
@@ -49,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -134,11 +136,42 @@ class MainActivity : ComponentActivity() {
                                             )
                                         },
                                     ) {
+                                        val route = it.toRoute<Destinations.StampRallyDetails>()
                                         StampRallyDetailsScreen(
                                             onClickBack = navController::navigateUp,
                                             onArtistClick = {
                                                 navController.navigate(
                                                     Destinations.ArtistDetails(it.id)
+                                                )
+                                            },
+                                            onStampRallyMapClick = {
+                                                navController.navigate(
+                                                    Destinations.StampRallyMap(route.id)
+                                                )
+                                            }
+                                        )
+                                    }
+
+                                    sharedElementComposable<Destinations.StampRallyMap>(
+                                        enterTransition = {
+                                            slideIntoContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Up
+                                            )
+                                        },
+                                        exitTransition = {
+                                            slideOutOfContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Down
+                                            )
+                                        },
+                                    ) {
+                                        StampRallyMapScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onArtistClick = { entry, imageIndex ->
+                                                navController.navigate(
+                                                    Destinations.ArtistDetails(
+                                                        entry.value.id,
+                                                        imageIndex.toString(),
+                                                    )
                                                 )
                                             },
                                         )
