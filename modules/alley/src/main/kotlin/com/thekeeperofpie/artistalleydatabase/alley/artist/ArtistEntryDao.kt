@@ -29,6 +29,9 @@ interface ArtistEntryDao {
     suspend fun getEntry(id: String): ArtistEntry?
 
     @Query("""SELECT * FROM artist_entries WHERE id = :id""")
+    fun getEntryFlow(id: String): Flow<ArtistEntry>
+
+    @Query("""SELECT * FROM artist_entries WHERE id = :id""")
     suspend fun getEntryWithStampRallies(id: String): ArtistWithStampRalliesEntry?
 
     @Query(

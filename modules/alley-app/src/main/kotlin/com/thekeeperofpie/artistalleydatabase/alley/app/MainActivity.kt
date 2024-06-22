@@ -48,6 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyScreen
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
@@ -78,7 +79,10 @@ class MainActivity : ComponentActivity() {
                         SharedTransitionLayout(modifier = Modifier.weight(1f)) {
                             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                                 NavHost(navController, Destinations.Home) {
-                                    sharedElementComposable<Destinations.Home> {
+                                    sharedElementComposable<Destinations.Home>(
+                                        enterTransition = null,
+                                        exitTransition = null,
+                                    ) {
                                         ArtistAlleyScreen(
                                             onArtistClick = onArtistClick,
                                             onStampRallyClick = { entry, imageIndex ->
@@ -102,18 +106,8 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.ArtistDetails>(
-                                        enterTransition = {
-                                            slideIntoContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Up
-                                            )
-                                        },
-                                        exitTransition = {
-                                            slideOutOfContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Down
-                                            )
-                                        },
-                                    ) {
+                                    sharedElementComposable<Destinations.ArtistDetails> {
+                                        val route = it.toRoute<Destinations.ArtistDetails>()
                                         ArtistDetailsScreen(
                                             onClickBack = navController::navigateUp,
                                             onSeriesClick = {
@@ -126,21 +120,22 @@ class MainActivity : ComponentActivity() {
                                                     Destinations.StampRallyDetails(it.id)
                                                 )
                                             },
+                                            onArtistMapClick = {
+                                                navController.navigate(
+                                                    Destinations.ArtistMap(route.id)
+                                                )
+                                            }
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.StampRallyDetails>(
-                                        enterTransition = {
-                                            slideIntoContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Up
-                                            )
-                                        },
-                                        exitTransition = {
-                                            slideOutOfContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Down
-                                            )
-                                        },
-                                    ) {
+                                    sharedElementComposable<Destinations.ArtistMap> {
+                                        ArtistMapScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onArtistClick = onArtistClick,
+                                        )
+                                    }
+
+                                    sharedElementComposable<Destinations.StampRallyDetails> {
                                         val route = it.toRoute<Destinations.StampRallyDetails>()
                                         StampRallyDetailsScreen(
                                             onClickBack = navController::navigateUp,
@@ -157,18 +152,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.StampRallyMap>(
-                                        enterTransition = {
-                                            slideIntoContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Up
-                                            )
-                                        },
-                                        exitTransition = {
-                                            slideOutOfContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Down
-                                            )
-                                        },
-                                    ) {
+                                    sharedElementComposable<Destinations.StampRallyMap> {
                                         StampRallyMapScreen(
                                             onClickBack = navController::navigateUp,
                                             onArtistClick = { entry, imageIndex ->
@@ -182,18 +166,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.Series>(
-                                        enterTransition = {
-                                            slideIntoContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Up
-                                            )
-                                        },
-                                        exitTransition = {
-                                            slideOutOfContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Down
-                                            )
-                                        },
-                                    ) {
+                                    sharedElementComposable<Destinations.Series> {
                                         ArtistSearchScreen(
                                             onClickBack = navController::navigateUp,
                                             onEntryClick = onArtistClick,
@@ -201,18 +174,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.Merch>(
-                                        enterTransition = {
-                                            slideIntoContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Up
-                                            )
-                                        },
-                                        exitTransition = {
-                                            slideOutOfContainer(
-                                                AnimatedContentTransitionScope.SlideDirection.Down
-                                            )
-                                        },
-                                    ) {
+                                    sharedElementComposable<Destinations.Merch> {
                                         ArtistSearchScreen(
                                             onClickBack = navController::navigateUp,
                                             onEntryClick = onArtistClick,
@@ -272,10 +234,18 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private inline fun <reified T : kotlin.Any>  NavGraphBuilder.sharedElementComposable(
+    private inline fun <reified T : kotlin.Any> NavGraphBuilder.sharedElementComposable(
         arguments: List<NamedNavArgument> = emptyList(),
-        noinline enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
-        noinline exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+        noinline enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Up
+            )
+        },
+        noinline exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Down
+            )
+        },
         noinline content: @Composable (NavBackStackEntry) -> Unit,
     ) = composable<T>(
         enterTransition = enterTransition,

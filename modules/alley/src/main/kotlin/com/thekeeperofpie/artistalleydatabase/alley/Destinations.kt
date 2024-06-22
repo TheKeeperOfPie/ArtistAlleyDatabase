@@ -10,6 +10,9 @@ sealed interface Destinations {
     data class ArtistDetails(val id: String, val imageIndex: String? = null) : Destinations
 
     @Serializable
+    data class ArtistMap(val id: String) : Destinations
+
+    @Serializable
     data class Series(val series: String) : Destinations
 
     @Serializable

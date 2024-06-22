@@ -1,11 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,16 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.R
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.compose.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.data.Series
 
 object ArtistDetailsScreen {
@@ -35,6 +38,7 @@ object ArtistDetailsScreen {
         onClickBack: () -> Unit,
         onSeriesClick: (Series) -> Unit,
         onStampRallyClick: (StampRallyEntry) -> Unit,
+        onArtistMapClick: () -> Unit,
     ) {
         val viewModel = hiltViewModel<ArtistDetailsViewModel>()
         val entry = viewModel.entry
@@ -53,31 +57,7 @@ object ArtistDetailsScreen {
         var showFullImagesIndex by rememberSaveable { mutableStateOf<Int?>(null) }
         val artist = entry.artist
         DetailsScreen(
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = artist.booth,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.sharedBounds(
-                            "booth",
-                            artist.id,
-                            zIndexInOverlay = 1f,
-                        )
-                    )
-
-                    Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
-
-                    Text(
-                        text = artist.name,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .sharedBounds("name", artist.id, zIndexInOverlay = 1f)
-                            .weight(1f)
-                    )
-                }
-            },
+            title = { ArtistTitle(artist) },
             sharedElementId = artist.id,
             favorite = { entry.favorite },
             onFavoriteToggle = viewModel::onFavoriteToggle,
@@ -192,6 +172,24 @@ object ArtistDetailsScreen {
                         allowExpand = false,
                         showDividerAbove = false,
                     )
+                }
+            }
+
+            FilledTonalButton(
+                onClick = onArtistMapClick,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Default.Map,
+                        contentDescription = stringResource(R.string.alley_stamp_rally_open_in_map),
+                    )
+                    Text(stringResource(R.string.alley_stamp_rally_open_in_map))
                 }
             }
         }

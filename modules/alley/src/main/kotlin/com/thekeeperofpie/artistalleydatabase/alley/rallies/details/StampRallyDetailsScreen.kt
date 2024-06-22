@@ -97,8 +97,6 @@ object StampRallyDetailsScreen {
                 )
             }
 
-            // TODO: Tables
-
             val uriHandler = LocalUriHandler.current
             val onClickOpenUri: (String) -> Unit = {
                 try {
