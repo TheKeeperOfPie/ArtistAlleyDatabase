@@ -212,7 +212,7 @@ object SearchScreen {
                                 onSearch = {},
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp),
+                                    .padding(top = 4.dp),
                             )
                         }
                     }

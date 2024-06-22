@@ -15,7 +15,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryFts
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntryFts
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntryFts
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 
 @Database(
@@ -28,15 +30,18 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
         StampRallyEntryFts::class,
         StampRallyArtistConnection::class,
         SeriesEntry::class,
+        SeriesEntryFts::class,
         MerchEntry::class,
+        MerchEntryFts::class,
     ],
     exportSchema = true,
-    version = 4,
+    version = 5,
     autoMigrations = [
         AutoMigration(1, 2),
         AutoMigration(2, 3),
         AutoMigration(3, 4),
-        AutoMigration(1, 4),
+        AutoMigration(4, 5),
+        AutoMigration(1, 5),
     ]
 )
 @TypeConverters(
