@@ -1,8 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.map
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculateCentroidSize
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,30 +19,45 @@ import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastFilter
+import androidx.compose.ui.util.fastForEach
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 object MapScreen {
 
     private val itemWidth = 80.dp
@@ -52,7 +75,6 @@ object MapScreen {
         val gridData = viewModel.gridData.result
         Box(modifier = Modifier.fillMaxSize()) {
             Map(
-                viewModel = viewModel,
                 gridData = gridData,
                 transformState = transformState,
                 onArtistClick = onArtistClick,
@@ -61,6 +83,7 @@ object MapScreen {
                 content = content,
             )
 
+            val coroutineScope = rememberCoroutineScope()
             Slider(
                 value = (transformState.scale - transformState.scaleRange.start) /
                         (transformState.scaleRange.endInclusive - transformState.scaleRange.start),
@@ -68,14 +91,16 @@ object MapScreen {
                     val newScale =
                         (transformState.scaleRange.endInclusive - transformState.scaleRange.start) *
                                 it + transformState.scaleRange.start
-                    transformState.onTransform(
-                        centroid = Offset(
-                            transformState.size.width / 2f,
-                            transformState.size.height / 2f,
-                        ),
-                        translate = Offset.Zero,
-                        newRawScale = newScale,
-                    )
+                    coroutineScope.launch {
+                        transformState.onTransform(
+                            centroid = Offset(
+                                transformState.size.width / 2f,
+                                transformState.size.height / 2f,
+                            ),
+                            translate = Offset.Zero,
+                            newRawScale = newScale,
+                        )
+                    }
                 },
                 modifier = Modifier
                     .widthIn(max = 200.dp)
@@ -88,7 +113,6 @@ object MapScreen {
 
     @Composable
     private fun Map(
-        viewModel: MapViewModel,
         gridData: MapViewModel.GridData?,
         transformState: TransformState,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
@@ -107,30 +131,30 @@ object MapScreen {
                 LocalDensity.current.run { itemHeight.toPx() } * transformState.scale
             val width = transformState.size.width
             val height = transformState.size.height
-            val maxX = ((gridData.maxRow + 1) * itemWidthPixels)
-                .coerceAtLeast(width.toFloat()) + contentPaddingPixels
+            val maxX = (gridData.maxRow * itemWidthPixels)
+                .coerceAtLeast(width.toFloat()) + 2 * contentPaddingPixels
             val maxY = ((gridData.maxColumn + 1) * itemHeightPixels)
                 .coerceAtLeast(height.toFloat()) + 2 * contentPaddingPixels
 
-            transformState.xRange = 0f..maxX - width
-            transformState.yRange = -maxY..-height.toFloat()
+            transformState.translation.updateBounds(
+                Offset(0f, -maxY),
+                Offset(maxX - width, -height.toFloat()),
+            )
             transformState.scaleRange = (width / maxX).coerceAtMost(height / maxY)..3f
-            transformState.translation = transformState.translation.run {
-                copy(
-                    x = x.coerceIn(transformState.xRange),
-                    y = y.coerceIn(transformState.yRange),
-                )
+            LaunchedEffect(transformState.size) {
+                transformState.translation.snapTo(transformState.translation.targetValue)
             }
 
             val itemProvider = remember(gridData) {
                 ItemProvider(
-                    viewModel = viewModel,
                     gridData = gridData,
-                    onArtistClick = onArtistClickState,
                     content = contentState,
                 )
             }
 
+            val coroutineScope = rememberCoroutineScope()
+            val maxFlingVelocity = (LocalViewConfiguration.current.maximumFlingVelocity / 2f)
+                .let { Velocity(it, it) }
             LazyLayout(
                 itemProvider = { itemProvider },
                 modifier = modifier
@@ -138,44 +162,130 @@ object MapScreen {
                         transformState.size = size
                         if (transformState.initialized) return@onSizeChanged
                         transformState.initialized = true
-                        transformState.translation = Offset(0f, -size.height.toFloat())
-                        if (initialGridPosition != null) {
-                            val translation = transformState.translation
-                            val targetGridPosition = Offset(
-                                initialGridPosition.x * itemWidthPixels + contentPaddingPixels +
-                                        (itemWidthPixels / 2),
-                                -initialGridPosition.y * itemHeightPixels + contentPaddingPixels +
-                                        (itemHeightPixels / 2),
-                            )
-                            val targetInDisplaySpace = Offset(
-                                size.width / 2f,
-                                size.height / 2f,
-                            )
-                            val targetInGridSpace = Offset(
-                                translation.x + targetInDisplaySpace.x,
-                                translation.y + targetInDisplaySpace.y,
-                            )
-                            val targetTranslation = targetGridPosition - targetInGridSpace
-                            transformState.translation = Offset(
-                                targetTranslation.x.coerceIn(transformState.xRange),
-                                (targetTranslation.y - size.height).coerceIn(transformState.yRange),
-                            )
+                        coroutineScope.launch {
+                            transformState.translation.snapTo(Offset(0f, -size.height.toFloat()))
+                            if (initialGridPosition != null) {
+                                val targetGridPosition = Offset(
+                                    initialGridPosition.x * itemWidthPixels + contentPaddingPixels +
+                                            (itemWidthPixels / 2),
+                                    -initialGridPosition.y * itemHeightPixels + contentPaddingPixels +
+                                            (itemHeightPixels / 2),
+                                )
+                                val targetInDisplaySpace = Offset(
+                                    size.width / 2f,
+                                    size.height / 2f,
+                                )
+                                val translation = transformState.translation.value
+                                val targetInGridSpace = Offset(
+                                    translation.x + targetInDisplaySpace.x,
+                                    translation.y + targetInDisplaySpace.y,
+                                )
+                                val targetTranslation = targetGridPosition - targetInGridSpace
+                                transformState.translation.snapTo(
+                                    Offset(targetTranslation.x, targetTranslation.y - size.height)
+                                )
+                            }
                         }
                     }
                     .pointerInput(Unit) {
-                        detectTransformGestures { centroid, pan, zoom, _ ->
-                            transformState.onTransform(
-                                centroid = centroid,
-                                translate = pan,
-                                newRawScale = transformState.scale * zoom,
-                            )
+                        val decay = splineBasedDecay<Offset>(this)
+                        val velocityTracker = VelocityTracker()
+                        awaitEachGesture {
+                            var zoom = 1f
+                            var pan = Offset.Zero
+                            var pastTouchSlop = false
+                            val touchSlop = viewConfiguration.touchSlop
+
+                            val initialDown = awaitFirstDown(requireUnconsumed = false)
+                            coroutineScope.launch { transformState.translation.stop() }
+                            do {
+                                val event = awaitPointerEvent()
+                                event.changes.fastForEach {
+                                    if (it.id == initialDown.id) {
+                                        velocityTracker.addPointerInputChange(it)
+                                    }
+                                }
+                                val canceled = event.changes.fastAny { it.isConsumed }
+                                if (!canceled) {
+                                    val zoomChange = event.calculateZoom()
+                                    val panChange = event.calculatePan()
+
+                                    if (!pastTouchSlop) {
+                                        zoom *= zoomChange
+                                        pan += panChange
+
+                                        val centroidSize =
+                                            event.calculateCentroidSize(useCurrent = false)
+                                        val zoomMotion = abs(1 - zoom) * centroidSize
+                                        val panMotion = pan.getDistance()
+
+                                        if (zoomMotion > touchSlop || panMotion > touchSlop) {
+                                            pastTouchSlop = true
+                                        }
+                                    }
+
+                                    if (pastTouchSlop) {
+                                        val centroid = event.calculateCentroid(useCurrent = false)
+                                        if (zoomChange != 1f || panChange != Offset.Zero) {
+                                            coroutineScope.launch {
+                                                transformState.onTransform(
+                                                    centroid = centroid,
+                                                    translate = panChange,
+                                                    newRawScale = transformState.scale * zoomChange,
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    if (event.changes
+                                            .fastFilter { it.id == initialDown.id }
+                                            .fastAny(PointerInputChange::changedToUp)
+                                    ) {
+                                        coroutineScope.launch {
+                                            val rawVelocity =
+                                                velocityTracker.calculateVelocity(maxFlingVelocity)
+                                            val translation = transformState.translation
+                                            val lowerBound = translation.lowerBound
+                                            val upperBound = translation.upperBound
+                                            var adjustedVelocityX = rawVelocity.x
+                                            var adjustedVelocityY = rawVelocity.y
+                                            if (lowerBound != null && upperBound != null) {
+                                                val isNearBoundsX = (translation.value.x - lowerBound.x < contentPaddingPixels)
+                                                        || (upperBound.x - translation.value.x) < contentPaddingPixels
+                                                val isNearBoundsY = (translation.value.y - lowerBound.y < contentPaddingPixels)
+                                                        || (upperBound.y - translation.value.y) < contentPaddingPixels
+                                                if (isNearBoundsX) {
+                                                    adjustedVelocityX = 0f
+                                                }
+                                                if (isNearBoundsY) {
+                                                    adjustedVelocityY = 0f
+                                                }
+                                            }
+                                            val velocity = Offset(
+                                                -adjustedVelocityX,
+                                                -adjustedVelocityY,
+                                            )
+                                            transformState.translation.animateDecay(
+                                                initialVelocity = velocity,
+                                                animationSpec = decay,
+                                            )
+                                        }
+                                    }
+
+                                    event.changes.fastForEach {
+                                        if (it.positionChanged()) {
+                                            it.consume()
+                                        }
+                                    }
+                                }
+                            } while (!canceled && event.changes.fastAny { it.pressed })
                         }
                     }
                     .fillMaxSize()
                     .clipToBounds()
             ) { constraints ->
                 val boundaries = getBounds(
-                    offset = transformState.translation,
+                    offset = transformState.translation.value,
                     itemHeightPixels = itemWidthPixels,
                     itemWidthPixels = itemHeightPixels,
                     constraints = constraints,
@@ -200,7 +310,7 @@ object MapScreen {
                     measured.forEach { (table, placeables) ->
                         val offsetX = table.gridX * itemWidthPixels
                         val offsetY = -table.gridY * itemHeightPixels
-                        val translation = transformState.translation
+                        val translation = transformState.translation.value
                         val xPosition = contentPaddingPixels + offsetX - translation.x
                         val yPosition = offsetY - translation.y - contentPaddingPixels
                         placeables.forEach {
@@ -213,9 +323,7 @@ object MapScreen {
     }
 
     class ItemProvider(
-        private val viewModel: MapViewModel,
         private val gridData: MapViewModel.GridData,
-        private val onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         private val content: @Composable (Table) -> Unit,
     ) : LazyLayoutItemProvider {
         override val itemCount = gridData.tables.size
@@ -272,39 +380,40 @@ object MapScreen {
         initialTranslationX: Float = 0f,
         initialTranslationY: Float = 0f,
         initialScale: Float = 1f,
-        var layoutSize: IntSize = IntSize(0, 0),
-        var xRange: ClosedFloatingPointRange<Float> = 0f..0f,
-        var yRange: ClosedFloatingPointRange<Float> = 0f..0f,
         var scaleRange: ClosedFloatingPointRange<Float> = 0.5f..3f,
     ) {
         var size by mutableStateOf(IntSize(0, 0))
-        var translation by mutableStateOf(Offset(initialTranslationX, initialTranslationY))
+        val translation by mutableStateOf(
+            Animatable(Offset(initialTranslationX, initialTranslationY), Offset.VectorConverter)
+        )
+
         var scale by mutableFloatStateOf(initialScale)
 
         var initialized = initialTranslationY != 0f
 
-        fun onTransform(centroid: Offset, translate: Offset, newRawScale: Float) {
+        suspend fun onTransform(centroid: Offset, translate: Offset, newRawScale: Float) {
             val newScale = newRawScale.coerceIn(scaleRange)
 
-            val centroidInGridSpace = Offset(translation.x + centroid.x, translation.y + centroid.y)
+            val translationValue = translation.value
+            val centroidInGridSpace = Offset(
+                translationValue.x + centroid.x,
+                translationValue.y + centroid.y,
+            )
             val scaleDiff = scale / newScale
             val newCentroidInGridSpace = centroidInGridSpace * scaleDiff
             val centroidDiffInGridSpace =
                 centroidInGridSpace - newCentroidInGridSpace
-            val newTranslation =
-                (translation + centroidDiffInGridSpace - translate).run {
-                    copy(
-                        x = x.coerceIn(xRange),
-                        y = y.coerceIn(yRange),
-                    )
-                }
-            translation = newTranslation
+            val newTranslation = translationValue + centroidDiffInGridSpace - translate
             scale = newScale
+            translation.snapTo(newTranslation)
         }
 
         companion object {
             val Saver: Saver<TransformState, *> = listSaver(
-                save = { listOf(it.translation.x, it.translation.y, it.scale) },
+                save = {
+                    val translationValue = it.translation.targetValue
+                    listOf(translationValue.x, translationValue.y, it.scale)
+                },
                 restore = {
                     TransformState(
                         initialTranslationX = it[0],
