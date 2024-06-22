@@ -99,4 +99,10 @@ interface TagEntryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMerch(entries: List<MerchEntry>)
+
+    @Query("""DELETE FROM series_entries""")
+    fun clearSeries()
+
+    @Query("""DELETE FROM merch_entries""")
+    fun clearMerch()
 }

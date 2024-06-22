@@ -59,4 +59,5 @@
 
     <string name="alley_browse_tab_series">Series</string>
     <string name="alley_browse_tab_merch">Merch</string>
+    <string name="alley_stamp_rally_details_minimum">Minimum per table</string>
 </resources>

@@ -165,6 +165,9 @@ interface StampRallyEntryDao {
         insertConnections(entries.flatMap { it.second })
     }
 
+    @Query("""DELETE FROM stamp_rally_entries WHERE stamp_rally_entries.id NOT IN (:ids)""")
+    suspend fun retainIds(ids: List<String>)
+
     private fun filterOptionsQuery(filterOptions: StampRallySearchQuery): MutableList<String> {
         val queryPieces = mutableListOf<String>()
 

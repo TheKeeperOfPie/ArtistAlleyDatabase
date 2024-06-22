@@ -89,7 +89,7 @@ object StampRallyDetailsScreen {
             onClickBack = onClickBack,
             initialImageIndex = viewModel.initialImageIndex,
         ) {
-            ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 InfoText(
                     stringResource(R.string.alley_stamp_rally_details_fandom),
                     stampRally.fandom,
@@ -106,7 +106,7 @@ object StampRallyDetailsScreen {
             }
 
             if (stampRally.links.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = R.string.alley_stamp_rally_details_links,
                         contentDescriptionTextRes = null,
@@ -120,7 +120,7 @@ object StampRallyDetailsScreen {
             }
 
             if (entry.artists.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = R.string.alley_stamp_rally_details_artists,
                         contentDescriptionTextRes = null,
@@ -140,7 +140,7 @@ object StampRallyDetailsScreen {
             }
 
             if (entry.otherTables.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = R.string.alley_stamp_rally_details_other_tables,
                         contentDescriptionTextRes = null,
@@ -148,6 +148,16 @@ object StampRallyDetailsScreen {
                         valueToText = { it },
                         onClick = null,
                         allowExpand = false,
+                        showDividerAbove = false,
+                    )
+                }
+            }
+
+            if (!entry.stampRally.minimumPerTable.isNullOrBlank()) {
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    InfoText(
+                        label = stringResource(R.string.alley_stamp_rally_details_minimum),
+                        body = entry.stampRally.minimumPerTable,
                         showDividerAbove = false,
                     )
                 }

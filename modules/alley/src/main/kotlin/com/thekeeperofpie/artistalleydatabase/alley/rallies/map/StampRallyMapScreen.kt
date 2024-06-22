@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -33,10 +34,14 @@ object StampRallyMapScreen {
                 )
             },
         ) {
+            val stampRally = stampRallyMapViewModel.stampRally ?: return@Scaffold
             val mapViewModel = hiltViewModel<MapViewModel>()
+            val gridData = mapViewModel.gridData.result ?: return@Scaffold
+            val targetTable = gridData.tables.find { it.booth == stampRally.hostTable }
             val transformState = MapScreen.rememberTransformState(initialScale = 0.5f)
             MapScreen(
                 transformState = transformState,
+                initialGridPosition = targetTable?.run { IntOffset(gridX, gridY) },
                 onArtistClick = onArtistClick,
                 modifier = Modifier.padding(it)
             ) { table ->

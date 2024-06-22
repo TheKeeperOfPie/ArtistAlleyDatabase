@@ -54,6 +54,8 @@ class DataInitializer @Inject constructor(
     }
 
     private suspend fun parseArtists() {
+        artistEntryDao.clearSeriesConnections()
+        artistEntryDao.clearMerchConnections()
         scopedApplication.app.assets.open(ARTISTS_CSV_NAME).use { input ->
             input.reader().use { reader ->
                 var counter = 1
@@ -123,6 +125,7 @@ class DataInitializer @Inject constructor(
     }
 
     private suspend fun parseTags() {
+        tagEntryDao.clearSeries()
         scopedApplication.app.assets.open(SERIES_CSV_NAME).use { input ->
             input.reader().use { reader ->
                 csvReader(reader)
@@ -136,6 +139,7 @@ class DataInitializer @Inject constructor(
                     .forEach { tagEntryDao.insertSeries(it) }
             }
         }
+        tagEntryDao.clearMerch()
         scopedApplication.app.assets.open(MERCH_CSV_NAME).use { input ->
             input.reader().use { reader ->
                 csvReader(reader)
@@ -152,8 +156,8 @@ class DataInitializer @Inject constructor(
     }
 
     private suspend fun parseStampRallies() {
-        stampRallyEntryDao.clearEntries()
         stampRallyEntryDao.clearConnections()
+        val allIds = mutableListOf<String>()
         scopedApplication.app.assets.open(STAMP_RALLIES_CSV_NAME).use { input ->
             input.reader().use { reader ->
                 var counter = 1
@@ -162,7 +166,9 @@ class DataInitializer @Inject constructor(
                         // Theme,Link,Tables,Minimum per table,Notes,Images
                         val theme = it["Theme"]
                         val links = it["Link"].split("\n")
-                        val tables = it["Tables"].split("\n").filter(String::isNotBlank)
+                            .filter(String::isNotBlank)
+                        val tables = it["Tables"].split("\n")
+                            .filter(String::isNotBlank)
                         val hostTable = tables.firstOrNull { it.contains("-") }
                             ?.substringBefore("-")
                             ?.trim() ?: return@mapNotNull null
@@ -188,9 +194,13 @@ class DataInitializer @Inject constructor(
                         ) to connections
                     }
                     .chunked(20)
-                    .forEach { stampRallyEntryDao.insertUpdatedEntries(it) }
+                    .forEach {
+                        allIds += it.map { it.first.id }
+                        stampRallyEntryDao.insertUpdatedEntries(it)
+                    }
             }
         }
+        stampRallyEntryDao.retainIds(allIds)
     }
 
     private fun csvReader(reader: Reader) =

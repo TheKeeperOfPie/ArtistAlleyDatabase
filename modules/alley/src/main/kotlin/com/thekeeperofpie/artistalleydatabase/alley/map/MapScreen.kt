@@ -115,6 +115,12 @@ object MapScreen {
             transformState.xRange = 0f..maxX - width
             transformState.yRange = -maxY..-height.toFloat()
             transformState.scaleRange = (width / maxX).coerceAtMost(height / maxY)..3f
+            transformState.translation = transformState.translation.run {
+                copy(
+                    x = x.coerceIn(transformState.xRange),
+                    y = y.coerceIn(transformState.yRange),
+                )
+            }
 
             val itemProvider = remember(gridData) {
                 ItemProvider(
@@ -131,6 +137,7 @@ object MapScreen {
                     .onSizeChanged { size ->
                         transformState.size = size
                         if (transformState.initialized) return@onSizeChanged
+                        transformState.initialized = true
                         transformState.translation = Offset(0f, -size.height.toFloat())
                         if (initialGridPosition != null) {
                             val translation = transformState.translation
@@ -275,7 +282,6 @@ object MapScreen {
         var scale by mutableFloatStateOf(initialScale)
 
         var initialized = initialTranslationY != 0f
-            private set
 
         fun onTransform(centroid: Offset, translate: Offset, newRawScale: Float) {
             val newScale = newRawScale.coerceIn(scaleRange)

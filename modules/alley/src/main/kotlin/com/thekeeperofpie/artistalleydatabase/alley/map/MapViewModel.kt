@@ -36,7 +36,8 @@ class MapViewModel @Inject constructor(
                 letterToBooths.maxOf {
                     it.value.mapNotNull { it.drop(1).toIntOrNull() }.maxOrNull() ?: 0
                 }
-            val tables = letterToBooths.values.mapIndexed { index, booths ->
+            var currentIndex = 0
+            val tables = letterToBooths.values.mapIndexed { letterIndex, booths ->
                 booths.map {
                     val tableNumber = it.filter { it.isDigit() }.toInt()
                     Table(
@@ -44,16 +45,22 @@ class MapViewModel @Inject constructor(
                         section = Table.Section.fromTableNumber(tableNumber),
                         image = ArtistAlleyUtils.getImages(application, "catalogs", it)
                             .firstOrNull(),
-                        gridX = index,
+                        gridX = currentIndex,
                         // There's a physical gap not accounted for in the numbers between 41 and 42
                         gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
                     )
+                }.also {
+                    currentIndex++
+                    if (letterIndex % 2 == 0) {
+                        // Skip an extra between every 2 tables
+                        currentIndex++
+                    }
                 }
             }.flatten()
             withContext(CustomDispatchers.Main) {
                 gridData = LoadingResult.success(
                     GridData(
-                        maxRow = maxRow,
+                        maxRow = currentIndex,
                         maxColumn = maxColumn,
                         tables = tables,
                     )

@@ -176,6 +176,12 @@ interface ArtistEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSeriesConnections(entries: List<ArtistSeriesConnection>)
 
+    @Query("""DELETE FROM artist_series_connections""")
+    fun clearSeriesConnections()
+
+    @Query("""DELETE FROM artist_merch_connections""")
+    fun clearMerchConnections()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMerchConnections(entries: List<ArtistMerchConnection>)
 
