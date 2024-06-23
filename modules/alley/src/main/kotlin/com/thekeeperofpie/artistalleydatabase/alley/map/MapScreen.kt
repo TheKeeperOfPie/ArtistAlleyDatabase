@@ -85,12 +85,8 @@ object MapScreen {
 
             val coroutineScope = rememberCoroutineScope()
             Slider(
-                value = (transformState.scale - transformState.scaleRange.start) /
-                        (transformState.scaleRange.endInclusive - transformState.scaleRange.start),
+                value = transformState.scale,
                 onValueChange = {
-                    val newScale =
-                        (transformState.scaleRange.endInclusive - transformState.scaleRange.start) *
-                                it + transformState.scaleRange.start
                     coroutineScope.launch {
                         transformState.onTransform(
                             centroid = Offset(
@@ -98,10 +94,11 @@ object MapScreen {
                                 transformState.size.height / 2f,
                             ),
                             translate = Offset.Zero,
-                            newRawScale = newScale,
+                            newRawScale = it,
                         )
                     }
                 },
+                valueRange = transformState.scaleRange,
                 modifier = Modifier
                     .widthIn(max = 200.dp)
                     .clickable(interactionSource = null, indication = null) { /* Consume events */ }
@@ -125,22 +122,27 @@ object MapScreen {
             val contentState by rememberUpdatedState(content)
             val contentPaddingPixels = LocalDensity.current.run { 32.dp.toPx() }
 
-            val itemWidthPixels =
-                LocalDensity.current.run { itemWidth.toPx() } * transformState.scale
-            val itemHeightPixels =
-                LocalDensity.current.run { itemHeight.toPx() } * transformState.scale
+            val baseItemWidth = LocalDensity.current.run { itemWidth.toPx() }
+            val baseItemHeight = LocalDensity.current.run { itemHeight.toPx() }
             val width = transformState.size.width
             val height = transformState.size.height
-            val maxX = (gridData.maxRow * itemWidthPixels)
+            val baseMaxX = (gridData.maxX * baseItemWidth)
                 .coerceAtLeast(width.toFloat()) + 2 * contentPaddingPixels
-            val maxY = ((gridData.maxColumn + 1) * itemHeightPixels)
+            val baseMaxY = ((gridData.maxY + 1) * baseItemHeight)
+                .coerceAtLeast(height.toFloat()) + 2 * contentPaddingPixels
+            transformState.scaleRange = (width / baseMaxX).coerceAtLeast(height / baseMaxY)..3f
+
+            val itemWidthPixels = baseItemWidth * transformState.scale
+            val itemHeightPixels = baseItemHeight * transformState.scale
+            val maxX = ((gridData.maxX + 1) * itemWidthPixels)
+                .coerceAtLeast(width.toFloat()) + 2 * contentPaddingPixels
+            val maxY = ((gridData.maxY + 1) * itemHeightPixels)
                 .coerceAtLeast(height.toFloat()) + 2 * contentPaddingPixels
 
             transformState.translation.updateBounds(
                 Offset(0f, -maxY),
                 Offset(maxX - width, -height.toFloat()),
             )
-            transformState.scaleRange = (width / maxX).coerceAtMost(height / maxY)..3f
             LaunchedEffect(transformState.size) {
                 transformState.translation.snapTo(transformState.translation.targetValue)
             }
@@ -250,10 +252,12 @@ object MapScreen {
                                             var adjustedVelocityX = rawVelocity.x
                                             var adjustedVelocityY = rawVelocity.y
                                             if (lowerBound != null && upperBound != null) {
-                                                val isNearBoundsX = (translation.value.x - lowerBound.x < contentPaddingPixels)
-                                                        || (upperBound.x - translation.value.x) < contentPaddingPixels
-                                                val isNearBoundsY = (translation.value.y - lowerBound.y < contentPaddingPixels)
-                                                        || (upperBound.y - translation.value.y) < contentPaddingPixels
+                                                val isNearBoundsX =
+                                                    (translation.value.x - lowerBound.x < contentPaddingPixels)
+                                                            || (upperBound.x - translation.value.x) < contentPaddingPixels
+                                                val isNearBoundsY =
+                                                    (translation.value.y - lowerBound.y < contentPaddingPixels)
+                                                            || (upperBound.y - translation.value.y) < contentPaddingPixels
                                                 if (isNearBoundsX) {
                                                     adjustedVelocityX = 0f
                                                 }

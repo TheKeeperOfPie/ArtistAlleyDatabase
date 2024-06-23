@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -56,7 +55,7 @@ class StampRallySearchViewModel @Inject constructor(
 
     var sortOptions by mutableStateOf(run {
         val values = StampRallySearchSortOption.entries
-        val option = settings.stampRalliesSortOption.let { stampRalliesSortOption ->
+        val option = settings.stampRalliesSortOption.value.let { stampRalliesSortOption ->
             values.find { it.name == stampRalliesSortOption } ?: StampRallySearchSortOption.RANDOM
         }
         values.map {
@@ -72,28 +71,20 @@ class StampRallySearchViewModel @Inject constructor(
     })
         private set
 
-    var sortAscending by mutableStateOf(settings.stampRalliesSortAscending)
-        private set
+    val sortAscending = settings.stampRalliesSortAscending
+    val showGridByDefault = settings.showGridByDefault
+    val showRandomCatalogImage = settings.showRandomCatalogImage
+    val displayType = settings.displayType
 
     var showOnlyFavorites by mutableStateOf(false)
-    var showGridByDefault by mutableStateOf(settings.showGridByDefault)
-        private set
     var showIgnored by mutableStateOf(true)
     var showOnlyIgnored by mutableStateOf(false)
 
     var entriesSize by mutableIntStateOf(0)
         private set
 
-    private val randomSeed = Random.nextInt().absoluteValue
+    val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<StampRallyEntry>(5, 5)
-
-    var displayType by mutableStateOf(
-        settings.displayType.let { displayType ->
-            SearchScreen.DisplayType.entries.find { it.name == displayType }
-                ?: SearchScreen.DisplayType.CARD
-        }
-    )
-        private set
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -102,13 +93,10 @@ class StampRallySearchViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(CustomDispatchers.Main) {
             stampRallyEntryDao.getEntriesSizeFlow()
-                .collect {
-                    withContext(CustomDispatchers.Main) {
-                        entriesSize = it
-                    }
-                }
+                .flowOn(CustomDispatchers.IO)
+                .collect { entriesSize = it }
         }
     }
 
@@ -117,7 +105,7 @@ class StampRallySearchViewModel @Inject constructor(
             fandom = fandomSection.value.trim(),
             tables = tablesSection.value.trim(),
             sortOption = sortOptions.selectedOption(StampRallySearchSortOption.RANDOM),
-            sortAscending = sortAscending,
+            sortAscending = sortAscending.value,
             showOnlyFavorites = showOnlyFavorites,
             showIgnored = showIgnored,
             showOnlyIgnored = showOnlyIgnored,
@@ -148,8 +136,7 @@ class StampRallySearchViewModel @Inject constructor(
     }
 
     fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {
-        this.displayType = displayType
-        settings.displayType = displayType.name
+        settings.displayType.value = displayType.name
     }
 
     fun onSortClick(option: StampRallySearchSortOption) {
@@ -161,7 +148,7 @@ class StampRallySearchViewModel @Inject constructor(
             newOption = values[(values.indexOf(option) + 1) % values.size]
         }
 
-        settings.stampRalliesSortOption = newOption.name
+        settings.stampRalliesSortOption.value = newOption.name
         sortOptions = values.map {
             SortEntry(
                 value = it,
@@ -175,13 +162,15 @@ class StampRallySearchViewModel @Inject constructor(
     }
 
     fun onSortAscendingToggle(ascending: Boolean) {
-        sortAscending = ascending
-        settings.stampRalliesSortAscending = ascending
+        settings.stampRalliesSortAscending.value = ascending
     }
 
-    fun onShowGridByDefaultToggle(show: Boolean) {
-        showGridByDefault = show
-        settings.showGridByDefault = show
+    fun onShowGridByDefaultToggle(showGridByDefault: Boolean) {
+        settings.showGridByDefault.value = showGridByDefault
+    }
+
+    fun onShowRandomCatalogImageToggle(showRandomCatalogImage: Boolean) {
+        settings.showRandomCatalogImage.value = showRandomCatalogImage
     }
 
     private data class FilterParams(

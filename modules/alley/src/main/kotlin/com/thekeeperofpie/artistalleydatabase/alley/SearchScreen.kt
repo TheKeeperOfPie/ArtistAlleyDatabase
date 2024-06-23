@@ -90,6 +90,7 @@ object SearchScreen {
         ),
         bottomSheet: @Composable ColumnScope.() -> Unit,
         showGridByDefault: () -> Boolean,
+        showRandomCatalogImage: () -> Boolean,
         displayType: () -> DisplayType,
         onDisplayTypeToggle: (DisplayType) -> Unit,
         listState: LazyListState,
@@ -242,6 +243,9 @@ object SearchScreen {
 
                     @Suppress("NAME_SHADOWING")
                     val showGridByDefault = showGridByDefault()
+
+                    @Suppress("NAME_SHADOWING")
+                    val showRandomCatalogImage = showRandomCatalogImage()
                     LazyColumn(
                         state = listState,
                         contentPadding = PaddingValues(top = 8.dp + topBarPadding, bottom = 80.dp),
@@ -290,6 +294,7 @@ object SearchScreen {
                                     entry = entry,
                                     sharedElementId = itemToSharedElementId(entry),
                                     showGridByDefault = showGridByDefault,
+                                    showRandomCatalogImage = showRandomCatalogImage,
                                     onFavoriteToggle = onFavoriteToggle,
                                     onIgnoredToggle = onIgnoredToggle,
                                     onClick = onEntryClick,
@@ -346,5 +351,12 @@ object SearchScreen {
     enum class DisplayType(val icon: ImageVector) {
         LIST(Icons.AutoMirrored.Filled.ViewList),
         CARD(Icons.Filled.ViewAgenda),
+        ;
+
+        companion object {
+            fun fromSerializedValue(value: String) =
+                SearchScreen.DisplayType.entries.find { it.name == value }
+                    ?: SearchScreen.DisplayType.CARD
+        }
     }
 }

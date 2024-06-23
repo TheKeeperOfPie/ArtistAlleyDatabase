@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.times
 import coil3.compose.AsyncImage
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ImageGrid
+import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -59,12 +60,14 @@ import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 @Composable
 fun <EntryModel : SearchEntryModel> ItemCard(
     entry: EntryModel,
     sharedElementId: Any,
     showGridByDefault: Boolean,
+    showRandomCatalogImage: Boolean,
     onFavoriteToggle: (Boolean) -> Unit,
     onIgnoredToggle: (Boolean) -> Unit,
     onClick: (EntryModel, Int) -> Unit,
@@ -79,6 +82,8 @@ fun <EntryModel : SearchEntryModel> ItemCard(
     val pagerState = rememberPagerState(
         initialPage = if (showGridByDefault || images.isEmpty()) {
             0
+        } else if (showRandomCatalogImage) {
+            (1..images.size).random(Random(LocalStableRandomSeed.current + entry.id.hashCode()))
         } else {
             1
         },

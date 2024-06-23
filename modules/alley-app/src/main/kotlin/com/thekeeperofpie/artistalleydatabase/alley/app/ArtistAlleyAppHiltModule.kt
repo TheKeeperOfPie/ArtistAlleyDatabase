@@ -33,8 +33,8 @@ class ArtistAlleyAppHiltModule {
 
     @Singleton
     @Provides
-    fun provideArtistAlleyAppSettings(application: Application) =
-        ArtistAlleyAppSettings(application)
+    fun provideArtistAlleyAppSettings(scopedApplication: ScopedApplication) =
+        ArtistAlleyAppSettings(scopedApplication)
 
     @Singleton
     @Provides

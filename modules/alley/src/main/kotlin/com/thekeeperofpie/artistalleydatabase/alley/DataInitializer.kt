@@ -36,19 +36,19 @@ class DataInitializer @Inject constructor(
         scopedApplication.scope.launch(CustomDispatchers.IO) {
             val application = scopedApplication.app
             val artistsCsvSize = parseSize(application, ARTISTS_CSV_NAME)
-            if (settings.lastKnownArtistsCsvSize != artistsCsvSize
+            if (settings.lastKnownArtistsCsvSize.value != artistsCsvSize
                 || artistEntryDao.getEntriesSize() == 0
             ) {
                 parseArtists()
                 parseTags()
-                settings.lastKnownArtistsCsvSize = artistsCsvSize
+                settings.lastKnownArtistsCsvSize.value = artistsCsvSize
             }
             val ralliesCsvSize = parseSize(application, STAMP_RALLIES_CSV_NAME)
-            if (settings.lastKnownStampRalliesCsvSize != ralliesCsvSize
+            if (settings.lastKnownStampRalliesCsvSize.value != ralliesCsvSize
                 || artistEntryDao.getEntriesSize() == 0
             ) {
                 parseStampRallies()
-                settings.lastKnownStampRalliesCsvSize = ralliesCsvSize
+                settings.lastKnownStampRalliesCsvSize.value = ralliesCsvSize
             }
         }
     }

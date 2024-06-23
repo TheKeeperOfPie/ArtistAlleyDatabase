@@ -20,7 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -74,142 +77,173 @@ object ArtistSearchScreen {
             }
         }
 
-        SearchScreen(
-            viewModel = viewModel,
-            title = { viewModel.lockedSeries ?: viewModel.lockedMerch },
-            onClickBack = onClickBack,
-            entriesSize = { viewModel.entriesSize },
-            scaffoldState = scaffoldState,
-            bottomSheet = {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .heightIn(min = 320.dp)
-                ) {
-                    HorizontalDivider()
-                    var sortExpanded by remember { mutableStateOf(false) }
-                    SortSection(
-                        headerTextRes = R.string.alley_sort_label,
-                        expanded = { sortExpanded },
-                        onExpandedChange = { sortExpanded = it },
-                        sortOptions = { viewModel.sortOptions },
-                        onSortClick = viewModel::onSortClick,
-                        sortAscending = { viewModel.sortAscending },
-                        onSortAscendingChange = {
-                            viewModel.onSortAscendingToggle(!viewModel.sortAscending)
+        CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {
+            val showGridByDefault by viewModel.showGridByDefault.collectAsState()
+            val showRandomCatalogImage by viewModel.showRandomCatalogImage.collectAsState()
+            val displayType = SearchScreen.DisplayType.fromSerializedValue(
+                viewModel.displayType.collectAsState().value
+            )
+            SearchScreen(
+                viewModel = viewModel,
+                title = { viewModel.lockedSeries ?: viewModel.lockedMerch },
+                onClickBack = onClickBack,
+                entriesSize = { viewModel.entriesSize },
+                scaffoldState = scaffoldState,
+                bottomSheet = {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .heightIn(min = 320.dp)
+                    ) {
+                        HorizontalDivider()
+                        var sortExpanded by remember { mutableStateOf(false) }
+                        val sortAscending by viewModel.sortAscending.collectAsState()
+                        SortSection(
+                            headerTextRes = R.string.alley_sort_label,
+                            expanded = { sortExpanded },
+                            onExpandedChange = { sortExpanded = it },
+                            sortOptions = { viewModel.sortOptions },
+                            onSortClick = viewModel::onSortClick,
+                            sortAscending = { sortAscending },
+                            onSortAscendingChange = {
+                                viewModel.onSortAscendingToggle(!sortAscending)
+                            }
+                        )
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.alley_filter_favorites),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .weight(1f)
+                            )
+
+                            Switch(
+                                checked = viewModel.showOnlyFavorites,
+                                onCheckedChange = { viewModel.showOnlyFavorites = it },
+                                modifier = Modifier.padding(end = 16.dp),
+                            )
                         }
-                    )
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.alley_filter_favorites),
-                            style = MaterialTheme.typography.titleMedium,
+                        HorizontalDivider()
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .weight(1f)
-                        )
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.alley_filter_only_catalogs),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .weight(1f)
+                            )
 
-                        Switch(
-                            checked = viewModel.showOnlyFavorites,
-                            onCheckedChange = { viewModel.showOnlyFavorites = it },
-                            modifier = Modifier.padding(end = 16.dp),
-                        )
-                    }
+                            Switch(
+                                checked = viewModel.showOnlyWithCatalog,
+                                onCheckedChange = { viewModel.showOnlyWithCatalog = it },
+                                modifier = Modifier.padding(end = 16.dp),
+                            )
+                        }
 
-                    HorizontalDivider()
+                        HorizontalDivider()
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.alley_filter_only_catalogs),
-                            style = MaterialTheme.typography.titleMedium,
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .weight(1f)
-                        )
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.alley_filter_show_grid_by_default),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .weight(1f)
+                            )
 
-                        Switch(
-                            checked = viewModel.showOnlyWithCatalog,
-                            onCheckedChange = { viewModel.showOnlyWithCatalog = it },
-                            modifier = Modifier.padding(end = 16.dp),
-                        )
-                    }
+                            Switch(
+                                checked = showGridByDefault,
+                                onCheckedChange = viewModel::onShowGridByDefaultToggle,
+                                modifier = Modifier.padding(end = 16.dp),
+                            )
+                        }
 
-                    HorizontalDivider()
+                        HorizontalDivider()
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.alley_filter_show_grid_by_default),
-                            style = MaterialTheme.typography.titleMedium,
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .weight(1f)
-                        )
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.alley_filter_show_random_catalog_image),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .weight(1f)
+                            )
 
-                        Switch(
-                            checked = viewModel.showGridByDefault,
-                            onCheckedChange = viewModel::onShowGridByDefaultToggle,
-                            modifier = Modifier.padding(end = 16.dp),
-                        )
-                    }
+                            Switch(
+                                checked = showRandomCatalogImage,
+                                onCheckedChange = viewModel::onShowRandomCatalogImageToggle,
+                                modifier = Modifier.padding(end = 16.dp),
+                            )
+                        }
 
-                    HorizontalDivider()
+                        HorizontalDivider()
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.alley_filter_show_ignored),
-                            style = MaterialTheme.typography.titleMedium,
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .weight(1f)
-                        )
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.alley_filter_show_ignored),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .weight(1f)
+                            )
 
-                        Switch(
-                            checked = viewModel.showIgnored,
-                            onCheckedChange = { viewModel.showIgnored = it },
-                            modifier = Modifier.padding(end = 16.dp),
-                        )
+                            Switch(
+                                checked = viewModel.showIgnored,
+                                onCheckedChange = { viewModel.showIgnored = it },
+                                modifier = Modifier.padding(end = 16.dp),
+                            )
+                        }
+
+                        HorizontalDivider()
+
+                        Spacer(Modifier.height(80.dp))
                     }
-
-                    HorizontalDivider()
-
-                    Spacer(Modifier.height(80.dp))
+                },
+                showGridByDefault = { showGridByDefault },
+                showRandomCatalogImage = { showRandomCatalogImage },
+                displayType = { displayType },
+                onDisplayTypeToggle = viewModel::onDisplayTypeToggle,
+                listState = listState,
+                onFavoriteToggle = viewModel::onFavoriteToggle,
+                onIgnoredToggle = viewModel::onIgnoredToggle,
+                onEntryClick = onEntryClick,
+                shouldShowCount = {
+                    viewModel.query.isNotEmpty()
+                            || viewModel.showOnlyFavorites
+                            || viewModel.showOnlyWithCatalog
+                            || viewModel.lockedSeries != null
+                            || viewModel.lockedMerch != null
+                },
+                itemToSharedElementId = { it.value.id },
+                itemRow = { entry, onFavoriteToggle, modifier ->
+                    ArtistListRow(entry, onFavoriteToggle, modifier)
                 }
-            },
-            showGridByDefault = viewModel::showGridByDefault,
-            displayType = viewModel::displayType,
-            onDisplayTypeToggle = viewModel::onDisplayTypeToggle,
-            listState = listState,
-            onFavoriteToggle = viewModel::onFavoriteToggle,
-            onIgnoredToggle = viewModel::onIgnoredToggle,
-            onEntryClick = onEntryClick,
-            shouldShowCount = {
-                viewModel.query.isNotEmpty()
-                        || viewModel.showOnlyFavorites
-                        || viewModel.showOnlyWithCatalog
-                        || viewModel.lockedSeries != null
-                        || viewModel.lockedMerch != null
-            },
-            itemToSharedElementId = { it.value.id },
-            itemRow = { entry, onFavoriteToggle, modifier ->
-                ArtistListRow(entry, onFavoriteToggle, modifier)
-            }
-        )
+            )
+        }
     }
 }

@@ -39,6 +39,7 @@
     <string name="alley_open_update">Open</string>
     <string name="alley_show_catalog_grid_content_description">Show content grid</string>
     <string name="alley_filter_show_grid_by_default">Show grid by default</string>
+    <string name="alley_filter_show_random_catalog_image">Show random catalog image</string>
     <string name="alley_filter_show_ignored">Show ignored (long press)</string>
     <string name="alley_search_option_ignored">Ignored</string>
     <string name="alley_series_header_zero">Series</string>

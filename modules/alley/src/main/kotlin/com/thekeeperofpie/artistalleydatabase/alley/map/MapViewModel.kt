@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
@@ -23,6 +24,7 @@ import javax.inject.Inject
 class MapViewModel @Inject constructor(
     private val application: Application,
     private val artistEntryDao: ArtistEntryDao,
+    settings: ArtistAlleySettings,
 ) : ViewModel() {
     var gridData by mutableStateOf(LoadingResult.loading<GridData>())
     private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
@@ -37,14 +39,20 @@ class MapViewModel @Inject constructor(
                     it.value.mapNotNull { it.drop(1).toIntOrNull() }.maxOrNull() ?: 0
                 }
             var currentIndex = 0
+            val showRandomCatalogImage = settings.showRandomCatalogImage.value
             val tables = letterToBooths.values.mapIndexed { letterIndex, booths ->
                 booths.map {
                     val tableNumber = it.filter { it.isDigit() }.toInt()
                     Table(
                         booth = it,
                         section = Table.Section.fromTableNumber(tableNumber),
-                        image = ArtistAlleyUtils.getImages(application, "catalogs", it)
-                            .firstOrNull(),
+                        image = ArtistAlleyUtils.getImages(application, "catalogs", it).let {
+                            if (showRandomCatalogImage) {
+                                it.randomOrNull()
+                            } else {
+                                it.firstOrNull()
+                            }
+                        },
                         gridX = currentIndex,
                         // There's a physical gap not accounted for in the numbers between 41 and 42
                         gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
@@ -60,8 +68,8 @@ class MapViewModel @Inject constructor(
             withContext(CustomDispatchers.Main) {
                 gridData = LoadingResult.success(
                     GridData(
-                        maxRow = currentIndex,
-                        maxColumn = maxColumn,
+                        maxX = tables.maxOf { it.gridX },
+                        maxY = tables.maxOf { it.gridY },
                         tables = tables,
                     )
                 )
@@ -88,8 +96,8 @@ class MapViewModel @Inject constructor(
     }
 
     data class GridData(
-        val maxRow: Int,
-        val maxColumn: Int,
+        val maxX: Int,
+        val maxY: Int,
         val tables: List<Table>,
     )
 }

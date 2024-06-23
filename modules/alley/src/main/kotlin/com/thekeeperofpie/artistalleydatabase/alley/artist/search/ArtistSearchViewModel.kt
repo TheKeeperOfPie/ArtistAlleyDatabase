@@ -73,11 +73,12 @@ class ArtistSearchViewModel @Inject constructor(
         R.string.alley_search_option_merch_many,
     )
 
-    override val sections = listOf(boothSection, artistSection, summarySection, seriesSection, merchSection)
+    override val sections =
+        listOf(boothSection, artistSection, summarySection, seriesSection, merchSection)
 
     var sortOptions by mutableStateOf(run {
         val values = ArtistSearchSortOption.entries
-        val option = settings.artistsSortOption.let { artistsSortOption ->
+        val option = settings.artistsSortOption.value.let { artistsSortOption ->
             values.find { it.name == artistsSortOption } ?: ArtistSearchSortOption.RANDOM
         }
         values.map {
@@ -93,29 +94,21 @@ class ArtistSearchViewModel @Inject constructor(
     })
         private set
 
-    var sortAscending by mutableStateOf(settings.artistsSortAscending)
-        private set
+    val sortAscending = settings.artistsSortAscending
+    val showGridByDefault = settings.showGridByDefault
+    val showRandomCatalogImage = settings.showRandomCatalogImage
+    val displayType = settings.displayType
 
     var showOnlyFavorites by mutableStateOf(false)
     var showOnlyWithCatalog by mutableStateOf(false)
-    var showGridByDefault by mutableStateOf(settings.showGridByDefault)
-        private set
     var showIgnored by mutableStateOf(true)
     var showOnlyIgnored by mutableStateOf(false)
 
     var entriesSize by mutableStateOf(0)
         private set
 
-    private val randomSeed = Random.nextInt().absoluteValue
+    val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
-
-    var displayType by mutableStateOf(
-        settings.displayType.let { displayType ->
-            SearchScreen.DisplayType.entries.find { it.name == displayType }
-                ?: SearchScreen.DisplayType.CARD
-        }
-    )
-        private set
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -124,8 +117,9 @@ class ArtistSearchViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(CustomDispatchers.Main) {
             artistEntryDao.getEntriesSizeFlow()
+                .flowOn(CustomDispatchers.IO)
                 .collect { entriesSize = it }
         }
     }
@@ -144,7 +138,7 @@ class ArtistSearchViewModel @Inject constructor(
                 .mapNotNull(AniListUtils::mediaId),
             merch = merchSection.finalContents().map { it.serializedValue },
             sortOption = sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
-            sortAscending = sortAscending,
+            sortAscending = sortAscending.value,
             showOnlyFavorites = showOnlyFavorites,
             showOnlyWithCatalog = showOnlyWithCatalog,
             showIgnored = showIgnored,
@@ -178,20 +172,19 @@ class ArtistSearchViewModel @Inject constructor(
     }
 
     fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {
-        this.displayType = displayType
-        settings.displayType = displayType.name
+        settings.displayType.value = displayType.name
     }
 
     fun onSortClick(option: ArtistSearchSortOption) {
         var newOption = option
-        val values = ArtistSearchSortOption.values()
+        val values = ArtistSearchSortOption.entries
         val existingOptions = sortOptions
         if (existingOptions.first { it.state == FilterIncludeExcludeState.INCLUDE }
                 .value == option) {
             newOption = values[(values.indexOf(option) + 1) % values.size]
         }
 
-        settings.artistsSortOption = newOption.name
+        settings.artistsSortOption.value = newOption.name
         sortOptions = values.map {
             SortEntry(
                 value = it,
@@ -205,13 +198,15 @@ class ArtistSearchViewModel @Inject constructor(
     }
 
     fun onSortAscendingToggle(ascending: Boolean) {
-        sortAscending = ascending
-        settings.artistsSortAscending = ascending
+        settings.artistsSortAscending.value = ascending
     }
 
-    fun onShowGridByDefaultToggle(show: Boolean) {
-        showGridByDefault = show
-        settings.showGridByDefault = show
+    fun onShowGridByDefaultToggle(showGridByDefault: Boolean) {
+        settings.showGridByDefault.value = showGridByDefault
+    }
+
+    fun onShowRandomCatalogImageToggle(showRandomCatalogImage: Boolean) {
+        settings.showRandomCatalogImage.value = showRandomCatalogImage
     }
 
     private data class FilterParams(

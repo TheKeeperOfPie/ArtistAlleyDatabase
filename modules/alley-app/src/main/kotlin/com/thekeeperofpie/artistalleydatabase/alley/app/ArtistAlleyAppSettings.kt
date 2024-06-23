@@ -1,75 +1,59 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
-import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 
-class ArtistAlleyAppSettings(application: Application) : ArtistAlleySettings {
+class ArtistAlleyAppSettings(private val application: ScopedApplication) : ArtistAlleySettings {
 
     private val sharedPrefs =
-        application.getSharedPreferences("shared_prefs", Context.MODE_PRIVATE)
+        application.app.getSharedPreferences("shared_prefs", Context.MODE_PRIVATE)
 
-    override var lastKnownArtistsCsvSize: Long
-        get() = sharedPrefs.getLong("lastKnownArtistsCsvSize", -1)
-        set(value) {
-            sharedPrefs.edit()
-                .putLong("lastKnownArtistsCsvSize", value)
-                .apply()
-        }
+    override val lastKnownArtistsCsvSize = long("lastKnownArtistsCsvSize")
+    override val lastKnownStampRalliesCsvSize = long("lastKnownStampRalliesCsvSize")
+    override val displayType = string("displayType")
+    override val artistsSortOption = string("artistsSortOption")
+    override val artistsSortAscending = boolean("artistsSortAscending", true)
+    override val stampRalliesSortOption = string("stampRalliesSortOption")
+    override val stampRalliesSortAscending = boolean("stampRalliesSortAscending", true)
+    override val showGridByDefault = boolean("showGridByDefault", false)
+    override val showRandomCatalogImage = boolean("showRandomCatalogImage", false)
 
-    override var lastKnownStampRalliesCsvSize: Long
-        get() = sharedPrefs.getLong("lastKnownStampRalliesCsvSize", -1)
-        set(value) {
-            sharedPrefs.edit()
-                .putLong("lastKnownStampRalliesCsvSize", value)
-                .apply()
-        }
+    private fun long(key: String, default: Long = -1L) = initialize(
+        key,
+        { getLong(it, -default) },
+        SharedPreferences.Editor::putLong,
+    )
 
-    override var displayType: String
-        get() = sharedPrefs.getString("displayType", null).orEmpty()
-        set(value) {
-            sharedPrefs.edit()
-                .putString("displayType", value)
-                .apply()
-        }
+    private fun string(key: String, default: String = "") = initialize(
+        key,
+        { getString(it, default).orEmpty() },
+        SharedPreferences.Editor::putString,
+    )
 
-    override var artistsSortOption: String
-        get() = sharedPrefs.getString("artistsSortOption", null).orEmpty()
-        set(value) {
-            sharedPrefs.edit()
-                .putString("artistsSortOption", value)
-                .apply()
-        }
+    private fun boolean(key: String, default: Boolean = false) = initialize(
+        key,
+        { getBoolean(it, default) },
+        SharedPreferences.Editor::putBoolean,
+    )
 
-    override var artistsSortAscending: Boolean
-        get() = sharedPrefs.getBoolean("artistsSortAscending", true)
-        set(value) {
-            sharedPrefs.edit()
-                .putBoolean("artistsSortAscending", value)
-                .apply()
+    private fun <T> initialize(
+        key: String,
+        initialValue: SharedPreferences.(String) -> T,
+        setValue: SharedPreferences.Editor.(key: String, value: T) -> SharedPreferences.Editor,
+    ): MutableStateFlow<T> {
+        val flow = MutableStateFlow(sharedPrefs.initialValue(key))
+        application.scope.launch(CustomDispatchers.IO) {
+            flow.drop(1).collectLatest {
+                sharedPrefs.edit().setValue(key, it).apply()
+            }
         }
-
-    override var stampRalliesSortOption: String
-        get() = sharedPrefs.getString("stampRalliesSortOption", null).orEmpty()
-        set(value) {
-            sharedPrefs.edit()
-                .putString("stampRalliesSortOption", value)
-                .apply()
-        }
-
-    override var stampRalliesSortAscending: Boolean
-        get() = sharedPrefs.getBoolean("stampRalliesSortAscending", true)
-        set(value) {
-            sharedPrefs.edit()
-                .putBoolean("stampRalliesSortAscending", value)
-                .apply()
-        }
-
-    override var showGridByDefault: Boolean
-        get() = sharedPrefs.getBoolean("showGridByDefault", false)
-        set(value) {
-            sharedPrefs.edit()
-                .putBoolean("showGridByDefault", value)
-                .apply()
-        }
+        return flow
+    }
 }

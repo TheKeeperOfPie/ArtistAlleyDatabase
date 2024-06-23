@@ -1,13 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
+import kotlinx.coroutines.flow.MutableStateFlow
+
 interface ArtistAlleySettings {
 
-    var lastKnownArtistsCsvSize: Long
-    var lastKnownStampRalliesCsvSize: Long
-    var displayType: String
-    var artistsSortOption: String
-    var artistsSortAscending: Boolean
-    var stampRalliesSortOption: String
-    var stampRalliesSortAscending: Boolean
-    var showGridByDefault: Boolean
+    val lastKnownArtistsCsvSize: MutableStateFlow<Long>
+    val lastKnownStampRalliesCsvSize: MutableStateFlow<Long>
+    val displayType: MutableStateFlow<String>
+    val artistsSortOption: MutableStateFlow<String>
+    val artistsSortAscending: MutableStateFlow<Boolean>
+    val stampRalliesSortOption: MutableStateFlow<String>
+    val stampRalliesSortAscending: MutableStateFlow<Boolean>
+    val showGridByDefault: MutableStateFlow<Boolean>
+    val showRandomCatalogImage: MutableStateFlow<Boolean>
 }

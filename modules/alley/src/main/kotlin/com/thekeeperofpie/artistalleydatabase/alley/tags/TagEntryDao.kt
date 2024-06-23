@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -43,7 +42,7 @@ interface TagEntryDao {
                 """.trimIndent()
         } + sortSuffix
 
-        return getSeries(SimpleSQLiteQuery(statement, bindArguments.toTypedArray()).also { Log.d("QueryDebug", "sql = ${it.sql}, options = ${bindArguments}")})
+        return getSeries(SimpleSQLiteQuery(statement, bindArguments.toTypedArray()))
     }
 
     @RawQuery([MerchEntry::class])
