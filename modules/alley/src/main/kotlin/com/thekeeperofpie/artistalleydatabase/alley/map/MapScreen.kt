@@ -25,7 +25,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -53,7 +52,6 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -66,7 +64,6 @@ object MapScreen {
     @Composable
     operator fun invoke(
         transformState: TransformState,
-        onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         modifier: Modifier = Modifier,
         initialGridPosition: IntOffset? = null,
         content: @Composable (Table) -> Unit,
@@ -77,7 +74,6 @@ object MapScreen {
             Map(
                 gridData = gridData,
                 transformState = transformState,
-                onArtistClick = onArtistClick,
                 initialGridPosition = initialGridPosition,
                 modifier = modifier,
                 content = content,
@@ -112,14 +108,11 @@ object MapScreen {
     private fun Map(
         gridData: MapViewModel.GridData?,
         transformState: TransformState,
-        onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         modifier: Modifier = Modifier,
         initialGridPosition: IntOffset? = null,
         content: @Composable (Table) -> Unit,
     ) {
         if (gridData != null) {
-            val onArtistClickState by rememberUpdatedState(onArtistClick)
-            val contentState by rememberUpdatedState(content)
             val contentPaddingPixels = LocalDensity.current.run { 32.dp.toPx() }
 
             val baseItemWidth = LocalDensity.current.run { itemWidth.toPx() }
@@ -150,7 +143,7 @@ object MapScreen {
             val itemProvider = remember(gridData) {
                 ItemProvider(
                     gridData = gridData,
-                    content = contentState,
+                    content = content,
                 )
             }
 

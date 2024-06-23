@@ -111,10 +111,7 @@ object ArtistAlleyScreen {
                 )
                 Destinations.MAP -> {
                     val mapViewModel = hiltViewModel<MapViewModel>()
-                    MapScreen(
-                        transformState = mapTransformState,
-                        onArtistClick = onArtistClick,
-                    ) { table ->
+                    MapScreen(transformState = mapTransformState) { table ->
                         TableCell(table = table, onArtistClick = onArtistClick)
                     }
                 }

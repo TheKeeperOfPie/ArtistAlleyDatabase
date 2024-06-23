@@ -43,16 +43,17 @@ class MapViewModel @Inject constructor(
             val tables = letterToBooths.values.mapIndexed { letterIndex, booths ->
                 booths.map {
                     val tableNumber = it.filter { it.isDigit() }.toInt()
+                    val images = ArtistAlleyUtils.getImages(application, "catalogs", it)
+                    val imageIndex = if (showRandomCatalogImage) {
+                        images.indices.randomOrNull()
+                    } else {
+                        0
+                    }
                     Table(
                         booth = it,
                         section = Table.Section.fromTableNumber(tableNumber),
-                        image = ArtistAlleyUtils.getImages(application, "catalogs", it).let {
-                            if (showRandomCatalogImage) {
-                                it.randomOrNull()
-                            } else {
-                                it.firstOrNull()
-                            }
-                        },
+                        image = imageIndex?.let(images::getOrNull),
+                        imageIndex = imageIndex,
                         gridX = currentIndex,
                         // There's a physical gap not accounted for in the numbers between 41 and 42
                         gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,

@@ -126,6 +126,7 @@ fun TableCell(
                     CircularProgressIndicator()
                 } else {
                     TablePopup(
+                        table = table,
                         entry = entry,
                         onFavoriteToggle = {
                             entry.favorite = it
@@ -151,6 +152,7 @@ fun TableCell(
 
 @Composable
 fun TablePopup(
+    table: Table,
     entry: ArtistEntryGridModel?,
     onFavoriteToggle: (Boolean) -> Unit,
     onIgnoredToggle: (Boolean) -> Unit,
@@ -158,16 +160,24 @@ fun TablePopup(
     modifier: Modifier = Modifier,
 ) {
     val ignored = entry?.ignored ?: false
+    val imagesSize = entry?.images?.size ?: 0
     val pagerState = rememberPagerState(
-        initialPage = 0,
-        pageCount = { entry?.images?.size ?: 0 },
+        initialPage = table.imageIndex?.coerceAtMost(imagesSize) ?: 0,
+        pageCount = { imagesSize },
     )
     OutlinedCard(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
             .combinedClickable(
-                onClick = { entry?.let { onClick(it, pagerState.settledPage) } },
+                onClick = {
+                    entry?.let {
+                        // This is a terrible hack, but DetailsScreen shows a grid in index 0
+                        // while MapScreen does not, so the image index needs to be 1 higher
+                        // to line up correctly when opening DetailsScreen
+                        onClick(it, pagerState.settledPage + 1)
+                    }
+                },
                 onLongClick = { onIgnoredToggle(!ignored) }
             )
             .alpha(if (entry?.ignored == true) 0.38f else 1f)
@@ -206,7 +216,10 @@ fun TablePopup(
                             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                             contentDescription = stringResource(R.string.alley_artist_catalog_image),
                             modifier = Modifier
-                                .clickable { onClick(entry, pagerState.settledPage) }
+                                .clickable {
+                                    // See above comment about hack
+                                    onClick(entry, pagerState.settledPage + 1)
+                                }
                                 .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                                 .conditionally(image.width != null && image.height != null) {

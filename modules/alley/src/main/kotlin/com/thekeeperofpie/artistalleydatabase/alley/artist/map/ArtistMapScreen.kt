@@ -82,7 +82,6 @@ object ArtistMapScreen {
             MapScreen(
                 transformState = transformState,
                 initialGridPosition = targetTable?.run { IntOffset(gridX, gridY) },
-                onArtistClick = onArtistClick,
                 modifier = Modifier.padding(it)
             ) { table ->
                 val shouldHighlight = table.booth == viewModel.id

@@ -42,7 +42,6 @@ object StampRallyMapScreen {
             MapScreen(
                 transformState = transformState,
                 initialGridPosition = targetTable?.run { IntOffset(gridX, gridY) },
-                onArtistClick = onArtistClick,
                 modifier = Modifier.padding(it)
             ) { table ->
                 val shouldHighlight = stampRallyMapViewModel.artistTables.contains(table.booth)

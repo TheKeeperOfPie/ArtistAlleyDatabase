@@ -7,6 +7,7 @@ data class Table(
     val booth: String,
     val section: Section,
     val image: CatalogImage?,
+    val imageIndex: Int?,
     val gridX: Int,
     val gridY: Int,
 ) {
