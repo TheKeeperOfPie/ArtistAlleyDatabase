@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -82,6 +84,20 @@ object DetailsScreen {
         content: @Composable ColumnScope.() -> Unit,
     ) {
         var showFullImagesIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+
+        @Suppress("NAME_SHADOWING")
+        val images = images()
+        val pageCount = if (images.isEmpty()) {
+            0
+        } else if (images.size == 1) {
+            1
+        } else {
+            images.size + 1
+        }
+        val headerPagerState = rememberPagerState(
+            initialPage = initialImageIndex.coerceAtMost(pageCount - 1),
+            pageCount = { pageCount },
+        )
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -121,8 +137,6 @@ object DetailsScreen {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                @Suppress("NAME_SHADOWING")
-                val images = images()
                 if (images.isEmpty()) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -139,24 +153,14 @@ object DetailsScreen {
                         )
                     }
                 } else {
-                    val pagerState = rememberPagerState(
-                        initialPage = initialImageIndex.coerceAtMost(images.size - 1),
-                        pageCount = {
-                            if (images.isEmpty()) {
-                                0
-                            } else if (images.size == 1) {
-                                1
-                            } else {
-                                images.size + 1
-                            }
-                        },
-                    )
                     ImagePager(
-                        pagerState = pagerState,
+                        pagerState = headerPagerState,
                         sharedElementId = sharedElementId,
                         images = images,
                         showFullImagesIndex = showFullImagesIndex,
-                        onShowFullImagesIndexChange = { showFullImagesIndex = it },
+                        onShowFullImagesIndexChange = {
+                            showFullImagesIndex = headerPagerState.currentPage
+                        },
                     )
                 }
 
@@ -166,16 +170,32 @@ object DetailsScreen {
             }
         }
 
+        val coroutineScope = rememberCoroutineScope()
         val imageIndex = showFullImagesIndex
         AnimatedVisibility(
             visible = imageIndex != null,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
-            CompositionLocalProvider(
-                LocalAnimatedVisibilityScope provides this,
-            ) {
-                BackHandler { showFullImagesIndex = null }
+            val fullPagerState = rememberPagerState(
+                initialPage = imageIndex ?: 0,
+                pageCount = {
+                    if (images.isEmpty()) {
+                        0
+                    } else if (images.size == 1) {
+                        1
+                    } else {
+                        images.size + 1
+                    }
+                },
+            )
+            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                BackHandler {
+                    showFullImagesIndex = null
+                    coroutineScope.launch {
+                        headerPagerState.scrollToPage(fullPagerState.currentPage)
+                    }
+                }
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
                         .copy(alpha = 0.4f),
@@ -183,23 +203,10 @@ object DetailsScreen {
                 ) {
                     @Suppress("NAME_SHADOWING")
                     val images = images()
-                    val pagerState = rememberPagerState(
-                        initialPage = imageIndex ?: 0,
-                        pageCount = {
-                            if (images.isEmpty()) {
-                                0
-                            } else if (images.size == 1) {
-                                1
-                            } else {
-                                images.size + 1
-                            }
-                        },
-                    )
                     val zoomPanState = rememberZoomPanState()
-                    val coroutineScope = rememberCoroutineScope()
                     Box {
                         HorizontalPager(
-                            state = pagerState,
+                            state = fullPagerState,
                             pageSpacing = 16.dp,
                             userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
                             modifier = Modifier.fillMaxSize()
@@ -210,14 +217,19 @@ object DetailsScreen {
                                     images = images,
                                     onImageClick = { index, _ ->
                                         coroutineScope.launch {
-                                            pagerState.animateScrollToPage(index + 1)
+                                            headerPagerState.animateScrollToPage(index + 1)
                                         }
                                     }
                                 )
                             } else {
                                 ZoomPanBox(
                                     state = zoomPanState,
-                                    onClick = { showFullImagesIndex = null },
+                                    onClick = {
+                                        showFullImagesIndex = null
+                                        coroutineScope.launch {
+                                            headerPagerState.scrollToPage(fullPagerState.currentPage)
+                                        }
+                                    },
                                 ) {
                                     val image = images[(it - 1).coerceAtLeast(0)]
                                     AsyncImage(
@@ -237,7 +249,7 @@ object DetailsScreen {
                                                     }
                                                 )
                                             }
-                                            .sharedBounds("image", image.uri)
+                                            .sharedElement("image", image.uri)
                                             .fillMaxWidth()
                                             .align(Alignment.Center)
                                     )
@@ -252,24 +264,32 @@ object DetailsScreen {
                             modifier = Modifier.align(Alignment.BottomCenter)
                         ) {
                             HorizontalPagerIndicator(
-                                pagerState = pagerState,
-                                pageCount = pagerState.pageCount,
+                                pagerState = headerPagerState,
+                                pageCount = headerPagerState.pageCount,
                                 modifier = Modifier
+                                    .sharedBounds(
+                                        "pagerIndicator",
+                                        sharedElementId,
+                                        zIndexInOverlay = 1f,
+                                    )
                                     .padding(8.dp)
                             )
                         }
 
                         AnimatedVisibility(
-                            visible = pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
+                            visible = fullPagerState.currentPage != 0 && zoomPanState.canPanExternal(),
                             enter = fadeIn(),
                             exit = fadeOut(),
                             modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
-                            IconButton(onClick = {
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(0)
-                                }
-                            }) {
+                            IconButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        headerPagerState.animateScrollToPage(0)
+                                    }
+                                },
+                                modifier = Modifier.sharedBounds("gridIcon", sharedElementId)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Filled.GridOn,
                                     contentDescription = stringResource(
@@ -290,7 +310,7 @@ object DetailsScreen {
         pagerState: PagerState,
         images: List<CatalogImage>,
         showFullImagesIndex: Int?,
-        onShowFullImagesIndexChange: (Int?) -> Unit,
+        onShowFullImagesIndexChange: () -> Unit,
     ) {
         val zoomPanState = rememberZoomPanState()
         val coroutineScope = rememberCoroutineScope()
@@ -304,10 +324,10 @@ object DetailsScreen {
                 state = pagerState,
                 userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
                 modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .sharedBounds("imageContainer", sharedElementId)
                     .height(IMAGE_HEIGHT)
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .clipToBounds()
             ) { page ->
                 if (page == 0 && images.size > 1) {
@@ -323,7 +343,7 @@ object DetailsScreen {
                 } else {
                     ZoomPanBox(
                         state = zoomPanState,
-                        onClick = { onShowFullImagesIndexChange(null) },
+                        onClick = { onShowFullImagesIndexChange() },
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
@@ -332,7 +352,7 @@ object DetailsScreen {
                                 .fillMaxWidth()
                                 .pointerInput(zoomPanState, page) {
                                     detectTapGestures(
-                                        onTap = { onShowFullImagesIndexChange(page) },
+                                        onTap = { onShowFullImagesIndexChange() },
                                         onDoubleTap = {
                                             coroutineScope.launch {
                                                 zoomPanState.toggleZoom(
@@ -345,7 +365,11 @@ object DetailsScreen {
                                 }
                         ) {
                             val image = images[(page - 1).coerceAtLeast(0)]
-                            AnimatedVisibility(visible = showFullImagesIndex == null) {
+                            AnimatedVisibility(
+                                visible = showFullImagesIndex == null,
+                                enter = EnterTransition.None,
+                                exit = ExitTransition.None,
+                            ) {
                                 CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
                                     AsyncImage(
                                         model = ImageRequest.Builder(LocalContext.current)
@@ -358,7 +382,7 @@ object DetailsScreen {
                                         contentScale = ContentScale.Fit,
                                         contentDescription = stringResource(R.string.alley_artist_catalog_image),
                                         modifier = Modifier
-                                            .sharedBounds("image", image.uri)
+                                            .sharedElement("image", image.uri)
                                             .height(IMAGE_HEIGHT)
                                     )
                                 }
@@ -369,41 +393,50 @@ object DetailsScreen {
             }
 
             AnimatedVisibility(
-                visible = images.size > 1 && zoomPanState.canPanExternal(),
+                visible = showFullImagesIndex == null && images.size > 1 && zoomPanState.canPanExternal(),
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                HorizontalPagerIndicator(
-                    pagerState = pagerState,
-                    pageCount = pagerState.pageCount,
-                    modifier = Modifier
-                        .sharedBounds(
-                            "pagerIndicator",
-                            sharedElementId,
-                            zIndexInOverlay = 1f
-                        )
-                        .padding(8.dp)
-                )
+                CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                    HorizontalPagerIndicator(
+                        pagerState = pagerState,
+                        pageCount = pagerState.pageCount,
+                        modifier = Modifier
+                            .sharedBounds(
+                                "pagerIndicator",
+                                sharedElementId,
+                                zIndexInOverlay = 1f,
+                            )
+                            .padding(8.dp)
+                    )
+                }
             }
 
             AnimatedVisibility(
-                visible = pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
+                visible = showFullImagesIndex == null
+                        && pagerState.currentPage != 0
+                        && zoomPanState.canPanExternal(),
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier.align(Alignment.BottomEnd)
             ) {
-                IconButton(onClick = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(0)
-                    }
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.GridOn,
-                        contentDescription = stringResource(
-                            R.string.alley_show_catalog_grid_content_description
+                CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
+                        },
+                        modifier = Modifier.sharedBounds("gridIcon", sharedElementId)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.GridOn,
+                            contentDescription = stringResource(
+                                R.string.alley_show_catalog_grid_content_description
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
