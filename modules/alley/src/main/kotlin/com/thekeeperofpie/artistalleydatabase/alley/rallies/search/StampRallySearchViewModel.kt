@@ -12,6 +12,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
+import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -29,6 +30,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -100,17 +102,21 @@ class StampRallySearchViewModel @Inject constructor(
         }
     }
 
-    override fun searchOptions() = snapshotFlow {
-        StampRallySearchQuery(
-            fandom = fandomSection.value.trim(),
-            tables = tablesSection.value.trim(),
-            sortOption = sortOptions.selectedOption(StampRallySearchSortOption.RANDOM),
-            sortAscending = sortAscending.value,
-            showOnlyFavorites = showOnlyFavorites,
-            showIgnored = showIgnored,
-            showOnlyIgnored = showOnlyIgnored,
-            randomSeed = randomSeed,
-        )
+    override fun searchOptions() = defer {
+        sortAscending.flatMapLatest { sortAscending ->
+            snapshotFlow {
+                StampRallySearchQuery(
+                    fandom = fandomSection.value.trim(),
+                    tables = tablesSection.value.trim(),
+                    sortOption = sortOptions.selectedOption(StampRallySearchSortOption.RANDOM),
+                    sortAscending = sortAscending,
+                    showOnlyFavorites = showOnlyFavorites,
+                    showIgnored = showIgnored,
+                    showOnlyIgnored = showOnlyIgnored,
+                    randomSeed = randomSeed,
+                )
+            }
+        }
     }
 
     override fun mapQuery(

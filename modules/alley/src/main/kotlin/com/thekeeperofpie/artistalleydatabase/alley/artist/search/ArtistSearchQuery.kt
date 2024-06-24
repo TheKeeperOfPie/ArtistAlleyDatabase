@@ -11,6 +11,7 @@ data class ArtistSearchQuery(
     val sortAscending: Boolean,
     val showOnlyFavorites: Boolean,
     val showOnlyWithCatalog: Boolean,
+    val showOnlyConfirmedTags: Boolean,
     val showIgnored: Boolean,
     val showOnlyIgnored: Boolean,
     val randomSeed: Int,

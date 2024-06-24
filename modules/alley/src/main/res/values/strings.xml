@@ -23,6 +23,10 @@
     <string name="alley_artist_details_links">Links</string>
     <string name="alley_artist_details_links_expand_content_description">Expand links</string>
     <string name="alley_artist_details_series">Series</string>
+    <string name="alley_artist_details_series_unconfirmed">Series - Unconfirmed</string>
+    <string name="alley_artist_details_series_unconfirmed_icon_content_description">Unconfirmed series info</string>
+    <string name="alley_artist_details_series_unconfirmed_explanation">Tags inferred from artist\'s past work, may not be available at convention</string>
+    <string name="alley_artist_details_series_unconfirmed_expand">Expand unconfirmed series</string>
     <string name="alley_artist_details_merch">Merch</string>
     <string name="alley_artist_details_stamp_rallies">Stamp rallies</string>
     <string name="alley_artist_catalog_image_none">No catalog image</string>
@@ -40,6 +44,7 @@
     <string name="alley_show_catalog_grid_content_description">Show content grid</string>
     <string name="alley_filter_show_grid_by_default">Show grid by default</string>
     <string name="alley_filter_show_random_catalog_image">Show random catalog image</string>
+    <string name="alley_filter_show_only_confirmed_tags">Show only confirmed tags</string>
     <string name="alley_filter_show_ignored">Show ignored (long press)</string>
     <string name="alley_search_option_ignored">Ignored</string>
     <string name="alley_series_header_zero">Series</string>

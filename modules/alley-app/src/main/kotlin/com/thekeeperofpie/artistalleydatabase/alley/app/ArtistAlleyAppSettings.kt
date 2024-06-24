@@ -24,6 +24,7 @@ class ArtistAlleyAppSettings(private val application: ScopedApplication) : Artis
     override val stampRalliesSortAscending = boolean("stampRalliesSortAscending", true)
     override val showGridByDefault = boolean("showGridByDefault", false)
     override val showRandomCatalogImage = boolean("showRandomCatalogImage", false)
+    override val showOnlyConfirmedTags = boolean("showOnlyConfirmedTags", false)
 
     private fun long(key: String, default: Long = -1L) = initialize(
         key,

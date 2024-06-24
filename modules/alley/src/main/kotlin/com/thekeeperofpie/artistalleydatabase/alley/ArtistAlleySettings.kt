@@ -13,4 +13,5 @@ interface ArtistAlleySettings {
     val stampRalliesSortAscending: MutableStateFlow<Boolean>
     val showGridByDefault: MutableStateFlow<Boolean>
     val showRandomCatalogImage: MutableStateFlow<Boolean>
+    val showOnlyConfirmedTags: MutableStateFlow<Boolean>
 }

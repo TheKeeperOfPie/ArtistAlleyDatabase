@@ -41,10 +41,17 @@ class ArtistDetailsViewModel @Inject constructor(
             val (artist, stampRallies) = artistEntryDao.getEntryWithStampRallies(id)
                 ?: return@launch
             val catalogImages = ArtistAlleyUtils.getImages(application, "catalogs", artist.booth)
-            val series = artist.seriesConfirmed(appJson)
-                .ifEmpty { artist.seriesInferred(appJson) }
+            val seriesConfirmed = artist.seriesConfirmed(appJson)
+            val seriesInferred = artist.seriesInferred(appJson)
+                .toMutableList()
+                .apply { removeAll(seriesConfirmed) }
             withContext(CustomDispatchers.Main) {
-                entry = Entry(artist, series, stampRallies)
+                entry = Entry(
+                    artist = artist,
+                    seriesInferred = seriesInferred,
+                    seriesConfirmed = seriesConfirmed,
+                    stampRallies = stampRallies,
+                )
                 images = catalogImages
             }
         }
@@ -60,7 +67,8 @@ class ArtistDetailsViewModel @Inject constructor(
 
     data class Entry(
         val artist: ArtistEntry,
-        val series: List<Series>,
+        val seriesInferred: List<Series>,
+        val seriesConfirmed: List<Series>,
         val stampRallies: List<StampRallyEntry>,
     ) {
         var favorite by mutableStateOf(artist.favorite)

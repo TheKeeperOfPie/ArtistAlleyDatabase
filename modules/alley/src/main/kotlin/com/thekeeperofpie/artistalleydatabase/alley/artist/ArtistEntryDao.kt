@@ -31,6 +31,7 @@ interface ArtistEntryDao {
     @Query("""SELECT * FROM artist_entries WHERE id = :id""")
     fun getEntryFlow(id: String): Flow<ArtistEntry>
 
+    @Transaction
     @Query("""SELECT * FROM artist_entries WHERE id = :id""")
     suspend fun getEntryWithStampRallies(id: String): ArtistWithStampRalliesEntry?
 
@@ -120,11 +121,14 @@ interface ArtistEntryDao {
             .orEmpty()
 
         val lockedSuffix = if (filterOptions.lockedSeries != null) {
-
-            "artist_entries.id IN (SELECT artistId from artist_series_connections WHERE artist_series_connections.seriesId == " +
+            "artist_entries.id IN (SELECT artistId from artist_series_connections WHERE " +
+                    (if (filterOptions.showOnlyConfirmedTags) "artist_series_connections.confirmed IS 1 AND" else "") +
+                    " artist_series_connections.seriesId == " +
                     "${DatabaseUtils.sqlEscapeString(filterOptions.lockedSeries)})"
         } else if (filterOptions.lockedMerch != null) {
-            "artist_entries.id IN (SELECT artistId from artist_merch_connections WHERE artist_merch_connections.merchId == " +
+            "artist_entries.id IN (SELECT artistId from artist_merch_connections WHERE " +
+                    (if (filterOptions.showOnlyConfirmedTags) "artist_merch_connections.confirmed IS 1 AND" else "") +
+                    " artist_merch_connections.merchId == " +
                     "${DatabaseUtils.sqlEscapeString(filterOptions.lockedMerch)})"
         } else {
             null
@@ -218,21 +222,30 @@ interface ArtistEntryDao {
         }
         queryPieces += filterOptions.series.flatMap { it.split(WHITESPACE_REGEX) }
             .map {
-                "seriesInferredSearchable:${RoomUtils.wrapMatchQuery(it)} OR "
-                    .takeUnless { filterOptions.showOnlyWithCatalog } +
-                        "seriesConfirmedSearchable:${RoomUtils.wrapMatchQuery(it)}"
+                if (filterOptions.showOnlyConfirmedTags) {
+                    "seriesConfirmedSearchable:${RoomUtils.wrapMatchQuery(it)}"
+                } else {
+                    "seriesInferredSearchable:${RoomUtils.wrapMatchQuery(it)}" +
+                            " OR seriesConfirmedSearchable:${RoomUtils.wrapMatchQuery(it)}"
+                }
             }
         queryPieces += filterOptions.seriesById
             .map {
-                "seriesInferredSerialized:${RoomUtils.wrapMatchQuery(it)} OR "
-                    .takeUnless { filterOptions.showOnlyWithCatalog } +
-                        "seriesConfirmedSerialized:${RoomUtils.wrapMatchQuery(it)}"
+                if (filterOptions.showOnlyConfirmedTags) {
+                    "seriesConfirmedSerialized:${RoomUtils.wrapMatchQuery(it)}"
+                } else {
+                    "seriesInferredSerialized:${RoomUtils.wrapMatchQuery(it)}" +
+                            "OR seriesConfirmedSerialized:${RoomUtils.wrapMatchQuery(it)}"
+                }
             }
         queryPieces += filterOptions.merch
             .map {
-                "merchInferred:${RoomUtils.wrapMatchQuery(it)} OR "
-                    .takeUnless { filterOptions.showOnlyWithCatalog } +
-                        "merchConfirmed:${RoomUtils.wrapMatchQuery(it)}"
+                if (filterOptions.showOnlyConfirmedTags) {
+                    "merchConfirmed:${RoomUtils.wrapMatchQuery(it)}"
+                } else {
+                    "merchInferred:${RoomUtils.wrapMatchQuery(it)}" +
+                            " OR merchConfirmed:${RoomUtils.wrapMatchQuery(it)}"
+                }
             }
 
         return queryPieces

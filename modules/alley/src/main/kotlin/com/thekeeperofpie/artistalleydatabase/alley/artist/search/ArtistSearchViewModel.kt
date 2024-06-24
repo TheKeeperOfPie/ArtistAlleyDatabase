@@ -13,6 +13,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
+import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -30,6 +31,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -97,6 +100,7 @@ class ArtistSearchViewModel @Inject constructor(
     val sortAscending = settings.artistsSortAscending
     val showGridByDefault = settings.showGridByDefault
     val showRandomCatalogImage = settings.showRandomCatalogImage
+    val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
     val displayType = settings.displayType
 
     var showOnlyFavorites by mutableStateOf(false)
@@ -124,29 +128,35 @@ class ArtistSearchViewModel @Inject constructor(
         }
     }
 
-    override fun searchOptions() = snapshotFlow {
-        val seriesContents = seriesSection.finalContents()
-        ArtistSearchQuery(
-            booth = boothSection.value.trim(),
-            artist = artistSection.value.trim(),
-            summary = summarySection.value.trim(),
-            series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
-                .map { it.serializedValue }
-                .filterNot(String::isBlank),
-            seriesById = seriesContents
-                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                .mapNotNull(AniListUtils::mediaId),
-            merch = merchSection.finalContents().map { it.serializedValue },
-            sortOption = sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
-            sortAscending = sortAscending.value,
-            showOnlyFavorites = showOnlyFavorites,
-            showOnlyWithCatalog = showOnlyWithCatalog,
-            showIgnored = showIgnored,
-            showOnlyIgnored = showOnlyIgnored,
-            randomSeed = randomSeed,
-            lockedSeries = lockedSeries,
-            lockedMerch = lockedMerch,
-        )
+    override fun searchOptions() = defer {
+        combine(sortAscending, showOnlyConfirmedTags, ::Pair)
+            .flatMapLatest { (sortAscending, showOnlyConfirmedTags) ->
+                snapshotFlow {
+                    val seriesContents = seriesSection.finalContents()
+                    ArtistSearchQuery(
+                        booth = boothSection.value.trim(),
+                        artist = artistSection.value.trim(),
+                        summary = summarySection.value.trim(),
+                        series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                            .map { it.serializedValue }
+                            .filterNot(String::isBlank),
+                        seriesById = seriesContents
+                            .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
+                            .mapNotNull(AniListUtils::mediaId),
+                        merch = merchSection.finalContents().map { it.serializedValue },
+                        sortOption = sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
+                        sortAscending = sortAscending,
+                        showOnlyFavorites = showOnlyFavorites,
+                        showOnlyWithCatalog = showOnlyWithCatalog,
+                        showOnlyConfirmedTags = showOnlyConfirmedTags,
+                        showIgnored = showIgnored,
+                        showOnlyIgnored = showOnlyIgnored,
+                        randomSeed = randomSeed,
+                        lockedSeries = lockedSeries,
+                        lockedMerch = lockedMerch,
+                    )
+                }
+            }
     }
 
     override fun mapQuery(
@@ -207,6 +217,10 @@ class ArtistSearchViewModel @Inject constructor(
 
     fun onShowRandomCatalogImageToggle(showRandomCatalogImage: Boolean) {
         settings.showRandomCatalogImage.value = showRandomCatalogImage
+    }
+
+    fun onShowOnlyConfirmedTagsToggle(showOnlyConfirmedTagsToggle: Boolean) {
+        settings.showOnlyConfirmedTags.value = showOnlyConfirmedTagsToggle
     }
 
     private data class FilterParams(

@@ -1529,6 +1529,7 @@ fun <T> expandableListInfoText(
     onClick: ((T) -> Unit)? = null,
     showDividerAbove: Boolean = true,
     allowExpand: Boolean = values.size > 3,
+    header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(stringResource(labelTextRes)) },
 ): Boolean {
     if (values.isEmpty()) return false
 
@@ -1549,7 +1550,7 @@ fun <T> expandableListInfoText(
                 Divider()
             }
 
-            DetailsSubsectionHeader(stringResource(labelTextRes))
+            header?.invoke()
 
             values.take(if (expanded) Int.MAX_VALUE else 3).forEachIndexed { index, value ->
                 if (index != 0) {

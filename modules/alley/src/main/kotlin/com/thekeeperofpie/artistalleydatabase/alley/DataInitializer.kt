@@ -109,12 +109,17 @@ class DataInitializer @Inject constructor(
                             counter = counter++
                         )
 
-                        val seriesConnections = (seriesInferred + seriesConfirmed)
-                            .map { ArtistSeriesConnection(artistId = booth, seriesId = it) }
-                            .distinct()
-                        val merchConnections = (merchInferred + merchConfirmed)
-                            .map { ArtistMerchConnection(artistId = booth, merchId = it) }
-                            .distinct()
+                        val seriesConnectionsInferred = (seriesInferred - seriesConfirmed.toSet())
+                            .map { ArtistSeriesConnection(artistId = booth, seriesId = it, confirmed = false) }
+                        val seriesConnectionsConfirmed = seriesConfirmed
+                            .map { ArtistSeriesConnection(artistId = booth, seriesId = it, confirmed = true) }
+                        val seriesConnections = seriesConnectionsInferred + seriesConnectionsConfirmed
+
+                        val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
+                            .map { ArtistMerchConnection(artistId = booth, merchId = it, confirmed = false) }
+                        val merchConnectionsConfirmed = merchConfirmed
+                            .map { ArtistMerchConnection(artistId = booth, merchId = it, confirmed = true) }
+                        val merchConnections = merchConnectionsInferred + merchConnectionsConfirmed
 
                         Triple(artistEntry, seriesConnections, merchConnections)
                     }

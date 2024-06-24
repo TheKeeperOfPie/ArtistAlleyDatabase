@@ -35,13 +35,14 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
         MerchEntryFts::class,
     ],
     exportSchema = true,
-    version = 5,
+    version = 6,
     autoMigrations = [
         AutoMigration(1, 2),
         AutoMigration(2, 3),
         AutoMigration(3, 4),
         AutoMigration(4, 5),
-        AutoMigration(1, 5),
+        AutoMigration(5, 6),
+        AutoMigration(1, 6),
     ]
 )
 @TypeConverters(

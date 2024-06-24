@@ -68,6 +68,7 @@ object ArtistSearchScreen {
             viewModel.sortAscending,
             viewModel.showOnlyFavorites,
             viewModel.showOnlyWithCatalog,
+            viewModel.showOnlyConfirmedTags,
         ) {
             if (seen) {
                 delay(500.milliseconds)
@@ -193,6 +194,29 @@ object ArtistSearchScreen {
                             Switch(
                                 checked = showRandomCatalogImage,
                                 onCheckedChange = viewModel::onShowRandomCatalogImageToggle,
+                                modifier = Modifier.padding(end = 16.dp),
+                            )
+                        }
+
+                        HorizontalDivider()
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.alley_filter_show_only_confirmed_tags),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .weight(1f)
+                            )
+
+                            val showOnlyConfirmedTags by viewModel.showOnlyConfirmedTags.collectAsState()
+                            Switch(
+                                checked = showOnlyConfirmedTags,
+                                onCheckedChange = viewModel::onShowOnlyConfirmedTagsToggle,
                                 modifier = Modifier.padding(end = 16.dp),
                             )
                         }
