@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
+import android.database.DatabaseUtils
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -8,6 +9,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -18,6 +20,9 @@ interface TagEntryDao {
 
     @RawQuery([SeriesEntry::class])
     fun getSeries(query: SupportSQLiteQuery): PagingSource<Int, SeriesEntry>
+
+    @RawQuery([SeriesEntry::class])
+    fun getSeriesBooths(query: SupportSQLiteQuery): List<String>
 
     fun searchSeries(query: String): PagingSource<Int, SeriesEntry> {
         val options = query.split(Regex("\\s+"))
@@ -47,6 +52,9 @@ interface TagEntryDao {
 
     @RawQuery([MerchEntry::class])
     fun getMerch(query: SupportSQLiteQuery): PagingSource<Int, MerchEntry>
+
+    @RawQuery([MerchEntry::class])
+    fun getMerchBooths(query: SupportSQLiteQuery): List<String>
 
     @Query(
         """
@@ -104,4 +112,35 @@ interface TagEntryDao {
 
     @Query("""DELETE FROM merch_entries""")
     fun clearMerch()
+
+    fun getBooths(tagMapQuery: TagMapQuery): Set<String> {
+        val tagQuery = if (tagMapQuery.series != null) {
+            """
+            (SELECT artistId from artist_series_connections WHERE
+            ${if (tagMapQuery.showOnlyConfirmedTags) "artist_series_connections.confirmed IS 1 AND " else ""}
+            artist_series_connections.seriesId == ${DatabaseUtils.sqlEscapeString(tagMapQuery.series)}
+            )
+            """
+        } else {
+            """
+            (SELECT artistId from artist_merch_connections WHERE
+            ${if (tagMapQuery.showOnlyConfirmedTags) "artist_merch_connections.confirmed IS 1 AND " else ""}
+            artist_merch_connections.merchId == ${DatabaseUtils.sqlEscapeString(tagMapQuery.merch)}
+            )
+            """
+        }
+        val query = SimpleSQLiteQuery(
+            """
+            SELECT booth
+            FROM artist_entries
+            WHERE artist_entries.id IN $tagQuery
+            """.trimIndent()
+        )
+
+        return if (tagMapQuery.series != null) {
+            getSeriesBooths(query)
+        } else {
+            getMerchBooths(query)
+        }.toSet()
+    }
 }

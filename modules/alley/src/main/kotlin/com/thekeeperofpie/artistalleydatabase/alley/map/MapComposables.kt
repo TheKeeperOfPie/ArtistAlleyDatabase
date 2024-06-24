@@ -151,6 +151,38 @@ fun TableCell(
 }
 
 @Composable
+fun HighlightedTableCell(
+    table: Table,
+    highlight: Boolean,
+    onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
+) {
+    val borderWidth = if (highlight) 2.dp else 1.dp
+    val borderColor = if (highlight) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    val background = if (highlight) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    val textColor = if (highlight) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    TableCell(
+        table = table,
+        background = background,
+        borderWidth = borderWidth,
+        borderColor = borderColor,
+        textColor = textColor,
+        onArtistClick = onArtistClick,
+    )
+}
+
+@Composable
 fun TablePopup(
     table: Table,
     entry: ArtistEntryGridModel?,

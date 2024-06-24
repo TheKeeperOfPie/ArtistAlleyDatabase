@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Switch
@@ -58,6 +62,7 @@ object ArtistSearchScreen {
             )
         ),
         scrollStateSaver: ScrollStateSaver,
+        onClickMap: (() -> Unit)? = null,
     ) {
         val viewModel = hiltViewModel<ArtistSearchViewModel>()
         val listState = scrollStateSaver.lazyListState()
@@ -87,6 +92,16 @@ object ArtistSearchScreen {
             SearchScreen(
                 viewModel = viewModel,
                 title = { viewModel.lockedSeries ?: viewModel.lockedMerch },
+                actions = if (onClickMap == null) { null } else {
+                    {
+                        IconButton(onClick = onClickMap) {
+                            Icon(
+                                imageVector = Icons.Default.Map,
+                                contentDescription = stringResource(R.string.alley_open_in_map),
+                            )
+                        }
+                    }
+                },
                 onClickBack = onClickBack,
                 entriesSize = { viewModel.entriesSize },
                 scaffoldState = scaffoldState,

@@ -7,21 +7,19 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
+import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.map.TableCell
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
@@ -83,30 +81,10 @@ object ArtistMapScreen {
                 transformState = transformState,
                 initialGridPosition = targetTable?.run { IntOffset(gridX, gridY) },
                 modifier = Modifier.padding(it)
-            ) { table ->
-                val shouldHighlight = table.booth == viewModel.id
-                val borderWidth = if (shouldHighlight) 2.dp else 1.dp
-                val borderColor = if (shouldHighlight) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-                val background = if (shouldHighlight) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surface
-                }
-                val textColor = if (shouldHighlight) {
-                    MaterialTheme.colorScheme.onPrimary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-                TableCell(
-                    table = table,
-                    background = background,
-                    borderWidth = borderWidth,
-                    borderColor = borderColor,
-                    textColor = textColor,
+            ) {
+                HighlightedTableCell(
+                    table = it,
+                    highlight = it.booth == viewModel.id,
                     onArtistClick = onArtistClick,
                 )
             }

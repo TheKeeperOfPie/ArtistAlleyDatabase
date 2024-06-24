@@ -16,7 +16,13 @@ sealed interface Destinations {
     data class Series(val series: String) : Destinations
 
     @Serializable
+    data class SeriesMap(val series: String) : Destinations
+
+    @Serializable
     data class Merch(val merch: String) : Destinations
+
+    @Serializable
+    data class MerchMap(val merch: String) : Destinations
 
     @Serializable
     data class StampRallyDetails(val id: String, val imageIndex: String? = null) : Destinations

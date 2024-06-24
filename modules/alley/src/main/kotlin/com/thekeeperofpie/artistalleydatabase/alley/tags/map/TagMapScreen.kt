@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.rallies.map
+package com.thekeeperofpie.artistalleydatabase.alley.tags.map
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -16,26 +16,30 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
-object StampRallyMapScreen {
+object TagMapScreen {
 
     @Composable
     operator fun invoke(
         onClickBack: () -> Unit,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
     ) {
-        val stampRallyMapViewModel = hiltViewModel<StampRallyMapViewModel>()
+        val viewModel = hiltViewModel<TagMapViewModel>()
         Scaffold(
             topBar = {
                 TopAppBar(
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
-                    title = { Text(stampRallyMapViewModel.stampRally?.fandom.orEmpty()) },
+                    title = {
+                        val route = viewModel.route
+                        Text(route.series ?: route.merch ?: "")
+                    },
                 )
             },
         ) {
-            val stampRally = stampRallyMapViewModel.stampRally ?: return@Scaffold
             val mapViewModel = hiltViewModel<MapViewModel>()
             val gridData = mapViewModel.gridData.result ?: return@Scaffold
-            val targetTable = gridData.tables.find { it.booth == stampRally.hostTable }
+
+            val highlightedBooths = viewModel.booths
+            val targetTable = gridData.tables.find { highlightedBooths.contains(it.booth) }
             val transformState = MapScreen.rememberTransformState(initialScale = 0.5f)
             MapScreen(
                 transformState = transformState,
@@ -44,7 +48,7 @@ object StampRallyMapScreen {
             ) {
                 HighlightedTableCell(
                     table = it,
-                    highlight = stampRallyMapViewModel.artistTables.contains(it.booth),
+                    highlight = highlightedBooths.contains(it.booth),
                     onArtistClick = onArtistClick,
                 )
             }

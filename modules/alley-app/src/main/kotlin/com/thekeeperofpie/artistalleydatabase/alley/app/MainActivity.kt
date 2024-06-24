@@ -52,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
+import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -167,18 +168,44 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     sharedElementComposable<Destinations.Series> {
+                                        val route = it.toRoute<Destinations.Series>()
                                         ArtistSearchScreen(
                                             onClickBack = navController::navigateUp,
                                             onEntryClick = onArtistClick,
                                             scrollStateSaver = ScrollStateSaver(),
+                                            onClickMap = {
+                                                navController.navigate(
+                                                    Destinations.SeriesMap(route.series)
+                                                )
+                                            },
                                         )
                                     }
 
                                     sharedElementComposable<Destinations.Merch> {
+                                        val route = it.toRoute<Destinations.Merch>()
                                         ArtistSearchScreen(
                                             onClickBack = navController::navigateUp,
                                             onEntryClick = onArtistClick,
                                             scrollStateSaver = ScrollStateSaver(),
+                                            onClickMap = {
+                                                navController.navigate(
+                                                    Destinations.MerchMap(route.merch)
+                                                )
+                                            },
+                                        )
+                                    }
+
+                                    sharedElementComposable<Destinations.SeriesMap> {
+                                        TagMapScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onArtistClick = onArtistClick,
+                                        )
+                                    }
+
+                                    sharedElementComposable<Destinations.MerchMap> {
+                                        TagMapScreen(
+                                            onClickBack = navController::navigateUp,
+                                            onArtistClick = onArtistClick,
                                         )
                                     }
                                 }

@@ -284,9 +284,9 @@ object ArtistDetailsScreen {
                 ) {
                     Icon(
                         Icons.Default.Map,
-                        contentDescription = stringResource(R.string.alley_stamp_rally_open_in_map),
+                        contentDescription = stringResource(R.string.alley_open_in_map),
                     )
-                    Text(stringResource(R.string.alley_stamp_rally_open_in_map))
+                    Text(stringResource(R.string.alley_open_in_map))
                 }
             }
         }

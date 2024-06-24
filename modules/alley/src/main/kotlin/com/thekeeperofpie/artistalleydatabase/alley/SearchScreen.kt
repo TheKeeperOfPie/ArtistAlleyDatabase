@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -101,6 +102,7 @@ object SearchScreen {
         onClickBack: (() -> Unit)? = null,
         title: () -> String? = { null },
         itemToSharedElementId: (EntryModel) -> Any,
+        actions: (@Composable RowScope.() -> Unit)? = null,
         itemRow: @Composable (
             entry: EntryModel,
             onFavoriteToggle: (Boolean) -> Unit,
@@ -208,6 +210,8 @@ object SearchScreen {
                                                 ),
                                             )
                                         }
+
+                                        actions?.invoke(this)
                                     }
                                 },
                                 onSearch = {},
