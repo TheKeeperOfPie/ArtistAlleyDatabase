@@ -25,9 +25,12 @@
     <string name="alley_artist_details_series">Series</string>
     <string name="alley_artist_details_series_unconfirmed">Series - Unconfirmed</string>
     <string name="alley_artist_details_series_unconfirmed_icon_content_description">Unconfirmed series info</string>
-    <string name="alley_artist_details_series_unconfirmed_explanation">Tags inferred from artist\'s past work, may not be available at convention</string>
     <string name="alley_artist_details_series_unconfirmed_expand">Expand unconfirmed series</string>
     <string name="alley_artist_details_merch">Merch</string>
+    <string name="alley_artist_details_merch_unconfirmed">Merch - Unconfirmed</string>
+    <string name="alley_artist_details_merch_unconfirmed_icon_content_description">Unconfirmed merch info</string>
+    <string name="alley_artist_details_merch_unconfirmed_expand">Expand unconfirmed merch</string>
+    <string name="alley_artist_details_tags_unconfirmed_explanation">Tags inferred from artist\'s past work, may not be available at convention</string>
     <string name="alley_artist_details_stamp_rallies">Stamp rallies</string>
     <string name="alley_artist_catalog_image_none">No catalog image</string>
     <string name="alley_sort_label">Sort</string>

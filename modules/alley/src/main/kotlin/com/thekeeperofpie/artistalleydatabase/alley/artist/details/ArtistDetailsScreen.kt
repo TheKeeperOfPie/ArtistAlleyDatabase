@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +54,7 @@ object ArtistDetailsScreen {
     operator fun invoke(
         onClickBack: () -> Unit,
         onSeriesClick: (Series) -> Unit,
+        onMerchClick: (String) -> Unit,
         onStampRallyClick: (StampRallyEntry) -> Unit,
         onArtistMapClick: () -> Unit,
     ) {
@@ -162,115 +164,27 @@ object ArtistDetailsScreen {
                 }
             }
 
-            if (entry.seriesConfirmed.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = R.string.alley_artist_details_series,
-                        contentDescriptionTextRes = null,
-                        values = entry.seriesConfirmed,
-                        valueToText = { it.text },
-                        onClick = onSeriesClick,
-                        allowExpand = false,
-                        showDividerAbove = false,
-                    )
-                }
-            }
+            ConfirmedAndInferred(
+                confirmed = entry.seriesConfirmed,
+                inferred = entry.seriesInferred,
+                headerTextRes = R.string.alley_artist_details_series,
+                headerTextResUnconfirmed = R.string.alley_artist_details_series_unconfirmed,
+                unconfirmedIconContentDescriptionTextRes = R.string.alley_artist_details_series_unconfirmed_icon_content_description,
+                expandTextRes = R.string.alley_artist_details_series_unconfirmed_expand,
+                itemToText = { it.text },
+                onClick = onSeriesClick,
+            )
 
-            if (entry.seriesInferred.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    val expandedByDefault = entry.seriesConfirmed.isEmpty()
-                    var expanded by remember { mutableStateOf(expandedByDefault) }
-                    var showPopup by remember { mutableStateOf(false) }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .conditionally(!expandedByDefault) {
-                                clickable { expanded = !expanded }
-                            }
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .height(IntrinsicSize.Min)
-                                .clickable(interactionSource = null, indication = null) {
-                                    showPopup = !showPopup
-                                }
-                        ) {
-                            Text(
-                                text = stringResource(R.string.alley_artist_details_series_unconfirmed),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.surfaceTint,
-                                modifier = Modifier
-                                    .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 4.dp)
-                            )
-
-                            Box {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = stringResource(
-                                        R.string.alley_artist_details_series_unconfirmed_icon_content_description
-                                    ),
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .heightIn(max = 20.dp)
-                                        .padding(top = 6.dp)
-                                )
-
-                                if (showPopup) {
-                                    Popup(onDismissRequest = { showPopup = false }) {
-                                        Text(
-                                            text = stringResource(R.string.alley_artist_details_series_unconfirmed_explanation),
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier
-                                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                                .widthIn(max = 200.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        if (!expandedByDefault) {
-                            TrailingDropdownIconButton(
-                                expanded = expanded,
-                                contentDescription = stringResource(R.string.alley_artist_details_series_unconfirmed_expand),
-                                onClick = { expanded = !expanded },
-                            )
-                        }
-                    }
-                    if (expanded) {
-                        expandableListInfoText(
-                            labelTextRes = R.string.alley_artist_details_series_unconfirmed,
-                            contentDescriptionTextRes = null,
-                            values = entry.seriesInferred,
-                            valueToText = { it.text },
-                            onClick = onSeriesClick,
-                            allowExpand = false,
-                            showDividerAbove = false,
-                            header = null,
-                        )
-                    }
-                }
-            }
-
-            val merch = artist.merchConfirmed.ifEmpty { artist.merchInferred }
-            if (merch.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = R.string.alley_artist_details_merch,
-                        contentDescriptionTextRes = null,
-                        values = merch,
-                        valueToText = { it },
-                        onClick = null,
-                        allowExpand = false,
-                        showDividerAbove = false,
-                    )
-                }
-            }
+            ConfirmedAndInferred(
+                confirmed = entry.artist.merchConfirmed,
+                inferred = entry.artist.merchInferred,
+                headerTextRes = R.string.alley_artist_details_merch,
+                headerTextResUnconfirmed = R.string.alley_artist_details_merch_unconfirmed,
+                unconfirmedIconContentDescriptionTextRes = R.string.alley_artist_details_merch_unconfirmed_icon_content_description,
+                expandTextRes = R.string.alley_artist_details_merch_unconfirmed_expand,
+                itemToText = { it },
+                onClick = onMerchClick,
+            )
 
             FilledTonalButton(
                 onClick = onArtistMapClick,
@@ -287,6 +201,113 @@ object ArtistDetailsScreen {
                         contentDescription = stringResource(R.string.alley_open_in_map),
                     )
                     Text(stringResource(R.string.alley_open_in_map))
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun <T> ConfirmedAndInferred(
+        confirmed: List<T>,
+        inferred: List<T>,
+        @StringRes headerTextRes: Int,
+        @StringRes headerTextResUnconfirmed: Int,
+        @StringRes unconfirmedIconContentDescriptionTextRes: Int,
+        @StringRes expandTextRes: Int,
+        itemToText: @Composable (T) -> String,
+        onClick: (T) -> Unit,
+    ) {
+        if (confirmed.isNotEmpty()) {
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                expandableListInfoText(
+                    labelTextRes = headerTextRes,
+                    contentDescriptionTextRes = null,
+                    values = confirmed,
+                    valueToText = itemToText,
+                    onClick = onClick,
+                    allowExpand = false,
+                    showDividerAbove = false,
+                )
+            }
+        }
+
+        if (inferred.isNotEmpty()) {
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                val expandedByDefault = confirmed.isEmpty()
+                var expanded by remember { mutableStateOf(expandedByDefault) }
+                var showPopup by remember { mutableStateOf(false) }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .conditionally(!expandedByDefault) {
+                            clickable { expanded = !expanded }
+                        }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .clickable(interactionSource = null, indication = null) {
+                                showPopup = !showPopup
+                            }
+                    ) {
+                        Text(
+                            text = stringResource(headerTextResUnconfirmed),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.surfaceTint,
+                            modifier = Modifier
+                                .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 4.dp)
+                        )
+
+                        Box {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = stringResource(
+                                    unconfirmedIconContentDescriptionTextRes
+                                ),
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .heightIn(max = 20.dp)
+                                    .padding(top = 6.dp)
+                            )
+
+                            if (showPopup) {
+                                Popup(onDismissRequest = { showPopup = false }) {
+                                    Text(
+                                        text = stringResource(R.string.alley_artist_details_tags_unconfirmed_explanation),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                                            .widthIn(max = 200.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    if (!expandedByDefault) {
+                        TrailingDropdownIconButton(
+                            expanded = expanded,
+                            contentDescription = stringResource(expandTextRes),
+                            onClick = { expanded = !expanded },
+                        )
+                    }
+                }
+                if (expanded) {
+                    expandableListInfoText(
+                        labelTextRes = headerTextResUnconfirmed,
+                        contentDescriptionTextRes = null,
+                        values = inferred,
+                        valueToText = itemToText,
+                        onClick = onClick,
+                        allowExpand = false,
+                        showDividerAbove = false,
+                        header = null,
+                    )
                 }
             }
         }

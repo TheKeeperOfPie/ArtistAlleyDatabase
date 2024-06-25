@@ -1,7 +1,8 @@
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.alley.ui
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -11,6 +12,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -29,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -54,8 +55,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanState
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
@@ -205,11 +208,8 @@ private fun ImagePager(
         } else {
             ZoomPanBox(state = zoomPanState) {
                 val image = images[(it - 1).coerceAtLeast(0)]
-                val cornerRadius by remember {
-                    derivedStateOf {
-                        if (pagerState.isScrollInProgress) 0.dp else 12.dp
-                    }
-                }
+                val width = image.width
+                val height = image.height
                 AsyncImage(
                     model = image.uri,
                     contentScale = ContentScale.FillWidth,
@@ -229,8 +229,13 @@ private fun ImagePager(
                         // This breaks page scrolling
 //                        .sharedElement("image", sharedElementId)
                         .fillMaxWidth()
+                        .conditionally(width != null && height != null) {
+                            aspectRatio(width!! / height!!.toFloat())
+                        }
                         .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .clip(RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius))
+                        .conditionally(LocalSharedTransitionScope.current.isTransitionActive) {
+                            clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        }
                 )
             }
         }

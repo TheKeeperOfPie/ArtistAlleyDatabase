@@ -123,6 +123,11 @@ class MainActivity : ComponentActivity() {
                                                     Destinations.Series(it.text)
                                                 )
                                             },
+                                            onMerchClick = {
+                                                navController.navigate(
+                                                    Destinations.Merch(it)
+                                                )
+                                            },
                                             onStampRallyClick = {
                                                 navController.navigate(
                                                     Destinations.StampRallyDetails(it.id)
