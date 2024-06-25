@@ -100,6 +100,7 @@ fun <EntryModel : SearchEntryModel> ItemCard(
     val ignored = entry.ignored
     ElevatedCard(
         modifier = modifier
+            .sharedBounds("itemContainer", sharedElementId)
             .padding(horizontal = 16.dp)
             .combinedClickable(
                 onClick = { onClick(entry, pagerState.settledPage) },

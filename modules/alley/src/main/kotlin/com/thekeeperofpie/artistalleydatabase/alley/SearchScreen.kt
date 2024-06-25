@@ -67,6 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
+import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
@@ -285,6 +286,10 @@ object SearchScreen {
                                         entry,
                                         onFavoriteToggle = onFavoriteToggle,
                                         modifier = Modifier
+                                            .sharedBounds(
+                                                "itemContainer",
+                                                itemToSharedElementId(entry),
+                                            )
                                             .combinedClickable(
                                                 onClick = { onEntryClick(entry, 1) },
                                                 onLongClick = { onIgnoredToggle(!ignored) }

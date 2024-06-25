@@ -128,7 +128,8 @@ object DetailsScreen {
                         .skipToLookaheadSize()
                         .sharedBounds("container", sharedElementId, zIndexInOverlay = 1f)
                 )
-            }
+            },
+            modifier = Modifier.sharedBounds("itemContainer", sharedElementId)
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -330,47 +331,47 @@ object DetailsScreen {
                     .fillMaxWidth()
                     .clipToBounds()
             ) { page ->
-                if (page == 0 && images.size > 1) {
-                    ImageGrid(
-                        targetHeight = 0,
-                        images = images,
-                        onImageClick = { index, _ ->
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index + 1)
-                            }
-                        }
-                    )
-                } else {
-                    ZoomPanBox(
-                        state = zoomPanState,
-                        onClick = { onShowFullImagesIndexChange() },
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .height(IMAGE_HEIGHT)
-                                .fillMaxWidth()
-                                .pointerInput(zoomPanState, page) {
-                                    detectTapGestures(
-                                        onTap = { onShowFullImagesIndexChange() },
-                                        onDoubleTap = {
-                                            coroutineScope.launch {
-                                                zoomPanState.toggleZoom(
-                                                    it,
-                                                    size
-                                                )
-                                            }
-                                        }
-                                    )
+                AnimatedVisibility(
+                    visible = showFullImagesIndex == null,
+                    enter = EnterTransition.None,
+                    exit = ExitTransition.None,
+                ) {
+                    CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                        if (page == 0 && images.size > 1) {
+                            ImageGrid(
+                                targetHeight = 0,
+                                images = images,
+                                onImageClick = { index, _ ->
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(index + 1)
+                                    }
                                 }
-                        ) {
-                            val image = images[(page - 1).coerceAtLeast(0)]
-                            AnimatedVisibility(
-                                visible = showFullImagesIndex == null,
-                                enter = EnterTransition.None,
-                                exit = ExitTransition.None,
+                            )
+                        } else {
+                            ZoomPanBox(
+                                state = zoomPanState,
+                                onClick = { onShowFullImagesIndexChange() },
                             ) {
-                                CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .height(IMAGE_HEIGHT)
+                                        .fillMaxWidth()
+                                        .pointerInput(zoomPanState, page) {
+                                            detectTapGestures(
+                                                onTap = { onShowFullImagesIndexChange() },
+                                                onDoubleTap = {
+                                                    coroutineScope.launch {
+                                                        zoomPanState.toggleZoom(
+                                                            it,
+                                                            size
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                ) {
+                                    val image = images[(page - 1).coerceAtLeast(0)]
                                     AsyncImage(
                                         model = ImageRequest.Builder(LocalContext.current)
                                             .data(image.uri)
