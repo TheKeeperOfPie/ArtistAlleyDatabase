@@ -25,6 +25,7 @@ class ArtistAlleyAppHiltModule {
             "artistAlleyAppDatabase"
         )
             .fallbackToDestructiveMigration(true)
+            .addMigrations(ArtistAlleyAppDatabase.Version_6_7)
             .build()
 
     @Singleton

@@ -70,10 +70,10 @@ object ArtistSearchScreen {
         LaunchedEffect(
             viewModel.query,
             viewModel.sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
-            viewModel.sortAscending,
+            viewModel.sortAscending.collectAsState().value,
             viewModel.showOnlyFavorites,
             viewModel.showOnlyWithCatalog,
-            viewModel.showOnlyConfirmedTags,
+            viewModel.showOnlyConfirmedTags.collectAsState().value,
         ) {
             if (seen) {
                 delay(500.milliseconds)

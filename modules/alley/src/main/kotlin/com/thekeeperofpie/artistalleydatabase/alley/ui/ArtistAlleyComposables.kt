@@ -46,6 +46,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -258,7 +259,8 @@ fun ArtistListRow(
     ) {
         Text(
             text = artist.booth,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleLarge
+                .copy(fontFamily = FontFamily.Monospace),
             modifier = Modifier
                 .sharedBounds("booth", artist.id, zIndexInOverlay = 1f)
                 .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)

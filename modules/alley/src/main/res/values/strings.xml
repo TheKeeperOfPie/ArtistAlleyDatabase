@@ -40,6 +40,8 @@
     <string name="alley_sort_artist">Artist name</string>
     <string name="alley_sort_random">Random</string>
     <string name="alley_sort_fandom">Fandom</string>
+    <string name="alley_sort_prize_limit">Prize limit</string>
+    <string name="alley_sort_table_min">Table minimum</string>
     <string name="alley_filter_favorites">Show only favorites</string>
     <string name="alley_filter_only_catalogs">Show only with catalog</string>
     <string name="alley_update_notice">New app version may be available</string>
@@ -69,4 +71,11 @@
     <string name="alley_browse_tab_series">Series</string>
     <string name="alley_browse_tab_merch">Merch</string>
     <string name="alley_stamp_rally_details_minimum">Minimum per table</string>
+    <string name="alley_stamp_rally_minimum_free">Free</string>
+    <string name="alley_stamp_rally_minimum_any">Any</string>
+    <string name="alley_stamp_rally_minimum_unknown">\?\?\?</string>
+    <string name="alley_stamp_rally_minimum_usd">$%1$s</string>
+    <string name="alley_stamp_rally_prize_limit_unknown">Unknown</string>
+    <string name="alley_stamp_rally_prize_limit">%1$s prizes</string>
+    <string name="alley_stamp_rally_table_min">%1$s/table</string>
 </resources>

@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.tableMinText
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
@@ -153,14 +154,13 @@ object StampRallyDetailsScreen {
                 }
             }
 
-            if (!entry.stampRally.minimumPerTable.isNullOrBlank()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    InfoText(
-                        label = stringResource(R.string.alley_stamp_rally_details_minimum),
-                        body = entry.stampRally.minimumPerTable,
-                        showDividerAbove = false,
-                    )
-                }
+            val tableMin = entry.stampRally.tableMinText()
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                InfoText(
+                    label = stringResource(R.string.alley_stamp_rally_details_minimum),
+                    body = tableMin,
+                    showDividerAbove = false,
+                )
             }
 
             FilledTonalButton(

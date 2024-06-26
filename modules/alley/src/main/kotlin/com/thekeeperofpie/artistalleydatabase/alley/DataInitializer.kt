@@ -177,7 +177,14 @@ class DataInitializer @Inject constructor(
                         val hostTable = tables.firstOrNull { it.contains("-") }
                             ?.substringBefore("-")
                             ?.trim() ?: return@mapNotNull null
-                        val minimumPerTable = it["Minimum per table"]
+                        val tableMin = it["Table Min"].let {
+                            when {
+                                it.equals("Free", ignoreCase = true) -> null
+                                it.equals("Any", ignoreCase = true) -> 0
+                                else -> it.removePrefix("$").toIntOrNull() ?: -1
+                            }
+                        }
+                        val prizeLimit = it["Prize Limit"].toIntOrNull()
                         val notes = it["Notes"]
 
                         val stampRallyId = "$hostTable-$theme"
@@ -193,7 +200,8 @@ class DataInitializer @Inject constructor(
                             tables = tables,
                             hostTable = hostTable,
                             links = links,
-                            minimumPerTable = minimumPerTable,
+                            tableMin = tableMin,
+                            prizeLimit = prizeLimit,
                             notes = notes,
                             counter = counter++
                         ) to connections

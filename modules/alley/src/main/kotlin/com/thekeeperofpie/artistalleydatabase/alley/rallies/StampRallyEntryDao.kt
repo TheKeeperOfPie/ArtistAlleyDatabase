@@ -89,11 +89,13 @@ interface StampRallyEntryDao {
             }
 
         val ascending = if (filterOptions.sortAscending) "ASC" else "DESC"
-        val basicSortSuffix = "\nORDER BY stamp_rally_entries_fts.FIELD COLLATE NOCASE $ascending"
+        val basicSortSuffix = "\nORDER BY stamp_rally_entries_fts.FIELD $ascending"
         val sortSuffix = when (filterOptions.sortOption) {
-            StampRallySearchSortOption.MAIN_TABLE -> basicSortSuffix.replace("FIELD", "hostTable")
-            StampRallySearchSortOption.FANDOM -> basicSortSuffix.replace("FIELD", "fandom")
+            StampRallySearchSortOption.MAIN_TABLE -> basicSortSuffix.replace("FIELD", "hostTable COLLATE NOCASE")
+            StampRallySearchSortOption.FANDOM -> basicSortSuffix.replace("FIELD", "fandom COLLATE NOCASE")
             StampRallySearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
+            StampRallySearchSortOption.PRIZE_LIMIT -> basicSortSuffix.replace("FIELD", "prizeLimit") + " NULLS LAST"
+            StampRallySearchSortOption.TABLE_MIN -> basicSortSuffix.replace("FIELD", "tableMin") + " NULLS LAST"
         }
         val selectSuffix =
             (", substr(stamp_rally_entries.counter * 0.${filterOptions.randomSeed}," +

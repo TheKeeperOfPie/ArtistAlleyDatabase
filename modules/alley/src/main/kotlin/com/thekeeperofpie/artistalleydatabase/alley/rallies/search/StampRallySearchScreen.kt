@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,12 +33,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.tableMinText
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
@@ -46,7 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object StampRallySearchScreen {
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -61,7 +65,7 @@ object StampRallySearchScreen {
         LaunchedEffect(
             viewModel.query,
             viewModel.sortOptions.selectedOption(StampRallySearchSortOption.RANDOM),
-            viewModel.sortAscending,
+            viewModel.sortAscending.collectAsState().value,
             viewModel.showOnlyFavorites,
         ) {
             if (seen) {
@@ -228,13 +232,15 @@ object StampRallySearchScreen {
             modifier = modifier
                 .fillMaxWidth()
                 .sharedBounds("container", stampRally.id, zIndexInOverlay = 1f)
+                .padding(start = 16.dp)
         ) {
             Text(
                 text = stampRally.hostTable,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleLarge
+                    .copy(fontFamily = FontFamily.Monospace),
                 modifier = Modifier
                     .sharedBounds("hostTable", stampRally.id, zIndexInOverlay = 1f)
-                    .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
+                    .padding(vertical = 8.dp)
             )
 
             Text(
@@ -242,19 +248,45 @@ object StampRallySearchScreen {
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
-                    .weight(1f)
                     .sharedBounds("fandom", stampRally.id, zIndexInOverlay = 1f)
-                    .padding(vertical = 12.dp)
+                    .weight(1f)
+                    .padding(vertical = 8.dp)
             )
+
+            Column(
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                if (stampRally.prizeLimit != null) {
+                    Text(
+                        text = stringResource(
+                            R.string.alley_stamp_rally_prize_limit,
+                            stampRally.prizeLimitText(),
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+                if (stampRally.tableMin != null) {
+                    Text(
+                        text = if (stampRally.tableMin == 0) {
+                            stringResource(R.string.alley_stamp_rally_minimum_free)
+                        } else {
+                            stringResource(
+                                R.string.alley_stamp_rally_table_min,
+                                stampRally.tableMinText(),
+                            )
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            }
 
             val favorite = entry.favorite
             IconButton(
                 onClick = { onFavoriteToggle(!favorite) },
-                modifier = Modifier.sharedElement(
-                    "favorite",
-                    stampRally.id,
-                    zIndexInOverlay = 1f,
-                )
+                modifier = Modifier
+                    .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
+                    .align(Alignment.Top)
             ) {
                 Icon(
                     imageVector = if (favorite) {
