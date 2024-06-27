@@ -10,5 +10,5 @@ enum class StampRallySearchSortOption(@StringRes override val textRes: Int) : So
     FANDOM(R.string.alley_sort_fandom),
     RANDOM(R.string.alley_sort_random),
     PRIZE_LIMIT(R.string.alley_sort_prize_limit),
-    TABLE_MIN(R.string.alley_sort_table_min),
+    TOTAL_COST(R.string.alley_sort_total_cost),
 }

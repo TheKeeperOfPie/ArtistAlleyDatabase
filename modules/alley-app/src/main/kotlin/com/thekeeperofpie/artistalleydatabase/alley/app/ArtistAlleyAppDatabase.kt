@@ -38,7 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
         MerchEntryFts::class,
     ],
     exportSchema = true,
-    version = 7,
+    version = 8,
     autoMigrations = [
         AutoMigration(1, 2),
         AutoMigration(2, 3),
@@ -63,6 +63,18 @@ abstract class ArtistAlleyAppDatabase : RoomDatabase(), ArtistAlleyDatabase {
             connection.execSQL(
                 """
                 CREATE VIRTUAL TABLE IF NOT EXISTS `stamp_rally_entries_fts` USING FTS4(`id` TEXT NOT NULL, `fandom` TEXT NOT NULL COLLATE NOCASE, `hostTable` TEXT NOT NULL COLLATE NOCASE, `tables` TEXT NOT NULL, `links` TEXT NOT NULL, `tableMin` INTEGER, `prizeLimit` INTEGER, `favorite` INTEGER NOT NULL, `ignored` INTEGER NOT NULL, `notes` TEXT, content=`stamp_rally_entries`)
+                """.trimIndent()
+            )
+        }
+    }
+
+    object Version_7_8 : Migration(7, 8) {
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("ALTER TABLE `stamp_rally_entries` ADD COLUMN `totalCost` INTEGER DEFAULT NULL")
+            connection.execSQL("DROP TABLE stamp_rally_entries_fts")
+            connection.execSQL(
+                """
+                CREATE VIRTUAL TABLE IF NOT EXISTS `stamp_rally_entries_fts` USING FTS4(`id` TEXT NOT NULL, `fandom` TEXT NOT NULL COLLATE NOCASE, `hostTable` TEXT NOT NULL COLLATE NOCASE, `tables` TEXT NOT NULL, `links` TEXT NOT NULL, `tableMin` INTEGER, `totalCost` INTEGER, `prizeLimit` INTEGER, `favorite` INTEGER NOT NULL, `ignored` INTEGER NOT NULL, `notes` TEXT, content=`stamp_rally_entries`)
                 """.trimIndent()
             )
         }

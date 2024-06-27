@@ -179,9 +179,9 @@ class DataInitializer @Inject constructor(
                             ?.trim() ?: return@mapNotNull null
                         val tableMin = it["Table Min"].let {
                             when {
-                                it.equals("Free", ignoreCase = true) -> null
-                                it.equals("Any", ignoreCase = true) -> 0
-                                else -> it.removePrefix("$").toIntOrNull() ?: -1
+                                it.equals("Free", ignoreCase = true) -> 0
+                                it.equals("Any", ignoreCase = true) -> 1
+                                else -> it.removePrefix("$").toIntOrNull()
                             }
                         }
                         val prizeLimit = it["Prize Limit"].toIntOrNull()
@@ -201,6 +201,7 @@ class DataInitializer @Inject constructor(
                             hostTable = hostTable,
                             links = links,
                             tableMin = tableMin,
+                            totalCost = tableMin?.takeIf { it != 1 }?.let { it * tables.size },
                             prizeLimit = prizeLimit,
                             notes = notes,
                             counter = counter++

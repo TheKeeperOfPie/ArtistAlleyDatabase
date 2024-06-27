@@ -41,7 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.tableMinText
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
@@ -266,14 +265,15 @@ object StampRallySearchScreen {
                         style = MaterialTheme.typography.labelSmall,
                     )
                 }
-                if (stampRally.tableMin != null) {
+                val totalCost = stampRally.totalCost
+                if (totalCost != null) {
                     Text(
-                        text = if (stampRally.tableMin == 0) {
-                            stringResource(R.string.alley_stamp_rally_minimum_free)
+                        text = if (totalCost == 0) {
+                            stringResource(R.string.alley_stamp_rally_total_free)
                         } else {
                             stringResource(
-                                R.string.alley_stamp_rally_table_min,
-                                stampRally.tableMinText(),
+                                R.string.alley_stamp_rally_total_paid,
+                                totalCost,
                             )
                         },
                         style = MaterialTheme.typography.labelSmall,

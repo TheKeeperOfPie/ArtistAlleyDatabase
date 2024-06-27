@@ -10,7 +10,7 @@ downloadUrl("Merch", "merch.csv")
 
 // For some reason Stamp Rallies doesn't download correctly, dev should overwrite manually.
 // This is kept around in case optimistically it fixes itself.
-downloadUrl("Stamp Rallies", "rallies.csv", "A1:E")
+downloadUrl("Stamp Rallies", "rallies.csv", "A1:F")
 
 fun downloadUrl(sheetName: String, fileName: String, range: String? = null) {
     val outputFile = assetsFolder.resolve(fileName)

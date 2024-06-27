@@ -27,11 +27,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.tableMinText
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.compose.skipToLookaheadSize
+import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 
 object StampRallyDetailsScreen {
 
@@ -120,6 +121,36 @@ object StampRallyDetailsScreen {
                 }
             }
 
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                val tableMin = entry.stampRally.tableMin
+                val totalCost = entry.stampRally.totalCost
+                val tableCount = entry.stampRally.tables.count()
+
+                val body = if (tableMin == null) {
+                    stringResource(R.string.alley_stamp_rally_cost_unknown)
+                } else if (tableMin == 0) {
+                    stringResource(R.string.alley_stamp_rally_cost_free)
+                } else if (tableMin == 1) {
+                    if (tableCount > 0) {
+                        stringResource(R.string.alley_stamp_rally_cost_equation_any, tableCount)
+                    } else {
+                        stringResource(R.string.alley_stamp_rally_cost_any)
+                    }
+                } else if (totalCost != null && tableCount > 0) {
+                    stringResource(R.string.alley_stamp_rally_cost_equation_paid, tableMin, tableCount, totalCost)
+                } else {
+                    stringResource(R.string.alley_stamp_rally_cost_unknown)
+                }
+
+                twoColumnInfoText(
+                    labelOne = stringResource(R.string.alley_stamp_rally_details_cost),
+                    bodyOne = body,
+                    labelTwo = stringResource(R.string.alley_stamp_rally_details_prize_limit),
+                    bodyTwo = entry.stampRally.prizeLimitText(),
+                    showDividerAbove = false,
+                )
+            }
+
             if (entry.artists.isNotEmpty()) {
                 ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
@@ -152,15 +183,6 @@ object StampRallyDetailsScreen {
                         showDividerAbove = false,
                     )
                 }
-            }
-
-            val tableMin = entry.stampRally.tableMinText()
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                InfoText(
-                    label = stringResource(R.string.alley_stamp_rally_details_minimum),
-                    body = tableMin,
-                    showDividerAbove = false,
-                )
             }
 
             FilledTonalButton(
