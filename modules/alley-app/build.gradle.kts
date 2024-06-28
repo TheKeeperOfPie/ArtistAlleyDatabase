@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.thekeeperofpie.artistalley"
-    compileSdkPreview = "UpsideDownCake"
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.thekeeperofpie.artistalley2024"

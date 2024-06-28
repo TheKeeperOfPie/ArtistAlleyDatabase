@@ -24,7 +24,7 @@ licenseReport {
 
 android {
     namespace = "com.thekeeperofpie.anichive"
-    compileSdkPreview = "UpsideDownCake"
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.thekeeperofpie.anichive"

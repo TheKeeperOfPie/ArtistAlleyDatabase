@@ -236,7 +236,7 @@ subprojects {
             }
             freeCompilerArgs += listOf(
                 "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:experimentalStrongSkipping=true",
+                "plugin:androidx.compose.compiler.plugins.kotlin:strongSkipping=true",
             )
         }
     }

@@ -171,6 +171,7 @@ import androidx.core.os.BuildCompat
 import androidx.core.text.HtmlCompat
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
+import coil3.asDrawable
 import coil3.request.ImageRequest
 import com.thekeeperofpie.compose_proxy.R
 import de.charlex.compose.toAnnotatedString

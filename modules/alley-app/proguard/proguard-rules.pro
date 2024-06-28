@@ -46,3 +46,6 @@
 -dontwarn org.graalvm.nativeimage.hosted.Feature$BeforeAnalysisAccess
 -dontwarn org.graalvm.nativeimage.hosted.Feature
 -dontwarn org.graalvm.nativeimage.hosted.RuntimeResourceAccess
+
+# TODO: Crash when initializing Room database
+-keep class com.thekeeperofpie.artistalleydatabase.alley.app.** { *; }

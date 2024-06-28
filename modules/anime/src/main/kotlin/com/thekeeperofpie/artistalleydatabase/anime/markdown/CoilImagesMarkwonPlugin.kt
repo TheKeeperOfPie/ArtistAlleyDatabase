@@ -9,6 +9,7 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
+import coil3.asDrawable
 import coil3.request.Disposable
 import coil3.request.ImageRequest
 import coil3.target.Target
