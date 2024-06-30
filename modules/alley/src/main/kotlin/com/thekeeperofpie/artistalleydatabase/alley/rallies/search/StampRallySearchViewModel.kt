@@ -10,12 +10,10 @@ import androidx.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -86,13 +84,4 @@ class StampRallySearchViewModel @Inject constructor(
     fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {
         settings.displayType.value = displayType.name
     }
-
-    private data class FilterParams(
-        val sortOptions: List<SortEntry<ArtistSearchSortOption>>,
-        val sortAscending: Boolean,
-        val showOnlyFavorites: Boolean,
-        val showOnlyWithCatalog: Boolean,
-        val showIgnored: Boolean,
-        val showOnlyIgnored: Boolean,
-    )
 }

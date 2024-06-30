@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistBoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -16,65 +17,35 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
     private val application: Application,
     private val artistEntryDao: ArtistEntryDao,
-    settings: ArtistAlleySettings,
+    private val settings: ArtistAlleySettings,
 ) : ViewModel() {
     var gridData by mutableStateOf(LoadingResult.loading<GridData>())
     private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
 
     init {
-        viewModelScope.launch(CustomDispatchers.IO) {
-            val booths = artistEntryDao.getBooths()
-            val letterToBooths = booths.groupBy { it.take(1) }.toSortedMap()
-            val maxRow = letterToBooths.size
-            val maxColumn =
-                letterToBooths.maxOf {
-                    it.value.mapNotNull { it.drop(1).toIntOrNull() }.maxOrNull() ?: 0
-                }
-            var currentIndex = 0
-            val showRandomCatalogImage = settings.showRandomCatalogImage.value
-            val tables = letterToBooths.values.mapIndexed { letterIndex, booths ->
-                booths.map {
-                    val tableNumber = it.filter { it.isDigit() }.toInt()
-                    val images = ArtistAlleyUtils.getImages(application, "catalogs", it)
-                    val imageIndex = if (showRandomCatalogImage) {
-                        images.indices.randomOrNull()
-                    } else {
-                        0
-                    }
-                    Table(
-                        booth = it,
-                        section = Table.Section.fromTableNumber(tableNumber),
-                        image = imageIndex?.let(images::getOrNull),
-                        imageIndex = imageIndex,
-                        gridX = currentIndex,
-                        // There's a physical gap not accounted for in the numbers between 41 and 42
-                        gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
+        viewModelScope.launch(CustomDispatchers.Main) {
+            // TODO: This is very inefficient to respond to favorites updates
+            artistEntryDao.getBoothsWithFavorite()
+                .map(::mapBooths)
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { tables ->
+                    gridData = LoadingResult.success(
+                        GridData(
+                            maxX = tables.maxOf { it.gridX },
+                            maxY = tables.maxOf { it.gridY },
+                            tables = tables,
+                        )
                     )
-                }.also {
-                    currentIndex++
-                    if (letterIndex % 2 == 0) {
-                        // Skip an extra between every 2 tables
-                        currentIndex++
-                    }
                 }
-            }.flatten()
-            withContext(CustomDispatchers.Main) {
-                gridData = LoadingResult.success(
-                    GridData(
-                        maxX = tables.maxOf { it.gridX },
-                        maxY = tables.maxOf { it.gridY },
-                        tables = tables,
-                    )
-                )
-            }
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -82,6 +53,44 @@ class MapViewModel @Inject constructor(
                 artistEntryDao.insertEntries(it)
             }
         }
+    }
+
+    private fun mapBooths(booths: List<ArtistBoothWithFavorite>): List<Table> {
+        val letterToBooths = booths.groupBy { it.booth.take(1) }.toSortedMap()
+        val maxRow = letterToBooths.size
+        val maxColumn =
+            letterToBooths.maxOf {
+                it.value.mapNotNull { it.booth.drop(1).toIntOrNull() }.maxOrNull() ?: 0
+            }
+        var currentIndex = 0
+        val showRandomCatalogImage = settings.showRandomCatalogImage.value
+        return letterToBooths.values.mapIndexed { letterIndex, booths ->
+            booths.map {
+                val tableNumber = it.booth.filter { it.isDigit() }.toInt()
+                val images = ArtistAlleyUtils.getImages(application, "catalogs", it.booth)
+                val imageIndex = if (showRandomCatalogImage) {
+                    images.indices.randomOrNull()
+                } else {
+                    0
+                }
+                Table(
+                    booth = it.booth,
+                    section = Table.Section.fromTableNumber(tableNumber),
+                    image = imageIndex?.let(images::getOrNull),
+                    imageIndex = imageIndex,
+                    favorite = it.favorite,
+                    gridX = currentIndex,
+                    // There's a physical gap not accounted for in the numbers between 41 and 42
+                    gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
+                )
+            }.also {
+                currentIndex++
+                if (letterIndex % 2 == 0) {
+                    // Skip an extra between every 2 tables
+                    currentIndex++
+                }
+            }
+        }.flatten()
     }
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {

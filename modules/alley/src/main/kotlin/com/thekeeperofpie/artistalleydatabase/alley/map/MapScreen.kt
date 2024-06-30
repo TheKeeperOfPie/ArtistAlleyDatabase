@@ -4,6 +4,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -11,13 +12,14 @@ import androidx.compose.foundation.gestures.calculateCentroid
 import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,7 +31,6 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -66,42 +67,52 @@ object MapScreen {
         transformState: TransformState,
         modifier: Modifier = Modifier,
         initialGridPosition: IntOffset? = null,
+        showSlider: Boolean = true,
         content: @Composable (Table) -> Unit,
     ) {
         val viewModel = hiltViewModel<MapViewModel>()
         val gridData = viewModel.gridData.result
-        Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = modifier.fillMaxSize()) {
             Map(
                 gridData = gridData,
                 transformState = transformState,
                 initialGridPosition = initialGridPosition,
-                modifier = modifier,
+                modifier = Modifier.weight(1f),
                 content = content,
             )
 
-            val coroutineScope = rememberCoroutineScope()
-            Slider(
-                value = transformState.scale,
-                onValueChange = {
-                    coroutineScope.launch {
-                        transformState.onTransform(
-                            centroid = Offset(
-                                transformState.size.width / 2f,
-                                transformState.size.height / 2f,
-                            ),
-                            translate = Offset.Zero,
-                            newRawScale = it,
-                        )
-                    }
-                },
-                valueRange = transformState.scaleRange,
-                modifier = Modifier
-                    .widthIn(max = 200.dp)
-                    .clickable(interactionSource = null, indication = null) { /* Consume events */ }
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .align(Alignment.BottomCenter)
-            )
+            if (showSlider) {
+                ZoomSlider(
+                    transformState = transformState,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp))
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                )
+            }
         }
+    }
+
+    @Composable
+    fun ZoomSlider(transformState: TransformState, modifier: Modifier = Modifier) {
+        val coroutineScope = rememberCoroutineScope()
+        Slider(
+            value = transformState.scale,
+            onValueChange = {
+                coroutineScope.launch {
+                    transformState.onTransform(
+                        centroid = Offset(
+                            transformState.size.width / 2f,
+                            transformState.size.height / 2f,
+                        ),
+                        translate = Offset.Zero,
+                        newRawScale = it,
+                    )
+                }
+            },
+            valueRange = transformState.scaleRange,
+            modifier = modifier
+                .clickable(interactionSource = null, indication = null) { /* Consume events */ }
+        )
     }
 
     @Composable
@@ -278,7 +289,6 @@ object MapScreen {
                             } while (!canceled && event.changes.fastAny { it.pressed })
                         }
                     }
-                    .fillMaxSize()
                     .clipToBounds()
             ) { constraints ->
                 val boundaries = getBounds(

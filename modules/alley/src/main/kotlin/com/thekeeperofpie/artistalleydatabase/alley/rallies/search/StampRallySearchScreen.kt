@@ -55,6 +55,7 @@ object StampRallySearchScreen {
             val showGridByDefault by sortFilterController.gridByDefaultSection.property.collectAsState()
             val showRandomCatalogImage by sortFilterController.randomCatalogImageSection.property.collectAsState()
             val forceOneDisplayColumn by sortFilterController.forceOneDisplayColumnSection.property.collectAsState()
+            val showOnlyFavorites by sortFilterController.onlyFavoritesSection.property.collectAsState()
             val displayType = SearchScreen.DisplayType.fromSerializedValue(
                 viewModel.displayType.collectAsState().value
             )
@@ -66,6 +67,7 @@ object StampRallySearchScreen {
                     SortFilterOptionsPanel(
                         sections = { sortFilterController.sections },
                         sectionState = { sortFilterController.state },
+                        showClear = false,
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 320.dp)
@@ -80,10 +82,7 @@ object StampRallySearchScreen {
                 onFavoriteToggle = viewModel::onFavoriteToggle,
                 onIgnoredToggle = viewModel::onIgnoredToggle,
                 onEntryClick = onEntryClick,
-                shouldShowCount = {
-                    viewModel.query.isNotEmpty()
-                            || sortFilterController.onlyFavoritesSection.enabled
-                },
+                shouldShowCount = { viewModel.query.isNotEmpty() || showOnlyFavorites },
                 itemToSharedElementId = { it.value.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     StampRallyListRow(entry, onFavoriteToggle, modifier)

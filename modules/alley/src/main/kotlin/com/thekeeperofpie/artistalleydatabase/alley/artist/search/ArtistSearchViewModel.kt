@@ -16,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -101,13 +100,4 @@ class ArtistSearchViewModel @Inject constructor(
     fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {
         settings.displayType.value = displayType.name
     }
-
-    private data class FilterParams(
-        val sortOptions: List<SortEntry<ArtistSearchSortOption>>,
-        val sortAscending: Boolean,
-        val showOnlyFavorites: Boolean,
-        val showOnlyWithCatalog: Boolean,
-        val showIgnored: Boolean,
-        val showOnlyIgnored: Boolean,
-    )
 }

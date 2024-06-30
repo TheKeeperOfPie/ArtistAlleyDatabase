@@ -55,6 +55,7 @@ object ArtistSearchScreen {
             val showGridByDefault by sortFilterController.gridByDefaultSection.property.collectAsState()
             val showRandomCatalogImage by sortFilterController.randomCatalogImageSection.property.collectAsState()
             val forceOneDisplayColumn by sortFilterController.forceOneDisplayColumnSection.property.collectAsState()
+            val showOnlyFavorites by sortFilterController.onlyFavoritesSection.property.collectAsState()
             val displayType = SearchScreen.DisplayType.fromSerializedValue(
                 viewModel.displayType.collectAsState().value
             )
@@ -81,6 +82,7 @@ object ArtistSearchScreen {
                     SortFilterOptionsPanel(
                         sections = { sortFilterController.sections },
                         sectionState = { sortFilterController.state },
+                        showClear = false,
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 320.dp)
@@ -97,7 +99,7 @@ object ArtistSearchScreen {
                 onEntryClick = onEntryClick,
                 shouldShowCount = {
                     viewModel.query.isNotEmpty()
-                            || sortFilterController.onlyFavoritesSection.enabled
+                            || showOnlyFavorites
                             || sortFilterController.onlyCatalogImagesSection.enabled
                             || viewModel.lockedSeries != null
                             || viewModel.lockedMerch != null

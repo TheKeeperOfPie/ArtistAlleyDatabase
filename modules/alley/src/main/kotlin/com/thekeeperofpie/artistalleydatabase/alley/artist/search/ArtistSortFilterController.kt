@@ -29,26 +29,34 @@ class ArtistSortFilterController(scope: CoroutineScope, settings: ArtistAlleySet
         R.string.alley_search_option_merch_many,
     )
 
-    private val sortSection = SortFilterSection.Sort<ArtistSearchSortOption>(
+    private val sortSection = SortFilterSection.SortBySetting<ArtistSearchSortOption>(
         enumClass = ArtistSearchSortOption::class,
-        defaultEnabled = ArtistSearchSortOption.RANDOM,
         headerTextRes = R.string.alley_sort_label,
+        sortProperty = settings.artistsSortOption,
+        sortAscendingProperty = settings.artistsSortAscending,
+        deserialize = {
+            ArtistSearchSortOption.entries.find { option -> option.name == it }
+                ?: ArtistSearchSortOption.RANDOM
+        },
+        serialize = { it?.name.orEmpty() },
     )
-    val onlyFavoritesSection =
-        SortFilterSection.Switch(R.string.alley_filter_favorites, false)
+    val onlyFavoritesSection = SortFilterSection.SwitchBySetting(
+        R.string.alley_filter_favorites,
+        settings.showOnlyFavorites,
+    )
     val onlyCatalogImagesSection =
         SortFilterSection.Switch(R.string.alley_filter_only_catalogs, false)
     val gridByDefaultSection = SortFilterSection.SwitchBySetting(
         R.string.alley_filter_show_grid_by_default,
-        settings.showGridByDefault
+        settings.showGridByDefault,
     )
     val randomCatalogImageSection = SortFilterSection.SwitchBySetting(
         R.string.alley_filter_show_random_catalog_image,
-        settings.showRandomCatalogImage
+        settings.showRandomCatalogImage,
     )
     private val onlyConfirmedTagsSection = SortFilterSection.SwitchBySetting(
         R.string.alley_filter_show_only_confirmed_tags,
-        settings.showOnlyConfirmedTags
+        settings.showOnlyConfirmedTags,
     )
     private val showIgnoredSection =
         SortFilterSection.Switch(R.string.alley_filter_show_ignored, true)
@@ -84,7 +92,7 @@ class ArtistSortFilterController(scope: CoroutineScope, settings: ArtistAlleySet
             merch = merchSection.finalContents().map { it.serializedValue },
             sortOption = sortSection.sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
             sortAscending = sortSection.sortAscending,
-            showOnlyFavorites = onlyFavoritesSection.enabled,
+            showOnlyFavorites = onlyFavoritesSection.property.collectAsState().value,
             showOnlyWithCatalog = onlyCatalogImagesSection.enabled,
             showOnlyConfirmedTags = onlyConfirmedTagsSection.property.collectAsState().value,
             showIgnored = showIgnoredSection.enabled,

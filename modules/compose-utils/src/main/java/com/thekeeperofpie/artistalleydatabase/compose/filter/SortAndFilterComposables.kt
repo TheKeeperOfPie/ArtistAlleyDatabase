@@ -608,6 +608,7 @@ fun RangeDataFilterSection(
 fun SortFilterOptionsPanel(
     sections: () -> List<SortFilterSection>,
     sectionState: () -> SortFilterSection.ExpandedState,
+    showClear: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     HorizontalDivider()
@@ -623,10 +624,11 @@ fun SortFilterOptionsPanel(
                 it.Content(state, showDivider = true)
             }
         }
-        HorizontalDivider()
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            TextButton(onClick = { sections().forEach(SortFilterSection::clear) }) {
-                Text(text = stringResource(R.string.clear))
+        if (showClear) {
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = { sections().forEach(SortFilterSection::clear) }) {
+                    Text(text = stringResource(R.string.clear))
+                }
             }
         }
     }

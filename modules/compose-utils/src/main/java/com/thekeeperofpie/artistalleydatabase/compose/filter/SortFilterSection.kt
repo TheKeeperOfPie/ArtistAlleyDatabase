@@ -57,13 +57,32 @@ sealed class SortFilterSection(val id: String) {
     @Composable
     abstract fun Content(state: ExpandedState, showDivider: Boolean)
 
-    class Sort<SortType : SortOption>(
+    class SortBySetting<SortType : SortOption>(
+        enumClass: KClass<SortType>,
+        @StringRes headerTextRes: Int,
+        sortProperty: MutableStateFlow<String>,
+        sortAscendingProperty: MutableStateFlow<Boolean>,
+        deserialize: (String) -> SortType,
+        serialize: (SortType?) -> String,
+    ) : Sort<SortType>(
+        enumClass = enumClass,
+        defaultEnabled = deserialize(sortProperty.value),
+        headerTextRes = headerTextRes,
+        defaultSortAscending = sortAscendingProperty.value,
+        onSortSelected = { sortProperty.value = serialize(it) },
+        onSortAscendingChange = { sortAscendingProperty.value = it },
+    )
+
+    open class Sort<SortType : SortOption>(
         private val enumClass: KClass<SortType>,
         private var defaultEnabled: SortType?,
         @StringRes val headerTextRes: Int,
+        val defaultSortAscending: Boolean = false,
+        private val onSortSelected: (SortType?) -> Unit = {},
+        private val onSortAscendingChange: (Boolean) -> Unit = {},
     ) : SortFilterSection(headerTextRes) {
         var sortOptions by mutableStateOf(SortEntry.options(enumClass, defaultEnabled))
-        var sortAscending by mutableStateOf(false)
+        var sortAscending by mutableStateOf(defaultSortAscending)
         var clickable by mutableStateOf(true)
 
         override fun showingPreview() =
@@ -76,7 +95,8 @@ sealed class SortFilterSection(val id: String) {
         fun changeDefault(defaultEnabled: SortType, sortAscending: Boolean, lockSort: Boolean) {
             this.defaultEnabled = defaultEnabled
             sortOptions = SortEntry.options(enumClass, defaultEnabled)
-            this.sortAscending = sortAscending
+            onSortSelected(defaultEnabled)
+            changeSortAscending(sortAscending)
             clickable = !lockSort
         }
 
@@ -84,15 +104,21 @@ sealed class SortFilterSection(val id: String) {
             if (sortOptions.singleOrNull { it.state == FilterIncludeExcludeState.INCLUDE }?.value != selected) {
                 onSelected(selected)
             }
-            this.sortAscending = sortAscending
+            changeSortAscending(sortAscending)
         }
 
         override fun clear() {
             sortOptions = SortEntry.options(enumClass, defaultEnabled)
-            sortAscending = false
+            onSortSelected(defaultEnabled)
+            changeSortAscending(defaultSortAscending)
         }
 
-        private fun onSelected(selected: SortOption) {
+        private fun changeSortAscending(sortAscending: Boolean) {
+            this.sortAscending = sortAscending
+            onSortAscendingChange(sortAscending)
+        }
+
+        private fun onSelected(selected: SortType) {
             val list = sortOptions.toMutableList()
             val existing = list.withIndex().first { it.value.value == selected }
             val newOption = if (existing.value.state == FilterIncludeExcludeState.INCLUDE) {
@@ -113,6 +139,7 @@ sealed class SortFilterSection(val id: String) {
                     } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
                 }
             }
+            onSortSelected(newOption)
         }
 
         @Composable
@@ -124,7 +151,7 @@ sealed class SortFilterSection(val id: String) {
                 sortOptions = { sortOptions },
                 onSortClick = ::onSelected,
                 sortAscending = { sortAscending },
-                onSortAscendingChange = { sortAscending = it },
+                onSortAscendingChange = ::changeSortAscending,
                 clickable = clickable,
                 showDivider = showDivider,
             )

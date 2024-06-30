@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterController
@@ -18,26 +19,34 @@ class StampRallySortFilterController(scope: CoroutineScope, settings: ArtistAlle
     val tablesSection = EntrySection.LongText(headerRes = R.string.alley_search_option_tables)
     val artistsSection = EntrySection.LongText(headerRes = R.string.alley_search_option_artist)
 
-    private val sortSection = SortFilterSection.Sort<StampRallySearchSortOption>(
+    private val sortSection = SortFilterSection.SortBySetting<StampRallySearchSortOption>(
         enumClass = StampRallySearchSortOption::class,
-        defaultEnabled = StampRallySearchSortOption.RANDOM,
         headerTextRes = R.string.alley_sort_label,
+        sortProperty = settings.stampRalliesSortOption,
+        sortAscendingProperty = settings.stampRalliesSortAscending,
+        deserialize = {
+            StampRallySearchSortOption.entries.find { option -> option.name == it }
+                ?: StampRallySearchSortOption.RANDOM
+        },
+        serialize = { it?.name.orEmpty() },
     )
-    val onlyFavoritesSection =
-        SortFilterSection.Switch(R.string.alley_filter_favorites, false)
+    val onlyFavoritesSection = SortFilterSection.SwitchBySetting(
+        R.string.alley_filter_favorites,
+        settings.showOnlyFavorites,
+    )
     val gridByDefaultSection = SortFilterSection.SwitchBySetting(
         R.string.alley_filter_show_grid_by_default,
-        settings.showGridByDefault
+        settings.showGridByDefault,
     )
     val randomCatalogImageSection = SortFilterSection.SwitchBySetting(
         R.string.alley_filter_show_random_catalog_image,
-        settings.showRandomCatalogImage
+        settings.showRandomCatalogImage,
     )
     private val showIgnoredSection =
         SortFilterSection.Switch(R.string.alley_filter_show_ignored, true)
     val forceOneDisplayColumnSection = SortFilterSection.SwitchBySetting(
         R.string.alley_filter_force_one_display_column,
-        settings.forceOneDisplayColumn
+        settings.forceOneDisplayColumn,
     )
 
     override val sections = listOf(
@@ -55,7 +64,7 @@ class StampRallySortFilterController(scope: CoroutineScope, settings: ArtistAlle
         tables = tablesSection.value.trim(),
         sortOption = sortSection.sortOptions.selectedOption(StampRallySearchSortOption.RANDOM),
         sortAscending = sortSection.sortAscending,
-        showOnlyFavorites = onlyFavoritesSection.enabled,
+        showOnlyFavorites = onlyFavoritesSection.property.collectAsState().value,
         showIgnored = showIgnoredSection.enabled,
     )
 

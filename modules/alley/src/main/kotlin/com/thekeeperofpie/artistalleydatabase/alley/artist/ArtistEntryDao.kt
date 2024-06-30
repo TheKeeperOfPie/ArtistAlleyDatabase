@@ -10,6 +10,7 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistBoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
@@ -70,11 +71,11 @@ interface ArtistEntryDao {
 
     @Query(
         """
-        SELECT booth
+        SELECT booth, favorite
         from artist_entries
         """
     )
-    fun getBooths(): List<String>
+    fun getBoothsWithFavorite(): Flow<List<ArtistBoothWithFavorite>>
 
     fun search(query: String, searchQuery: ArtistSearchQuery): PagingSource<Int, ArtistEntry> {
         val filterParams = searchQuery.filterParams

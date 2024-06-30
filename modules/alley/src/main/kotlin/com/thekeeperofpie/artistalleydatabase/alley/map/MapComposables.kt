@@ -78,6 +78,7 @@ fun TableCell(
         table.section.textColor.copy(alpha = 0.33f)
             .compositeOver(MaterialTheme.colorScheme.onSurface)
     },
+    showImages: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
     var showPopup by remember { mutableStateOf(false) }
@@ -95,7 +96,7 @@ fun TableCell(
             .clickable { showPopup = true }
     ) {
         val imageUri = table.image?.uri
-        if (imageUri != null) {
+        if (showImages && imageUri != null) {
             BoxWithConstraints {
                 val minSize = LocalDensity.current.run { 80.dp }
                 if (maxWidth > minSize && maxHeight > minSize) {
@@ -154,6 +155,7 @@ fun TableCell(
 fun HighlightedTableCell(
     table: Table,
     highlight: Boolean,
+    showImages: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
     val borderWidth = if (highlight) 2.dp else 1.dp
@@ -178,6 +180,7 @@ fun HighlightedTableCell(
         borderWidth = borderWidth,
         borderColor = borderColor,
         textColor = textColor,
+        showImages = showImages,
         onArtistClick = onArtistClick,
     )
 }

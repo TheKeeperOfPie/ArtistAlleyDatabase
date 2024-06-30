@@ -30,8 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
-import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.map.TableCell
+import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
@@ -109,12 +108,10 @@ object ArtistAlleyScreen {
                     onSeriesClick = onSeriesClick,
                     onMerchClick = onMerchClick,
                 )
-                Destinations.MAP -> {
-                    val mapViewModel = hiltViewModel<MapViewModel>()
-                    MapScreen(transformState = mapTransformState) { table ->
-                        TableCell(table = table, onArtistClick = onArtistClick)
-                    }
-                }
+                Destinations.MAP -> FavoritesMapScreen(
+                    mapTransformState = mapTransformState,
+                    onArtistClick = onArtistClick,
+                )
                 Destinations.STAMP_RALLIES -> StampRallySearchScreen(
                     onEntryClick = onStampRallyClick,
                     scrollStateSaver = ScrollStateSaver.fromMap(

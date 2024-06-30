@@ -8,6 +8,7 @@ data class Table(
     val section: Section,
     val image: CatalogImage?,
     val imageIndex: Int?,
+    val favorite: Boolean,
     val gridX: Int,
     val gridY: Int,
 ) {
