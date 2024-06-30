@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,7 +13,9 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.UnfoldMore
@@ -43,6 +46,49 @@ import kotlin.math.roundToInt
 fun VerticalScrollbar(
     state: LazyGridState,
     modifier: Modifier = Modifier,
+) = VerticalScrollbar(
+    firstVisibleItemIndex = { firstVisibleItemIndex },
+    totalItemsCount = { layoutInfo.totalItemsCount },
+    lastVisibleIndex = { layoutInfo.visibleItemsInfo.lastOrNull()?.index },
+    scrollToItem = { scrollToItem(it) },
+    state = state,
+    modifier = modifier,
+)
+
+@Composable
+fun VerticalScrollbar(
+    state: LazyStaggeredGridState,
+    modifier: Modifier = Modifier,
+) = VerticalScrollbar(
+    firstVisibleItemIndex = { firstVisibleItemIndex },
+    totalItemsCount = { layoutInfo.totalItemsCount },
+    lastVisibleIndex = { layoutInfo.visibleItemsInfo.lastOrNull()?.index },
+    scrollToItem = { scrollToItem(it) },
+    state = state,
+    modifier = modifier,
+)
+
+@Composable
+fun VerticalScrollbar(
+    state: LazyListState,
+    modifier: Modifier = Modifier,
+) = VerticalScrollbar(
+    firstVisibleItemIndex = { firstVisibleItemIndex },
+    totalItemsCount = { layoutInfo.totalItemsCount },
+    lastVisibleIndex = { layoutInfo.visibleItemsInfo.lastOrNull()?.index },
+    scrollToItem = { scrollToItem(it) },
+    state = state,
+    modifier = modifier,
+)
+
+@Composable
+fun <State: ScrollableState> VerticalScrollbar(
+    firstVisibleItemIndex: State.() -> Int,
+    totalItemsCount: State.() -> Int,
+    lastVisibleIndex: State.() -> Int?,
+    scrollToItem: suspend State.(index: Int) -> Unit,
+    state: State,
+    modifier: Modifier = Modifier,
 ) {
     var height by remember { mutableIntStateOf(1) }
     val handleSize = LocalDensity.current.run { 40.dp.roundToPx() }
@@ -50,8 +96,8 @@ fun VerticalScrollbar(
     Box(modifier = modifier.onSizeChanged { height = it.height }) {
         val offsetFromGrid by remember(maxOffsetY) {
             derivedStateOf {
-                (state.firstVisibleItemIndex.toFloat()
-                        / state.layoutInfo.totalItemsCount.coerceAtLeast(1)
+                (state.firstVisibleItemIndex().toFloat()
+                        / state.totalItemsCount().coerceAtLeast(1)
                         * maxOffsetY)
                     .roundToInt()
             }
@@ -68,8 +114,9 @@ fun VerticalScrollbar(
         val scope = rememberCoroutineScope()
         val fillsViewPort by remember {
             derivedStateOf {
-                val lastVisibleIndex = state.layoutInfo.visibleItemsInfo.lastOrNull()?.index
-                lastVisibleIndex != null && lastVisibleIndex < (state.layoutInfo.totalItemsCount - 1)
+                @Suppress("NAME_SHADOWING")
+                val lastVisibleIndex = state.lastVisibleIndex()
+                lastVisibleIndex != null && lastVisibleIndex < (state.totalItemsCount() - 1)
             }
         }
         val handleVisible = fillsViewPort && (state.isScrollInProgress || dragging)
@@ -102,7 +149,7 @@ fun VerticalScrollbar(
                         offsetY = newOffset
                         val ratio = offsetY / maxOffsetY
                         val scrollPositionFromOffset =
-                            (ratio * state.layoutInfo.totalItemsCount.coerceAtLeast(1))
+                            (ratio * state.totalItemsCount().coerceAtLeast(1))
                                 .roundToInt()
                         scope.launch {
                             state.scrollToItem(scrollPositionFromOffset)

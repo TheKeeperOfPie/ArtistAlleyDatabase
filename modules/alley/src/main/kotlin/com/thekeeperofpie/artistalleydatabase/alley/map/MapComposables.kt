@@ -304,7 +304,7 @@ fun TablePopup(
                         Icons.Filled.FavoriteBorder
                     },
                     contentDescription = stringResource(
-                        R.string.alley_artist_favorite_icon_content_description
+                        R.string.alley_favorite_icon_content_description
                     ),
                 )
             }

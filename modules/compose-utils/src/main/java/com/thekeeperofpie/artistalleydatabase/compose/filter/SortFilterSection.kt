@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.filter
+package com.thekeeperofpie.artistalleydatabase.compose.filter
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
@@ -37,18 +37,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterSection
-import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
-import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeDataFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SuggestionsSection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.reflect.KClass
 
@@ -349,11 +340,8 @@ sealed class SortFilterSection(val id: String) {
 
     class SwitchBySetting(
         @StringRes private val titleRes: Int,
-        val settings: AnimeSettings,
-        property: (AnimeSettings) -> MutableStateFlow<Boolean>,
+        val property: MutableStateFlow<Boolean>,
     ) : SortFilterSection(titleRes) {
-
-        private val stateFlow = property(settings)
 
         override fun showingPreview() = false
 
@@ -363,11 +351,11 @@ sealed class SortFilterSection(val id: String) {
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
-            val enabled by stateFlow.collectAsState()
+            val enabled by property.collectAsState()
             SwitchRow(
                 titleRes = titleRes,
                 enabled = { enabled },
-                onEnabledChanged = { stateFlow.value = it },
+                onEnabledChanged = { property.value = it },
                 showDivider = showDivider,
             )
         }

@@ -11,12 +11,11 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface StampRallyEntryDao {
-
 
     companion object {
         private val WHITESPACE_REGEX = Regex("\\s+")
@@ -61,23 +60,16 @@ interface StampRallyEntryDao {
     )
     fun getEntriesSize(): Int
 
-    @Query(
-        """
-        SELECT COUNT(*)
-        FROM stamp_rally_entries
-        """
-    )
-    fun getEntriesSizeFlow(): Flow<Int>
-
     fun search(
         query: String,
-        filterOptions: StampRallySearchQuery,
+        searchQuery: StampRallySearchQuery,
     ): PagingSource<Int, StampRallyEntry> {
+        val filterParams = searchQuery.filterParams
         val booleanOptions = mutableListOf<String>().apply {
-            if (filterOptions.showOnlyFavorites) this += "favorite:1"
+            if (filterParams.showOnlyFavorites) this += "favorite:1"
         }
 
-        val filterOptionsQueryPieces = filterOptionsQuery(filterOptions)
+        val filterParamsQueryPieces = filterParamsQuery(filterParams)
         val options = query.split(Regex("\\s+"))
             .filter(String::isNotBlank)
             .map { "*$it*" }
@@ -88,9 +80,9 @@ interface StampRallyEntryDao {
                 )
             }
 
-        val ascending = if (filterOptions.sortAscending) "ASC" else "DESC"
+        val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val basicSortSuffix = "\nORDER BY stamp_rally_entries_fts.FIELD $ascending"
-        val sortSuffix = when (filterOptions.sortOption) {
+        val sortSuffix = when (filterParams.sortOption) {
             StampRallySearchSortOption.MAIN_TABLE -> basicSortSuffix.replace("FIELD", "hostTable COLLATE NOCASE")
             StampRallySearchSortOption.FANDOM -> basicSortSuffix.replace("FIELD", "fandom COLLATE NOCASE")
             StampRallySearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
@@ -98,12 +90,12 @@ interface StampRallyEntryDao {
             StampRallySearchSortOption.TOTAL_COST -> basicSortSuffix.replace("FIELD", "totalCost") + " NULLS LAST"
         }
         val selectSuffix =
-            (", substr(stamp_rally_entries.counter * 0.${filterOptions.randomSeed}," +
+            (", substr(stamp_rally_entries.counter * 0.${searchQuery.randomSeed}," +
                     " length(stamp_rally_entries.counter) + 2) as orderIndex")
-                .takeIf { filterOptions.sortOption == StampRallySearchSortOption.RANDOM }
+                .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM }
                 .orEmpty()
 
-        if (options.isEmpty() && filterOptionsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
+        if (options.isEmpty() && filterParamsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
                 SELECT *$selectSuffix
                 FROM stamp_rally_entries
@@ -120,7 +112,7 @@ interface StampRallyEntryDao {
         }
         val bindArguments = (optionsArguments + separator + booleanArguments)
             .filterNot { it.isNullOrEmpty() }
-        val statement = (bindArguments + filterOptionsQueryPieces).joinToString("\nINTERSECT\n") {
+        val statement = (bindArguments + filterParamsQueryPieces).joinToString("\nINTERSECT\n") {
             """
                 SELECT *$selectSuffix
                 FROM stamp_rally_entries
@@ -132,7 +124,7 @@ interface StampRallyEntryDao {
         return getEntries(
             SimpleSQLiteQuery(
                 statement,
-                bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray(),
+                bindArguments.toTypedArray() + filterParamsQueryPieces.toTypedArray(),
             )
         )
     }
@@ -170,14 +162,16 @@ interface StampRallyEntryDao {
     @Query("""DELETE FROM stamp_rally_entries WHERE stamp_rally_entries.id NOT IN (:ids)""")
     suspend fun retainIds(ids: List<String>)
 
-    private fun filterOptionsQuery(filterOptions: StampRallySearchQuery): MutableList<String> {
+    private fun filterParamsQuery(
+        filterParams: StampRallySortFilterController.FilterParams,
+    ): MutableList<String> {
         val queryPieces = mutableListOf<String>()
 
-        filterOptions.fandom.takeUnless(String?::isNullOrBlank)?.let {
+        filterParams.fandom.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
                 .map { "fandom:${RoomUtils.wrapMatchQuery(it)}" }
         }
-        filterOptions.tables.takeUnless(String?::isNullOrBlank)?.let {
+        filterParams.tables.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
                 .map { "tables:${RoomUtils.wrapMatchQuery(it)}" }
         }

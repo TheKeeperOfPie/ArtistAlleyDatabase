@@ -9,11 +9,11 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 
@@ -24,7 +24,7 @@ class ForumSubsectionSortFilterController(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController<ForumSubsectionSortFilterController.FilterParams>(
+) : AnimeSettingsSortFilterController<ForumSubsectionSortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,

@@ -55,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
+import com.thekeeperofpie.artistalleydatabase.compose.VerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -92,7 +93,7 @@ object BrowseScreen {
                 val scrollStateSaver = ScrollStateSaver.fromMap(it.name, scrollPositions)
                 when (it) {
                     Tab.SERIES -> TabScreen(
-                        query =  { viewModel.seriesQuery },
+                        query = { viewModel.seriesQuery },
                         onQueryChange = { viewModel.seriesQuery = it },
                         entriesSize = { viewModel.seriesSize },
                         values = viewModel.series.collectAsLazyPagingItems(),
@@ -102,7 +103,7 @@ object BrowseScreen {
                         scrollStateSaver = scrollStateSaver
                     )
                     Tab.MERCH -> TabScreen(
-                        query =  { viewModel.merchQuery },
+                        query = { viewModel.merchQuery },
                         onQueryChange = { viewModel.merchQuery = it },
                         entriesSize = { viewModel.merchSize },
                         values = viewModel.merch.collectAsLazyPagingItems(),
@@ -182,13 +183,17 @@ object BrowseScreen {
                 }
             },
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+            ) {
+                val listState = scrollStateSaver.lazyListState()
                 LazyColumn(
-                    state = scrollStateSaver.lazyListState(),
+                    state = listState,
                     contentPadding = PaddingValues(bottom = 80.dp),
                     modifier = Modifier
                         .fillMaxHeight()
-                        .padding(it)
                         .widthIn(max = 400.dp)
                         .align(Alignment.TopCenter)
                 ) {
@@ -212,6 +217,14 @@ object BrowseScreen {
                         }
                     }
                 }
+
+                VerticalScrollbar(
+                    state = listState,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        .padding(bottom = 72.dp)
+                )
             }
         }
     }

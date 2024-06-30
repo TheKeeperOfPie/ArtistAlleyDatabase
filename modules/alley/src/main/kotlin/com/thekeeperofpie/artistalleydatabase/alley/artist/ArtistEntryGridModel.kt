@@ -26,6 +26,8 @@ class ArtistEntryGridModel(
     override var favorite by mutableStateOf(value.favorite)
     override var ignored by mutableStateOf(value.ignored)
 
+    override val booth get() = value.booth
+
     companion object {
         @WorkerThread
         fun buildFromEntry(application: Application, entry: ArtistEntry): ArtistEntryGridModel {

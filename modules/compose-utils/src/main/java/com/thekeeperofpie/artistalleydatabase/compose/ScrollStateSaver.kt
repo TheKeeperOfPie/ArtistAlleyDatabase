@@ -4,6 +4,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -97,6 +99,16 @@ interface ScrollStateSaver {
         }
     }
 
+    @Composable
+    fun lazyStaggeredGridState() = rememberLazyStaggeredGridState(
+        initialFirstVisibleItemIndex = position,
+        initialFirstVisibleItemScrollOffset = offset,
+    ).also {
+        DisposableEffect(it) {
+            onDispose { save(it) }
+        }
+    }
+
     private fun save(lazyListState: LazyListState) {
         position = lazyListState.firstVisibleItemIndex
         offset = lazyListState.firstVisibleItemScrollOffset
@@ -105,6 +117,11 @@ interface ScrollStateSaver {
     private fun save(lazyGridState: LazyGridState) {
         position = lazyGridState.firstVisibleItemIndex
         offset = lazyGridState.firstVisibleItemScrollOffset
+    }
+
+    private fun save(lazyStaggeredGridState: LazyStaggeredGridState) {
+        position = lazyStaggeredGridState.firstVisibleItemIndex
+        offset = lazyStaggeredGridState.firstVisibleItemScrollOffset
     }
 
     class ScrollStateSaverImpl(

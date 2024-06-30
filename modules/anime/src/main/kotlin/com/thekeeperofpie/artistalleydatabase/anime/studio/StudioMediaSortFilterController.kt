@@ -7,10 +7,10 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 
@@ -19,7 +19,7 @@ class StudioMediaSortFilterController(
     scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController<StudioMediaSortFilterController.FilterParams>(
+) : AnimeSettingsSortFilterController<StudioMediaSortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,

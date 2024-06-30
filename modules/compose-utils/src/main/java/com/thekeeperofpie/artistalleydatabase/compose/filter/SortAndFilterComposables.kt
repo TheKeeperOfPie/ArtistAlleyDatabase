@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -38,6 +40,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -596,6 +599,34 @@ fun RangeDataFilterSection(
                     ),
                     modifier = Modifier.width(64.dp),
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun SortFilterOptionsPanel(
+    sections: () -> List<SortFilterSection>,
+    sectionState: () -> SortFilterSection.ExpandedState,
+    modifier: Modifier = Modifier,
+) {
+    HorizontalDivider()
+    Column(modifier = modifier) {
+        Column(
+            Modifier
+                .weight(1f, fill = false)
+                .verticalScroll(rememberScrollState())
+                .animateContentSize()
+        ) {
+            val state = sectionState()
+            sections().forEach {
+                it.Content(state, showDivider = true)
+            }
+        }
+        HorizontalDivider()
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = { sections().forEach(SortFilterSection::clear) }) {
+                Text(text = stringResource(R.string.clear))
             }
         }
     }

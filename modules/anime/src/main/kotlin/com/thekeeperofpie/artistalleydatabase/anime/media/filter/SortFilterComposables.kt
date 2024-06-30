@@ -27,10 +27,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.CalendarToday
@@ -43,7 +41,6 @@ import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -55,7 +52,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,10 +70,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -91,41 +85,16 @@ import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.IncludeExcludeIcon
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterOptionsPanel
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.roundToInt
 
 @Composable
-fun SortFilterOptionsPanel(
-    sections: () -> List<SortFilterSection>,
-    sectionState: () -> SortFilterSection.ExpandedState,
-    modifier: Modifier = Modifier,
-) {
-    HorizontalDivider()
-    Column(modifier = modifier) {
-        Column(
-            Modifier
-                .weight(1f, fill = false)
-                .verticalScroll(rememberScrollState())
-                .animateContentSize()
-        ) {
-            val state = sectionState()
-            sections().forEach {
-                it.Content(state, showDivider = true)
-            }
-        }
-        HorizontalDivider()
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            TextButton(onClick = { sections().forEach(SortFilterSection::clear) }) {
-                Text(text = stringResource(UtilsStringR.clear))
-            }
-        }
-    }
-}
-
-@Composable
 fun SortFilterBottomScaffold(
-    sortFilterController: SortFilterController<*>?,
+    sortFilterController: AnimeSettingsSortFilterController<*>?,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
     sheetState: androidx.compose.material3.SheetState = androidx.compose.material3.rememberStandardBottomSheetState(
@@ -185,7 +154,7 @@ fun SortFilterBottomScaffold(
 
 @Composable
 private fun SheetDragHandle(
-    sortFilterController: SortFilterController<*>?,
+    sortFilterController: AnimeSettingsSortFilterController<*>?,
     targetValue: () -> SheetValue,
     onClick: () -> Unit,
 ) {

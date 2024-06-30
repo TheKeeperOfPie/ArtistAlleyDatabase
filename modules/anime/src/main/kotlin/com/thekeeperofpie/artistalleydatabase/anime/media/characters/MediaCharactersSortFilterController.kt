@@ -10,10 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 
@@ -22,7 +22,7 @@ class MediaCharactersSortFilterController(
     scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : SortFilterController<MediaCharactersSortFilterController.FilterParams>(
+) : AnimeSettingsSortFilterController<MediaCharactersSortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,

@@ -15,7 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableCo
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +40,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
 
     val items = MutableStateFlow(PagingData.empty<ListEntryType>())
 
-    abstract val sortFilterController: SortFilterController<FilterParams>
+    abstract val sortFilterController: AnimeSettingsSortFilterController<FilterParams>
 
     private val refresh = MutableStateFlow(-1L)
 

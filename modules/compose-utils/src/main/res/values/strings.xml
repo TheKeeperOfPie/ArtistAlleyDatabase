@@ -16,4 +16,5 @@
     <string name="theme_light">Light</string>
     <string name="theme_black">Black</string>
     <string name="scrollbar_handle_content_description">Scrollbar handle</string>
+    <string name="clear">Clear</string>
 </resources>

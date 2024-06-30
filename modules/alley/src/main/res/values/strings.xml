@@ -11,7 +11,7 @@
     <string name="alley_search_option_merch_one">Merch</string>
     <string name="alley_search_option_merch_many">Merch</string>
 
-    <string name="alley_artist_favorite_icon_content_description">Mark artist as favorite</string>
+    <string name="alley_favorite_icon_content_description">Mark as favorite</string>
     <string name="alley_artist_catalog_image">Artist catalog image</string>
     <string name="alley_display_type_icon_content_description">Change display type</string>
     <string name="alley_artist_details_booth_and_table_name">%1$s - %2$s</string>
@@ -42,15 +42,16 @@
     <string name="alley_sort_fandom">Fandom</string>
     <string name="alley_sort_prize_limit">Prize limit</string>
     <string name="alley_sort_total_cost">Total cost</string>
-    <string name="alley_filter_favorites">Show only favorites</string>
-    <string name="alley_filter_only_catalogs">Show only with catalog</string>
+    <string name="alley_filter_favorites">Only favorites</string>
+    <string name="alley_filter_only_catalogs">Only with catalog images</string>
     <string name="alley_update_notice">New app version may be available</string>
     <string name="alley_open_update">Open</string>
     <string name="alley_show_catalog_grid_content_description">Show content grid</string>
-    <string name="alley_filter_show_grid_by_default">Show grid by default</string>
-    <string name="alley_filter_show_random_catalog_image">Show random catalog image</string>
-    <string name="alley_filter_show_only_confirmed_tags">Show only confirmed tags</string>
+    <string name="alley_filter_show_grid_by_default">Grid by default</string>
+    <string name="alley_filter_show_random_catalog_image">Random catalog image</string>
+    <string name="alley_filter_show_only_confirmed_tags">Only confirmed tags</string>
     <string name="alley_filter_show_ignored">Show ignored (long press)</string>
+    <string name="alley_filter_force_one_display_column">Force one display column</string>
     <string name="alley_search_option_ignored">Ignored</string>
     <string name="alley_series_header_zero">Series</string>
     <string name="alley_series_header_one">Series</string>

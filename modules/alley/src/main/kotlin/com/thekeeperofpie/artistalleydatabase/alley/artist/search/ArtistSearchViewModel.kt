@@ -1,10 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
@@ -15,26 +11,21 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
-import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
@@ -61,56 +52,11 @@ class ArtistSearchViewModel @Inject constructor(
     val lockedSeries = route.series
     val lockedMerch = route.merch
 
-    val boothSection = EntrySection.LongText(headerRes = R.string.alley_search_option_booth)
-    val artistSection = EntrySection.LongText(headerRes = R.string.alley_search_option_artist)
-    val summarySection =
-        EntrySection.LongText(headerRes = R.string.alley_search_option_summary)
-    val seriesSection = EntrySection.MultiText(
-        R.string.alley_series_header_zero,
-        R.string.alley_series_header_one,
-        R.string.alley_series_header_many,
-    )
-    val merchSection = EntrySection.MultiText(
-        R.string.alley_search_option_merch_zero,
-        R.string.alley_search_option_merch_one,
-        R.string.alley_search_option_merch_many,
-    )
+    val sortFilterController = ArtistSortFilterController(viewModelScope, settings)
 
-    override val sections =
-        listOf(boothSection, artistSection, summarySection, seriesSection, merchSection)
+    override val sections = emptyList<EntrySection>()
 
-    var sortOptions by mutableStateOf(run {
-        val values = ArtistSearchSortOption.entries
-        val option = settings.artistsSortOption.value.let { artistsSortOption ->
-            values.find { it.name == artistsSortOption } ?: ArtistSearchSortOption.RANDOM
-        }
-        values.map {
-            SortEntry(
-                value = it,
-                state = if (it == option) {
-                    FilterIncludeExcludeState.INCLUDE
-                } else {
-                    FilterIncludeExcludeState.DEFAULT
-                }
-            )
-        }
-    })
-        private set
-
-    val sortAscending = settings.artistsSortAscending
-    val showGridByDefault = settings.showGridByDefault
-    val showRandomCatalogImage = settings.showRandomCatalogImage
-    val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
     val displayType = settings.displayType
-
-    var showOnlyFavorites by mutableStateOf(false)
-    var showOnlyWithCatalog by mutableStateOf(false)
-    var showIgnored by mutableStateOf(true)
-    var showOnlyIgnored by mutableStateOf(false)
-
-    var entriesSize by mutableStateOf(0)
-        private set
-
     val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
 
@@ -120,43 +66,17 @@ class ArtistSearchViewModel @Inject constructor(
                 artistEntryDao.insertEntries(it)
             }
         }
-
-        viewModelScope.launch(CustomDispatchers.Main) {
-            artistEntryDao.getEntriesSizeFlow()
-                .flowOn(CustomDispatchers.IO)
-                .collect { entriesSize = it }
-        }
     }
 
     override fun searchOptions() = defer {
-        combine(sortAscending, showOnlyConfirmedTags, ::Pair)
-            .flatMapLatest { (sortAscending, showOnlyConfirmedTags) ->
-                snapshotFlow {
-                    val seriesContents = seriesSection.finalContents()
-                    ArtistSearchQuery(
-                        booth = boothSection.value.trim(),
-                        artist = artistSection.value.trim(),
-                        summary = summarySection.value.trim(),
-                        series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
-                            .map { it.serializedValue }
-                            .filterNot(String::isBlank),
-                        seriesById = seriesContents
-                            .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                            .mapNotNull(AniListUtils::mediaId),
-                        merch = merchSection.finalContents().map { it.serializedValue },
-                        sortOption = sortOptions.selectedOption(ArtistSearchSortOption.RANDOM),
-                        sortAscending = sortAscending,
-                        showOnlyFavorites = showOnlyFavorites,
-                        showOnlyWithCatalog = showOnlyWithCatalog,
-                        showOnlyConfirmedTags = showOnlyConfirmedTags,
-                        showIgnored = showIgnored,
-                        showOnlyIgnored = showOnlyIgnored,
-                        randomSeed = randomSeed,
-                        lockedSeries = lockedSeries,
-                        lockedMerch = lockedMerch,
-                    )
-                }
-            }
+        sortFilterController.filterParams.mapLatest {
+            ArtistSearchQuery(
+                filterParams = it,
+                randomSeed = randomSeed,
+                lockedSeries = lockedSeries,
+                lockedMerch = lockedMerch,
+            )
+        }
     }
 
     override fun mapQuery(
@@ -166,10 +86,7 @@ class ArtistSearchViewModel @Inject constructor(
         trackPagingSource { artistEntryDao.search(query, options) }
     }.flow
         .flowOn(CustomDispatchers.IO)
-        .map {
-            it.filter { !it.ignored || options.showIgnored }
-                .filter { it.ignored || !options.showOnlyIgnored }
-        }
+        .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
         .map { it.map { ArtistEntryGridModel.buildFromEntry(application, it) } }
         .cachedIn(viewModelScope)
 
@@ -183,44 +100,6 @@ class ArtistSearchViewModel @Inject constructor(
 
     fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {
         settings.displayType.value = displayType.name
-    }
-
-    fun onSortClick(option: ArtistSearchSortOption) {
-        var newOption = option
-        val values = ArtistSearchSortOption.entries
-        val existingOptions = sortOptions
-        if (existingOptions.first { it.state == FilterIncludeExcludeState.INCLUDE }
-                .value == option) {
-            newOption = values[(values.indexOf(option) + 1) % values.size]
-        }
-
-        settings.artistsSortOption.value = newOption.name
-        sortOptions = values.map {
-            SortEntry(
-                value = it,
-                state = if (it == newOption) {
-                    FilterIncludeExcludeState.INCLUDE
-                } else {
-                    FilterIncludeExcludeState.DEFAULT
-                }
-            )
-        }
-    }
-
-    fun onSortAscendingToggle(ascending: Boolean) {
-        settings.artistsSortAscending.value = ascending
-    }
-
-    fun onShowGridByDefaultToggle(showGridByDefault: Boolean) {
-        settings.showGridByDefault.value = showGridByDefault
-    }
-
-    fun onShowRandomCatalogImageToggle(showRandomCatalogImage: Boolean) {
-        settings.showRandomCatalogImage.value = showRandomCatalogImage
-    }
-
-    fun onShowOnlyConfirmedTagsToggle(showOnlyConfirmedTagsToggle: Boolean) {
-        settings.showOnlyConfirmedTags.value = showOnlyConfirmedTagsToggle
     }
 
     private data class FilterParams(

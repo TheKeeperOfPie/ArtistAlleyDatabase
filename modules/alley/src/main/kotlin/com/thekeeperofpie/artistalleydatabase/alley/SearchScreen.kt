@@ -17,18 +17,21 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
@@ -59,14 +62,17 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
+import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.compose.StaggeredGridCellsAdaptiveWithMin
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
+import com.thekeeperofpie.artistalleydatabase.compose.VerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
@@ -83,7 +89,7 @@ object SearchScreen {
     @Composable
     operator fun <SearchQuery, EntryModel : SearchEntryModel> invoke(
         viewModel: EntrySearchViewModel<SearchQuery, EntryModel>,
-        entriesSize: () -> Int,
+        entries: LazyPagingItems<EntryModel>,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(
             rememberStandardBottomSheetState(
                 confirmValueChange = { it != SheetValue.Hidden },
@@ -93,9 +99,10 @@ object SearchScreen {
         bottomSheet: @Composable ColumnScope.() -> Unit,
         showGridByDefault: () -> Boolean,
         showRandomCatalogImage: () -> Boolean,
+        forceOneDisplayColumn: () -> Boolean,
         displayType: () -> DisplayType,
         onDisplayTypeToggle: (DisplayType) -> Unit,
-        listState: LazyListState,
+        gridState: LazyStaggeredGridState,
         onFavoriteToggle: (EntryModel, Boolean) -> Unit,
         onIgnoredToggle: (EntryModel, Boolean) -> Unit,
         onEntryClick: (EntryModel, Int) -> Unit,
@@ -164,8 +171,7 @@ object SearchScreen {
                                     if (title != null) {
                                         Text(title)
                                     } else {
-                                        @Suppress("NAME_SHADOWING")
-                                        val entriesSize = entriesSize()
+                                        val entriesSize = entries.itemCount
                                         Text(
                                             if (entriesSize > 0) {
                                                 stringResource(
@@ -193,19 +199,14 @@ object SearchScreen {
 
                                         @Suppress("NAME_SHADOWING")
                                         val displayType = displayType()
+                                        val entries = DisplayType.entries
+                                        val nextDisplayType =
+                                            entries[(entries.indexOf(displayType) + 1) % entries.size]
                                         IconButton(onClick = {
-                                            onDisplayTypeToggle(
-                                                when (displayType) {
-                                                    DisplayType.LIST -> DisplayType.CARD
-                                                    DisplayType.CARD -> DisplayType.LIST
-                                                }
-                                            )
+                                            onDisplayTypeToggle(nextDisplayType)
                                         }) {
                                             Icon(
-                                                imageVector = when (displayType) {
-                                                    DisplayType.LIST -> DisplayType.CARD.icon
-                                                    DisplayType.CARD -> DisplayType.LIST.icon
-                                                },
+                                                imageVector = nextDisplayType.icon,
                                                 contentDescription = stringResource(
                                                     R.string.alley_display_type_icon_content_description,
                                                 ),
@@ -240,7 +241,6 @@ object SearchScreen {
                 }
 
                 Box {
-                    val entries = viewModel.results.collectAsLazyPagingItems()
                     val coroutineScope = rememberCoroutineScope()
 
                     @Suppress("NAME_SHADOWING")
@@ -251,13 +251,46 @@ object SearchScreen {
 
                     @Suppress("NAME_SHADOWING")
                     val showRandomCatalogImage = showRandomCatalogImage()
-                    LazyColumn(
-                        state = listState,
-                        contentPadding = PaddingValues(top = 8.dp + topBarPadding, bottom = 80.dp),
-                        verticalArrangement = when (displayType) {
-                            DisplayType.LIST -> Arrangement.Top
-                            DisplayType.CARD -> Arrangement.spacedBy(16.dp)
+                    LazyVerticalStaggeredGrid(
+                        columns = if (forceOneDisplayColumn()) {
+                            StaggeredGridCells.Fixed(1)
+                        } else {
+                            when (displayType) {
+                                DisplayType.LIST,
+                                DisplayType.CARD,
+                                -> StaggeredGridCells.Adaptive(350.dp)
+                                DisplayType.IMAGE,
+                                -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
+                            }
                         },
+                        state = gridState,
+                        contentPadding = when (displayType) {
+                            DisplayType.LIST,
+                            DisplayType.IMAGE,
+                            -> PaddingValues(
+                                top = 8.dp + topBarPadding,
+                                bottom = 80.dp,
+                            )
+                            DisplayType.CARD,
+                            -> PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 8.dp + topBarPadding,
+                                bottom = 80.dp,
+                            )
+                        },
+                        verticalItemSpacing = when (displayType) {
+                            DisplayType.LIST,
+                            DisplayType.IMAGE,
+                            -> 0.dp
+                            DisplayType.CARD,
+                            -> 8.dp
+                        },
+                        horizontalArrangement = when (displayType) {
+                            DisplayType.LIST,
+                            DisplayType.CARD -> 8.dp
+                            DisplayType.IMAGE -> 0.dp
+                        }.let(Arrangement::spacedBy),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(
@@ -309,20 +342,37 @@ object SearchScreen {
                                     onClick = onEntryClick,
                                     itemRow = itemRow,
                                 )
+                                DisplayType.IMAGE -> ItemImage(
+                                    entry = entry,
+                                    sharedElementId = itemToSharedElementId(entry),
+                                    showGridByDefault = showGridByDefault,
+                                    showRandomCatalogImage = showRandomCatalogImage,
+                                    onFavoriteToggle = onFavoriteToggle,
+                                    onIgnoredToggle = onIgnoredToggle,
+                                    onClick = onEntryClick,
+                                    itemRow = itemRow,
+                                )
                             }
                         }
                     }
 
+                    VerticalScrollbar(
+                        state = gridState,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .fillMaxHeight()
+                            .padding(top = 8.dp + topBarPadding, bottom = 72.dp)
+                    )
+
                     if (shouldShowCount()) {
-                        val entriesSize = entries.itemCount
-                        val stringRes = when (entriesSize) {
+                        val stringRes = when (entries.itemCount) {
                             0 -> EntryStringR.entry_results_zero
                             1 -> EntryStringR.entry_results_one
                             else -> EntryStringR.entry_results_multiple
                         }
 
                         Text(
-                            text = stringResource(stringRes, entriesSize),
+                            text = stringResource(stringRes, entries.itemCount),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSecondary,
                             modifier = Modifier
@@ -340,7 +390,7 @@ object SearchScreen {
                                 )
                                 .clickable {
                                     coroutineScope.launch {
-                                        listState.animateScrollToItem(0, 0)
+                                        gridState.animateScrollToItem(0, 0)
                                     }
                                 }
                                 .padding(8.dp)
@@ -352,6 +402,7 @@ object SearchScreen {
     }
 
     interface SearchEntryModel : EntryGridModel {
+        val booth: String
         val images: List<CatalogImage>
         var favorite: Boolean
         var ignored: Boolean
@@ -360,6 +411,7 @@ object SearchScreen {
     enum class DisplayType(val icon: ImageVector) {
         LIST(Icons.AutoMirrored.Filled.ViewList),
         CARD(Icons.Filled.ViewAgenda),
+        IMAGE(Icons.Filled.Image),
         ;
 
         companion object {

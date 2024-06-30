@@ -17,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LogUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
@@ -28,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResul
 import com.thekeeperofpie.artistalleydatabase.anime2anime.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anime2anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.debounce
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job

@@ -1,12 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 data class StampRallySearchQuery(
-    val fandom: String?,
-    val tables: String?,
-    val sortOption: StampRallySearchSortOption,
-    val sortAscending: Boolean,
-    val showOnlyFavorites: Boolean,
-    val showIgnored: Boolean,
-    val showOnlyIgnored: Boolean,
+    val filterParams: StampRallySortFilterController.FilterParams,
     val randomSeed: Int,
 )

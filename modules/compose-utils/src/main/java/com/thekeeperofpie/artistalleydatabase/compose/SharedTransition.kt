@@ -144,6 +144,11 @@ fun Modifier.skipToLookaheadSize() = with(LocalSharedTransitionScope.current) {
     skipToLookaheadSize()
 }
 
+@Composable
+fun Modifier.renderInSharedTransitionScopeOverlay() = with(LocalSharedTransitionScope.current) {
+    renderInSharedTransitionScopeOverlay()
+}
+
 object SharedTransition {
     const val USE_ANDROIDX = false
 }

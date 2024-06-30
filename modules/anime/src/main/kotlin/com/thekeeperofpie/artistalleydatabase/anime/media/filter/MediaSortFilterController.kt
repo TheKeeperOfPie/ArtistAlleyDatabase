@@ -24,8 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
@@ -33,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,7 +60,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
     userScoreEnabled: Boolean,
-) : SortFilterController<MediaSortFilterController.FilterParams<SortType>>(
+) : AnimeSettingsSortFilterController<MediaSortFilterController.FilterParams<SortType>>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider
@@ -240,14 +240,12 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
 
     protected val showLessImportantTagsSection = SortFilterSection.SwitchBySetting(
         titleRes = R.string.anime_media_filter_show_less_important_tags,
-        settings = settings,
-        property = { it.showLessImportantTags },
+        property = settings.showLessImportantTags,
     )
 
     protected val showSpoilerTagsSection = SortFilterSection.SwitchBySetting(
         titleRes = R.string.anime_media_filter_show_spoiler_tags,
-        settings = settings,
-        property = { it.showSpoilerTags },
+        property = settings.showSpoilerTags,
     )
 
     protected val titleLanguageSection = SortFilterSection.Dropdown(

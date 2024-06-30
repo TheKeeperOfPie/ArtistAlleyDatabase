@@ -26,6 +26,8 @@ class StampRallyEntryGridModel(
     override var favorite by mutableStateOf(value.favorite)
     override var ignored by mutableStateOf(value.ignored)
 
+    override val booth get() = value.hostTable
+
     companion object {
         @WorkerThread
         fun buildFromEntry(application: Application, entry: StampRallyEntry) =

@@ -13,6 +13,7 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
@@ -69,30 +70,23 @@ interface ArtistEntryDao {
 
     @Query(
         """
-        SELECT COUNT(*)
-        FROM artist_entries
-        """
-    )
-    fun getEntriesSizeFlow(): Flow<Int>
-
-    @Query(
-        """
         SELECT booth
         from artist_entries
         """
     )
     fun getBooths(): List<String>
 
-    fun search(query: String, filterOptions: ArtistSearchQuery): PagingSource<Int, ArtistEntry> {
+    fun search(query: String, searchQuery: ArtistSearchQuery): PagingSource<Int, ArtistEntry> {
+        val filterParams = searchQuery.filterParams
         val booleanOptions = mutableListOf<String>().apply {
-            if (filterOptions.showOnlyFavorites) this += "favorite:1"
+            if (filterParams.showOnlyFavorites) this += "favorite:1"
 
             // Search for "http" as a simplification of logic, since checking
             // not empty would require a separate query template
-            if (filterOptions.showOnlyWithCatalog) this += "driveLink:*http*"
+            if (filterParams.showOnlyWithCatalog) this += "driveLink:*http*"
         }
 
-        val filterOptionsQueryPieces = filterOptionsQuery(filterOptions)
+        val filterParamsQueryPieces = filterParamsQuery(filterParams)
         val options = query.split(Regex("\\s+"))
             .filter(String::isNotBlank)
             .map { "*$it*" }
@@ -108,33 +102,33 @@ interface ArtistEntryDao {
                 )
             }
 
-        val ascending = if (filterOptions.sortAscending) "ASC" else "DESC"
+        val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val basicSortSuffix = "\nORDER BY artist_entries_fts.FIELD COLLATE NOCASE $ascending"
-        val sortSuffix = when (filterOptions.sortOption) {
+        val sortSuffix = when (filterParams.sortOption) {
             ArtistSearchSortOption.BOOTH -> basicSortSuffix.replace("FIELD", "booth")
             ArtistSearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "name")
             ArtistSearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
         }
-        val selectSuffix = (", substr(artist_entries.counter * 0.${filterOptions.randomSeed}," +
+        val selectSuffix = (", substr(artist_entries.counter * 0.${searchQuery.randomSeed}," +
                 " length(artist_entries.counter) + 2) as orderIndex")
-            .takeIf { filterOptions.sortOption == ArtistSearchSortOption.RANDOM }
+            .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM }
             .orEmpty()
 
-        val lockedSuffix = if (filterOptions.lockedSeries != null) {
+        val lockedSuffix = if (searchQuery.lockedSeries != null) {
             "artist_entries.id IN (SELECT artistId from artist_series_connections WHERE " +
-                    (if (filterOptions.showOnlyConfirmedTags) "artist_series_connections.confirmed IS 1 AND" else "") +
+                    (if (filterParams.showOnlyConfirmedTags) "artist_series_connections.confirmed IS 1 AND" else "") +
                     " artist_series_connections.seriesId == " +
-                    "${DatabaseUtils.sqlEscapeString(filterOptions.lockedSeries)})"
-        } else if (filterOptions.lockedMerch != null) {
+                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
+        } else if (searchQuery.lockedMerch != null) {
             "artist_entries.id IN (SELECT artistId from artist_merch_connections WHERE " +
-                    (if (filterOptions.showOnlyConfirmedTags) "artist_merch_connections.confirmed IS 1 AND" else "") +
+                    (if (filterParams.showOnlyConfirmedTags) "artist_merch_connections.confirmed IS 1 AND" else "") +
                     " artist_merch_connections.merchId == " +
-                    "${DatabaseUtils.sqlEscapeString(filterOptions.lockedMerch)})"
+                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
         } else {
             null
         }
 
-        if (options.isEmpty() && filterOptionsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
+        if (options.isEmpty() && filterParamsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
                 SELECT *$selectSuffix
                 FROM artist_entries
@@ -153,7 +147,7 @@ interface ArtistEntryDao {
         val bindArguments = (optionsArguments + separator + booleanArguments)
             .filterNot { it.isNullOrEmpty() }
 
-        val statement = (bindArguments + filterOptionsQueryPieces).joinToString("\nINTERSECT\n") {
+        val statement = (bindArguments + filterParamsQueryPieces).joinToString("\nINTERSECT\n") {
             """
                 SELECT *$selectSuffix
                 FROM artist_entries
@@ -166,7 +160,7 @@ interface ArtistEntryDao {
         return getEntries(
             SimpleSQLiteQuery(
                 statement,
-                bindArguments.toTypedArray() + filterOptionsQueryPieces.toTypedArray(),
+                bindArguments.toTypedArray() + filterParamsQueryPieces.toTypedArray(),
             )
         )
     }
@@ -205,42 +199,44 @@ interface ArtistEntryDao {
         insertMerchConnections(entries.flatMap { it.third })
     }
 
-    private fun filterOptionsQuery(filterOptions: ArtistSearchQuery): MutableList<String> {
+    private fun filterParamsQuery(
+        filterParams: ArtistSortFilterController.FilterParams,
+    ): MutableList<String> {
         val queryPieces = mutableListOf<String>()
 
-        filterOptions.artist.takeUnless(String?::isNullOrBlank)?.let {
+        filterParams.artist.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
                 .map { "artistNames:${RoomUtils.wrapMatchQuery(it)}" }
         }
-        filterOptions.booth.takeUnless(String?::isNullOrBlank)?.let {
+        filterParams.booth.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
                 .map { "booth:${RoomUtils.wrapMatchQuery(it)}" }
         }
-        filterOptions.summary.takeUnless(String?::isNullOrBlank)?.let {
+        filterParams.summary.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
                 .map { "description:${RoomUtils.wrapMatchQuery(it)}" }
         }
-        queryPieces += filterOptions.series.flatMap { it.split(WHITESPACE_REGEX) }
+        queryPieces += filterParams.series.flatMap { it.split(WHITESPACE_REGEX) }
             .map {
-                if (filterOptions.showOnlyConfirmedTags) {
+                if (filterParams.showOnlyConfirmedTags) {
                     "seriesConfirmedSearchable:${RoomUtils.wrapMatchQuery(it)}"
                 } else {
                     "seriesInferredSearchable:${RoomUtils.wrapMatchQuery(it)}" +
                             " OR seriesConfirmedSearchable:${RoomUtils.wrapMatchQuery(it)}"
                 }
             }
-        queryPieces += filterOptions.seriesById
+        queryPieces += filterParams.seriesById
             .map {
-                if (filterOptions.showOnlyConfirmedTags) {
+                if (filterParams.showOnlyConfirmedTags) {
                     "seriesConfirmedSerialized:${RoomUtils.wrapMatchQuery(it)}"
                 } else {
                     "seriesInferredSerialized:${RoomUtils.wrapMatchQuery(it)}" +
                             "OR seriesConfirmedSerialized:${RoomUtils.wrapMatchQuery(it)}"
                 }
             }
-        queryPieces += filterOptions.merch
+        queryPieces += filterParams.merch
             .map {
-                if (filterOptions.showOnlyConfirmedTags) {
+                if (filterParams.showOnlyConfirmedTags) {
                     "merchConfirmed:${RoomUtils.wrapMatchQuery(it)}"
                 } else {
                     "merchInferred:${RoomUtils.wrapMatchQuery(it)}" +

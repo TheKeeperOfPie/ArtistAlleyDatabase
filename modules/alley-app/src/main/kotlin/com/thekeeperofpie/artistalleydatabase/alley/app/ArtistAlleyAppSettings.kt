@@ -25,6 +25,7 @@ class ArtistAlleyAppSettings(private val application: ScopedApplication) : Artis
     override val showGridByDefault = boolean("showGridByDefault", false)
     override val showRandomCatalogImage = boolean("showRandomCatalogImage", false)
     override val showOnlyConfirmedTags = boolean("showOnlyConfirmedTags", false)
+    override val forceOneDisplayColumn = boolean("forceOneDisplayColumn", false)
 
     private fun long(key: String, default: Long = -1L) = initialize(
         key,
