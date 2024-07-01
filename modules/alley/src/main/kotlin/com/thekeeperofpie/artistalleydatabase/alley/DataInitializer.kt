@@ -168,7 +168,7 @@ class DataInitializer @Inject constructor(
                 var counter = 1
                 csvReader(reader)
                     .mapNotNull {
-                        // Theme,Link,Tables,Minimum per table,Notes,Images
+                        // Theme,Link,Tables,Table Min, Total, Notes,Images
                         val theme = it["Theme"]
                         val links = it["Link"].split("\n")
                             .filter(String::isNotBlank)
@@ -184,6 +184,7 @@ class DataInitializer @Inject constructor(
                                 else -> it.removePrefix("$").toIntOrNull()
                             }
                         }
+                        val totalCost = it["Total"]?.removePrefix("$")?.toIntOrNull()
                         val prizeLimit = it["Prize Limit"].toIntOrNull()
                         val notes = it["Notes"]
 
@@ -201,7 +202,7 @@ class DataInitializer @Inject constructor(
                             hostTable = hostTable,
                             links = links,
                             tableMin = tableMin,
-                            totalCost = tableMin?.takeIf { it != 1 }?.let { it * tables.size },
+                            totalCost = if (tableMin == 0) 0 else totalCost,
                             prizeLimit = prizeLimit,
                             notes = notes,
                             counter = counter++
