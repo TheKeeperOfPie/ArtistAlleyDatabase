@@ -30,7 +30,7 @@ fun ArtistTitle(artist: ArtistEntry) {
             text = artist.booth,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.sharedBounds(
+            modifier = Modifier.sharedElement(
                 "booth",
                 artist.id,
                 zIndexInOverlay = 1f,
@@ -44,7 +44,7 @@ fun ArtistTitle(artist: ArtistEntry) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .sharedBounds("name", artist.id, zIndexInOverlay = 1f)
+                .sharedElement("name", artist.id, zIndexInOverlay = 1f)
                 .weight(1f)
         )
     }
@@ -69,8 +69,8 @@ fun ArtistListRow(
             style = MaterialTheme.typography.titleLarge
                 .copy(fontFamily = FontFamily.Monospace),
             modifier = Modifier
-                .sharedBounds("booth", artist.id, zIndexInOverlay = 1f)
                 .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
+                .sharedElement("booth", artist.id, zIndexInOverlay = 1f)
         )
 
         Text(
@@ -78,7 +78,7 @@ fun ArtistListRow(
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier
-                .sharedBounds("name", artist.id, zIndexInOverlay = 1f)
+                .sharedElement("name", artist.id, zIndexInOverlay = 1f)
                 .weight(1f)
                 .padding(vertical = 12.dp)
         )

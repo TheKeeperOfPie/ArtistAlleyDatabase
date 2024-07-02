@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
 
 @Composable
 internal fun ImageGrid(
@@ -52,7 +52,7 @@ internal fun ImageGrid(
                     contentDescription = stringResource(R.string.alley_artist_catalog_image),
                     modifier = Modifier
                         .clickable { onImageClick(index, image.uri) }
-                        .sharedBounds("gridImage", image.uri)
+                        .sharedElement("gridImage", image.uri)
                         .fillMaxWidth()
                         .conditionally(image.width != null && image.height != null) {
                             heightIn(min = (image.height!! / image.width!!.toFloat()) * maxWidth)

@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -60,7 +61,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
 import com.thekeeperofpie.artistalleydatabase.compose.renderInSharedTransitionScopeOverlay
-import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -92,7 +92,6 @@ fun <EntryModel : SearchEntryModel> ItemCard(
     val ignored = entry.ignored
     ElevatedCard(
         modifier = modifier
-            .sharedBounds("itemContainer", sharedElementId)
             .combinedClickable(
                 onClick = { onClick(entry, pagerState.settledPage) },
                 onLongClick = { onIgnoredToggle(!ignored) }
@@ -139,7 +138,6 @@ fun <EntryModel : SearchEntryModel> ItemImage(
     val ignored = entry.ignored
     Box(
         modifier = modifier
-            .sharedBounds("itemContainer", sharedElementId)
             .combinedClickable(
                 onClick = { onClick(entry, pagerState.settledPage) },
                 onLongClick = { onIgnoredToggle(!ignored) }
@@ -178,8 +176,8 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                 Text(
                     text = entry.booth,
                     modifier = Modifier
-                        .sharedBounds("booth", sharedElementId, zIndexInOverlay = 1f)
                         .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+                        .sharedElement("booth", sharedElementId, zIndexInOverlay = 1f)
                 )
 
                 IconButton(
@@ -248,7 +246,6 @@ private fun ImagePager(
             userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .sharedBounds("imageContainer", sharedElementId)
                 .heightIn(min = density.run { minHeight.toDp() })
                 .onSizeChanged {
                     if (it.height > minHeight) {
@@ -258,6 +255,8 @@ private fun ImagePager(
                 .conditionally(clipCorners) {
                     clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                 }
+                .sharedElement("imageContainer", sharedElementId)
+                .clipToBounds()
         ) {
             if (it == 0 && images.size > 1) {
                 ImageGrid(
@@ -317,7 +316,7 @@ private fun ImagePager(
                 pagerState = pagerState,
                 pageCount = pagerState.pageCount,
                 modifier = Modifier
-                    .sharedBounds("pagerIndicator", sharedElementId, zIndexInOverlay = 1f)
+                    .sharedElement("pagerIndicator", sharedElementId, zIndexInOverlay = 1f)
                     .padding(8.dp)
             )
         }
@@ -334,7 +333,7 @@ private fun ImagePager(
                         pagerState.animateScrollToPage(0)
                     }
                 },
-                modifier = Modifier.sharedBounds("gridIcon", sharedElementId)
+                modifier = Modifier.sharedElement("gridIcon", sharedElementId)
             ) {
                 Icon(
                     imageVector = Icons.Filled.GridOn,

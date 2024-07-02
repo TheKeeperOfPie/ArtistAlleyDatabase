@@ -288,7 +288,8 @@ object SearchScreen {
                         },
                         horizontalArrangement = when (displayType) {
                             DisplayType.LIST,
-                            DisplayType.CARD -> 8.dp
+                            DisplayType.CARD,
+                            -> 8.dp
                             DisplayType.IMAGE -> 0.dp
                         }.let(Arrangement::spacedBy),
                         modifier = Modifier.fillMaxSize()
@@ -312,6 +313,7 @@ object SearchScreen {
                                 onIgnoredToggle(entry, it)
                             }
 
+                            val sharedElementId = itemToSharedElementId(entry)
                             when (displayType) {
                                 DisplayType.LIST -> {
                                     val ignored = entry.ignored
@@ -319,10 +321,7 @@ object SearchScreen {
                                         entry,
                                         onFavoriteToggle = onFavoriteToggle,
                                         modifier = Modifier
-                                            .sharedBounds(
-                                                "itemContainer",
-                                                itemToSharedElementId(entry),
-                                            )
+                                            .sharedBounds("itemContainer", sharedElementId)
                                             .combinedClickable(
                                                 onClick = { onEntryClick(entry, 1) },
                                                 onLongClick = { onIgnoredToggle(!ignored) }
@@ -341,6 +340,10 @@ object SearchScreen {
                                     onIgnoredToggle = onIgnoredToggle,
                                     onClick = onEntryClick,
                                     itemRow = itemRow,
+                                    modifier = Modifier.sharedBounds(
+                                        "itemContainer",
+                                        sharedElementId
+                                    ),
                                 )
                                 DisplayType.IMAGE -> ItemImage(
                                     entry = entry,
@@ -351,6 +354,10 @@ object SearchScreen {
                                     onIgnoredToggle = onIgnoredToggle,
                                     onClick = onEntryClick,
                                     itemRow = itemRow,
+                                    modifier = Modifier.sharedBounds(
+                                        "itemContainer",
+                                        sharedElementId
+                                    ),
                                 )
                             }
                         }

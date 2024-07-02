@@ -130,14 +130,17 @@ fun Modifier.sharedElement(vararg keys: Any, zIndexInOverlay: Float = 0f) =
     }
 
 @Composable
-fun Modifier.sharedBounds(vararg keys: Any, zIndexInOverlay: Float = 0f) =
-    with(LocalSharedTransitionScope.current) {
-        sharedBounds(
-            rememberSharedContentState(key = keys.toList()),
-            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
-            zIndexInOverlay = zIndexInOverlay,
-        )
-    }
+fun Modifier.sharedBounds(vararg keys: Any, zIndexInOverlay: Float = 0f): Modifier {
+    return this
+    // TODO: sharedBounds disabled due to bugs with scrolling
+//    return with(LocalSharedTransitionScope.current) {
+//        sharedBounds(
+//            rememberSharedContentState(key = keys.toList()),
+//            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+//            zIndexInOverlay = zIndexInOverlay,
+//        )
+//    }
+}
 
 @Composable
 fun Modifier.skipToLookaheadSize() = with(LocalSharedTransitionScope.current) {

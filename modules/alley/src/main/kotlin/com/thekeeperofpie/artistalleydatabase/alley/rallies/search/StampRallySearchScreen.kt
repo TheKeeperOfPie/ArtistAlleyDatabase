@@ -111,7 +111,7 @@ object StampRallySearchScreen {
                 style = MaterialTheme.typography.titleLarge
                     .copy(fontFamily = FontFamily.Monospace),
                 modifier = Modifier
-                    .sharedBounds("hostTable", stampRally.id, zIndexInOverlay = 1f)
+                    .sharedElement("hostTable", stampRally.id, zIndexInOverlay = 1f)
                     .padding(vertical = 8.dp)
             )
 
@@ -120,7 +120,7 @@ object StampRallySearchScreen {
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
-                    .sharedBounds("fandom", stampRally.id, zIndexInOverlay = 1f)
+                    .sharedElement("fandom", stampRally.id, zIndexInOverlay = 1f)
                     .weight(1f)
                     .padding(vertical = 8.dp)
             )

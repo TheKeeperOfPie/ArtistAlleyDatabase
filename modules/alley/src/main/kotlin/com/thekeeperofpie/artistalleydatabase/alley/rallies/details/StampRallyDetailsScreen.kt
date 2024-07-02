@@ -30,7 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 
@@ -65,7 +65,7 @@ object StampRallyDetailsScreen {
                         text = stampRally.hostTable,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.sharedBounds(
+                        modifier = Modifier.sharedElement(
                             "hostTable",
                             stampRally.id,
                             zIndexInOverlay = 1f,
@@ -80,7 +80,7 @@ object StampRallyDetailsScreen {
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .weight(1f)
-                            .sharedBounds("fandom", stampRally.id, zIndexInOverlay = 1f)
+                            .sharedElement("fandom", stampRally.id, zIndexInOverlay = 1f)
                     )
                 }
             },

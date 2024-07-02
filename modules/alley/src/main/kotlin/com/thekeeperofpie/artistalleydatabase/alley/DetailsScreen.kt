@@ -268,7 +268,7 @@ object DetailsScreen {
                                 pagerState = headerPagerState,
                                 pageCount = headerPagerState.pageCount,
                                 modifier = Modifier
-                                    .sharedBounds(
+                                    .sharedElement(
                                         "pagerIndicator",
                                         sharedElementId,
                                         zIndexInOverlay = 1f,
@@ -289,7 +289,7 @@ object DetailsScreen {
                                         headerPagerState.animateScrollToPage(0)
                                     }
                                 },
-                                modifier = Modifier.sharedBounds("gridIcon", sharedElementId)
+                                modifier = Modifier.sharedElement("gridIcon", sharedElementId)
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.GridOn,
@@ -326,9 +326,9 @@ object DetailsScreen {
                 userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .sharedBounds("imageContainer", sharedElementId)
                     .height(IMAGE_HEIGHT)
                     .fillMaxWidth()
+                    .sharedElement("imageContainer", sharedElementId)
                     .clipToBounds()
             ) { page ->
                 AnimatedVisibility(
@@ -404,7 +404,7 @@ object DetailsScreen {
                         pagerState = pagerState,
                         pageCount = pagerState.pageCount,
                         modifier = Modifier
-                            .sharedBounds(
+                            .sharedElement(
                                 "pagerIndicator",
                                 sharedElementId,
                                 zIndexInOverlay = 1f,
@@ -429,7 +429,7 @@ object DetailsScreen {
                                 pagerState.animateScrollToPage(0)
                             }
                         },
-                        modifier = Modifier.sharedBounds("gridIcon", sharedElementId)
+                        modifier = Modifier.sharedElement("gridIcon", sharedElementId)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.GridOn,
