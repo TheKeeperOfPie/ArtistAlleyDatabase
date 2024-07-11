@@ -30,6 +30,5 @@ dependencies {
 
     implementation(libs.billing.ktx)
 
-    implementation(libs.app.update)
     implementation(libs.app.update.ktx)
 }
