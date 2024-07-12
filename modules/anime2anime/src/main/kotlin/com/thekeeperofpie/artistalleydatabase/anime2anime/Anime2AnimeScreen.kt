@@ -41,6 +41,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -382,7 +383,7 @@ object Anime2AnimeScreen {
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { onSubmitMedia() }),
                             modifier = Modifier
-                                .menuAnchor()
+                                .menuAnchor(MenuAnchorType.PrimaryEditable)
                                 .fillMaxWidth()
                                 .onKeyEvent {
                                     if (it.type == KeyEventType.KeyUp && it.key == Key.Enter) {
@@ -859,7 +860,7 @@ object Anime2AnimeScreen {
                                             ?.let(onChooseCustomMedia)
                                     }),
                                     modifier = Modifier
-                                        .menuAnchor()
+                                        .menuAnchor(MenuAnchorType.PrimaryEditable)
                                         .fillMaxWidth()
                                         .onKeyEvent {
                                             if (it.type == KeyEventType.KeyUp && it.key == Key.Enter) {

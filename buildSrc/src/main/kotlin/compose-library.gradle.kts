@@ -1,18 +1,18 @@
-repositories {
-    mavenCentral()
-    google()
-}
-
 plugins {
     id("module-library")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
+}
+
+composeCompiler {
+    enableStrongSkippingMode = true
+    enableNonSkippingGroupOptimization = true
+//    featureFlags = setOf(ComposeFeatureFlag.StrongSkipping, ComposeFeatureFlag.OptimizeNonSkippingGroups)
+    includeSourceInformation = true
 }

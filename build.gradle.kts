@@ -218,27 +218,27 @@ dependencyAnalysis {
 
 subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions {
+        compilerOptions {
             if (project.findProperty("composeCompilerReports") == "true") {
-                freeCompilerArgs += listOf(
-                    "-P",
-                    "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
-                            project.layout.buildDirectory.asFile.get().absolutePath +
-                            "/compose_compiler"
+                freeCompilerArgs.addAll(
+                    listOf(
+                        "-P",
+                        "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
+                                project.layout.buildDirectory.asFile.get().absolutePath +
+                                "/compose_compiler"
+                    )
                 )
             }
             if (project.findProperty("composeCompilerMetrics") == "true") {
-                freeCompilerArgs += listOf(
-                    "-P",
-                    "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
-                            project.layout.buildDirectory.asFile.get().absolutePath +
-                            "/compose_compiler"
+                freeCompilerArgs.addAll(
+                    listOf(
+                        "-P",
+                        "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
+                                project.layout.buildDirectory.asFile.get().absolutePath +
+                                "/compose_compiler"
+                    )
                 )
             }
-            freeCompilerArgs += listOf(
-                "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:strongSkipping=true",
-            )
         }
     }
 }

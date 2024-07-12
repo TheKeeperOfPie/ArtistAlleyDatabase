@@ -1,31 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    kotlin("jvm")
+    id("jvm-library")
     alias(libs.plugins.com.apollographql.apollo3.external)
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-kotlin {
-    jvmToolchain(18)
-    sourceSets.all {
-        languageSettings {
-            languageSettings.optIn("kotlin.RequiresOptIn")
-        }
-    }
-}
-
-afterEvaluate {
-    tasks.withType(KotlinCompile::class).forEach {
-        it.kotlinOptions {
-            jvmTarget = "17"
-            freeCompilerArgs += "-Xcontext-receivers"
-        }
-    }
 }
 
 // Need to manually remove some types, as this downloads the default type definitions,

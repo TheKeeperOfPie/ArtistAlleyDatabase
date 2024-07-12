@@ -319,8 +319,8 @@ object SearchScreen {
                                     val ignored = entry.ignored
                                     itemRow(
                                         entry,
-                                        onFavoriteToggle = onFavoriteToggle,
-                                        modifier = Modifier
+                                        onFavoriteToggle,
+                                        Modifier
                                             .sharedBounds("itemContainer", sharedElementId)
                                             .combinedClickable(
                                                 onClick = { onEntryClick(entry, 1) },

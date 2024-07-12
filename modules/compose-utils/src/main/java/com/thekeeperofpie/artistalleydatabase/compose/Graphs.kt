@@ -130,8 +130,8 @@ fun <Key, Value> PieChart(
         )
 
         var height by remember { mutableIntStateOf(-1) }
-        val showFadingEdge = pieMaxHeight.isSpecified &&
-                LocalDensity.current.run { height.toDp() } >= pieMaxHeight
+        val showFadingEdge = LocalDensity.current.run { height.toDp() } >= pieMaxHeight
+                && pieMaxHeight.isSpecified
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),

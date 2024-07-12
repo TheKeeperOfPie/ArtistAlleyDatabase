@@ -31,7 +31,6 @@ import Versions_gradle.Versions.google.userMessagingPlatform
 import Versions_gradle.Versions.junit.four
 import Versions_gradle.Versions.junit.jupiter
 import Versions_gradle.Versions.junit.jupiterAndroid
-import Versions_gradle.Versions.kotlin.androidGradlePlugin
 import Versions_gradle.Versions.kotlin.collectionsImmutable
 import Versions_gradle.Versions.kotlin.coroutines
 import Versions_gradle.Versions.kotlin.ksp
@@ -117,13 +116,11 @@ object Versions {
     }
 
     object kotlin {
-        const val androidGradlePlugin = "1.9.24"
+        const val core = "2.0.10-RC"
         const val collectionsImmutable = "0.3.7"
         const val coroutines = "1.9.0-RC"
-        const val ksp = "1.9.24-1.0.20"
-
-        // Past 1.6.3 requires Kotlin 2.0
-        const val serializationJson = "1.6.3"
+        const val ksp = "2.0.10-RC-1.0.23"
+        const val serializationJson = "1.7.1"
     }
 
     const val kotlinPoet = "1.15.3"
@@ -137,6 +134,7 @@ object Versions {
     const val material3 = "1.3.0-beta04"
     const val mockito = "5.12.0"
     const val mockitoKotlin = "5.4.0"
+    const val molecule = "2.0.0"
     const val moshi = "1.15.1"
     const val neovisionariesInternationalization = "1.29"
     const val netflixDgs = "9.0.3"
@@ -180,8 +178,11 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("de.mannodermaus.android-junit5").version("1.10.0.0")
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.2.0")
-                plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.24")
-                plugin("app.cash.molecule").version("1.4.3")
+
+                with(Versions.kotlin) {
+                    plugin("org.jetbrains.kotlin.plugin.compose").version(core)
+                    plugin("org.jetbrains.kotlin.plugin.serialization").version(core)
+                }
 
                 with(Versions.androidx) {
                     library("androidx.activity:activity-compose:$activity")
@@ -317,7 +318,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("org.jetbrains.kotlinx:kotlinx-coroutines-test")
                     }
                     library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$ksp")
-                    library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:$androidGradlePlugin")
+                    library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:$core")
+                    library("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$core")
                     library("org.jetbrains.kotlinx:kotlinx-collections-immutable:$collectionsImmutable")
                     library("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationJson")
                 }
@@ -378,6 +380,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     }
                 }
 
+                library("app.cash.molecule:molecule-runtime:${Versions.molecule}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")

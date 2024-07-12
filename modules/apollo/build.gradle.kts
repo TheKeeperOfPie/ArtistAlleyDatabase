@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm")
+    id("jvm-library")
 }
 
 dependencies {

@@ -3,7 +3,6 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
-    alias(libs.plugins.app.cash.molecule)
 }
 
 android {
@@ -32,6 +31,8 @@ dependencies {
     implementation(libs.html.text)
 
     api(libs.paging.compose)
+
+    implementation(libs.molecule.runtime)
 
     api(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 }

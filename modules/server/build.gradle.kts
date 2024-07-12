@@ -1,36 +1,11 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    kotlin("jvm")
+    id("jvm-library")
     alias(libs.plugins.io.ktor.plugin)
     alias(libs.plugins.com.netflix.dgs.codegen)
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-kotlin {
-    jvmToolchain(18)
-    sourceSets.all {
-        languageSettings {
-            languageSettings.optIn("kotlin.RequiresOptIn")
-        }
-    }
-}
-
 application {
     mainClass.set("com.thekeeperofpie.artistalleydatabase.server.AniListServerKt")
-}
-
-afterEvaluate {
-    tasks.withType(KotlinCompile::class).forEach {
-        it.kotlinOptions {
-            jvmTarget = "17"
-            freeCompilerArgs += "-Xcontext-receivers"
-        }
-    }
 }
 
 tasks.withType<com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask> {
@@ -61,8 +36,4 @@ dependencies {
     testImplementation(libs.ktor.server.tests.jvm)
     testImplementation(libs.truth)
     testRuntimeOnly(libs.junit.jupiter.engine)
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }

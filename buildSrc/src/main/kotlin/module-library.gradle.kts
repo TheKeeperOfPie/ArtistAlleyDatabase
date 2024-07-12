@@ -1,11 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-repositories {
-    mavenCentral()
-    google()
-}
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.library")
@@ -47,12 +42,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-        freeCompilerArgs += "-Xcontext-receivers"
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
     packaging {
         resources {
@@ -76,30 +67,14 @@ android {
 }
 
 kotlin {
-    jvmToolchain(18)
-    sourceSets.all {
-        languageSettings {
-            languageSettings.optIn("kotlin.RequiresOptIn")
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_18
+        jvmToolchain(18)
+        sourceSets.all {
+            languageSettings {
+                languageSettings.optIn("kotlin.RequiresOptIn")
+            }
         }
-    }
-}
-
-dependencies {
-    // TODO: Figure this out and remove
-    // https://github.com/gradle/gradle/issues/22326
-    // AGP 8.3.0-alpha11 causes a conflicts with Guava
-    modules {
-        module("com.google.guava:listenablefuture") {
-            replacedBy("com.google.guava:guava")
-        }
-    }
-}
-
-// The KSP jvmTarget isn't set correctly, so fix it up here
-afterEvaluate {
-    tasks.withType(KotlinCompile::class).forEach {
-        it.kotlinOptions {
-            jvmTarget = "11"
-        }
+        freeCompilerArgs.add("-Xcontext-receivers")
     }
 }

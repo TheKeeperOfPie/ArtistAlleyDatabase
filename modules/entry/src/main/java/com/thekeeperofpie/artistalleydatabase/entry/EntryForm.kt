@@ -75,6 +75,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -380,7 +381,7 @@ private fun MultiTextSection(
                 bringIntoViewRequester = bringIntoViewRequester,
                 focusRequester = focusRequester,
                 onFocusChanged = { focused = it },
-                modifier = Modifier.menuAnchor(),
+                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable),
             )
         }
     }
@@ -813,7 +814,7 @@ private fun DropdownSection(section: EntrySection.Dropdown, focusRequester: Focu
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
-                    .menuAnchor()
+                    .menuAnchor(MenuAnchorType.PrimaryEditable)
             )
             ExposedDropdownMenu(
                 expanded = section.expanded,

@@ -83,6 +83,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SheetValue
@@ -533,7 +534,7 @@ fun <T> ItemDropdown(
             colors = ExposedDropdownMenuDefaults.textFieldColors(),
             modifier = Modifier
                 .wrapWidthIfRequested()
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryEditable)
         )
         ExposedDropdownMenu(
             expanded = expanded,

@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -10,6 +8,7 @@ plugins {
     id("com.google.android.gms.oss-licenses-plugin")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("android-test-library")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 secrets {
@@ -307,12 +306,4 @@ dependencies {
     implementation(libs.play.services.oss.licenses)
 
     debugImplementation(libs.leakcanary.android)
-}
-
-afterEvaluate {
-    tasks.withType(KotlinCompile::class).forEach {
-        it.kotlinOptions {
-            jvmTarget = "11"
-        }
-    }
 }

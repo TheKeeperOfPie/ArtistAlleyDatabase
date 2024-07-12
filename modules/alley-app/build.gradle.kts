@@ -1,11 +1,10 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id("com.android.application")
     kotlin("android")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -186,12 +185,4 @@ dependencies {
     implementation(libs.room.ktx)
     testImplementation(libs.room.testing)
     implementation(libs.room.paging)
-}
-
-afterEvaluate {
-    tasks.withType(KotlinCompile::class).forEach {
-        it.kotlinOptions {
-            jvmTarget = "11"
-        }
-    }
 }

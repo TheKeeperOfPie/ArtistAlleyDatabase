@@ -29,6 +29,8 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     api(libs.paging.compose)
 
+    implementation(libs.molecule.runtime)
+
     debugRuntimeOnly(libs.compose.ui.test.manifest)
     kspAndroidTest(kspProcessors.hilt.android.compiler)
     androidTestImplementation(libs.hilt.android.testing)
