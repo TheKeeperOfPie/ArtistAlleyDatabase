@@ -59,9 +59,9 @@ import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeSongComposables {

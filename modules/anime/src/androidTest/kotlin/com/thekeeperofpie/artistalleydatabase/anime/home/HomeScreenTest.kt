@@ -23,7 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension

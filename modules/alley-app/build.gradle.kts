@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -71,13 +73,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
@@ -97,11 +92,15 @@ android {
 }
 
 kotlin {
-    jvmToolchain(18)
-    sourceSets.all {
-        languageSettings {
-            languageSettings.optIn("kotlin.RequiresOptIn")
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_18
+        jvmToolchain(18)
+        sourceSets.all {
+            languageSettings {
+                languageSettings.optIn("kotlin.RequiresOptIn")
+            }
         }
+        freeCompilerArgs.add("-Xcontext-receivers")
     }
 }
 
@@ -155,13 +154,6 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
-
-tasks.register("debugTask") {
-    println("repositories = ${rootProject.repositories.size}")
-    rootProject.repositories.forEach {
-        println("Repo = ${it.name}, $it")
-    }
-}
 
 dependencies {
     implementation(project(":modules:alley"))

@@ -7,6 +7,8 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -55,7 +57,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
@@ -64,6 +65,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import com.anilist.type.MediaType
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
@@ -95,12 +97,13 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
@@ -124,6 +127,7 @@ import javax.inject.Inject
 import kotlin.enums.EnumEntries
 import kotlin.jvm.optionals.getOrNull
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -432,149 +436,153 @@ class MainActivity : ComponentActivity() {
             Box(
                 modifier = Modifier.weight(1f)
             ) {
-                AutoSharedElementsRoot {
-                    NavHost(
-                        navController = navHostController,
-                        startDestination = startDestination,
-                    ) {
-                        AnimeNavigator.initialize(
-                            navHostController = navHostController,
-                            navGraphBuilder = this,
-                            upIconOption = navDrawerUpIconOption,
-                            onClickAuth = {
-                                aniListOAuthStore.launchAuthRequest(
-                                    this@MainActivity
+                SharedElementsRoot {
+                    SharedTransitionLayout {
+                        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                            NavHost(
+                                navController = navHostController,
+                                startDestination = startDestination,
+                            ) {
+                                AnimeNavigator.initialize(
+                                    navHostController = navHostController,
+                                    navGraphBuilder = this,
+                                    upIconOption = navDrawerUpIconOption,
+                                    onClickAuth = {
+                                        aniListOAuthStore.launchAuthRequest(
+                                            this@MainActivity
+                                        )
+                                    },
+                                    onClickSettings = {
+                                        navHostController.navigate(AppNavDestinations.SETTINGS.id)
+                                    },
+                                    onClickShowLastCrash = {
+                                        navHostController.navigate(AppNavDestinations.CRASH.id)
+                                    }
                                 )
-                            },
-                            onClickSettings = {
-                                navHostController.navigate(AppNavDestinations.SETTINGS.id)
-                            },
-                            onClickShowLastCrash = {
-                                navHostController.navigate(AppNavDestinations.CRASH.id)
-                            }
-                        )
 
-                        artEntryNavigator.initialize(
-                            onClickNav = onClickNav,
-                            navHostController = navHostController,
-                            navGraphBuilder = this
-                        )
-                        cdEntryNavigator.initialize(
-                            onClickNav = onClickNav,
-                            navHostController = navHostController,
-                            navGraphBuilder = this
-                        )
+                                artEntryNavigator.initialize(
+                                    onClickNav = onClickNav,
+                                    navHostController = navHostController,
+                                    navGraphBuilder = this
+                                )
+                                cdEntryNavigator.initialize(
+                                    onClickNav = onClickNav,
+                                    navHostController = navHostController,
+                                    navGraphBuilder = this
+                                )
 
-                        composable(AppNavDestinations.BROWSE.id) {
-                            val viewModel = hiltViewModel<BrowseViewModel>()
-                            BrowseScreen(
-                                upIconOption = navDrawerUpIconOption,
-                                tabs = viewModel.tabs,
-                                onClick = { tabContent, entry ->
-                                    viewModel.onSelectEntry(
-                                        navHostController,
-                                        tabContent,
-                                        entry
+                                sharedElementComposable(AppNavDestinations.BROWSE.id) {
+                                    val viewModel = hiltViewModel<BrowseViewModel>()
+                                    BrowseScreen(
+                                        upIconOption = navDrawerUpIconOption,
+                                        tabs = viewModel.tabs,
+                                        onClick = { tabContent, entry ->
+                                            viewModel.onSelectEntry(
+                                                navHostController,
+                                                tabContent,
+                                                entry
+                                            )
+                                        },
+                                        onPageRequested = viewModel::onPageRequested,
                                     )
-                                },
-                                onPageRequested = viewModel::onPageRequested,
-                            )
-                        }
+                                }
 
-                        composable(AppNavDestinations.IMPORT.id) {
-                            ImportScreen(upIconOption = navDrawerUpIconOption)
-                        }
+                                sharedElementComposable(AppNavDestinations.IMPORT.id) {
+                                    ImportScreen(upIconOption = navDrawerUpIconOption)
+                                }
 
-                        composable(AppNavDestinations.EXPORT.id) {
-                            ExportScreen(upIconOption = navDrawerUpIconOption)
-                        }
+                                sharedElementComposable(AppNavDestinations.EXPORT.id) {
+                                    ExportScreen(upIconOption = navDrawerUpIconOption)
+                                }
 
-                        composable(
-                            route = "${AppNavDestinations.SETTINGS.id}?root={root}",
-                            arguments = listOf(
-                                navArgument("root") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                            )
-                        ) {
-                            val viewModel =
-                                hiltViewModel<SettingsViewModel>().apply {
-                                    initialize(
-                                        onClickDatabaseFetch = {
-                                            val request =
-                                                OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
-                                                    .setExpedited(
-                                                        OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+                                sharedElementComposable(
+                                    route = "${AppNavDestinations.SETTINGS.id}?root={root}",
+                                    arguments = listOf(
+                                        navArgument("root") {
+                                            type = NavType.StringType
+                                            nullable = true
+                                        },
+                                    )
+                                ) {
+                                    val viewModel =
+                                        hiltViewModel<SettingsViewModel>().apply {
+                                            initialize(
+                                                onClickDatabaseFetch = {
+                                                    val request =
+                                                        OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
+                                                            .setExpedited(
+                                                                OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+                                                            )
+                                                            .build()
+
+                                                    it.enqueueUniqueWork(
+                                                        DatabaseSyncWorker.UNIQUE_WORK_NAME,
+                                                        ExistingWorkPolicy.REPLACE,
+                                                        request
                                                     )
-                                                    .build()
-
-                                            it.enqueueUniqueWork(
-                                                DatabaseSyncWorker.UNIQUE_WORK_NAME,
-                                                ExistingWorkPolicy.REPLACE,
-                                                request
+                                                }
                                             )
                                         }
+                                    val root = it.arguments?.getString("root")
+                                        ?.toBooleanStrictOrNull() == true
+                                    val navigationCallback = LocalNavigationCallback.current
+                                    SettingsScreen(
+                                        viewModel = viewModel,
+                                        appMetadataProvider = appMetadataProvider,
+                                        upIconOption = navDrawerUpIconOption.takeIf { root }
+                                            ?: UpIconOption.Back(navHostController),
+                                        onClickShowLastCrash = {
+                                            navHostController.navigate(AppNavDestinations.CRASH.id)
+                                        },
+                                        onClickShowLicenses = {
+                                            // TODO: Better UI for licenses
+                                            startActivity(
+                                                Intent(
+                                                    this@MainActivity,
+                                                    OssLicensesMenuActivity::class.java,
+                                                ).setClassName(
+                                                    this@MainActivity,
+                                                    OssLicensesMenuActivity::class.java.canonicalName!!,
+                                                )
+                                            )
+                                        },
+                                        onClickFeatureTiers = {
+                                            navigationCallback.navigate(
+                                                AnimeNavDestinations.FEATURE_TIERS.id
+                                            )
+                                        },
+                                        onClickViewMediaHistory = {
+                                            navigationCallback.onClickViewMediaHistory(null)
+                                        },
+                                        onClickViewMediaIgnore = {
+                                            navigationCallback.onClickViewIgnored()
+                                        },
                                     )
                                 }
-                            val root = it.arguments?.getString("root")
-                                ?.toBooleanStrictOrNull() == true
-                            val navigationCallback = LocalNavigationCallback.current
-                            SettingsScreen(
-                                viewModel = viewModel,
-                                appMetadataProvider = appMetadataProvider,
-                                upIconOption = navDrawerUpIconOption.takeIf { root }
-                                    ?: UpIconOption.Back(navHostController),
-                                onClickShowLastCrash = {
-                                    navHostController.navigate(AppNavDestinations.CRASH.id)
-                                },
-                                onClickShowLicenses = {
-                                    // TODO: Better UI for licenses
-                                    startActivity(
-                                        Intent(
-                                            this@MainActivity,
-                                            OssLicensesMenuActivity::class.java,
-                                        ).setClassName(
-                                            this@MainActivity,
-                                            OssLicensesMenuActivity::class.java.canonicalName!!,
-                                        )
-                                    )
-                                },
-                                onClickFeatureTiers = {
-                                    navigationCallback.navigate(
-                                        AnimeNavDestinations.FEATURE_TIERS.id
-                                    )
-                                },
-                                onClickViewMediaHistory = {
-                                    navigationCallback.onClickViewMediaHistory(null)
-                                },
-                                onClickViewMediaIgnore = {
-                                    navigationCallback.onClickViewIgnored()
-                                },
-                            )
-                        }
 
-                        composable(AppNavDestinations.ANIME_2_ANIME.id) {
-                            Anime2AnimeScreen(upIconOption = navDrawerUpIconOption)
-                        }
-
-                        composable(
-                            route = AppNavDestinations.CRASH.id,
-                            deepLinks = listOf(
-                                navDeepLink {
-                                    action =
-                                        scopedApplication.mainActivityInternalAction
-                                    uriPattern =
-                                        "${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}"
+                                sharedElementComposable(AppNavDestinations.ANIME_2_ANIME.id) {
+                                    Anime2AnimeScreen(upIconOption = navDrawerUpIconOption)
                                 }
-                            )
-                        ) {
-                            SideEffect { settings.lastCrashShown.value = true }
-                            CrashScreen(
-                                settings = settings,
-                                appMetadataProvider = appMetadataProvider,
-                                onClickBack = { navHostController.navigateUp() },
-                            )
+
+                                sharedElementComposable(
+                                    route = AppNavDestinations.CRASH.id,
+                                    deepLinks = listOf(
+                                        navDeepLink {
+                                            action =
+                                                scopedApplication.mainActivityInternalAction
+                                            uriPattern =
+                                                "${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}"
+                                        }
+                                    )
+                                ) {
+                                    SideEffect { settings.lastCrashShown.value = true }
+                                    CrashScreen(
+                                        settings = settings,
+                                        appMetadataProvider = appMetadataProvider,
+                                        onClickBack = { navHostController.navigateUp() },
+                                    )
+                                }
+                            }
                         }
                     }
                 }

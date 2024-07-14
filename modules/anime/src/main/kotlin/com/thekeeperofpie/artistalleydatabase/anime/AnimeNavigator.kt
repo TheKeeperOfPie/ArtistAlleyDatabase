@@ -16,7 +16,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -117,6 +116,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.navArguments
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 
 object AnimeNavigator {
@@ -129,7 +129,7 @@ object AnimeNavigator {
         onClickSettings: () -> Unit,
         onClickShowLastCrash: () -> Unit,
     ) {
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.HOME.id,
             deepLinks = listOf(navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/" }),
         ) {
@@ -144,7 +144,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.SEARCH_MEDIA.id
                     + "?title={title}"
                     + "&titleRes={titleRes}"
@@ -210,7 +210,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.USER_LIST.id +
                     "?userId={userId}" +
                     "&userName={userName}" +
@@ -249,7 +249,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.MEDIA_DETAILS.id
                     + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
             deepLinks = listOf(
@@ -501,7 +501,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.CHARACTER_DETAILS.id
                     + "?characterId={characterId}${CharacterHeaderValues.routeSuffix}",
             deepLinks = listOf(
@@ -536,7 +536,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.CHARACTER_MEDIAS.id
                     + "?characterId={characterId}${CharacterHeaderValues.routeSuffix}",
             arguments = listOf(
@@ -560,7 +560,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.STAFF_DETAILS.id
                     + "?staffId={staffId}${StaffHeaderValues.routeSuffix}",
             deepLinks = listOf(
@@ -589,7 +589,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.STAFF_CHARACTERS.id
                     + "?staffId={staffId}${StaffHeaderValues.routeSuffix}",
             arguments = listOf(
@@ -613,7 +613,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.USER.id
                     + "?userId={userId}${UserHeaderValues.routeSuffix}",
             deepLinks = listOf(
@@ -634,7 +634,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.IGNORED.id + "?mediaType={mediaType}",
             arguments = navArguments("mediaType") {
                 type = NavType.StringType
@@ -644,13 +644,13 @@ object AnimeNavigator {
             AnimeIgnoreScreen(UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.composable(route = AnimeNavDestinations.AIRING_SCHEDULE.id) {
+        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.AIRING_SCHEDULE.id) {
             AiringScheduleScreen(
                 onClickBack = { navHostController.navigateUp() },
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = "${AnimeNavDestinations.SEASONAL.id}?type={type}",
             arguments = navArguments("type") {
                 type = NavType.StringType
@@ -660,19 +660,19 @@ object AnimeNavigator {
             SeasonalScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.composable(AnimeNavDestinations.NEWS.id) {
+        navGraphBuilder.sharedElementComposable(AnimeNavDestinations.NEWS.id) {
             AnimeNewsScreen()
         }
 
-        navGraphBuilder.composable(AnimeNavDestinations.ACTIVITY.id) {
+        navGraphBuilder.sharedElementComposable(AnimeNavDestinations.ACTIVITY.id) {
             AnimeActivityScreen()
         }
 
-        navGraphBuilder.composable(AnimeNavDestinations.NOTIFICATIONS.id) {
+        navGraphBuilder.sharedElementComposable(AnimeNavDestinations.NOTIFICATIONS.id) {
             NotificationsScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.MEDIA_CHARACTERS.id
                     + "?mediaId={mediaId}&mediaType={mediaType}${MediaHeaderValues.routeSuffix}",
             arguments = listOf(
@@ -700,7 +700,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.MEDIA_REVIEWS.id
                     + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
             arguments = listOf(
@@ -724,19 +724,19 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(route = AnimeNavDestinations.REVIEWS.id) {
+        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.REVIEWS.id) {
             ReviewsScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
 
-        navGraphBuilder.composable(route = AnimeNavDestinations.RECOMMENDATIONS.id) {
+        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.RECOMMENDATIONS.id) {
             RecommendationsScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id
                     + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
             arguments = listOf(
@@ -760,7 +760,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.MEDIA_ACTIVITIES.id
                     + "?mediaId={mediaId}"
                     + "&showFollowing={showFollowing}"
@@ -790,7 +790,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.REVIEW_DETAILS.id + "?reviewId={reviewId}",
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}" },
@@ -820,7 +820,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.STUDIO_MEDIAS.id
                     + "?studioId={studioId}&name={name}&favorite={favorite}",
             deepLinks = listOf(
@@ -857,7 +857,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.ACTIVITY_DETAILS.id + "?activityId={activityId}",
             deepLinks = listOf(
                 navDeepLink {
@@ -877,20 +877,20 @@ object AnimeNavigator {
             ActivityDetailsScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.composable(route = AnimeNavDestinations.FEATURE_TIERS.id) {
+        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.FEATURE_TIERS.id) {
             UnlockScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 onClickSettings = null,
             )
         }
 
-        navGraphBuilder.composable(route = AnimeNavDestinations.FORUM.id) {
+        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.FORUM.id) {
             ForumRootScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.FORUM_SEARCH.id
                     + "?title={title}"
                     + "&titleRes={titleRes}"
@@ -925,7 +925,7 @@ object AnimeNavigator {
         }
 
         // TODO: Forum deep links
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.FORUM_THREAD.id
                     + "?threadId={threadId}"
                     + "&title={title}",
@@ -953,7 +953,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.FORUM_THREAD_COMMENT.id
                     + "?threadId={threadId}"
                     + "&commentId={commentId}"
@@ -987,7 +987,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.MEDIA_HISTORY.id + "?mediaType={mediaType}",
             arguments = listOf(
                 navArgument("mediaType") {
@@ -1001,7 +1001,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.USER_FOLLOWING.id
                     + "?userId={userId}"
                     + "&userName={userName}",
@@ -1031,7 +1031,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.USER_FOLLOWERS.id
                     + "?userId={userId}"
                     + "&userName={userName}",
@@ -1061,7 +1061,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.USER_FAVORITE_MEDIA.id
                     + "?userId={userId}"
                     + "&userName={userName}"
@@ -1097,7 +1097,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.USER_FAVORITE_CHARACTERS.id
                     + "?userId={userId}"
                     + "&userName={userName}",
@@ -1122,7 +1122,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.USER_FAVORITE_STAFF.id
                     + "?userId={userId}"
                     + "&userName={userName}",
@@ -1147,7 +1147,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.USER_FAVORITE_STUDIOS.id
                     + "?userId={userId}"
                     + "&userName={userName}",

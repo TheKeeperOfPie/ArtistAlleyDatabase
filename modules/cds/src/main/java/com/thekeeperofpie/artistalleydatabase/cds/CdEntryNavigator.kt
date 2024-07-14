@@ -1,12 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
@@ -17,9 +22,8 @@ import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelec
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
-import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -33,7 +37,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder
     ) {
-        navGraphBuilder.composable(CdNavDestinations.HOME.id) {
+        navGraphBuilder.sharedElementComposable(CdNavDestinations.HOME.id) {
             val viewModel = hiltViewModel<CdSearchViewModel>()
             EntryHomeScreen(
                 screenKey = CdNavDestinations.HOME.id,
@@ -64,7 +68,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
             )
         }
 
-        navGraphBuilder.composable(
+        navGraphBuilder.sharedElementComposable(
             CdNavDestinations.BROWSE_SELECTION.id +
                     "?queryType={queryType}" +
                     "&title={title}" +
@@ -131,29 +135,34 @@ class CdEntryNavigator : BrowseSelectionNavigator {
             val viewModel = hiltViewModel<CdEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(CdEntryUtils.SCOPED_ID_TYPE, it) }) }
 
-            BackPressStageHandler {
-                AddBackPressInvokeFirst(label = "CdEntryNavigator exit") {
-                    viewModel.onNavigateBack()
+            val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
+                ?.onBackPressedDispatcher
+
+            var enabled by remember { mutableStateOf(true) }
+            BackHandler(enabled) {
+                if (viewModel.onNavigateBack()) {
+                    enabled = false
                 }
-
-                val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
-                    ?.onBackPressedDispatcher
-
-                EntryDetailsScreen(
-                    screenKey = CdNavDestinations.ENTRY_DETAILS.id,
-                    viewModel = viewModel,
-                    onClickBack = { navHostController.navigateUp() },
-                    imageCornerDp = imageCornerDp,
-                    onImageClickOpen = {
-                        viewModel.entryImageController.onImageClickOpen(navHostController, it)
-                    },
-                    onClickSave = { viewModel.onClickSave(navHostController) },
-                    onLongClickSave = { viewModel.onLongClickSave(navHostController) },
-                    onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                    onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
-                    onNavigate = navHostController::navigate,
-                )
             }
+            LaunchedEffect(enabled) {
+                if (!enabled) {
+                    backPressedDispatcher?.onBackPressed()
+                }
+            }
+
+            EntryDetailsScreen(
+                viewModel = viewModel,
+                onClickBack = { navHostController.navigateUp() },
+                imageCornerDp = imageCornerDp,
+                onImageClickOpen = {
+                    viewModel.entryImageController.onImageClickOpen(navHostController, it)
+                },
+                onClickSave = { viewModel.onClickSave(navHostController) },
+                onLongClickSave = { viewModel.onLongClickSave(navHostController) },
+                onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
+                onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
+                onNavigate = navHostController::navigate,
+            )
         }
     }
 

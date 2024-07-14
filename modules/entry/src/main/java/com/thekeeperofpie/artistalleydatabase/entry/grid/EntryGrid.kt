@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.entry.grid
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -49,11 +50,8 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Dimension
-import com.mxalbert.sharedelements.FadeMode
-import com.mxalbert.sharedelements.ProgressThresholds
-import com.mxalbert.sharedelements.SharedElementsTransitionSpec
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.R
 import kotlinx.coroutines.launch
@@ -204,7 +202,8 @@ object EntryGrid {
                         onLongClickLabel = stringResource(R.string.long_press_multi_select_label)
                     )
             ) {
-                if (entry.imageUri == null) {
+                val imageUri = entry.imageUri
+                if (imageUri == null) {
                     // TODO: Better no-image placeholder
                     Text(
                         text = entry.placeholderText,
@@ -224,46 +223,37 @@ object EntryGrid {
                         )
                     }
                 } else {
-                    AutoSharedElement(
-                        key = "${entry.id.scopedId}_image",
-                        screenKey = imageScreenKey,
-                        // Try to disable the fade animation
-                        transitionSpec = SharedElementsTransitionSpec(
-                            fadeMode = FadeMode.In,
-                            fadeProgressThresholds = ProgressThresholds(0f, 0f),
-                        ),
-                        onFractionChanged = onSharedElementFractionChanged,
-                    ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(entry.imageUri)
-                                .size(expectedWidth, Dimension.Undefined)
-                                .crossfade(true)
-                                .memoryCacheKey(
-                                    EntryUtils.getImageCacheKey(
-                                        entry,
-                                        entry.imageWidth ?: -1,
-                                        entry.imageHeight ?: -1,
-                                    )
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUri)
+                            .size(expectedWidth, Dimension.Undefined)
+                            .crossfade(true)
+                            .memoryCacheKey(
+                                EntryUtils.getImageCacheKey(
+                                    entry,
+                                    entry.imageWidth ?: -1,
+                                    entry.imageHeight ?: -1,
                                 )
-                                .build(),
-                            contentDescription = stringResource(
-                                R.string.entry_image_content_description
-                            ),
-                            contentScale = ContentScale.FillWidth,
-                            modifier = entryModifier
-                                .fillMaxWidth()
-                                .heightIn(min = LocalDensity.current.run {
-                                    if (entry.imageWidth != null) {
-                                        (expectedWidth.px * entry.imageWidthToHeightRatio).toDp()
-                                    } else {
-                                        56.dp
-                                    }
-                                })
-                                .alpha(if (selected) 0.38f else 1f)
-                                .semantics { this.selected = selected }
-                        )
-                    }
+                            )
+                            .build(),
+                        contentDescription = stringResource(
+                            R.string.entry_image_content_description
+                        ),
+                        contentScale = ContentScale.FillWidth,
+                        modifier = entryModifier
+                            .alpha(if (selected) 0.38f else 1f)
+                            .semantics { this.selected = selected }
+                            .sharedElement("entryImage", entry.id)
+                            .also { Log.d("SharedDebug", "key = ${entry.id}") }
+                            .fillMaxWidth()
+                            .heightIn(min = LocalDensity.current.run {
+                                if (entry.imageWidth != null) {
+                                    (expectedWidth.px * entry.imageWidthToHeightRatio).toDp()
+                                } else {
+                                    56.dp
+                                }
+                            })
+                    )
                 }
 
                 AnimatedVisibility(

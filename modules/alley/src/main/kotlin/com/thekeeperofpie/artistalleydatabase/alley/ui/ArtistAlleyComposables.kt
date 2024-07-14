@@ -56,12 +56,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
-import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
-import com.thekeeperofpie.artistalleydatabase.compose.renderInSharedTransitionScopeOverlay
-import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 

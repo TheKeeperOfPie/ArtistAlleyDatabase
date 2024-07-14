@@ -4,11 +4,7 @@ import android.app.Activity
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -29,12 +25,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -42,10 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalley.BuildConfig
@@ -58,12 +46,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
-import com.thekeeperofpie.artistalleydatabase.compose.LocalAnimatedVisibilityScope
-import com.thekeeperofpie.artistalleydatabase.compose.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(
     ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class,
@@ -271,39 +257,5 @@ class MainActivity : ComponentActivity() {
             colorScheme = colorScheme,
             content = content
         )
-    }
-
-    private inline fun <reified T : kotlin.Any> NavGraphBuilder.sharedElementComposable(
-        noinline enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Up
-            )
-        },
-        noinline exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Down
-            )
-        },
-        noinline content: @Composable (NavBackStackEntry) -> Unit,
-    ) = composable<T>(
-        enterTransition = enterTransition,
-        exitTransition = exitTransition,
-    ) {
-        CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-            // This is a hack to avoid a navigation bug that occurs if the user
-            // tries to navigate back before a shared element transition finishes
-            val startTime = remember { System.currentTimeMillis() }
-            var blockBackEvents by remember { mutableStateOf(true) }
-            BackHandler(blockBackEvents) {
-                if ((System.currentTimeMillis() - startTime) > 400) {
-                    blockBackEvents = false
-                }
-            }
-            LaunchedEffect(Unit) {
-                delay(400.milliseconds)
-                blockBackEvents = false
-            }
-            content(it)
-        }
     }
 }

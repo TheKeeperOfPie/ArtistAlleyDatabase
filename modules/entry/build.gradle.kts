@@ -36,7 +36,4 @@ dependencies {
     androidTestImplementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
-
-//    implementation(libs.shared-elements)
-    implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 }

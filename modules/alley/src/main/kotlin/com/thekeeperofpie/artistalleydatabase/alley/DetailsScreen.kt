@@ -58,12 +58,12 @@ import coil3.request.ImageRequest
 import coil3.size.Dimension
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
-import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.skipToLookaheadSize
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.skipToLookaheadSize
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 

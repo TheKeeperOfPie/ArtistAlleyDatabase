@@ -54,9 +54,7 @@ object Versions {
         const val hilt = "1.2.0"
         const val lifecycle = "2.8.3"
         const val media3 = "1.4.0-beta01"
-
-        // Upgrading past 2.6.0 will break shared element transitions
-        const val navigation = "2.6.0"
+        const val navigation = "2.8.0-beta05"
         const val paging = "3.3.0"
         const val palette = "1.0.0"
         const val room = "2.7.0-alpha05"

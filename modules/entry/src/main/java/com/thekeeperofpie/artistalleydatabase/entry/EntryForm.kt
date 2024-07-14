@@ -1,5 +1,8 @@
 @file:Suppress("NAME_SHADOWING")
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@file:OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalSharedTransitionApi::class
+)
 
 package com.thekeeperofpie.artistalleydatabase.entry
 
@@ -16,8 +19,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
@@ -33,7 +36,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -96,7 +98,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -105,9 +106,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
@@ -115,13 +114,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanState
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
@@ -129,101 +126,106 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 @Composable
 fun EntryForm(
+    modifier: Modifier = Modifier,
     areSectionsLoading: () -> Boolean = { false },
     sections: () -> List<EntrySection> = { emptyList() },
     onNavigate: (String) -> Unit,
 ) {
-    AnimatedContent(
-        targetState = areSectionsLoading(),
-        transitionSpec = {
-            fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)) togetherWith
-                    fadeOut(animationSpec = tween(100))
-        },
-        label = "Entry form section fade in",
-    ) {
-        if (it) {
-            AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
-                Box(Modifier.fillMaxWidth()) {
+    Box(modifier.fillMaxWidth()) {
+        AnimatedContent(
+            targetState = areSectionsLoading(),
+            transitionSpec = {
+                fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)) togetherWith
+                        fadeOut(animationSpec = tween(100))
+            },
+            label = "Entry form section fade in",
+        ) {
+            if (it) {
+                // TODO: Remove this in favor of bottom sheet?
+                // This forces it to be bigger than the screen so that it
+                // covers all of the previous screen content.
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2000.dp)) {
                     CircularProgressIndicator(
                         Modifier
                             .padding(16.dp)
-                            .align(Alignment.Center)
+                            .align(Alignment.TopCenter)
                     )
                 }
-            }
-        } else {
-            Column {
-                val sections = sections()
-                val sectionFocusRequesters = remember(sections) {
-                    sections.map { FocusRequester() }
-                }
-                val onFocusNext = { index: Int ->
-                    try {
-                        (index + 1 until sections.size)
-                            .find {
-                                when (val nextSection = sections[it]) {
-                                    is EntrySection.Custom<*> -> false
-                                    is EntrySection.Dropdown,
-                                    is EntrySection.LongText,
-                                    is EntrySection.MultiText,
-                                    -> nextSection.lockState?.editable != false
-                                }
-                            }
-                            ?.let { sectionFocusRequesters[it] }
-                            ?.requestFocus()
-                    } catch (ignored: Throwable) {
-                        // FocusRequester will throw if it isn't attached
+            } else {
+                Column {
+                    val sections = sections()
+                    val sectionFocusRequesters = remember(sections) {
+                        sections.map { FocusRequester() }
                     }
-                }
-                val onFocusPrevious = { index: Int ->
-                    try {
-                        val focusRequester = (index - 1 downTo 0)
-                            .find {
-                                // TODO: Previous will only move if the section is unlocked,
-                                //  which means it's not actually possible to navigate back to
-                                //  a section after committing one with the next button. It's
-                                //  not clear if this should be changed, because the idea of
-                                //  locking is that it should be a difficult operation to unlock
-                                when (val previousSection = sections[it]) {
-                                    is EntrySection.Custom<*> -> false
-                                    is EntrySection.Dropdown,
-                                    is EntrySection.LongText,
-                                    is EntrySection.MultiText,
-                                    -> previousSection.lockState?.editable != false
+                    val onFocusNext = { index: Int ->
+                        try {
+                            (index + 1 until sections.size)
+                                .find {
+                                    when (val nextSection = sections[it]) {
+                                        is EntrySection.Custom<*> -> false
+                                        is EntrySection.Dropdown,
+                                        is EntrySection.LongText,
+                                        is EntrySection.MultiText,
+                                        -> nextSection.lockState?.editable != false
+                                    }
                                 }
-                            }
-                            ?.let { sectionFocusRequesters[it] }
-                        focusRequester?.requestFocus()
-                        focusRequester != null
-                    } catch (ignored: Throwable) {
-                        // FocusRequester will throw if it isn't attached
-                        false
-                    }
-                }
-                sections.forEachIndexed { index, section ->
-                    val focusRequester = sectionFocusRequesters[index]
-                    when (section) {
-                        is EntrySection.MultiText -> {
-                            MultiTextSection(
-                                section = section,
-                                focusRequester = focusRequester,
-                                onNavigate = onNavigate,
-                                onFocusPrevious = { onFocusPrevious(index) },
-                                onFocusNext = { onFocusNext(index) },
-                            )
+                                ?.let { sectionFocusRequesters[it] }
+                                ?.requestFocus()
+                        } catch (ignored: Throwable) {
+                            // FocusRequester will throw if it isn't attached
                         }
-                        is EntrySection.LongText -> LongTextSection(section, focusRequester)
-                        is EntrySection.Dropdown -> DropdownSection(section, focusRequester)
-                        // TODO: Custom section FocusRequester
-                        is EntrySection.Custom<*> -> CustomSection(section)
                     }
-                }
+                    val onFocusPrevious = { index: Int ->
+                        try {
+                            val focusRequester = (index - 1 downTo 0)
+                                .find {
+                                    // TODO: Previous will only move if the section is unlocked,
+                                    //  which means it's not actually possible to navigate back to
+                                    //  a section after committing one with the next button. It's
+                                    //  not clear if this should be changed, because the idea of
+                                    //  locking is that it should be a difficult operation to unlock
+                                    when (val previousSection = sections[it]) {
+                                        is EntrySection.Custom<*> -> false
+                                        is EntrySection.Dropdown,
+                                        is EntrySection.LongText,
+                                        is EntrySection.MultiText,
+                                        -> previousSection.lockState?.editable != false
+                                    }
+                                }
+                                ?.let { sectionFocusRequesters[it] }
+                            focusRequester?.requestFocus()
+                            focusRequester != null
+                        } catch (ignored: Throwable) {
+                            // FocusRequester will throw if it isn't attached
+                            false
+                        }
+                    }
+                    sections.forEachIndexed { index, section ->
+                        val focusRequester = sectionFocusRequesters[index]
+                        when (section) {
+                            is EntrySection.MultiText -> {
+                                MultiTextSection(
+                                    section = section,
+                                    focusRequester = focusRequester,
+                                    onNavigate = onNavigate,
+                                    onFocusPrevious = { onFocusPrevious(index) },
+                                    onFocusNext = { onFocusNext(index) },
+                                )
+                            }
+                            is EntrySection.LongText -> LongTextSection(section, focusRequester)
+                            is EntrySection.Dropdown -> DropdownSection(section, focusRequester)
+                            // TODO: Custom section FocusRequester
+                            is EntrySection.Custom<*> -> CustomSection(section)
+                        }
+                    }
 
-                Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(24.dp))
+                }
             }
         }
     }
@@ -863,7 +865,6 @@ fun MultiImageSelectBox(
     pagerState: PagerState,
     imageState: () -> ImageState,
     cropState: () -> CropUtils.CropState,
-    loading: () -> Boolean,
     onClickOpenImage: (index: Int) -> Unit,
     imageContent: @Composable (image: EntryImage, zoomPanState: ZoomPanState) -> Unit,
 ) {
@@ -929,111 +930,73 @@ fun MultiImageSelectBox(
         }
     }
 
-    // If the image ratio changes, reset maxHeight so it shrinks/grows properly
-    val imageRatio = imageState().images().firstOrNull()?.widthToHeightRatio ?: 1f
-    val screenWidthPx = LocalDensity.current.run {
-        LocalConfiguration.current.screenWidthDp.dp.roundToPx()
-    }
-    val startingHeight = (screenWidthPx * imageRatio).roundToInt()
-    val targetHeight = LocalDensity.current.run { 400.dp.roundToPx() }.coerceAtMost(startingHeight)
-    val heightAnimation = remember { Animatable(1f) }
-
-    var expanded by remember { mutableStateOf(false) }
-    LaunchedEffect(expanded, loading()) {
-        // This call will also implicitly kick the initial slide up
-        // due to maxHeight causing a recompose and running this effect
-        heightAnimation.animateTo(
-            if (expanded || loading()) 1f else 0f,
-            animationSpec = tween(EntryUtils.SLIDE_DURATION_MS),
-        )
-    }
-
-    val animatedHeight = LocalDensity.current.run {
-        ((startingHeight - targetHeight) * heightAnimation.value + targetHeight).toDp()
-    }
-
     var showMenu by remember { mutableStateOf(false) }
-    ImageSelectBoxInner(
-        loading = loading,
-        expanded = { expanded },
-        setExpanded = { expanded = it },
-        showExpandImage = startingHeight > (targetHeight + 10f),
-        height = animatedHeight,
-        onBackPress = { heightAnimation.animateTo(1f, tween(1000)) }
-    ) {
-        val zoomPanStates = remember { mutableMapOf<Int, ZoomPanState>() }
-        val userScrollEnabled by remember {
-            derivedStateOf {
-                zoomPanStates[pagerState.currentPage]?.canPanExternal() != false
-            }
+    val zoomPanStates = remember { mutableMapOf<Int, ZoomPanState>() }
+    val userScrollEnabled by remember {
+        derivedStateOf {
+            zoomPanStates[pagerState.currentPage]?.canPanExternal() != false
         }
-        val images = imageState().images()
-        HorizontalPager(
-            state = pagerState,
-            userScrollEnabled = userScrollEnabled,
-            modifier = Modifier.heightIn(max = 10000.dp)
-        ) { index ->
-            if (index == images.size) {
-                AddImagePagerPage(
-                    onAddClick = { imageSelectMultipleLauncher.launch("image/*") },
-                    modifier = Modifier
-                        .height(animatedHeight)
-                )
+    }
+    val images = imageState().images()
+    HorizontalPager(
+        state = pagerState,
+        userScrollEnabled = userScrollEnabled,
+        modifier = Modifier.heightIn(max = 10000.dp)
+    ) { index ->
+        if (index == images.size) {
+            AddImagePagerPage(
+                onAddClick = { imageSelectMultipleLauncher.launch("image/*") },
+            )
+        } else {
+            val image = images[index]
+            val uri = image.croppedUri ?: image.uri
+            if (uri == null) {
+                // TODO: Null image placeholder
             } else {
-                val image = images[index]
-                val uri = image.croppedUri ?: image.uri
-                if (uri == null) {
-                    // TODO: Null image placeholder
-                } else {
-                    val coroutineScope = rememberCoroutineScope()
-                    val zoomPanState = rememberZoomPanState()
-                    DisposableEffect(image, index) {
-                        zoomPanStates[index] = zoomPanState
-                        onDispose {
-                            zoomPanStates.remove(index)
+                val coroutineScope = rememberCoroutineScope()
+                val zoomPanState = rememberZoomPanState()
+                DisposableEffect(image, index) {
+                    zoomPanStates[index] = zoomPanState
+                    onDispose {
+                        zoomPanStates.remove(index)
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .verticalScroll(rememberScrollState())
+                        .pointerInput(zoomPanState) {
+                            detectTapGestures(
+                                onTap = { showMenu = true },
+                                onLongPress = {
+                                    val cropState = cropState()
+                                    if (cropState.cropReadyIndex() == index) {
+                                        imageCropLauncher.launch(index)
+                                    } else {
+                                        cropState.onImageRequestCrop(index)
+                                    }
+                                },
+                                onDoubleTap = {
+                                    coroutineScope.launch {
+                                        zoomPanState.toggleZoom(it, size)
+                                    }
+                                },
+                            )
                         }
-                    }
-                    Box(
-                        modifier = Modifier
-                            .wrapContentHeight()
-                            .verticalScroll(rememberScrollState())
-                            .pointerInput(zoomPanState) {
-                                detectTapGestures(
-                                    onTap = { showMenu = true },
-                                    onLongPress = {
-                                        val cropState = cropState()
-                                        if (cropState.cropReadyIndex() == index) {
-                                            imageCropLauncher.launch(index)
-                                        } else {
-                                            cropState.onImageRequestCrop(index)
-                                        }
-                                    },
-                                    onDoubleTap = {
-                                        if (zoomPanState.scale < 1.1f) {
-                                            expanded = true
-                                        }
-                                        coroutineScope.launch {
-                                            zoomPanState.toggleZoom(it, size)
-                                        }
-                                    },
-                                )
-                            }
-                    ) {
-                        imageContent(image, zoomPanState)
-                    }
+                ) {
+                    imageContent(image, zoomPanState)
                 }
             }
         }
-
-        // TODO: Pager indicator? Might need to migrate back to Accompanist
     }
+
+    // TODO: Pager indicator? Might need to migrate back to Accompanist
 
     AnimatedVisibility(visible = showMenu, enter = fadeIn(), exit = fadeOut()) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .height(animatedHeight)
                 .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f))
                 .clickable { showMenu = false }
         ) {
@@ -1092,6 +1055,7 @@ private fun AddImagePagerPage(onAddClick: () -> Unit, modifier: Modifier = Modif
             .clickable(onClick = onAddClick)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .fillMaxWidth()
+            .height(400.dp)
     ) {
         Icon(
             imageVector = Icons.Default.AddPhotoAlternate,
@@ -1102,55 +1066,6 @@ private fun AddImagePagerPage(onAddClick: () -> Unit, modifier: Modifier = Modif
                 .size(48.dp)
                 .align(Alignment.Center)
         )
-    }
-}
-
-@Composable
-fun ImageSelectBoxInner(
-    loading: () -> Boolean = { false },
-    expanded: () -> Boolean,
-    setExpanded: (Boolean) -> Unit,
-    showExpandImage: Boolean,
-    height: Dp,
-    onBackPress: suspend () -> Unit,
-    content: @Composable BoxScope.() -> Unit,
-) {
-    AddBackPressInvokeTogether(label = "ImageSelectBoxInner onBackPress") { onBackPress() }
-
-    Box {
-        Box(
-            Modifier
-                .height(height)
-                .verticalScroll(rememberScrollState())
-                .animateContentSize()
-        ) {
-            content()
-        }
-
-        AnimatedVisibility(
-            visible = showExpandImage && !loading(),
-            enter = fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .background(
-                        Color.DarkGray.copy(alpha = 0.33f),
-                        RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
-                    )
-                    .clickable { setExpanded(!expanded()) }
-                    .padding(12.dp)
-            ) {
-                TrailingDropdownIcon(
-                    expanded = expanded(),
-                    contentDescription = stringResource(
-                        R.string.entry_image_expand_content_description
-                    ),
-                )
-            }
-        }
     }
 }
 

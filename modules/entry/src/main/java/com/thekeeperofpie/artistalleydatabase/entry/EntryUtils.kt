@@ -14,9 +14,9 @@ import androidx.core.net.toUri
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import java.io.File
 
@@ -159,7 +159,7 @@ object EntryUtils {
     fun NavGraphBuilder.entryDetailsComposable(
         route: String,
         block: @Composable (entryIds: List<String>, imageCornerDp: Dp?) -> Unit
-    ) = composable(
+    ) = sharedElementComposable(
         "$route?entry_ids={entry_ids}&image_corner_dp={image_corner_dp}",
         arguments = listOf(
             navArgument("entry_ids") {

@@ -34,8 +34,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridM
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterOptionsPanel
-import com.thekeeperofpie.artistalleydatabase.compose.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.compose.sharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object StampRallySearchScreen {

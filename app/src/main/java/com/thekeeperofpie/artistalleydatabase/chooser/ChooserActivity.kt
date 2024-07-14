@@ -10,10 +10,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.withResumed
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
@@ -48,7 +48,7 @@ class ChooserActivity : ComponentActivity() {
                             navController = navController,
                             startDestination = NavDestinations.HOME
                         ) {
-                            composable(NavDestinations.HOME) {
+                            sharedElementComposable(NavDestinations.HOME) {
                                 val viewModel = hiltViewModel<ChooserViewModel>()
                                 ChooserScreen(
                                     query = { viewModel.query.orEmpty() },
