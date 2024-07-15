@@ -77,21 +77,16 @@ fun MediaCoverImage(
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     onError: ((AsyncImagePainter.State.Error) -> Unit)? = null,
 ) {
-    AutoSharedElement(
-        key = "anime_media_${mediaId}_image",
-        screenKey = screenKey,
-    ) {
-        AsyncImage(
-            model = image,
-            contentScale = contentScale,
-            alignment = UpperHalfBiasAlignment,
-            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-            onSuccess = onSuccess,
-            onError = onError,
-            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-            modifier = modifier.blurForScreenshotMode(),
-        )
-    }
+    AsyncImage(
+        model = image,
+        contentScale = contentScale,
+        alignment = UpperHalfBiasAlignment,
+        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+        onSuccess = onSuccess,
+        onError = onError,
+        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+        modifier = modifier.blurForScreenshotMode()
+    )
 }
 
 @Composable

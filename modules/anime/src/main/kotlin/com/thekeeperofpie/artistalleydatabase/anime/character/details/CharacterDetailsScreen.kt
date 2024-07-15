@@ -103,10 +103,9 @@ object CharacterDetailsScreen {
         }
 
         val entry = viewModel.entry
-        var headerTransitionFinished by remember { mutableStateOf(false) }
         val viewer by viewModel.viewer.collectAsState()
         var loadingThresholdPassed by remember { mutableStateOf(false) }
-        val refreshing = headerTransitionFinished && entry.loading && loadingThresholdPassed
+        val refreshing = entry.loading && loadingThresholdPassed
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
             onRefresh = viewModel::refresh,
@@ -133,6 +132,7 @@ object CharacterDetailsScreen {
                         CharacterHeader(
                             screenKey = SCREEN_KEY,
                             upIconOption = upIconOption,
+                            viewer = viewer,
                             characterId = viewModel.characterId,
                             progress = it,
                             headerValues = headerValues,
@@ -142,11 +142,6 @@ object CharacterDetailsScreen {
                             },
                             onImageWidthToHeightRatioAvailable = {
                                 characterImageWidthToHeightRatio = it
-                            },
-                            onCoverImageSharedElementFractionChanged = {
-                                if (it == 0f) {
-                                    headerTransitionFinished = true
-                                }
                             },
                         )
                     }

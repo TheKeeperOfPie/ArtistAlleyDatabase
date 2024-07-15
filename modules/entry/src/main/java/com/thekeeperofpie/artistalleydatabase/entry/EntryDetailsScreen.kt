@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
@@ -453,12 +452,6 @@ object EntryDetailsScreen {
                                 contentScale = ContentScale.FillWidth,
                                 modifier = Modifier
                                     .sharedElement("entryImage", entryImage.entryId)
-                                    .also {
-                                        Log.d(
-                                            "SharedDebug",
-                                            "details key = ${entryImage.entryId}"
-                                        )
-                                    }
                                     .fillMaxWidth()
                                     .heightIn(min = minimumHeight)
                                     .conditionally(imageCornerDp != null) {

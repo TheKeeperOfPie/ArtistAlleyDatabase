@@ -35,6 +35,7 @@ import com.anilist.fragment.CharacterNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
@@ -55,12 +56,12 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 fun CharacterHeader(
     screenKey: String,
     upIconOption: UpIconOption?,
+    viewer: AniListViewer?,
     characterId: String,
     progress: Float,
     headerValues: CharacterHeaderValues,
     onFavoriteChanged: (Boolean) -> Unit,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
-    onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
 ) {
     AutoSharedElement(
         key = "anime_character_${characterId}_header",
@@ -71,16 +72,15 @@ fun CharacterHeader(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             upIconOption = upIconOption,
             entryId = EntryId("anime_character", characterId),
-            progress = progress,
-            color = { headerValues.color(colorCalculationState) },
             coverImage = { headerValues.image },
             coverImageAllowHardware = colorCalculationState.allowHardware(characterId),
+            progress = progress,
             coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
+            color = { headerValues.color(colorCalculationState) },
             coverImageOnSuccess = {
                 onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
                 ComposeColorUtils.calculatePalette(characterId, it, colorCalculationState)
             },
-            onCoverImageSharedElementFractionChanged = onCoverImageSharedElementFractionChanged,
             menuContent = {
                 FavoriteIconButton(
                     favorite = headerValues.favorite,

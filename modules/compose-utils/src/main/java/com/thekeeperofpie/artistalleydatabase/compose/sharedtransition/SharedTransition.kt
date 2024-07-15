@@ -2,15 +2,12 @@
 
 package com.thekeeperofpie.artistalleydatabase.compose.sharedtransition
 
-import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,12 +27,14 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import com.mxalbert.sharedelements.DefaultSharedElementsTransitionSpec
 import com.mxalbert.sharedelements.SharedElement
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes.baseTypeMap
 import kotlinx.coroutines.delay
+import kotlin.reflect.KType
 import kotlin.time.Duration.Companion.milliseconds
 
 val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope> {
@@ -52,40 +51,6 @@ private val LocalSharedTransitionKeys = compositionLocalOf<Pair<String, String>>
 
 object SharedTransitionSignal {
     var navigating by mutableStateOf(false)
-}
-
-@SuppressLint("UnrememberedMutableState")
-@Composable
-fun AutoSharedElementsRoot(content: @Composable () -> Unit) {
-    if (SharedTransition.USE_ANDROIDX) {
-        AnimatedVisibility(visible = true) {
-            SharedTransitionLayout {
-                CompositionLocalProvider(
-                    LocalSharedTransitionScope provides this@SharedTransitionLayout,
-                    LocalAnimatedVisibilityScope provides this@AnimatedVisibility,
-                ) {
-                    content()
-                }
-                val isTransitionActive = this.isTransitionActive
-                val navigating = SharedTransitionSignal.navigating
-                var disableOnNext by remember { mutableStateOf(false) }
-                LaunchedEffect(isTransitionActive, navigating) {
-                    if (navigating && isTransitionActive) {
-                        disableOnNext = true
-                    }
-
-                    if (!isTransitionActive && disableOnNext) {
-                        disableOnNext = false
-                        SharedTransitionSignal.navigating = false
-                    }
-                }
-            }
-        }
-    } else {
-        SharedElementsRoot {
-            content()
-        }
-    }
 }
 
 @Composable
@@ -148,6 +113,8 @@ fun NavGraphBuilder.sharedElementComposable(
 }
 
 inline fun <reified T : Any> NavGraphBuilder.sharedElementComposable(
+    typeMap: Map<KType, @JvmSuppressWildcards NavType<*>> = emptyMap(),
+    deepLinks: List<NavDeepLink> = emptyList(),
     noinline enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = {
         slideIntoContainer(
             AnimatedContentTransitionScope.SlideDirection.Up
@@ -160,6 +127,8 @@ inline fun <reified T : Any> NavGraphBuilder.sharedElementComposable(
     },
     noinline content: @Composable (NavBackStackEntry) -> Unit,
 ) = composable<T>(
+    typeMap = baseTypeMap + typeMap,
+    deepLinks = deepLinks,
     enterTransition = enterTransition,
     exitTransition = exitTransition,
 ) {
@@ -199,26 +168,27 @@ fun Modifier.autoSharedElement(key: String? = null) =
     } else this
 
 @Composable
-fun Modifier.sharedElement(vararg keys: Any?, zIndexInOverlay: Float = 0f) =
-    with(LocalSharedTransitionScope.current) {
+fun Modifier.sharedElement(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
+    if (keys.contains(null)) return this
+    return with(LocalSharedTransitionScope.current) {
         sharedElement(
             rememberSharedContentState(key = keys.toList()),
             animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
             zIndexInOverlay = zIndexInOverlay,
         )
     }
+}
 
 @Composable
-fun Modifier.sharedBounds(vararg keys: Any, zIndexInOverlay: Float = 0f): Modifier {
-    return this
-    // TODO: sharedBounds disabled due to bugs with scrolling
-//    return with(LocalSharedTransitionScope.current) {
-//        sharedBounds(
-//            rememberSharedContentState(key = keys.toList()),
-//            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
-//            zIndexInOverlay = zIndexInOverlay,
-//        )
-//    }
+fun Modifier.sharedBounds(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
+    // TODO: sharedBounds causes bugs with scrolling?
+    return with(LocalSharedTransitionScope.current) {
+        sharedBounds(
+            rememberSharedContentState(key = keys.toList()),
+            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            zIndexInOverlay = zIndexInOverlay,
+        )
+    }
 }
 
 @Composable

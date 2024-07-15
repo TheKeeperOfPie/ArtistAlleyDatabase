@@ -47,6 +47,7 @@ object CharacterMediasScreen {
                 CharacterHeader(
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
+                    viewer = viewer,
                     characterId = viewModel.characterId,
                     progress = it,
                     headerValues = headerValues,

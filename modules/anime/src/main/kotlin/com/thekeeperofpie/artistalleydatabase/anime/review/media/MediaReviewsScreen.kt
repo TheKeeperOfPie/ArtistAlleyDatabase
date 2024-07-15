@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.review.media
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ object MediaReviewsScreen {
                 MediaHeader(
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
+                    viewer = viewModel.viewer.collectAsState().value,
                     mediaId = viewModel.mediaId,
                     mediaType = media?.type,
                     titles = entry.result?.titlesUnique,

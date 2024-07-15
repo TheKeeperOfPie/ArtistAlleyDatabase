@@ -83,7 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
@@ -93,6 +93,8 @@ internal fun CoverAndBannerHeader(
     entryId: EntryId?,
     coverImage: @Composable () -> String?,
     coverImageAllowHardware: Boolean,
+    modifier: Modifier = Modifier,
+    sharedElementKey: String? = null,
     bannerImage: String? = null,
     pinnedHeight: Dp = 120.dp,
     progress: Float = 0f,
@@ -102,12 +104,11 @@ internal fun CoverAndBannerHeader(
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
     coverImageOnSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
-    menuContent: (@Composable RowScope.() -> Unit)? = null,
+    menuContent: @Composable() (RowScope.() -> Unit)? = null,
     fadeOutMenu: Boolean = true,
     reserveMenuWidth: Boolean = !fadeOutMenu,
-    onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
     onCoverImageClick: (() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit,
+    content: @Composable() (ColumnScope.() -> Unit),
 ) {
     val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
     val bottomCornerDp = lerp(0.dp, 12.dp, progress)
@@ -119,7 +120,7 @@ internal fun CoverAndBannerHeader(
         contentColor = MaterialTheme.colorScheme.onSurface,
         tonalElevation = elevation,
         shadowElevation = elevation,
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(bottomStart = bottomCornerDp, bottomEnd = bottomCornerDp))
             .combinedClickable(
                 enabled = onClickEnabled,
@@ -216,58 +217,52 @@ internal fun CoverAndBannerHeader(
                     .height(rowHeight)
             ) {
                 Box(modifier = Modifier.padding(vertical = 10.dp)) {
-                    AutoSharedElement(
-                        key = "${entryId?.scopedId}_image",
-                        screenKey = screenKey,
-                        onFractionChanged = onCoverImageSharedElementFractionChanged,
-                    ) {
-                        ElevatedCard {
-                            val imageHeight = rowHeight - 20.dp
-                            var success by remember { mutableStateOf(false) }
-                            val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
-                            val coverImage = coverImage()
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(coverImage)
-                                    .crossfade(true)
-                                    .allowHardware(coverImageAllowHardware)
-                                    .size(
-                                        width = Dimension.Undefined,
-                                        height = Dimension.Pixels(
-                                            LocalDensity.current.run { imageHeight.roundToPx() }
-                                        ),
-                                    )
-                                    .build(),
-                                contentScale = ContentScale.FillHeight,
-                                error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                fallback = null,
-                                onSuccess = {
-                                    success = true
-                                    coverImageOnSuccess(it)
-                                },
-                                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                                modifier = Modifier
-                                    .height(imageHeight)
-                                    .run {
-                                        if (coverImageWidthToHeightRatio != 1f) {
-                                            width(
-                                                (imageHeight * coverImageWidthToHeightRatio)
-                                                    .coerceAtMost(maxWidth)
-                                            )
-                                        } else if (success) {
-                                            wrapContentWidth()
-                                        } else this
+                    ElevatedCard(modifier = Modifier.sharedElement(sharedElementKey, "media_image")) {
+                        val imageHeight = rowHeight - 20.dp
+                        var success by remember { mutableStateOf(false) }
+                        val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
+                        val coverImage = coverImage()
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(coverImage)
+                                .crossfade(true)
+                                .allowHardware(coverImageAllowHardware)
+                                .size(
+                                    width = Dimension.Undefined,
+                                    height = Dimension.Pixels(
+                                        LocalDensity.current.run { imageHeight.roundToPx() }
+                                    ),
+                                )
+                                .build(),
+                            contentScale = ContentScale.FillHeight,
+                            error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                            fallback = null,
+                            onSuccess = {
+                                success = true
+                                coverImageOnSuccess(it)
+                            },
+                            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                            modifier = Modifier
+                                .height(imageHeight)
+                                .run {
+                                    if (coverImageWidthToHeightRatio != 1f) {
+                                        width(
+                                            (imageHeight * coverImageWidthToHeightRatio)
+                                                .coerceAtMost(maxWidth)
+                                        )
+                                    } else if (success) {
+                                        wrapContentWidth()
+                                    } else this
+                                }
+                                .widthIn(max = maxWidth)
+                                .combinedClickable(
+                                    onClick = { onCoverImageClick?.invoke() },
+                                    onLongClick = {
+                                        coverImage?.let(fullscreenImageHandler::openImage)
                                     }
-                                    .widthIn(max = maxWidth)
-                                    .combinedClickable(
-                                        onClick = { onCoverImageClick?.invoke() },
-                                        onLongClick = {
-                                            coverImage?.let(fullscreenImageHandler::openImage)
-                                        }
-                                    )
-                                    .blurForScreenshotMode()
-                            )
-                        }
+                                )
+                                .blurForScreenshotMode()
+                        )
                     }
                 }
 

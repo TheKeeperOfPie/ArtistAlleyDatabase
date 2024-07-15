@@ -71,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -94,6 +95,7 @@ object AnimeMediaListRow {
             newRating: RecommendationRating,
         ) -> Unit = { _, _ -> },
     ) {
+        val sharedElementKey = entry?.media?.id?.toString()
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
@@ -110,11 +112,14 @@ object AnimeMediaListRow {
                 .combinedClickable(
                     enabled = entry != null,
                     onClick = {
-                        navigationCallback.onMediaClick(
-                            entry!!,
-                            null,
-                            imageWidthToHeightRatio
-                        )
+                        if (entry != null) {
+                            navigationCallback.onMediaClick(
+                                media = entry.media,
+                                favorite = null,
+                                imageWidthToHeightRatio = imageWidthToHeightRatio,
+                                sharedElementKey = entry.media.id.toString(),
+                            )
+                        }
                     },
                     onLongClick = {
                         if (entry != null) {
@@ -126,12 +131,8 @@ object AnimeMediaListRow {
                 CoverImage(
                     screenKey = screenKey,
                     entry = entry,
+                    sharedElementKey = sharedElementKey,
                     viewer = viewer,
-                    onClick = {
-                        if (entry != null) {
-                            navigationCallback.onMediaClick(entry, null, imageWidthToHeightRatio)
-                        }
-                    },
                     onClickListEdit = onClickListEdit,
                     onRatioAvailable = { imageWidthToHeightRatio = it },
                     recommendation = recommendation,
@@ -201,8 +202,9 @@ object AnimeMediaListRow {
     private fun CoverImage(
         screenKey: String,
         entry: Entry?,
+        sharedElementKey: String?,
         viewer: AniListViewer?,
-        onClick: (Entry) -> Unit = {},
+        onClick: ((Entry) -> Unit)? = null,
         onClickListEdit: (MediaNavigationData) -> Unit,
         onRatioAvailable: (Float) -> Unit,
         recommendation: RecommendationData?,
@@ -241,6 +243,7 @@ object AnimeMediaListRow {
                     }
                 },
                 modifier = Modifier
+                    .sharedElement(sharedElementKey, "media_image")
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(shape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -253,7 +256,7 @@ object AnimeMediaListRow {
                         highlight = PlaceholderHighlight.shimmer(),
                     )
                     .combinedClickable(
-                        onClick = { if (entry != null) onClick(entry) },
+                        onClick = { if (entry != null) onClick?.invoke(entry) },
                         onLongClick = {
                             entry?.media?.coverImage?.extraLarge
                                 ?.let(fullscreenImageHandler::openImage)
@@ -337,6 +340,7 @@ object AnimeMediaListRow {
             }
 
             if (viewer != null && entry != null && showQuickEdit) {
+                // TODO: Animate this in and out for shared element
                 MediaListQuickEditIconButton(
                     viewer = viewer,
                     mediaType = entry.media.type,
@@ -346,6 +350,7 @@ object AnimeMediaListRow {
                     onClick = { onClickListEdit(entry.media) },
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.align(Alignment.BottomStart)
+                        .sharedElement(sharedElementKey, "edit_button")
                 )
             }
         }

@@ -183,6 +183,7 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
+        sharedElementKey: String?,
         charactersCount: (Entry?) -> Int,
         charactersSection: LazyListScope.(
             screenKey: String,
@@ -290,6 +291,7 @@ object AnimeMediaDetailsScreen {
                         MediaHeader(
                             screenKey = viewModel.screenKey,
                             upIconOption = upIconOption,
+                            viewer = viewer,
                             mediaId = viewModel.mediaId,
                             mediaType = viewModel.entry.result?.media?.type,
                             titles = entry.result?.titlesUnique,
@@ -299,6 +301,7 @@ object AnimeMediaDetailsScreen {
                             popularity = entry.result?.media?.popularity,
                             progress = it,
                             headerValues = headerValues,
+                            sharedElementKey = sharedElementKey,
                             onFavoriteChanged = {
                                 viewModel.favoritesToggleHelper.set(
                                     headerValues.type.toFavoriteType(),
@@ -384,7 +387,7 @@ object AnimeMediaDetailsScreen {
                                         }
                                     }
                                 }
-                            }
+                            },
                         )
                     }
                 },

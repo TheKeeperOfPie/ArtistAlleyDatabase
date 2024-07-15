@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -10,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.paging.PagingData
 import com.anilist.type.MediaType
 import com.google.common.truth.Truth.assertThat
+import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -23,8 +26,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
@@ -48,7 +51,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import javax.inject.Inject
 
-@OptIn(ExperimentalTestApi::class)
+@OptIn(ExperimentalTestApi::class, ExperimentalSharedTransitionApi::class)
 @ExtendWith(HiltInjectExtension::class)
 @HiltAndroidTest
 @Execution(ExecutionMode.SAME_THREAD)
@@ -318,17 +321,20 @@ class HomeScreenTest {
         viewModel: AnimeHomeViewModel,
         mediaViewModel: AnimeHomeMediaViewModel,
     ) {
-        AutoSharedElementsRoot {
-            CompositionLocalProvider(
-                LocalIgnoreController.provides(ignoreController),
-            ) {
-                AnimeHomeScreen(
-                    viewModel = viewModel,
-                    upIconOption = null,
-                    scrollStateSaver = ScrollStateSaver.STUB,
-                    bottomNavigationState = null,
-                    mediaViewModel = { mediaViewModel },
-                )
+        SharedElementsRoot {
+            SharedTransitionLayout {
+                CompositionLocalProvider(
+                    LocalSharedTransitionScope provides this,
+                    LocalIgnoreController provides ignoreController,
+                ) {
+                    AnimeHomeScreen(
+                        viewModel = viewModel,
+                        upIconOption = null,
+                        scrollStateSaver = ScrollStateSaver.STUB,
+                        bottomNavigationState = null,
+                        mediaViewModel = { mediaViewModel },
+                    )
+                }
             }
         }
     }

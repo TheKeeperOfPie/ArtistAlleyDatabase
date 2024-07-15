@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry.grid
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -244,7 +243,6 @@ object EntryGrid {
                             .alpha(if (selected) 0.38f else 1f)
                             .semantics { this.selected = selected }
                             .sharedElement("entryImage", entry.id)
-                            .also { Log.d("SharedDebug", "key = ${entry.id}") }
                             .fillMaxWidth()
                             .heightIn(min = LocalDensity.current.run {
                                 if (entry.imageWidth != null) {

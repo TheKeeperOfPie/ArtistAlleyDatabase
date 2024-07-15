@@ -105,6 +105,7 @@ object AnimeMediaLargeCard {
                                 mediaId = entry.mediaId,
                                 title = title,
                                 coverImage = entry.image,
+                                sharedElementKey = entry.mediaId.toString(),
                             )
                         }
                     },
