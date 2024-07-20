@@ -37,9 +37,9 @@ sealed interface AnimeSearchEntry {
 
         // So that enough meaningful text is shown, strip any double newlines
         override val description
-            get() =entry.description
+            get() = entry.description
         override val tags
-            get() =entry.tags
+            get() = entry.tags
 
         override val media
             get() = entry.media

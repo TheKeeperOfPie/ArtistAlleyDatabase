@@ -68,10 +68,16 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UpperHalfBiasAlignment
@@ -293,17 +299,21 @@ fun LazyListScope.charactersSection(
     if (charactersDeferred().itemCount.coerceAtLeast(charactersInitial.size) == 0) return
     item("charactersHeader-$titleRes") {
         val navigationCallback = LocalNavigationCallback.current
+        val title = media?.title?.primaryTitle()
         DetailsSectionHeader(
             text = stringResource(titleRes),
-            onClickViewAll = remember(mediaId, media, mediaFavorite) {
-                {
-                    navigationCallback.onMediaCharactersClick(
+            onClickViewAll = {
+                navigationCallback.navigate(
+                    AnimeDestinations.MediaCharacters(
                         mediaId = mediaId,
-                        media = media,
-                        favorite = mediaFavorite,
-                        imageWidthToHeightRatio = mediaCoverImageWidthToHeightRatio(),
+                        headerParams = MediaHeaderParams(
+                            title = title,
+                            coverImageWidthToHeightRatio = mediaCoverImageWidthToHeightRatio(),
+                            media = media,
+                            favorite = mediaFavorite,
+                        )
                     )
-                }
+                )
             },
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
             modifier = Modifier.recomposeHighlighter()
@@ -400,23 +410,48 @@ fun CharactersSectionItem(
     val colorCalculationState = LocalColorCalculationState.current
     var imageWidthToHeightRatio by remember { MutableSingle(1f) }
     var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
+    val characterName = character?.character?.name?.primaryName()
     val onClickCharacter: () -> Unit = {
-        character?.character?.let {
-            navigationCallback.onCharacterClick(
-                character.character,
-                null,
-                if (showVoiceActorAsMain) innerImageWidthToHeightRatio else imageWidthToHeightRatio,
-                colorCalculationState.getColorsNonComposable(character.id).first,
+        if (character?.character != null) {
+            navigationCallback.navigate(
+                AnimeDestinations.CharacterDetails(
+                    characterId = character.id,
+                    headerParams = CharacterHeaderParams(
+                        coverImageWidthToHeightRatio = if (showVoiceActorAsMain) {
+                            innerImageWidthToHeightRatio
+                        } else {
+                            imageWidthToHeightRatio
+                        },
+                        name = characterName,
+                        subtitle = null,
+                        favorite = null,
+                        coverImage = character.image,
+                        colorArgb = colorCalculationState.getColorsNonComposable(character.id).first.toArgb(),
+                    )
+                )
             )
         }
     }
+    val voiceActorName = voiceActor?.staff?.name?.primaryName()
+    val voiceActorSubtitle = voiceActor?.staff?.name?.subtitleName()
     val onClickVoiceActor: () -> Unit = {
         voiceActor?.let {
-            navigationCallback.onStaffClick(
-                voiceActor.staff,
-                null,
-                if (showVoiceActorAsMain) imageWidthToHeightRatio else innerImageWidthToHeightRatio,
-                colorCalculationState.getColorsNonComposable(voiceActor.id).first,
+            navigationCallback.navigate(
+                AnimeDestinations.StaffDetails(
+                    staffId = voiceActor.id.toString(),
+                    headerParams = StaffHeaderParams(
+                        coverImageWidthToHeightRatio = if (showVoiceActorAsMain) {
+                            imageWidthToHeightRatio
+                        } else {
+                            innerImageWidthToHeightRatio
+                        },
+                        name = voiceActorName,
+                        subtitle = voiceActorSubtitle,
+                        coverImage = voiceActor.staff.image?.large,
+                        colorArgb = colorCalculationState.getColorsNonComposable(voiceActor.id).first.toArgb(),
+                        favorite = null,
+                    )
+                )
             )
         }
     }
@@ -520,14 +555,22 @@ fun CharacterCard(
     var imageWidthToHeightRatio by remember { MutableSingle(1f) }
     val navigationCallback = LocalNavigationCallback.current
     val colorCalculationState = LocalColorCalculationState.current
+    val characterName = character?.character?.name?.primaryName()
     ElevatedCard(
         onClick = {
             character?.character?.let {
-                navigationCallback.onCharacterClick(
-                    it,
-                    null,
-                    imageWidthToHeightRatio,
-                    colorCalculationState.getColorsNonComposable(it.id.toString()).first,
+                navigationCallback.navigate(
+                    AnimeDestinations.CharacterDetails(
+                        characterId = character.id.toString(),
+                        headerParams = CharacterHeaderParams(
+                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                            name = characterName,
+                            subtitle = null,
+                            favorite = null,
+                            coverImage = it.image?.large,
+                            colorArgb = colorCalculationState.getColorsNonComposable(it.id.toString()).first.toArgb(),
+                        )
+                    )
                 )
             }
         },
@@ -632,6 +675,8 @@ fun CharacterCard(
 
             if (character == null || voiceActor?.image != null) {
                 var voiceActorImageWidthToHeightRatio by remember { MutableSingle(1f) }
+                val voiceActorName = voiceActor?.staff?.name?.primaryName()
+                val voiceActorSubtitle = voiceActor?.staff?.name?.subtitleName()
                 StaffCoverImage(
                     screenKey = screenKey,
                     staffId = voiceActor?.id,
@@ -656,13 +701,18 @@ fun CharacterCard(
                         )
                         .clickable {
                             if (voiceActor != null) {
-                                navigationCallback.onStaffClick(
-                                    voiceActor.staff,
-                                    null,
-                                    voiceActorImageWidthToHeightRatio,
-                                    colorCalculationState.getColorsNonComposable(
-                                        voiceActor.staff.id.toString()
-                                    ).first,
+                                navigationCallback.navigate(
+                                    AnimeDestinations.StaffDetails(
+                                        staffId = voiceActor.staff.id.toString(),
+                                        headerParams = StaffHeaderParams(
+                                            name = voiceActorName,
+                                            subtitle = voiceActorSubtitle,
+                                            coverImageWidthToHeightRatio = voiceActorImageWidthToHeightRatio,
+                                            coverImage = voiceActor.staff?.image?.large,
+                                            colorArgb = colorCalculationState.getColorsNonComposable(voiceActor.staff.id.toString()).first.toArgb(),
+                                            favorite = null,
+                                        )
+                                    )
                                 )
                             }
                         }

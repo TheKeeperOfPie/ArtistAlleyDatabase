@@ -12,12 +12,17 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserMediaStatistics
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -108,34 +113,45 @@ object UserMediaScreen {
                         )
                     },
                 )
-                UserStatsTab.VOICE_ACTORS -> UserStatsDetailScreen(
-                    screenKey = SCREEN_KEY,
-                    statistics = statistics,
-                    values = { it.statistics.voiceActors?.filterNotNull().orEmpty() },
-                    state = (state as AniListUserViewModel.States.Anime).voiceActorsState,
-                    isAnime = true,
-                    bottomNavigationState = bottomNavigationState,
-                    valueToKey = { it.voiceActor?.id.toString() },
-                    valueToText = { it.voiceActor?.name?.primaryName().orEmpty() },
-                    valueToCount = UserMediaStatistics.VoiceActor::count,
-                    valueToMinutesWatched = UserMediaStatistics.VoiceActor::minutesWatched,
-                    valueToChaptersRead = UserMediaStatistics.VoiceActor::chaptersRead,
-                    valueToMeanScore = UserMediaStatistics.VoiceActor::meanScore,
-                    valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { value, imageWidthToHeightRatio ->
-                        navigationCallback.onStaffClick(
-                            value.voiceActor!!,
-                            null,
-                            imageWidthToHeightRatio,
-                            colorCalculationState.getColorsNonComposable(
-                                value.voiceActor!!.id.toString()
-                            ).first,
-                        )
-                    },
-                    initialItemId = { it.voiceActor?.id.toString() },
-                    initialItemImage = { it.voiceActor?.image?.large },
-                    initialItemSharedElementKey = { "anime_staff_${it.voiceActor?.id}_image" },
-                )
+                UserStatsTab.VOICE_ACTORS -> {
+                    val languageOptionStaff = LocalLanguageOptionStaff.current
+                    UserStatsDetailScreen(
+                        screenKey = SCREEN_KEY,
+                        statistics = statistics,
+                        values = { it.statistics.voiceActors?.filterNotNull().orEmpty() },
+                        state = (state as AniListUserViewModel.States.Anime).voiceActorsState,
+                        isAnime = true,
+                        bottomNavigationState = bottomNavigationState,
+                        valueToKey = { it.voiceActor?.id.toString() },
+                        valueToText = { it.voiceActor?.name?.primaryName().orEmpty() },
+                        valueToCount = UserMediaStatistics.VoiceActor::count,
+                        valueToMinutesWatched = UserMediaStatistics.VoiceActor::minutesWatched,
+                        valueToChaptersRead = UserMediaStatistics.VoiceActor::chaptersRead,
+                        valueToMeanScore = UserMediaStatistics.VoiceActor::meanScore,
+                        valueToMediaIds = { it.mediaIds.filterNotNull() },
+                        onValueClick = { value, imageWidthToHeightRatio ->
+                            val voiceActor = value.voiceActor
+                            if (voiceActor != null) {
+                                navigationCallback.navigate(
+                                    AnimeDestinations.StaffDetails(
+                                        staffId = voiceActor.id.toString(),
+                                        headerParams = StaffHeaderParams(
+                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                            name = voiceActor.name?.primaryName(languageOptionStaff),
+                                            subtitle = voiceActor.name?.subtitleName(languageOptionStaff),
+                                            coverImage = voiceActor.image?.large,
+                                            colorArgb = colorCalculationState.getColorsNonComposable(voiceActor.id.toString()).first.toArgb(),
+                                            favorite = null,
+                                        )
+                                    )
+                                )
+                            }
+                        },
+                        initialItemId = { it.voiceActor?.id.toString() },
+                        initialItemImage = { it.voiceActor?.image?.large },
+                        initialItemSharedElementKey = { "anime_staff_${it.voiceActor?.id}_image" },
+                    )
+                }
                 UserStatsTab.STUDIOS -> UserStatsDetailScreen(
                     screenKey = SCREEN_KEY,
                     statistics = statistics,
@@ -156,34 +172,45 @@ object UserMediaScreen {
                         }
                     },
                 )
-                UserStatsTab.STAFF -> UserStatsDetailScreen(
-                    screenKey = SCREEN_KEY,
-                    statistics = statistics,
-                    values = { it.statistics.staff?.filterNotNull().orEmpty() },
-                    state = state.staffState,
-                    isAnime = isAnime,
-                    bottomNavigationState = bottomNavigationState,
-                    valueToKey = { it.staff?.id.toString() },
-                    valueToText = { it.staff?.name?.primaryName().orEmpty() },
-                    valueToCount = UserMediaStatistics.Staff::count,
-                    valueToMinutesWatched = UserMediaStatistics.Staff::minutesWatched,
-                    valueToChaptersRead = UserMediaStatistics.Staff::chaptersRead,
-                    valueToMeanScore = UserMediaStatistics.Staff::meanScore,
-                    valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { value, imageWidthToHeightRatio ->
-                        navigationCallback.onStaffClick(
-                            value.staff!!,
-                            null,
-                            imageWidthToHeightRatio,
-                            colorCalculationState.getColorsNonComposable(
-                                value.staff!!.id.toString()
-                            ).first,
-                        )
-                    },
-                    initialItemId = { it.staff?.id.toString() },
-                    initialItemImage = { it.staff?.image?.large },
-                    initialItemSharedElementKey = { "anime_staff_${it.staff?.id}_image" },
-                )
+                UserStatsTab.STAFF -> {
+                    val languageOptionStaff = LocalLanguageOptionStaff.current
+                    UserStatsDetailScreen(
+                        screenKey = SCREEN_KEY,
+                        statistics = statistics,
+                        values = { it.statistics.staff?.filterNotNull().orEmpty() },
+                        state = state.staffState,
+                        isAnime = isAnime,
+                        bottomNavigationState = bottomNavigationState,
+                        valueToKey = { it.staff?.id.toString() },
+                        valueToText = { it.staff?.name?.primaryName().orEmpty() },
+                        valueToCount = UserMediaStatistics.Staff::count,
+                        valueToMinutesWatched = UserMediaStatistics.Staff::minutesWatched,
+                        valueToChaptersRead = UserMediaStatistics.Staff::chaptersRead,
+                        valueToMeanScore = UserMediaStatistics.Staff::meanScore,
+                        valueToMediaIds = { it.mediaIds.filterNotNull() },
+                        onValueClick = { value, imageWidthToHeightRatio ->
+                            val staff = value.staff
+                            if (staff != null) {
+                                navigationCallback.navigate(
+                                    AnimeDestinations.StaffDetails(
+                                        staffId = staff.id.toString(),
+                                        headerParams = StaffHeaderParams(
+                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                            name = staff.name?.primaryName(languageOptionStaff),
+                                            subtitle = staff.name?.subtitleName(languageOptionStaff),
+                                            coverImage = staff.image?.large,
+                                            colorArgb = colorCalculationState.getColorsNonComposable(staff.id.toString()).first.toArgb(),
+                                            favorite = null,
+                                        )
+                                    )
+                                )
+                            }
+                        },
+                        initialItemId = { it.staff?.id.toString() },
+                        initialItemImage = { it.staff?.image?.large },
+                        initialItemSharedElementKey = { "anime_staff_${it.staff?.id}_image" },
+                    )
+                }
             }
         }
     }

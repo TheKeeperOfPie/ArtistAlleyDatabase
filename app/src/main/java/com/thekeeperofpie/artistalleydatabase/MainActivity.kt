@@ -100,6 +100,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
@@ -176,6 +177,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var markwon: Markwon
+
+    @Inject
+    lateinit var navigationTypeMap: NavigationTypeMap
 
     @Inject
     lateinit var notificationsController: NotificationsController
@@ -447,6 +451,7 @@ class MainActivity : ComponentActivity() {
                                     navHostController = navHostController,
                                     navGraphBuilder = this,
                                     upIconOption = navDrawerUpIconOption,
+                                    navigationTypeMap = navigationTypeMap,
                                     onClickAuth = {
                                         aniListOAuthStore.launchAuthRequest(
                                             this@MainActivity

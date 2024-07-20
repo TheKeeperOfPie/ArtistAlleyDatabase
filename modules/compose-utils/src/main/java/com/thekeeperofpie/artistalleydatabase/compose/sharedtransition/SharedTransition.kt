@@ -27,14 +27,12 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import com.mxalbert.sharedelements.DefaultSharedElementsTransitionSpec
 import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
-import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes.baseTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import kotlinx.coroutines.delay
-import kotlin.reflect.KType
 import kotlin.time.Duration.Companion.milliseconds
 
 val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope> {
@@ -113,7 +111,7 @@ fun NavGraphBuilder.sharedElementComposable(
 }
 
 inline fun <reified T : Any> NavGraphBuilder.sharedElementComposable(
-    typeMap: Map<KType, @JvmSuppressWildcards NavType<*>> = emptyMap(),
+    navigationTypeMap: NavigationTypeMap,
     deepLinks: List<NavDeepLink> = emptyList(),
     noinline enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = {
         slideIntoContainer(
@@ -127,7 +125,7 @@ inline fun <reified T : Any> NavGraphBuilder.sharedElementComposable(
     },
     noinline content: @Composable (NavBackStackEntry) -> Unit,
 ) = composable<T>(
-    typeMap = baseTypeMap + typeMap,
+    typeMap = navigationTypeMap.typeMap,
     deepLinks = deepLinks,
     enterTransition = enterTransition,
     exitTransition = exitTransition,

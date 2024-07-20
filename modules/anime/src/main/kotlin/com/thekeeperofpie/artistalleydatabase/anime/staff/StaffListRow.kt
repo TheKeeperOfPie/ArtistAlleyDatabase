@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -52,12 +53,18 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
@@ -87,13 +94,22 @@ object StaffListRow {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
         val colorCalculationState = LocalColorCalculationState.current
+        val staffName = entry?.staff?.name?.primaryName()
+        val staffSubtitle = entry?.staff?.name?.subtitleName()
         val onClick = {
             if (entry != null) {
-                navigationCallback.onStaffClick(
-                    entry.staff,
-                    null,
-                    imageWidthToHeightRatio,
-                    colorCalculationState.getColorsNonComposable(entry.staff.id.toString()).first,
+                navigationCallback.navigate(
+                    AnimeDestinations.StaffDetails(
+                        staffId = entry.staff.id.toString(),
+                        headerParams = StaffHeaderParams(
+                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                            name = staffName,
+                            subtitle = staffSubtitle,
+                            coverImage = entry.staff.image?.large,
+                            colorArgb = colorCalculationState.getColorsNonComposable(entry.staff.id.toString()).first.toArgb(),
+                            favorite = null,
+                        )
+                    )
                 )
             }
         }
@@ -258,6 +274,7 @@ object StaffListRow {
             items(characters, key = { it.id }) {
                 AutoSharedElement(key = "anime_character_${it.id}_image", screenKey = screenKey) {
                     val navigationCallback = LocalNavigationCallback.current
+                    val characterName = it.name?.primaryName()
                     ListRowSmallImage(
                         context = context,
                         density = density,
@@ -265,11 +282,19 @@ object StaffListRow {
                         image = it.image?.large,
                         contentDescriptionTextRes = R.string.anime_character_image_content_description,
                         onClick = { ratio ->
-                            navigationCallback.onCharacterClick(
-                                it,
-                                null,
-                                ratio,
-                                colorCalculationState.getColorsNonComposable(it.id.toString()).first,
+                            navigationCallback.navigate(
+                                AnimeDestinations.CharacterDetails(
+                                    characterId = it.id.toString(),
+                                    headerParams = CharacterHeaderParams(
+                                        coverImageWidthToHeightRatio = ratio,
+                                        name = characterName,
+                                        subtitle = null,
+                                        favorite = null,
+                                        coverImage = it.image?.large,
+                                        colorArgb = colorCalculationState.getColorsNonComposable(it.id.toString())
+                                            .first.toArgb(),
+                                    )
+                                )
                             )
                         },
                         width = MEDIA_WIDTH,
@@ -282,13 +307,27 @@ object StaffListRow {
                 AutoSharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
                     Box {
                         val navigationCallback = LocalNavigationCallback.current
+                        val title = it.media.title?.primaryTitle()
                         ListRowSmallImage(
                             context = context,
                             density = density,
                             ignored = it.ignored,
                             image = it.media.coverImage?.extraLarge,
                             contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                            onClick = { ratio -> navigationCallback.onMediaClick(it.media, ratio) },
+                            onClick = { ratio ->
+                                navigationCallback.navigate(
+                                    AnimeDestinations.MediaDetails(
+                                        mediaId = it.media.id.toString(),
+                                        title = title,
+                                        coverImage = it.media.coverImage?.extraLarge,
+                                        headerParams = MediaHeaderParams(
+                                            title = title,
+                                            coverImageWidthToHeightRatio = ratio,
+                                            mediaWithListStatus = it.media,
+                                        )
+                                    )
+                                )
+                            },
                             width = MEDIA_WIDTH,
                             height = MEDIA_HEIGHT,
                         )

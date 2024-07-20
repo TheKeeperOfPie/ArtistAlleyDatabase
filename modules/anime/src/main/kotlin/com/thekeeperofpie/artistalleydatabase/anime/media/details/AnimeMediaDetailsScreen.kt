@@ -239,7 +239,6 @@ object AnimeMediaDetailsScreen {
         var coverImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
-        var headerTransitionFinished by remember { mutableStateOf(false) }
         val entry = viewModel.entry
         val entry2 = viewModel.entry2
         val expandedState = rememberExpandedState()
@@ -261,8 +260,7 @@ object AnimeMediaDetailsScreen {
         )
 
         var loadingThresholdPassed by remember { mutableStateOf(false) }
-        val refreshing =
-            headerTransitionFinished && (entry.loading || entry2.loading) && loadingThresholdPassed
+        val refreshing = (entry.loading || entry2.loading) && loadingThresholdPassed
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
             onRefresh = viewModel::refresh,
@@ -291,7 +289,6 @@ object AnimeMediaDetailsScreen {
                         MediaHeader(
                             screenKey = viewModel.screenKey,
                             upIconOption = upIconOption,
-                            viewer = viewer,
                             mediaId = viewModel.mediaId,
                             mediaType = viewModel.entry.result?.media?.type,
                             titles = entry.result?.titlesUnique,
@@ -301,7 +298,6 @@ object AnimeMediaDetailsScreen {
                             popularity = entry.result?.media?.popularity,
                             progress = it,
                             headerValues = headerValues,
-                            sharedElementKey = sharedElementKey,
                             onFavoriteChanged = {
                                 viewModel.favoritesToggleHelper.set(
                                     headerValues.type.toFavoriteType(),
@@ -309,13 +305,9 @@ object AnimeMediaDetailsScreen {
                                     it,
                                 )
                             },
+                            sharedElementKey = sharedElementKey,
                             onImageWidthToHeightRatioAvailable = {
                                 coverImageWidthToHeightRatio = it
-                            },
-                            onCoverImageSharedElementFractionChanged = {
-                                if (it == 0f) {
-                                    headerTransitionFinished = true
-                                }
                             },
                             menuContent = {
                                 Box {

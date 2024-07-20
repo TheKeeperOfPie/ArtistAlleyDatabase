@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
@@ -40,36 +41,34 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavType
+import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaHeaderData
+import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 @Composable
 fun MediaHeader(
     screenKey: String,
     upIconOption: UpIconOption,
-    viewer: AniListViewer?,
     mediaId: String?,
     mediaType: MediaType?,
     titles: List<String>?,
@@ -83,9 +82,8 @@ fun MediaHeader(
     sharedElementKey: String? = null,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
     enableCoverImageSharedElement: Boolean = true,
-    onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
     onCoverImageClick: (() -> Unit)? = null,
-    menuContent: (@Composable () -> Unit)? = null,
+    menuContent: @Composable() (() -> Unit)? = null,
 ) {
     val defaultTitle = headerValues.title()
     var preferredTitle by remember(defaultTitle, titles) {
@@ -95,20 +93,14 @@ fun MediaHeader(
     }
     val colorCalculationState = LocalColorCalculationState.current
     CoverAndBannerHeader(
-        screenKey = screenKey,
         upIconOption = upIconOption,
-        entryId = if (enableCoverImageSharedElement) {
-            EntryId("anime_media", mediaId ?: "unknown")
-        } else {
-            EntryId("unknown", "disabled")
-        },
-        coverImage = { headerValues.coverImage },
+        headerValues = headerValues,
         coverImageAllowHardware = colorCalculationState.allowHardware(mediaId),
         modifier = Modifier.sharedBounds(sharedElementKey, "media_header"),
         sharedElementKey = sharedElementKey,
-        bannerImage = headerValues.bannerImage,
+        coverImageSharedElementKey = "media_image",
+        bannerImageSharedElementKey = "media_banner_image",
         progress = progress,
-        coverImageWidthToHeightRatio = headerValues.coverImageWidthToHeightRatio,
         color = { headerValues.color },
         onClickEnabled = (titles?.size ?: 0) > 1,
         onClick = {
@@ -259,106 +251,114 @@ fun MediaHeader(
     }
 }
 
+@Parcelize
+@Serializable
+data class MediaHeaderParams(
+    val coverImageWidthToHeightRatio: Float? = null,
+    val title: String? = null,
+    val coverImage: String? = null,
+    val bannerImage: String? = null,
+    val subtitleFormatRes: Int? = null,
+    val subtitleStatusRes: Int? = null,
+    val subtitleSeason: MediaSeason? = null,
+    val subtitleSeasonYear: Int? = null,
+    val nextEpisode: Int? = null,
+    val nextEpisodeAiringAt: Int? = null,
+    val colorArgb: Int? = null,
+    val type: MediaType? = null,
+    val favorite: Boolean? = null,
+) : Parcelable {
+    constructor(
+        title: String?,
+        coverImageWidthToHeightRatio: Float?,
+        media: MediaHeaderData?,
+        favorite: Boolean? = null,
+    ) : this(
+        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+        title = title,
+        coverImage = media?.coverImage?.extraLarge,
+        bannerImage = media?.bannerImage,
+        subtitleFormatRes = media?.format.toTextRes(),
+        subtitleStatusRes = media?.status.toTextRes(),
+        subtitleSeason = media?.season,
+        subtitleSeasonYear = media?.seasonYear,
+        nextEpisode = media?.nextAiringEpisode?.episode,
+        nextEpisodeAiringAt = media?.nextAiringEpisode?.airingAt,
+        colorArgb = media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb(),
+        type = media?.type,
+        favorite = favorite,
+    )
+
+    constructor(
+        title: String?,
+        coverImageWidthToHeightRatio: Float?,
+        mediaCompactWithTags: MediaCompactWithTags?,
+        favorite: Boolean? = null,
+    ) : this(
+        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+        title = title,
+        coverImage = mediaCompactWithTags?.coverImage?.extraLarge,
+        bannerImage = null,
+        subtitleFormatRes = mediaCompactWithTags?.format.toTextRes(),
+        subtitleStatusRes = null,
+        subtitleSeason = mediaCompactWithTags?.season,
+        subtitleSeasonYear = mediaCompactWithTags?.seasonYear,
+        nextEpisode = mediaCompactWithTags?.nextAiringEpisode?.episode,
+        nextEpisodeAiringAt = null,
+        colorArgb = mediaCompactWithTags?.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb(),
+        favorite = favorite,
+        type = mediaCompactWithTags?.type,
+    )
+
+    constructor(
+        title: String?,
+        coverImageWidthToHeightRatio: Float?,
+        mediaWithListStatus: MediaWithListStatus?,
+        favorite: Boolean? = null,
+    ) : this(
+        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+        title = title,
+        coverImage = mediaWithListStatus?.coverImage?.extraLarge,
+        bannerImage = null,
+        subtitleFormatRes = null,
+        subtitleStatusRes = null,
+        subtitleSeason = null,
+        subtitleSeasonYear = null,
+        nextEpisode = mediaWithListStatus?.nextAiringEpisode?.episode,
+        nextEpisodeAiringAt = null,
+        colorArgb = null,
+        type = mediaWithListStatus?.type,
+        favorite = favorite,
+    )
+}
+
 class MediaHeaderValues(
-    destination: AnimeDestinations.MediaDetails,
-    val coverImageWidthToHeightRatio: Float = destination.imageWidthToHeightRatio ?: 1f,
-    private val _title: String? = destination.title,
-    private val _coverImage: String? = destination.coverImage,
-    private val _bannerImage: String? = destination.bannerImage,
-    private val _subtitleFormatRes: Int? = destination.subtitleFormatRes,
-    private val _subtitleStatusRes: Int? = destination.subtitleStatusRes,
-    private val _subtitleSeason: MediaSeason? = destination.subtitleSeason,
-    private val _subtitleSeasonYear: Int? = destination.subtitleSeasonYear,
-    private val _nextEpisode: Int? = destination.nextEpisode,
-    private val _nextEpisodeAiringAt: Int? = destination.nextEpisodeAiringAt,
-    private val _color: Color? = destination.colorArgb?.let(::Color),
-    private val _favorite: Boolean? = destination.favorite,
-    private val _type: MediaType? = destination.type,
+    private val params: MediaHeaderParams?,
     private val media: () -> MediaHeaderData?,
     private val favoriteUpdate: () -> Boolean?,
-) {
-    companion object {
-        const val routeSuffix = "&title={title}" +
-                "&subtitleFormatRes={subtitleFormatRes}" +
-                "&subtitleStatusRes={subtitleStatusRes}" +
-                "&subtitleSeason={subtitleSeason}" +
-                "&subtitleSeasonYear={subtitleSeasonYear}" +
-                "&nextEpisode={nextEpisode}" +
-                "&nextEpisodeAiringAt={nextEpisodeAiringAt}" +
-                "&coverImage={coverImage}" +
-                "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}" +
-                "&color={color}" +
-                "&bannerImage={bannerImage}" +
-                "&favorite={favorite}" +
-                "&type={type}"
-
-        fun routeSuffix(
-            media: MediaHeaderData?,
-            languageOption: AniListLanguageOption,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-        ) =
-            if (media == null) {
-                ""
-            } else {
-                "&title=${media.title?.primaryTitle(languageOption)}" +
-                        "&subtitleFormatRes=${media.format.toTextRes()}" +
-                        "&subtitleStatusRes=${media.status.toTextRes()}" +
-                        "&subtitleSeason=${media.season}" +
-                        "&subtitleSeasonYear=${media.seasonYear}" +
-                        "&nextEpisode=${media.nextAiringEpisode?.episode}" +
-                        "&nextEpisodeAiringAt=${media.nextAiringEpisode?.airingAt}" +
-                        "&bannerImage=${media.bannerImage}" +
-                        "&coverImage=${media.coverImage?.extraLarge}" +
-                        "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
-                        "&color=${
-                            media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb()
-                        }" +
-                        "&favorite=$favorite" +
-                        "&type=${media.type?.name}"
-            }
-
-        fun navArguments() = navArguments(
-            "title",
-            "subtitleFormatRes",
-            "subtitleStatusRes",
-            "subtitleSeason",
-            "subtitleSeasonYear",
-            "nextEpisode",
-            "nextEpisodeAiringAt",
-            "coverImage",
-            "coverImageWidthToHeightRatio",
-            "bannerImage",
-            "color",
-            "favorite",
-            "type",
-        ) {
-            type = NavType.StringType
-            nullable = true
-        }
-    }
-
+): DetailsHeaderValues {
+    override val coverImageWidthToHeightRatio = params?.coverImageWidthToHeightRatio ?: 1f
     val color
         get() = media()?.coverImage?.color
             ?.let(ComposeColorUtils::hexToColor)
-            ?: _color
-    val coverImage
-        get() = media()?.coverImage?.extraLarge ?: _coverImage
-    val bannerImage
-        get() = media()?.bannerImage ?: _bannerImage
+            ?: params?.colorArgb?.let(::Color)
+    override val coverImage
+        get() = media()?.coverImage?.extraLarge ?: params?.coverImage
+    override val bannerImage
+        get() = media()?.bannerImage ?: params?.bannerImage
     val nextEpisode
         get() = media()?.nextAiringEpisode?.episode
-            ?: _nextEpisode
+            ?: params?.nextEpisode
     val nextEpisodeAiringAt
         get() = media()?.nextAiringEpisode?.airingAt
-            ?: _nextEpisodeAiringAt
+            ?: params?.nextEpisodeAiringAt
     val favorite
-        get() = favoriteUpdate() ?: media()?.isFavourite ?: _favorite
+        get() = favoriteUpdate() ?: media()?.isFavourite ?: params?.favorite
     val type
-        get() = media()?.type ?: _type ?: MediaType.UNKNOWN__
+        get() = media()?.type ?: params?.type ?: MediaType.UNKNOWN__
 
     @Composable
-    fun title() = media()?.title?.primaryTitle() ?: _title ?: ""
+    fun title() = media()?.title?.primaryTitle() ?: params?.title ?: ""
 
     @Composable
     fun subtitleText() = media()?.let {
@@ -369,11 +369,11 @@ class MediaHeaderValues(
             seasonYear = it.seasonYear,
         )
     } ?: listOfNotNull(
-        _subtitleFormatRes?.let { stringResource(it) },
-        _subtitleStatusRes?.let { stringResource(it) },
+        params?.subtitleFormatRes?.let { stringResource(it) },
+        params?.subtitleStatusRes?.let { stringResource(it) },
         MediaUtils.formatSeasonYear(
-            _subtitleSeason,
-            _subtitleSeasonYear,
+            params?.subtitleSeason,
+            params?.subtitleSeasonYear,
             withSeparator = true,
         ),
     )

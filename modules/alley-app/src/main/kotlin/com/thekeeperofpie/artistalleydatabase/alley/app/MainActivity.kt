@@ -47,9 +47,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDe
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @OptIn(
     ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class,
@@ -57,6 +59,9 @@ import dagger.hilt.android.AndroidEntryPoint
 )
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var navigationTypeMap: NavigationTypeMap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +79,7 @@ class MainActivity : ComponentActivity() {
                             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                                 NavHost(navController, Destinations.Home) {
                                     sharedElementComposable<Destinations.Home>(
+                                        navigationTypeMap = navigationTypeMap,
                                         enterTransition = null,
                                         exitTransition = null,
                                     ) {
@@ -100,7 +106,9 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.ArtistDetails> {
+                                    sharedElementComposable<Destinations.ArtistDetails>(
+                                        navigationTypeMap = navigationTypeMap,
+                                    ) {
                                         val route = it.toRoute<Destinations.ArtistDetails>()
                                         ArtistDetailsScreen(
                                             onClickBack = navController::navigateUp,
@@ -127,14 +135,18 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.ArtistMap> {
+                                    sharedElementComposable<Destinations.ArtistMap>(
+                                        navigationTypeMap = navigationTypeMap,
+                                    ) {
                                         ArtistMapScreen(
                                             onClickBack = navController::navigateUp,
                                             onArtistClick = onArtistClick,
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.StampRallyDetails> {
+                                    sharedElementComposable<Destinations.StampRallyDetails>(
+                                        navigationTypeMap = navigationTypeMap,
+                                    ) {
                                         val route = it.toRoute<Destinations.StampRallyDetails>()
                                         StampRallyDetailsScreen(
                                             onClickBack = navController::navigateUp,
@@ -151,7 +163,9 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.StampRallyMap> {
+                                    sharedElementComposable<Destinations.StampRallyMap>(
+                                        navigationTypeMap = navigationTypeMap,
+                                    ) {
                                         StampRallyMapScreen(
                                             onClickBack = navController::navigateUp,
                                             onArtistClick = { entry, imageIndex ->
@@ -165,7 +179,9 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.Series> {
+                                    sharedElementComposable<Destinations.Series>(
+                                        navigationTypeMap = navigationTypeMap,
+                                    ) {
                                         val route = it.toRoute<Destinations.Series>()
                                         ArtistSearchScreen(
                                             onClickBack = navController::navigateUp,
@@ -179,7 +195,9 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.Merch> {
+                                    sharedElementComposable<Destinations.Merch>(
+                                        navigationTypeMap = navigationTypeMap,
+                                    ) {
                                         val route = it.toRoute<Destinations.Merch>()
                                         ArtistSearchScreen(
                                             onClickBack = navController::navigateUp,
@@ -193,14 +211,18 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.SeriesMap> {
+                                    sharedElementComposable<Destinations.SeriesMap>(
+                                        navigationTypeMap = navigationTypeMap,
+                                    ) {
                                         TagMapScreen(
                                             onClickBack = navController::navigateUp,
                                             onArtistClick = onArtistClick,
                                         )
                                     }
 
-                                    sharedElementComposable<Destinations.MerchMap> {
+                                    sharedElementComposable<Destinations.MerchMap>(
+                                        navigationTypeMap = navigationTypeMap,
+                                    ) {
                                         TagMapScreen(
                                             onClickBack = navController::navigateUp,
                                             onArtistClick = onArtistClick,

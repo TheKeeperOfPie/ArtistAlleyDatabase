@@ -32,7 +32,7 @@ object CharacterMediasScreen {
         headerValues: CharacterHeaderValues,
     ) {
         var characterImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
+            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio ?: 1f)
         }
 
         val viewer by viewModel.viewer.collectAsState()

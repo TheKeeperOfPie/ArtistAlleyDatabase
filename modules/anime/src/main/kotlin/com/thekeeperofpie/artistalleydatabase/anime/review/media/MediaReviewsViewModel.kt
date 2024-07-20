@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.MediaAndReviewsReview
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
@@ -14,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteT
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -24,11 +27,13 @@ class MediaReviewsViewModel @Inject constructor(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : HeaderAndListViewModel<MediaReviewsScreen.Entry, MediaAndReviewsReview, MediaAndReviewsReview, ReviewSortOption, MediaReviewsSortFilterController.FilterParams>(
     aniListApi = aniListApi,
     loadingErrorTextRes = R.string.anime_reviews_error_loading,
 ) {
-    val mediaId = savedStateHandle.get<String>("mediaId")!!
+    private val destination = savedStateHandle.toDestination<AnimeDestinations.MediaCharacters>(navigationTypeMap)
+    val mediaId = destination.mediaId
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 

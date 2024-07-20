@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import androidx.compose.runtime.Composable
 import com.anilist.fragment.HomeMedia
+import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -20,7 +21,7 @@ data class AnimeHomeDataEntry(
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
-    ) : AnimeMediaLargeCard.Entry {
+    ) : AnimeMediaLargeCard.Entry, MediaHeaderData by media {
         override val mediaId = media.id.toString()
         override val image
             get() = media.coverImage?.extraLarge
@@ -35,9 +36,7 @@ data class AnimeHomeDataEntry(
             get() = media.popularity
 
         override val nextAiringEpisode
-            get() = media.nextAiringEpisode?.episode
-        override val nextAiringAiringAt
-            get() = media.nextAiringEpisode?.airingAt
+            get() = media.nextAiringEpisode
         override val type
             get() = media.type
 

@@ -42,6 +42,7 @@ import com.anilist.fragment.ForumThread
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
@@ -311,11 +312,13 @@ fun AiringNotificationCard(
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(onClick = {
         notification.mediaId?.let {
-            navigationCallback.onMediaClick(
-                mediaId = it,
-                title = null,
-                coverImage = null,
-                imageWidthToHeightRatio = 1f,
+            navigationCallback.navigate(
+                AnimeDestinations.MediaDetails(
+                    mediaId = it,
+                    title = null,
+                    coverImage = null,
+                    headerParams = null,
+                )
             )
         }
     }) {
@@ -333,11 +336,10 @@ fun AiringNotificationCard(
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
         AnimeMediaCompactListRow(
-            screenKey = screenKey,
             viewer = viewer,
             entry = mediaEntry,
-            onClickListEdit = onClickListEdit,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(8.dp),
+            onClickListEdit = onClickListEdit
         )
     }
 }
@@ -373,11 +375,13 @@ fun RelatedMediaAdditionNotificationCard(
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
-            navigationCallback.onMediaClick(
-                mediaId = it,
-                title = null,
-                coverImage = null,
-                imageWidthToHeightRatio = 1f,
+            navigationCallback.navigate(
+                AnimeDestinations.MediaDetails(
+                    mediaId = it,
+                    title = null,
+                    coverImage = null,
+                    headerParams = null,
+                )
             )
         }
     }) {
@@ -392,11 +396,10 @@ fun RelatedMediaAdditionNotificationCard(
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
         AnimeMediaCompactListRow(
-            screenKey = screenKey,
             viewer = viewer,
             entry = mediaEntry,
-            onClickListEdit = onClickListEdit,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(8.dp),
+            onClickListEdit = onClickListEdit
         )
     }
 }
@@ -412,11 +415,13 @@ fun MediaDataChangeNotificationCard(
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
-            navigationCallback.onMediaClick(
-                mediaId = it,
-                title = null,
-                coverImage = null,
-                imageWidthToHeightRatio = 1f,
+            navigationCallback.navigate(
+                AnimeDestinations.MediaDetails(
+                    mediaId = it,
+                    title = null,
+                    coverImage = null,
+                    headerParams = null,
+                )
             )
         }
     }) {
@@ -441,11 +446,10 @@ fun MediaDataChangeNotificationCard(
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
         AnimeMediaCompactListRow(
-            screenKey = screenKey,
             viewer = viewer,
             entry = mediaEntry,
-            onClickListEdit = onClickListEdit,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(8.dp),
+            onClickListEdit = onClickListEdit
         )
     }
 }
@@ -483,11 +487,10 @@ fun MediaDeletionNotificationCard(
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
         AnimeMediaCompactListRow(
-            screenKey = screenKey,
             viewer = viewer,
             entry = mediaEntry,
-            onClickListEdit = onClickListEdit,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(8.dp),
+            onClickListEdit = onClickListEdit
         )
     }
 }
@@ -503,11 +506,13 @@ fun MediaMergeNotificationCard(
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
-            navigationCallback.onMediaClick(
-                mediaId = it,
-                title = null,
-                coverImage = null,
-                imageWidthToHeightRatio = 1f,
+            navigationCallback.navigate(
+                AnimeDestinations.MediaDetails(
+                    mediaId = it,
+                    title = null,
+                    coverImage = null,
+                    headerParams = null,
+                )
             )
         }
     }) {
@@ -532,11 +537,10 @@ fun MediaMergeNotificationCard(
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
         AnimeMediaCompactListRow(
-            screenKey = screenKey,
             viewer = viewer,
             entry = mediaEntry,
-            onClickListEdit = onClickListEdit,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(8.dp),
+            onClickListEdit = onClickListEdit
         )
     }
 }

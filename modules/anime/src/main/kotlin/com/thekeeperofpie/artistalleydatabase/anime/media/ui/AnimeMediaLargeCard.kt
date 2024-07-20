@@ -48,15 +48,15 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
-import com.anilist.type.MediaFormat
-import com.anilist.type.MediaSeason
-import com.anilist.type.MediaStatus
+import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -69,7 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeMediaLargeCard {
@@ -78,7 +78,6 @@ object AnimeMediaLargeCard {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
         modifier: Modifier = Modifier,
@@ -86,6 +85,7 @@ object AnimeMediaLargeCard {
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
     ) {
+        val sharedElementKey = entry?.mediaId
         ElevatedCard(
             modifier = modifier
                 .fillMaxWidth()
@@ -101,11 +101,18 @@ object AnimeMediaLargeCard {
                     enabled = entry != null,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.onMediaClick(
-                                mediaId = entry.mediaId,
-                                title = title,
-                                coverImage = entry.image,
-                                sharedElementKey = entry.mediaId.toString(),
+                            navigationCallback.navigate(
+                                AnimeDestinations.MediaDetails(
+                                    mediaId = entry.mediaId,
+                                    title = title,
+                                    coverImage = entry.image,
+                                    sharedElementKey = sharedElementKey,
+                                    headerParams = MediaHeaderParams(
+                                        coverImageWidthToHeightRatio = null,
+                                        title = title,
+                                        media = entry,
+                                    ),
+                                )
                             )
                         }
                     },
@@ -126,8 +133,8 @@ object AnimeMediaLargeCard {
                 )
             ) {
                 BannerImage(
-                    screenKey = screenKey,
                     entry = entry,
+                    sharedElementKey = sharedElementKey,
                 )
 
                 Column(
@@ -155,9 +162,9 @@ object AnimeMediaLargeCard {
                     Description(entry = entry)
 
                     Row(verticalAlignment = Alignment.Bottom) {
-                        val nextAiringEpisode = entry?.nextAiringEpisode
                         Column(modifier = Modifier.weight(1f)) {
-                            val nextAiringAt = entry?.nextAiringAiringAt
+                            val nextAiringAt = entry?.nextAiringEpisode?.airingAt
+                            val nextAiringEpisode = entry?.nextAiringEpisode?.episode
                             if (nextAiringAt != null && nextAiringEpisode != null) {
                                 MediaNextAiringSection(
                                     airingAtAniListTimestamp = nextAiringAt,
@@ -191,7 +198,7 @@ object AnimeMediaLargeCard {
                             MediaQuickEdit(
                                 viewer = viewer,
                                 entry = entry,
-                                nextAiringEpisode = nextAiringEpisode,
+                                nextAiringEpisode = entry.nextAiringEpisode?.episode,
                                 forceListEditIcon = forceListEditIcon,
                             )
                         }
@@ -203,66 +210,65 @@ object AnimeMediaLargeCard {
 
     @Composable
     private fun BannerImage(
-        screenKey: String,
         entry: Entry?,
+        sharedElementKey: String?,
     ) {
-        AutoSharedElement(
-            key = "anime_media_${entry?.mediaId}_banner_image",
-            screenKey = screenKey,
-        ) {
-            val foregroundColor = MaterialTheme.colorScheme.surface
-            var loaded by remember(entry?.mediaId) { mutableStateOf(false) }
-            val appTheme = LocalAppTheme.current
-            val isLightTheme = appTheme == AppThemeSetting.LIGHT
-                    || (appTheme == AppThemeSetting.AUTO && !isSystemInDarkTheme())
-            val colorCalculationState = LocalColorCalculationState.current
-            val alpha by animateFloatAsState(
-                if (loaded) 1f else 0f,
-                label = "AnimeMediaLargeCard banner image alpha",
-            )
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(entry?.imageBanner ?: entry?.image)
-                    .crossfade(true)
-                    .allowHardware(colorCalculationState.allowHardware(entry?.mediaId))
-                    .size(
-                        width = Dimension.Undefined,
-                        height = Dimension.Pixels(
-                            LocalDensity.current.run { HEIGHT.roundToPx() / 2 }
-                        ),
+        val foregroundColor = MaterialTheme.colorScheme.surface
+        var loaded by remember(entry?.mediaId) { mutableStateOf(false) }
+        val appTheme = LocalAppTheme.current
+        val isLightTheme = appTheme == AppThemeSetting.LIGHT
+                || (appTheme == AppThemeSetting.AUTO && !isSystemInDarkTheme())
+        val colorCalculationState = LocalColorCalculationState.current
+        val alpha by animateFloatAsState(
+            if (loaded) 1f else 0f,
+            label = "AnimeMediaLargeCard banner image alpha",
+        )
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(entry?.imageBanner ?: entry?.image)
+                .crossfade(true)
+                .allowHardware(colorCalculationState.allowHardware(entry?.mediaId))
+                .size(
+                    width = Dimension.Undefined,
+                    height = Dimension.Pixels(
+                        LocalDensity.current.run { HEIGHT.roundToPx() / 2 }
+                    ),
+                )
+                .build(),
+            contentScale = ContentScale.Crop,
+            onSuccess = {
+                loaded = true
+                if (entry != null) {
+                    ComposeColorUtils.calculatePalette(
+                        entry.mediaId,
+                        it,
+                        colorCalculationState,
                     )
-                    .build(),
-                contentScale = ContentScale.Crop,
-                onSuccess = {
-                    loaded = true
-                    if (entry != null) {
-                        ComposeColorUtils.calculatePalette(
-                            entry.mediaId,
-                            it,
-                            colorCalculationState,
-                        )
-                    }
-                },
-                contentDescription = stringResource(
-                    R.string.anime_media_banner_image_content_description
-                ),
-                modifier = Modifier
-                    .background(entry?.color ?: MaterialTheme.colorScheme.surfaceVariant)
-                    .fillMaxWidth()
-                    .height(HEIGHT)
-                    .drawWithContent {
-                        drawContent()
-                        drawRect(
-                            foregroundColor,
-                            alpha = if (isLightTheme) 0.8f else 0.6f,
-                        )
-                    }
-                    // Clip to match card so that shared element animation keeps rounded corner
-                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-                    .alpha(alpha)
-                    .blurForScreenshotMode()
-            )
-        }
+                }
+            },
+            contentDescription = stringResource(
+                R.string.anime_media_banner_image_content_description
+            ),
+            modifier = Modifier
+                .sharedElement(
+                    sharedElementKey,
+                    if (entry?.imageBanner != null) "media_banner_image" else "media_image",
+                )
+                .background(entry?.color ?: MaterialTheme.colorScheme.surfaceVariant)
+                .fillMaxWidth()
+                .height(HEIGHT)
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        foregroundColor,
+                        alpha = if (isLightTheme) 0.8f else 0.6f,
+                    )
+                }
+                // Clip to match card so that shared element animation keeps rounded corner
+                .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                .alpha(alpha)
+                .blurForScreenshotMode()
+        )
     }
 
     @Composable
@@ -385,27 +391,17 @@ object AnimeMediaLargeCard {
         }
     }
 
-    interface Entry : MediaStatusAware {
+    interface Entry : MediaStatusAware, MediaHeaderData {
         val mediaId: String
         val image: String?
         val imageBanner: String?
         val color: Color?
         val rating: Int?
-        val popularity: Int?
-        val nextAiringAiringAt: Int?
-        val nextAiringEpisode: Int?
         val tags: List<AnimeMediaTagEntry>
         val description: String?
-        val type: MediaType?
-        val isAdult: Boolean?
         val titleRomaji: String?
         val titleEnglish: String?
         val titleNative: String?
-        val format: MediaFormat?
-        val status: MediaStatus?
-        val season: MediaSeason?
-        val seasonYear: Int?
-        val episodes: Int?
         val chapters: Int?
         val volumes: Int?
 

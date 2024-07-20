@@ -9,14 +9,18 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
@@ -34,6 +38,8 @@ object StaffOverviewScreen {
     ) {
         val characters = viewModel.characters.collectAsLazyPagingItems()
         val colorCalculationState = LocalColorCalculationState.current
+        val staffName = entry.staff.name?.primaryName()
+        val staffSubtitle = entry.staff.name?.subtitleName()
         LazyColumn(
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.fillMaxSize()
@@ -53,12 +59,19 @@ object StaffOverviewScreen {
                 titleRes = R.string.anime_staff_details_characters_label,
                 characters = characters,
                 onClickViewAll = {
-                    it.onStaffCharactersClick(
-                        entry.staff,
-                        viewModel.favoritesToggleHelper.favorite,
-                        staffImageWidthToHeightRatio(),
-                        colorCalculationState.getColorsNonComposable(entry.staff.id.toString())
-                            .first
+                    it.navigate(
+                        AnimeDestinations.StaffCharacters(
+                            staffId = entry.staff.id.toString(),
+                            headerParams = StaffHeaderParams(
+                                coverImageWidthToHeightRatio =  staffImageWidthToHeightRatio(),
+                                name = staffName,
+                                subtitle = staffSubtitle,
+                                coverImage = entry.staff.image?.large,
+                                colorArgb = colorCalculationState.getColorsNonComposable(entry.staff.id.toString())
+                                    .first.toArgb(),
+                                favorite = viewModel.favoritesToggleHelper.favorite,
+                            )
+                        )
                     )
                 },
                 viewAllContentDescriptionTextRes = R.string.anime_staff_details_view_all_content_description,

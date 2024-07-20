@@ -2,6 +2,7 @@ plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
+    id(libs.plugins.org.jetbrains.kotlin.plugin.parcelize.get().pluginId)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     alias(libs.plugins.de.mannodermaus.android.junit5)
 }

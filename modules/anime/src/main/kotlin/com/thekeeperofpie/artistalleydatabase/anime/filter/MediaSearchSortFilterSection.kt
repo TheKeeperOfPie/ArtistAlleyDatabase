@@ -48,7 +48,9 @@ import androidx.compose.ui.window.PopupProperties
 import com.anilist.MediaAutocompleteQuery.Data.Page.Medium
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -206,8 +208,17 @@ class MediaSearchSortFilterSection(
             val selectedMedia = selectedMedia
             if (selectedMedia != null) {
                 val navigationCallback = LocalNavigationCallback.current
+                val languageOptionMedia = LocalLanguageOptionMedia.current
                 OutlinedCard(
-                    onClick = { navigationCallback.onMediaClick(selectedMedia) },
+                    onClick = {
+                        navigationCallback.navigate(
+                            AnimeDestinations.MediaDetails(
+                                mediaNavigationData = selectedMedia,
+                                coverImageWidthToHeightRatio = null,
+                                languageOptionMedia = languageOptionMedia,
+                            )
+                        )
+                    },
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {

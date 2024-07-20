@@ -1,7 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.compose.navigation
 
+import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.navigation.NavType
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
+import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -62,18 +68,53 @@ object CustomNavTypes {
         override fun parseValue(value: String) = value.toIntOrNull()
     }
 
-    class NullableEnumType<EnumType : Enum<*>>(private val type: Class<EnumType>) :
+    class NullableEnumType<EnumType : Enum<*>>(private val type: KClass<EnumType>) :
         NavType<EnumType?>(true) {
-        override fun get(bundle: Bundle, key: String): EnumType? {
-            val targetName = bundle.getString(key)
-            return targetName?.let(::parseValue)
+        companion object {
+            inline operator fun <reified T : Enum<*>> invoke() =
+                CustomNavTypes.NullableEnumType(T::class)
+        }
+
+        override fun get(bundle: Bundle, key: String) =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getSerializable(key, type.java)
+            } else {
+                @Suppress("DEPRECATION", "UNCHECKED_CAST")
+                bundle.getSerializable(key) as? EnumType
+            }
+
+        override fun put(bundle: Bundle, key: String, value: EnumType?) {
+            bundle.putSerializable(key, value)
         }
 
         override fun parseValue(value: String) =
-            type.enumConstants?.find { it.name.equals(value, ignoreCase = true) }
+            type.java.enumConstants?.find { it.name.equals(value, ignoreCase = true) }
 
-        override fun put(bundle: Bundle, key: String, value: EnumType?) {
-            bundle.putString(key, value?.name)
+        override fun serializeAsValue(value: EnumType?) = value?.name ?: ""
+    }
+
+    @OptIn(InternalSerializationApi::class)
+    class ParcelableType<Type : Any>(private val type: KClass<Type>) : NavType<Type>(true) {
+        companion object {
+            inline operator fun <reified T : Any> invoke() = CustomNavTypes.ParcelableType(T::class)
         }
+
+        override val name: String = type.java.name
+
+        override fun put(bundle: Bundle, key: String, value: Type) {
+            bundle.putParcelable(key, value as Parcelable?)
+        }
+
+        override fun get(bundle: Bundle, key: String) =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getParcelable(key, type.java)
+            } else {
+                @Suppress("DEPRECATION")
+                bundle.getParcelable(key) as? Type
+            }
+
+        override fun parseValue(value: String) = Json.decodeFromString(type.serializer(), value)
+
+        override fun serializeAsValue(value: Type) = Json.encodeToString(type.serializer(), value)
     }
 }

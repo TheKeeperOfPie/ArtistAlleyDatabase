@@ -38,6 +38,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -49,10 +50,14 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -99,7 +104,7 @@ object CharacterDetailsScreen {
         )
 
         var characterImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
+            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio ?: 1f)
         }
 
         val entry = viewModel.entry
@@ -164,6 +169,9 @@ object CharacterDetailsScreen {
                         val voiceActors =
                             voiceActorsDeferred.takeIf { it.itemCount > 0 } ?: voiceActorsInitial
                         val colorCalculationState = LocalColorCalculationState.current
+                        val character = entry.result?.character
+                        val characterName = character?.name?.primaryName()
+                        val characterSubtitle = character?.name?.subtitleName()
                         LazyColumn(
                             contentPadding = PaddingValues(bottom = 16.dp),
                             modifier = Modifier
@@ -174,6 +182,8 @@ object CharacterDetailsScreen {
                                 editViewModel = editViewModel,
                                 headerValues = headerValues,
                                 entry = entry.result!!,
+                                characterName = characterName,
+                                characterSubtitle = characterSubtitle,
                                 voiceActors = voiceActors,
                                 viewer = viewer,
                                 characterImageWidthToHeightRatio = { characterImageWidthToHeightRatio },
@@ -197,6 +207,8 @@ object CharacterDetailsScreen {
         editViewModel: MediaEditViewModel,
         headerValues: CharacterHeaderValues,
         entry: Entry,
+        characterName: String?,
+        characterSubtitle: String?,
         voiceActors: LazyPagingItems<DetailsStaff>,
         viewer: AniListViewer?,
         characterImageWidthToHeightRatio: () -> Float,
@@ -224,6 +236,8 @@ object CharacterDetailsScreen {
             viewer = viewer,
             editViewModel = editViewModel,
             entry = entry,
+            characterName = characterName,
+            characterSubtitle = characterSubtitle,
             headerValues = headerValues,
             characterImageWidthToHeightRatio = characterImageWidthToHeightRatio,
             expanded = expandedState::media,
@@ -397,6 +411,8 @@ object CharacterDetailsScreen {
         viewer: AniListViewer?,
         editViewModel: MediaEditViewModel,
         entry: Entry,
+        characterName: String?,
+        characterSubtitle: String?,
         headerValues: CharacterHeaderValues,
         characterImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
@@ -415,11 +431,19 @@ object CharacterDetailsScreen {
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             onClickViewAll = {
-                it.onCharacterMediasClick(
-                    character = entry.character,
-                    favorite = headerValues.favorite,
-                    imageWidthToHeightRatio = characterImageWidthToHeightRatio(),
-                    color = headerValues.colorNonComposable(colorCalculationState),
+                it.navigate(
+                    AnimeDestinations.CharacterMedias(
+                        characterId = entry.character.id.toString(),
+                        headerParams = CharacterHeaderParams(
+                            coverImageWidthToHeightRatio = characterImageWidthToHeightRatio(),
+                            name = characterName,
+                            subtitle = characterSubtitle,
+                            favorite = headerValues.favorite,
+                            coverImage = entry.character.image?.large,
+                            colorArgb = headerValues.colorNonComposable(colorCalculationState)
+                                .toArgb(),
+                        )
+                    )
                 )
             },
             viewAllContentDescriptionTextRes = R.string.anime_character_details_view_all_content_description,

@@ -32,7 +32,6 @@ tasks.register("recopyVerificationMetadata") {
 tasks.register("generateVerificationMetadata") {
     dependsOn("recopyVerificationMetadata")
     dependsOn(subprojects.mapNotNull { it.tasks.findByName("assembleDebug") })
-    dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageDebugAndroidTest") })
     dependsOn("buildHealth")
     finalizedBy(":app:licenseReleaseReport")
 }

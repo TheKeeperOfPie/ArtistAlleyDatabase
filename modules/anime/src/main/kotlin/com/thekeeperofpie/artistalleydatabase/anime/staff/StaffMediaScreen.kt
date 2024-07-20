@@ -18,15 +18,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
@@ -70,6 +74,8 @@ object StaffMediaScreen {
                             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                             var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
                             val colorCalculationState = LocalColorCalculationState.current
+                            val languageOptionMedia = LocalLanguageOptionMedia.current
+                            val characterName = it.character.name?.primaryName()
                             CharacterSmallCard(
                                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                                 id = EntryId("anime_character", it.character.id.toString()),
@@ -83,20 +89,30 @@ object StaffMediaScreen {
                                     innerImageWidthToHeightRatio = it.widthToHeightRatio()
                                 },
                                 onClick = {
-                                    navigationCallback.onCharacterClick(
-                                        it.character,
-                                        null,
-                                        imageWidthToHeightRatio,
-                                        colorCalculationState.getColorsNonComposable(
-                                            it.character.id.toString()
-                                        ).first,
+                                    navigationCallback.navigate(
+                                        AnimeDestinations.CharacterDetails(
+                                            characterId = it.character.id.toString(),
+                                            headerParams = CharacterHeaderParams(
+                                                coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                                name = characterName,
+                                                subtitle = null,
+                                                favorite = null,
+                                                coverImage = it.character.image?.large,
+                                                colorArgb = colorCalculationState
+                                                    .getColorsNonComposable(it.character.id.toString())
+                                                    .first.toArgb(),
+                                            )
+                                        )
                                     )
                                 },
                                 onClickInnerImage = {
-                                    it.media?.let {
-                                        navigationCallback.onMediaClick(
-                                            it,
-                                            innerImageWidthToHeightRatio
+                                    if (it.media != null) {
+                                        navigationCallback.navigate(
+                                            AnimeDestinations.MediaDetails(
+                                                mediaNavigationData = it.media,
+                                                coverImageWidthToHeightRatio = innerImageWidthToHeightRatio,
+                                                languageOptionMedia = languageOptionMedia,
+                                            )
                                         )
                                     }
                                 },

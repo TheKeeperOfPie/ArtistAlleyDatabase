@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -16,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,7 @@ class ArtistSearchViewModel @Inject constructor(
     private val artistEntryDao: ArtistEntryDao,
     private val settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : EntrySearchViewModel<ArtistSearchQuery, ArtistEntryGridModel>() {
 
     @Serializable
@@ -47,7 +49,7 @@ class ArtistSearchViewModel @Inject constructor(
         val merch: String? = null,
     )
 
-    private val route = savedStateHandle.toRoute<InternalRoute>()
+    private val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
     val lockedSeries = route.series
     val lockedMerch = route.merch
 

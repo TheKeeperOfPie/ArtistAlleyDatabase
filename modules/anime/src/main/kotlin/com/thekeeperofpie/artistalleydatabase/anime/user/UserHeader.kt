@@ -9,37 +9,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
 fun UserHeader(
-    screenKey: String,
     upIconOption: UpIconOption?,
-    userId: String,
     progress: Float,
-    name: @Composable () -> String,
-    coverImage: @Composable () -> String?,
-    coverImageWidthToHeightRatio: Float = 1f,
-    bannerImage: String? = null,
+    headerValues: UserHeaderValues,
 ) {
     CoverAndBannerHeader(
-        screenKey = screenKey,
         upIconOption = upIconOption,
-        entryId = EntryId("anime_user", userId),
-        progress = progress,
-        coverImage = coverImage,
+        headerValues = headerValues,
         coverImageAllowHardware = true,
-        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-        bannerImage = bannerImage,
         pinnedHeight = 104.dp,
+        progress = progress,
         coverSize = 180.dp,
     ) {
         AutoResizeHeightText(
-            text = name(),
+            text = headerValues.name,
             style = MaterialTheme.typography.headlineLarge,
             maxLines = 1,
             modifier = Modifier
@@ -56,12 +48,12 @@ fun UserHeader(
 
 class UserHeaderValues(
     arguments: Bundle?,
-    val imageWidthToHeightRatio: Float = arguments?.getString("imageWidthToHeightRatio")
+    override val coverImageWidthToHeightRatio: Float = arguments?.getString("imageWidthToHeightRatio")
         ?.toFloatOrNull() ?: 1f,
     private val _name: String? = arguments?.getString("name"),
     private val _image: String? = arguments?.getString("image"),
-    private val user: () -> UserNavigationData?,
-) {
+    private val user: () -> UserByIdQuery.Data.User?,
+) : DetailsHeaderValues {
     companion object {
         const val routeSuffix = "&name={name}" +
                 "&image={image}" +
@@ -96,7 +88,8 @@ class UserHeaderValues(
         }
     }
 
-    val image
+    override val bannerImage = user()?.bannerImage
+    override val coverImage
         get() = user()?.avatar?.large ?: _image
     val name
         get() = user()?.name ?: _name ?: ""

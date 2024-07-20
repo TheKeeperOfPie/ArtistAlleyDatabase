@@ -5,5 +5,6 @@ import androidx.navigation.NavType
 import androidx.navigation.toRoute
 import kotlin.reflect.KType
 
-inline fun <reified T : Any> SavedStateHandle.toDestination(typeMap: Map<KType, NavType<*>>) =
-    toRoute<T>(CustomNavTypes.baseTypeMap + typeMap)
+class NavigationTypeMap(val typeMap: Map<KType, NavType<*>>)
+
+inline fun <reified T : Any> SavedStateHandle.toDestination(typeMap: NavigationTypeMap) = toRoute<T>(typeMap.typeMap)

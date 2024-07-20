@@ -6,11 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,9 +21,10 @@ import javax.inject.Inject
 class StampRallyMapViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     stampRallyEntryDao: StampRallyEntryDao,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    private val route = savedStateHandle.toRoute<Destinations.StampRallyMap>()
+    private val route = savedStateHandle.toDestination<Destinations.StampRallyMap>(navigationTypeMap)
 
     var stampRally by mutableStateOf<StampRallyEntry?>(null)
         private set

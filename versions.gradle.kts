@@ -34,7 +34,7 @@ import Versions_gradle.Versions.junit.jupiterAndroid
 import Versions_gradle.Versions.kotlin.collectionsImmutable
 import Versions_gradle.Versions.kotlin.coroutines
 import Versions_gradle.Versions.kotlin.ksp
-import Versions_gradle.Versions.kotlin.serializationJson
+import Versions_gradle.Versions.kotlin.serialization
 import org.gradle.api.initialization.dsl.VersionCatalogBuilder
 import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 import org.gradle.api.initialization.resolve.RepositoriesMode
@@ -118,7 +118,7 @@ object Versions {
         const val collectionsImmutable = "0.3.7"
         const val coroutines = "1.9.0-RC"
         const val ksp = "2.0.10-RC-1.0.23"
-        const val serializationJson = "1.7.1"
+        const val serialization = "1.7.1"
     }
 
     const val kotlinPoet = "1.15.3"
@@ -179,6 +179,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 with(Versions.kotlin) {
                     plugin("org.jetbrains.kotlin.plugin.compose").version(core)
+                    plugin("org.jetbrains.kotlin.plugin.parcelize").version(core)
                     plugin("org.jetbrains.kotlin.plugin.serialization").version(core)
                 }
 
@@ -319,7 +320,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:$core")
                     library("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$core")
                     library("org.jetbrains.kotlinx:kotlinx-collections-immutable:$collectionsImmutable")
-                    library("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationJson")
+                    library("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
                 }
 
                 with(Versions.junit) {

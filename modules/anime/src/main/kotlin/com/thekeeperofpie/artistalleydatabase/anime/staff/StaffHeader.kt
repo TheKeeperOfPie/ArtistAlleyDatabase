@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
-import android.os.Bundle
+import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -25,22 +25,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import com.anilist.fragment.StaffHeaderData
 import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -48,7 +44,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 // TODO: Collapse this with CharacterHeader?
 @Composable
@@ -62,14 +59,11 @@ fun StaffHeader(
 ) {
     val colorCalculationState = LocalColorCalculationState.current
     CoverAndBannerHeader(
-        screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
         upIconOption = upIconOption,
-        entryId = EntryId("anime_staff", staffId),
+        headerValues = headerValues,
+        coverImageAllowHardware = colorCalculationState.allowHardware(staffId),
         progress = progress,
         color = { headerValues.color(colorCalculationState) },
-        coverImage = { headerValues.image },
-        coverImageAllowHardware = colorCalculationState.allowHardware(staffId),
-        coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
         coverImageOnSuccess = {
             onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
             ComposeColorUtils.calculatePalette(staffId, it, colorCalculationState)
@@ -155,100 +149,52 @@ fun StaffHeader(
     }
 }
 
+@Parcelize
+@Serializable
+data class StaffHeaderParams(
+    val coverImageWidthToHeightRatio: Float?,
+    val name: String?,
+    val subtitle: String?,
+    val coverImage: String?,
+    val colorArgb: Int?,
+    val favorite: Boolean?,
+) : Parcelable {
+    constructor(
+        name: String?,
+        subtitle: String?,
+        coverImageWidthToHeightRatio: Float?,
+        favorite: Boolean?,
+        staffNavigationData: StaffNavigationData,
+    ) : this(
+        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+        name = name,
+        subtitle = subtitle,
+        coverImage = staffNavigationData.image?.large,
+        colorArgb = null,
+        favorite = favorite,
+    )
+}
+
 class StaffHeaderValues(
-    arguments: Bundle,
-    val imageWidthToHeightRatio: Float = arguments.getString("imageWidthToHeightRatio")
-        ?.toFloatOrNull() ?: 1f,
-    private val _name: String? = arguments.getString("name"),
-    private val _subtitle: String? = arguments.getString("subtitle"),
-    private val _image: String? = arguments.getString("image"),
-    private val _color: Color? = arguments.getString("color")
-        ?.toIntOrNull()
-        ?.let(::Color),
-    private val _favorite: Boolean? = arguments.getString("favorite")?.toBooleanStrictOrNull(),
+    private val params: StaffHeaderParams?,
     private val staff: () -> StaffHeaderData?,
     private val favoriteUpdate: () -> Boolean?,
-) {
-    companion object {
-        const val routeSuffix = "&name={name}" +
-                "&subtitle={subtitle}" +
-                "&image={image}" +
-                "&imageWidthToHeightRatio={imageWidthToHeightRatio}" +
-                "&color={color}" +
-                "&favorite={favorite}"
-
-        fun routeSuffix(
-            staff: StaffHeaderData?,
-            languageOption: AniListLanguageOption,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) = if (staff == null) "" else routeSuffix(
-            name = staff.name?.primaryName(languageOption),
-            subtitle = staff.name?.subtitleName(languageOption),
-            image = staff.image?.large,
-            imageWidthToHeightRatio = imageWidthToHeightRatio,
-            color = color,
-            favorite = favorite,
-        )
-
-        fun routeSuffix(
-            staff: StaffNavigationData?,
-            languageOption: AniListLanguageOption,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) = if (staff == null) "" else routeSuffix(
-            name = staff.name?.primaryName(languageOption),
-            subtitle = staff.name?.subtitleName(languageOption),
-            image = staff.image?.large,
-            imageWidthToHeightRatio = imageWidthToHeightRatio,
-            color = color,
-            favorite = favorite,
-        )
-
-        private fun routeSuffix(
-            name: String?,
-            subtitle: String?,
-            image: String?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-            favorite: Boolean?,
-        ) = "&name=$name" +
-                "&subtitle=$subtitle" +
-                "&image=$image" +
-                "&imageWidthToHeightRatio=$imageWidthToHeightRatio" +
-                "&color=${color?.toArgb()}" +
-                "&favorite=$favorite"
-
-        fun navArguments() = listOf(
-            "name",
-            "subtitle",
-            "image",
-            "imageWidthToHeightRatio",
-            "color",
-            "favorite",
-        ).map {
-            navArgument(it) {
-                type = NavType.StringType
-                nullable = true
-            }
-        }
-    }
-
-    val image
-        get() = staff()?.image?.large ?: _image
+) : DetailsHeaderValues {
+    override val coverImageWidthToHeightRatio = params?.coverImageWidthToHeightRatio
+    override val bannerImage = null
+    override val coverImage
+        get() = staff()?.image?.large ?: params?.coverImage
     val favorite
-        get() = favoriteUpdate() ?: staff()?.isFavourite ?: _favorite
+        get() = favoriteUpdate() ?: staff()?.isFavourite ?: params?.favorite
 
     @Composable
-    fun name() = staff()?.name?.primaryName() ?: _name ?: ""
+    fun name() = staff()?.name?.primaryName() ?: params?.name ?: ""
 
     @Composable
-    fun subtitle() = staff()?.name?.subtitleName() ?: _subtitle ?: ""
+    fun subtitle() = staff()?.name?.subtitleName() ?: params?.subtitle ?: ""
 
     @Composable
     fun color(colorCalculationState: ColorCalculationState) =
         colorCalculationState.getColors(staff()?.id?.toString()).first
-            .takeOrElse { _color ?: Color.Unspecified }
+            .takeOrElse { params?.colorArgb?.let(::Color) ?: Color.Unspecified }
 }

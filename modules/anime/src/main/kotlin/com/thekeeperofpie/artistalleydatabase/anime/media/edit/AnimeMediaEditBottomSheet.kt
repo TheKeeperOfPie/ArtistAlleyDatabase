@@ -75,8 +75,10 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -257,8 +259,6 @@ object AnimeMediaEditBottomSheet {
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 val colorCalculationState = LocalColorCalculationState.current
                 MediaCoverImage(
-                    screenKey = screenKey,
-                    mediaId = mediaId,
                     image = ImageRequest.Builder(LocalContext.current)
                         .data(coverImage)
                         .crossfade(true)
@@ -270,6 +270,30 @@ object AnimeMediaEditBottomSheet {
                             height = Dimension.Undefined
                         )
                         .build(),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
+                        .combinedClickable(
+                            onClick = {
+                                navigationCallback.navigate(
+                                    AnimeDestinations.MediaDetails(
+                                        mediaId = mediaId,
+                                        title = initialParams.title,
+                                        coverImage = coverImage,
+                                        headerParams = MediaHeaderParams(
+                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                            title = initialParams.title,
+                                            media = null,
+                                        ),
+                                    )
+                                )
+                            },
+                            onLongClick = { coverImage?.let(fullscreenImageHandler::openImage) },
+                            onLongClickLabel = stringResource(
+                                R.string.anime_media_cover_image_long_press_preview
+                            ),
+                        ),
                     contentScale = ContentScale.Crop,
                     onSuccess = {
                         imageWidthToHeightRatio = it.widthToHeightRatio()
@@ -278,25 +302,7 @@ object AnimeMediaEditBottomSheet {
                             it,
                             colorCalculationState,
                         )
-                    },
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
-                        .combinedClickable(
-                            onClick = {
-                                navigationCallback.onMediaClick(
-                                    mediaId = mediaId,
-                                    title = initialParams.title,
-                                    coverImage = coverImage,
-                                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                                )
-                            },
-                            onLongClick = { coverImage?.let(fullscreenImageHandler::openImage) },
-                            onLongClickLabel = stringResource(
-                                R.string.anime_media_cover_image_long_press_preview
-                            ),
-                        )
+                    }
                 )
 
                 AutoSizeText(

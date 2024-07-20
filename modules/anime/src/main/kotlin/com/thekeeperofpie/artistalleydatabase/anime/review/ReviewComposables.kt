@@ -187,11 +187,10 @@ fun ReviewCard(
 
         if (showMedia) {
             AnimeMediaCompactListRow(
-                screenKey = screenKey,
                 viewer = viewer,
                 entry = media,
-                onClickListEdit = onClickListEdit,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                onClickListEdit = onClickListEdit
             )
         }
     }

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
-import android.text.Spanned
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -63,7 +62,7 @@ object StaffDetailsScreen {
         val expandedState = rememberExpandedState()
 
         var staffImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
+            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio ?: 1f)
         }
 
         val snackbarHostState = remember { SnackbarHostState() }

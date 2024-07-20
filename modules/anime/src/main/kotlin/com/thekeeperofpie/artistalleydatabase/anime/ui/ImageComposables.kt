@@ -69,8 +69,6 @@ fun MediaCoverImageNoSharedElement(
 
 @Composable
 fun MediaCoverImage(
-    screenKey: String,
-    mediaId: String?,
     image: ImageRequest,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,

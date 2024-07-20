@@ -42,7 +42,9 @@ import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -125,7 +127,6 @@ object UserListRow {
                         viewer = viewer,
                         entry = entry,
                         onClickListEdit = onClickListEdit,
-                        onMediaClick = navigationCallback::onMediaClick,
                     )
                 }
             }
@@ -206,7 +207,6 @@ object UserListRow {
         viewer: AniListViewer?,
         entry: Entry?,
         onClickListEdit: (MediaNavigationData) -> Unit,
-        onMediaClick: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() } ?: return
         val context = LocalContext.current
@@ -227,8 +227,13 @@ object UserListRow {
                 key = { it.media.id },
                 contentType = { "media" },
             ) {
-                AutoSharedElement(key = "anime_media_${it?.media?.id}_image", screenKey = screenKey) {
+                AutoSharedElement(
+                    key = "anime_media_${it?.media?.id}_image",
+                    screenKey = screenKey
+                ) {
                     Box {
+                        val navigationCallback = LocalNavigationCallback.current
+                        val languageOptionMedia = LocalLanguageOptionMedia.current
                         ListRowSmallImage(
                             context = context,
                             density = density,
@@ -238,8 +243,14 @@ object UserListRow {
                             width = MEDIA_WIDTH,
                             height = MEDIA_HEIGHT,
                             onClick = { imageWidthToHeightRatio ->
-                                it?.media?.let {
-                                    onMediaClick(it, imageWidthToHeightRatio)
+                                if (it?.media != null) {
+                                    navigationCallback.navigate(
+                                        AnimeDestinations.MediaDetails(
+                                            mediaNavigationData = it.media,
+                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                            languageOptionMedia = languageOptionMedia,
+                                        )
+                                    )
                                 }
                             },
                         )

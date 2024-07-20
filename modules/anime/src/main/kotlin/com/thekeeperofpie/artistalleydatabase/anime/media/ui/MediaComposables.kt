@@ -524,19 +524,17 @@ fun MediaViewOptionRow(
             showQuickEdit = showQuickEdit,
         )
         MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
-            screenKey = screenKey,
             viewer = viewer,
             entry = entry,
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
         )
         MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
-            screenKey = screenKey,
             viewer = viewer,
             entry = entry,
+            onClickListEdit = onClickListEdit,
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
-            onClickListEdit = onClickListEdit,
         )
         MediaViewOption.GRID -> MediaGridCard(
             screenKey = screenKey,

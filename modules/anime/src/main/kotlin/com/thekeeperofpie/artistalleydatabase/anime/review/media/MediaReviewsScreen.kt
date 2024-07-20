@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.review.media
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -10,10 +9,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaAndReviewsQuery
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
@@ -35,6 +37,7 @@ object MediaReviewsScreen {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
 
+        val mediaTitle = media?.title?.primaryTitle()
         HeaderAndListScreen(
             viewModel = viewModel,
             headerTextRes = R.string.anime_reviews_header,
@@ -42,7 +45,6 @@ object MediaReviewsScreen {
                 MediaHeader(
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
-                    viewer = viewModel.viewer.collectAsState().value,
                     mediaId = viewModel.mediaId,
                     mediaType = media?.type,
                     titles = entry.result?.titlesUnique,
@@ -59,10 +61,10 @@ object MediaReviewsScreen {
                             it,
                         )
                     },
-                    enableCoverImageSharedElement = false,
                     onImageWidthToHeightRatioAvailable = {
                         coverImageWidthToHeightRatio = it
-                    }
+                    },
+                    enableCoverImageSharedElement = false
                 )
             },
             itemKey = { it.id },
@@ -72,11 +74,17 @@ object MediaReviewsScreen {
                     review = review,
                     onClick = {
                         if (review != null) {
-                            it.onReviewClick(
-                                reviewId = review.id.toString(),
-                                media = media,
-                                favorite = viewModel.favoritesToggleHelper.favorite,
-                                imageWidthToHeightRatio = coverImageWidthToHeightRatio
+                            it.navigate(
+                                AnimeDestinations.ReviewDetails(
+                                    reviewId = review.id.toString(),
+                                    headerParams = MediaHeaderParams(
+                                        title = mediaTitle,
+                                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                                        media = media,
+                                        favorite = viewModel.favoritesToggleHelper.favorite
+                                            ?: media?.isFavourite,
+                                    )
+                                )
                             )
                         }
                     },

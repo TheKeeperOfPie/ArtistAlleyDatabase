@@ -100,7 +100,6 @@ object MediaActivitiesScreen {
                     MediaHeader(
                         screenKey = SCREEN_KEY,
                         upIconOption = upIconOption,
-                        viewer = viewer,
                         mediaId = viewModel.mediaId,
                         mediaType = viewModel.entry.result?.data?.media?.type,
                         titles = entry.result?.titlesUnique,
@@ -117,10 +116,10 @@ object MediaActivitiesScreen {
                                 it,
                             )
                         },
-                        enableCoverImageSharedElement = false,
                         onImageWidthToHeightRatioAvailable = {
                             coverImageWidthToHeightRatio = it
-                        }
+                        },
+                        enableCoverImageSharedElement = false
                     )
                 }
             },

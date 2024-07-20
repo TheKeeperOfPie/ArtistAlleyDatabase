@@ -27,9 +27,12 @@ import androidx.compose.ui.unit.dp
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StudioListRowFragment
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
@@ -138,6 +141,7 @@ object StudioListRow {
                 AutoSharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
                     Box {
                         val navigationCallback = LocalNavigationCallback.current
+                        val title = item?.media?.title?.primaryTitle()
                         ListRowSmallImage(
                             context = context,
                             density = density,
@@ -146,7 +150,18 @@ object StudioListRow {
                             contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
                             onClick = { ratio ->
                                 if (item != null) {
-                                    navigationCallback.onMediaClick(item.media, ratio)
+                                    navigationCallback.navigate(
+                                        AnimeDestinations.MediaDetails(
+                                            mediaId = item.media.id.toString(),
+                                            title = title,
+                                            coverImage = item.media.coverImage?.extraLarge,
+                                            headerParams = MediaHeaderParams(
+                                                title = title,
+                                                coverImageWidthToHeightRatio = ratio,
+                                                mediaWithListStatus = item.media,
+                                            )
+                                        )
+                                    )
                                 }
                             },
                             width = mediaWidth,

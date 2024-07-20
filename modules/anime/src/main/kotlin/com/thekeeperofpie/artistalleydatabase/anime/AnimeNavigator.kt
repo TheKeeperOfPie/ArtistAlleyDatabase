@@ -7,8 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -21,14 +19,6 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.anilist.fragment.CharacterHeaderData
-import com.anilist.fragment.CharacterNavigationData
-import com.anilist.fragment.MediaHeaderData
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.MediaPreview
-import com.anilist.fragment.MediaPreviewWithDescription
-import com.anilist.fragment.StaffHeaderData
-import com.anilist.fragment.StaffNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -59,9 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
@@ -115,18 +105,20 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdsFromMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.navArguments
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
+import kotlin.reflect.KClass
 
 object AnimeNavigator {
 
     fun initialize(
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder,
+        navigationTypeMap: NavigationTypeMap,
         upIconOption: UpIconOption?,
         onClickAuth: () -> Unit,
         onClickSettings: () -> Unit,
@@ -253,7 +245,7 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaDetails>(
-            typeMap = AnimeDestinations.MediaDetails.typeMap,
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}/.*" },
@@ -264,7 +256,7 @@ object AnimeNavigator {
             val destination = it.toRoute<AnimeDestinations.MediaDetails>()
             val mediaDetailsViewModel = hiltViewModel<AnimeMediaDetailsViewModel>()
             val headerValues = MediaHeaderValues(
-                destination = destination,
+                params = destination.headerParams,
                 media = { mediaDetailsViewModel.entry.result?.media },
                 favoriteUpdate = { mediaDetailsViewModel.favoritesToggleHelper.favorite },
             )
@@ -320,6 +312,7 @@ object AnimeNavigator {
             val navigationCallback = LocalNavigationCallback.current
 
             val sharedElementKey = destination.sharedElementKey
+            val mediaTitle = mediaDetailsViewModel.entry.result?.media?.title?.primaryTitle()
             AnimeMediaDetailsScreen(
                 viewModel = mediaDetailsViewModel,
                 upIconOption = UpIconOption.Back(navHostController),
@@ -397,11 +390,18 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChange,
                         onClickListEdit = onClickListEdit,
                         onClickViewAll = {
-                            it.onMediaRecommendationsClick(
-                                mediaDetailsViewModel.mediaId,
-                                mediaDetailsViewModel.entry.result?.media,
-                                mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                                coverImageWidthToHeightRatio(),
+                            val media = mediaDetailsViewModel.entry.result?.media
+                            it.navigate(
+                                AnimeDestinations.MediaRecommendations(
+                                    mediaId = mediaDetailsViewModel.mediaId,
+                                    headerParams = MediaHeaderParams(
+                                        title = mediaTitle,
+                                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
+                                        media = media,
+                                        favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
+                                            ?: media?.isFavourite,
+                                    )
+                                )
                             )
                         },
                         onUserRecommendationRating = recommendationsViewModel.recommendationToggleHelper::toggle,
@@ -435,11 +435,18 @@ object AnimeNavigator {
                         onClickViewAll = {
                             val entry = mediaDetailsViewModel.entry.result
                             if (entry != null) {
-                                it.onMediaActivitiesClick(
-                                    entry,
-                                    activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
-                                    mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                                    coverImageWidthToHeightRatio(),
+                                it.navigate(
+                                    AnimeDestinations.MediaActivities(
+                                        mediaId = mediaDetailsViewModel.mediaId,
+                                        showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
+                                        headerParams = MediaHeaderParams(
+                                            title = mediaTitle,
+                                            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
+                                            media = entry.media,
+                                            favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
+                                                ?: entry.media.isFavourite,
+                                        )
+                                    )
                                 )
                             }
                         },
@@ -480,19 +487,33 @@ object AnimeNavigator {
                         expanded = expanded,
                         onExpandedChange = onExpandedChange,
                         onClickViewAll = {
-                            it.onMediaReviewsClick(
-                                mediaDetailsViewModel.mediaId,
-                                mediaDetailsViewModel.entry.result?.media,
-                                mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                                coverImageWidthToHeightRatio(),
+                            val media = mediaDetailsViewModel.entry.result?.media
+                            it.navigate(
+                                AnimeDestinations.MediaReviews(
+                                    mediaId = mediaDetailsViewModel.mediaId,
+                                    headerParams = MediaHeaderParams(
+                                        title = mediaTitle,
+                                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
+                                        media = media,
+                                        favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
+                                            ?: media?.isFavourite,
+                                    )
+                                )
                             )
                         },
                         onReviewClick = { navigationCallback, item ->
-                            navigationCallback.onReviewClick(
-                                reviewId = item.id.toString(),
-                                media = mediaDetailsViewModel.entry.result?.media,
-                                favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                                imageWidthToHeightRatio = coverImageWidthToHeightRatio()
+                            val media = mediaDetailsViewModel.entry.result?.media
+                            navigationCallback.navigate(
+                                AnimeDestinations.ReviewDetails(
+                                    reviewId = item.id.toString(),
+                                    headerParams = MediaHeaderParams(
+                                        title = mediaTitle,
+                                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
+                                        media = media,
+                                        favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
+                                            ?: media?.isFavourite,
+                                    )
+                                )
                             )
                         },
                     )
@@ -500,9 +521,8 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.CHARACTER_DETAILS.id
-                    + "?characterId={characterId}${CharacterHeaderValues.routeSuffix}",
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.CharacterDetails>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}"
@@ -511,19 +531,11 @@ object AnimeNavigator {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}/.*"
                 },
             ),
-            arguments = listOf(
-                navArgument("characterId") {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            ) + CharacterHeaderValues.navArguments(),
         ) {
-            val arguments = it.arguments!!
-            val characterId = arguments.getString("characterId")!!
-
             val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>()
+            val destination = it.toRoute<AnimeDestinations.CharacterDetails>()
             val headerValues = CharacterHeaderValues(
-                arguments,
+                params = destination.headerParams,
                 character = { viewModel.entry.result?.character },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -535,19 +547,13 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.CHARACTER_MEDIAS.id
-                    + "?characterId={characterId}${CharacterHeaderValues.routeSuffix}",
-            arguments = listOf(
-                navArgument("characterId") {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            ) + MediaHeaderValues.navArguments()
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.CharacterMedias>(
+            navigationTypeMap = navigationTypeMap
         ) {
+            val destination = it.toRoute<AnimeDestinations.CharacterMedias>()
             val viewModel = hiltViewModel<CharacterMediasViewModel>()
             val headerValues = CharacterHeaderValues(
-                it.arguments!!,
+                params = destination.headerParams,
                 character = { viewModel.entry.result?.character },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -559,24 +565,17 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.STAFF_DETAILS.id
-                    + "?staffId={staffId}${StaffHeaderValues.routeSuffix}",
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.StaffDetails>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}/.*" },
             ),
-            arguments = listOf(
-                navArgument("staffId") {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            ) + StaffHeaderValues.navArguments(),
         ) {
-            val arguments = it.arguments!!
             val viewModel = hiltViewModel<StaffDetailsViewModel>()
+            val destination = it.toRoute<AnimeDestinations.StaffDetails>()
             val headerValues = StaffHeaderValues(
-                arguments,
+                params = destination.headerParams,
                 staff = { viewModel.entry?.staff },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -588,19 +587,13 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.STAFF_CHARACTERS.id
-                    + "?staffId={staffId}${StaffHeaderValues.routeSuffix}",
-            arguments = listOf(
-                navArgument("staffId") {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            ) + StaffHeaderValues.navArguments()
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.StaffCharacters>(
+            navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<StaffCharactersViewModel>()
+            val destination = it.toRoute<AnimeDestinations.StaffCharacters>()
             val headerValues = StaffHeaderValues(
-                arguments = it.arguments!!,
+                params = destination.headerParams,
                 staff = { viewModel.entry.result?.staff },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -671,26 +664,13 @@ object AnimeNavigator {
             NotificationsScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.MEDIA_CHARACTERS.id
-                    + "?mediaId={mediaId}&mediaType={mediaType}${MediaHeaderValues.routeSuffix}",
-            arguments = listOf(
-                navArgument("mediaId") {
-                    type = NavType.StringType
-                    nullable = false
-                },
-                navArgument("mediaType") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ) + MediaHeaderValues.navArguments()
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaCharacters>(
+            navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<MediaCharactersViewModel>()
-            // TODO
+            val destination = it.toRoute<AnimeDestinations.MediaCharacters>()
             val headerValues = MediaHeaderValues(
-                destination = AnimeDestinations.MediaDetails(
-                    it.arguments!!.getString("mediaId")!!
-                ),
+                params = destination.headerParams,
                 media = { viewModel.entry.result?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -702,22 +682,13 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.MEDIA_REVIEWS.id
-                    + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
-            arguments = listOf(
-                navArgument("mediaId") {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            ) + MediaHeaderValues.navArguments()
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaReviews>(
+            navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<MediaReviewsViewModel>()
-            // TODO
+            val destination = it.toRoute<AnimeDestinations.MediaReviews>()
             val headerValues = MediaHeaderValues(
-                destination = AnimeDestinations.MediaDetails(
-                    it.arguments!!.getString("mediaId")!!
-                ),
+                params = destination.headerParams,
                 media = { viewModel.entry.result?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -741,22 +712,13 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id
-                    + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
-            arguments = listOf(
-                navArgument("mediaId") {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            ) + MediaHeaderValues.navArguments()
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaRecommendations>(
+            navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<MediaRecommendationsViewModel>()
-            // TODO
+            val destination = it.toRoute<AnimeDestinations.MediaRecommendations>()
             val headerValues = MediaHeaderValues(
-                destination = AnimeDestinations.MediaDetails(
-                    it.arguments!!.getString("mediaId")!!
-                ),
+                params = destination.headerParams,
                 media = { viewModel.entry.result?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -768,28 +730,13 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.MEDIA_ACTIVITIES.id
-                    + "?mediaId={mediaId}"
-                    + "&showFollowing={showFollowing}"
-                    + MediaHeaderValues.routeSuffix,
-            arguments = listOf(
-                navArgument("mediaId") {
-                    type = NavType.StringType
-                    nullable = false
-                },
-                navArgument("showFollowing") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ) + MediaHeaderValues.navArguments()
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaActivities>(
+            navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<MediaActivitiesViewModel>()
-            // TODO
+            val destination = it.toRoute<AnimeDestinations.MediaActivities>()
             val headerValues = MediaHeaderValues(
-                destination = AnimeDestinations.MediaDetails(
-                    it.arguments!!.getString("mediaId")!!
-                ),
+                params = destination.headerParams,
                 media = { viewModel.entry.result?.data?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -801,28 +748,19 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.REVIEW_DETAILS.id + "?reviewId={reviewId}",
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.ReviewDetails>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}" },
                 navDeepLink {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}/.*"
                 },
             ),
-            arguments = listOf(
-                navArgument("reviewId") {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            ) + MediaHeaderValues.navArguments()
         ) {
-            val arguments = it.arguments!!
             val viewModel = hiltViewModel<ReviewDetailsViewModel>()
-            // TODO
+            val destination = it.toRoute<AnimeDestinations.ReviewDetails>()
             val headerValues = MediaHeaderValues(
-                destination = AnimeDestinations.MediaDetails(
-                    it.arguments!!.getString("mediaId")!!
-                ),
+                params = destination.headerParams,
                 media = { viewModel.entry?.review?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
@@ -1206,174 +1144,6 @@ object AnimeNavigator {
         )
     }
 
-    fun onMediaCharactersClick(
-        navHostController: NavHostController,
-        mediaId: String,
-        media: MediaHeaderData?,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.MEDIA_CHARACTERS.id +
-                "?mediaId=$mediaId" +
-                MediaHeaderValues.routeSuffix(
-                    media = media,
-                    languageOption = languageOption,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                )
-    )
-
-    fun onMediaReviewsClick(
-        navHostController: NavHostController,
-        mediaId: String,
-        media: MediaHeaderData?,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.MEDIA_REVIEWS.id +
-                "?mediaId=$mediaId" +
-                MediaHeaderValues.routeSuffix(
-                    media = media,
-                    languageOption = languageOption,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                )
-    )
-
-    fun onMediaRecommendationsClick(
-        navHostController: NavHostController,
-        mediaId: String,
-        media: MediaHeaderData?,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id +
-                "?mediaId=$mediaId" +
-                MediaHeaderValues.routeSuffix(
-                    media = media,
-                    languageOption = languageOption,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                )
-    )
-
-    fun onMediaActivitiesClick(
-        navHostController: NavHostController,
-        entry: AnimeMediaDetailsScreen.Entry,
-        languageOption: AniListLanguageOption,
-        showFollowing: Boolean,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.MEDIA_ACTIVITIES.id
-                + "?mediaId=${entry.mediaId}"
-                + "&showFollowing=${showFollowing}"
-                + MediaHeaderValues.routeSuffix(
-            media = entry.media,
-            languageOption = languageOption,
-            favorite = favorite,
-            imageWidthToHeightRatio = imageWidthToHeightRatio,
-        )
-    )
-
-    fun onCharacterClick(
-        navHostController: NavHostController,
-        character: CharacterNavigationData,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-        color: Color?,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.CHARACTER_DETAILS.id +
-                "?characterId=${character.id}" +
-                CharacterHeaderValues.routeSuffix(
-                    character,
-                    languageOption,
-                    favorite,
-                    imageWidthToHeightRatio,
-                    color
-                )
-    )
-
-    fun onCharacterMediasClick(
-        navHostController: NavHostController,
-        character: CharacterHeaderData,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-        color: Color?,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.CHARACTER_MEDIAS.id +
-                "?characterId=${character.id}" +
-                CharacterHeaderValues.routeSuffix(
-                    character,
-                    languageOption,
-                    favorite ?: character.isFavourite,
-                    imageWidthToHeightRatio,
-                    color,
-                )
-    )
-
-    fun onStaffClick(
-        navHostController: NavHostController,
-        staff: StaffNavigationData,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-        color: Color?,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.STAFF_DETAILS.id +
-                "?staffId=${staff.id}" +
-                StaffHeaderValues.routeSuffix(
-                    staff = staff,
-                    languageOption = languageOption,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    color = color,
-                )
-    )
-
-    fun onStaffClick(
-        navHostController: NavHostController,
-        staff: StaffHeaderData,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-        color: Color?,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.STAFF_DETAILS.id +
-                "?staffId=${staff.id}" +
-                StaffHeaderValues.routeSuffix(
-                    staff = staff,
-                    languageOption = languageOption,
-                    favorite = favorite ?: staff.isFavourite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    color = color,
-                )
-    )
-
-    fun onStaffCharactersClick(
-        navHostController: NavHostController,
-        staff: StaffHeaderData,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-        color: Color?,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.STAFF_CHARACTERS.id +
-                "?staffId=${staff.id}" +
-                StaffHeaderValues.routeSuffix(
-                    staff = staff,
-                    languageOption = languageOption,
-                    favorite = favorite ?: staff.isFavourite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    color = color,
-                )
-    )
-
     fun onUserClick(
         navHostController: NavHostController,
         user: UserNavigationData,
@@ -1399,24 +1169,6 @@ object AnimeNavigator {
                     "&mediaListStatus=${mediaListStatus?.rawValue}"
         )
     }
-
-    fun onReviewClick(
-        navHostController: NavHostController,
-        reviewId: String,
-        media: MediaHeaderData?,
-        languageOption: AniListLanguageOption,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.REVIEW_DETAILS.id +
-                "?reviewId=$reviewId" +
-                MediaHeaderValues.routeSuffix(
-                    media,
-                    languageOption,
-                    favorite ?: media?.isFavourite,
-                    imageWidthToHeightRatio,
-                )
-    )
 
     fun onStudioClick(
         navHostController: NavHostController,
@@ -1462,147 +1214,6 @@ object AnimeNavigator {
         private val languageOptionCharacters: AniListLanguageOption = AniListLanguageOption.DEFAULT,
         private val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     ) {
-        fun onMediaClick(
-            media: MediaPreview,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            sharedElementKey: String? = null,
-        ) {
-            navHostController?.navigate(
-                AnimeDestinations.MediaDetails(
-                    mediaId = media.id.toString(),
-                    sharedElementKey = sharedElementKey,
-                    title = media.title?.primaryTitle(languageOptionMedia),
-                    coverImage = media.coverImage?.extraLarge,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    subtitleFormatRes = media.format.toTextRes(),
-                    subtitleStatusRes = media.status.toTextRes(),
-                    subtitleSeason = media.season,
-                    subtitleSeasonYear = media.seasonYear,
-                    nextEpisode = media.nextAiringEpisode?.episode,
-                    nextEpisodeAiringAt = media.nextAiringEpisode?.airingAt,
-                    bannerImage = media.bannerImage,
-                    colorArgb = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb(),
-                    favorite = favorite,
-                    type = media.type,
-                )
-            )
-        }
-
-        fun onMediaClick(
-            media: MediaPreviewWithDescription,
-            imageWidthToHeightRatio: Float? = null,
-        ) {
-            navHostController?.navigate(
-                AnimeDestinations.MediaDetails(
-                    mediaId = media.id.toString(),
-                    title = media.title?.primaryTitle(languageOptionMedia),
-                    coverImage = media.coverImage?.extraLarge,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                )
-            )
-        }
-
-        fun onMediaClick(
-            mediaId: String,
-            title: String?,
-            coverImage: String?,
-            imageWidthToHeightRatio: Float? = null,
-            sharedElementKey: String? = null,
-        ) {
-            navHostController?.navigate(
-                AnimeDestinations.MediaDetails(
-                    mediaId = mediaId,
-                    title = title,
-                    coverImage = coverImage,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    sharedElementKey = sharedElementKey,
-                )
-            )
-        }
-
-        fun onMediaClick(media: MediaNavigationData, imageWidthToHeightRatio: Float? = null) {
-            navHostController?.navigate(
-                AnimeDestinations.MediaDetails(
-                    mediaId = media.id.toString(),
-                    title = media.title?.primaryTitle(languageOptionMedia),
-                    coverImage = media.coverImage?.extraLarge,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                )
-            )
-        }
-
-        fun onMediaCharactersClick(
-            mediaId: String,
-            media: MediaHeaderData?,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-        ) {
-            navHostController?.let {
-                onMediaCharactersClick(
-                    navHostController = it,
-                    mediaId = mediaId,
-                    media = media,
-                    languageOption = languageOptionMedia,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio
-                )
-            }
-        }
-
-        fun onMediaReviewsClick(
-            mediaId: String,
-            media: MediaHeaderData?,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-        ) {
-            navHostController?.let {
-                onMediaReviewsClick(
-                    navHostController = it,
-                    mediaId = mediaId,
-                    media = media,
-                    languageOption = languageOptionMedia,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio
-                )
-            }
-        }
-
-        fun onMediaRecommendationsClick(
-            mediaId: String,
-            media: MediaHeaderData?,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-        ) {
-            navHostController?.let {
-                onMediaRecommendationsClick(
-                    navHostController = it,
-                    mediaId = mediaId,
-                    media = media,
-                    languageOption = languageOptionMedia,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio
-                )
-            }
-        }
-
-        fun onMediaActivitiesClick(
-            media: AnimeMediaDetailsScreen.Entry,
-            showFollowing: Boolean,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-        ) {
-            navHostController?.let {
-                onMediaActivitiesClick(
-                    navHostController = it,
-                    entry = media,
-                    languageOption = languageOptionMedia,
-                    showFollowing = showFollowing,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio
-                )
-            }
-        }
 
         fun onTagClick(mediaType: MediaType, id: String, name: String) {
             navHostController?.let { onTagClick(it, mediaType, id, name) }
@@ -1624,80 +1235,8 @@ object AnimeNavigator {
             navHostController?.let { onUserClick(it, userNavigationData, imageWidthToHeightRatio) }
         }
 
-        fun onCharacterClick(
-            character: CharacterNavigationData,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) {
-            navHostController?.let {
-                onCharacterClick(
-                    navHostController = it,
-                    character = character,
-                    languageOption = languageOptionCharacters,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    color = color
-                )
-            }
-        }
-
-        fun onCharacterMediasClick(
-            character: CharacterHeaderData,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) {
-            navHostController?.let {
-                onCharacterMediasClick(
-                    navHostController = it,
-                    character = character,
-                    languageOption = languageOptionCharacters,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    color = color
-                )
-            }
-        }
-
         fun onCharacterLongClick(id: String) {
             // TODO
-        }
-
-        fun onStaffClick(
-            staff: StaffNavigationData,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) {
-            navHostController?.let {
-                onStaffClick(
-                    navHostController = it,
-                    staff = staff,
-                    languageOption = languageOptionStaff,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    color = color,
-                )
-            }
-        }
-
-        fun onStaffCharactersClick(
-            staff: StaffHeaderData,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) {
-            navHostController?.let {
-                onStaffCharactersClick(
-                    navHostController = it,
-                    staff = staff,
-                    languageOption = languageOptionStaff,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                    color = color,
-                )
-            }
         }
 
         fun onStaffLongClick(id: String) {
@@ -1741,24 +1280,6 @@ object AnimeNavigator {
 
         fun onSeasonalClick() {
             navHostController?.navigate(AnimeNavDestinations.SEASONAL.id)
-        }
-
-        fun onReviewClick(
-            reviewId: String,
-            media: MediaHeaderData?,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-        ) {
-            navHostController?.let {
-                onReviewClick(
-                    navHostController = it,
-                    reviewId = reviewId,
-                    media = media,
-                    languageOption = languageOptionMedia,
-                    favorite = favorite,
-                    imageWidthToHeightRatio = imageWidthToHeightRatio,
-                )
-            }
         }
 
         fun onActivityDetailsClick(activityId: String) {
@@ -1842,6 +1363,12 @@ object AnimeNavigator {
         }
 
         fun navigate(route: String) = navHostController?.navigate(route)
+
+        inline fun <reified T : Any> navigate(route: T) = navigate(T::class, route)
+
+        fun <T : Any> navigate(clazz: KClass<T>, route: T) {
+            navHostController?.navigate<T>(route)
+        }
 
         fun navigateUp() = navHostController?.navigateUp()
     }

@@ -43,9 +43,11 @@ import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -113,17 +115,26 @@ fun StaffListRow(
             val staff = staffList[it]
             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
             val colorCalculationState = LocalColorCalculationState.current
+            val staffName = staff?.staff?.name?.primaryName()
+            val staffSubtitle = staff?.staff?.name?.subtitleName()
             StaffSmallCard(
                 screenKey = screenKey,
                 id = EntryId("anime_staff", staff?.id.orEmpty()),
                 image = staff?.image,
                 onClick = {
                     if (staff != null) {
-                        navigationCallback.onStaffClick(
-                            staff.staff,
-                            null,
-                            imageWidthToHeightRatio,
-                            colorCalculationState.getColorsNonComposable(staff.id).first,
+                        navigationCallback.navigate(
+                            AnimeDestinations.StaffDetails(
+                                staffId = staff.staff.id.toString(),
+                                headerParams = StaffHeaderParams(
+                                    coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                    name = staffName,
+                                    subtitle = staffSubtitle,
+                                    coverImage = staff.staff.image?.large,
+                                    colorArgb = colorCalculationState.getColorsNonComposable(staff.staff.id.toString()).first.toArgb(),
+                                    favorite = null,
+                                )
+                            )
                         )
                     }
                 },

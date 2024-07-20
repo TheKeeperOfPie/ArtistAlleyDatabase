@@ -10,10 +10,13 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,9 +35,11 @@ class ReviewDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    private val reviewId = savedStateHandle.get<String>("reviewId")!!
+    private val destination = savedStateHandle.toDestination<AnimeDestinations.ReviewDetails>(navigationTypeMap)
+    private val reviewId = destination.reviewId
 
     val viewer = aniListApi.authedUser
     var loading by mutableStateOf(true)

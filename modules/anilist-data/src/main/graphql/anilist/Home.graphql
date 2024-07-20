@@ -1,15 +1,8 @@
 fragment HomeMedia on Media {
+    ...MediaHeaderData
     id
     coverImage {
         extraLarge
-        color
-    }
-    bannerImage
-    averageScore
-    popularity
-    nextAiringEpisode {
-        airingAt
-        episode
     }
     tags {
         id
@@ -30,11 +23,6 @@ fragment HomeMedia on Media {
         english
         native
     }
-    format
-    status
-    season
-    seasonYear
-    episodes
     chapters
     volumes
     mediaListEntry {

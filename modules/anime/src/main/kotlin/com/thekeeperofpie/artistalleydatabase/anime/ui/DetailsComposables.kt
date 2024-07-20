@@ -83,23 +83,21 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
 internal fun CoverAndBannerHeader(
-    screenKey: String,
     upIconOption: UpIconOption?,
-    entryId: EntryId?,
-    coverImage: @Composable () -> String?,
+    headerValues: DetailsHeaderValues,
     coverImageAllowHardware: Boolean,
     modifier: Modifier = Modifier,
     sharedElementKey: String? = null,
-    bannerImage: String? = null,
+    coverImageSharedElementKey: String? = null,
+    bannerImageSharedElementKey: String? = null,
     pinnedHeight: Dp = 120.dp,
     progress: Float = 0f,
     coverSize: Dp = 256.dp,
-    coverImageWidthToHeightRatio: Float = 1f,
     color: @Composable () -> Color? = { null },
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
@@ -125,7 +123,7 @@ internal fun CoverAndBannerHeader(
             .combinedClickable(
                 enabled = onClickEnabled,
                 onClick = onClick ?: {},
-                onLongClick = { bannerImage?.let(fullscreenImageHandler::openImage) },
+                onLongClick = { headerValues.bannerImage?.let(fullscreenImageHandler::openImage) },
                 onLongClickLabel = stringResource(
                     R.string.anime_media_cover_image_long_press_preview
                 ),
@@ -134,7 +132,7 @@ internal fun CoverAndBannerHeader(
         Box {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(bannerImage)
+                    .data(headerValues.bannerImage)
                     .crossfade(true)
                     .size(
                         width = Dimension.Undefined,
@@ -144,6 +142,9 @@ internal fun CoverAndBannerHeader(
                 contentScale = ContentScale.Crop,
                 contentDescription = stringResource(R.string.anime_media_banner_image),
                 modifier = Modifier
+                    .conditionally(headerValues.bannerImage != null) {
+                        sharedElement(sharedElementKey, bannerImageSharedElementKey)
+                    }
                     .fillMaxWidth()
                     .height(lerp(180.dp, pinnedHeight, progress))
                     .align(Alignment.TopCenter)
@@ -217,11 +218,15 @@ internal fun CoverAndBannerHeader(
                     .height(rowHeight)
             ) {
                 Box(modifier = Modifier.padding(vertical = 10.dp)) {
-                    ElevatedCard(modifier = Modifier.sharedElement(sharedElementKey, "media_image")) {
+                    ElevatedCard(
+                        modifier = Modifier
+                            .sharedElement(sharedElementKey, coverImageSharedElementKey)
+                            .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                    ) {
                         val imageHeight = rowHeight - 20.dp
                         var success by remember { mutableStateOf(false) }
                         val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
-                        val coverImage = coverImage()
+                        val coverImage = headerValues.coverImage
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(coverImage)
@@ -245,6 +250,8 @@ internal fun CoverAndBannerHeader(
                             modifier = Modifier
                                 .height(imageHeight)
                                 .run {
+                                    val coverImageWidthToHeightRatio =
+                                        headerValues.coverImageWidthToHeightRatio ?: 1f
                                     if (coverImageWidthToHeightRatio != 1f) {
                                         width(
                                             (imageHeight * coverImageWidthToHeightRatio)

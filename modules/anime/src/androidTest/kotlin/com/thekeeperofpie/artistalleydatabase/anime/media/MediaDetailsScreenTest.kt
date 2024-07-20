@@ -32,9 +32,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
@@ -171,6 +174,7 @@ class MediaDetailsScreenTest {
                 historyController = historyController,
                 markwon = markwon,
                 savedStateHandle = savedStateHandle,
+                navigationTypeMap = NavigationTypeMap(CustomNavTypes.baseTypeMap + AnimeDestinations.typeMap),
             )
         )
         val activitiesViewModel = spy(
@@ -281,11 +285,12 @@ class MediaDetailsScreenTest {
                             }
                         )
                     }
+                    val mediaTitle = viewModels.mediaDetailsViewModel.entry.result?.media?.title?.primaryTitle()
                     AnimeMediaDetailsScreen(
                         viewModel = viewModels.mediaDetailsViewModel,
                         upIconOption = UpIconOption.Back {},
                         headerValues = MediaHeaderValues(
-                            AnimeDestinations.MediaDetails(mediaId = "1234"),
+                            null,
                             media = { mock() },
                             favoriteUpdate = { false },
                         ),
@@ -329,11 +334,18 @@ class MediaDetailsScreenTest {
                                 onClickViewAll = {
                                     val entry = viewModels.mediaDetailsViewModel.entry.result
                                     if (entry != null) {
-                                        it.onMediaActivitiesClick(
-                                            entry,
-                                            activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
-                                            viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                                            coverImageWidthToHeightRatio(),
+                                        it.navigate(
+                                            AnimeDestinations.MediaActivities(
+                                                mediaId = viewModels.mediaDetailsViewModel.mediaId,
+                                                showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
+                                                headerParams = MediaHeaderParams(
+                                                    title = mediaTitle,
+                                                    coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
+                                                    media = entry.media,
+                                                    favorite = viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite
+                                                        ?: entry.media.isFavourite,
+                                                )
+                                            )
                                         )
                                     }
                                 },

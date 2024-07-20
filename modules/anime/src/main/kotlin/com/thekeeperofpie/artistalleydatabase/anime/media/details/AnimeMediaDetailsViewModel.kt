@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteT
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
@@ -64,6 +65,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     private val historyController: HistoryController,
     private val markwon: Markwon,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
     companion object {
@@ -72,7 +74,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     val screenKey = "${AnimeNavDestinations.MEDIA_DETAILS.id}-${UUID.randomUUID()}"
     val viewer = aniListApi.authedUser
-    val mediaId = savedStateHandle.toDestination<AnimeDestinations.MediaDetails>(AnimeDestinations.MediaDetails.typeMap).mediaId
+    val mediaId = savedStateHandle.toDestination<AnimeDestinations.MediaDetails>(navigationTypeMap).mediaId
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)

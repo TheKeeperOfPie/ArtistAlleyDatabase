@@ -212,15 +212,14 @@ object ForumThreadScreen {
                                 contentType = { _, _ -> "media" },
                             ) { index, item ->
                                 AnimeMediaCompactListRow(
-                                    screenKey = SCREEN_KEY,
                                     viewer = viewer,
                                     entry = item,
-                                    onClickListEdit = editViewModel::initialize,
                                     modifier = Modifier.padding(
                                         start = 16.dp,
                                         end = 16.dp,
                                         bottom = 8.dp,
-                                    )
+                                    ),
+                                    onClickListEdit = editViewModel::initialize
                                 )
                             }
 

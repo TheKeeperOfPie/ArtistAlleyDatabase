@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -31,6 +32,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteT
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +55,7 @@ class MediaActivitiesViewModel @Inject constructor(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -67,15 +71,15 @@ class MediaActivitiesViewModel @Inject constructor(
         featureOverrideProvider = featureOverrideProvider,
     )
 
-    val mediaId = savedStateHandle.get<String>("mediaId")!!
+    private val destination = savedStateHandle.toDestination<AnimeDestinations.MediaActivities>(navigationTypeMap)
+    val mediaId = destination.mediaId
     var entry by mutableStateOf(LoadingResult.empty<MediaActivitiesScreen.Entry>())
         private set
 
     val following = MutableStateFlow(PagingData.empty<ActivityEntry>())
     val global = MutableStateFlow(PagingData.empty<ActivityEntry>())
 
-    private val initialIsFollowing =
-        savedStateHandle.get<String?>("showFollowing")?.toBooleanStrictOrNull() ?: false
+    private val initialIsFollowing = destination.showFollowing
     var selectedIsFollowing by mutableStateOf(initialIsFollowing)
 
     private val refresh = MutableStateFlow(-1L)

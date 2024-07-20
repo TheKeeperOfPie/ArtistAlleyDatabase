@@ -32,8 +32,10 @@ import androidx.paging.compose.itemKey
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -167,6 +169,7 @@ object ReviewsScreen {
                     contentType = reviews.itemContentType { "review" }
                 ) {
                     val entry = reviews[it]
+                    val mediaTitle = entry?.media?.media?.title?.primaryTitle()
                     ReviewCard(
                         screenKey = SCREEN_KEY,
                         viewer = viewer,
@@ -175,11 +178,16 @@ object ReviewsScreen {
                         showMedia = showMedia,
                         onClick = {
                             if (entry != null) {
-                                it.onReviewClick(
-                                    reviewId = entry.review.id.toString(),
-                                    media = null,
-                                    favorite = null,
-                                    imageWidthToHeightRatio = 1f,
+                                it.navigate(
+                                    AnimeDestinations.ReviewDetails(
+                                        reviewId = entry.review.id.toString(),
+                                        headerParams = MediaHeaderParams(
+                                            title = mediaTitle,
+                                            coverImageWidthToHeightRatio = null,
+                                            mediaCompactWithTags = entry.media.media,
+                                            favorite = null,
+                                        )
+                                    )
                                 )
                             }
                         },

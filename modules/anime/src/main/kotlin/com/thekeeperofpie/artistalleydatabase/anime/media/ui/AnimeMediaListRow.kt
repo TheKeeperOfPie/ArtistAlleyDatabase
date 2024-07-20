@@ -56,10 +56,12 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -107,17 +109,27 @@ object AnimeMediaListRow {
                 .recomposeHighlighter()
         ) {
             val ignoreController = LocalIgnoreController.current
+            val title = entry?.media?.title?.primaryTitle()
             Row(modifier = Modifier
                 .height(IntrinsicSize.Min)
                 .combinedClickable(
                     enabled = entry != null,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.onMediaClick(
-                                media = entry.media,
-                                favorite = null,
-                                imageWidthToHeightRatio = imageWidthToHeightRatio,
-                                sharedElementKey = entry.media.id.toString(),
+                            val media = entry.media
+                            val coverImage = media.coverImage?.extraLarge
+                            navigationCallback.navigate(
+                                AnimeDestinations.MediaDetails(
+                                    mediaId = media.id.toString(),
+                                    title = title,
+                                    coverImage = coverImage,
+                                    sharedElementKey = sharedElementKey,
+                                    headerParams = MediaHeaderParams(
+                                        coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                        title = title,
+                                        media = media,
+                                    ),
+                                )
                             )
                         }
                     },
@@ -220,8 +232,6 @@ object AnimeMediaListRow {
             val colorCalculationState = LocalColorCalculationState.current
             val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
             MediaCoverImage(
-                screenKey = screenKey,
-                mediaId = entry?.media?.id?.toString(),
                 image = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.media?.coverImage?.extraLarge)
                     .crossfade(true)
@@ -231,17 +241,6 @@ object AnimeMediaListRow {
                         height = Dimension.Undefined
                     )
                     .build(),
-                contentScale = ContentScale.Crop,
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    entry?.media?.id?.let { mediaId ->
-                        ComposeColorUtils.calculatePalette(
-                            mediaId.toString(),
-                            it,
-                            colorCalculationState,
-                        )
-                    }
-                },
                 modifier = Modifier
                     .sharedElement(sharedElementKey, "media_image")
                     // Clip to match card so that shared element animation keeps rounded corner
@@ -264,7 +263,18 @@ object AnimeMediaListRow {
                         onLongClickLabel = stringResource(
                             R.string.anime_media_cover_image_long_press_preview
                         ),
-                    )
+                    ),
+                contentScale = ContentScale.Crop,
+                onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
+                    entry?.media?.id?.let { mediaId ->
+                        ComposeColorUtils.calculatePalette(
+                            mediaId.toString(),
+                            it,
+                            colorCalculationState,
+                        )
+                    }
+                }
             )
 
             if (viewer != null && recommendation != null) {

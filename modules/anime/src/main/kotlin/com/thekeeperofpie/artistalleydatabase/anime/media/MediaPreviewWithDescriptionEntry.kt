@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -22,7 +23,7 @@ data class MediaPreviewWithDescriptionEntry(
     override val showLessImportantTags: Boolean = false,
     override val showSpoilerTags: Boolean = false,
 ) : AnimeMediaListRow.Entry, MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry,
-    AnimeMediaCompactListRow.Entry {
+    AnimeMediaCompactListRow.Entry, MediaHeaderData by media {
     override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
     override val type = media.type
     override val maxProgress = MediaUtils.maxProgress(media)
@@ -46,9 +47,7 @@ data class MediaPreviewWithDescriptionEntry(
         get() = media.popularity
 
     override val nextAiringEpisode
-        get() = media.nextAiringEpisode?.episode
-    override val nextAiringAiringAt: Int?
-        get() = media.nextAiringEpisode?.airingAt
+        get() = media.nextAiringEpisode
 
     override val isAdult
         get() = media.isAdult

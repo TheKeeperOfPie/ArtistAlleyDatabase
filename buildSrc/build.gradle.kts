@@ -9,12 +9,12 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.gradle)
-    implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
     implementation(libs.com.google.devtools.ksp.gradle.plugin)
     implementation(libs.compose.compiler.gradle.plugin)
+    implementation(libs.gradle)
     implementation(libs.javapoet)
     implementation(libs.kotlinpoet)
+    implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
     implementation(libs.oss.licenses.plugin)
     implementation(libs.secrets.gradle.plugin)
 }

@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
-import android.os.Bundle
+import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -25,32 +25,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavType
 import com.anilist.fragment.CharacterHeaderData
 import com.anilist.fragment.CharacterNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 @Composable
 fun CharacterHeader(
@@ -69,13 +66,10 @@ fun CharacterHeader(
     ) {
         val colorCalculationState = LocalColorCalculationState.current
         CoverAndBannerHeader(
-            screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             upIconOption = upIconOption,
-            entryId = EntryId("anime_character", characterId),
-            coverImage = { headerValues.image },
+            headerValues = headerValues,
             coverImageAllowHardware = colorCalculationState.allowHardware(characterId),
             progress = progress,
-            coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
             color = { headerValues.color(colorCalculationState) },
             coverImageOnSuccess = {
                 onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
@@ -162,102 +156,55 @@ fun CharacterHeader(
     }
 }
 
+@Parcelize
+@Serializable
+data class CharacterHeaderParams(
+    val coverImageWidthToHeightRatio: Float?,
+    val name: String?,
+    val subtitle: String?,
+    val favorite: Boolean?,
+    val coverImage: String?,
+    val colorArgb: Int?,
+) : Parcelable {
+    constructor(
+        name: String?,
+        coverImageWidthToHeightRatio: Float?,
+        favorite: Boolean? = null,
+        characterNavigationData: CharacterNavigationData,
+    ) : this(
+        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+        name = name,
+        subtitle = null,
+        favorite = favorite,
+        coverImage = characterNavigationData.image?.large,
+        colorArgb = null,
+    )
+}
+
 class CharacterHeaderValues(
-    arguments: Bundle,
-    val imageWidthToHeightRatio: Float = arguments.getString("imageWidthToHeightRatio")
-        ?.toFloatOrNull() ?: 1f,
-    private val _name: String? = arguments.getString("name"),
-    private val _subtitle: String? = arguments.getString("subtitle"),
-    private val _favorite: Boolean? = arguments.getString("favorite")?.toBooleanStrictOrNull(),
-    private val _image: String? = arguments.getString("image"),
-    private val _color: Color? = arguments.getString("color")
-        ?.toIntOrNull()
-        ?.let(::Color),
+    private val params: CharacterHeaderParams?,
     private val character: () -> CharacterHeaderData?,
     private val favoriteUpdate: () -> Boolean?,
-) {
-    companion object {
-        const val routeSuffix = "&name={name}" +
-                "&subtitle={subtitle}" +
-                "&favorite={favorite}" +
-                "&image={image}" +
-                "&imageWidthToHeightRatio={imageWidthToHeightRatio}" +
-                "&color={color}"
-
-        fun routeSuffix(
-            character: CharacterHeaderData?,
-            languageOption: AniListLanguageOption,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) = if (character == null) "" else routeSuffix(
-            name = character.name?.primaryName(languageOption),
-            subtitle = character.name?.subtitleName(languageOption),
-            favorite = favorite,
-            image = character.image?.large,
-            imageWidthToHeightRatio = imageWidthToHeightRatio,
-            color = color,
-        )
-
-        fun routeSuffix(
-            character: CharacterNavigationData?,
-            languageOption: AniListLanguageOption,
-            favorite: Boolean?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) = if (character == null) "" else routeSuffix(
-            name = character.name?.primaryName(languageOption),
-            subtitle = character.name?.subtitleName(languageOption),
-            favorite = favorite,
-            image = character.image?.large,
-            imageWidthToHeightRatio = imageWidthToHeightRatio,
-            color = color,
-        )
-
-        private fun routeSuffix(
-            name: String?,
-            subtitle: String?,
-            favorite: Boolean?,
-            image: String?,
-            imageWidthToHeightRatio: Float,
-            color: Color?,
-        ) = "&name=$name" +
-                "&subtitle=$subtitle" +
-                "&favorite=$favorite" +
-                "&image=$image" +
-                "&imageWidthToHeightRatio=$imageWidthToHeightRatio" +
-                "&color=${color?.toArgb()}"
-
-        fun navArguments() = navArguments(
-            "name",
-            "subtitle",
-            "favorite",
-            "image",
-            "imageWidthToHeightRatio",
-            "color",
-        ) {
-            type = NavType.StringType
-            nullable = true
-        }
-    }
-
-    val image
-        get() = character()?.image?.large ?: _image
+) : DetailsHeaderValues {
+    override val coverImageWidthToHeightRatio = params?.coverImageWidthToHeightRatio
+    override val bannerImage = null
+    override val coverImage
+        get() = character()?.image?.large ?: params?.coverImage
     val favorite
-        get() = favoriteUpdate() ?: character()?.isFavourite ?: _favorite
+        get() = favoriteUpdate() ?: character()?.isFavourite ?: params?.favorite
 
     @Composable
-    fun name() = character()?.name?.primaryName() ?: _name ?: ""
+    fun name() = character()?.name?.primaryName() ?: params?.name ?: ""
 
     @Composable
-    fun subtitle() = character()?.name?.subtitleName() ?: _subtitle ?: ""
+    fun subtitle() = character()?.name?.subtitleName() ?: params?.subtitle ?: ""
 
     @Composable
     fun color(colorCalculationState: ColorCalculationState) =
         colorCalculationState.getColors(character()?.id?.toString()).first
-            .takeOrElse { _color ?: Color.Unspecified }
+            .takeOrElse { params?.colorArgb?.let(::Color) ?: Color.Unspecified }
 
     fun colorNonComposable(colorCalculationState: ColorCalculationState) =
         colorCalculationState.getColorsNonComposable(character()?.id?.toString()).first
-            .takeOrElse { _color ?: Color.Unspecified }
+            .takeOrElse { params?.colorArgb?.let(::Color) ?: Color.Unspecified }
 }

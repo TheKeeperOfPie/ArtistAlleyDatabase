@@ -79,16 +79,20 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeStringR
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
@@ -466,6 +470,8 @@ object Anime2AnimeScreen {
                     )
                 }
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
+                val voiceActorName = voiceActor.name?.primaryName()
+                val voiceActorSubtitle = voiceActor.name?.subtitleName()
                 StaffCoverImage(
                     screenKey = SCREEN_KEY,
                     staffId = voiceActor.id.toString(),
@@ -484,11 +490,17 @@ object Anime2AnimeScreen {
                         .width(48.dp)
                         .combinedClickable(
                             onClick = {
-                                navigationCallback.onStaffClick(
-                                    staff = voiceActor,
-                                    favorite = null,
-                                    imageWidthToHeightRatio = 1f,
-                                    color = null,
+                                navigationCallback.navigate(
+                                    AnimeDestinations.StaffDetails(
+                                        staffId = voiceActor.id.toString(),
+                                        headerParams = StaffHeaderParams(
+                                            name = voiceActorName,
+                                            subtitle = voiceActorSubtitle,
+                                            coverImageWidthToHeightRatio = null,
+                                            favorite = null,
+                                            staffNavigationData = voiceActor,
+                                        )
+                                    )
                                 )
                             },
                             onLongClick = {
@@ -516,6 +528,7 @@ object Anime2AnimeScreen {
     private fun CharacterImage(character: CharacterNavigationData) {
         val navigationCallback = LocalNavigationCallback.current
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
+        val characterName = character.name?.primaryName()
         CharacterCoverImage(
             screenKey = SCREEN_KEY,
             characterId = character.id.toString(),
@@ -534,11 +547,16 @@ object Anime2AnimeScreen {
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .combinedClickable(
                     onClick = {
-                        navigationCallback.onCharacterClick(
-                            character = character,
-                            favorite = null,
-                            imageWidthToHeightRatio = 1f,
-                            color = null,
+                        navigationCallback.navigate(
+                            AnimeDestinations.CharacterDetails(
+                                characterId = character.id.toString(),
+                                headerParams = CharacterHeaderParams(
+                                    name = characterName,
+                                    coverImageWidthToHeightRatio = null,
+                                    favorite = null,
+                                    characterNavigationData = character,
+                                )
+                            )
                         )
                     },
                     onLongClick = {
@@ -560,13 +578,21 @@ object Anime2AnimeScreen {
         modifier: Modifier = Modifier,
     ) {
         val navigationCallback = LocalNavigationCallback.current
+        val staffName = staff.name?.primaryName()
+        val staffSubtitle = staff.name?.subtitleName()
         OutlinedCard(
             onClick = {
-                navigationCallback.onStaffClick(
-                    staff = staff,
-                    favorite = null,
-                    imageWidthToHeightRatio = 1f,
-                    color = null,
+                navigationCallback.navigate(
+                    AnimeDestinations.StaffDetails(
+                        staffId = staff.id.toString(),
+                        headerParams = StaffHeaderParams(
+                            name = staffName,
+                            subtitle = staffSubtitle,
+                            coverImageWidthToHeightRatio = null,
+                            favorite = null,
+                            staffNavigationData = staff,
+                        )
+                    )
                 )
             },
             modifier = modifier.padding(start = 48.dp, end = 16.dp)
@@ -597,11 +623,17 @@ object Anime2AnimeScreen {
                         .width(48.dp)
                         .combinedClickable(
                             onClick = {
-                                navigationCallback.onStaffClick(
-                                    staff = staff,
-                                    favorite = null,
-                                    imageWidthToHeightRatio = 1f,
-                                    color = null,
+                                navigationCallback.navigate(
+                                    AnimeDestinations.StaffDetails(
+                                        staffId = staff.id.toString(),
+                                        headerParams = StaffHeaderParams(
+                                            name = staffName,
+                                            subtitle = staffSubtitle,
+                                            coverImageWidthToHeightRatio = null,
+                                            favorite = null,
+                                            staffNavigationData = staff,
+                                        )
+                                    )
                                 )
                             },
                             onLongClick = {

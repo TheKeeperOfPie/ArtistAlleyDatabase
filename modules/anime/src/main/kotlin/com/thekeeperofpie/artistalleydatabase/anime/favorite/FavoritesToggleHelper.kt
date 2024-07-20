@@ -29,6 +29,7 @@ class FavoritesToggleHelper(
         private const val TAG = "FavoritesToggleHelper"
     }
 
+    // TODO: Initial with media value?
     var favorite by mutableStateOf<Boolean?>(null)
         private set
 

@@ -46,9 +46,11 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
@@ -59,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -76,6 +79,7 @@ object MediaGridCard {
         showTypeIcon: Boolean = false,
         label: @Composable ColumnScope.(textColor: Color) -> Unit = {},
     ) {
+        val sharedElementKey = entry?.media?.id?.toString()
         val colorCalculationState = LocalColorCalculationState.current
         val colors = colorCalculationState.getColors(entry?.media?.id?.toString())
         val animationProgress by animateIntAsState(
@@ -107,12 +111,24 @@ object MediaGridCard {
             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
             val navigationCallback = LocalNavigationCallback.current
             val ignoreController = LocalIgnoreController.current
+            val title = entry?.media?.title?.primaryTitle()
             Box(
                 modifier = Modifier.combinedClickable(
                     enabled = entry != null,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.onMediaClick(entry.media, imageWidthToHeightRatio)
+                            navigationCallback.navigate(
+                                AnimeDestinations.MediaDetails(
+                                    mediaId = entry.media.id.toString(),
+                                    title = title,
+                                    coverImage = entry.media.coverImage?.extraLarge,
+                                    headerParams = MediaHeaderParams(
+                                        title = title,
+                                        coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                        mediaWithListStatus = entry.media,
+                                    )
+                                )
+                            )
                         }
                     },
                     onLongClick = {
@@ -123,16 +139,26 @@ object MediaGridCard {
                 )
             ) {
                 Column {
+                    val title = entry?.media?.title?.primaryTitle()
                     Box {
                         CoverImage(
-                            screenKey = screenKey,
                             entry = entry,
+                            sharedElementKey = sharedElementKey,
                             viewer = viewer,
                             onClick = {
                                 if (entry != null) {
-                                    navigationCallback.onMediaClick(
-                                        entry.media,
-                                        imageWidthToHeightRatio
+                                    navigationCallback.navigate(
+                                        AnimeDestinations.MediaDetails(
+                                            mediaId = entry.media.id.toString(),
+                                            title = title,
+                                            coverImage = entry.media.coverImage?.extraLarge,
+                                            sharedElementKey = sharedElementKey,
+                                            headerParams = MediaHeaderParams(
+                                                coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                                title = title,
+                                                mediaWithListStatus = entry.media,
+                                            )
+                                        )
                                     )
                                 }
                             },
@@ -174,7 +200,7 @@ object MediaGridCard {
                     label(textColor)
 
                     Text(
-                        text = entry?.media?.title?.primaryTitle() ?: "Placeholder",
+                        text = title ?: "Placeholder",
                         style = MaterialTheme.typography.labelSmall,
                         color = textColor,
                         overflow = TextOverflow.Ellipsis,
@@ -194,8 +220,8 @@ object MediaGridCard {
 
     @Composable
     private fun CoverImage(
-        screenKey: String,
         entry: Entry?,
+        sharedElementKey: String?,
         viewer: AniListViewer?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -207,8 +233,6 @@ object MediaGridCard {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
             val colorCalculationState = LocalColorCalculationState.current
             MediaCoverImage(
-                screenKey = screenKey,
-                mediaId = entry?.media?.id.toString(),
                 image = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.media?.coverImage?.extraLarge)
                     .crossfade(true)
@@ -218,18 +242,8 @@ object MediaGridCard {
                         height = Dimension.Undefined
                     )
                     .build(),
-                contentScale = ContentScale.Crop,
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    entry?.media?.id?.let { mediaId ->
-                        ComposeColorUtils.calculatePalette(
-                            mediaId.toString(),
-                            it,
-                            colorCalculationState,
-                        )
-                    }
-                },
                 modifier = Modifier
+                    .sharedElement(sharedElementKey, "media_image")
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -248,7 +262,18 @@ object MediaGridCard {
                         onLongClickLabel = stringResource(
                             R.string.anime_media_cover_image_long_press_preview
                         ),
-                    )
+                    ),
+                contentScale = ContentScale.Crop,
+                onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
+                    entry?.media?.id?.let { mediaId ->
+                        ComposeColorUtils.calculatePalette(
+                            mediaId.toString(),
+                            it,
+                            colorCalculationState,
+                        )
+                    }
+                }
             )
 
             if (viewer != null && entry != null && showQuickEdit) {

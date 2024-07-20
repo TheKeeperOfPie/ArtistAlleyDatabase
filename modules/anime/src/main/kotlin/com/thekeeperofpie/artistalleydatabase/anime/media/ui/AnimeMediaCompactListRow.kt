@@ -47,10 +47,12 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -60,7 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -71,112 +73,130 @@ object AnimeMediaCompactListRow {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
         modifier: Modifier = Modifier,
         onClickListEdit: (MediaNavigationData) -> Unit,
-        label: (@Composable () -> Unit)? = null,
+        label: @Composable() (() -> Unit)? = null,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
     ) {
+        val sharedElementKey = entry?.media?.id?.toString()
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-        AutoSharedElement(key = "anime_media_compact_row_${entry?.media?.id}", screenKey = screenKey) {
-            OutlinedCard(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .heightIn(min = DEFAULT_IMAGE_HEIGHT)
-                    .alpha(if (entry?.ignored == true) 0.38f else 1f)
-            ) {
-                val navigationCallback = LocalNavigationCallback.current
-                val ignoreController = LocalIgnoreController.current
-                Row(
-                    modifier = Modifier
-                        .height(IntrinsicSize.Min)
-                        .combinedClickable(
-                            enabled = entry != null,
-                            onClick = {
-                                if (entry != null) {
-                                    navigationCallback.onMediaClick(
-                                        entry.media,
-                                        imageWidthToHeightRatio
-                                    )
-                                }
-                            },
-                            onLongClick = {
-                                if (entry != null) {
-                                    ignoreController.toggle(entry.media)
-                                }
-                            },
-                        )
-                ) {
-                    CoverImage(
-                        screenKey = screenKey,
-                        viewer = viewer,
-                        entry = entry,
+        OutlinedCard(
+            modifier = modifier
+                // Used to animate persistence of this view across screens
+                .sharedElement(sharedElementKey, "media_compact_list_row")
+                .fillMaxWidth()
+                .heightIn(min = DEFAULT_IMAGE_HEIGHT)
+                .alpha(if (entry?.ignored == true) 0.38f else 1f)
+        ) {
+            val navigationCallback = LocalNavigationCallback.current
+            val ignoreController = LocalIgnoreController.current
+            val title = entry?.media?.title?.primaryTitle().orEmpty()
+            Row(
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .combinedClickable(
+                        enabled = entry != null,
                         onClick = {
                             if (entry != null) {
-                                navigationCallback.onMediaClick(
-                                    entry.media,
-                                    imageWidthToHeightRatio
+                                navigationCallback.navigate(
+                                    AnimeDestinations.MediaDetails(
+                                        mediaId = entry.media.id.toString(),
+                                        title = title,
+                                        coverImage = entry.media.coverImage?.extraLarge,
+                                        sharedElementKey = sharedElementKey,
+                                        headerParams = MediaHeaderParams(
+                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                            title = title,
+                                            mediaCompactWithTags = entry.media,
+                                        )
+                                    )
                                 )
                             }
                         },
-                        onClickListEdit = onClickListEdit,
-                        onRatioAvailable = { imageWidthToHeightRatio = it },
-                        forceListEditIcon = forceListEditIcon,
-                        showQuickEdit = showQuickEdit,
-                    )
-
-                    Column(
-                        modifier = Modifier
-                            .heightIn(min = DEFAULT_IMAGE_HEIGHT)
-                            .fillMaxHeight()
-                    ) {
-                        Row(
-                            Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                label?.invoke()
-                                TitleText(entry)
-                                SubtitleText(entry)
+                        onLongClick = {
+                            if (entry != null) {
+                                ignoreController.toggle(entry.media)
                             }
-
-                            MediaRatingIconsSection(
-                                rating = entry?.media?.averageScore,
-                                popularity = entry?.media?.popularity,
-                                loading = entry == null,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp, vertical = 8.dp)
-                                    .wrapContentWidth()
+                        },
+                    )
+            ) {
+                CoverImage(
+                    viewer = viewer,
+                    entry = entry,
+                    sharedElementKey = sharedElementKey,
+                    onClick = {
+                        if (entry != null) {
+                            navigationCallback.navigate(
+                                AnimeDestinations.MediaDetails(
+                                    mediaId = entry.media.id.toString(),
+                                    title = title,
+                                    coverImage = entry.media.coverImage?.extraLarge,
+                                    headerParams = MediaHeaderParams(
+                                        title = title,
+                                        coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                        mediaCompactWithTags = entry.media,
+                                    )
+                                )
                             )
                         }
+                    },
+                    onClickListEdit = onClickListEdit,
+                    onRatioAvailable = { imageWidthToHeightRatio = it },
+                    forceListEditIcon = forceListEditIcon,
+                    showQuickEdit = showQuickEdit,
+                )
 
-                        val colorCalculationState = LocalColorCalculationState.current
-                        val (containerColor, textColor) =
-                            colorCalculationState.getColors(entry?.media?.id?.toString())
-                        MediaTagRow(
+                Column(
+                    modifier = Modifier
+                        .heightIn(min = DEFAULT_IMAGE_HEIGHT)
+                        .fillMaxHeight()
+                ) {
+                    Row(
+                        Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            label?.invoke()
+                            TitleText(entry)
+                            SubtitleText(entry)
+                        }
+
+                        MediaRatingIconsSection(
+                            rating = entry?.media?.averageScore,
+                            popularity = entry?.media?.popularity,
                             loading = entry == null,
-                            tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
-                            onTagClick = { id, name ->
-                                if (entry != null) {
-                                    navigationCallback.onTagClick(
-                                        entry.media.type ?: MediaType.ANIME,
-                                        id,
-                                        name
-                                    )
-                                }
-                            },
-                            tagContainerColor = containerColor,
-                            tagTextColor = textColor,
-                            tagTextStyle = MaterialTheme.typography.bodySmall,
-                            height = 20.dp,
-                            startPadding = 8.dp,
-                            bottomPadding = 8.dp,
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                                .wrapContentWidth()
                         )
                     }
+
+                    val colorCalculationState = LocalColorCalculationState.current
+                    val (containerColor, textColor) =
+                        colorCalculationState.getColors(entry?.media?.id?.toString())
+                    MediaTagRow(
+                        loading = entry == null,
+                        tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
+                        onTagClick = { id, name ->
+                            if (entry != null) {
+                                navigationCallback.onTagClick(
+                                    entry.media.type ?: MediaType.ANIME,
+                                    id,
+                                    name
+                                )
+                            }
+                        },
+                        tagContainerColor = containerColor,
+                        tagTextColor = textColor,
+                        tagTextStyle = MaterialTheme.typography.bodySmall,
+                        height = 20.dp,
+                        startPadding = 8.dp,
+                        bottomPadding = 8.dp,
+                    )
                 }
             }
         }
@@ -184,9 +204,9 @@ object AnimeMediaCompactListRow {
 
     @Composable
     private fun CoverImage(
-        screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
+        sharedElementKey: String?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (MediaNavigationData) -> Unit,
         onRatioAvailable: (Float) -> Unit,
@@ -198,8 +218,6 @@ object AnimeMediaCompactListRow {
             val colorCalculationState = LocalColorCalculationState.current
             val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
             MediaCoverImage(
-                screenKey = screenKey,
-                mediaId = entry?.media?.id?.toString(),
                 image = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.media?.coverImage?.extraLarge)
                     .crossfade(true)
@@ -211,16 +229,10 @@ object AnimeMediaCompactListRow {
                         height = Dimension.Undefined
                     )
                     .build(),
-                contentScale = ContentScale.Crop,
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    ComposeColorUtils.calculatePalette(
-                        entry?.media?.id.toString(),
-                        it,
-                        colorCalculationState,
-                    )
-                },
                 modifier = Modifier
+                    // Pad inside to offset the 1.dp border from the OutlinedCard
+                    .padding(start = 1.dp, top = 1.dp, bottom = 1.dp)
+                    .sharedElement(sharedElementKey, "media_image")
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(shape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -240,7 +252,16 @@ object AnimeMediaCompactListRow {
                         onLongClickLabel = stringResource(
                             R.string.anime_media_cover_image_long_press_preview
                         ),
+                    ),
+                contentScale = ContentScale.Crop,
+                onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
+                    ComposeColorUtils.calculatePalette(
+                        entry?.media?.id.toString(),
+                        it,
+                        colorCalculationState,
                     )
+                }
             )
 
             if (viewer != null && entry != null && showQuickEdit) {

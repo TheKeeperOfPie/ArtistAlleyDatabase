@@ -107,19 +107,17 @@ fun RecommendationCard(
         }
 
         AnimeMediaCompactListRow(
-            screenKey = screenKey,
             viewer = viewer,
             entry = media,
-            onClickListEdit = onClickListEdit,
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+            onClickListEdit = onClickListEdit
         )
 
         AnimeMediaCompactListRow(
-            screenKey = screenKey,
             viewer = viewer,
             entry = mediaRecommendation,
-            onClickListEdit = onClickListEdit,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 8.dp),
+            onClickListEdit = onClickListEdit
         )
 
         Row(

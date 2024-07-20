@@ -36,6 +36,8 @@ import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
@@ -200,6 +202,7 @@ object UserStatsDetailScreen {
                         items(mediaIds, key = { it }) {
                             val media = medias.getOrNull()?.get(it)
                             val navigationCallback = LocalNavigationCallback.current
+                            val languageOptionMedia = LocalLanguageOptionMedia.current
                             InnerCard(
                                 screenKey = screenKey,
                                 sharedElementKey = "anime_media_${media?.id}_image",
@@ -208,9 +211,12 @@ object UserStatsDetailScreen {
                                 loading = media == null,
                                 onClick = { ratio ->
                                     if (media != null) {
-                                        navigationCallback.onMediaClick(
-                                            media = media,
-                                            imageWidthToHeightRatio = ratio,
+                                        navigationCallback.navigate(
+                                            AnimeDestinations.MediaDetails(
+                                                mediaNavigationData = media,
+                                                coverImageWidthToHeightRatio = ratio,
+                                                languageOptionMedia = languageOptionMedia,
+                                            )
                                         )
                                     }
                                 }

@@ -99,6 +99,7 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -107,6 +108,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdat
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -662,7 +664,6 @@ object AnimeHomeScreen {
         ) {
             val entry = entries?.getOrNull(it)
             AnimeMediaLargeCard(
-                screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry,
             )
@@ -743,9 +744,21 @@ object AnimeHomeScreen {
 
         val navigationCallback = LocalNavigationCallback.current
         var widthToHeightRatio by remember(mediaId) { mutableStateOf<Float?>(null) }
+        val title = media?.title?.primaryTitle()
         val onClick = rememberCallback {
             if (media != null) {
-                navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)
+                navigationCallback.navigate(
+                    AnimeDestinations.MediaDetails(
+                        mediaId = media.id.toString(),
+                        title = title,
+                        coverImage = media.coverImage?.extraLarge,
+                        headerParams = MediaHeaderParams(
+                            coverImageWidthToHeightRatio = widthToHeightRatio,
+                            title = title,
+                            media = media,
+                        ),
+                    )
+                )
             }
         }
 
@@ -793,13 +806,22 @@ object AnimeHomeScreen {
             )
             val colorCalculationState = LocalColorCalculationState.current
             MediaCoverImage(
-                screenKey = SCREEN_KEY,
-                mediaId = mediaId,
                 image = ImageRequest.Builder(LocalContext.current)
                     .data(media?.coverImage?.extraLarge)
                     .allowHardware(colorCalculationState.allowHardware(mediaId))
                     .size(width = coilWidth, height = coilHeight)
                     .build(),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .size(
+                        width = CURRENT_ROW_IMAGE_WIDTH,
+                        height = CURRENT_ROW_IMAGE_HEIGHT
+                    )
+                    .animateContentSize()
+                    .placeholder(
+                        visible = media == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    ),
                 contentScale = ContentScale.Crop,
                 onSuccess = {
                     onWidthToHeightRatioChange(it.widthToHeightRatio())
@@ -812,18 +834,7 @@ object AnimeHomeScreen {
                             selectMaxPopulation = true,
                         )
                     }
-                },
-                modifier = Modifier
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                    .size(
-                        width = CURRENT_ROW_IMAGE_WIDTH,
-                        height = CURRENT_ROW_IMAGE_HEIGHT
-                    )
-                    .animateContentSize()
-                    .placeholder(
-                        visible = media == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
+                }
             )
 
             if (viewer != null && media != null) {
@@ -922,11 +933,17 @@ object AnimeHomeScreen {
                     .combinedClickable(
                         onClick = {
                             if (media != null) {
-                                navigationCallback.onMediaClick(
-                                    mediaId = media.id.toString(),
-                                    title = title,
-                                    coverImage = media.coverImage?.extraLarge,
-                                    imageWidthToHeightRatio = widthToHeightRatio ?: 1f,
+                                navigationCallback.navigate(
+                                    AnimeDestinations.MediaDetails(
+                                        mediaId = media.id.toString(),
+                                        title = title,
+                                        coverImage = media.coverImage?.extraLarge,
+                                        headerParams = MediaHeaderParams(
+                                            coverImageWidthToHeightRatio = widthToHeightRatio,
+                                            title = title,
+                                            media = media,
+                                        ),
+                                    )
                                 )
                             }
                         },
@@ -1122,6 +1139,7 @@ object AnimeHomeScreen {
             modifier = Modifier.recomposeHighlighter()
         ) {
             val entry = reviews.getOrNull(it)
+            val mediaTitle = entry?.media?.media?.title?.primaryTitle()
             ReviewCard(
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
@@ -1129,11 +1147,16 @@ object AnimeHomeScreen {
                 media = entry?.media,
                 onClick = {
                     if (entry != null) {
-                        it.onReviewClick(
-                            reviewId = entry.review.id.toString(),
-                            media = null,
-                            favorite = null,
-                            imageWidthToHeightRatio = 1f,
+                        it.navigate(
+                            AnimeDestinations.ReviewDetails(
+                                reviewId = entry.review.id.toString(),
+                                headerParams = MediaHeaderParams(
+                                    title = mediaTitle,
+                                    coverImageWidthToHeightRatio = null,
+                                    mediaCompactWithTags = entry.media.media,
+                                    favorite = null,
+                                )
+                            )
                         )
                     }
                 },

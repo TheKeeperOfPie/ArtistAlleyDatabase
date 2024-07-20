@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import android.app.Application
+import androidx.navigation.NavType
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -32,6 +33,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.IntoSet
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import io.noties.markwon.core.CorePlugin
@@ -43,6 +45,7 @@ import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.movement.MovementMethodPlugin
 import okhttp3.OkHttpClient
 import javax.inject.Singleton
+import kotlin.reflect.KType
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -190,4 +193,9 @@ object AnimeHiltModule {
         historyDao: AnimeHistoryDao,
         settings: AnimeSettings,
     ) = HistoryController(scopedApplication, historyDao, settings)
+
+    @Singleton
+    @Provides
+    @IntoSet
+    fun provideNavigationTypeMap(): @JvmSuppressWildcards Map<KType, NavType<*>> = AnimeDestinations.typeMap
 }

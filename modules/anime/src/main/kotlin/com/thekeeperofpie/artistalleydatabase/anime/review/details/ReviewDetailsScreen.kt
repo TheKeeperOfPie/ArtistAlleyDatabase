@@ -53,12 +53,15 @@ import com.anilist.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
@@ -98,10 +101,10 @@ object ReviewDetailsScreen {
                 ) {
                     val navigationCallback = LocalNavigationCallback.current
                     var coverImageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
+                    val title = entry?.review?.media?.title?.primaryTitle()
                     MediaHeader(
                         screenKey = SCREEN_KEY,
                         upIconOption = upIconOption,
-                        viewer = viewModel.viewer.collectAsState().value,
                         mediaId = entry?.review?.media?.id?.toString(),
                         mediaType = viewModel.entry?.review?.media?.type,
                         titles = entry?.titlesUnique,
@@ -118,13 +121,24 @@ object ReviewDetailsScreen {
                                 it,
                             )
                         },
-                        enableCoverImageSharedElement = false,
                         onImageWidthToHeightRatioAvailable = {
                             coverImageWidthToHeightRatio = it
                         },
+                        enableCoverImageSharedElement = false,
                         onCoverImageClick = {
-                            entry?.review?.media?.let {
-                                navigationCallback.onMediaClick(it, coverImageWidthToHeightRatio)
+                            entry?.review?.media?.let { media ->
+                                navigationCallback.navigate(
+                                    AnimeDestinations.MediaDetails(
+                                        mediaId = media.id.toString(),
+                                        title = title,
+                                        coverImage = media.coverImage?.extraLarge,
+                                        headerParams = MediaHeaderParams(
+                                            title = title,
+                                            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                                            media = media,
+                                        )
+                                    )
+                                )
                             }
                         }
                     )

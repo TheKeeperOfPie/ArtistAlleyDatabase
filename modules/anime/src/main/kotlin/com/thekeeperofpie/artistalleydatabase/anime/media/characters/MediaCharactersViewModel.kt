@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.CharacterWithRole
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
@@ -16,6 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelp
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -26,11 +29,13 @@ class MediaCharactersViewModel @Inject constructor(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : HeaderAndListViewModel<MediaCharactersScreen.Entry, CharacterWithRole, DetailsCharacter, CharacterSortOption, MediaCharactersSortFilterController.FilterParams>(
     aniListApi = aniListApi,
     loadingErrorTextRes = R.string.anime_characters_error_loading,
 ) {
-    val mediaId = savedStateHandle.get<String>("mediaId")!!
+    private val destination = savedStateHandle.toDestination<AnimeDestinations.MediaCharacters>(navigationTypeMap)
+    val mediaId = destination.mediaId
 
     override val sortFilterController =
         MediaCharactersSortFilterController(viewModelScope, settings, featureOverrideProvider)
