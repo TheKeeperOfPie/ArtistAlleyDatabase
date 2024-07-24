@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
-import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -50,9 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -62,18 +59,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.request
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -463,19 +460,18 @@ fun GenericViewAllCard(
 // TODO: Placeholder background color
 @Composable
 fun ListRowSmallImage(
-    context: Context,
     density: Density,
     ignored: Boolean,
-    image: String?,
+    imageState: CoilImageState?,
     @StringRes contentDescriptionTextRes: Int,
+    modifier: Modifier = Modifier,
     width: Dp = 64.dp,
     height: Dp = 96.dp,
-    onClick: (imageWidthToHeightRatio: Float) -> Unit,
+    onClick: () -> Unit,
 ) {
-    var imageWidthToHeightRatio by remember { mutableStateOf<Float?>(null) }
-    AsyncImage(
-        model = ImageRequest.Builder(context)
-            .data(image)
+    CoilImage(
+        state = imageState,
+        model = imageState.request()
             .size(
                 width = density.run { width.roundToPx() },
                 height = density.run { height.roundToPx() },
@@ -484,14 +480,13 @@ fun ListRowSmallImage(
             .build(),
         contentScale = ContentScale.Crop,
         contentDescription = stringResource(contentDescriptionTextRes),
-        onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-        modifier = Modifier
+        modifier = modifier
             .size(width = width, height = height)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
-            .clickable { onClick(imageWidthToHeightRatio ?: 1f) }
+            .clickable { onClick() }
             .placeholder(
-                visible = imageWidthToHeightRatio == null,
+                visible = imageState?.imageCacheKey == null,
                 highlight = PlaceholderHighlight.shimmer(),
             )
             .alpha(if (ignored) 0.38f else 1f)

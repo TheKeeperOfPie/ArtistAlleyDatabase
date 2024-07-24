@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoilApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
 import android.os.Parcelable
@@ -28,8 +30,8 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil3.annotation.ExperimentalCoilApi
 import com.anilist.fragment.StaffHeaderData
-import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -39,11 +41,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.maybeOverride
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -54,19 +59,19 @@ fun StaffHeader(
     upIconOption: UpIconOption?,
     progress: Float,
     headerValues: StaffHeaderValues,
+    coverImageState: CoilImageState = rememberCoilImageState(headerValues.coverImage),
     onFavoriteChanged: (Boolean) -> Unit,
-    onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
 ) {
     val colorCalculationState = LocalColorCalculationState.current
     CoverAndBannerHeader(
         upIconOption = upIconOption,
         headerValues = headerValues,
+        coverImageState = coverImageState,
         coverImageAllowHardware = colorCalculationState.allowHardware(staffId),
         progress = progress,
         color = { headerValues.color(colorCalculationState) },
         coverImageOnSuccess = {
-            onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
-            ComposeColorUtils.calculatePalette(staffId, it, colorCalculationState)
+            ComposeColorUtils.calculatePalette(staffId, it.result.image, colorCalculationState)
         },
         menuContent = {
             FavoriteIconButton(
@@ -152,38 +157,21 @@ fun StaffHeader(
 @Parcelize
 @Serializable
 data class StaffHeaderParams(
-    val coverImageWidthToHeightRatio: Float?,
     val name: String?,
     val subtitle: String?,
-    val coverImage: String?,
-    val colorArgb: Int?,
+    val coverImage: ImageState?,
     val favorite: Boolean?,
-) : Parcelable {
-    constructor(
-        name: String?,
-        subtitle: String?,
-        coverImageWidthToHeightRatio: Float?,
-        favorite: Boolean?,
-        staffNavigationData: StaffNavigationData,
-    ) : this(
-        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-        name = name,
-        subtitle = subtitle,
-        coverImage = staffNavigationData.image?.large,
-        colorArgb = null,
-        favorite = favorite,
-    )
-}
+    val colorArgb: Int? = null,
+) : Parcelable
 
 class StaffHeaderValues(
     private val params: StaffHeaderParams?,
     private val staff: () -> StaffHeaderData?,
     private val favoriteUpdate: () -> Boolean?,
 ) : DetailsHeaderValues {
-    override val coverImageWidthToHeightRatio = params?.coverImageWidthToHeightRatio
     override val bannerImage = null
     override val coverImage
-        get() = staff()?.image?.large ?: params?.coverImage
+        get() = params?.coverImage.maybeOverride(staff()?.image?.large)
     val favorite
         get() = favoriteUpdate() ?: staff()?.isFavourite ?: params?.favorite
 

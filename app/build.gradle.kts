@@ -42,8 +42,8 @@ android {
         resourceConfigurations += "en"
     }
 
-    val proguardFiles = (file("proguard/").listFiles().orEmpty().toList() +
-            getDefaultProguardFile("proguard-android-optimize.txt")).toTypedArray()
+    val proguardFiles = file("proguard").listFiles()!! +
+            getDefaultProguardFile("proguard-android-optimize.txt")
 
     val debugKeystore = file(System.getProperty("user.home"))
         .resolve(".android")
@@ -80,7 +80,9 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             isCrunchPngs = true
-            proguardFiles(*proguardFiles)
+            proguardFiles(
+                *(proguardFiles + file("proguardInternal").listFiles()!!)
+            )
 
             if (debugKeystoreExists) {
                 signingConfig = signingConfigs.getByName("default")

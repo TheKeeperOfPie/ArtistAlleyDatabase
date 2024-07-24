@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,9 +30,6 @@ object MediaRecommendationsScreen {
     ) {
         val entry = viewModel.entry
         val media = entry.result?.media
-        var coverImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
-        }
 
         val viewer by viewModel.viewer.collectAsState()
         val editViewModel = hiltViewModel<MediaEditViewModel>()
@@ -46,7 +40,6 @@ object MediaRecommendationsScreen {
             headerTextRes = R.string.anime_recommendations_header,
             header = {
                 MediaHeader(
-                    screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
                     mediaId = viewModel.mediaId,
                     mediaType = media?.type,
@@ -64,22 +57,18 @@ object MediaRecommendationsScreen {
                             it,
                         )
                     },
-                    onImageWidthToHeightRatioAvailable = {
-                        coverImageWidthToHeightRatio = it
-                    },
                     enableCoverImageSharedElement = false
                 )
             },
             itemKey = { it.recommendation.id },
             item = {
                 AnimeMediaListRow(
-                    screenKey = SCREEN_KEY,
                     entry = it?.entry,
                     viewer = viewer,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                     onClickListEdit = editViewModel::initialize,
                     recommendation = it?.recommendationData,
-                    onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                    onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle
                 )
             },
         )

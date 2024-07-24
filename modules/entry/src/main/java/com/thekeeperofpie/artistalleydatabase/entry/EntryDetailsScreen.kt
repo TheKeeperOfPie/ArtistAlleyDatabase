@@ -393,7 +393,7 @@ object EntryDetailsScreen {
     @OptIn(ExperimentalCoilApi::class)
     @Composable
     private fun HeaderImage(
-        imageState: () -> ImageState,
+        imageState: () -> EntryImageState,
         imageCornerDp: Dp?,
         cropState: () -> CropUtils.CropState,
         modifier: Modifier = Modifier,

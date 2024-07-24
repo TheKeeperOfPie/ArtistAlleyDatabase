@@ -63,15 +63,14 @@ object StudioMediasScreen {
             itemKey = { it.media.id },
             item = {
                 AnimeMediaListRow(
-                    screenKey = SCREEN_KEY,
                     entry = it,
                     viewer = viewer,
-                    onClickListEdit = editViewModel::initialize,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,
                         bottom = 16.dp
-                    )
+                    ),
+                    onClickListEdit = editViewModel::initialize
                 )
             },
         )

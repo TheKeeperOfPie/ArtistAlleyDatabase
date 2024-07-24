@@ -34,10 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,6 +69,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import java.time.Instant
 import java.time.ZoneOffset
@@ -100,10 +99,11 @@ object ReviewDetailsScreen {
                     scrollBehavior = scrollBehavior,
                 ) {
                     val navigationCallback = LocalNavigationCallback.current
-                    var coverImageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
+                    val coverImageState = rememberCoilImageState(media?.coverImage?.extraLarge)
                     val title = entry?.review?.media?.title?.primaryTitle()
+                    val mediaSharedTransitionKey = entry?.review?.media?.id?.toString()
+                        ?.let { SharedTransitionKey.makeKeyForId(it) }
                     MediaHeader(
-                        screenKey = SCREEN_KEY,
                         upIconOption = upIconOption,
                         mediaId = entry?.review?.media?.id?.toString(),
                         mediaType = viewModel.entry?.review?.media?.type,
@@ -114,15 +114,13 @@ object ReviewDetailsScreen {
                         popularity = media?.popularity,
                         progress = it,
                         headerValues = headerValues,
+                        coverImageState = coverImageState,
                         onFavoriteChanged = {
                             viewModel.favoritesToggleHelper.set(
                                 headerValues.type.toFavoriteType(),
                                 entry?.review?.media?.id.toString(),
                                 it,
                             )
-                        },
-                        onImageWidthToHeightRatioAvailable = {
-                            coverImageWidthToHeightRatio = it
                         },
                         enableCoverImageSharedElement = false,
                         onCoverImageClick = {
@@ -131,10 +129,11 @@ object ReviewDetailsScreen {
                                     AnimeDestinations.MediaDetails(
                                         mediaId = media.id.toString(),
                                         title = title,
-                                        coverImage = media.coverImage?.extraLarge,
+                                        coverImage = coverImageState.toImageState(),
+                                        sharedTransitionKey = mediaSharedTransitionKey,
                                         headerParams = MediaHeaderParams(
                                             title = title,
-                                            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                                            coverImage = coverImageState.toImageState(),
                                             media = media,
                                         )
                                     )

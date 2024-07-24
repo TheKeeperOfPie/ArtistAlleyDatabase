@@ -48,7 +48,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,7 +66,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
@@ -91,9 +90,13 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionPrefixProvider
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 @Suppress("NAME_SHADOWING")
 object AnimeMediaEditBottomSheet {
 
@@ -102,7 +105,6 @@ object AnimeMediaEditBottomSheet {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         viewModel: MediaEditViewModel,
         modifier: Modifier = Modifier,
         onDismiss: () -> Unit,
@@ -132,11 +134,12 @@ object AnimeMediaEditBottomSheet {
                         }
                     } else {
                         Column {
-                            Form(
-                                screenKey = screenKey,
-                                viewModel = viewModel,
-                                initialParams = initialParams,
-                            )
+                            SharedTransitionPrefixProvider("media_edit_bottom_sheet") {
+                                Form(
+                                    viewModel = viewModel,
+                                    initialParams = initialParams,
+                                )
+                            }
                         }
                     }
                 }
@@ -238,7 +241,6 @@ object AnimeMediaEditBottomSheet {
 
     @Composable
     private fun ColumnScope.Form(
-        screenKey: String,
         viewModel: MediaEditViewModel,
         initialParams: MediaEditData.InitialParams?,
     ) {
@@ -255,12 +257,13 @@ object AnimeMediaEditBottomSheet {
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 val navigationCallback = LocalNavigationCallback.current
-                var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
+                val coverImageState = rememberCoilImageState(coverImage)
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 val colorCalculationState = LocalColorCalculationState.current
+                val sharedTransitionKey = SharedTransitionKey.makeKeyForId(mediaId)
                 MediaCoverImage(
-                    image = ImageRequest.Builder(LocalContext.current)
-                        .data(coverImage)
+                    imageState = coverImageState,
+                    image = coverImageState.request()
                         .crossfade(true)
                         .allowHardware(colorCalculationState.allowHardware(mediaId))
                         .size(
@@ -269,8 +272,17 @@ object AnimeMediaEditBottomSheet {
                             ),
                             height = Dimension.Undefined
                         )
+                        .listener(onSuccess = { _, result ->
+                            ComposeColorUtils.calculatePalette(
+                                id = mediaId,
+                                image = result.image,
+                                colorCalculationState = colorCalculationState,
+                            )
+                        })
                         .build(),
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
+                        .sharedElement(sharedTransitionKey, "media_image")
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
@@ -280,9 +292,10 @@ object AnimeMediaEditBottomSheet {
                                     AnimeDestinations.MediaDetails(
                                         mediaId = mediaId,
                                         title = initialParams.title,
-                                        coverImage = coverImage,
+                                        coverImage = coverImageState.toImageState(),
+                                        sharedTransitionKey = sharedTransitionKey,
                                         headerParams = MediaHeaderParams(
-                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                            coverImage = coverImageState.toImageState(),
                                             title = initialParams.title,
                                             media = null,
                                         ),
@@ -293,16 +306,7 @@ object AnimeMediaEditBottomSheet {
                             onLongClickLabel = stringResource(
                                 R.string.anime_media_cover_image_long_press_preview
                             ),
-                        ),
-                    contentScale = ContentScale.Crop,
-                    onSuccess = {
-                        imageWidthToHeightRatio = it.widthToHeightRatio()
-                        ComposeColorUtils.calculatePalette(
-                            mediaId,
-                            it,
-                            colorCalculationState,
                         )
-                    }
                 )
 
                 AutoSizeText(

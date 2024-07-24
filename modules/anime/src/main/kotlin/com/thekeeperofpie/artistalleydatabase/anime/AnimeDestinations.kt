@@ -8,17 +8,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderPar
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
+import com.thekeeperofpie.artistalleydatabase.compose.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import kotlinx.serialization.Serializable
 import kotlin.reflect.typeOf
 
 object AnimeDestinations {
     val typeMap = mapOf(
-        typeOf<CharacterHeaderParams?>() to CustomNavTypes.ParcelableType<CharacterHeaderParams>(),
-        typeOf<MediaHeaderParams?>() to CustomNavTypes.ParcelableType<MediaHeaderParams>(),
+        typeOf<CharacterHeaderParams?>() to CustomNavTypes.SerializableParcelableType<CharacterHeaderParams>(),
+        typeOf<MediaHeaderParams?>() to CustomNavTypes.SerializableParcelableType<MediaHeaderParams>(),
         typeOf<MediaSeason?>() to CustomNavTypes.NullableEnumType<MediaSeason>(),
         typeOf<MediaType?>() to CustomNavTypes.NullableEnumType<MediaType>(),
-        typeOf<StaffHeaderParams?>() to CustomNavTypes.ParcelableType<CharacterHeaderParams>(),
+        typeOf<StaffHeaderParams?>() to CustomNavTypes.SerializableParcelableType<StaffHeaderParams>(),
     )
 
     @Serializable
@@ -68,24 +70,24 @@ object AnimeDestinations {
     data class MediaDetails(
         val mediaId: String,
         val title: String? = null,
-        val coverImage: String? = null,
-        val sharedElementKey: String? = null,
+        val coverImage: ImageState? = null,
         // TODO: Corner radius animation
         val headerParams: MediaHeaderParams? = null,
+        val sharedTransitionKey: SharedTransitionKey?,
     ) {
         constructor(
             mediaNavigationData: MediaNavigationData,
-            coverImageWidthToHeightRatio: Float?,
+            coverImage: ImageState?,
             languageOptionMedia: AniListLanguageOption,
+            sharedTransitionKey: SharedTransitionKey?,
         ) : this(
             mediaId = mediaNavigationData.id.toString(),
             title = mediaNavigationData.title?.primaryTitle(languageOptionMedia),
-            coverImage = mediaNavigationData.coverImage?.extraLarge,
-            sharedElementKey = null,
+            coverImage = coverImage,
+            sharedTransitionKey = sharedTransitionKey,
             headerParams = MediaHeaderParams(
-                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
                 title = mediaNavigationData.title?.primaryTitle(languageOptionMedia),
-                coverImage = mediaNavigationData.coverImage?.extraLarge,
+                coverImage = coverImage,
             ),
         )
     }

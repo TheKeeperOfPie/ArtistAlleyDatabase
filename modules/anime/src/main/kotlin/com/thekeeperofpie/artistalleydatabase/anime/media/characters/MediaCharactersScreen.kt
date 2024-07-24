@@ -57,7 +57,6 @@ object MediaCharactersScreen {
                 val mediaType = media?.type
                 val mediaId = viewModel.mediaId
                 MediaHeader(
-                    screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
                     mediaId = mediaId,
                     mediaType = mediaType,

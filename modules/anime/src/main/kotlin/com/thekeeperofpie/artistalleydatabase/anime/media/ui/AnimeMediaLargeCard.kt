@@ -1,6 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -35,7 +39,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,8 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
@@ -62,16 +64,28 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
+import com.thekeeperofpie.artistalleydatabase.compose.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
+    ExperimentalCoilApi::class
+)
 object AnimeMediaLargeCard {
 
     private val HEIGHT = 200.dp
@@ -84,10 +98,18 @@ object AnimeMediaLargeCard {
         label: (@Composable () -> Unit)? = null,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
+        shouldTransitionCoverImageIfUsed: Boolean = true,
     ) {
-        val sharedElementKey = entry?.mediaId
+        val sharedTransitionKey = entry?.mediaId?.let { SharedTransitionKey.makeKeyForId(it) }
+        val sharedContentState = rememberSharedContentState(
+            sharedTransitionKey.takeIf { entry?.imageBanner != null || shouldTransitionCoverImageIfUsed },
+            if (entry?.imageBanner != null) "media_banner_image" else "media_image",
+        )
         ElevatedCard(
             modifier = modifier
+                .conditionally(entry?.imageBanner != null || shouldTransitionCoverImageIfUsed) {
+                    sharedElement(sharedContentState)
+                }
                 .fillMaxWidth()
                 .heightIn(min = HEIGHT)
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
@@ -96,6 +118,8 @@ object AnimeMediaLargeCard {
             val navigationCallback = LocalNavigationCallback.current
             val ignoreController = LocalIgnoreController.current
             val title = entry?.primaryTitle()
+            val imageState = rememberCoilImageState(entry?.imageBanner ?: entry?.image)
+            val isBanner = entry?.imageBanner != null
             Box(
                 modifier = Modifier.combinedClickable(
                     enabled = entry != null,
@@ -105,10 +129,15 @@ object AnimeMediaLargeCard {
                                 AnimeDestinations.MediaDetails(
                                     mediaId = entry.mediaId,
                                     title = title,
-                                    coverImage = entry.image,
-                                    sharedElementKey = sharedElementKey,
+                                    coverImage = if (!isBanner) imageState.toImageState() else ImageState(
+                                        entry.image
+                                    ),
+                                    sharedTransitionKey = sharedTransitionKey,
                                     headerParams = MediaHeaderParams(
-                                        coverImageWidthToHeightRatio = null,
+                                        bannerImage = imageState.takeIf { isBanner }
+                                            ?.toImageState(),
+                                        coverImage = imageState.takeUnless { isBanner }
+                                            ?.toImageState(),
                                         title = title,
                                         media = entry,
                                     ),
@@ -134,11 +163,21 @@ object AnimeMediaLargeCard {
             ) {
                 BannerImage(
                     entry = entry,
-                    sharedElementKey = sharedElementKey,
+                    imageState = imageState,
                 )
 
+                val foregroundAlpha by LocalAnimatedVisibilityScope.current.transition
+                    .animateFloat(transitionSpec = { tween() }, label = "Foreground text alpha") {
+                        when (it) {
+                            EnterExitState.PreEnter -> 0f
+                            EnterExitState.Visible -> 1f
+                            EnterExitState.PostExit -> 0f
+                        }
+                    }
                 Column(
                     modifier = Modifier
+                        .alpha(foregroundAlpha.takeIf { sharedContentState?.isMatchFound == true }
+                            ?: 1f)
                         .fillMaxHeight()
                         .heightIn(min = HEIGHT)
                 ) {
@@ -211,7 +250,7 @@ object AnimeMediaLargeCard {
     @Composable
     private fun BannerImage(
         entry: Entry?,
-        sharedElementKey: String?,
+        imageState: CoilImageState,
     ) {
         val foregroundColor = MaterialTheme.colorScheme.surface
         var loaded by remember(entry?.mediaId) { mutableStateOf(false) }
@@ -223,9 +262,9 @@ object AnimeMediaLargeCard {
             if (loaded) 1f else 0f,
             label = "AnimeMediaLargeCard banner image alpha",
         )
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(entry?.imageBanner ?: entry?.image)
+        CoilImage(
+            state = imageState,
+            model = imageState.request()
                 .crossfade(true)
                 .allowHardware(colorCalculationState.allowHardware(entry?.mediaId))
                 .size(
@@ -234,26 +273,22 @@ object AnimeMediaLargeCard {
                         LocalDensity.current.run { HEIGHT.roundToPx() / 2 }
                     ),
                 )
+                .listener(onSuccess = { _, result ->
+                    loaded = true
+                    if (entry != null) {
+                        ComposeColorUtils.calculatePalette(
+                            id = entry.mediaId,
+                            image = result.image,
+                            colorCalculationState = colorCalculationState,
+                        )
+                    }
+                })
                 .build(),
             contentScale = ContentScale.Crop,
-            onSuccess = {
-                loaded = true
-                if (entry != null) {
-                    ComposeColorUtils.calculatePalette(
-                        entry.mediaId,
-                        it,
-                        colorCalculationState,
-                    )
-                }
-            },
             contentDescription = stringResource(
                 R.string.anime_media_banner_image_content_description
             ),
             modifier = Modifier
-                .sharedElement(
-                    sharedElementKey,
-                    if (entry?.imageBanner != null) "media_banner_image" else "media_image",
-                )
                 .background(entry?.color ?: MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxWidth()
                 .height(HEIGHT)

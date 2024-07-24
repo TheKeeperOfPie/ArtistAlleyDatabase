@@ -1,14 +1,9 @@
+@file:OptIn(ExperimentalCoilApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.VisibilityThreshold
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,8 +34,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import coil3.annotation.ExperimentalCoilApi
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaWithListStatus
@@ -57,17 +52,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.maybeOverride
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Composable
 fun MediaHeader(
-    screenKey: String,
     upIconOption: UpIconOption,
     mediaId: String?,
     mediaType: MediaType?,
@@ -79,8 +76,8 @@ fun MediaHeader(
     progress: Float,
     headerValues: MediaHeaderValues,
     onFavoriteChanged: (Boolean) -> Unit,
-    sharedElementKey: String? = null,
-    onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
+    sharedTransitionKey: SharedTransitionKey? = null,
+    coverImageState: CoilImageState? = rememberCoilImageState(headerValues.coverImage),
     enableCoverImageSharedElement: Boolean = true,
     onCoverImageClick: (() -> Unit)? = null,
     menuContent: @Composable() (() -> Unit)? = null,
@@ -95,10 +92,11 @@ fun MediaHeader(
     CoverAndBannerHeader(
         upIconOption = upIconOption,
         headerValues = headerValues,
+        coverImageState = coverImageState,
         coverImageAllowHardware = colorCalculationState.allowHardware(mediaId),
-        modifier = Modifier.sharedBounds(sharedElementKey, "media_header"),
-        sharedElementKey = sharedElementKey,
-        coverImageSharedElementKey = "media_image",
+//        modifier = Modifier.sharedBounds(sharedElementKey, "media_header"),
+        sharedTransitionKey = sharedTransitionKey,
+        coverImageSharedElementKey = "media_image".takeIf { enableCoverImageSharedElement },
         bannerImageSharedElementKey = "media_banner_image",
         progress = progress,
         color = { headerValues.color },
@@ -107,9 +105,8 @@ fun MediaHeader(
             preferredTitle = (preferredTitle + 1) % (titles?.size ?: 1)
         },
         coverImageOnSuccess = {
-            onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
             if (mediaId != null) {
-                ComposeColorUtils.calculatePalette(mediaId, it, colorCalculationState)
+                ComposeColorUtils.calculatePalette(mediaId, it.result.image, colorCalculationState)
             }
         },
         menuContent = {
@@ -131,26 +128,14 @@ fun MediaHeader(
                         .weight(1f)
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
                 )
-                AnimatedVisibility(
-                    visible = progress > 0.6f,
-                    enter = fadeIn() + expandHorizontally(
-                        animationSpec = spring(
-                            stiffness = Spring.StiffnessHigh,
-                            visibilityThreshold = IntSize.VisibilityThreshold
-                        ),
-                        expandFrom = Alignment.Start,
-                    ),
-                    exit = fadeOut() + shrinkHorizontally(),
-                    modifier = Modifier.align(Alignment.Top)
-                ) {
-                    MediaRatingIconsSection(
-                        rating = averageScore,
-                        popularity = popularity,
-                        modifier = Modifier
-                            .alpha(if (progress > 0.6f) 1f - ((1f - progress) / 0.2f) else 0f)
-                            .padding(start = 8.dp, end = 8.dp, top = 12.dp)
-                    )
-                }
+                MediaRatingIconsSection(
+                    rating = averageScore,
+                    popularity = popularity,
+                    modifier = Modifier
+                        .alpha(if (progress > 0.6f) 1f - ((1f - progress) / 0.2f) else 0f)
+                        .padding(start = 8.dp, end = 8.dp, top = 12.dp)
+                        .align(Alignment.Top)
+                )
             }
 
             Row(verticalAlignment = Alignment.Bottom) {
@@ -254,10 +239,9 @@ fun MediaHeader(
 @Parcelize
 @Serializable
 data class MediaHeaderParams(
-    val coverImageWidthToHeightRatio: Float? = null,
     val title: String? = null,
-    val coverImage: String? = null,
-    val bannerImage: String? = null,
+    val bannerImage: ImageState? = null,
+    val coverImage: ImageState? = null,
     val subtitleFormatRes: Int? = null,
     val subtitleStatusRes: Int? = null,
     val subtitleSeason: MediaSeason? = null,
@@ -270,14 +254,14 @@ data class MediaHeaderParams(
 ) : Parcelable {
     constructor(
         title: String?,
-        coverImageWidthToHeightRatio: Float?,
         media: MediaHeaderData?,
         favorite: Boolean? = null,
+        bannerImage: ImageState? = media?.bannerImage?.let(::ImageState),
+        coverImage: ImageState?,
     ) : this(
-        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
         title = title,
-        coverImage = media?.coverImage?.extraLarge,
-        bannerImage = media?.bannerImage,
+        bannerImage = bannerImage,
+        coverImage = coverImage,
         subtitleFormatRes = media?.format.toTextRes(),
         subtitleStatusRes = media?.status.toTextRes(),
         subtitleSeason = media?.season,
@@ -291,14 +275,14 @@ data class MediaHeaderParams(
 
     constructor(
         title: String?,
-        coverImageWidthToHeightRatio: Float?,
         mediaCompactWithTags: MediaCompactWithTags?,
         favorite: Boolean? = null,
+        bannerImage: ImageState? = null,
+        coverImage: ImageState?,
     ) : this(
-        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
         title = title,
-        coverImage = mediaCompactWithTags?.coverImage?.extraLarge,
-        bannerImage = null,
+        bannerImage = bannerImage,
+        coverImage = coverImage,
         subtitleFormatRes = mediaCompactWithTags?.format.toTextRes(),
         subtitleStatusRes = null,
         subtitleSeason = mediaCompactWithTags?.season,
@@ -312,14 +296,14 @@ data class MediaHeaderParams(
 
     constructor(
         title: String?,
-        coverImageWidthToHeightRatio: Float?,
         mediaWithListStatus: MediaWithListStatus?,
         favorite: Boolean? = null,
+        bannerImage: ImageState? = null,
+        coverImage: ImageState?,
     ) : this(
-        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
         title = title,
-        coverImage = mediaWithListStatus?.coverImage?.extraLarge,
-        bannerImage = null,
+        coverImage = coverImage,
+        bannerImage = bannerImage,
         subtitleFormatRes = null,
         subtitleStatusRes = null,
         subtitleSeason = null,
@@ -337,15 +321,14 @@ class MediaHeaderValues(
     private val media: () -> MediaHeaderData?,
     private val favoriteUpdate: () -> Boolean?,
 ): DetailsHeaderValues {
-    override val coverImageWidthToHeightRatio = params?.coverImageWidthToHeightRatio ?: 1f
     val color
         get() = media()?.coverImage?.color
             ?.let(ComposeColorUtils::hexToColor)
             ?: params?.colorArgb?.let(::Color)
     override val coverImage
-        get() = media()?.coverImage?.extraLarge ?: params?.coverImage
+        get() = params?.coverImage.maybeOverride(media()?.coverImage?.extraLarge)
     override val bannerImage
-        get() = media()?.bannerImage ?: params?.bannerImage
+        get() = params?.bannerImage.maybeOverride(media()?.bannerImage)
     val nextEpisode
         get() = media()?.nextAiringEpisode?.episode
             ?: params?.nextEpisode

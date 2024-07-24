@@ -1,5 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.EaseOutExpo
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -10,6 +15,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
@@ -109,6 +115,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import kotlin.reflect.KClass
@@ -252,6 +259,19 @@ object AnimeNavigator {
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/manga/{mediaId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/manga/{mediaId}/.*" },
             ),
+            enterTransition = {
+                val destination = targetState.toRoute<AnimeDestinations.MediaDetails>()
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                    // If there's a shared element, delay the slide up to allow
+                    // previous screen's exit animations to run
+                    animationSpec = if (destination.sharedTransitionKey == null) {
+                        spring(visibilityThreshold = IntOffset.VisibilityThreshold)
+                    } else {
+                        tween(delayMillis = 200, easing = EaseOutExpo)
+                    },
+                )
+            }
         ) {
             val destination = it.toRoute<AnimeDestinations.MediaDetails>()
             val mediaDetailsViewModel = hiltViewModel<AnimeMediaDetailsViewModel>()
@@ -311,27 +331,34 @@ object AnimeNavigator {
 
             val navigationCallback = LocalNavigationCallback.current
 
-            val sharedElementKey = destination.sharedElementKey
+            val sharedTransitionKey = destination.sharedTransitionKey
             val mediaTitle = mediaDetailsViewModel.entry.result?.media?.title?.primaryTitle()
+            val coverImageState = rememberCoilImageState(headerValues.coverImage)
+            val media = mediaDetailsViewModel.entry.result?.media
+            fun mediaHeaderParams() = MediaHeaderParams(
+                title = mediaTitle,
+                coverImage = coverImageState.toImageState(),
+                media = media,
+                favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite ?: media?.isFavourite,
+            )
             AnimeMediaDetailsScreen(
                 viewModel = mediaDetailsViewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                sharedElementKey = sharedElementKey,
+                sharedTransitionKey = sharedTransitionKey,
+                coverImageState = coverImageState,
                 charactersCount = {
                     charactersDeferred.itemCount
                         .coerceAtLeast(charactersViewModel.charactersInitial.size)
                 },
-                charactersSection = { screenKey, entry, coverImageWidthToHeightRatio ->
+                charactersSection = { screenKey, entry ->
                     charactersSection(
                         screenKey = screenKey,
                         titleRes = R.string.anime_media_details_characters_label,
                         charactersInitial = charactersViewModel.charactersInitial,
                         charactersDeferred = { charactersDeferred },
                         mediaId = entry.mediaId,
-                        media = entry.media,
-                        mediaFavorite = mediaDetailsViewModel.favoritesToggleHelper.favorite,
-                        mediaCoverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                        mediaHeaderParams = mediaHeaderParams(),
                         viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
                     )
                 },
@@ -380,7 +407,7 @@ object AnimeNavigator {
                     aboveFold = RecommendationComposables.RECOMMENDATIONS_ABOVE_FOLD,
                     hasMore = recommendationsViewModel.recommendations?.hasMore ?: true,
                 ),
-                recommendationsSection = { screenKey, expanded, onExpandedChange, onClickListEdit, coverImageWidthToHeightRatio ->
+                recommendationsSection = { screenKey, expanded, onExpandedChange, onClickListEdit ->
                     val entry = recommendationsViewModel.recommendations
                     recommendationsSection(
                         screenKey = screenKey,
@@ -390,17 +417,10 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChange,
                         onClickListEdit = onClickListEdit,
                         onClickViewAll = {
-                            val media = mediaDetailsViewModel.entry.result?.media
                             it.navigate(
                                 AnimeDestinations.MediaRecommendations(
                                     mediaId = mediaDetailsViewModel.mediaId,
-                                    headerParams = MediaHeaderParams(
-                                        title = mediaTitle,
-                                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
-                                        media = media,
-                                        favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
-                                            ?: media?.isFavourite,
-                                    )
+                                    headerParams = mediaHeaderParams(),
                                 )
                             )
                         },
@@ -417,7 +437,7 @@ object AnimeNavigator {
                     hasMore = true,
                     addOneForViewer = true,
                 ),
-                activitiesSection = { screenKey, expanded, onExpandedChanged, onClickListEdit, coverImageWidthToHeightRatio ->
+                activitiesSection = { screenKey, expanded, onExpandedChanged, onClickListEdit ->
                     activitiesSection(
                         screenKey = screenKey,
                         viewer = viewer,
@@ -433,22 +453,13 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChanged,
                         onClickListEdit = onClickListEdit,
                         onClickViewAll = {
-                            val entry = mediaDetailsViewModel.entry.result
-                            if (entry != null) {
-                                it.navigate(
-                                    AnimeDestinations.MediaActivities(
-                                        mediaId = mediaDetailsViewModel.mediaId,
-                                        showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
-                                        headerParams = MediaHeaderParams(
-                                            title = mediaTitle,
-                                            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
-                                            media = entry.media,
-                                            favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
-                                                ?: entry.media.isFavourite,
-                                        )
-                                    )
+                            it.navigate(
+                                AnimeDestinations.MediaActivities(
+                                    mediaId = mediaDetailsViewModel.mediaId,
+                                    showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
+                                    headerParams = mediaHeaderParams(),
                                 )
-                            }
+                            )
                         },
                     )
                 },
@@ -480,39 +491,25 @@ object AnimeNavigator {
                     aboveFold = ReviewComposables.REVIEWS_ABOVE_FOLD,
                     hasMore = reviewsViewModel.reviews?.hasMore ?: false,
                 ),
-                reviewsSection = { screenKey, expanded, onExpandedChange, coverImageWidthToHeightRatio ->
+                reviewsSection = { screenKey, expanded, onExpandedChange ->
                     reviewsSection(
                         screenKey = screenKey,
                         entry = reviewsViewModel.reviews,
                         expanded = expanded,
                         onExpandedChange = onExpandedChange,
                         onClickViewAll = {
-                            val media = mediaDetailsViewModel.entry.result?.media
                             it.navigate(
                                 AnimeDestinations.MediaReviews(
                                     mediaId = mediaDetailsViewModel.mediaId,
-                                    headerParams = MediaHeaderParams(
-                                        title = mediaTitle,
-                                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
-                                        media = media,
-                                        favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
-                                            ?: media?.isFavourite,
-                                    )
+                                    headerParams = mediaHeaderParams()
                                 )
                             )
                         },
                         onReviewClick = { navigationCallback, item ->
-                            val media = mediaDetailsViewModel.entry.result?.media
                             navigationCallback.navigate(
                                 AnimeDestinations.ReviewDetails(
                                     reviewId = item.id.toString(),
-                                    headerParams = MediaHeaderParams(
-                                        title = mediaTitle,
-                                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
-                                        media = media,
-                                        favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
-                                            ?: media?.isFavourite,
-                                    )
+                                    headerParams = mediaHeaderParams(),
                                 )
                             )
                         },

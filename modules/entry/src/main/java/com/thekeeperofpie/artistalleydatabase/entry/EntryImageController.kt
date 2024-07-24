@@ -48,7 +48,7 @@ class EntryImageController(
 
     var images = mutableStateListOf<EntryImage>()
 
-    val imageState = ImageState(
+    val imageState = EntryImageState(
         images = { images },
         onSelected = ::onImageSelected,
         onSelectError = {

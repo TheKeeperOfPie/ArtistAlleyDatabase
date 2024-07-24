@@ -55,7 +55,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -121,6 +120,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHa
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
@@ -141,6 +141,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 import com.thekeeperofpie.artistalleydatabase.compose.rememberLambda
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -183,13 +184,10 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
-        sharedElementKey: String?,
+        sharedTransitionKey: SharedTransitionKey?,
+        coverImageState: CoilImageState?,
         charactersCount: (Entry?) -> Int,
-        charactersSection: LazyListScope.(
-            screenKey: String,
-            entry: Entry,
-            coverImageWidthToHeightRatio: () -> Float,
-        ) -> Unit,
+        charactersSection: LazyListScope.(screenKey: String, entry: Entry) -> Unit,
         staffCount: () -> Int,
         staffSection: LazyListScope.(screenKey: String) -> Unit,
         songsSectionMetadata: SectionIndexInfo.SectionMetadata?,
@@ -207,7 +205,6 @@ object AnimeMediaDetailsScreen {
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
-            coverImageWidthToHeightRatio: () -> Float,
         ) -> Unit,
         activitiesSectionMetadata: SectionIndexInfo.SectionMetadata,
         activitiesSection: LazyListScope.(
@@ -215,7 +212,6 @@ object AnimeMediaDetailsScreen {
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
-            coverImageWidthToHeightRatio: () -> Float,
         ) -> Unit,
         forumThreadsSectionMetadata: SectionIndexInfo.SectionMetadata,
         forumThreadsSection: LazyListScope.(
@@ -227,7 +223,6 @@ object AnimeMediaDetailsScreen {
             screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
-            coverImageWidthToHeightRatio: () -> Float,
         ) -> Unit,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -236,9 +231,6 @@ object AnimeMediaDetailsScreen {
         val lazyListState = rememberLazyListState()
         val scope = rememberCoroutineScope()
 
-        var coverImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
-        }
         val entry = viewModel.entry
         val entry2 = viewModel.entry2
         val expandedState = rememberExpandedState()
@@ -287,7 +279,6 @@ object AnimeMediaDetailsScreen {
                         scrollBehavior = scrollBehavior,
                     ) {
                         MediaHeader(
-                            screenKey = viewModel.screenKey,
                             upIconOption = upIconOption,
                             mediaId = viewModel.mediaId,
                             mediaType = viewModel.entry.result?.media?.type,
@@ -305,10 +296,8 @@ object AnimeMediaDetailsScreen {
                                     it,
                                 )
                             },
-                            sharedElementKey = sharedElementKey,
-                            onImageWidthToHeightRatioAvailable = {
-                                coverImageWidthToHeightRatio = it
-                            },
+                            sharedTransitionKey = sharedTransitionKey,
+                            coverImageState = coverImageState,
                             menuContent = {
                                 Box {
                                     var showMenu by remember { mutableStateOf(false) }
@@ -509,7 +498,6 @@ object AnimeMediaDetailsScreen {
                                     entry2Result = entry2,
                                     onClickListEdit = onClickListEdit,
                                     expandedState = expandedState,
-                                    coverImageWidthToHeightRatio = { coverImageWidthToHeightRatio },
                                     charactersSection = charactersSection,
                                     staffSection = staffSection,
                                     songsSection = songsSection,
@@ -539,13 +527,8 @@ object AnimeMediaDetailsScreen {
         entry: Entry,
         entry2Result: LoadingResult<Entry2>,
         onClickListEdit: (MediaNavigationData) -> Unit,
-        coverImageWidthToHeightRatio: () -> Float,
         expandedState: ExpandedState,
-        charactersSection: LazyListScope.(
-            screenKey: String,
-            entry: Entry,
-            coverImageWidthToHeightRatio: () -> Float,
-        ) -> Unit,
+        charactersSection: LazyListScope.(screenKey: String, entry: Entry) -> Unit,
         staffSection: LazyListScope.(screenKey: String) -> Unit,
         songsSection: LazyListScope.(
             screenKey: String,
@@ -558,14 +541,12 @@ object AnimeMediaDetailsScreen {
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
-            coverImageWidthToHeightRatio: () -> Float,
         ) -> Unit,
         activitiesSection: LazyListScope.(
             screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
-            coverImageWidthToHeightRatio: () -> Float,
         ) -> Unit,
         forumThreadsSection: LazyListScope.(
             expanded: () -> Boolean,
@@ -575,7 +556,6 @@ object AnimeMediaDetailsScreen {
             screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
-            coverImageWidthToHeightRatio: () -> Float,
         ) -> Unit,
     ) {
         val screenKey = viewModel.screenKey
@@ -595,7 +575,7 @@ object AnimeMediaDetailsScreen {
             }
         }
 
-        charactersSection(screenKey, entry, coverImageWidthToHeightRatio)
+        charactersSection(screenKey, entry)
 
         relationsSection(
             screenKey = screenKey,
@@ -673,7 +653,6 @@ object AnimeMediaDetailsScreen {
             expandedState::recommendations,
             { expandedState.recommendations = it },
             onClickListEdit,
-            coverImageWidthToHeightRatio,
         )
 
         activitiesSection(
@@ -681,7 +660,6 @@ object AnimeMediaDetailsScreen {
             expandedState::activities,
             { expandedState.activities = it },
             onClickListEdit,
-            coverImageWidthToHeightRatio,
         )
 
         forumThreadsSection(expandedState::forumThreads) { expandedState.forumThreads = it }
@@ -690,7 +668,6 @@ object AnimeMediaDetailsScreen {
             screenKey,
             expandedState::reviews,
             { expandedState.reviews = it },
-            coverImageWidthToHeightRatio,
         )
     }
 

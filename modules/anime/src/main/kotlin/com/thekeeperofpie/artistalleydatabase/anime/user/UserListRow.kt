@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -33,6 +34,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
@@ -60,10 +62,17 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalSharedTransitionApi::class, ExperimentalCoilApi::class
+)
 object UserListRow {
 
     private val MIN_HEIGHT = 156.dp
@@ -159,9 +168,9 @@ object UserListRow {
                 onRatioAvailable(it.widthToHeightRatio())
                 if (entry != null) {
                     ComposeColorUtils.calculatePalette(
-                        entry.user.id.toString(),
-                        it,
-                        colorCalculationState,
+                        id = entry.user.id.toString(),
+                        image = it.result.image,
+                        colorCalculationState = colorCalculationState,
                     )
                 }
             },
@@ -234,25 +243,30 @@ object UserListRow {
                     Box {
                         val navigationCallback = LocalNavigationCallback.current
                         val languageOptionMedia = LocalLanguageOptionMedia.current
+                        val sharedTransitionKey = it?.media?.id?.toString()
+                            ?.let { SharedTransitionKey.makeKeyForId(it) }
+                        val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
+                        val imageState = rememberCoilImageState(it?.media?.coverImage?.extraLarge)
                         ListRowSmallImage(
-                            context = context,
                             density = density,
                             ignored = it?.ignored ?: false,
-                            image = it?.media?.coverImage?.extraLarge,
+                            imageState = imageState,
                             contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
                             width = MEDIA_WIDTH,
                             height = MEDIA_HEIGHT,
-                            onClick = { imageWidthToHeightRatio ->
+                            onClick = {
                                 if (it?.media != null) {
                                     navigationCallback.navigate(
                                         AnimeDestinations.MediaDetails(
                                             mediaNavigationData = it.media,
-                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                            coverImage = imageState.toImageState(),
                                             languageOptionMedia = languageOptionMedia,
+                                            sharedTransitionKey = sharedTransitionKey,
                                         )
                                     )
                                 }
                             },
+                            modifier = Modifier.sharedElement(sharedContentState)
                         )
 
                         if (viewer != null && it != null) {
@@ -266,7 +280,9 @@ object UserListRow {
                                 padding = 6.dp,
                                 // API is broken, doesn't return the viewer's entry
                                 forceListEditIcon = true,
-                                modifier = Modifier.align(Alignment.BottomStart)
+                                modifier = Modifier
+                                    .animateSharedTransitionWithOtherState(sharedContentState)
+                                    .align(Alignment.BottomStart)
                             )
                         }
                     }

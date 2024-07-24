@@ -6,7 +6,9 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -21,7 +23,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
@@ -58,16 +59,12 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
-import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
@@ -77,12 +74,18 @@ import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
@@ -92,7 +95,7 @@ internal fun CoverAndBannerHeader(
     headerValues: DetailsHeaderValues,
     coverImageAllowHardware: Boolean,
     modifier: Modifier = Modifier,
-    sharedElementKey: String? = null,
+    sharedTransitionKey: SharedTransitionKey? = null,
     coverImageSharedElementKey: String? = null,
     bannerImageSharedElementKey: String? = null,
     pinnedHeight: Dp = 120.dp,
@@ -101,6 +104,7 @@ internal fun CoverAndBannerHeader(
     color: @Composable () -> Color? = { null },
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
+    coverImageState: CoilImageState? = rememberCoilImageState(headerValues.coverImage),
     coverImageOnSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     menuContent: @Composable() (RowScope.() -> Unit)? = null,
     fadeOutMenu: Boolean = true,
@@ -123,16 +127,17 @@ internal fun CoverAndBannerHeader(
             .combinedClickable(
                 enabled = onClickEnabled,
                 onClick = onClick ?: {},
-                onLongClick = { headerValues.bannerImage?.let(fullscreenImageHandler::openImage) },
+                onLongClick = { headerValues.bannerImage?.uri?.let(fullscreenImageHandler::openImage) },
                 onLongClickLabel = stringResource(
                     R.string.anime_media_cover_image_long_press_preview
                 ),
             )
     ) {
         Box {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(headerValues.bannerImage)
+            val bannerImageState = rememberCoilImageState(headerValues.bannerImage)
+            CoilImage(
+                state = bannerImageState,
+                model = bannerImageState.request()
                     .crossfade(true)
                     .size(
                         width = Dimension.Undefined,
@@ -143,7 +148,7 @@ internal fun CoverAndBannerHeader(
                 contentDescription = stringResource(R.string.anime_media_banner_image),
                 modifier = Modifier
                     .conditionally(headerValues.bannerImage != null) {
-                        sharedElement(sharedElementKey, bannerImageSharedElementKey)
+                        sharedElement(sharedTransitionKey, bannerImageSharedElementKey)
                     }
                     .fillMaxWidth()
                     .height(lerp(180.dp, pinnedHeight, progress))
@@ -178,11 +183,22 @@ internal fun CoverAndBannerHeader(
                     .blurForScreenshotMode()
             )
 
-            if (upIconOption != null && progress != 1f) {
+            val maxAlpha by LocalAnimatedVisibilityScope.current.transition
+                .animateFloat(label = "CoverAndBannerHeader upIconOption transition") {
+                    when (it) {
+                        EnterExitState.PreEnter -> 0f
+                        EnterExitState.Visible -> 1f
+                        EnterExitState.PostExit -> 0f
+                    }
+                }
+
+            if (upIconOption != null) {
                 UpIconButton(
-                    option = upIconOption, modifier = Modifier
+                    option = upIconOption,
+                    modifier = Modifier
+                        .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
                         .align(Alignment.TopStart)
-                        .alpha(1f - progress)
+                        .alpha((1f - progress).coerceAtMost(maxAlpha))
                         .clip(RoundedCornerShape(bottomEnd = 12.dp))
                         .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
                 )
@@ -220,16 +236,14 @@ internal fun CoverAndBannerHeader(
                 Box(modifier = Modifier.padding(vertical = 10.dp)) {
                     ElevatedCard(
                         modifier = Modifier
-                            .sharedElement(sharedElementKey, coverImageSharedElementKey)
-                            .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                            .sharedElement(sharedTransitionKey, coverImageSharedElementKey)
                     ) {
                         val imageHeight = rowHeight - 20.dp
                         var success by remember { mutableStateOf(false) }
                         val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
-                        val coverImage = headerValues.coverImage
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(coverImage)
+                        CoilImage(
+                            state = coverImageState,
+                            model = coverImageState.request()
                                 .crossfade(true)
                                 .allowHardware(coverImageAllowHardware)
                                 .size(
@@ -249,23 +263,12 @@ internal fun CoverAndBannerHeader(
                             contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                             modifier = Modifier
                                 .height(imageHeight)
-                                .run {
-                                    val coverImageWidthToHeightRatio =
-                                        headerValues.coverImageWidthToHeightRatio ?: 1f
-                                    if (coverImageWidthToHeightRatio != 1f) {
-                                        width(
-                                            (imageHeight * coverImageWidthToHeightRatio)
-                                                .coerceAtMost(maxWidth)
-                                        )
-                                    } else if (success) {
-                                        wrapContentWidth()
-                                    } else this
-                                }
+                                .wrapContentWidth()
                                 .widthIn(max = maxWidth)
                                 .combinedClickable(
                                     onClick = { onCoverImageClick?.invoke() },
                                     onLongClick = {
-                                        coverImage?.let(fullscreenImageHandler::openImage)
+                                        coverImageState?.uri?.let(fullscreenImageHandler::openImage)
                                     }
                                 )
                                 .blurForScreenshotMode()

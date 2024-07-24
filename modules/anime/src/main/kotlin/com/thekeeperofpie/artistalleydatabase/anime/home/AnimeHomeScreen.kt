@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.annotation.SuppressLint
 import androidx.annotation.StringRes
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -73,7 +75,6 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -87,8 +88,7 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.size.Dimension
 import com.anilist.UserSocialActivityQuery
@@ -134,6 +134,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.itemsIndexed
 import com.thekeeperofpie.artistalleydatabase.anime.utils.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
@@ -149,13 +151,21 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateEnterExit
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 @Suppress("NAME_SHADOWING")
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalSharedTransitionApi::class, ExperimentalCoilApi::class
+)
 object AnimeHomeScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.HOME.id
@@ -413,14 +423,16 @@ object AnimeHomeScreen {
             val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
                 .coerceAtLeast(1) + 1
             mediaViewModel.entry.result?.lists?.forEach {
-                MediaRow(
-                    data = it,
-                    viewer = viewer,
-                    onClickListEdit = onClickListEdit,
-                    selectedItemTracker = selectedItemTracker,
-                    contentPadding = contentPadding,
-                    placeholderCount = placeholderCount,
-                )
+                SharedTransitionKeyScope("anime_home_media_list_row_${it.id}") {
+                    MediaRow(
+                        data = it,
+                        viewer = viewer,
+                        onClickListEdit = onClickListEdit,
+                        selectedItemTracker = selectedItemTracker,
+                        contentPadding = contentPadding,
+                        placeholderCount = placeholderCount,
+                    )
+                }
             }
 
             Reviews(
@@ -476,13 +488,15 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.ACTIVITY.id
         )
 
-        this@AnimeHomeScreen.ActivityRow(
-            viewer = viewer,
-            data = data,
-            pageSize = pageSize,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
-        )
+        SharedTransitionKeyScope("anime_home_activity_row") {
+            this@AnimeHomeScreen.ActivityRow(
+                viewer = viewer,
+                data = data,
+                pageSize = pageSize,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+                onClickListEdit = onClickListEdit,
+            )
+        }
     }
 
     @Composable
@@ -584,13 +598,15 @@ object AnimeHomeScreen {
             }
         )
 
-        CurrentMediaRow(
-            viewer = viewer,
-            mediaResult = mediaViewModel::currentMedia,
-            currentMediaPreviousSize = mediaViewModel.currentMediaPreviousSize.collectAsState().value,
-            onClickListEdit = onClickListEdit,
-            onClickIncrementProgress = onClickIncrementProgress,
-        )
+        SharedTransitionKeyScope("anime_home_current_media_row") {
+            CurrentMediaRow(
+                viewer = viewer,
+                mediaResult = mediaViewModel::currentMedia,
+                currentMediaPreviousSize = mediaViewModel.currentMediaPreviousSize.collectAsState().value,
+                onClickListEdit = onClickListEdit,
+                onClickIncrementProgress = onClickIncrementProgress,
+            )
+        }
     }
 
     @Composable
@@ -666,6 +682,7 @@ object AnimeHomeScreen {
             AnimeMediaLargeCard(
                 viewer = viewer,
                 entry = entry,
+                shouldTransitionCoverImageIfUsed = false,
             )
         }
 
@@ -743,17 +760,19 @@ object AnimeHomeScreen {
         }
 
         val navigationCallback = LocalNavigationCallback.current
-        var widthToHeightRatio by remember(mediaId) { mutableStateOf<Float?>(null) }
+        val coverImageState = rememberCoilImageState(media?.coverImage?.extraLarge)
         val title = media?.title?.primaryTitle()
+        val sharedTransitionKey = SharedTransitionKey.makeKeyForId(media?.id.toString())
         val onClick = rememberCallback {
             if (media != null) {
                 navigationCallback.navigate(
                     AnimeDestinations.MediaDetails(
                         mediaId = media.id.toString(),
                         title = title,
-                        coverImage = media.coverImage?.extraLarge,
+                        coverImage = coverImageState.toImageState(),
+                        sharedTransitionKey = sharedTransitionKey,
                         headerParams = MediaHeaderParams(
-                            coverImageWidthToHeightRatio = widthToHeightRatio,
+                            coverImage = coverImageState.toImageState(),
                             title = title,
                             media = media,
                         ),
@@ -775,11 +794,12 @@ object AnimeHomeScreen {
         ) {
             CurrentMediaCardContent(
                 entry = entry,
+                sharedTransitionKey = sharedTransitionKey,
                 viewer = viewer,
                 textColor = ComposeColorUtils.bestTextColor(containerColor),
                 onClickListEdit = onClickListEdit,
                 onClickIncrementProgress = onClickIncrementProgress,
-                onWidthToHeightRatioChange = { widthToHeightRatio = it },
+                coverImageState = coverImageState,
             )
         }
     }
@@ -788,11 +808,12 @@ object AnimeHomeScreen {
     @Composable
     private fun ColumnScope.CurrentMediaCardContent(
         entry: UserMediaListController.MediaEntry?,
+        sharedTransitionKey: SharedTransitionKey,
         viewer: AniListViewer?,
         textColor: Color?,
         onClickListEdit: (MediaPreview) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
-        onWidthToHeightRatioChange: (Float) -> Unit,
+        coverImageState: CoilImageState,
     ) {
         val media = entry?.media
         val mediaId = media?.id?.toString()
@@ -805,13 +826,26 @@ object AnimeHomeScreen {
                 density.run { CURRENT_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
             )
             val colorCalculationState = LocalColorCalculationState.current
+            val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
-                image = ImageRequest.Builder(LocalContext.current)
-                    .data(media?.coverImage?.extraLarge)
+                imageState = coverImageState,
+                image = coverImageState.request()
                     .allowHardware(colorCalculationState.allowHardware(mediaId))
                     .size(width = coilWidth, height = coilHeight)
+                    .listener(onSuccess = { _, result ->
+                        if (mediaId != null) {
+                            ComposeColorUtils.calculatePalette(
+                                id = mediaId,
+                                image = result.image,
+                                colorCalculationState = colorCalculationState,
+                                heightStartThreshold = 3 / 4f,
+                                selectMaxPopulation = true,
+                            )
+                        }
+                    })
                     .build(),
                 modifier = Modifier
+                    .sharedElement(sharedContentState)
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                     .size(
                         width = CURRENT_ROW_IMAGE_WIDTH,
@@ -823,18 +857,6 @@ object AnimeHomeScreen {
                         highlight = PlaceholderHighlight.shimmer(),
                     ),
                 contentScale = ContentScale.Crop,
-                onSuccess = {
-                    onWidthToHeightRatioChange(it.widthToHeightRatio())
-                    if (mediaId != null) {
-                        ComposeColorUtils.calculatePalette(
-                            id = mediaId,
-                            success = it,
-                            colorCalculationState = colorCalculationState,
-                            heightStartThreshold = 3 / 4f,
-                            selectMaxPopulation = true,
-                        )
-                    }
-                }
             )
 
             if (viewer != null && media != null) {
@@ -848,13 +870,16 @@ object AnimeHomeScreen {
                     onClick = { onClickListEdit(media) },
                     iconSize = 12.dp,
                     textVerticalPadding = 2.dp,
-                    modifier = Modifier.align(Alignment.BottomStart)
+                    modifier = Modifier
+                        .animateSharedTransitionWithOtherState(sharedContentState)
+                        .align(Alignment.BottomStart)
                 )
 
                 if ((entry.progress ?: 0) < (maxProgress ?: 1)) {
                     IconButton(
                         onClick = { onClickIncrementProgress(entry) },
                         modifier = Modifier
+                            .animateSharedTransitionWithOtherState(sharedContentState)
                             .align(Alignment.TopEnd)
                             .clip(RoundedCornerShape(bottomStart = 12.dp))
                             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
@@ -910,7 +935,6 @@ object AnimeHomeScreen {
         }
 
         val navigationCallback = LocalNavigationCallback.current
-        var widthToHeightRatio by remember(mediaId) { mutableStateOf<Float?>(null) }
         val title = MediaUtils.userPreferredTitle(
             userPreferred = media?.title?.userPreferred,
             romaji = media?.title?.romaji,
@@ -918,60 +942,60 @@ object AnimeHomeScreen {
             native = media?.title?.native,
         )
 
-        AutoSharedElement(
-            key = "anime_media_${mediaId}_image",
-            screenKey = SCREEN_KEY,
-        ) {
-            val fullscreenImageHandler = LocalFullscreenImageHandler.current
-            ElevatedCard(
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = containerColor,
-                ),
-                modifier = modifier
-                    .height(MEDIA_ROW_IMAGE_HEIGHT)
-                    .widthIn(min = MEDIA_ROW_IMAGE_WIDTH)
-                    .combinedClickable(
-                        onClick = {
-                            if (media != null) {
-                                navigationCallback.navigate(
-                                    AnimeDestinations.MediaDetails(
-                                        mediaId = media.id.toString(),
+        val fullscreenImageHandler = LocalFullscreenImageHandler.current
+        val sharedTransitionKey =
+            media?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
+        val coverImageState = rememberCoilImageState(media?.coverImage?.extraLarge)
+        ElevatedCard(
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = containerColor,
+            ),
+            modifier = modifier
+                .height(MEDIA_ROW_IMAGE_HEIGHT)
+                .widthIn(min = MEDIA_ROW_IMAGE_WIDTH)
+                .sharedElement(sharedTransitionKey, "media_image")
+                .combinedClickable(
+                    onClick = {
+                        if (media != null) {
+                            navigationCallback.navigate(
+                                AnimeDestinations.MediaDetails(
+                                    mediaId = media.id.toString(),
+                                    title = title,
+                                    coverImage = coverImageState.toImageState(),
+                                    headerParams = MediaHeaderParams(
+                                        coverImage = coverImageState.toImageState(),
                                         title = title,
-                                        coverImage = media.coverImage?.extraLarge,
-                                        headerParams = MediaHeaderParams(
-                                            coverImageWidthToHeightRatio = widthToHeightRatio,
-                                            title = title,
-                                            media = media,
-                                        ),
-                                    )
+                                        media = media,
+                                    ),
+                                    sharedTransitionKey = sharedTransitionKey,
                                 )
-                            }
-                        },
-                        onLongClick = {
-                            media?.coverImage?.extraLarge?.let(fullscreenImageHandler::openImage)
-                        },
-                    )
-                    .alpha(if (ignored) 0.38f else 1f)
-                    .conditionally(selected) {
-                        border(
-                            width = 1.5.dp,
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(12.dp),
-                        )
-                    }
-                    .padding(2.dp)
-            ) {
-                MediaCardContent(
-                    media = media,
-                    mediaStatusAware = mediaStatusAware,
-                    viewer = viewer,
-                    allowHardware = { colorCalculationState.allowHardware(mediaId) },
-                    onClickListEdit = onClickListEdit,
-                    textColor = ComposeColorUtils.bestTextColor(containerColor),
-                    title = title,
-                    onWidthToHeightChange = { widthToHeightRatio = it },
+                            )
+                        }
+                    },
+                    onLongClick = {
+                        media?.coverImage?.extraLarge?.let(fullscreenImageHandler::openImage)
+                    },
                 )
-            }
+                .alpha(if (ignored) 0.38f else 1f)
+                .conditionally(selected) {
+                    border(
+                        width = 1.5.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(12.dp),
+                    )
+                }
+                .padding(2.dp)
+        ) {
+            MediaCardContent(
+                media = media,
+                mediaStatusAware = mediaStatusAware,
+                viewer = viewer,
+                allowHardware = { colorCalculationState.allowHardware(mediaId) },
+                onClickListEdit = onClickListEdit,
+                textColor = ComposeColorUtils.bestTextColor(containerColor),
+                title = title,
+                coverImageState = coverImageState,
+            )
         }
     }
 
@@ -983,8 +1007,8 @@ object AnimeHomeScreen {
         allowHardware: @Composable () -> Boolean,
         textColor: Color?,
         title: String?,
-        onWidthToHeightChange: (Float) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
+        coverImageState: CoilImageState,
     ) {
         Box(modifier = Modifier.recomposeHighlighter()) {
             var showTitle by remember(media) { mutableStateOf(false) }
@@ -998,29 +1022,29 @@ object AnimeHomeScreen {
 
             val mediaId = media?.id?.toString()
             val colorCalculationState = LocalColorCalculationState.current
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(media?.coverImage?.extraLarge)
+            CoilImage(
+                state = coverImageState,
+                model = coverImageState.request()
                     .allowHardware(allowHardware())
                     .size(width = coilWidth, height = coilHeight)
+                    .listener(onSuccess = { _, result ->
+                        if (mediaId != null) {
+                            ComposeColorUtils.calculatePalette(
+                                id = mediaId,
+                                image = result.image,
+                                colorCalculationState = colorCalculationState,
+                                heightStartThreshold = 3 / 4f,
+                                selectMaxPopulation = true,
+                            )
+                        }
+                    })
                     .build(),
                 contentScale = ContentScale.Crop,
                 contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                onSuccess = {
-                    onWidthToHeightChange(it.widthToHeightRatio())
-                    if (mediaId != null) {
-                        ComposeColorUtils.calculatePalette(
-                            id = mediaId,
-                            success = it,
-                            colorCalculationState = colorCalculationState,
-                            heightStartThreshold = 3 / 4f,
-                            selectMaxPopulation = true,
-                        )
-                    }
-                },
                 onError = { showTitle = true },
                 modifier = Modifier
-                    .size(width = MEDIA_ROW_IMAGE_WIDTH, height = MEDIA_ROW_IMAGE_HEIGHT)
+                    .fillMaxSize()
+                    .sizeIn(maxWidth = MEDIA_ROW_IMAGE_WIDTH, maxHeight = MEDIA_ROW_IMAGE_HEIGHT)
                     .blurForScreenshotMode()
                     .placeholder(
                         visible = media == null,
@@ -1075,7 +1099,9 @@ object AnimeHomeScreen {
 
                         })
                     },
-                    modifier = Modifier.align(Alignment.BottomStart)
+                    modifier = Modifier
+                        .animateEnterExit()
+                        .align(Alignment.BottomStart)
                 )
             }
         }
@@ -1145,14 +1171,14 @@ object AnimeHomeScreen {
                 viewer = viewer,
                 review = entry?.review,
                 media = entry?.media,
-                onClick = {
+                onClick = { navigationCallback, coverImageState ->
                     if (entry != null) {
-                        it.navigate(
+                        navigationCallback.navigate(
                             AnimeDestinations.ReviewDetails(
                                 reviewId = entry.review.id.toString(),
                                 headerParams = MediaHeaderParams(
                                     title = mediaTitle,
-                                    coverImageWidthToHeightRatio = null,
+                                    coverImage = coverImageState.toImageState(),
                                     mediaCompactWithTags = entry.media.media,
                                     favorite = null,
                                 )

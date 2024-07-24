@@ -176,14 +176,14 @@ object ReviewsScreen {
                         review = entry?.review,
                         media = entry?.media,
                         showMedia = showMedia,
-                        onClick = {
+                        onClick = { navigationCallback, coverImageState ->
                             if (entry != null) {
-                                it.navigate(
+                                navigationCallback.navigate(
                                     AnimeDestinations.ReviewDetails(
                                         reviewId = entry.review.id.toString(),
                                         headerParams = MediaHeaderParams(
                                             title = mediaTitle,
-                                            coverImageWidthToHeightRatio = null,
+                                            coverImage = coverImageState.toImageState(),
                                             mediaCompactWithTags = entry.media.media,
                                             favorite = null,
                                         )

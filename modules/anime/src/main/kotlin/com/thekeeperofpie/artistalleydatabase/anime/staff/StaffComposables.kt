@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
@@ -19,14 +19,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
@@ -36,13 +34,9 @@ import androidx.core.graphics.ColorUtils
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil3.compose.AsyncImagePainter
-import coil3.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -50,11 +44,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 fun LazyListScope.staffSection(
@@ -113,24 +109,23 @@ fun StaffListRow(
             contentType = staffList.itemContentType { "staff" },
         ) {
             val staff = staffList[it]
-            var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+            val coverImageState = rememberCoilImageState(staff?.image)
             val colorCalculationState = LocalColorCalculationState.current
             val staffName = staff?.staff?.name?.primaryName()
             val staffSubtitle = staff?.staff?.name?.subtitleName()
             StaffSmallCard(
                 screenKey = screenKey,
                 id = EntryId("anime_staff", staff?.id.orEmpty()),
-                image = staff?.image,
+                imageState = coverImageState,
                 onClick = {
                     if (staff != null) {
                         navigationCallback.navigate(
                             AnimeDestinations.StaffDetails(
                                 staffId = staff.staff.id.toString(),
                                 headerParams = StaffHeaderParams(
-                                    coverImageWidthToHeightRatio = imageWidthToHeightRatio,
                                     name = staffName,
                                     subtitle = staffSubtitle,
-                                    coverImage = staff.staff.image?.large,
+                                    coverImage = coverImageState.toImageState(),
                                     colorArgb = colorCalculationState.getColorsNonComposable(staff.staff.id.toString()).first.toArgb(),
                                     favorite = null,
                                 )
@@ -138,7 +133,6 @@ fun StaffListRow(
                         )
                     }
                 },
-                onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() }
             ) { textColor ->
                 staff?.role?.let {
                     AutoHeightText(
@@ -193,10 +187,9 @@ fun StaffListRow(
 fun StaffSmallCard(
     screenKey: String,
     id: EntryId,
-    image: String?,
+    imageState: CoilImageState,
     onClick: () -> Unit,
     innerImage: String? = null,
-    onImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     width: Dp = 100.dp,
     content: @Composable (textColor: Color) -> Unit,
 ) {
@@ -249,29 +242,28 @@ fun StaffSmallCard(
         StaffCoverImage(
             screenKey = screenKey,
             staffId = id.valueId,
-            image = ImageRequest.Builder(LocalContext.current)
-                .data(image)
+            imageState = imageState,
+            image = imageState.request()
                 .crossfade(true)
                 .allowHardware(colorCalculationState.allowHardware(id.scopedId))
                 .size(
                     width = density.run { width.roundToPx() },
                     height = density.run { (width * 1.5f).roundToPx() },
                 )
+                .listener(onSuccess = { _, result ->
+                    ComposeColorUtils.calculatePalette(
+                        id = id.scopedId,
+                        image = result.image,
+                        colorCalculationState = colorCalculationState,
+                        heightStartThreshold = 3 / 4f,
+                        // Only capture left 3/5ths to ignore
+                        // part covered by voice actor
+                        widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
+                        selectMaxPopulation = true,
+                    )
+                })
                 .build(),
             contentScale = ContentScale.Crop,
-            onSuccess = {
-                onImageSuccess(it)
-                ComposeColorUtils.calculatePalette(
-                    id = id.scopedId,
-                    success = it,
-                    colorCalculationState = colorCalculationState,
-                    heightStartThreshold = 3 / 4f,
-                    // Only capture left 3/5ths to ignore
-                    // part covered by voice actor
-                    widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
-                    selectMaxPopulation = true,
-                )
-            },
             modifier = Modifier
                 .size(width = width, height = width * 1.5f)
                 .clip(

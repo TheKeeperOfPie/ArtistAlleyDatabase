@@ -106,8 +106,8 @@ object MediaEditBottomSheetScaffold {
             },
             sheetContent = {
                 AnimeMediaEditBottomSheet(
-                    screenKey = screenKey,
                     viewModel,
+                    modifier = Modifier.padding(bottom = bottomPadding),
                     onDismiss = {
                         scope.launch { sheetState.hide() }
                             .invokeOnCompletion {
@@ -115,8 +115,7 @@ object MediaEditBottomSheetScaffold {
                                     viewModel.hide()
                                 }
                             }
-                    },
-                    modifier = Modifier.padding(bottom = bottomPadding)
+                    }
                 )
             },
             modifier = modifier,

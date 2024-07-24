@@ -15,16 +15,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -36,7 +32,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.pri
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,33 +68,30 @@ object StaffMediaScreen {
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         items(entries, { it.id }) {
-                            var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-                            var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
+                            val imageState = rememberCoilImageState(it.character.image?.large)
+                            val innerImageState = rememberCoilImageState(it.media?.coverImage?.extraLarge)
                             val colorCalculationState = LocalColorCalculationState.current
                             val languageOptionMedia = LocalLanguageOptionMedia.current
                             val characterName = it.character.name?.primaryName()
+                            val mediaSharedTransitionKey = it.media?.id?.toString()
+                                ?.let { SharedTransitionKey.makeKeyForId(it) }
                             CharacterSmallCard(
                                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                                 id = EntryId("anime_character", it.character.id.toString()),
-                                image = it.character.image?.large,
-                                innerImage = it.media?.coverImage?.extraLarge,
+                                image = imageState.uri,
+                                imageState = imageState,
+                                innerImage = innerImageState.uri,
+                                innerImageState = innerImageState,
                                 innerImageKey = "anime_media_${it.media?.id}_image",
-                                onImageSuccess = {
-                                    imageWidthToHeightRatio = it.widthToHeightRatio()
-                                },
-                                onInnerImageSuccess = {
-                                    innerImageWidthToHeightRatio = it.widthToHeightRatio()
-                                },
                                 onClick = {
                                     navigationCallback.navigate(
                                         AnimeDestinations.CharacterDetails(
                                             characterId = it.character.id.toString(),
                                             headerParams = CharacterHeaderParams(
-                                                coverImageWidthToHeightRatio = imageWidthToHeightRatio,
                                                 name = characterName,
                                                 subtitle = null,
                                                 favorite = null,
-                                                coverImage = it.character.image?.large,
+                                                coverImage = imageState.toImageState(),
                                                 colorArgb = colorCalculationState
                                                     .getColorsNonComposable(it.character.id.toString())
                                                     .first.toArgb(),
@@ -110,8 +104,9 @@ object StaffMediaScreen {
                                         navigationCallback.navigate(
                                             AnimeDestinations.MediaDetails(
                                                 mediaNavigationData = it.media,
-                                                coverImageWidthToHeightRatio = innerImageWidthToHeightRatio,
+                                                coverImage = innerImageState.toImageState(),
                                                 languageOptionMedia = languageOptionMedia,
+                                                sharedTransitionKey = mediaSharedTransitionKey,
                                             )
                                         )
                                     }

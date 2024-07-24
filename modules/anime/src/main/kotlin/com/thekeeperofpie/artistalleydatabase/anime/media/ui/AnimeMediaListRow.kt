@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -31,7 +32,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,22 +39,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.RecommendationRating
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -68,37 +64,40 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
+    ExperimentalCoilApi::class
+)
 object AnimeMediaListRow {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         entry: Entry?,
         viewer: AniListViewer?,
         modifier: Modifier = Modifier,
-        label: (@Composable () -> Unit)? = null,
+        label: @Composable (() -> Unit)? = null,
         onClickListEdit: (MediaNavigationData) -> Unit,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         showDate: Boolean = true,
         recommendation: RecommendationData? = null,
-        onUserRecommendationRating: (
-            recommendation: RecommendationData,
-            newRating: RecommendationRating,
-        ) -> Unit = { _, _ -> },
+        onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
     ) {
-        val sharedElementKey = entry?.media?.id?.toString()
-        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val sharedTransitionKey = SharedTransitionKey.makeKeyForId(entry?.media?.id.toString())
+        val coverImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge)
         val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             modifier = modifier
@@ -117,15 +116,14 @@ object AnimeMediaListRow {
                     onClick = {
                         if (entry != null) {
                             val media = entry.media
-                            val coverImage = media.coverImage?.extraLarge
                             navigationCallback.navigate(
                                 AnimeDestinations.MediaDetails(
                                     mediaId = media.id.toString(),
                                     title = title,
-                                    coverImage = coverImage,
-                                    sharedElementKey = sharedElementKey,
+                                    coverImage = coverImageState.toImageState(),
+                                    sharedTransitionKey = sharedTransitionKey,
                                     headerParams = MediaHeaderParams(
-                                        coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                        coverImage = coverImageState.toImageState(),
                                         title = title,
                                         media = media,
                                     ),
@@ -141,12 +139,11 @@ object AnimeMediaListRow {
                 )
             ) {
                 CoverImage(
-                    screenKey = screenKey,
                     entry = entry,
-                    sharedElementKey = sharedElementKey,
+                    sharedTransitionKey = sharedTransitionKey,
+                    imageState = coverImageState,
                     viewer = viewer,
                     onClickListEdit = onClickListEdit,
-                    onRatioAvailable = { imageWidthToHeightRatio = it },
                     recommendation = recommendation,
                     onUserRecommendationRating = onUserRecommendationRating,
                     forceListEditIcon = forceListEditIcon,
@@ -212,13 +209,12 @@ object AnimeMediaListRow {
 
     @Composable
     private fun CoverImage(
-        screenKey: String,
         entry: Entry?,
-        sharedElementKey: String?,
+        sharedTransitionKey: SharedTransitionKey?,
+        imageState: CoilImageState,
         viewer: AniListViewer?,
         onClick: ((Entry) -> Unit)? = null,
         onClickListEdit: (MediaNavigationData) -> Unit,
-        onRatioAvailable: (Float) -> Unit,
         recommendation: RecommendationData?,
         onUserRecommendationRating: (
             recommendation: RecommendationData,
@@ -231,18 +227,29 @@ object AnimeMediaListRow {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
             val colorCalculationState = LocalColorCalculationState.current
             val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
+            val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
-                image = ImageRequest.Builder(LocalContext.current)
-                    .data(entry?.media?.coverImage?.extraLarge)
+                imageState = imageState,
+                image = imageState.request()
                     .crossfade(true)
                     .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
                         width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
                         height = Dimension.Undefined
                     )
+                    .listener(onSuccess = { _, result ->
+                        entry?.media?.id?.let { mediaId ->
+                            ComposeColorUtils.calculatePalette(
+                                id = mediaId.toString(),
+                                image = result.image,
+                                colorCalculationState = colorCalculationState,
+                            )
+                        }
+                    })
                     .build(),
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .sharedElement(sharedElementKey, "media_image")
+                    .sharedElement(sharedContentState)
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(shape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -257,24 +264,12 @@ object AnimeMediaListRow {
                     .combinedClickable(
                         onClick = { if (entry != null) onClick?.invoke(entry) },
                         onLongClick = {
-                            entry?.media?.coverImage?.extraLarge
-                                ?.let(fullscreenImageHandler::openImage)
+                            imageState.uri?.let(fullscreenImageHandler::openImage)
                         },
                         onLongClickLabel = stringResource(
                             R.string.anime_media_cover_image_long_press_preview
                         ),
-                    ),
-                contentScale = ContentScale.Crop,
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    entry?.media?.id?.let { mediaId ->
-                        ComposeColorUtils.calculatePalette(
-                            mediaId.toString(),
-                            it,
-                            colorCalculationState,
-                        )
-                    }
-                }
+                    )
             )
 
             if (viewer != null && recommendation != null) {
@@ -350,7 +345,6 @@ object AnimeMediaListRow {
             }
 
             if (viewer != null && entry != null && showQuickEdit) {
-                // TODO: Animate this in and out for shared element
                 MediaListQuickEditIconButton(
                     viewer = viewer,
                     mediaType = entry.media.type,
@@ -359,8 +353,9 @@ object AnimeMediaListRow {
                     maxProgressVolumes = entry.media.volumes,
                     onClick = { onClickListEdit(entry.media) },
                     forceListEditIcon = forceListEditIcon,
-                    modifier = Modifier.align(Alignment.BottomStart)
-                        .sharedElement(sharedElementKey, "edit_button")
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .animateSharedTransitionWithOtherState(sharedContentState)
                 )
             }
         }

@@ -232,9 +232,8 @@ object AiringScheduleScreen {
                                     ) { index ->
                                         val schedule = content[index]
                                         AnimeMediaListRow(
-                                            screenKey = SCREEN_KEY,
-                                            viewer = viewer,
                                             entry = schedule?.entry,
+                                            viewer = viewer,
                                             onClickListEdit = editViewModel::initialize,
                                             nextAiringEpisode = schedule?.data?.let {
                                                 AiringScheduleQuery.Data.Page.AiringSchedule.Media.NextAiringEpisode(

@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -29,22 +28,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
-import coil3.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -57,19 +52,21 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 object MediaGridCard {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         entry: Entry?,
         viewer: AniListViewer?,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -77,9 +74,9 @@ object MediaGridCard {
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
         showTypeIcon: Boolean = false,
-        label: @Composable ColumnScope.(textColor: Color) -> Unit = {},
+        label: @Composable() (ColumnScope.(textColor: Color) -> Unit) = {},
     ) {
-        val sharedElementKey = entry?.media?.id?.toString()
+        val sharedTransitionKey = entry?.media?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
         val colorCalculationState = LocalColorCalculationState.current
         val colors = colorCalculationState.getColors(entry?.media?.id?.toString())
         val animationProgress by animateIntAsState(
@@ -108,7 +105,7 @@ object MediaGridCard {
                 .fillMaxWidth()
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
         ) {
-            var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+            val coverImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge)
             val navigationCallback = LocalNavigationCallback.current
             val ignoreController = LocalIgnoreController.current
             val title = entry?.media?.title?.primaryTitle()
@@ -121,10 +118,11 @@ object MediaGridCard {
                                 AnimeDestinations.MediaDetails(
                                     mediaId = entry.media.id.toString(),
                                     title = title,
-                                    coverImage = entry.media.coverImage?.extraLarge,
+                                    coverImage = coverImageState.toImageState(),
+                                    sharedTransitionKey = sharedTransitionKey,
                                     headerParams = MediaHeaderParams(
+                                        coverImage = coverImageState.toImageState(),
                                         title = title,
-                                        coverImageWidthToHeightRatio = imageWidthToHeightRatio,
                                         mediaWithListStatus = entry.media,
                                     )
                                 )
@@ -143,7 +141,8 @@ object MediaGridCard {
                     Box {
                         CoverImage(
                             entry = entry,
-                            sharedElementKey = sharedElementKey,
+                            sharedTransitionKey = sharedTransitionKey,
+                            imageState = coverImageState,
                             viewer = viewer,
                             onClick = {
                                 if (entry != null) {
@@ -151,10 +150,10 @@ object MediaGridCard {
                                         AnimeDestinations.MediaDetails(
                                             mediaId = entry.media.id.toString(),
                                             title = title,
-                                            coverImage = entry.media.coverImage?.extraLarge,
-                                            sharedElementKey = sharedElementKey,
+                                            coverImage = coverImageState.toImageState(),
+                                            sharedTransitionKey = sharedTransitionKey,
                                             headerParams = MediaHeaderParams(
-                                                coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                                coverImage = coverImageState.toImageState(),
                                                 title = title,
                                                 mediaWithListStatus = entry.media,
                                             )
@@ -163,7 +162,6 @@ object MediaGridCard {
                                 }
                             },
                             onClickListEdit = onClickListEdit,
-                            onRatioAvailable = { imageWidthToHeightRatio = it },
                             forceListEditIcon = forceListEditIcon,
                             showQuickEdit = showQuickEdit,
                         )
@@ -221,11 +219,11 @@ object MediaGridCard {
     @Composable
     private fun CoverImage(
         entry: Entry?,
-        sharedElementKey: String?,
+        sharedTransitionKey: SharedTransitionKey?,
+        imageState: CoilImageState,
         viewer: AniListViewer?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (MediaNavigationData) -> Unit,
-        onRatioAvailable: (Float) -> Unit,
         forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
     ) {
@@ -233,17 +231,26 @@ object MediaGridCard {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
             val colorCalculationState = LocalColorCalculationState.current
             MediaCoverImage(
-                image = ImageRequest.Builder(LocalContext.current)
-                    .data(entry?.media?.coverImage?.extraLarge)
+                imageState = imageState,
+                image = imageState.request()
                     .crossfade(true)
                     .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
                         width = Dimension.Pixels(LocalDensity.current.run { 120.dp.roundToPx() }),
                         height = Dimension.Undefined
                     )
+                    .listener(onSuccess = { _, result ->
+                        entry?.media?.id?.let { mediaId ->
+                            ComposeColorUtils.calculatePalette(
+                                id = mediaId.toString(),
+                                image = result.image,
+                                colorCalculationState = colorCalculationState,
+                            )
+                        }
+                    })
                     .build(),
                 modifier = Modifier
-                    .sharedElement(sharedElementKey, "media_image")
+                    .sharedElement(sharedTransitionKey, "media_image")
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -264,16 +271,6 @@ object MediaGridCard {
                         ),
                     ),
                 contentScale = ContentScale.Crop,
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    entry?.media?.id?.let { mediaId ->
-                        ComposeColorUtils.calculatePalette(
-                            mediaId.toString(),
-                            it,
-                            colorCalculationState,
-                        )
-                    }
-                }
             )
 
             if (viewer != null && entry != null && showQuickEdit) {

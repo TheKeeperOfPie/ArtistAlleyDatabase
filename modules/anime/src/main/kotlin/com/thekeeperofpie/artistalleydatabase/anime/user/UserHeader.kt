@@ -14,6 +14,7 @@ import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
 @Composable
@@ -48,7 +49,7 @@ fun UserHeader(
 
 class UserHeaderValues(
     arguments: Bundle?,
-    override val coverImageWidthToHeightRatio: Float = arguments?.getString("imageWidthToHeightRatio")
+    val coverImageWidthToHeightRatio: Float = arguments?.getString("imageWidthToHeightRatio")
         ?.toFloatOrNull() ?: 1f,
     private val _name: String? = arguments?.getString("name"),
     private val _image: String? = arguments?.getString("image"),
@@ -88,9 +89,11 @@ class UserHeaderValues(
         }
     }
 
-    override val bannerImage = user()?.bannerImage
+    // TODO:
+    override val bannerImage
+        get() = ImageState(user()?.bannerImage)
     override val coverImage
-        get() = user()?.avatar?.large ?: _image
+        get() = ImageState(user()?.avatar?.large ?: _image)
     val name
         get() = user()?.name ?: _name ?: ""
 }

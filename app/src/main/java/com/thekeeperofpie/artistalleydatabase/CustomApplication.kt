@@ -16,6 +16,7 @@ import coil3.disk.DiskCache
 import coil3.disk.directory
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
+import coil3.util.DebugLogger
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
@@ -37,6 +38,7 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
 
     companion object {
         const val TAG = "ArtistAlleyDatabase"
+        private const val DEBUG_COIL = false
     }
 
     override val scope = MainScope()
@@ -132,6 +134,14 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
                 .build()
         }
         .crossfade(true)
+        .run {
+            if (!DEBUG_COIL) return@run this
+            @Suppress("KotlinConstantConditions")
+            when (BuildConfig.BUILD_TYPE) {
+                "debug", "internal" -> logger(DebugLogger())
+                else -> this
+            }
+        }
         .build()
 
     override fun getSystemService(name: String): Any? {

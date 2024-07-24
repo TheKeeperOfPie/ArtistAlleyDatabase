@@ -104,16 +104,15 @@ fun <T> LazyListScope.mediaListSection(
 ) { item, paddingBottom ->
     val entry = valueToEntry(item)
     AnimeMediaListRow(
-        screenKey = screenKey,
         entry = entry,
         viewer = viewer,
+        modifier = Modifier
+            .animateItem()
+            .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom),
         label = if (label == null) null else {
             { label(item) }
         },
-        onClickListEdit = onClickListEdit,
-        modifier = Modifier
-            .animateItem()
-            .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+        onClickListEdit = onClickListEdit
     )
 }
 
@@ -148,12 +147,11 @@ fun LazyListScope.mediaHorizontalRow(
             ) {
                 val entry = entries[it]
                 MediaGridCard(
-                    screenKey = screenKey,
                     entry = entry,
                     viewer = viewer,
                     onClickListEdit = editViewModel::initialize,
-                    forceListEditIcon = forceListEditIcon,
-                    modifier = Modifier.width(120.dp)
+                    modifier = Modifier.width(120.dp),
+                    forceListEditIcon = forceListEditIcon
                 )
             }
         }
@@ -516,9 +514,8 @@ fun MediaViewOptionRow(
 ) {
     when (mediaViewOption) {
         MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
-            screenKey = screenKey,
-            viewer = viewer,
             entry = entry,
+            viewer = viewer,
             onClickListEdit = onClickListEdit,
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
@@ -537,7 +534,6 @@ fun MediaViewOptionRow(
             showQuickEdit = showQuickEdit,
         )
         MediaViewOption.GRID -> MediaGridCard(
-            screenKey = screenKey,
             entry = entry,
             viewer = viewer,
             onClickListEdit = onClickListEdit,

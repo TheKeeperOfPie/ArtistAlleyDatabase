@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -23,29 +24,23 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -58,14 +53,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 object AnimeMediaCompactListRow {
 
     private val DEFAULT_IMAGE_HEIGHT = 100.dp
@@ -80,13 +80,13 @@ object AnimeMediaCompactListRow {
         label: @Composable() (() -> Unit)? = null,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
+        coverImageState: CoilImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge),
     ) {
-        val sharedElementKey = entry?.media?.id?.toString()
-        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val sharedTransitionKey = SharedTransitionKey.makeKeyForId(entry?.media?.id.toString())
         OutlinedCard(
             modifier = modifier
                 // Used to animate persistence of this view across screens
-                .sharedElement(sharedElementKey, "media_compact_list_row")
+                .sharedElement(sharedTransitionKey, "media_compact_list_row")
                 .fillMaxWidth()
                 .heightIn(min = DEFAULT_IMAGE_HEIGHT)
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
@@ -105,10 +105,10 @@ object AnimeMediaCompactListRow {
                                     AnimeDestinations.MediaDetails(
                                         mediaId = entry.media.id.toString(),
                                         title = title,
-                                        coverImage = entry.media.coverImage?.extraLarge,
-                                        sharedElementKey = sharedElementKey,
+                                        coverImage = coverImageState.toImageState(),
+                                        sharedTransitionKey = sharedTransitionKey,
                                         headerParams = MediaHeaderParams(
-                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
+                                            coverImage = coverImageState.toImageState(),
                                             title = title,
                                             mediaCompactWithTags = entry.media,
                                         )
@@ -126,17 +126,19 @@ object AnimeMediaCompactListRow {
                 CoverImage(
                     viewer = viewer,
                     entry = entry,
-                    sharedElementKey = sharedElementKey,
+                    imageState = coverImageState,
+                    sharedTransitionKey = sharedTransitionKey,
                     onClick = {
                         if (entry != null) {
                             navigationCallback.navigate(
                                 AnimeDestinations.MediaDetails(
                                     mediaId = entry.media.id.toString(),
                                     title = title,
-                                    coverImage = entry.media.coverImage?.extraLarge,
+                                    coverImage = coverImageState.toImageState(),
+                                    sharedTransitionKey = sharedTransitionKey,
                                     headerParams = MediaHeaderParams(
+                                        coverImage = coverImageState.toImageState(),
                                         title = title,
-                                        coverImageWidthToHeightRatio = imageWidthToHeightRatio,
                                         mediaCompactWithTags = entry.media,
                                     )
                                 )
@@ -144,7 +146,6 @@ object AnimeMediaCompactListRow {
                         }
                     },
                     onClickListEdit = onClickListEdit,
-                    onRatioAvailable = { imageWidthToHeightRatio = it },
                     forceListEditIcon = forceListEditIcon,
                     showQuickEdit = showQuickEdit,
                 )
@@ -206,10 +207,10 @@ object AnimeMediaCompactListRow {
     private fun CoverImage(
         viewer: AniListViewer?,
         entry: Entry?,
-        sharedElementKey: String?,
+        imageState: CoilImageState,
+        sharedTransitionKey: SharedTransitionKey,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (MediaNavigationData) -> Unit,
-        onRatioAvailable: (Float) -> Unit,
         forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
     ) {
@@ -217,9 +218,10 @@ object AnimeMediaCompactListRow {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
             val colorCalculationState = LocalColorCalculationState.current
             val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
+            val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
-                image = ImageRequest.Builder(LocalContext.current)
-                    .data(entry?.media?.coverImage?.extraLarge)
+                imageState = imageState,
+                image = imageState.request()
                     .crossfade(true)
                     .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
@@ -228,16 +230,24 @@ object AnimeMediaCompactListRow {
                         ),
                         height = Dimension.Undefined
                     )
+                    .listener(onSuccess = { _, result ->
+                        ComposeColorUtils.calculatePalette(
+                            id = entry?.media?.id.toString(),
+                            image = result.image,
+                            colorCalculationState = colorCalculationState,
+                        )
+                    })
                     .build(),
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     // Pad inside to offset the 1.dp border from the OutlinedCard
                     .padding(start = 1.dp, top = 1.dp, bottom = 1.dp)
-                    .sharedElement(sharedElementKey, "media_image")
+                    .width(DEFAULT_IMAGE_WIDTH)
+                    .heightIn(min = DEFAULT_IMAGE_HEIGHT)
+                    .sharedElement(sharedContentState)
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(shape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .width(DEFAULT_IMAGE_WIDTH)
-                    .heightIn(min = DEFAULT_IMAGE_HEIGHT)
                     .placeholder(
                         visible = entry == null,
                         shape = shape,
@@ -245,23 +255,11 @@ object AnimeMediaCompactListRow {
                     )
                     .combinedClickable(
                         onClick = { if (entry != null) onClick(entry) },
-                        onLongClick = {
-                            entry?.media?.coverImage?.extraLarge
-                                ?.let(fullscreenImageHandler::openImage)
-                        },
+                        onLongClick = { imageState.uri?.let(fullscreenImageHandler::openImage) },
                         onLongClickLabel = stringResource(
                             R.string.anime_media_cover_image_long_press_preview
                         ),
-                    ),
-                contentScale = ContentScale.Crop,
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    ComposeColorUtils.calculatePalette(
-                        entry?.media?.id.toString(),
-                        it,
-                        colorCalculationState,
                     )
-                }
             )
 
             if (viewer != null && entry != null && showQuickEdit) {
@@ -275,6 +273,7 @@ object AnimeMediaCompactListRow {
                     padding = 6.dp,
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier
+                        .animateSharedTransitionWithOtherState(sharedContentState)
                         .align(Alignment.BottomStart)
                         .widthIn(max = DEFAULT_IMAGE_WIDTH)
                 )

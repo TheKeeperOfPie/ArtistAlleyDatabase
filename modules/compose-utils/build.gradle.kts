@@ -3,6 +3,7 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id(libs.plugins.org.jetbrains.kotlin.plugin.parcelize.get().pluginId)
 }
 
 android {

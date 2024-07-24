@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -43,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -60,10 +60,7 @@ object StaffDetailsScreen {
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
         )
         val expandedState = rememberExpandedState()
-
-        var staffImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio ?: 1f)
-        }
+        val coverImageState = rememberCoilImageState(headerValues.coverImage)
 
         val snackbarHostState = remember { SnackbarHostState() }
         val error = viewModel.error
@@ -90,11 +87,11 @@ object StaffDetailsScreen {
                         upIconOption = upIconOption,
                         progress = it,
                         headerValues = headerValues,
+                        coverImageState = coverImageState,
                         onFavoriteChanged = {
                             viewModel.favoritesToggleHelper
                                 .set(FavoriteType.STAFF, viewModel.staffId, it)
                         },
-                        onImageWidthToHeightRatioAvailable = { staffImageWidthToHeightRatio = it },
                     )
                 }
             },
@@ -153,7 +150,7 @@ object StaffDetailsScreen {
                             StaffTab.OVERVIEW -> StaffOverviewScreen(
                                 viewModel = viewModel,
                                 entry = entry,
-                                staffImageWidthToHeightRatio = { staffImageWidthToHeightRatio },
+                                coverImageState = coverImageState,
                                 expandedState = expandedState,
                             )
                             StaffTab.MEDIA -> StaffMediaScreen(

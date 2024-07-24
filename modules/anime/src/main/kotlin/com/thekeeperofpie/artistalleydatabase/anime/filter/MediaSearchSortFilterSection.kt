@@ -58,10 +58,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
-import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImageNoSharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -209,13 +212,17 @@ class MediaSearchSortFilterSection(
             if (selectedMedia != null) {
                 val navigationCallback = LocalNavigationCallback.current
                 val languageOptionMedia = LocalLanguageOptionMedia.current
+                val sharedTransitionKey =
+                    SharedTransitionKey.makeKeyForId(selectedMedia.id.toString())
+                val coverImageState = rememberCoilImageState(selectedMedia.coverImage?.medium)
                 OutlinedCard(
                     onClick = {
                         navigationCallback.navigate(
                             AnimeDestinations.MediaDetails(
                                 mediaNavigationData = selectedMedia,
-                                coverImageWidthToHeightRatio = null,
+                                coverImage = coverImageState.toImageState(),
                                 languageOptionMedia = languageOptionMedia,
+                                sharedTransitionKey = sharedTransitionKey,
                             )
                         )
                     },
@@ -224,7 +231,8 @@ class MediaSearchSortFilterSection(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         MediaContent(
                             media = selectedMedia,
-                            sharedElement = true,
+                            imageState = coverImageState,
+                            sharedTransitionKey = sharedTransitionKey,
                             clipImage = true,
                             modifier = Modifier.weight(1f)
                         )
@@ -257,7 +265,7 @@ class MediaSearchSortFilterSection(
         DropdownMenuItem(
             onClick = { onClick(media) },
             text = { MediaContent(media = media) },
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
         )
     }
 
@@ -265,35 +273,30 @@ class MediaSearchSortFilterSection(
     private fun MediaContent(
         media: Medium,
         modifier: Modifier = Modifier,
+        imageState: CoilImageState = rememberCoilImageState(media.coverImage?.medium),
         clipImage: Boolean = false,
-        sharedElement: Boolean = false,
+        sharedTransitionKey: SharedTransitionKey? = null,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = modifier.animateContentSize(),
         ) {
-            val imageModifier = Modifier
-                .fillMaxHeight()
-                .conditionally(clipImage) {
-                    clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-                }
-                .heightIn(min = 54.dp)
-                .width(42.dp)
-            if (sharedElement && mediaSharedElement) {
-                MediaCoverImage(
-                    screenKey = screenKey,
-                    mediaId = media.id.toString(),
-                    image = media.coverImage?.medium,
-                    contentScale = ContentScale.FillWidth,
-                    modifier = imageModifier
-                )
-            } else {
-                MediaCoverImageNoSharedElement(
-                    image = media.coverImage?.medium,
-                    contentScale = ContentScale.FillWidth,
-                    modifier = imageModifier
-                )
-            }
+            MediaCoverImage(
+                screenKey = screenKey,
+                mediaId = media.id.toString(),
+                imageState = imageState,
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier
+                    .conditionally(mediaSharedElement) {
+                        sharedElement(sharedTransitionKey, "media_image")
+                    }
+                    .fillMaxHeight()
+                    .conditionally(clipImage) {
+                        clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                    }
+                    .heightIn(min = 54.dp)
+                    .width(42.dp)
+            )
 
             Column(
                 Modifier

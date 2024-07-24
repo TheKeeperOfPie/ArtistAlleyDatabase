@@ -441,10 +441,9 @@ object AnimeUserListScreen {
         when (viewModel.mediaViewOption) {
             MediaViewOption.SMALL_CARD -> {
                 AnimeMediaListRow(
-                    screenKey = SCREEN_KEY,
-                    viewer = viewer,
                     entry = entry?.entry,
-                    onClickListEdit = onClickListEdit,
+                    viewer = viewer,
+                    modifier = modifier,
                     label = if (statusText == null) null else {
                         {
                             Text(
@@ -465,7 +464,7 @@ object AnimeUserListScreen {
                             )
                         }
                     },
-                    modifier = modifier,
+                    onClickListEdit = onClickListEdit,
                 )
             }
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
@@ -519,7 +518,6 @@ object AnimeUserListScreen {
                 },
             )
             MediaViewOption.GRID -> MediaGridCard(
-                screenKey = SCREEN_KEY,
                 entry = entry?.entry,
                 viewer = viewer,
                 onClickListEdit = onClickListEdit,

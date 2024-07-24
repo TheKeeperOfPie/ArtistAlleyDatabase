@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
@@ -68,6 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
@@ -81,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
@@ -103,9 +104,7 @@ object CharacterDetailsScreen {
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
         )
 
-        var characterImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio ?: 1f)
-        }
+        val coverImageState = rememberCoilImageState(headerValues.coverImage)
 
         val entry = viewModel.entry
         val viewer by viewModel.viewer.collectAsState()
@@ -137,16 +136,13 @@ object CharacterDetailsScreen {
                         CharacterHeader(
                             screenKey = SCREEN_KEY,
                             upIconOption = upIconOption,
-                            viewer = viewer,
                             characterId = viewModel.characterId,
                             progress = it,
                             headerValues = headerValues,
+                            coverImageState = coverImageState,
                             onFavoriteChanged = {
                                 viewModel.favoritesToggleHelper
                                     .set(FavoriteType.CHARACTER, viewModel.characterId, it)
-                            },
-                            onImageWidthToHeightRatioAvailable = {
-                                characterImageWidthToHeightRatio = it
                             },
                         )
                     }
@@ -186,7 +182,7 @@ object CharacterDetailsScreen {
                                 characterSubtitle = characterSubtitle,
                                 voiceActors = voiceActors,
                                 viewer = viewer,
-                                characterImageWidthToHeightRatio = { characterImageWidthToHeightRatio },
+                                coverImageState = coverImageState,
                                 expandedState = expandedState,
                                 colorCalculationState = colorCalculationState,
                             )
@@ -211,7 +207,7 @@ object CharacterDetailsScreen {
         characterSubtitle: String?,
         voiceActors: LazyPagingItems<DetailsStaff>,
         viewer: AniListViewer?,
-        characterImageWidthToHeightRatio: () -> Float,
+        coverImageState: CoilImageState,
         expandedState: ExpandedState,
         colorCalculationState: ColorCalculationState,
     ) {
@@ -239,7 +235,7 @@ object CharacterDetailsScreen {
             characterName = characterName,
             characterSubtitle = characterSubtitle,
             headerValues = headerValues,
-            characterImageWidthToHeightRatio = characterImageWidthToHeightRatio,
+            coverImageState = coverImageState,
             expanded = expandedState::media,
             onExpandedChange = { expandedState.media = it },
             colorCalculationState = colorCalculationState,
@@ -414,7 +410,7 @@ object CharacterDetailsScreen {
         characterName: String?,
         characterSubtitle: String?,
         headerValues: CharacterHeaderValues,
-        characterImageWidthToHeightRatio: () -> Float,
+        coverImageState: CoilImageState,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
@@ -435,11 +431,10 @@ object CharacterDetailsScreen {
                     AnimeDestinations.CharacterMedias(
                         characterId = entry.character.id.toString(),
                         headerParams = CharacterHeaderParams(
-                            coverImageWidthToHeightRatio = characterImageWidthToHeightRatio(),
                             name = characterName,
                             subtitle = characterSubtitle,
                             favorite = headerValues.favorite,
-                            coverImage = entry.character.image?.large,
+                            coverImage = coverImageState.toImageState(),
                             colorArgb = headerValues.colorNonComposable(colorCalculationState)
                                 .toArgb(),
                         )

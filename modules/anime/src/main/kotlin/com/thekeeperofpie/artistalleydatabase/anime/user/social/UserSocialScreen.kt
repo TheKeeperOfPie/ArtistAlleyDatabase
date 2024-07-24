@@ -36,6 +36,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
@@ -55,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHig
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
+@OptIn(ExperimentalCoilApi::class)
 object UserSocialScreen {
 
     private val USER_IMAGE_SIZE = 120.dp
@@ -201,9 +203,9 @@ object UserSocialScreen {
                         imageWidthToHeightRatio = it.widthToHeightRatio()
                         if (user != null) {
                             ComposeColorUtils.calculatePalette(
-                                user.id.toString(),
-                                it,
-                                colorCalculationState,
+                                id = user.id.toString(),
+                                image = it.result.image,
+                                colorCalculationState = colorCalculationState,
                             )
                         }
                     },

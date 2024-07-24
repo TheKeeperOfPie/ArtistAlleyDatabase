@@ -32,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 object NotificationsScreen {
@@ -99,150 +100,151 @@ object NotificationsScreen {
                                     contentType = content.itemContentType { it.notificationId.type }
                                 ) {
                                     val entry = content[it]
-                                    when (val notification = entry?.notification) {
-                                        is NotificationsQuery.Data.Page.ActivityMentionNotificationNotification ->
-                                            ActivityMentionNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry,
-                                                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.ActivityMessageNotificationNotification ->
-                                            ActivityMessageNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                activityEntry = entry.activityEntry,
-                                                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.AiringNotificationNotification ->
-                                            AiringNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.FollowingNotificationNotification ->
-                                            FollowingNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                notification = notification,
-                                            )
-                                        is NotificationsQuery.Data.Page.ActivityReplyNotificationNotification ->
-                                            ActivityReplyNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry,
-                                                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification ->
-                                            ActivityReplySubscribedNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry,
-                                                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification ->
-                                            ActivityLikedNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry,
-                                                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification ->
-                                            ActivityReplyLikedNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry,
-                                                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification ->
-                                            RelatedMediaAdditionNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification ->
-                                            MediaDataChangeNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.MediaDeletionNotificationNotification ->
-                                            MediaDeletionNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.MediaMergeNotificationNotification ->
-                                            MediaMergeNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                mediaEntry = entry.mediaEntry,
-                                                onClickListEdit = editViewModel::initialize,
-                                            )
-                                        is NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification ->
-                                            ThreadCommentMentionNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                entry = entry.commentEntry,
-                                                onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
-                                            )
-                                        is NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification ->
-                                            ThreadCommentLikeNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                entry = entry.commentEntry,
-                                                onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
-                                            )
-                                        is NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification ->
-                                            ThreadCommentReplyNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                entry = entry.commentEntry,
-                                                onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
-                                            )
-                                        is NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification ->
-                                            ThreadCommentSubscribedNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                viewer = viewer,
-                                                notification = notification,
-                                                entry = entry.commentEntry,
-                                                onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
-                                            )
-                                        is NotificationsQuery.Data.Page.ThreadLikeNotificationNotification ->
-                                            ThreadLikeNotificationCard(
-                                                screenKey = SCREEN_KEY,
-                                                notification = notification,
-                                            )
-                                        is NotificationsQuery.Data.Page.OtherNotification,
-                                        null -> NotificationPlaceholderCard()
+                                    SharedTransitionKeyScope(
+                                        "notification",
+                                        entry?.notificationId?.scopedId
+                                    ) {
+                                        when (val notification = entry?.notification) {
+                                            is NotificationsQuery.Data.Page.ActivityMentionNotificationNotification ->
+                                                ActivityMentionNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    activityEntry = entry.activityEntry,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.ActivityMessageNotificationNotification ->
+                                                ActivityMessageNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    activityEntry = entry.activityEntry,
+                                                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.AiringNotificationNotification ->
+                                                AiringNotificationCard(
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.FollowingNotificationNotification ->
+                                                FollowingNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    notification = notification,
+                                                )
+                                            is NotificationsQuery.Data.Page.ActivityReplyNotificationNotification ->
+                                                ActivityReplyNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    activityEntry = entry.activityEntry,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification ->
+                                                ActivityReplySubscribedNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    activityEntry = entry.activityEntry,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification ->
+                                                ActivityLikedNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    activityEntry = entry.activityEntry,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification ->
+                                                ActivityReplyLikedNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    activityEntry = entry.activityEntry,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification ->
+                                                RelatedMediaAdditionNotificationCard(
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification ->
+                                                MediaDataChangeNotificationCard(
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.MediaDeletionNotificationNotification ->
+                                                MediaDeletionNotificationCard(
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.MediaMergeNotificationNotification ->
+                                                MediaMergeNotificationCard(
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    mediaEntry = entry.mediaEntry,
+                                                    onClickListEdit = editViewModel::initialize,
+                                                )
+                                            is NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification ->
+                                                ThreadCommentMentionNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    entry = entry.commentEntry,
+                                                    onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
+                                                )
+                                            is NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification ->
+                                                ThreadCommentLikeNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    entry = entry.commentEntry,
+                                                    onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
+                                                )
+                                            is NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification ->
+                                                ThreadCommentReplyNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    entry = entry.commentEntry,
+                                                    onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
+                                                )
+                                            is NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification ->
+                                                ThreadCommentSubscribedNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    viewer = viewer,
+                                                    notification = notification,
+                                                    entry = entry.commentEntry,
+                                                    onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
+                                                )
+                                            is NotificationsQuery.Data.Page.ThreadLikeNotificationNotification ->
+                                                ThreadLikeNotificationCard(
+                                                    screenKey = SCREEN_KEY,
+                                                    notification = notification,
+                                                )
+                                            is NotificationsQuery.Data.Page.OtherNotification,
+                                            null,
+                                            -> NotificationPlaceholderCard()
+                                        }
                                     }
                                 }
 

@@ -1,7 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
+import com.thekeeperofpie.artistalleydatabase.compose.ImageState
+
 interface DetailsHeaderValues {
-    val coverImageWidthToHeightRatio: Float?
-    val coverImage: String?
-    val bannerImage: String?
+    val coverImage: ImageState?
+    val bannerImage: ImageState?
 }

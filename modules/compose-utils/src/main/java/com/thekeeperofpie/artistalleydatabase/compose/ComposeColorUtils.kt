@@ -8,8 +8,8 @@ import androidx.palette.graphics.Palette
 import androidx.palette.graphics.Target
 import androidx.palette.graphics.get
 import coil3.BitmapImage
+import coil3.Image
 import coil3.annotation.ExperimentalCoilApi
-import coil3.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
 
@@ -30,21 +30,20 @@ object ComposeColorUtils {
         null
     }
 
-
     /**
      * Requires non-hardware bitmaps.
      */
     @OptIn(ExperimentalCoilApi::class)
     fun calculatePalette(
         id: String,
-        success: AsyncImagePainter.State.Success,
+        image: Image?,
         colorCalculationState: ColorCalculationState,
         heightStartThreshold: Float = 0f,
         widthEndThreshold: Float = 1f,
         selectMaxPopulation: Boolean = false,
     ) {
         if (colorCalculationState.shouldCalculate(id)) {
-            (success.result.image as? BitmapImage)?.bitmap?.let {
+            (image as? BitmapImage)?.bitmap?.let {
                 colorCalculationState.scope.launch(CustomDispatchers.IO) {
                     try {
                         val palette = Palette.from(it)

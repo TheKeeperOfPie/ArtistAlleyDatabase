@@ -15,7 +15,10 @@ import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
 
 val UpperHalfBiasAlignment = BiasAbsoluteAlignment(0f, -0.5f)
@@ -24,7 +27,7 @@ val UpperHalfBiasAlignment = BiasAbsoluteAlignment(0f, -0.5f)
 fun MediaCoverImage(
     screenKey: String,
     mediaId: String?,
-    image: String?,
+    imageState: CoilImageState?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
@@ -34,8 +37,9 @@ fun MediaCoverImage(
         key = "anime_media_${mediaId}_image",
         screenKey = screenKey,
     ) {
-        AsyncImage(
-            model = image,
+        CoilImage(
+            state = imageState,
+            model = imageState.request().build(),
             contentScale = contentScale,
             alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
@@ -69,19 +73,17 @@ fun MediaCoverImageNoSharedElement(
 
 @Composable
 fun MediaCoverImage(
+    imageState: CoilImageState,
     image: ImageRequest,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
-    onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
-    onError: ((AsyncImagePainter.State.Error) -> Unit)? = null,
 ) {
-    AsyncImage(
+    CoilImage(
+        state = imageState,
         model = image,
         contentScale = contentScale,
         alignment = UpperHalfBiasAlignment,
         fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-        onSuccess = onSuccess,
-        onError = onError,
         contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
         modifier = modifier.blurForScreenshotMode()
     )
@@ -91,21 +93,21 @@ fun MediaCoverImage(
 fun CharacterCoverImage(
     screenKey: String,
     characterId: String?,
+    imageState: CoilImageState?,
     image: ImageRequest,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
-    onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
 ) {
     AutoSharedElement(
         key = "anime_character_${characterId}_image",
         screenKey = screenKey,
     ) {
-        AsyncImage(
+        CoilImage(
+            state = imageState,
             model = image,
             contentScale = contentScale,
             alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-            onSuccess = onSuccess,
             contentDescription = stringResource(R.string.anime_character_image_content_description),
             modifier = modifier.blurForScreenshotMode(),
         )
@@ -116,23 +118,23 @@ fun CharacterCoverImage(
 fun StaffCoverImage(
     screenKey: String,
     staffId: String?,
+    imageState: CoilImageState?,
     image: ImageRequest,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
-    onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     contentDescriptionTextRes: Int = R.string.anime_staff_image,
 ) {
     AutoSharedElement(
         key = "anime_staff_${staffId}_image",
         screenKey = screenKey,
     ) {
-        AsyncImage(
+        CoilImage(
+            state = imageState,
             model = image,
             contentDescription = stringResource(contentDescriptionTextRes),
             contentScale = contentScale,
             alignment = UpperHalfBiasAlignment,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-            onSuccess = onSuccess,
             modifier = modifier.blurForScreenshotMode(),
         )
     }

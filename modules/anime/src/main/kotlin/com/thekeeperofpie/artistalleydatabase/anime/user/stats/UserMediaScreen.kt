@@ -27,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 
 object UserMediaScreen {
 
@@ -129,17 +130,16 @@ object UserMediaScreen {
                         valueToChaptersRead = UserMediaStatistics.VoiceActor::chaptersRead,
                         valueToMeanScore = UserMediaStatistics.VoiceActor::meanScore,
                         valueToMediaIds = { it.mediaIds.filterNotNull() },
-                        onValueClick = { value, imageWidthToHeightRatio ->
+                        onValueClick = { value, imageState ->
                             val voiceActor = value.voiceActor
                             if (voiceActor != null) {
                                 navigationCallback.navigate(
                                     AnimeDestinations.StaffDetails(
                                         staffId = voiceActor.id.toString(),
                                         headerParams = StaffHeaderParams(
-                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
                                             name = voiceActor.name?.primaryName(languageOptionStaff),
                                             subtitle = voiceActor.name?.subtitleName(languageOptionStaff),
-                                            coverImage = voiceActor.image?.large,
+                                            coverImage = imageState.toImageState(),
                                             colorArgb = colorCalculationState.getColorsNonComposable(voiceActor.id.toString()).first.toArgb(),
                                             favorite = null,
                                         )
@@ -149,7 +149,11 @@ object UserMediaScreen {
                         },
                         initialItemId = { it.voiceActor?.id.toString() },
                         initialItemImage = { it.voiceActor?.image?.large },
-                        initialItemSharedElementKey = { "anime_staff_${it.voiceActor?.id}_image" },
+                        initialItemSharedTransitionKey = {
+                            it.voiceActor?.id?.toString()
+                                ?.let { SharedTransitionKey.makeKeyForId(it) }
+                        },
+                        initialItemSharedTransitionIdentifier = { "staff_image" },
                     )
                 }
                 UserStatsTab.STUDIOS -> UserStatsDetailScreen(
@@ -188,17 +192,16 @@ object UserMediaScreen {
                         valueToChaptersRead = UserMediaStatistics.Staff::chaptersRead,
                         valueToMeanScore = UserMediaStatistics.Staff::meanScore,
                         valueToMediaIds = { it.mediaIds.filterNotNull() },
-                        onValueClick = { value, imageWidthToHeightRatio ->
+                        onValueClick = { value, imageState ->
                             val staff = value.staff
                             if (staff != null) {
                                 navigationCallback.navigate(
                                     AnimeDestinations.StaffDetails(
                                         staffId = staff.id.toString(),
                                         headerParams = StaffHeaderParams(
-                                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
                                             name = staff.name?.primaryName(languageOptionStaff),
                                             subtitle = staff.name?.subtitleName(languageOptionStaff),
-                                            coverImage = staff.image?.large,
+                                            coverImage = imageState.toImageState(),
                                             colorArgb = colorCalculationState.getColorsNonComposable(staff.id.toString()).first.toArgb(),
                                             favorite = null,
                                         )
@@ -208,7 +211,11 @@ object UserMediaScreen {
                         },
                         initialItemId = { it.staff?.id.toString() },
                         initialItemImage = { it.staff?.image?.large },
-                        initialItemSharedElementKey = { "anime_staff_${it.staff?.id}_image" },
+                        initialItemSharedTransitionKey = {
+                            it.staff?.id?.toString()
+                                ?.let { SharedTransitionKey.makeKeyForId(it) }
+                        },
+                        initialItemSharedTransitionIdentifier = { "staff_image" },
                     )
                 }
             }

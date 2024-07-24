@@ -38,7 +38,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
@@ -286,6 +288,7 @@ class MediaDetailsScreenTest {
                         )
                     }
                     val mediaTitle = viewModels.mediaDetailsViewModel.entry.result?.media?.title?.primaryTitle()
+                    val coverImageState = rememberCoilImageState(uri = null)
                     AnimeMediaDetailsScreen(
                         viewModel = viewModels.mediaDetailsViewModel,
                         upIconOption = UpIconOption.Back {},
@@ -294,14 +297,15 @@ class MediaDetailsScreenTest {
                             media = { mock() },
                             favoriteUpdate = { false },
                         ),
-                        sharedElementKey = "1234",
+                        sharedTransitionKey = SharedTransitionKey.makeKeyForId("1234"),
+                        coverImageState = coverImageState,
                         charactersCount = { 0 },
-                        charactersSection = { _, _, _ -> },
+                        charactersSection = { _, _ -> },
                         staffCount = { 0 },
                         staffSection = {},
                         requestLoadMedia2 = {},
                         recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                        recommendationsSection = { _, _, _, _, _ -> },
+                        recommendationsSection = { _, _, _, _ -> },
                         songsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
                         songsSection = { _, _, _ -> },
                         cdsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
@@ -316,7 +320,7 @@ class MediaDetailsScreenTest {
                             hasMore = true,
                             addOneForViewer = true,
                         ),
-                        activitiesSection = { screenKey, expanded, onExpandedChanged, onClickListEdit, coverImageWidthToHeightRatio ->
+                        activitiesSection = { screenKey, expanded, onExpandedChanged, onClickListEdit ->
                             activitiesSection(
                                 screenKey = screenKey,
                                 viewer = viewer,
@@ -340,7 +344,7 @@ class MediaDetailsScreenTest {
                                                 showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
                                                 headerParams = MediaHeaderParams(
                                                     title = mediaTitle,
-                                                    coverImageWidthToHeightRatio = coverImageWidthToHeightRatio(),
+                                                    coverImage = coverImageState.toImageState(),
                                                     media = entry.media,
                                                     favorite = viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite
                                                         ?: entry.media.isFavourite,
@@ -354,7 +358,7 @@ class MediaDetailsScreenTest {
                         forumThreadsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
                         forumThreadsSection = { _, _ -> },
                         reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                        reviewsSection = { screenKey, expanded, onExpandedChange, coverImageWidthToHeightRatio -> },
+                        reviewsSection = { screenKey, expanded, onExpandedChange -> },
                     )
                 }
             }

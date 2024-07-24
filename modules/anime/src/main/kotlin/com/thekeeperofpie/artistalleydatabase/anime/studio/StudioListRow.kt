@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.studio
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,9 +41,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 object StudioListRow {
 
     @Composable
@@ -142,22 +148,27 @@ object StudioListRow {
                     Box {
                         val navigationCallback = LocalNavigationCallback.current
                         val title = item?.media?.title?.primaryTitle()
+                        val sharedTransitionKey = item?.media?.id?.toString()
+                            ?.let { SharedTransitionKey.makeKeyForId(it) }
+                        val sharedContentState =
+                            rememberSharedContentState(sharedTransitionKey, "media_image")
+                        val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
                         ListRowSmallImage(
-                            context = context,
                             density = density,
                             ignored = item?.ignored ?: false,
-                            image = item?.media?.coverImage?.extraLarge,
+                            imageState = imageState,
                             contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                            onClick = { ratio ->
+                            onClick = {
                                 if (item != null) {
                                     navigationCallback.navigate(
                                         AnimeDestinations.MediaDetails(
                                             mediaId = item.media.id.toString(),
                                             title = title,
-                                            coverImage = item.media.coverImage?.extraLarge,
+                                            coverImage = imageState.toImageState(),
+                                            sharedTransitionKey = sharedTransitionKey,
                                             headerParams = MediaHeaderParams(
+                                                coverImage = imageState.toImageState(),
                                                 title = title,
-                                                coverImageWidthToHeightRatio = ratio,
                                                 mediaWithListStatus = item.media,
                                             )
                                         )
@@ -166,6 +177,7 @@ object StudioListRow {
                             },
                             width = mediaWidth,
                             height = mediaHeight,
+                            modifier = Modifier.sharedElement(sharedContentState)
                         )
 
                         if (viewer != null && item != null) {
@@ -177,7 +189,9 @@ object StudioListRow {
                                 maxProgressVolumes = item.media.volumes,
                                 onClick = { onClickListEdit(item.media) },
                                 padding = 6.dp,
-                                modifier = Modifier.align(Alignment.BottomStart)
+                                modifier = Modifier
+                                    .animateSharedTransitionWithOtherState(sharedContentState)
+                                    .align(Alignment.BottomStart)
                             )
                         }
                     }

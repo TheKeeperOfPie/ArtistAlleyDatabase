@@ -20,22 +20,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -43,11 +36,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionPrefixProvider
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
@@ -70,10 +68,11 @@ object UserStatsDetailScreen {
         valueToChaptersRead: (Value) -> Int,
         valueToMeanScore: (Value) -> Double,
         valueToMediaIds: (Value) -> List<Int>,
-        onValueClick: (Value, imageWidthToHeightRatio: Float) -> Unit,
+        onValueClick: (Value, CoilImageState) -> Unit,
         initialItemId: ((Value) -> String)? = null,
         initialItemImage: ((Value) -> String?)? = null,
-        initialItemSharedElementKey: ((Value) -> String)? = null,
+        initialItemSharedTransitionKey: (@Composable (Value) -> SharedTransitionKey?)? = null,
+        initialItemSharedTransitionIdentifier: ((Value) -> String)? = null,
     ) {
         val statistics = statistics()
         LazyColumn(
@@ -100,8 +99,8 @@ object UserStatsDetailScreen {
             val values = values(statistics)
             if (values.isNotEmpty()) {
                 items(values, key = valueToKey) {
+                    SharedTransitionPrefixProvider("user_stats_details") { }
                     StatsDetailCard(
-                        screenKey = screenKey,
                         value = it,
                         valueToText = valueToText,
                         valueToCount = valueToCount,
@@ -112,7 +111,8 @@ object UserStatsDetailScreen {
                         onValueClick = onValueClick,
                         initialItemId = initialItemId,
                         initialItemImage = initialItemImage,
-                        initialItemSharedElementKey = initialItemSharedElementKey,
+                        initialItemSharedTransitionKey = initialItemSharedTransitionKey,
+                        initialItemSharedTransitionIdentifier = initialItemSharedTransitionIdentifier,
                         state = state,
                         isAnime = isAnime,
                     )
@@ -123,7 +123,6 @@ object UserStatsDetailScreen {
 
     @Composable
     private fun <Value> StatsDetailCard(
-        screenKey: String,
         value: Value,
         valueToText: @Composable (Value) -> String,
         valueToCount: (Value) -> Int,
@@ -131,16 +130,17 @@ object UserStatsDetailScreen {
         valueToChaptersRead: (Value) -> Int,
         valueToMeanScore: (Value) -> Double,
         valueToMediaIds: (Value) -> List<Int>,
-        onValueClick: (Value, imageWidthToHeightRatio: Float) -> Unit,
+        onValueClick: (Value, CoilImageState) -> Unit,
         initialItemId: ((Value) -> String)?,
         initialItemImage: ((Value) -> String?)?,
-        initialItemSharedElementKey: ((Value) -> String)?,
+        initialItemSharedTransitionKey: @Composable() ((Value) -> SharedTransitionKey?)?,
+        initialItemSharedTransitionIdentifier: ((Value) -> String)?,
         state: AniListUserViewModel.States.State<Value>,
         isAnime: Boolean,
     ) {
-        var firstItemImageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val firstItemImageState = rememberCoilImageState(initialItemImage?.invoke(value))
         ElevatedCard(
-            onClick = { onValueClick(value, firstItemImageWidthToHeightRatio) },
+            onClick = { onValueClick(value, firstItemImageState) },
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .height(IntrinsicSize.Min),
@@ -178,24 +178,22 @@ object UserStatsDetailScreen {
                             .padding(vertical = 16.dp)
                             .height(180.dp)
                     ) {
-                        if (initialItemSharedElementKey != null) {
-                            if (initialItemImage != null) {
-                                val initialItemImage = initialItemImage.invoke(value)
-                                item {
-                                    InnerCard(
-                                        screenKey = screenKey,
-                                        sharedElementKey = initialItemSharedElementKey(value),
-                                        id = initialItemId!!.invoke(value),
-                                        image = initialItemImage,
-                                        loading = false,
-                                        onClick = {
-                                            onValueClick(value, firstItemImageWidthToHeightRatio)
-                                        },
-                                        onImageRatioCalculated = {
-                                            firstItemImageWidthToHeightRatio = it
-                                        },
-                                    )
-                                }
+                        if (initialItemId != null
+                            && initialItemImage != null
+                            && initialItemSharedTransitionKey != null
+                            && initialItemSharedTransitionIdentifier != null
+                        ) {
+                            val initialItemImage = initialItemImage.invoke(value)
+                            item(key = initialItemId) {
+                                InnerCard(
+                                    sharedTransitionKey = initialItemSharedTransitionKey(value),
+                                    sharedTransitionIdentifier = initialItemSharedTransitionIdentifier(
+                                        value
+                                    ),
+                                    imageState = firstItemImageState,
+                                    loading = false,
+                                    onClick = { onValueClick(value, firstItemImageState) },
+                                )
                             }
                         }
 
@@ -203,19 +201,21 @@ object UserStatsDetailScreen {
                             val media = medias.getOrNull()?.get(it)
                             val navigationCallback = LocalNavigationCallback.current
                             val languageOptionMedia = LocalLanguageOptionMedia.current
+                            val sharedTransitionKey = media?.id?.toString()
+                                ?.let { SharedTransitionKey.makeKeyForId(it) }
                             InnerCard(
-                                screenKey = screenKey,
-                                sharedElementKey = "anime_media_${media?.id}_image",
-                                id = media?.id.toString(),
+                                sharedTransitionKey = sharedTransitionKey,
+                                sharedTransitionIdentifier = "media_image",
                                 image = media?.coverImage?.extraLarge,
                                 loading = media == null,
-                                onClick = { ratio ->
+                                onClick = { imageState ->
                                     if (media != null) {
                                         navigationCallback.navigate(
                                             AnimeDestinations.MediaDetails(
                                                 mediaNavigationData = media,
-                                                coverImageWidthToHeightRatio = ratio,
+                                                coverImage = imageState.toImageState(),
                                                 languageOptionMedia = languageOptionMedia,
+                                                sharedTransitionKey = sharedTransitionKey,
                                             )
                                         )
                                     }
@@ -234,63 +234,53 @@ object UserStatsDetailScreen {
     // TODO: For media types, show quick edit and stats
     @Composable
     private fun InnerCard(
-        screenKey: String,
-        sharedElementKey: String,
-        id: String,
-        image: String?,
+        sharedTransitionKey: SharedTransitionKey?,
+        sharedTransitionIdentifier: String,
+        imageState: CoilImageState,
         loading: Boolean,
         onClick: () -> Unit,
-        onImageRatioCalculated: (Float) -> Unit,
     ) {
         Card(onClick = onClick) {
             val density = LocalDensity.current
-            AutoSharedElement(
-                key = sharedElementKey,
-                screenKey = screenKey,
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(image)
-                        .crossfade(true)
-                        .size(
-                            width = density.run { 130.dp.roundToPx() },
-                            height = density.run { 180.dp.roundToPx() },
-                        )
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    onSuccess = { onImageRatioCalculated(it.widthToHeightRatio()) },
-                    contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .size(width = 130.dp, height = 180.dp)
-                        .placeholder(
-                            visible = loading,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                        .clip(RoundedCornerShape(12.dp))
-                )
-            }
+            CoilImage(
+                state = imageState,
+                model = imageState.request()
+                    .crossfade(true)
+                    .size(
+                        width = density.run { 130.dp.roundToPx() },
+                        height = density.run { 180.dp.roundToPx() },
+                    )
+                    .build(),
+                contentScale = ContentScale.Crop,
+                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                modifier = Modifier
+                    .sharedElement(sharedTransitionKey, sharedTransitionIdentifier)
+                    .fillMaxHeight()
+                    .size(width = 130.dp, height = 180.dp)
+                    .placeholder(
+                        visible = loading,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .clip(RoundedCornerShape(12.dp))
+            )
         }
     }
 
     @Composable
     private fun InnerCard(
-        screenKey: String,
-        sharedElementKey: String,
-        id: String,
+        sharedTransitionKey: SharedTransitionKey?,
+        sharedTransitionIdentifier: String,
         image: String?,
         loading: Boolean,
-        onClick: (widthToHeightRatio: Float) -> Unit,
+        onClick: (CoilImageState) -> Unit,
     ) {
-        var widthToHeightRatio by remember { MutableSingle(1f) }
+        val imageState = rememberCoilImageState(image)
         InnerCard(
-            screenKey = screenKey,
-            sharedElementKey = sharedElementKey,
-            id = id,
-            image = image,
+            sharedTransitionKey = sharedTransitionKey,
+            sharedTransitionIdentifier = sharedTransitionIdentifier,
+            imageState = imageState,
             loading = loading,
-            onClick = { onClick(widthToHeightRatio) },
-            onImageRatioCalculated = { widthToHeightRatio = it },
+            onClick = { onClick(imageState) },
         )
     }
 }

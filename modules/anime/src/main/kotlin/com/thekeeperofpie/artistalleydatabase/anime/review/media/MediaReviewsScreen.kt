@@ -2,10 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.review.media
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaAndReviewsQuery
@@ -20,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteT
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 
 object MediaReviewsScreen {
 
@@ -33,9 +30,7 @@ object MediaReviewsScreen {
     ) {
         val entry = viewModel.entry
         val media = entry.result?.media
-        var coverImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
-        }
+        val coverImageState = rememberCoilImageState(headerValues.coverImage)
 
         val mediaTitle = media?.title?.primaryTitle()
         HeaderAndListScreen(
@@ -43,7 +38,6 @@ object MediaReviewsScreen {
             headerTextRes = R.string.anime_reviews_header,
             header = {
                 MediaHeader(
-                    screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
                     mediaId = viewModel.mediaId,
                     mediaType = media?.type,
@@ -54,15 +48,13 @@ object MediaReviewsScreen {
                     popularity = media?.popularity,
                     progress = it,
                     headerValues = headerValues,
+                    coverImageState = coverImageState,
                     onFavoriteChanged = {
                         viewModel.favoritesToggleHelper.set(
                             headerValues.type.toFavoriteType(),
                             viewModel.mediaId,
                             it,
                         )
-                    },
-                    onImageWidthToHeightRatioAvailable = {
-                        coverImageWidthToHeightRatio = it
                     },
                     enableCoverImageSharedElement = false
                 )
@@ -79,7 +71,7 @@ object MediaReviewsScreen {
                                     reviewId = review.id.toString(),
                                     headerParams = MediaHeaderParams(
                                         title = mediaTitle,
-                                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                                        coverImage = coverImageState.toImageState(),
                                         media = media,
                                         favorite = viewModel.favoritesToggleHelper.favorite
                                             ?: media?.isFavourite,

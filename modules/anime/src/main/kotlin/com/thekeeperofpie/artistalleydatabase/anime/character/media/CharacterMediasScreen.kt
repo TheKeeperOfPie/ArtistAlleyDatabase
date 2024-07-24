@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -31,12 +28,7 @@ object CharacterMediasScreen {
         upIconOption: UpIconOption,
         headerValues: CharacterHeaderValues,
     ) {
-        var characterImageWidthToHeightRatio by remember {
-            mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio ?: 1f)
-        }
-
         val viewer by viewModel.viewer.collectAsState()
-
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         HeaderAndMediaListScreen(
             screenKey = SCREEN_KEY,
@@ -47,7 +39,6 @@ object CharacterMediasScreen {
                 CharacterHeader(
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
-                    viewer = viewer,
                     characterId = viewModel.characterId,
                     progress = it,
                     headerValues = headerValues,
@@ -55,23 +46,19 @@ object CharacterMediasScreen {
                         viewModel.favoritesToggleHelper
                             .set(FavoriteType.CHARACTER, viewModel.characterId, it)
                     },
-                    onImageWidthToHeightRatioAvailable = {
-                        characterImageWidthToHeightRatio = it
-                    }
                 )
             },
             itemKey = { it.media.id },
             item = {
                 AnimeMediaListRow(
-                    screenKey = SCREEN_KEY,
                     entry = it,
                     viewer = viewer,
-                    onClickListEdit = editViewModel::initialize,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,
                         bottom = 16.dp
-                    )
+                    ),
+                    onClickListEdit = editViewModel::initialize
                 )
             },
         )

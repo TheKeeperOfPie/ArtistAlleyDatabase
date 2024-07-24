@@ -64,12 +64,11 @@ object StaffStaffScreen {
                     ) {
                         items(entries, { it.id }) { entry ->
                             MediaGridCard(
-                                screenKey = screenKey,
                                 entry = entry,
                                 viewer = viewer,
                                 onClickListEdit = editViewModel::initialize,
-                                showTypeIcon = true,
                                 modifier = Modifier.width(120.dp),
+                                showTypeIcon = true,
                             ) { textColor ->
                                 entry.role?.let {
                                     AutoHeightText(

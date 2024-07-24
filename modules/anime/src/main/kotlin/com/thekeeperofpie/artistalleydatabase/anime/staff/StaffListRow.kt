@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,7 +28,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,7 +40,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil3.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
@@ -49,9 +49,6 @@ import com.anilist.UserFavoritesStaffQuery
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -69,14 +66,22 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
+    ExperimentalCoilApi::class
+)
 object StaffListRow {
 
     private val MIN_HEIGHT = 156.dp
@@ -91,7 +96,7 @@ object StaffListRow {
         entry: Entry?,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
-        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val coverImageState = rememberCoilImageState(entry?.staff?.image?.large)
         val navigationCallback = LocalNavigationCallback.current
         val colorCalculationState = LocalColorCalculationState.current
         val staffName = entry?.staff?.name?.primaryName()
@@ -102,10 +107,9 @@ object StaffListRow {
                     AnimeDestinations.StaffDetails(
                         staffId = entry.staff.id.toString(),
                         headerParams = StaffHeaderParams(
-                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
                             name = staffName,
                             subtitle = staffSubtitle,
-                            coverImage = entry.staff.image?.large,
+                            coverImage = coverImageState.toImageState(),
                             colorArgb = colorCalculationState.getColorsNonComposable(entry.staff.id.toString()).first.toArgb(),
                             favorite = null,
                         )
@@ -126,8 +130,8 @@ object StaffListRow {
                 StaffImage(
                     screenKey = screenKey,
                     entry = entry,
+                    coverImageState = coverImageState,
                     onClick = onClick,
-                    onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
 
                 Column(
@@ -164,34 +168,33 @@ object StaffListRow {
     private fun StaffImage(
         screenKey: String,
         entry: Entry?,
+        coverImageState: CoilImageState,
         onClick: () -> Unit,
-        onRatioAvailable: (Float) -> Unit,
     ) {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         val colorCalculationState = LocalColorCalculationState.current
         StaffCoverImage(
             screenKey = screenKey,
             staffId = entry?.staff?.id?.toString(),
-            image = ImageRequest.Builder(LocalContext.current)
-                .data(entry?.staff?.image?.large)
+            imageState = coverImageState,
+            image = coverImageState.request()
                 .crossfade(true)
                 .allowHardware(colorCalculationState.allowHardware(entry?.staff?.id?.toString()))
                 .size(
                     width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
                     height = Dimension.Undefined,
                 )
+                .listener(onSuccess = { _, result ->
+                    if (entry != null) {
+                        ComposeColorUtils.calculatePalette(
+                            id = entry.staff.id.toString(),
+                            image = result.image,
+                            colorCalculationState = colorCalculationState,
+                        )
+                    }
+                })
                 .build(),
             contentScale = ContentScale.Crop,
-            onSuccess = {
-                onRatioAvailable(it.widthToHeightRatio())
-                if (entry != null) {
-                    ComposeColorUtils.calculatePalette(
-                        entry.staff.id.toString(),
-                        it,
-                        colorCalculationState,
-                    )
-                }
-            },
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
@@ -275,22 +278,21 @@ object StaffListRow {
                 AutoSharedElement(key = "anime_character_${it.id}_image", screenKey = screenKey) {
                     val navigationCallback = LocalNavigationCallback.current
                     val characterName = it.name?.primaryName()
+                    val imageState = rememberCoilImageState(it.image?.large)
                     ListRowSmallImage(
-                        context = context,
                         density = density,
                         ignored = false,
-                        image = it.image?.large,
+                        imageState = imageState,
                         contentDescriptionTextRes = R.string.anime_character_image_content_description,
-                        onClick = { ratio ->
+                        onClick = {
                             navigationCallback.navigate(
                                 AnimeDestinations.CharacterDetails(
                                     characterId = it.id.toString(),
                                     headerParams = CharacterHeaderParams(
-                                        coverImageWidthToHeightRatio = ratio,
                                         name = characterName,
                                         subtitle = null,
                                         favorite = null,
-                                        coverImage = it.image?.large,
+                                        coverImage = imageState.toImageState(),
                                         colorArgb = colorCalculationState.getColorsNonComposable(it.id.toString())
                                             .first.toArgb(),
                                     )
@@ -304,46 +306,51 @@ object StaffListRow {
             }
 
             items(media, key = { it.media.id }) {
-                AutoSharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
-                    Box {
-                        val navigationCallback = LocalNavigationCallback.current
-                        val title = it.media.title?.primaryTitle()
-                        ListRowSmallImage(
-                            context = context,
-                            density = density,
-                            ignored = it.ignored,
-                            image = it.media.coverImage?.extraLarge,
-                            contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                            onClick = { ratio ->
-                                navigationCallback.navigate(
-                                    AnimeDestinations.MediaDetails(
-                                        mediaId = it.media.id.toString(),
+                Box {
+                    val navigationCallback = LocalNavigationCallback.current
+                    val title = it.media.title?.primaryTitle()
+                    val sharedTransitionKey =
+                        SharedTransitionKey.makeKeyForId(it.media.id.toString())
+                    val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
+                    val imageState = rememberCoilImageState(it.media.coverImage?.extraLarge)
+                    ListRowSmallImage(
+                        density = density,
+                        ignored = it.ignored,
+                        imageState = imageState,
+                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                        onClick = {
+                            navigationCallback.navigate(
+                                AnimeDestinations.MediaDetails(
+                                    mediaId = it.media.id.toString(),
+                                    title = title,
+                                    coverImage = imageState.toImageState(),
+                                    sharedTransitionKey = sharedTransitionKey,
+                                    headerParams = MediaHeaderParams(
+                                        coverImage = imageState.toImageState(),
                                         title = title,
-                                        coverImage = it.media.coverImage?.extraLarge,
-                                        headerParams = MediaHeaderParams(
-                                            title = title,
-                                            coverImageWidthToHeightRatio = ratio,
-                                            mediaWithListStatus = it.media,
-                                        )
+                                        mediaWithListStatus = it.media,
                                     )
                                 )
-                            },
-                            width = MEDIA_WIDTH,
-                            height = MEDIA_HEIGHT,
-                        )
-
-                        if (viewer != null) {
-                            MediaListQuickEditIconButton(
-                                viewer = viewer,
-                                mediaType = it.media.type,
-                                media = it,
-                                maxProgress = MediaUtils.maxProgress(it.media),
-                                maxProgressVolumes = it.media.volumes,
-                                onClick = { onClickListEdit(it.media) },
-                                padding = 6.dp,
-                                modifier = Modifier.align(Alignment.BottomStart)
                             )
-                        }
+                        },
+                        width = MEDIA_WIDTH,
+                        height = MEDIA_HEIGHT,
+                        modifier = Modifier.sharedElement(sharedTransitionKey)
+                    )
+
+                    if (viewer != null) {
+                        MediaListQuickEditIconButton(
+                            viewer = viewer,
+                            mediaType = it.media.type,
+                            media = it,
+                            maxProgress = MediaUtils.maxProgress(it.media),
+                            maxProgressVolumes = it.media.volumes,
+                            onClick = { onClickListEdit(it.media) },
+                            padding = 6.dp,
+                            modifier = Modifier
+                                .animateSharedTransitionWithOtherState(sharedContentState)
+                                .align(Alignment.BottomStart)
+                        )
                     }
                 }
             }

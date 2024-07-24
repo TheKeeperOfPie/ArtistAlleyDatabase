@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoilApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
 import android.os.Parcelable
@@ -28,11 +30,10 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil3.annotation.ExperimentalCoilApi
 import com.anilist.fragment.CharacterHeaderData
-import com.anilist.fragment.CharacterNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.subtitleName
@@ -40,12 +41,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.maybeOverride
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -53,12 +57,11 @@ import kotlinx.serialization.Serializable
 fun CharacterHeader(
     screenKey: String,
     upIconOption: UpIconOption?,
-    viewer: AniListViewer?,
     characterId: String,
     progress: Float,
     headerValues: CharacterHeaderValues,
+    coverImageState: CoilImageState = rememberCoilImageState(headerValues.coverImage),
     onFavoriteChanged: (Boolean) -> Unit,
-    onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
 ) {
     AutoSharedElement(
         key = "anime_character_${characterId}_header",
@@ -68,12 +71,12 @@ fun CharacterHeader(
         CoverAndBannerHeader(
             upIconOption = upIconOption,
             headerValues = headerValues,
+            coverImageState = coverImageState,
             coverImageAllowHardware = colorCalculationState.allowHardware(characterId),
             progress = progress,
             color = { headerValues.color(colorCalculationState) },
             coverImageOnSuccess = {
-                onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
-                ComposeColorUtils.calculatePalette(characterId, it, colorCalculationState)
+                ComposeColorUtils.calculatePalette(characterId, it.result.image, colorCalculationState)
             },
             menuContent = {
                 FavoriteIconButton(
@@ -159,37 +162,21 @@ fun CharacterHeader(
 @Parcelize
 @Serializable
 data class CharacterHeaderParams(
-    val coverImageWidthToHeightRatio: Float?,
     val name: String?,
     val subtitle: String?,
+    val coverImage: ImageState?,
     val favorite: Boolean?,
-    val coverImage: String?,
-    val colorArgb: Int?,
-) : Parcelable {
-    constructor(
-        name: String?,
-        coverImageWidthToHeightRatio: Float?,
-        favorite: Boolean? = null,
-        characterNavigationData: CharacterNavigationData,
-    ) : this(
-        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-        name = name,
-        subtitle = null,
-        favorite = favorite,
-        coverImage = characterNavigationData.image?.large,
-        colorArgb = null,
-    )
-}
+    val colorArgb: Int? = null,
+) : Parcelable
 
 class CharacterHeaderValues(
     private val params: CharacterHeaderParams?,
     private val character: () -> CharacterHeaderData?,
     private val favoriteUpdate: () -> Boolean?,
 ) : DetailsHeaderValues {
-    override val coverImageWidthToHeightRatio = params?.coverImageWidthToHeightRatio
     override val bannerImage = null
     override val coverImage
-        get() = character()?.image?.large ?: params?.coverImage
+        get() = params?.coverImage?.maybeOverride(character()?.image?.large)
     val favorite
         get() = favoriteUpdate() ?: character()?.isFavourite ?: params?.favorite
 

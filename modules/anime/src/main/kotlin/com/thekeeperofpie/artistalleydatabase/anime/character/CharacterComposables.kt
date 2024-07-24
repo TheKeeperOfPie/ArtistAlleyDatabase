@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
@@ -44,7 +44,6 @@ import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,16 +54,10 @@ import androidx.core.graphics.ColorUtils
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
-import coil3.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
-import com.anilist.fragment.MediaHeaderData
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
@@ -74,7 +67,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
@@ -84,6 +76,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.UpperHalfBiasAlignment
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
@@ -92,8 +86,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
@@ -101,12 +96,13 @@ fun CharacterSmallCard(
     screenKey: String,
     id: EntryId,
     image: String?,
+    imageState: CoilImageState? = rememberCoilImageState(image),
     onClick: () -> Unit,
-    innerImage: String? = null,
+    innerImage: String?,
+    innerImageState: CoilImageState? = rememberCoilImageState(innerImage),
+    // TODO: Use SharedTransitionKey here
     innerImageKey: String = "invalid_key",
     onClickInnerImage: (() -> Unit)? = null,
-    onImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
-    onInnerImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     width: Dp = 100.dp,
     isStaffMain: Boolean = false,
     content: @Composable (textColor: Color) -> Unit,
@@ -158,27 +154,25 @@ fun CharacterSmallCard(
     ) {
         Box {
             val density = LocalDensity.current
-            val onSuccess: (AsyncImagePainter.State.Success) -> Unit = {
-                onImageSuccess(it)
-                ComposeColorUtils.calculatePalette(
-                    id = id.scopedId,
-                    success = it,
-                    colorCalculationState = colorCalculationState,
-                    heightStartThreshold = 3 / 4f,
-                    // Only capture left 3/5ths to ignore
-                    // part covered by voice actor
-                    widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
-                    selectMaxPopulation = true,
-                )
-            }
-            val imageRequest = ImageRequest.Builder(LocalContext.current)
-                .data(image)
+            val imageRequest = imageState.request()
                 .crossfade(true)
                 .allowHardware(colorCalculationState.allowHardware(id.scopedId))
                 .size(
                     width = density.run { width.roundToPx() },
                     height = density.run { (width * 1.5f).roundToPx() },
                 )
+                .listener(onSuccess = { _, result ->
+                    ComposeColorUtils.calculatePalette(
+                        id = id.scopedId,
+                        image = result.image,
+                        colorCalculationState = colorCalculationState,
+                        heightStartThreshold = 3 / 4f,
+                        // Only capture left 3/5ths to ignore
+                        // part covered by voice actor
+                        widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
+                        selectMaxPopulation = true,
+                    )
+                })
                 .build()
             val imageModifier = Modifier
                 .size(width = width, height = width * 1.5f)
@@ -192,18 +186,18 @@ fun CharacterSmallCard(
                 StaffCoverImage(
                     screenKey = screenKey,
                     staffId = id.valueId,
+                    imageState = imageState,
                     image = imageRequest,
                     contentScale = ContentScale.Crop,
-                    onSuccess = onSuccess,
                     modifier = imageModifier
                 )
             } else {
                 CharacterCoverImage(
                     screenKey = screenKey,
                     characterId = id.valueId,
+                    imageState = imageState,
                     image = imageRequest,
                     contentScale = ContentScale.Crop,
-                    onSuccess = onSuccess,
                     modifier = imageModifier
                 )
             }
@@ -218,9 +212,9 @@ fun CharacterSmallCard(
                             key = innerImageKey,
                             screenKey = screenKey,
                         ) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(innerImage)
+                            CoilImage(
+                                state = innerImageState,
+                                model = innerImageState.request()
                                     .crossfade(true)
                                     .listener(onError = { _, _ ->
                                         showInnerImage = false
@@ -237,7 +231,6 @@ fun CharacterSmallCard(
                                         R.string.anime_media_voice_actor_image
                                     }
                                 ),
-                                onSuccess = onInnerImageSuccess,
                                 modifier = Modifier
                                     .size(width = 40.dp, height = 40.dp)
                                     .clip(clipShape)
@@ -289,29 +282,21 @@ fun LazyListScope.charactersSection(
     screenKey: String,
     @StringRes titleRes: Int,
     mediaId: String,
-    media: MediaHeaderData?,
-    mediaFavorite: Boolean?,
+    mediaHeaderParams: MediaHeaderParams,
     charactersInitial: List<DetailsCharacter>,
     charactersDeferred: () -> LazyPagingItems<DetailsCharacter>,
-    mediaCoverImageWidthToHeightRatio: () -> Float,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {
     if (charactersDeferred().itemCount.coerceAtLeast(charactersInitial.size) == 0) return
     item("charactersHeader-$titleRes") {
         val navigationCallback = LocalNavigationCallback.current
-        val title = media?.title?.primaryTitle()
         DetailsSectionHeader(
             text = stringResource(titleRes),
             onClickViewAll = {
                 navigationCallback.navigate(
                     AnimeDestinations.MediaCharacters(
                         mediaId = mediaId,
-                        headerParams = MediaHeaderParams(
-                            title = title,
-                            coverImageWidthToHeightRatio = mediaCoverImageWidthToHeightRatio(),
-                            media = media,
-                            favorite = mediaFavorite,
-                        )
+                        headerParams = mediaHeaderParams,
                     )
                 )
             },
@@ -408,24 +393,25 @@ fun CharactersSectionItem(
     val navigationCallback = LocalNavigationCallback.current
     val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
     val colorCalculationState = LocalColorCalculationState.current
-    var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-    var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
     val characterName = character?.character?.name?.primaryName()
+    val image = if (showVoiceActorAsMain) voiceActor?.image else character?.image
+    val innerImage = if (showVoiceActorAsMain) character?.image else voiceActor?.image
+    val imageState = rememberCoilImageState(image)
+    val innerImageState = rememberCoilImageState(innerImage)
     val onClickCharacter: () -> Unit = {
         if (character?.character != null) {
             navigationCallback.navigate(
                 AnimeDestinations.CharacterDetails(
                     characterId = character.id,
                     headerParams = CharacterHeaderParams(
-                        coverImageWidthToHeightRatio = if (showVoiceActorAsMain) {
-                            innerImageWidthToHeightRatio
-                        } else {
-                            imageWidthToHeightRatio
-                        },
                         name = characterName,
                         subtitle = null,
                         favorite = null,
-                        coverImage = character.image,
+                        coverImage = if (showVoiceActorAsMain) {
+                            innerImageState
+                        } else {
+                            imageState
+                        }.toImageState(),
                         colorArgb = colorCalculationState.getColorsNonComposable(character.id).first.toArgb(),
                     )
                 )
@@ -440,14 +426,13 @@ fun CharactersSectionItem(
                 AnimeDestinations.StaffDetails(
                     staffId = voiceActor.id.toString(),
                     headerParams = StaffHeaderParams(
-                        coverImageWidthToHeightRatio = if (showVoiceActorAsMain) {
-                            imageWidthToHeightRatio
-                        } else {
-                            innerImageWidthToHeightRatio
-                        },
                         name = voiceActorName,
                         subtitle = voiceActorSubtitle,
-                        coverImage = voiceActor.staff.image?.large,
+                        coverImage = if (showVoiceActorAsMain) {
+                            imageState
+                        } else {
+                            innerImageState
+                        }.toImageState(),
                         colorArgb = colorCalculationState.getColorsNonComposable(voiceActor.id).first.toArgb(),
                         favorite = null,
                     )
@@ -463,16 +448,8 @@ fun CharactersSectionItem(
         } else {
             EntryId("anime_character", character?.id.orEmpty())
         },
-        image = if (showVoiceActorAsMain) {
-            voiceActor?.image
-        } else {
-            character?.image
-        },
-        innerImage = if (showVoiceActorAsMain) {
-            character?.image
-        } else {
-            voiceActor?.image
-        },
+        imageState = imageState,
+        innerImageState = innerImageState,
         onClick = if (showVoiceActorAsMain) {
             onClickVoiceActor
         } else {
@@ -483,8 +460,6 @@ fun CharactersSectionItem(
         } else {
             onClickVoiceActor
         },
-        onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-        onInnerImageSuccess = { innerImageWidthToHeightRatio = it.widthToHeightRatio() },
         text = {
             if (showVoiceActorAsMain) {
                 voiceActor?.name.orEmpty()
@@ -501,12 +476,10 @@ fun CharactersSectionItem(
     screenKey: String,
     character: DetailsCharacter?,
     id: EntryId,
-    image: String?,
-    innerImage: String?,
+    imageState: CoilImageState?,
+    innerImageState: CoilImageState?,
     onClick: () -> Unit,
     onClickInnerImage: () -> Unit,
-    onImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
-    onInnerImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     text: @Composable () -> String,
     isStaffMain: Boolean = false,
 ) {
@@ -516,13 +489,13 @@ fun CharactersSectionItem(
     CharacterSmallCard(
         screenKey = screenKey,
         id = id,
-        image = image,
+        image = imageState?.uri,
+        imageState = imageState,
         onClick = onClick,
-        innerImage = innerImage,
+        innerImage = innerImageState?.uri,
+        innerImageState = innerImageState,
         innerImageKey = "anime_staff_${voiceActor?.id}_image",
         onClickInnerImage = onClickInnerImage,
-        onImageSuccess = onImageSuccess,
-        onInnerImageSuccess = onInnerImageSuccess,
         isStaffMain = isStaffMain,
     ) { textColor ->
         AutoResizeHeightText(
@@ -552,7 +525,7 @@ fun CharacterCard(
     character: DetailsCharacter?,
     voiceActorLanguage: VoiceActorLanguageOption = LocalLanguageOptionVoiceActor.current.first,
 ) {
-    var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+    val coverImageState = rememberCoilImageState(character?.character?.image?.large)
     val navigationCallback = LocalNavigationCallback.current
     val colorCalculationState = LocalColorCalculationState.current
     val characterName = character?.character?.name?.primaryName()
@@ -563,11 +536,10 @@ fun CharacterCard(
                     AnimeDestinations.CharacterDetails(
                         characterId = character.id.toString(),
                         headerParams = CharacterHeaderParams(
-                            coverImageWidthToHeightRatio = imageWidthToHeightRatio,
                             name = characterName,
                             subtitle = null,
                             favorite = null,
-                            coverImage = it.image?.large,
+                            coverImage = coverImageState.toImageState(),
                             colorArgb = colorCalculationState.getColorsNonComposable(it.id.toString()).first.toArgb(),
                         )
                     )
@@ -589,14 +561,13 @@ fun CharacterCard(
             CharacterCoverImage(
                 screenKey = screenKey,
                 characterId = character?.id,
-                image = ImageRequest.Builder(LocalContext.current)
-                    .data(character?.image)
+                imageState = coverImageState,
+                image = coverImageState.request()
                     .crossfade(true)
                     .allowHardware(true)
                     .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
                     .build(),
                 contentScale = ContentScale.Crop,
-                onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
                 modifier = Modifier
                     .width(imageWidth)
                     .fillMaxHeight()
@@ -674,23 +645,20 @@ fun CharacterCard(
             }
 
             if (character == null || voiceActor?.image != null) {
-                var voiceActorImageWidthToHeightRatio by remember { MutableSingle(1f) }
+                val voiceActorImageState = rememberCoilImageState(voiceActor?.image)
                 val voiceActorName = voiceActor?.staff?.name?.primaryName()
                 val voiceActorSubtitle = voiceActor?.staff?.name?.subtitleName()
                 StaffCoverImage(
                     screenKey = screenKey,
                     staffId = voiceActor?.id,
-                    image = ImageRequest.Builder(LocalContext.current)
-                        .data(voiceActor?.image)
+                    imageState = voiceActorImageState,
+                    image = voiceActorImageState.request()
                         .crossfade(true)
                         .allowHardware(true)
                         .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
                         .build(),
                     contentScale = ContentScale.Crop,
                     contentDescriptionTextRes = R.string.anime_media_voice_actor_image,
-                    onSuccess = {
-                        voiceActorImageWidthToHeightRatio = it.widthToHeightRatio()
-                    },
                     modifier = Modifier
                         .width(imageWidth)
                         .fillMaxHeight()
@@ -707,9 +675,10 @@ fun CharacterCard(
                                         headerParams = StaffHeaderParams(
                                             name = voiceActorName,
                                             subtitle = voiceActorSubtitle,
-                                            coverImageWidthToHeightRatio = voiceActorImageWidthToHeightRatio,
-                                            coverImage = voiceActor.staff?.image?.large,
-                                            colorArgb = colorCalculationState.getColorsNonComposable(voiceActor.staff.id.toString()).first.toArgb(),
+                                            coverImage = voiceActorImageState.toImageState(),
+                                            colorArgb = colorCalculationState.getColorsNonComposable(
+                                                voiceActor.staff.id.toString()
+                                            ).first.toArgb(),
                                             favorite = null,
                                         )
                                     )

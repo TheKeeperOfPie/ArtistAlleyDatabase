@@ -48,9 +48,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -169,29 +172,33 @@ fun ReviewCard(
     viewer: AniListViewer?,
     review: MediaAndReviewsReview?,
     media: AnimeMediaCompactListRow.Entry?,
-    onClick: (AnimeNavigator.NavigationCallback) -> Unit,
+    onClick: (AnimeNavigator.NavigationCallback, CoilImageState) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
     modifier: Modifier = Modifier,
     showMedia: Boolean = true,
 ) {
     val navigationCallback = LocalNavigationCallback.current
+    val coverImageState = rememberCoilImageState(media?.media?.coverImage?.extraLarge)
     ElevatedCard(
         modifier = modifier
             .clickable(
                 enabled = review?.id != null,
-                onClick = { onClick(navigationCallback) },
+                onClick = { onClick(navigationCallback, coverImageState) },
             )
             .recomposeHighlighter()
     ) {
         ReviewSmallCardContent(screenKey, review)
 
         if (showMedia) {
-            AnimeMediaCompactListRow(
-                viewer = viewer,
-                entry = media,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-                onClickListEdit = onClickListEdit
-            )
+            SharedTransitionKeyScope("anime_home_review", review?.id.toString()) {
+                AnimeMediaCompactListRow(
+                    viewer = viewer,
+                    entry = media,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                    onClickListEdit = onClickListEdit,
+                    coverImageState = coverImageState,
+                )
+            }
         }
     }
 }

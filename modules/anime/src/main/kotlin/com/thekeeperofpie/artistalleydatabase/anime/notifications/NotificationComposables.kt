@@ -56,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactLi
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -303,13 +304,13 @@ fun ActivityReplyLikedNotificationCard(
 
 @Composable
 fun AiringNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.AiringNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
+    val sharedTransitionKey = notification.mediaId?.let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId?.let {
             navigationCallback.navigate(
@@ -318,6 +319,7 @@ fun AiringNotificationCard(
                     title = null,
                     coverImage = null,
                     headerParams = null,
+                    sharedTransitionKey = sharedTransitionKey,
                 )
             )
         }
@@ -339,7 +341,7 @@ fun AiringNotificationCard(
             viewer = viewer,
             entry = mediaEntry,
             modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit
+            onClickListEdit = onClickListEdit,
         )
     }
 }
@@ -366,13 +368,13 @@ fun FollowingNotificationCard(
 
 @Composable
 fun RelatedMediaAdditionNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
+    val sharedTransitionKey = notification.mediaId.toString().let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationCallback.navigate(
@@ -381,6 +383,7 @@ fun RelatedMediaAdditionNotificationCard(
                     title = null,
                     coverImage = null,
                     headerParams = null,
+                    sharedTransitionKey = sharedTransitionKey,
                 )
             )
         }
@@ -399,20 +402,20 @@ fun RelatedMediaAdditionNotificationCard(
             viewer = viewer,
             entry = mediaEntry,
             modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit
+            onClickListEdit = onClickListEdit,
         )
     }
 }
 
 @Composable
 fun MediaDataChangeNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
+    val sharedTransitionKey = notification.mediaId.toString().let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationCallback.navigate(
@@ -421,6 +424,7 @@ fun MediaDataChangeNotificationCard(
                     title = null,
                     coverImage = null,
                     headerParams = null,
+                    sharedTransitionKey = sharedTransitionKey,
                 )
             )
         }
@@ -449,14 +453,13 @@ fun MediaDataChangeNotificationCard(
             viewer = viewer,
             entry = mediaEntry,
             modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit
+            onClickListEdit = onClickListEdit,
         )
     }
 }
 
 @Composable
 fun MediaDeletionNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaDeletionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
@@ -497,13 +500,13 @@ fun MediaDeletionNotificationCard(
 
 @Composable
 fun MediaMergeNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaMergeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
+    val sharedTransitionKey = notification.mediaId.toString().let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationCallback.navigate(
@@ -512,6 +515,7 @@ fun MediaMergeNotificationCard(
                     title = null,
                     coverImage = null,
                     headerParams = null,
+                    sharedTransitionKey = sharedTransitionKey,
                 )
             )
         }
@@ -540,7 +544,7 @@ fun MediaMergeNotificationCard(
             viewer = viewer,
             entry = mediaEntry,
             modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit
+            onClickListEdit = onClickListEdit,
         )
     }
 }

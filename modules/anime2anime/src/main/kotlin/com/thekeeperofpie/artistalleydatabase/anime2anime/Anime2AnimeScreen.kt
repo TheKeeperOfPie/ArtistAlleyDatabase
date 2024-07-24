@@ -61,7 +61,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -70,7 +69,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.AniListMedia
@@ -84,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeStringR
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -105,6 +104,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 
@@ -249,13 +250,12 @@ object Anime2AnimeScreen {
                         continuations.fastForEachReversed {
                             item {
                                 AnimeMediaListRow(
-                                    screenKey = SCREEN_KEY,
                                     entry = it.media,
                                     viewer = viewer,
-                                    onClickListEdit = editViewModel::initialize,
                                     modifier = Modifier
                                         .animateItem()
-                                        .padding(start = 16.dp, end = 16.dp)
+                                        .padding(start = 16.dp, end = 16.dp),
+                                    onClickListEdit = editViewModel::initialize
                                 )
                             }
                             connections(it.connections)
@@ -472,11 +472,12 @@ object Anime2AnimeScreen {
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 val voiceActorName = voiceActor.name?.primaryName()
                 val voiceActorSubtitle = voiceActor.name?.subtitleName()
+                val coverImageState = rememberCoilImageState(voiceActor.image?.large)
                 StaffCoverImage(
                     screenKey = SCREEN_KEY,
                     staffId = voiceActor.id.toString(),
-                    image = ImageRequest.Builder(LocalContext.current)
-                        .data(voiceActor.image?.large)
+                    imageState = coverImageState,
+                    image = coverImageState.request()
                         .crossfade(true)
                         .size(
                             width = Dimension.Pixels(LocalDensity.current.run { 48.dp.roundToPx() }),
@@ -496,9 +497,8 @@ object Anime2AnimeScreen {
                                         headerParams = StaffHeaderParams(
                                             name = voiceActorName,
                                             subtitle = voiceActorSubtitle,
-                                            coverImageWidthToHeightRatio = null,
+                                            coverImage = coverImageState.toImageState(),
                                             favorite = null,
-                                            staffNavigationData = voiceActor,
                                         )
                                     )
                                 )
@@ -529,11 +529,13 @@ object Anime2AnimeScreen {
         val navigationCallback = LocalNavigationCallback.current
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         val characterName = character.name?.primaryName()
+        val subtitleName = character.name?.subtitleName()
+        val coverImageState = rememberCoilImageState(character.image?.large)
         CharacterCoverImage(
             screenKey = SCREEN_KEY,
             characterId = character.id.toString(),
-            image = ImageRequest.Builder(LocalContext.current)
-                .data(character.image?.large)
+            imageState = coverImageState,
+            image = coverImageState.request()
                 .crossfade(true)
                 .size(
                     width = Dimension.Pixels(LocalDensity.current.run { 48.dp.roundToPx() }),
@@ -552,9 +554,9 @@ object Anime2AnimeScreen {
                                 characterId = character.id.toString(),
                                 headerParams = CharacterHeaderParams(
                                     name = characterName,
-                                    coverImageWidthToHeightRatio = null,
+                                    subtitle = subtitleName,
+                                    coverImage = coverImageState.toImageState(),
                                     favorite = null,
-                                    characterNavigationData = character,
                                 )
                             )
                         )
@@ -580,6 +582,7 @@ object Anime2AnimeScreen {
         val navigationCallback = LocalNavigationCallback.current
         val staffName = staff.name?.primaryName()
         val staffSubtitle = staff.name?.subtitleName()
+        val coverImageState = rememberCoilImageState(staff.image?.large)
         OutlinedCard(
             onClick = {
                 navigationCallback.navigate(
@@ -588,9 +591,8 @@ object Anime2AnimeScreen {
                         headerParams = StaffHeaderParams(
                             name = staffName,
                             subtitle = staffSubtitle,
-                            coverImageWidthToHeightRatio = null,
+                            coverImage = coverImageState.toImageState(),
                             favorite = null,
-                            staffNavigationData = staff,
                         )
                     )
                 )
@@ -607,8 +609,8 @@ object Anime2AnimeScreen {
                 StaffCoverImage(
                     screenKey = SCREEN_KEY,
                     staffId = staff.id.toString(),
-                    image = ImageRequest.Builder(LocalContext.current)
-                        .data(staff.image?.large)
+                    imageState = coverImageState,
+                    image = coverImageState.request()
                         .crossfade(true)
                         .size(
                             width = Dimension.Pixels(LocalDensity.current.run { 48.dp.roundToPx() }),
@@ -629,9 +631,8 @@ object Anime2AnimeScreen {
                                         headerParams = StaffHeaderParams(
                                             name = staffName,
                                             subtitle = staffSubtitle,
-                                            coverImageWidthToHeightRatio = null,
+                                            coverImage = coverImageState.toImageState(),
                                             favorite = null,
-                                            staffNavigationData = staff,
                                         )
                                     )
                                 )
@@ -713,7 +714,7 @@ object Anime2AnimeScreen {
                 }
                 is Anime2AnimeSubmitResult.SameMedia -> {
                     Text(
-                        text = stringResource( R.string.anime2anime_submit_error_same_media),
+                        text = stringResource(R.string.anime2anime_submit_error_same_media),
                         textAlign = TextAlign.Center,
                         modifier = modifier
                     )
@@ -864,7 +865,6 @@ object Anime2AnimeScreen {
                     GameTab.RANDOM,
                     GameTab.USER_LIST,
                     -> AnimeMediaListRow(
-                        screenKey = SCREEN_KEY,
                         entry = continuation?.media,
                         viewer = viewer,
                         onClickListEdit = onClickListEdit,
@@ -905,7 +905,6 @@ object Anime2AnimeScreen {
                             }
                         } else {
                             AnimeMediaListRow(
-                                screenKey = SCREEN_KEY,
                                 entry = continuation?.media,
                                 viewer = viewer,
                                 onClickListEdit = onClickListEdit,

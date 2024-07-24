@@ -31,6 +31,7 @@ import androidx.navigation.compose.composable
 import com.mxalbert.sharedelements.DefaultSharedElementsTransitionSpec
 import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -47,6 +48,18 @@ private val LocalSharedTransitionKeys = compositionLocalOf<Pair<String, String>>
     throw IllegalStateException("SharedTransition keys not provided")
 }
 
+val LocalSharedTransitionPrefixKeys = staticCompositionLocalOf<String> { "" }
+
+@Composable
+fun <T> T.SharedTransitionKeyScope(vararg prefixKeys: String?, content: @Composable T.() -> Unit) {
+    val currentPrefix = LocalSharedTransitionPrefixKeys.current
+    CompositionLocalProvider(
+        LocalSharedTransitionPrefixKeys provides "$currentPrefix-${prefixKeys.joinToString(separator = "-")}",
+    ) {
+        content()
+    }
+}
+
 object SharedTransitionSignal {
     var navigating by mutableStateOf(false)
 }
@@ -59,6 +72,10 @@ fun AutoSharedElement(
     onFractionChanged: ((Float) -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
+    if (true) {
+        content()
+        return
+    }
     if (SharedTransition.USE_ANDROIDX) {
         CompositionLocalProvider(
             LocalSharedTransitionKeys provides (key to screenKey)
@@ -166,8 +183,45 @@ fun Modifier.autoSharedElement(key: String? = null) =
     } else this
 
 @Composable
+fun Modifier.sharedElement(
+    key: SharedTransitionKey?,
+    identifier: String,
+    zIndexInOverlay: Float = 0f,
+): Modifier {
+    if (key?.key.isNullOrEmpty()) return this
+    return sharedElement(keys = arrayOf(key, identifier), zIndexInOverlay = zIndexInOverlay)
+}
+
+@Composable
+fun Modifier.sharedElement(
+    state: SharedTransitionScope.SharedContentState?,
+    zIndexInOverlay: Float = 0f,
+): Modifier {
+    state ?: return this
+    return with(LocalSharedTransitionScope.current) {
+        sharedElement(
+            state = state,
+            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            zIndexInOverlay = zIndexInOverlay,
+        )
+    }
+}
+
+@Composable
+fun rememberSharedContentState(
+    sharedTransitionKey: SharedTransitionKey?,
+    identifier: String,
+): SharedTransitionScope.SharedContentState? {
+    sharedTransitionKey ?: return null
+    return with(LocalSharedTransitionScope.current) {
+        rememberSharedContentState(key = listOf(sharedTransitionKey, identifier))
+    }
+}
+
+@Composable
 fun Modifier.sharedElement(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
     if (keys.contains(null)) return this
+    if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
     return with(LocalSharedTransitionScope.current) {
         sharedElement(
             rememberSharedContentState(key = keys.toList()),
@@ -179,6 +233,8 @@ fun Modifier.sharedElement(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modi
 
 @Composable
 fun Modifier.sharedBounds(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
+    if (keys.contains(null)) return this
+    if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
     // TODO: sharedBounds causes bugs with scrolling?
     return with(LocalSharedTransitionScope.current) {
         sharedBounds(
@@ -195,8 +251,34 @@ fun Modifier.skipToLookaheadSize() = with(LocalSharedTransitionScope.current) {
 }
 
 @Composable
-fun Modifier.renderInSharedTransitionScopeOverlay(zIndexInOverlay: Float = 0f) = with(LocalSharedTransitionScope.current) {
-    renderInSharedTransitionScopeOverlay(zIndexInOverlay = zIndexInOverlay)
+fun Modifier.renderInSharedTransitionScopeOverlay(
+    zIndexInOverlay: Float = 0f,
+    renderInOverlay: (() -> Boolean)? = null,
+) = with(LocalSharedTransitionScope.current) {
+    renderInSharedTransitionScopeOverlay(
+        renderInOverlay = renderInOverlay ?: { isTransitionActive },
+        zIndexInOverlay = zIndexInOverlay,
+    )
+}
+
+@Composable
+fun Modifier.animateSharedTransitionWithOtherState(
+    sharedContentState: SharedTransitionScope.SharedContentState?,
+    enter: EnterTransition = fadeIn(),
+    exit: ExitTransition = fadeOut(),
+    zIndexInOverlay: Float = 1f,
+    disableAnimateEnterExit: Boolean = false,
+): Modifier {
+    sharedContentState ?: return this
+    return with(LocalSharedTransitionScope.current) {
+        renderInSharedTransitionScopeOverlay(
+            renderInOverlay = { sharedContentState.isMatchFound },
+            zIndexInOverlay = zIndexInOverlay,
+        )
+            .conditionally(!disableAnimateEnterExit && sharedContentState.isMatchFound) {
+                animateEnterExit(enter = enter, exit = exit)
+            }
+    }
 }
 
 @Composable

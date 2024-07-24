@@ -863,7 +863,7 @@ private fun CustomSection(section: EntrySection.Custom<*>) {
 @Composable
 fun MultiImageSelectBox(
     pagerState: PagerState,
-    imageState: () -> ImageState,
+    imageState: () -> EntryImageState,
     cropState: () -> CropUtils.CropState,
     onClickOpenImage: (index: Int) -> Unit,
     imageContent: @Composable (image: EntryImage, zoomPanState: ZoomPanState) -> Unit,
@@ -1069,7 +1069,7 @@ private fun AddImagePagerPage(onAddClick: () -> Unit, modifier: Modifier = Modif
     }
 }
 
-data class ImageState(
+data class EntryImageState(
     val images: () -> List<EntryImage> = { emptyList() },
     val onSelected: (index: Int, Uri?) -> Unit = { _, _ -> },
     val onSelectError: (Exception?) -> Unit,

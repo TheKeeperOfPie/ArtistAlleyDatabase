@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
+import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
@@ -33,7 +34,7 @@ object StaffOverviewScreen {
     operator fun invoke(
         viewModel: StaffDetailsViewModel,
         entry: StaffDetailsScreen.Entry,
-        staffImageWidthToHeightRatio: () -> Float,
+        coverImageState: CoilImageState,
         expandedState: StaffDetailsScreen.ExpandedState,
     ) {
         val characters = viewModel.characters.collectAsLazyPagingItems()
@@ -63,10 +64,9 @@ object StaffOverviewScreen {
                         AnimeDestinations.StaffCharacters(
                             staffId = entry.staff.id.toString(),
                             headerParams = StaffHeaderParams(
-                                coverImageWidthToHeightRatio =  staffImageWidthToHeightRatio(),
                                 name = staffName,
                                 subtitle = staffSubtitle,
-                                coverImage = entry.staff.image?.large,
+                                coverImage = coverImageState.toImageState(),
                                 colorArgb = colorCalculationState.getColorsNonComposable(entry.staff.id.toString())
                                     .first.toArgb(),
                                 favorite = viewModel.favoritesToggleHelper.favorite,

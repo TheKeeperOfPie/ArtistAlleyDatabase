@@ -44,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 
 object RecommendationComposables  {
     const val RECOMMENDATIONS_ABOVE_FOLD = 3
@@ -106,19 +107,25 @@ fun RecommendationCard(
             }
         }
 
-        AnimeMediaCompactListRow(
-            viewer = viewer,
-            entry = media,
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
-            onClickListEdit = onClickListEdit
-        )
+        SharedTransitionKeyScope(
+            "recommendation",
+            media?.media?.id.toString(),
+            mediaRecommendation?.media?.id.toString(),
+        ) {
+            AnimeMediaCompactListRow(
+                viewer = viewer,
+                entry = media,
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                onClickListEdit = onClickListEdit,
+            )
 
-        AnimeMediaCompactListRow(
-            viewer = viewer,
-            entry = mediaRecommendation,
-            modifier = Modifier.padding(horizontal = 8.dp),
-            onClickListEdit = onClickListEdit
-        )
+            AnimeMediaCompactListRow(
+                viewer = viewer,
+                entry = mediaRecommendation,
+                modifier = Modifier.padding(horizontal = 8.dp),
+                onClickListEdit = onClickListEdit,
+            )
+        }
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
@@ -223,15 +230,14 @@ fun LazyListScope.recommendationsSection(
         viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
     ) { item, paddingBottom ->
         AnimeMediaListRow(
-            screenKey = screenKey,
             entry = item.entry,
             viewer = viewer,
-            onClickListEdit = onClickListEdit,
-            recommendation = item.data,
-            onUserRecommendationRating = onUserRecommendationRating,
             modifier = Modifier
                 .animateItem()
-                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom),
+            onClickListEdit = onClickListEdit,
+            recommendation = item.data,
+            onUserRecommendationRating = onUserRecommendationRating
         )
     }
 }
