@@ -507,8 +507,6 @@ private fun UserImage(
     val shape = RoundedCornerShape(12.dp)
     val navigationCallback = LocalNavigationCallback.current
     UserAvatarImage(
-        screenKey = screenKey,
-        userId = user?.id?.toString(),
         image = user?.avatar?.large,
         modifier = Modifier
             .size(32.dp)

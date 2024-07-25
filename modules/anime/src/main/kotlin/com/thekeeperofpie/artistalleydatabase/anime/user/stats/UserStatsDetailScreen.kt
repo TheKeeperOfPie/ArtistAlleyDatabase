@@ -55,7 +55,6 @@ object UserStatsDetailScreen {
 
     @Composable
     operator fun <Value> invoke(
-        screenKey: String,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
         state: AniListUserViewModel.States.State<Value>,
         isAnime: Boolean,
@@ -68,10 +67,10 @@ object UserStatsDetailScreen {
         valueToChaptersRead: (Value) -> Int,
         valueToMeanScore: (Value) -> Double,
         valueToMediaIds: (Value) -> List<Int>,
-        onValueClick: (Value, CoilImageState) -> Unit,
+        onValueClick: (Value, CoilImageState, SharedTransitionKey?) -> Unit,
         initialItemId: ((Value) -> String)? = null,
         initialItemImage: ((Value) -> String?)? = null,
-        initialItemSharedTransitionKey: (@Composable (Value) -> SharedTransitionKey?)? = null,
+        initialItemSharedTransitionKey: @Composable() ((Value) -> SharedTransitionKey?)? = null,
         initialItemSharedTransitionIdentifier: ((Value) -> String)? = null,
     ) {
         val statistics = statistics()
@@ -130,7 +129,7 @@ object UserStatsDetailScreen {
         valueToChaptersRead: (Value) -> Int,
         valueToMeanScore: (Value) -> Double,
         valueToMediaIds: (Value) -> List<Int>,
-        onValueClick: (Value, CoilImageState) -> Unit,
+        onValueClick: (Value, CoilImageState, SharedTransitionKey?) -> Unit,
         initialItemId: ((Value) -> String)?,
         initialItemImage: ((Value) -> String?)?,
         initialItemSharedTransitionKey: @Composable() ((Value) -> SharedTransitionKey?)?,
@@ -139,8 +138,9 @@ object UserStatsDetailScreen {
         isAnime: Boolean,
     ) {
         val firstItemImageState = rememberCoilImageState(initialItemImage?.invoke(value))
+        val sharedTransitionKey = initialItemSharedTransitionKey?.invoke(value)
         ElevatedCard(
-            onClick = { onValueClick(value, firstItemImageState) },
+            onClick = { onValueClick(value, firstItemImageState, sharedTransitionKey) },
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .height(IntrinsicSize.Min),
@@ -186,13 +186,19 @@ object UserStatsDetailScreen {
                             val initialItemImage = initialItemImage.invoke(value)
                             item(key = initialItemId) {
                                 InnerCard(
-                                    sharedTransitionKey = initialItemSharedTransitionKey(value),
+                                    sharedTransitionKey = sharedTransitionKey,
                                     sharedTransitionIdentifier = initialItemSharedTransitionIdentifier(
                                         value
                                     ),
                                     imageState = firstItemImageState,
                                     loading = false,
-                                    onClick = { onValueClick(value, firstItemImageState) },
+                                    onClick = {
+                                        onValueClick(
+                                            value,
+                                            firstItemImageState,
+                                            sharedTransitionKey,
+                                        )
+                                    },
                                 )
                             }
                         }

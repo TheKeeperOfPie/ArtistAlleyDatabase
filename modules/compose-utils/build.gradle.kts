@@ -34,6 +34,4 @@ dependencies {
     api(libs.paging.compose)
 
     implementation(libs.molecule.runtime)
-
-    api(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 }

@@ -61,7 +61,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeSongComposables {
@@ -318,63 +319,51 @@ object AnimeSongComposables {
 
                             @Composable
                             fun ArtistImage(modifier: Modifier) {
-                                val image = @Composable {
-                                    AsyncImage(
-                                        model = artistImage,
-                                        contentScale = ContentScale.FillHeight,
-                                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                        contentDescription = stringResource(
-                                            if (artist.asCharacter) {
-                                                R.string.anime_media_voice_actor_image
-                                            } else {
-                                                R.string.anime_media_artist_image
-                                            }
-                                        ),
-                                        modifier = modifier
-                                            .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
-                                            .fillMaxHeight()
-                                    )
-                                }
-                                if (artist.aniListId != null) {
-                                    AutoSharedElement(
-                                        key = "anime_staff_${artist.aniListId}_image",
-                                        screenKey = screenKey
-                                    ) {
-                                        image()
-                                    }
-                                } else {
-                                    image()
-                                }
+                                val sharedTransitionKey = artist.aniListId
+                                    ?.let { SharedTransitionKey.makeKeyForId(it) }
+                                AsyncImage(
+                                    model = artistImage,
+                                    contentScale = ContentScale.FillHeight,
+                                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                    contentDescription = stringResource(
+                                        if (artist.asCharacter) {
+                                            R.string.anime_media_voice_actor_image
+                                        } else {
+                                            R.string.anime_media_artist_image
+                                        }
+                                    ),
+                                    modifier = modifier
+                                        .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
+                                        .conditionally(artist.aniListId != null) {
+                                            sharedElement(sharedTransitionKey, "staff_image")
+                                        }
+                                        .fillMaxHeight()
+                                )
                             }
 
                             @Composable
                             fun CharacterImage(modifier: Modifier) {
-                                val image = @Composable { modifier: Modifier ->
-                                    AsyncImage(
-                                        model = characterImage!!,
-                                        contentScale = ContentScale.FillHeight,
-                                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                        contentDescription = stringResource(
-                                            R.string.anime_character_image_content_description
-                                        ),
-                                        modifier = modifier
-                                            .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
-                                            .fillMaxHeight()
-                                    )
-                                }
-                                if (artist.character?.aniListId != null) {
-                                    AutoSharedElement(
-                                        key = "anime_character_${artist.character.aniListId}_image",
-                                        screenKey = screenKey
-                                    ) {
-                                        image(modifier.clickable {
-                                            // TODO: Use navigation callback
-                                            uriHandler.openUri(artist.character.link)
-                                        })
-                                    }
-                                } else {
-                                    image(modifier)
-                                }
+                                val characterId = artist.character?.aniListId
+                                val sharedTransitionKey =
+                                    characterId?.let { SharedTransitionKey.makeKeyForId(it) }
+                                AsyncImage(
+                                    model = characterImage!!,
+                                    contentScale = ContentScale.FillHeight,
+                                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                    contentDescription = stringResource(
+                                        R.string.anime_character_image_content_description
+                                    ),
+                                    modifier = modifier
+                                        .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
+                                        .conditionally(characterId != null) {
+                                            sharedElement(sharedTransitionKey, "character_image")
+                                                .clickable {
+                                                    // TODO: Use navigation callback
+                                                    uriHandler.openUri(artist.character.link)
+                                                }
+                                        }
+                                        .fillMaxHeight()
+                                )
                             }
 
                             val firstImage: (@Composable (modifier: Modifier) -> Unit)?

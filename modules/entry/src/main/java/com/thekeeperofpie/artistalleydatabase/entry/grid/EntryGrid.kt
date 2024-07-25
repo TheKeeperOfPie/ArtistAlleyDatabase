@@ -50,6 +50,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.R
@@ -222,6 +223,7 @@ object EntryGrid {
                         )
                     }
                 } else {
+                    val sharedTransitionKey = SharedTransitionKey.makeKeyForId(entry.id.scopedId)
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(imageUri)
@@ -242,7 +244,7 @@ object EntryGrid {
                         modifier = entryModifier
                             .alpha(if (selected) 0.38f else 1f)
                             .semantics { this.selected = selected }
-                            .sharedElement("entryImage", entry.id)
+                            .sharedElement(sharedTransitionKey, "entry_image")
                             .fillMaxWidth()
                             .heightIn(min = LocalDensity.current.run {
                                 if (entry.imageWidth != null) {

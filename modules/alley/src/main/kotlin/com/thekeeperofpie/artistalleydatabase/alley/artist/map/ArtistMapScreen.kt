@@ -20,9 +20,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.skipToLookaheadSize
 
 @OptIn(ExperimentalMaterial3Api::class)

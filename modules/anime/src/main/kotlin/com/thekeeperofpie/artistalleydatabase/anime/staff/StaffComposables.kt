@@ -51,6 +51,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 fun LazyListScope.staffSection(
@@ -113,15 +115,19 @@ fun StaffListRow(
             val colorCalculationState = LocalColorCalculationState.current
             val staffName = staff?.staff?.name?.primaryName()
             val staffSubtitle = staff?.staff?.name?.subtitleName()
+            val sharedTransitionKey = staff?.staff?.id?.toString()
+                ?.let { SharedTransitionKey.makeKeyForId(it) }
             StaffSmallCard(
                 screenKey = screenKey,
                 id = EntryId("anime_staff", staff?.id.orEmpty()),
                 imageState = coverImageState,
+                sharedTransitionKey = sharedTransitionKey,
                 onClick = {
                     if (staff != null) {
                         navigationCallback.navigate(
                             AnimeDestinations.StaffDetails(
                                 staffId = staff.staff.id.toString(),
+                                sharedTransitionKey = sharedTransitionKey,
                                 headerParams = StaffHeaderParams(
                                     name = staffName,
                                     subtitle = staffSubtitle,
@@ -187,9 +193,9 @@ fun StaffListRow(
 fun StaffSmallCard(
     screenKey: String,
     id: EntryId,
+    sharedTransitionKey: SharedTransitionKey?,
     imageState: CoilImageState,
     onClick: () -> Unit,
-    innerImage: String? = null,
     width: Dp = 100.dp,
     content: @Composable (textColor: Color) -> Unit,
 ) {
@@ -240,8 +246,6 @@ fun StaffSmallCard(
     ) {
         val density = LocalDensity.current
         StaffCoverImage(
-            screenKey = screenKey,
-            staffId = id.valueId,
             imageState = imageState,
             image = imageState.request()
                 .crossfade(true)
@@ -256,22 +260,21 @@ fun StaffSmallCard(
                         image = result.image,
                         colorCalculationState = colorCalculationState,
                         heightStartThreshold = 3 / 4f,
-                        // Only capture left 3/5ths to ignore
-                        // part covered by voice actor
-                        widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
+                        widthEndThreshold = 1f,
                         selectMaxPopulation = true,
                     )
                 })
                 .build(),
-            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(width = width, height = width * 1.5f)
+                .sharedElement(sharedTransitionKey, "staff_image")
                 .clip(
                     RoundedCornerShape(
                         topStart = 12.dp,
                         topEnd = 12.dp,
                     )
-                )
+                ),
+            contentScale = ContentScale.Crop
         )
 
         content(textColor)

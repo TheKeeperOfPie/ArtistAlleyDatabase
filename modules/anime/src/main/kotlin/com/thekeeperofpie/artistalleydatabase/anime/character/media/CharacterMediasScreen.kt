@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 
 object CharacterMediasScreen {
 
@@ -27,6 +28,7 @@ object CharacterMediasScreen {
         viewModel: CharacterMediasViewModel,
         upIconOption: UpIconOption,
         headerValues: CharacterHeaderValues,
+        sharedTransitionKey: SharedTransitionKey?,
     ) {
         val viewer by viewModel.viewer.collectAsState()
         val editViewModel = hiltViewModel<MediaEditViewModel>()
@@ -37,11 +39,11 @@ object CharacterMediasScreen {
             headerTextRes = R.string.anime_character_medias_header,
             header = {
                 CharacterHeader(
-                    screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
                     characterId = viewModel.characterId,
                     progress = it,
                     headerValues = headerValues,
+                    sharedTransitionKey = sharedTransitionKey,
                     onFavoriteChanged = {
                         viewModel.favoritesToggleHelper
                             .set(FavoriteType.CHARACTER, viewModel.characterId, it)

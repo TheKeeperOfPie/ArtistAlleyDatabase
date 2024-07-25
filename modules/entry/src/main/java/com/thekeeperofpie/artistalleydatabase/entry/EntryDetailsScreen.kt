@@ -78,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
@@ -426,6 +427,8 @@ object EntryDetailsScreen {
                     val configuration = LocalConfiguration.current
                     val screenWidth = configuration.screenWidthDp.dp
                     val minimumHeight = screenWidth * entryImage.widthToHeightRatio
+                    val sharedTransitionKey = entryImage.entryId?.scopedId
+                        ?.let { SharedTransitionKey.makeKeyForId(it) }
                     Column {
                         ZoomPanBox(state = zoomPanState) {
                             AsyncImage(
@@ -451,7 +454,7 @@ object EntryDetailsScreen {
                                 ),
                                 contentScale = ContentScale.FillWidth,
                                 modifier = Modifier
-                                    .sharedElement("entryImage", entryImage.entryId)
+                                    .sharedElement(sharedTransitionKey, "entry_image")
                                     .fillMaxWidth()
                                     .heightIn(min = minimumHeight)
                                     .conditionally(imageCornerDp != null) {

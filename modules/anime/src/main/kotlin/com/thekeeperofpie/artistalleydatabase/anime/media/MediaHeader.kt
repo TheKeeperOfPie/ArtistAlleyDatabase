@@ -60,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.maybeOverride
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -94,10 +95,9 @@ fun MediaHeader(
         headerValues = headerValues,
         coverImageState = coverImageState,
         coverImageAllowHardware = colorCalculationState.allowHardware(mediaId),
-//        modifier = Modifier.sharedBounds(sharedElementKey, "media_header"),
-        sharedTransitionKey = sharedTransitionKey,
-        coverImageSharedElementKey = "media_image".takeIf { enableCoverImageSharedElement },
-        bannerImageSharedElementKey = "media_banner_image",
+        sharedTransitionKey = sharedTransitionKey.takeIf { enableCoverImageSharedElement },
+        coverImageSharedTransitionIdentifier = "media_image",
+        bannerImageSharedTransitionIdentifier = "media_banner_image",
         progress = progress,
         color = { headerValues.color },
         onClickEnabled = (titles?.size ?: 0) > 1,
@@ -116,6 +116,7 @@ fun MediaHeader(
             )
         },
         onCoverImageClick = onCoverImageClick,
+        modifier = Modifier.sharedBounds(sharedTransitionKey, "media_header")
     ) {
         Column {
             Row(modifier = Modifier.weight(1f)) {

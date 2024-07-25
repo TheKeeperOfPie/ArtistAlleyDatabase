@@ -73,11 +73,7 @@ fun RecommendationCard(
                 val shape = RoundedCornerShape(12.dp)
                 val navigationCallback = LocalNavigationCallback.current
                 UserAvatarImage(
-                    screenKey = screenKey,
-                    userId = user?.id?.toString(),
                     image = user?.avatar?.large,
-                    contentScale = ContentScale.FillHeight,
-                    contentDescriptionTextRes = R.string.anime_recommendation_user_avatar_content_description,
                     modifier = Modifier
                         .size(40.dp)
                         .clip(shape)
@@ -90,7 +86,9 @@ fun RecommendationCard(
                         .placeholder(
                             visible = media == null,
                             highlight = PlaceholderHighlight.shimmer(),
-                        )
+                        ),
+                    contentScale = ContentScale.FillHeight,
+                    contentDescriptionTextRes = R.string.anime_recommendation_user_avatar_content_description
                 )
 
                 Text(

@@ -77,7 +77,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHig
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.request
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
@@ -104,11 +103,13 @@ object CharacterListRow {
         val navigationCallback = LocalNavigationCallback.current
         val colorCalculationState = LocalColorCalculationState.current
         val characterName = entry?.character?.name?.primaryName()
+        val characterSharedTransitionKey = entry?.character?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
         val onClick = {
             if (entry != null) {
                 navigationCallback.navigate(
                     AnimeDestinations.CharacterDetails(
                         characterId = entry.character.id.toString(),
+                        sharedTransitionKey = characterSharedTransitionKey,
                         headerParams = CharacterHeaderParams(
                             name = characterName,
                             subtitle = null,
@@ -189,8 +190,6 @@ object CharacterListRow {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         val colorCalculationState = LocalColorCalculationState.current
         CharacterCoverImage(
-            screenKey = screenKey,
-            characterId = entry?.character?.id?.toString(),
             imageState = imageState,
             image = imageState.request()
                 .crossfade(true)
@@ -209,7 +208,6 @@ object CharacterListRow {
                     }
                 })
                 .build(),
-            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxHeight()
                 .heightIn(min = MIN_HEIGHT)
@@ -228,7 +226,8 @@ object CharacterListRow {
                     onLongClickLabel = stringResource(
                         R.string.anime_character_image_long_press_preview
                     ),
-                )
+                ),
+            contentScale = ContentScale.Crop
         )
     }
 
@@ -327,35 +326,36 @@ object CharacterListRow {
             if (voiceActor?.image?.large != null) {
                 val staffId = voiceActor.id
                 item(staffId) {
-                    AutoSharedElement(key = "anime_staff_${staffId}_image", screenKey = screenKey) {
-                        val voiceActorName = voiceActor.name?.primaryName()
-                        val voiceActorSubtitle = voiceActor.name?.subtitleName()
-                        val voiceActorImageState = rememberCoilImageState(voiceActor.image?.large)
-                        ListRowSmallImage(
-                            density = density,
-                            ignored = false,
-                            imageState = voiceActorImageState,
-                            contentDescriptionTextRes = R.string.anime_staff_image_content_description,
-                            onClick = {
-                                navigationCallback.navigate(
-                                    AnimeDestinations.StaffDetails(
-                                        staffId = voiceActor.id.toString(),
-                                        headerParams = StaffHeaderParams(
-                                            name = voiceActorName,
-                                            subtitle = voiceActorSubtitle,
-                                            coverImage = voiceActorImageState.toImageState(),
-                                            colorArgb = colorCalculationState.getColorsNonComposable(
-                                                staffId.toString()
-                                            ).first.toArgb(),
-                                            favorite = null,
-                                        )
+                    val voiceActorName = voiceActor.name?.primaryName()
+                    val voiceActorSubtitle = voiceActor.name?.subtitleName()
+                    val voiceActorImageState = rememberCoilImageState(voiceActor.image?.large)
+                    val sharedTransitionKey = SharedTransitionKey.makeKeyForId(voiceActor.id.toString())
+                    ListRowSmallImage(
+                        density = density,
+                        ignored = false,
+                        imageState = voiceActorImageState,
+                        contentDescriptionTextRes = R.string.anime_staff_image_content_description,
+                        onClick = {
+                            navigationCallback.navigate(
+                                AnimeDestinations.StaffDetails(
+                                    staffId = voiceActor.id.toString(),
+                                    sharedTransitionKey = sharedTransitionKey,
+                                    headerParams = StaffHeaderParams(
+                                        name = voiceActorName,
+                                        subtitle = voiceActorSubtitle,
+                                        coverImage = voiceActorImageState.toImageState(),
+                                        colorArgb = colorCalculationState.getColorsNonComposable(
+                                            staffId.toString()
+                                        ).first.toArgb(),
+                                        favorite = null,
                                     )
                                 )
-                            },
-                            width = MEDIA_WIDTH,
-                            height = MEDIA_HEIGHT,
-                        )
-                    }
+                            )
+                        },
+                        width = MEDIA_WIDTH,
+                        height = MEDIA_HEIGHT,
+                        modifier = Modifier.sharedElement(sharedTransitionKey, "staff_image")
+                    )
                 }
             }
 
@@ -363,53 +363,48 @@ object CharacterListRow {
                 media,
                 key = { index, item -> item?.media?.id ?: "placeholder_$index" },
             ) { index, item ->
-                AutoSharedElement(
-                    key = "anime_media_${item?.media?.id}_image",
-                    screenKey = screenKey
-                ) {
-                    Box {
-                        val languageOptionMedia = LocalLanguageOptionMedia.current
-                        val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
-                        val sharedTransitionKey = item?.media?.id?.toString()
-                            ?.let { SharedTransitionKey.makeKeyForId(it) }
-                        val sharedContentState =
-                            rememberSharedContentState(sharedTransitionKey, "media_image")
-                        ListRowSmallImage(
-                            density = density,
-                            ignored = item?.ignored ?: false,
-                            imageState = imageState,
-                            contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                            onClick = {
-                                if (item != null) {
-                                    navigationCallback.navigate(
-                                        AnimeDestinations.MediaDetails(
-                                            mediaNavigationData = item.media,
-                                            coverImage = imageState.toImageState(),
-                                            languageOptionMedia = languageOptionMedia,
-                                            sharedTransitionKey = sharedTransitionKey,
-                                        )
+                Box {
+                    val languageOptionMedia = LocalLanguageOptionMedia.current
+                    val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
+                    val sharedTransitionKey = item?.media?.id?.toString()
+                        ?.let { SharedTransitionKey.makeKeyForId(it) }
+                    val sharedContentState =
+                        rememberSharedContentState(sharedTransitionKey, "media_image")
+                    ListRowSmallImage(
+                        density = density,
+                        ignored = item?.ignored ?: false,
+                        imageState = imageState,
+                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                        onClick = {
+                            if (item != null) {
+                                navigationCallback.navigate(
+                                    AnimeDestinations.MediaDetails(
+                                        mediaNavigationData = item.media,
+                                        coverImage = imageState.toImageState(),
+                                        languageOptionMedia = languageOptionMedia,
+                                        sharedTransitionKey = sharedTransitionKey,
                                     )
-                                }
-                            },
-                            width = MEDIA_WIDTH,
-                            height = MEDIA_HEIGHT,
-                            modifier = Modifier.sharedElement(sharedContentState)
-                        )
+                                )
+                            }
+                        },
+                        width = MEDIA_WIDTH,
+                        height = MEDIA_HEIGHT,
+                        modifier = Modifier.sharedElement(sharedContentState)
+                    )
 
-                        if (viewer != null && item != null) {
-                            MediaListQuickEditIconButton(
-                                viewer = viewer,
-                                mediaType = item.media.type,
-                                media = item,
-                                maxProgress = MediaUtils.maxProgress(item.media),
-                                maxProgressVolumes = item.media.volumes,
-                                onClick = { onClickListEdit(item.media) },
-                                padding = 6.dp,
-                                modifier = Modifier
-                                    .animateSharedTransitionWithOtherState(sharedContentState)
-                                    .align(Alignment.BottomStart)
-                            )
-                        }
+                    if (viewer != null && item != null) {
+                        MediaListQuickEditIconButton(
+                            viewer = viewer,
+                            mediaType = item.media.type,
+                            media = item,
+                            maxProgress = MediaUtils.maxProgress(item.media),
+                            maxProgressVolumes = item.media.volumes,
+                            onClick = { onClickListEdit(item.media) },
+                            padding = 6.dp,
+                            modifier = Modifier
+                                .animateSharedTransitionWithOtherState(sharedContentState)
+                                .align(Alignment.BottomStart)
+                        )
                     }
                 }
             }

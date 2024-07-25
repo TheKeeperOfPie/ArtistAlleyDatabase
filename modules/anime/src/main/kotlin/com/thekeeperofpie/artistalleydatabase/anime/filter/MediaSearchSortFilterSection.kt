@@ -282,10 +282,7 @@ class MediaSearchSortFilterSection(
             modifier = modifier.animateContentSize(),
         ) {
             MediaCoverImage(
-                screenKey = screenKey,
-                mediaId = media.id.toString(),
                 imageState = imageState,
-                contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .conditionally(mediaSharedElement) {
                         sharedElement(sharedTransitionKey, "media_image")
@@ -295,7 +292,8 @@ class MediaSearchSortFilterSection(
                         clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                     }
                     .heightIn(min = 54.dp)
-                    .width(42.dp)
+                    .width(42.dp),
+                contentScale = ContentScale.FillWidth
             )
 
             Column(

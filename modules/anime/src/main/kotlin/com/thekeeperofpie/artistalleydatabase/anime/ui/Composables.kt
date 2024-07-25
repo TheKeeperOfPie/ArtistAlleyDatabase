@@ -480,8 +480,8 @@ fun ListRowSmallImage(
             .build(),
         contentScale = ContentScale.Crop,
         contentDescription = stringResource(contentDescriptionTextRes),
-        modifier = modifier
-            .size(width = width, height = height)
+        modifier = Modifier.size(width = width, height = height)
+            .then(modifier)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
             .clickable { onClick() }

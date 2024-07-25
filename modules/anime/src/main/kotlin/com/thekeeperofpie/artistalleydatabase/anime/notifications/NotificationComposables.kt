@@ -762,8 +762,6 @@ private fun ContextHeader(
         val shape = RoundedCornerShape(12.dp)
         val navigationCallback = LocalNavigationCallback.current
         UserAvatarImage(
-            screenKey = screenKey,
-            userId = user?.id?.toString(),
             image = user?.avatar?.large,
             modifier = Modifier
                 .size(40.dp)

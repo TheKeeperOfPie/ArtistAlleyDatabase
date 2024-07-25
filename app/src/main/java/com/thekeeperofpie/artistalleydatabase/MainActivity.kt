@@ -65,7 +65,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import com.anilist.type.MediaType
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
@@ -440,153 +439,151 @@ class MainActivity : ComponentActivity() {
             Box(
                 modifier = Modifier.weight(1f)
             ) {
-                SharedElementsRoot {
-                    SharedTransitionLayout {
-                        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                            NavHost(
-                                navController = navHostController,
-                                startDestination = startDestination,
-                            ) {
-                                AnimeNavigator.initialize(
-                                    navHostController = navHostController,
-                                    navGraphBuilder = this,
+                SharedTransitionLayout {
+                    CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                        NavHost(
+                            navController = navHostController,
+                            startDestination = startDestination,
+                        ) {
+                            AnimeNavigator.initialize(
+                                navHostController = navHostController,
+                                navGraphBuilder = this,
+                                upIconOption = navDrawerUpIconOption,
+                                navigationTypeMap = navigationTypeMap,
+                                onClickAuth = {
+                                    aniListOAuthStore.launchAuthRequest(
+                                        this@MainActivity
+                                    )
+                                },
+                                onClickSettings = {
+                                    navHostController.navigate(AppNavDestinations.SETTINGS.id)
+                                },
+                                onClickShowLastCrash = {
+                                    navHostController.navigate(AppNavDestinations.CRASH.id)
+                                }
+                            )
+
+                            artEntryNavigator.initialize(
+                                onClickNav = onClickNav,
+                                navHostController = navHostController,
+                                navGraphBuilder = this
+                            )
+                            cdEntryNavigator.initialize(
+                                onClickNav = onClickNav,
+                                navHostController = navHostController,
+                                navGraphBuilder = this
+                            )
+
+                            sharedElementComposable(AppNavDestinations.BROWSE.id) {
+                                val viewModel = hiltViewModel<BrowseViewModel>()
+                                BrowseScreen(
                                     upIconOption = navDrawerUpIconOption,
-                                    navigationTypeMap = navigationTypeMap,
-                                    onClickAuth = {
-                                        aniListOAuthStore.launchAuthRequest(
-                                            this@MainActivity
+                                    tabs = viewModel.tabs,
+                                    onClick = { tabContent, entry ->
+                                        viewModel.onSelectEntry(
+                                            navHostController,
+                                            tabContent,
+                                            entry
                                         )
                                     },
-                                    onClickSettings = {
-                                        navHostController.navigate(AppNavDestinations.SETTINGS.id)
+                                    onPageRequested = viewModel::onPageRequested,
+                                )
+                            }
+
+                            sharedElementComposable(AppNavDestinations.IMPORT.id) {
+                                ImportScreen(upIconOption = navDrawerUpIconOption)
+                            }
+
+                            sharedElementComposable(AppNavDestinations.EXPORT.id) {
+                                ExportScreen(upIconOption = navDrawerUpIconOption)
+                            }
+
+                            sharedElementComposable(
+                                route = "${AppNavDestinations.SETTINGS.id}?root={root}",
+                                arguments = listOf(
+                                    navArgument("root") {
+                                        type = NavType.StringType
+                                        nullable = true
                                     },
+                                )
+                            ) {
+                                val viewModel =
+                                    hiltViewModel<SettingsViewModel>().apply {
+                                        initialize(
+                                            onClickDatabaseFetch = {
+                                                val request =
+                                                    OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
+                                                        .setExpedited(
+                                                            OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+                                                        )
+                                                        .build()
+
+                                                it.enqueueUniqueWork(
+                                                    DatabaseSyncWorker.UNIQUE_WORK_NAME,
+                                                    ExistingWorkPolicy.REPLACE,
+                                                    request
+                                                )
+                                            }
+                                        )
+                                    }
+                                val root = it.arguments?.getString("root")
+                                    ?.toBooleanStrictOrNull() == true
+                                val navigationCallback = LocalNavigationCallback.current
+                                SettingsScreen(
+                                    viewModel = viewModel,
+                                    appMetadataProvider = appMetadataProvider,
+                                    upIconOption = navDrawerUpIconOption.takeIf { root }
+                                        ?: UpIconOption.Back(navHostController),
                                     onClickShowLastCrash = {
                                         navHostController.navigate(AppNavDestinations.CRASH.id)
+                                    },
+                                    onClickShowLicenses = {
+                                        // TODO: Better UI for licenses
+                                        startActivity(
+                                            Intent(
+                                                this@MainActivity,
+                                                OssLicensesMenuActivity::class.java,
+                                            ).setClassName(
+                                                this@MainActivity,
+                                                OssLicensesMenuActivity::class.java.canonicalName!!,
+                                            )
+                                        )
+                                    },
+                                    onClickFeatureTiers = {
+                                        navigationCallback.navigate(
+                                            AnimeNavDestinations.FEATURE_TIERS.id
+                                        )
+                                    },
+                                    onClickViewMediaHistory = {
+                                        navigationCallback.onClickViewMediaHistory(null)
+                                    },
+                                    onClickViewMediaIgnore = {
+                                        navigationCallback.onClickViewIgnored()
+                                    },
+                                )
+                            }
+
+                            sharedElementComposable(AppNavDestinations.ANIME_2_ANIME.id) {
+                                Anime2AnimeScreen(upIconOption = navDrawerUpIconOption)
+                            }
+
+                            sharedElementComposable(
+                                route = AppNavDestinations.CRASH.id,
+                                deepLinks = listOf(
+                                    navDeepLink {
+                                        action =
+                                            scopedApplication.mainActivityInternalAction
+                                        uriPattern =
+                                            "${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}"
                                     }
                                 )
-
-                                artEntryNavigator.initialize(
-                                    onClickNav = onClickNav,
-                                    navHostController = navHostController,
-                                    navGraphBuilder = this
+                            ) {
+                                SideEffect { settings.lastCrashShown.value = true }
+                                CrashScreen(
+                                    settings = settings,
+                                    appMetadataProvider = appMetadataProvider,
+                                    onClickBack = { navHostController.navigateUp() },
                                 )
-                                cdEntryNavigator.initialize(
-                                    onClickNav = onClickNav,
-                                    navHostController = navHostController,
-                                    navGraphBuilder = this
-                                )
-
-                                sharedElementComposable(AppNavDestinations.BROWSE.id) {
-                                    val viewModel = hiltViewModel<BrowseViewModel>()
-                                    BrowseScreen(
-                                        upIconOption = navDrawerUpIconOption,
-                                        tabs = viewModel.tabs,
-                                        onClick = { tabContent, entry ->
-                                            viewModel.onSelectEntry(
-                                                navHostController,
-                                                tabContent,
-                                                entry
-                                            )
-                                        },
-                                        onPageRequested = viewModel::onPageRequested,
-                                    )
-                                }
-
-                                sharedElementComposable(AppNavDestinations.IMPORT.id) {
-                                    ImportScreen(upIconOption = navDrawerUpIconOption)
-                                }
-
-                                sharedElementComposable(AppNavDestinations.EXPORT.id) {
-                                    ExportScreen(upIconOption = navDrawerUpIconOption)
-                                }
-
-                                sharedElementComposable(
-                                    route = "${AppNavDestinations.SETTINGS.id}?root={root}",
-                                    arguments = listOf(
-                                        navArgument("root") {
-                                            type = NavType.StringType
-                                            nullable = true
-                                        },
-                                    )
-                                ) {
-                                    val viewModel =
-                                        hiltViewModel<SettingsViewModel>().apply {
-                                            initialize(
-                                                onClickDatabaseFetch = {
-                                                    val request =
-                                                        OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
-                                                            .setExpedited(
-                                                                OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
-                                                            )
-                                                            .build()
-
-                                                    it.enqueueUniqueWork(
-                                                        DatabaseSyncWorker.UNIQUE_WORK_NAME,
-                                                        ExistingWorkPolicy.REPLACE,
-                                                        request
-                                                    )
-                                                }
-                                            )
-                                        }
-                                    val root = it.arguments?.getString("root")
-                                        ?.toBooleanStrictOrNull() == true
-                                    val navigationCallback = LocalNavigationCallback.current
-                                    SettingsScreen(
-                                        viewModel = viewModel,
-                                        appMetadataProvider = appMetadataProvider,
-                                        upIconOption = navDrawerUpIconOption.takeIf { root }
-                                            ?: UpIconOption.Back(navHostController),
-                                        onClickShowLastCrash = {
-                                            navHostController.navigate(AppNavDestinations.CRASH.id)
-                                        },
-                                        onClickShowLicenses = {
-                                            // TODO: Better UI for licenses
-                                            startActivity(
-                                                Intent(
-                                                    this@MainActivity,
-                                                    OssLicensesMenuActivity::class.java,
-                                                ).setClassName(
-                                                    this@MainActivity,
-                                                    OssLicensesMenuActivity::class.java.canonicalName!!,
-                                                )
-                                            )
-                                        },
-                                        onClickFeatureTiers = {
-                                            navigationCallback.navigate(
-                                                AnimeNavDestinations.FEATURE_TIERS.id
-                                            )
-                                        },
-                                        onClickViewMediaHistory = {
-                                            navigationCallback.onClickViewMediaHistory(null)
-                                        },
-                                        onClickViewMediaIgnore = {
-                                            navigationCallback.onClickViewIgnored()
-                                        },
-                                    )
-                                }
-
-                                sharedElementComposable(AppNavDestinations.ANIME_2_ANIME.id) {
-                                    Anime2AnimeScreen(upIconOption = navDrawerUpIconOption)
-                                }
-
-                                sharedElementComposable(
-                                    route = AppNavDestinations.CRASH.id,
-                                    deepLinks = listOf(
-                                        navDeepLink {
-                                            action =
-                                                scopedApplication.mainActivityInternalAction
-                                            uriPattern =
-                                                "${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}"
-                                        }
-                                    )
-                                ) {
-                                    SideEffect { settings.lastCrashShown.value = true }
-                                    CrashScreen(
-                                        settings = settings,
-                                        appMetadataProvider = appMetadataProvider,
-                                        onClickBack = { navHostController.navigateUp() },
-                                    )
-                                }
                             }
                         }
                     }

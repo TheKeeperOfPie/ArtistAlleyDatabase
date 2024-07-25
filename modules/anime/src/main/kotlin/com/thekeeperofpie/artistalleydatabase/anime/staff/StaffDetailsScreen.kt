@@ -43,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -55,6 +56,7 @@ object StaffDetailsScreen {
         viewModel: StaffDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption?,
         headerValues: StaffHeaderValues,
+        sharedTransitionKey: SharedTransitionKey?,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -87,6 +89,7 @@ object StaffDetailsScreen {
                         upIconOption = upIconOption,
                         progress = it,
                         headerValues = headerValues,
+                        sharedTransitionKey = sharedTransitionKey,
                         coverImageState = coverImageState,
                         onFavoriteChanged = {
                             viewModel.favoritesToggleHelper

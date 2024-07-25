@@ -49,110 +49,110 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.maybeOverride
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Composable
 fun CharacterHeader(
-    screenKey: String,
     upIconOption: UpIconOption?,
     characterId: String,
     progress: Float,
     headerValues: CharacterHeaderValues,
+    sharedTransitionKey: SharedTransitionKey?,
     coverImageState: CoilImageState = rememberCoilImageState(headerValues.coverImage),
     onFavoriteChanged: (Boolean) -> Unit,
 ) {
-    AutoSharedElement(
-        key = "anime_character_${characterId}_header",
-        screenKey = screenKey,
-    ) {
-        val colorCalculationState = LocalColorCalculationState.current
-        CoverAndBannerHeader(
-            upIconOption = upIconOption,
-            headerValues = headerValues,
-            coverImageState = coverImageState,
-            coverImageAllowHardware = colorCalculationState.allowHardware(characterId),
-            progress = progress,
-            color = { headerValues.color(colorCalculationState) },
-            coverImageOnSuccess = {
-                ComposeColorUtils.calculatePalette(characterId, it.result.image, colorCalculationState)
-            },
-            menuContent = {
-                FavoriteIconButton(
-                    favorite = headerValues.favorite,
-                    onFavoriteChanged = onFavoriteChanged,
-                )
-            },
-            fadeOutMenu = false,
-            reserveMenuWidth = false,
-        ) {
-            AutoResizeHeightText(
-                text = headerValues.name(),
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
+    val colorCalculationState = LocalColorCalculationState.current
+    CoverAndBannerHeader(
+        upIconOption = upIconOption,
+        headerValues = headerValues,
+        coverImageState = coverImageState,
+        coverImageAllowHardware = colorCalculationState.allowHardware(characterId),
+        sharedTransitionKey = sharedTransitionKey,
+        coverImageSharedTransitionIdentifier = "character_image",
+        bannerImageSharedTransitionIdentifier = "character_banner_image",
+        progress = progress,
+        color = { headerValues.color(colorCalculationState) },
+        coverImageOnSuccess = {
+            ComposeColorUtils.calculatePalette(characterId, it.result.image, colorCalculationState)
+        },
+        menuContent = {
+            FavoriteIconButton(
+                favorite = headerValues.favorite,
+                onFavoriteChanged = onFavoriteChanged,
             )
+        },
+        fadeOutMenu = false,
+        reserveMenuWidth = false,
+        modifier = Modifier.sharedBounds(sharedTransitionKey, "character_header")
+    ) {
+        AutoResizeHeightText(
+            text = headerValues.name(),
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
+        )
 
-            Row(verticalAlignment = Alignment.Bottom) {
-                val subtitle = headerValues.subtitle()
-                AnimatedVisibility(
-                    subtitle.isNotEmpty(),
-                    label = "Character details subtitle text",
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(bottom = 10.dp),
-                ) {
-                    if (subtitle.isNotEmpty()) {
-                        Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier
-                                .wrapContentHeight()
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
-                                .fillMaxWidth()
-                                .wrapContentHeight(Alignment.Bottom)
-                        )
-                    }
+        Row(verticalAlignment = Alignment.Bottom) {
+            val subtitle = headerValues.subtitle()
+            AnimatedVisibility(
+                subtitle.isNotEmpty(),
+                label = "Character details subtitle text",
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(bottom = 10.dp),
+            ) {
+                if (subtitle.isNotEmpty()) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight(Alignment.Bottom)
+                    )
+                }
+            }
+
+            Box {
+                var showMenu by remember { mutableStateOf(false) }
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = stringResource(
+                            R.string.anime_character_details_more_actions_content_description,
+                        ),
+                    )
                 }
 
-                Box {
-                    var showMenu by remember { mutableStateOf(false) }
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(
-                                R.string.anime_character_details_more_actions_content_description,
-                            ),
-                        )
-                    }
-
-                    val uriHandler = LocalUriHandler.current
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false },
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.anime_character_details_open_external)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Filled.OpenInBrowser,
-                                    contentDescription = stringResource(
-                                        R.string.anime_character_details_open_external_icon_content_description
-                                    )
+                val uriHandler = LocalUriHandler.current
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.anime_character_details_open_external)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.OpenInBrowser,
+                                contentDescription = stringResource(
+                                    R.string.anime_character_details_open_external_icon_content_description
                                 )
-                            },
-                            onClick = {
-                                showMenu = false
-                                uriHandler.openUri(
-                                    AniListUtils.characterUrl(characterId)
-                                            + "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true"
-                                )
-                            }
-                        )
-                    }
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            uriHandler.openUri(
+                                AniListUtils.characterUrl(characterId)
+                                        + "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true"
+                            )
+                        }
+                    )
                 }
             }
         }

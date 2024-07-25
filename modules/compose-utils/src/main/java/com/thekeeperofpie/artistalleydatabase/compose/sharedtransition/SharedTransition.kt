@@ -11,7 +11,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -22,15 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.mxalbert.sharedelements.DefaultSharedElementsTransitionSpec
-import com.mxalbert.sharedelements.SharedElement
-import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import kotlinx.coroutines.delay
@@ -57,41 +52,6 @@ fun <T> T.SharedTransitionKeyScope(vararg prefixKeys: String?, content: @Composa
         LocalSharedTransitionPrefixKeys provides "$currentPrefix-${prefixKeys.joinToString(separator = "-")}",
     ) {
         content()
-    }
-}
-
-object SharedTransitionSignal {
-    var navigating by mutableStateOf(false)
-}
-
-@Composable
-fun AutoSharedElement(
-    key: String,
-    screenKey: String,
-    transitionSpec: SharedElementsTransitionSpec = DefaultSharedElementsTransitionSpec,
-    onFractionChanged: ((Float) -> Unit)? = null,
-    content: @Composable () -> Unit,
-) {
-    if (true) {
-        content()
-        return
-    }
-    if (SharedTransition.USE_ANDROIDX) {
-        CompositionLocalProvider(
-            LocalSharedTransitionKeys provides (key to screenKey)
-        ) {
-            Box(modifier = Modifier.autoSharedElement(key)) {
-                content()
-            }
-        }
-    } else {
-        SharedElement(
-            key = key,
-            screenKey = screenKey,
-            transitionSpec = transitionSpec,
-            onFractionChanged = onFractionChanged,
-            content = content,
-        )
     }
 }
 
@@ -166,30 +126,37 @@ inline fun <reified T : Any> NavGraphBuilder.sharedElementComposable(
 }
 
 @Composable
-fun Modifier.autoSharedElement(key: String? = null) =
-    if (SharedTransitionSignal.navigating && key?.contains("media") == true) {
-        composed {
-            val (localKey, screenKey) = LocalSharedTransitionKeys.current
-
-            // Freezes with duplicate keys, works if given UUID.randomUuid().toString()
-            val sharedElementKey = key ?: localKey
-            with(LocalSharedTransitionScope.current) {
-                sharedElement(
-                    rememberSharedContentState(key = sharedElementKey),
-                    LocalAnimatedVisibilityScope.current,
-                )
-            }
-        }
-    } else this
-
-@Composable
 fun Modifier.sharedElement(
     key: SharedTransitionKey?,
     identifier: String,
     zIndexInOverlay: Float = 0f,
 ): Modifier {
     if (key?.key.isNullOrEmpty()) return this
-    return sharedElement(keys = arrayOf(key, identifier), zIndexInOverlay = zIndexInOverlay)
+    return with(LocalSharedTransitionScope.current) {
+        sharedElement(
+            state = rememberSharedContentState(listOf(key, identifier)),
+            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            zIndexInOverlay = zIndexInOverlay,
+        )
+    }
+}
+
+@Composable
+fun Modifier.sharedBounds(
+    key: SharedTransitionKey?,
+    identifier: String,
+    zIndexInOverlay: Float = 0f,
+): Modifier {
+    if (key?.key.isNullOrEmpty()) return this
+    // TODO: sharedBounds broken
+    if (true) return this
+    return with(LocalSharedTransitionScope.current) {
+        sharedBounds(
+            sharedContentState = rememberSharedContentState(arrayOf(key, identifier)),
+            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            zIndexInOverlay = zIndexInOverlay,
+        )
+    }
 }
 
 @Composable
@@ -215,33 +182,6 @@ fun rememberSharedContentState(
     sharedTransitionKey ?: return null
     return with(LocalSharedTransitionScope.current) {
         rememberSharedContentState(key = listOf(sharedTransitionKey, identifier))
-    }
-}
-
-@Composable
-fun Modifier.sharedElement(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
-    if (keys.contains(null)) return this
-    if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
-    return with(LocalSharedTransitionScope.current) {
-        sharedElement(
-            rememberSharedContentState(key = keys.toList()),
-            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
-            zIndexInOverlay = zIndexInOverlay,
-        )
-    }
-}
-
-@Composable
-fun Modifier.sharedBounds(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
-    if (keys.contains(null)) return this
-    if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
-    // TODO: sharedBounds causes bugs with scrolling?
-    return with(LocalSharedTransitionScope.current) {
-        sharedBounds(
-            rememberSharedContentState(key = keys.toList()),
-            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
-            zIndexInOverlay = zIndexInOverlay,
-        )
     }
 }
 
@@ -287,8 +227,4 @@ fun Modifier.animateEnterExit(
     exit: ExitTransition = fadeOut(),
 ) = with(LocalAnimatedVisibilityScope.current) {
     animateEnterExit(enter, exit)
-}
-
-object SharedTransition {
-    const val USE_ANDROIDX = false
 }

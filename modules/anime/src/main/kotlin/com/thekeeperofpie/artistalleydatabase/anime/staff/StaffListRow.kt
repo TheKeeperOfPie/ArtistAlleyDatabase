@@ -73,7 +73,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHig
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.request
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
@@ -101,11 +100,14 @@ object StaffListRow {
         val colorCalculationState = LocalColorCalculationState.current
         val staffName = entry?.staff?.name?.primaryName()
         val staffSubtitle = entry?.staff?.name?.subtitleName()
+        val sharedTransitionKey = entry?.staff?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         val onClick = {
             if (entry != null) {
                 navigationCallback.navigate(
                     AnimeDestinations.StaffDetails(
                         staffId = entry.staff.id.toString(),
+                        sharedTransitionKey = sharedTransitionKey,
                         headerParams = StaffHeaderParams(
                             name = staffName,
                             subtitle = staffSubtitle,
@@ -174,8 +176,6 @@ object StaffListRow {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         val colorCalculationState = LocalColorCalculationState.current
         StaffCoverImage(
-            screenKey = screenKey,
-            staffId = entry?.staff?.id?.toString(),
             imageState = coverImageState,
             image = coverImageState.request()
                 .crossfade(true)
@@ -194,7 +194,6 @@ object StaffListRow {
                     }
                 })
                 .build(),
-            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
@@ -213,7 +212,8 @@ object StaffListRow {
                     onLongClickLabel = stringResource(
                         R.string.anime_staff_image_long_press_preview
                     ),
-                )
+                ),
+            contentScale = ContentScale.Crop
         )
     }
 
@@ -275,34 +275,35 @@ object StaffListRow {
                 .size(width = LocalConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
         ) {
             items(characters, key = { it.id }) {
-                AutoSharedElement(key = "anime_character_${it.id}_image", screenKey = screenKey) {
-                    val navigationCallback = LocalNavigationCallback.current
-                    val characterName = it.name?.primaryName()
-                    val imageState = rememberCoilImageState(it.image?.large)
-                    ListRowSmallImage(
-                        density = density,
-                        ignored = false,
-                        imageState = imageState,
-                        contentDescriptionTextRes = R.string.anime_character_image_content_description,
-                        onClick = {
-                            navigationCallback.navigate(
-                                AnimeDestinations.CharacterDetails(
-                                    characterId = it.id.toString(),
-                                    headerParams = CharacterHeaderParams(
-                                        name = characterName,
-                                        subtitle = null,
-                                        favorite = null,
-                                        coverImage = imageState.toImageState(),
-                                        colorArgb = colorCalculationState.getColorsNonComposable(it.id.toString())
-                                            .first.toArgb(),
-                                    )
+                val navigationCallback = LocalNavigationCallback.current
+                val characterName = it.name?.primaryName()
+                val imageState = rememberCoilImageState(it.image?.large)
+                val sharedTransitionKey = SharedTransitionKey.makeKeyForId(it.id.toString())
+                ListRowSmallImage(
+                    density = density,
+                    ignored = false,
+                    imageState = imageState,
+                    contentDescriptionTextRes = R.string.anime_character_image_content_description,
+                    onClick = {
+                        navigationCallback.navigate(
+                            AnimeDestinations.CharacterDetails(
+                                characterId = it.id.toString(),
+                                sharedTransitionKey = sharedTransitionKey,
+                                headerParams = CharacterHeaderParams(
+                                    name = characterName,
+                                    subtitle = null,
+                                    favorite = null,
+                                    coverImage = imageState.toImageState(),
+                                    colorArgb = colorCalculationState.getColorsNonComposable(it.id.toString())
+                                        .first.toArgb(),
                                 )
                             )
-                        },
-                        width = MEDIA_WIDTH,
-                        height = MEDIA_HEIGHT,
-                    )
-                }
+                        )
+                    },
+                    width = MEDIA_WIDTH,
+                    height = MEDIA_HEIGHT,
+                    modifier = Modifier.sharedElement(sharedTransitionKey, "character_image")
+                )
             }
 
             items(media, key = { it.media.id }) {
@@ -335,7 +336,7 @@ object StaffListRow {
                         },
                         width = MEDIA_WIDTH,
                         height = MEDIA_HEIGHT,
-                        modifier = Modifier.sharedElement(sharedTransitionKey)
+                        modifier = Modifier.sharedElement(sharedTransitionKey, "media_image")
                     )
 
                     if (viewer != null) {

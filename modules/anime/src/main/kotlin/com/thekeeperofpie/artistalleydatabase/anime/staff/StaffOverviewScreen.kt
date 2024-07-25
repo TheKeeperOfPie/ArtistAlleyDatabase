@@ -63,6 +63,7 @@ object StaffOverviewScreen {
                     it.navigate(
                         AnimeDestinations.StaffCharacters(
                             staffId = entry.staff.id.toString(),
+                            sharedTransitionKey = null,
                             headerParams = StaffHeaderParams(
                                 name = staffName,
                                 subtitle = staffSubtitle,

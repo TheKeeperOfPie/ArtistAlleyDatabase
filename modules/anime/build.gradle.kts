@@ -47,8 +47,6 @@ dependencies {
     implementation(libs.media3.ui)
     implementation(libs.androidyoutubeplayer)
 
-    implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
-
     implementation(libs.rome)
 
     api(libs.markwon.core)

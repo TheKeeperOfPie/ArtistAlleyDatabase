@@ -27,6 +27,10 @@ fun UserHeader(
         upIconOption = upIconOption,
         headerValues = headerValues,
         coverImageAllowHardware = true,
+        // TODO: SharedTransitionKey
+        sharedTransitionKey = null,
+        coverImageSharedTransitionIdentifier = "user_image",
+        bannerImageSharedTransitionIdentifier = "user_banner_image",
         pinnedHeight = 104.dp,
         progress = progress,
         coverSize = 180.dp,

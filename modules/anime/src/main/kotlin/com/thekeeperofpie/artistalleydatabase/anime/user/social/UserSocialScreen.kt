@@ -190,14 +190,21 @@ object UserSocialScreen {
                     Dimension.Pixels(LocalDensity.current.run { USER_IMAGE_SIZE.roundToPx() })
                 val colorCalculationState = LocalColorCalculationState.current
                 UserAvatarImage(
-                    screenKey = screenKey,
-                    userId = user?.id?.toString(),
                     image = ImageRequest.Builder(LocalContext.current)
                         .data(user?.avatar?.large)
                         .crossfade(true)
                         .allowHardware(colorCalculationState.allowHardware(user?.id.toString()))
                         .size(width = dimension, height = dimension)
                         .build(),
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .fillMaxHeight()
+                        .size(USER_IMAGE_SIZE)
+                        .placeholder(
+                            visible = user == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                        .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop,
                     onSuccess = {
                         imageWidthToHeightRatio = it.widthToHeightRatio()
@@ -208,16 +215,7 @@ object UserSocialScreen {
                                 colorCalculationState = colorCalculationState,
                             )
                         }
-                    },
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .fillMaxHeight()
-                        .size(USER_IMAGE_SIZE)
-                        .placeholder(
-                            visible = user == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                        .clip(RoundedCornerShape(12.dp))
+                    }
                 )
 
                 Text(

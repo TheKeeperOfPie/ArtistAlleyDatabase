@@ -15,7 +15,6 @@ import androidx.lifecycle.withResumed
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
@@ -48,53 +47,51 @@ class ChooserActivity : ComponentActivity() {
             val navController = rememberNavController()
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navController) {
                 Surface {
-                    SharedElementsRoot {
-                        SharedTransitionLayout {
-                            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                                NavHost(
-                                    navController = navController,
-                                    startDestination = NavDestinations.HOME
-                                ) {
-                                    sharedElementComposable(NavDestinations.HOME) {
-                                        val viewModel = hiltViewModel<ChooserViewModel>()
-                                        ChooserScreen(
-                                            query = { viewModel.query.orEmpty() },
-                                            onQueryChange = viewModel::onQuery,
-                                            // TODO: Migrate to section search
-                                            options = { emptyList() },
-                                            onOptionChange = {},
-                                            entries = { viewModel.results.collectAsLazyPagingItems() },
-                                            selectedItems = { viewModel.selectedEntries.keys },
-                                            onClickEntry = { index, entry ->
-                                                if (allowMultiple) {
-                                                    viewModel.selectEntry(index, entry)
-                                                } else {
-                                                    viewModel.getResult(entry)?.let {
-                                                        setResult(RESULT_OK, it)
-                                                        finish()
-                                                    }
-                                                }
-                                            },
-                                            onLongClickEntry = { index, entry ->
-                                                if (allowMultiple) {
-                                                    viewModel.selectEntry(index, entry)
-                                                }
-                                            },
-                                            onClickClear = viewModel::clearSelected,
-                                            onClickSelect = {
-                                                viewModel.getResults()?.let {
+                    SharedTransitionLayout {
+                        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                            NavHost(
+                                navController = navController,
+                                startDestination = NavDestinations.HOME
+                            ) {
+                                sharedElementComposable(NavDestinations.HOME) {
+                                    val viewModel = hiltViewModel<ChooserViewModel>()
+                                    ChooserScreen(
+                                        query = { viewModel.query.orEmpty() },
+                                        onQueryChange = viewModel::onQuery,
+                                        // TODO: Migrate to section search
+                                        options = { emptyList() },
+                                        onOptionChange = {},
+                                        entries = { viewModel.results.collectAsLazyPagingItems() },
+                                        selectedItems = { viewModel.selectedEntries.keys },
+                                        onClickEntry = { index, entry ->
+                                            if (allowMultiple) {
+                                                viewModel.selectEntry(index, entry)
+                                            } else {
+                                                viewModel.getResult(entry)?.let {
                                                     setResult(RESULT_OK, it)
                                                     finish()
                                                 }
-                                            },
-                                        )
+                                            }
+                                        },
+                                        onLongClickEntry = { index, entry ->
+                                            if (allowMultiple) {
+                                                viewModel.selectEntry(index, entry)
+                                            }
+                                        },
+                                        onClickClear = viewModel::clearSelected,
+                                        onClickSelect = {
+                                            viewModel.getResults()?.let {
+                                                setResult(RESULT_OK, it)
+                                                finish()
+                                            }
+                                        },
+                                    )
 
-                                        LaunchedEffect(true) {
-                                            viewModel.viewModelScope.launch(Dispatchers.Main) {
-                                                it.withResumed {
-                                                    viewModel.viewModelScope.launch(Dispatchers.Main) {
-                                                        viewModel.invalidate()
-                                                    }
+                                    LaunchedEffect(true) {
+                                        viewModel.viewModelScope.launch(Dispatchers.Main) {
+                                            it.withResumed {
+                                                viewModel.viewModelScope.launch(Dispatchers.Main) {
+                                                    viewModel.invalidate()
                                                 }
                                             }
                                         }

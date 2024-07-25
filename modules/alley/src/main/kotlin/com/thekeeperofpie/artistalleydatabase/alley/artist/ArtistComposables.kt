@@ -19,8 +19,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.alley.R
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.skipToLookaheadSize
 
 @Composable

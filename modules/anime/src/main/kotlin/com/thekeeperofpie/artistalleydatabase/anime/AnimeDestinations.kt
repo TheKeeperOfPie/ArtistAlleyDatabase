@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
+import android.util.Log
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
@@ -26,14 +27,18 @@ object AnimeDestinations {
     @Serializable
     data class CharacterDetails(
         val characterId: String,
-        val sharedElementKey: String? = null,
+        val sharedTransitionKey: SharedTransitionKey?,
         val headerParams: CharacterHeaderParams? = null,
-    )
+    ) {
+        init {
+            Log.d("SharedDebug", "CharacterDetails sharedTransitionKey = $sharedTransitionKey")
+        }
+    }
 
     @Serializable
     data class CharacterMedias(
         val characterId: String,
-        val sharedElementKey: String? = null,
+        val sharedTransitionKey: SharedTransitionKey?,
         val headerParams: CharacterHeaderParams? = null,
     )
 
@@ -102,14 +107,14 @@ object AnimeDestinations {
     @Serializable
     data class StaffCharacters(
         val staffId: String,
-        val sharedElementKey: String? = null,
+        val sharedTransitionKey: SharedTransitionKey?,
         val headerParams: StaffHeaderParams? = null,
     )
 
     @Serializable
     data class StaffDetails(
         val staffId: String,
-        val sharedElementKey: String? = null,
+        val sharedTransitionKey: SharedTransitionKey?,
         val headerParams: StaffHeaderParams? = null,
     )
 }

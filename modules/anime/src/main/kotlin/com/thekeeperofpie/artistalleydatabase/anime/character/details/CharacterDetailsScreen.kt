@@ -82,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshInd
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
@@ -99,6 +100,7 @@ object CharacterDetailsScreen {
         viewModel: AnimeCharacterDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption?,
         headerValues: CharacterHeaderValues,
+        sharedTransitionKey: SharedTransitionKey?,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -134,11 +136,11 @@ object CharacterDetailsScreen {
                         scrollBehavior = scrollBehavior,
                     ) {
                         CharacterHeader(
-                            screenKey = SCREEN_KEY,
                             upIconOption = upIconOption,
                             characterId = viewModel.characterId,
                             progress = it,
                             headerValues = headerValues,
+                            sharedTransitionKey = sharedTransitionKey,
                             coverImageState = coverImageState,
                             onFavoriteChanged = {
                                 viewModel.favoritesToggleHelper
@@ -430,6 +432,7 @@ object CharacterDetailsScreen {
                 it.navigate(
                     AnimeDestinations.CharacterMedias(
                         characterId = entry.character.id.toString(),
+                        sharedTransitionKey = null,
                         headerParams = CharacterHeaderParams(
                             name = characterName,
                             subtitle = characterSubtitle,

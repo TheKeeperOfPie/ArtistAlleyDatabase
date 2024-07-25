@@ -374,8 +374,6 @@ private fun ReplyRow(
             val image = user?.avatar?.large
             if (replyEntry == null || image != null) {
                 UserAvatarImage(
-                    screenKey = screenKey,
-                    userId = user?.id?.toString(),
                     image = image,
                     modifier = Modifier
                         .size(32.dp)

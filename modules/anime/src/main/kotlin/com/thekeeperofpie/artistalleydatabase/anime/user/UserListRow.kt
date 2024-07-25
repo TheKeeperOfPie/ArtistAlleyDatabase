@@ -63,7 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
@@ -152,8 +151,6 @@ object UserListRow {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         val colorCalculationState = LocalColorCalculationState.current
         UserAvatarImage(
-            screenKey = screenKey,
-            userId = entry?.user?.id.toString(),
             image = ImageRequest.Builder(LocalContext.current)
                 .data(entry?.user?.avatar?.large)
                 .crossfade(true)
@@ -163,17 +160,6 @@ object UserListRow {
                     height = Dimension.Undefined
                 )
                 .build(),
-            contentScale = ContentScale.Crop,
-            onSuccess = {
-                onRatioAvailable(it.widthToHeightRatio())
-                if (entry != null) {
-                    ComposeColorUtils.calculatePalette(
-                        id = entry.user.id.toString(),
-                        image = it.result.image,
-                        colorCalculationState = colorCalculationState,
-                    )
-                }
-            },
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
@@ -191,7 +177,18 @@ object UserListRow {
                     onLongClickLabel = stringResource(
                         R.string.anime_user_image_long_press_preview
                     ),
-                )
+                ),
+            contentScale = ContentScale.Crop,
+            onSuccess = {
+                onRatioAvailable(it.widthToHeightRatio())
+                if (entry != null) {
+                    ComposeColorUtils.calculatePalette(
+                        id = entry.user.id.toString(),
+                        image = it.result.image,
+                        colorCalculationState = colorCalculationState,
+                    )
+                }
+            }
         )
     }
 
@@ -236,55 +233,50 @@ object UserListRow {
                 key = { it.media.id },
                 contentType = { "media" },
             ) {
-                AutoSharedElement(
-                    key = "anime_media_${it?.media?.id}_image",
-                    screenKey = screenKey
-                ) {
-                    Box {
-                        val navigationCallback = LocalNavigationCallback.current
-                        val languageOptionMedia = LocalLanguageOptionMedia.current
-                        val sharedTransitionKey = it?.media?.id?.toString()
-                            ?.let { SharedTransitionKey.makeKeyForId(it) }
-                        val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
-                        val imageState = rememberCoilImageState(it?.media?.coverImage?.extraLarge)
-                        ListRowSmallImage(
-                            density = density,
-                            ignored = it?.ignored ?: false,
-                            imageState = imageState,
-                            contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                            width = MEDIA_WIDTH,
-                            height = MEDIA_HEIGHT,
-                            onClick = {
-                                if (it?.media != null) {
-                                    navigationCallback.navigate(
-                                        AnimeDestinations.MediaDetails(
-                                            mediaNavigationData = it.media,
-                                            coverImage = imageState.toImageState(),
-                                            languageOptionMedia = languageOptionMedia,
-                                            sharedTransitionKey = sharedTransitionKey,
-                                        )
+                Box {
+                    val navigationCallback = LocalNavigationCallback.current
+                    val languageOptionMedia = LocalLanguageOptionMedia.current
+                    val sharedTransitionKey = it?.media?.id?.toString()
+                        ?.let { SharedTransitionKey.makeKeyForId(it) }
+                    val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
+                    val imageState = rememberCoilImageState(it?.media?.coverImage?.extraLarge)
+                    ListRowSmallImage(
+                        density = density,
+                        ignored = it?.ignored ?: false,
+                        imageState = imageState,
+                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                        width = MEDIA_WIDTH,
+                        height = MEDIA_HEIGHT,
+                        onClick = {
+                            if (it?.media != null) {
+                                navigationCallback.navigate(
+                                    AnimeDestinations.MediaDetails(
+                                        mediaNavigationData = it.media,
+                                        coverImage = imageState.toImageState(),
+                                        languageOptionMedia = languageOptionMedia,
+                                        sharedTransitionKey = sharedTransitionKey,
                                     )
-                                }
-                            },
-                            modifier = Modifier.sharedElement(sharedContentState)
-                        )
+                                )
+                            }
+                        },
+                        modifier = Modifier.sharedElement(sharedContentState)
+                    )
 
-                        if (viewer != null && it != null) {
-                            MediaListQuickEditIconButton(
-                                viewer = viewer,
-                                mediaType = it.media.type,
-                                media = it,
-                                maxProgress = MediaUtils.maxProgress(it.media),
-                                maxProgressVolumes = it.media.volumes,
-                                onClick = { onClickListEdit(it.media) },
-                                padding = 6.dp,
-                                // API is broken, doesn't return the viewer's entry
-                                forceListEditIcon = true,
-                                modifier = Modifier
-                                    .animateSharedTransitionWithOtherState(sharedContentState)
-                                    .align(Alignment.BottomStart)
-                            )
-                        }
+                    if (viewer != null && it != null) {
+                        MediaListQuickEditIconButton(
+                            viewer = viewer,
+                            mediaType = it.media.type,
+                            media = it,
+                            maxProgress = MediaUtils.maxProgress(it.media),
+                            maxProgressVolumes = it.media.volumes,
+                            onClick = { onClickListEdit(it.media) },
+                            padding = 6.dp,
+                            // API is broken, doesn't return the viewer's entry
+                            forceListEditIcon = true,
+                            modifier = Modifier
+                                .animateSharedTransitionWithOtherState(sharedContentState)
+                                .align(Alignment.BottomStart)
+                        )
                     }
                 }
             }

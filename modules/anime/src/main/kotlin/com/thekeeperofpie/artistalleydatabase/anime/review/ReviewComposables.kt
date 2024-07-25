@@ -93,11 +93,7 @@ private fun ColumnScope.ReviewSmallCardContent(
         val shape = RoundedCornerShape(12.dp)
         val navigationCallback = LocalNavigationCallback.current
         UserAvatarImage(
-            screenKey = screenKey,
-            userId = review?.user?.id?.toString(),
             image = review?.user?.avatar?.large,
-            contentScale = ContentScale.FillHeight,
-            contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
             modifier = Modifier
                 .size(40.dp)
                 .clip(shape)
@@ -110,7 +106,9 @@ private fun ColumnScope.ReviewSmallCardContent(
                 .placeholder(
                     visible = review == null,
                     highlight = PlaceholderHighlight.shimmer(),
-                )
+                ),
+            contentScale = ContentScale.FillHeight,
+            contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description
         )
 
         Column(

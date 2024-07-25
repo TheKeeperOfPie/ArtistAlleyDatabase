@@ -176,12 +176,7 @@ object ReviewDetailsScreen {
                         val navigationCallback = LocalNavigationCallback.current
                         val shape = RoundedCornerShape(12.dp)
                         UserAvatarImage(
-                            screenKey = SCREEN_KEY,
-                            userId = review.user?.id?.toString(),
                             image = review.user?.avatar?.large,
-                            contentScale = ContentScale.FillHeight,
-                            contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
-                            onSuccess = { userImageWidthToHeightRatio = it.widthToHeightRatio() },
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(shape)
@@ -194,6 +189,9 @@ object ReviewDetailsScreen {
                                         )
                                     }
                                 },
+                            contentScale = ContentScale.FillHeight,
+                            onSuccess = { userImageWidthToHeightRatio = it.widthToHeightRatio() },
+                            contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
                         )
 
                         AutoSizeText(

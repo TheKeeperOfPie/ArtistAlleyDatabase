@@ -49,6 +49,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.maybeOverride
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -59,6 +61,7 @@ fun StaffHeader(
     upIconOption: UpIconOption?,
     progress: Float,
     headerValues: StaffHeaderValues,
+    sharedTransitionKey: SharedTransitionKey?,
     coverImageState: CoilImageState = rememberCoilImageState(headerValues.coverImage),
     onFavoriteChanged: (Boolean) -> Unit,
 ) {
@@ -67,7 +70,10 @@ fun StaffHeader(
         upIconOption = upIconOption,
         headerValues = headerValues,
         coverImageState = coverImageState,
+        sharedTransitionKey = sharedTransitionKey,
         coverImageAllowHardware = colorCalculationState.allowHardware(staffId),
+        coverImageSharedTransitionIdentifier = "staff_image",
+        bannerImageSharedTransitionIdentifier = "staff_banner_image",
         progress = progress,
         color = { headerValues.color(colorCalculationState) },
         coverImageOnSuccess = {
@@ -81,6 +87,7 @@ fun StaffHeader(
         },
         fadeOutMenu = false,
         reserveMenuWidth = false,
+        modifier = Modifier.sharedBounds(sharedTransitionKey, "staff_header")
     ) {
         AutoResizeHeightText(
             text = headerValues.name(),

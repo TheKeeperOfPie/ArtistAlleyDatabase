@@ -106,6 +106,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 
@@ -473,9 +475,8 @@ object Anime2AnimeScreen {
                 val voiceActorName = voiceActor.name?.primaryName()
                 val voiceActorSubtitle = voiceActor.name?.subtitleName()
                 val coverImageState = rememberCoilImageState(voiceActor.image?.large)
+                val sharedTransitionKey = SharedTransitionKey.makeKeyForId(voiceActor.id.toString())
                 StaffCoverImage(
-                    screenKey = SCREEN_KEY,
-                    staffId = voiceActor.id.toString(),
                     imageState = coverImageState,
                     image = coverImageState.request()
                         .crossfade(true)
@@ -484,7 +485,6 @@ object Anime2AnimeScreen {
                             height = Dimension.Undefined,
                         )
                         .build(),
-                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .fillMaxHeight()
@@ -494,6 +494,7 @@ object Anime2AnimeScreen {
                                 navigationCallback.navigate(
                                     AnimeDestinations.StaffDetails(
                                         staffId = voiceActor.id.toString(),
+                                        sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
                                             name = voiceActorName,
                                             subtitle = voiceActorSubtitle,
@@ -509,7 +510,8 @@ object Anime2AnimeScreen {
                             onLongClickLabel = stringResource(
                                 AnimeStringR.anime_staff_image_long_press_preview
                             ),
-                        )
+                        ),
+                    contentScale = ContentScale.Crop
                 )
                 Text(
                     text = character.name?.primaryName().orEmpty(),
@@ -531,9 +533,8 @@ object Anime2AnimeScreen {
         val characterName = character.name?.primaryName()
         val subtitleName = character.name?.subtitleName()
         val coverImageState = rememberCoilImageState(character.image?.large)
+        val sharedTransitionKey = SharedTransitionKey.makeKeyForId(character.id.toString())
         CharacterCoverImage(
-            screenKey = SCREEN_KEY,
-            characterId = character.id.toString(),
             imageState = coverImageState,
             image = coverImageState.request()
                 .crossfade(true)
@@ -542,7 +543,6 @@ object Anime2AnimeScreen {
                     height = Dimension.Undefined
                 )
                 .build(),
-            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxHeight()
                 .width(48.dp)
@@ -552,6 +552,7 @@ object Anime2AnimeScreen {
                         navigationCallback.navigate(
                             AnimeDestinations.CharacterDetails(
                                 characterId = character.id.toString(),
+                                sharedTransitionKey = sharedTransitionKey,
                                 headerParams = CharacterHeaderParams(
                                     name = characterName,
                                     subtitle = subtitleName,
@@ -567,7 +568,8 @@ object Anime2AnimeScreen {
                     onLongClickLabel = stringResource(
                         AnimeStringR.anime_character_image_long_press_preview
                     ),
-                )
+                ),
+            contentScale = ContentScale.Crop
         )
     }
 
@@ -583,11 +585,13 @@ object Anime2AnimeScreen {
         val staffName = staff.name?.primaryName()
         val staffSubtitle = staff.name?.subtitleName()
         val coverImageState = rememberCoilImageState(staff.image?.large)
+        val sharedTransitionKey = SharedTransitionKey.makeKeyForId(staff.id.toString())
         OutlinedCard(
             onClick = {
                 navigationCallback.navigate(
                     AnimeDestinations.StaffDetails(
                         staffId = staff.id.toString(),
+                        sharedTransitionKey = sharedTransitionKey,
                         headerParams = StaffHeaderParams(
                             name = staffName,
                             subtitle = staffSubtitle,
@@ -607,8 +611,6 @@ object Anime2AnimeScreen {
             ) {
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 StaffCoverImage(
-                    screenKey = SCREEN_KEY,
-                    staffId = staff.id.toString(),
                     imageState = coverImageState,
                     image = coverImageState.request()
                         .crossfade(true)
@@ -617,17 +619,18 @@ object Anime2AnimeScreen {
                             height = Dimension.Undefined,
                         )
                         .build(),
-                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .align(Alignment.CenterVertically)
                         .fillMaxHeight()
                         .width(48.dp)
+                        .sharedElement(sharedTransitionKey, "staff_image")
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .align(Alignment.CenterVertically)
                         .combinedClickable(
                             onClick = {
                                 navigationCallback.navigate(
                                     AnimeDestinations.StaffDetails(
                                         staffId = staff.id.toString(),
+                                        sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
                                             name = staffName,
                                             subtitle = staffSubtitle,
@@ -643,7 +646,8 @@ object Anime2AnimeScreen {
                             onLongClickLabel = stringResource(
                                 AnimeStringR.anime_staff_image_long_press_preview
                             ),
-                        )
+                        ),
+                    contentScale = ContentScale.Crop
                 )
 
                 Column(

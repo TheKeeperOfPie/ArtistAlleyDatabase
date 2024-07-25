@@ -541,6 +541,7 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
+                sharedTransitionKey = destination.sharedTransitionKey,
             )
         }
 
@@ -559,6 +560,7 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
+                sharedTransitionKey = destination.sharedTransitionKey,
             )
         }
 
@@ -581,6 +583,7 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
+                sharedTransitionKey = destination.sharedTransitionKey,
             )
         }
 
@@ -599,6 +602,7 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
+                sharedTransitionKey = destination.sharedTransitionKey,
             )
         }
 

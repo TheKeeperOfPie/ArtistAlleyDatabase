@@ -12,7 +12,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.paging.PagingData
 import com.anilist.type.MediaType
 import com.google.common.truth.Truth.assertThat
-import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -321,20 +320,18 @@ class HomeScreenTest {
         viewModel: AnimeHomeViewModel,
         mediaViewModel: AnimeHomeMediaViewModel,
     ) {
-        SharedElementsRoot {
-            SharedTransitionLayout {
-                CompositionLocalProvider(
-                    LocalSharedTransitionScope provides this,
-                    LocalIgnoreController provides ignoreController,
-                ) {
-                    AnimeHomeScreen(
-                        viewModel = viewModel,
-                        upIconOption = null,
-                        scrollStateSaver = ScrollStateSaver.STUB,
-                        bottomNavigationState = null,
-                        mediaViewModel = { mediaViewModel },
-                    )
-                }
+        SharedTransitionLayout {
+            CompositionLocalProvider(
+                LocalSharedTransitionScope provides this,
+                LocalIgnoreController provides ignoreController,
+            ) {
+                AnimeHomeScreen(
+                    viewModel = viewModel,
+                    upIconOption = null,
+                    scrollStateSaver = ScrollStateSaver.STUB,
+                    bottomNavigationState = null,
+                    mediaViewModel = { mediaViewModel },
+                )
             }
         }
     }

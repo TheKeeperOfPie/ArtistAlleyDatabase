@@ -72,12 +72,11 @@ object UserMediaScreen {
                     bottomNavigationState = bottomNavigationState,
                 )
                 UserStatsTab.GENRES -> UserStatsDetailScreen(
-                    screenKey = SCREEN_KEY,
                     statistics = statistics,
-                    values = { it.statistics.genres?.filterNotNull().orEmpty() },
                     state = state.genresState,
                     isAnime = isAnime,
                     bottomNavigationState = bottomNavigationState,
+                    values = { it.statistics.genres?.filterNotNull().orEmpty() },
                     valueToKey = { it.genre.orEmpty() },
                     valueToText = { it.genre.orEmpty() },
                     valueToCount = UserMediaStatistics.Genre::count,
@@ -85,7 +84,7 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.Genre::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.Genre::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { value, _ ->
+                    onValueClick = { value, _, _ ->
                         navigationCallback.onGenreClick(
                             if (isAnime) MediaType.ANIME else MediaType.MANGA,
                             value.genre!!,
@@ -93,12 +92,11 @@ object UserMediaScreen {
                     },
                 )
                 UserStatsTab.TAGS -> UserStatsDetailScreen(
-                    screenKey = SCREEN_KEY,
                     statistics = statistics,
-                    values = { it.statistics.tags?.filterNotNull().orEmpty() },
                     state = state.tagsState,
                     isAnime = isAnime,
                     bottomNavigationState = bottomNavigationState,
+                    values = { it.statistics.tags?.filterNotNull().orEmpty() },
                     valueToKey = { it.tag?.name.orEmpty() },
                     valueToText = { it.tag?.name.orEmpty() },
                     valueToCount = UserMediaStatistics.Tag::count,
@@ -106,7 +104,7 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.Tag::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.Tag::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { value, _ ->
+                    onValueClick = { value, _, _ ->
                         navigationCallback.onTagClick(
                             if (isAnime) MediaType.ANIME else MediaType.MANGA,
                             value.tag?.id.toString(),
@@ -117,12 +115,11 @@ object UserMediaScreen {
                 UserStatsTab.VOICE_ACTORS -> {
                     val languageOptionStaff = LocalLanguageOptionStaff.current
                     UserStatsDetailScreen(
-                        screenKey = SCREEN_KEY,
                         statistics = statistics,
-                        values = { it.statistics.voiceActors?.filterNotNull().orEmpty() },
                         state = (state as AniListUserViewModel.States.Anime).voiceActorsState,
                         isAnime = true,
                         bottomNavigationState = bottomNavigationState,
+                        values = { it.statistics.voiceActors?.filterNotNull().orEmpty() },
                         valueToKey = { it.voiceActor?.id.toString() },
                         valueToText = { it.voiceActor?.name?.primaryName().orEmpty() },
                         valueToCount = UserMediaStatistics.VoiceActor::count,
@@ -130,17 +127,22 @@ object UserMediaScreen {
                         valueToChaptersRead = UserMediaStatistics.VoiceActor::chaptersRead,
                         valueToMeanScore = UserMediaStatistics.VoiceActor::meanScore,
                         valueToMediaIds = { it.mediaIds.filterNotNull() },
-                        onValueClick = { value, imageState ->
+                        onValueClick = { value, imageState, sharedTransitionKey ->
                             val voiceActor = value.voiceActor
                             if (voiceActor != null) {
                                 navigationCallback.navigate(
                                     AnimeDestinations.StaffDetails(
                                         staffId = voiceActor.id.toString(),
+                                        sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
                                             name = voiceActor.name?.primaryName(languageOptionStaff),
-                                            subtitle = voiceActor.name?.subtitleName(languageOptionStaff),
+                                            subtitle = voiceActor.name?.subtitleName(
+                                                languageOptionStaff
+                                            ),
                                             coverImage = imageState.toImageState(),
-                                            colorArgb = colorCalculationState.getColorsNonComposable(voiceActor.id.toString()).first.toArgb(),
+                                            colorArgb = colorCalculationState.getColorsNonComposable(
+                                                voiceActor.id.toString()
+                                            ).first.toArgb(),
                                             favorite = null,
                                         )
                                     )
@@ -157,12 +159,11 @@ object UserMediaScreen {
                     )
                 }
                 UserStatsTab.STUDIOS -> UserStatsDetailScreen(
-                    screenKey = SCREEN_KEY,
                     statistics = statistics,
-                    values = { it.statistics.studios?.filterNotNull().orEmpty() },
                     state = (state as AniListUserViewModel.States.Anime).studiosState,
                     isAnime = true,
                     bottomNavigationState = bottomNavigationState,
+                    values = { it.statistics.studios?.filterNotNull().orEmpty() },
                     valueToKey = { it.studio?.name.orEmpty() },
                     valueToText = { it.studio?.name.orEmpty() },
                     valueToCount = UserMediaStatistics.Studio::count,
@@ -170,7 +171,7 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.Studio::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.Studio::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { value, _ ->
+                    onValueClick = { value, _, _ ->
                         value.studio?.let {
                             navigationCallback.onStudioClick(it.id.toString(), it.name)
                         }
@@ -179,12 +180,11 @@ object UserMediaScreen {
                 UserStatsTab.STAFF -> {
                     val languageOptionStaff = LocalLanguageOptionStaff.current
                     UserStatsDetailScreen(
-                        screenKey = SCREEN_KEY,
                         statistics = statistics,
-                        values = { it.statistics.staff?.filterNotNull().orEmpty() },
                         state = state.staffState,
                         isAnime = isAnime,
                         bottomNavigationState = bottomNavigationState,
+                        values = { it.statistics.staff?.filterNotNull().orEmpty() },
                         valueToKey = { it.staff?.id.toString() },
                         valueToText = { it.staff?.name?.primaryName().orEmpty() },
                         valueToCount = UserMediaStatistics.Staff::count,
@@ -192,17 +192,20 @@ object UserMediaScreen {
                         valueToChaptersRead = UserMediaStatistics.Staff::chaptersRead,
                         valueToMeanScore = UserMediaStatistics.Staff::meanScore,
                         valueToMediaIds = { it.mediaIds.filterNotNull() },
-                        onValueClick = { value, imageState ->
+                        onValueClick = { value, imageState, sharedTransitionKey ->
                             val staff = value.staff
                             if (staff != null) {
                                 navigationCallback.navigate(
                                     AnimeDestinations.StaffDetails(
                                         staffId = staff.id.toString(),
+                                        sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
                                             name = staff.name?.primaryName(languageOptionStaff),
                                             subtitle = staff.name?.subtitleName(languageOptionStaff),
                                             coverImage = imageState.toImageState(),
-                                            colorArgb = colorCalculationState.getColorsNonComposable(staff.id.toString()).first.toArgb(),
+                                            colorArgb = colorCalculationState.getColorsNonComposable(
+                                                staff.id.toString()
+                                            ).first.toArgb(),
                                             favorite = null,
                                         )
                                     )

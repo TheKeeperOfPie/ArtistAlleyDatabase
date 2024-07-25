@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeader
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffCharactersScreen {
@@ -30,6 +31,7 @@ object StaffCharactersScreen {
         viewModel: StaffCharactersViewModel,
         upIconOption: UpIconOption?,
         headerValues: StaffHeaderValues,
+        sharedTransitionKey: SharedTransitionKey?,
     ) {
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
@@ -46,6 +48,7 @@ object StaffCharactersScreen {
                         upIconOption = upIconOption,
                         progress = it,
                         headerValues = headerValues,
+                        sharedTransitionKey = sharedTransitionKey,
                         onFavoriteChanged = {
                             viewModel.favoritesToggleHelper
                                 .set(FavoriteType.STAFF, viewModel.staffId, it)

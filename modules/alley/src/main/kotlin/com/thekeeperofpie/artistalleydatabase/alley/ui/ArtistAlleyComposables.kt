@@ -59,9 +59,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryMode
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -343,5 +344,32 @@ private fun ImagePager(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun Modifier.sharedElement(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
+    if (keys.contains(null)) return this
+    if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
+    return with(LocalSharedTransitionScope.current) {
+        sharedElement(
+            rememberSharedContentState(key = keys.toList()),
+            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            zIndexInOverlay = zIndexInOverlay,
+        )
+    }
+}
+
+@Composable
+fun Modifier.sharedBounds(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
+    if (keys.contains(null)) return this
+    if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
+    // TODO: sharedBounds causes bugs with scrolling?
+    return with(LocalSharedTransitionScope.current) {
+        sharedBounds(
+            rememberSharedContentState(key = keys.toList()),
+            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            zIndexInOverlay = zIndexInOverlay,
+        )
     }
 }

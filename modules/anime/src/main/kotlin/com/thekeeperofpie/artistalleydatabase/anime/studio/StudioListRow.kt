@@ -42,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.AutoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
@@ -144,56 +143,54 @@ object StudioListRow {
                 media,
                 key = { index, item -> item?.media?.id ?: "placeholder_$index" },
             ) { index, item ->
-                AutoSharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
-                    Box {
-                        val navigationCallback = LocalNavigationCallback.current
-                        val title = item?.media?.title?.primaryTitle()
-                        val sharedTransitionKey = item?.media?.id?.toString()
-                            ?.let { SharedTransitionKey.makeKeyForId(it) }
-                        val sharedContentState =
-                            rememberSharedContentState(sharedTransitionKey, "media_image")
-                        val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
-                        ListRowSmallImage(
-                            density = density,
-                            ignored = item?.ignored ?: false,
-                            imageState = imageState,
-                            contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                            onClick = {
-                                if (item != null) {
-                                    navigationCallback.navigate(
-                                        AnimeDestinations.MediaDetails(
-                                            mediaId = item.media.id.toString(),
-                                            title = title,
+                Box {
+                    val navigationCallback = LocalNavigationCallback.current
+                    val title = item?.media?.title?.primaryTitle()
+                    val sharedTransitionKey = item?.media?.id?.toString()
+                        ?.let { SharedTransitionKey.makeKeyForId(it) }
+                    val sharedContentState =
+                        rememberSharedContentState(sharedTransitionKey, "media_image")
+                    val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
+                    ListRowSmallImage(
+                        density = density,
+                        ignored = item?.ignored ?: false,
+                        imageState = imageState,
+                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                        onClick = {
+                            if (item != null) {
+                                navigationCallback.navigate(
+                                    AnimeDestinations.MediaDetails(
+                                        mediaId = item.media.id.toString(),
+                                        title = title,
+                                        coverImage = imageState.toImageState(),
+                                        sharedTransitionKey = sharedTransitionKey,
+                                        headerParams = MediaHeaderParams(
                                             coverImage = imageState.toImageState(),
-                                            sharedTransitionKey = sharedTransitionKey,
-                                            headerParams = MediaHeaderParams(
-                                                coverImage = imageState.toImageState(),
-                                                title = title,
-                                                mediaWithListStatus = item.media,
-                                            )
+                                            title = title,
+                                            mediaWithListStatus = item.media,
                                         )
                                     )
-                                }
-                            },
-                            width = mediaWidth,
-                            height = mediaHeight,
-                            modifier = Modifier.sharedElement(sharedContentState)
-                        )
+                                )
+                            }
+                        },
+                        width = mediaWidth,
+                        height = mediaHeight,
+                        modifier = Modifier.sharedElement(sharedContentState)
+                    )
 
-                        if (viewer != null && item != null) {
-                            MediaListQuickEditIconButton(
-                                viewer = viewer,
-                                mediaType = item.media.type,
-                                media = item,
-                                maxProgress = MediaUtils.maxProgress(item.media),
-                                maxProgressVolumes = item.media.volumes,
-                                onClick = { onClickListEdit(item.media) },
-                                padding = 6.dp,
-                                modifier = Modifier
-                                    .animateSharedTransitionWithOtherState(sharedContentState)
-                                    .align(Alignment.BottomStart)
-                            )
-                        }
+                    if (viewer != null && item != null) {
+                        MediaListQuickEditIconButton(
+                            viewer = viewer,
+                            mediaType = item.media.type,
+                            media = item,
+                            maxProgress = MediaUtils.maxProgress(item.media),
+                            maxProgressVolumes = item.media.volumes,
+                            onClick = { onClickListEdit(item.media) },
+                            padding = 6.dp,
+                            modifier = Modifier
+                                .animateSharedTransitionWithOtherState(sharedContentState)
+                                .align(Alignment.BottomStart)
+                        )
                     }
                 }
             }

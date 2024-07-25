@@ -6,6 +6,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
+import android.util.Log
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloat
@@ -95,9 +96,9 @@ internal fun CoverAndBannerHeader(
     headerValues: DetailsHeaderValues,
     coverImageAllowHardware: Boolean,
     modifier: Modifier = Modifier,
-    sharedTransitionKey: SharedTransitionKey? = null,
-    coverImageSharedElementKey: String? = null,
-    bannerImageSharedElementKey: String? = null,
+    sharedTransitionKey: SharedTransitionKey?,
+    coverImageSharedTransitionIdentifier: String,
+    bannerImageSharedTransitionIdentifier: String,
     pinnedHeight: Dp = 120.dp,
     progress: Float = 0f,
     coverSize: Dp = 256.dp,
@@ -148,7 +149,7 @@ internal fun CoverAndBannerHeader(
                 contentDescription = stringResource(R.string.anime_media_banner_image),
                 modifier = Modifier
                     .conditionally(headerValues.bannerImage != null) {
-                        sharedElement(sharedTransitionKey, bannerImageSharedElementKey)
+                        sharedElement(sharedTransitionKey, bannerImageSharedTransitionIdentifier)
                     }
                     .fillMaxWidth()
                     .height(lerp(180.dp, pinnedHeight, progress))
@@ -236,7 +237,9 @@ internal fun CoverAndBannerHeader(
                 Box(modifier = Modifier.padding(vertical = 10.dp)) {
                     ElevatedCard(
                         modifier = Modifier
-                            .sharedElement(sharedTransitionKey, coverImageSharedElementKey)
+                            .sharedElement(sharedTransitionKey, coverImageSharedTransitionIdentifier).also {
+                                Log.d("SharedDebug", "header sharedTransitionKey = $sharedTransitionKey, identifier = $coverImageSharedTransitionIdentifier")
+                            }
                     ) {
                         val imageHeight = rowHeight - 20.dp
                         var success by remember { mutableStateOf(false) }

@@ -73,20 +73,26 @@ object StaffMediaScreen {
                             val colorCalculationState = LocalColorCalculationState.current
                             val languageOptionMedia = LocalLanguageOptionMedia.current
                             val characterName = it.character.name?.primaryName()
+                            val characterSharedTransitionKey =
+                                SharedTransitionKey.makeKeyForId(it.character.id.toString())
                             val mediaSharedTransitionKey = it.media?.id?.toString()
                                 ?.let { SharedTransitionKey.makeKeyForId(it) }
                             CharacterSmallCard(
                                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                                 id = EntryId("anime_character", it.character.id.toString()),
+                                sharedTransitionKey = characterSharedTransitionKey,
+                                sharedTransitionIdentifier = "character_image",
+                                innerSharedTransitionKey = mediaSharedTransitionKey,
+                                innerSharedTransitionIdentifier = "media_image",
                                 image = imageState.uri,
                                 imageState = imageState,
                                 innerImage = innerImageState.uri,
                                 innerImageState = innerImageState,
-                                innerImageKey = "anime_media_${it.media?.id}_image",
                                 onClick = {
                                     navigationCallback.navigate(
                                         AnimeDestinations.CharacterDetails(
                                             characterId = it.character.id.toString(),
+                                            sharedTransitionKey = characterSharedTransitionKey,
                                             headerParams = CharacterHeaderParams(
                                                 name = characterName,
                                                 subtitle = null,
