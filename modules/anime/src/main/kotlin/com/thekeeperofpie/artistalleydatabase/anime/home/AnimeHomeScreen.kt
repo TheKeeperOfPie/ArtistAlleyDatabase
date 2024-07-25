@@ -488,15 +488,13 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.ACTIVITY.id
         )
 
-        SharedTransitionKeyScope("anime_home_activity_row") {
-            this@AnimeHomeScreen.ActivityRow(
-                viewer = viewer,
-                data = data,
-                pageSize = pageSize,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-                onClickListEdit = onClickListEdit,
-            )
-        }
+        this@AnimeHomeScreen.ActivityRow(
+            viewer = viewer,
+            data = data,
+            pageSize = pageSize,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
+        )
     }
 
     @Composable
@@ -518,26 +516,54 @@ object AnimeHomeScreen {
             modifier = Modifier.recomposeHighlighter()
         ) {
             val entry = activities.getOrNull(it)
-            when (val activity = entry?.activity) {
-                is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
-                    TextActivitySmallCard(
+            SharedTransitionKeyScope("anime_home_activity_${entry?.activityId?.valueId}") {
+                when (val activity = entry?.activity) {
+                    is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
+                        TextActivitySmallCard(
+                            screenKey = SCREEN_KEY,
+                            viewer = viewer,
+                            activity = activity,
+                            entry = entry,
+                            onActivityStatusUpdate = onActivityStatusUpdate,
+                            clickable = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .recomposeHighlighter()
+                        )
+                    is UserSocialActivityQuery.Data.Page.ListActivityActivity ->
+                        ListActivitySmallCard(
+                            screenKey = SCREEN_KEY,
+                            viewer = viewer,
+                            activity = activity,
+                            mediaEntry = entry.media,
+                            entry = entry,
+                            onActivityStatusUpdate = onActivityStatusUpdate,
+                            onClickListEdit = onClickListEdit,
+                            clickable = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .recomposeHighlighter()
+                        )
+                    is UserSocialActivityQuery.Data.Page.MessageActivityActivity ->
+                        MessageActivitySmallCard(
+                            screenKey = SCREEN_KEY,
+                            viewer = viewer,
+                            activity = activity,
+                            entry = entry,
+                            onActivityStatusUpdate = onActivityStatusUpdate,
+                            clickable = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .recomposeHighlighter()
+                        )
+                    is UserSocialActivityQuery.Data.Page.OtherActivity,
+                    null,
+                    -> ListActivitySmallCard(
                         screenKey = SCREEN_KEY,
                         viewer = viewer,
-                        activity = activity,
-                        entry = entry,
-                        onActivityStatusUpdate = onActivityStatusUpdate,
-                        clickable = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .recomposeHighlighter()
-                    )
-                is UserSocialActivityQuery.Data.Page.ListActivityActivity ->
-                    ListActivitySmallCard(
-                        screenKey = SCREEN_KEY,
-                        viewer = viewer,
-                        activity = activity,
-                        mediaEntry = entry.media,
-                        entry = entry,
+                        activity = null,
+                        mediaEntry = null,
+                        entry = null,
                         onActivityStatusUpdate = onActivityStatusUpdate,
                         onClickListEdit = onClickListEdit,
                         clickable = true,
@@ -545,33 +571,7 @@ object AnimeHomeScreen {
                             .fillMaxWidth()
                             .recomposeHighlighter()
                     )
-                is UserSocialActivityQuery.Data.Page.MessageActivityActivity ->
-                    MessageActivitySmallCard(
-                        screenKey = SCREEN_KEY,
-                        viewer = viewer,
-                        activity = activity,
-                        entry = entry,
-                        onActivityStatusUpdate = onActivityStatusUpdate,
-                        clickable = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .recomposeHighlighter()
-                    )
-                is UserSocialActivityQuery.Data.Page.OtherActivity,
-                null,
-                -> ListActivitySmallCard(
-                    screenKey = SCREEN_KEY,
-                    viewer = viewer,
-                    activity = null,
-                    mediaEntry = null,
-                    entry = null,
-                    onActivityStatusUpdate = onActivityStatusUpdate,
-                    onClickListEdit = onClickListEdit,
-                    clickable = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .recomposeHighlighter()
-                )
+                }
             }
         }
     }
