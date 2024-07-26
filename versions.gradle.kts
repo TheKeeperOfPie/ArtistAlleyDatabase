@@ -44,7 +44,7 @@ object Versions {
     const val accompanist = "0.35.1-alpha"
 
     object android {
-        const val gradle = "8.6.0-alpha08"
+        const val gradle = "8.7.0-alpha03"
     }
 
     object androidx {
@@ -52,10 +52,10 @@ object Versions {
         const val browser = "1.8.0"
         const val core = "1.15.0-alpha01"
         const val hilt = "1.2.0"
-        const val lifecycle = "2.8.3"
-        const val media3 = "1.4.0-beta01"
-        const val navigation = "2.8.0-beta05"
-        const val paging = "3.3.0"
+        const val lifecycle = "2.8.4"
+        const val media3 = "1.4.0"
+        const val navigation = "2.8.0-beta06"
+        const val paging = "3.3.1"
         const val palette = "1.0.0"
         const val room = "2.7.0-alpha05"
         const val securityCrypto = "1.1.0-alpha06"
@@ -74,10 +74,10 @@ object Versions {
 
     const val apollo = "4.0.0-beta.7"
     const val awaitility = "4.2.1"
-    const val coil = "3.0.0-alpha08"
+    const val coil = "3.0.0-alpha09"
 
     object compose {
-        const val core = "1.7.0-beta05"
+        const val core = "1.7.0-beta06"
         const val runtime = "1.7.0-alpha01"
         const val runtimeTracing = "1.0.0-beta01"
     }
@@ -95,9 +95,9 @@ object Versions {
         const val playServicesAds = "23.2.0"
         const val playServicesCronet = "18.1.0"
         const val playServicesOssLicenses = "17.1.0"
-        const val truth = "1.4.3"
+        const val truth = "1.4.4"
         const val secretsPlugin = "2.0.1"
-        const val userMessagingPlatform = "2.2.0"
+        const val userMessagingPlatform = "3.0.0"
     }
 
     const val graphQlJava = "22.1"
@@ -110,7 +110,7 @@ object Versions {
     object junit {
         const val four = "4.13.2"
         const val jupiter = "5.11.0-M2"
-        const val jupiterAndroid = "1.4.0"
+        const val jupiterAndroid = "1.5.0"
     }
 
     object kotlin {
@@ -127,15 +127,15 @@ object Versions {
     const val ktor = "2.3.4"
     const val leakCanary = "3.0-alpha-8"
     const val rome = "2.1.0"
-    const val manifoldGraphql = "2024.1.23"
+    const val manifoldGraphql = "2024.1.28"
     const val markwon = "4.6.2"
-    const val material3 = "1.3.0-beta04"
+    const val material3 = "1.3.0-beta05"
     const val mockito = "5.12.0"
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
     const val moshi = "1.15.1"
     const val neovisionariesInternationalization = "1.29"
-    const val netflixDgs = "9.0.3"
+    const val netflixDgs = "9.0.4"
     const val okhttp = "5.0.0-alpha.14"
     const val skrapeIt = "1.3.0-alpha.1"
     const val unityAds = "4.12.1"
@@ -173,7 +173,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.google.dagger.hilt.android").version(Versions.google.dagger)
                 plugin("com.jaredsburrows.license").version("0.9.8")
                 plugin("com.netflix.dgs.codegen").version("6.2.2")
-                plugin("de.mannodermaus.android-junit5").version("1.10.0.0")
+                plugin("de.mannodermaus.android-junit5").version("1.10.2.0")
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.2.0")
 

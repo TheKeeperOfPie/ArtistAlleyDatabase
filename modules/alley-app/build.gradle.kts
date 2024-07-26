@@ -161,8 +161,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)
 
-    implementation("androidx.navigation:navigation-compose:2.8.0-beta03")
-
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
@@ -171,6 +169,7 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.navigation.compose)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)
