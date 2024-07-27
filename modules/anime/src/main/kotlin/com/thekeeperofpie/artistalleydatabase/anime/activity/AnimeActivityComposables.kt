@@ -61,6 +61,7 @@ import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -69,14 +70,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.collections.immutable.ImmutableList
 import java.time.Instant
 import java.time.ZoneOffset
@@ -267,7 +273,6 @@ fun ColumnScope.TextActivityCardContent(
         val image = user?.avatar?.large
         if (activity == null || image != null) {
             UserImage(
-                screenKey = screenKey,
                 loading = activity == null,
                 user = user,
                 clickable = allowUserClick,
@@ -414,7 +419,6 @@ fun ColumnScope.MessageActivityCardContent(
         val image = messenger?.avatar?.large
         if (activity == null || image != null) {
             UserImage(
-                screenKey = screenKey,
                 loading = activity == null,
                 user = messenger,
                 clickable = allowUserClick,
@@ -471,6 +475,10 @@ fun ColumnScope.MessageActivityCardContent(
     }
 
     val navigationCallback = LocalNavigationCallback.current
+    val userImage = activity?.recipient?.avatar?.large
+    val userImageState = rememberCoilImageState(userImage)
+    val userSharedTransitionKey = activity?.recipient?.id?.toString()
+        ?.let { SharedTransitionKey.makeKeyForId(it) }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -478,7 +486,19 @@ fun ColumnScope.MessageActivityCardContent(
             .padding(horizontal = 16.dp)
             .align(Alignment.End)
             .clickable {
-                activity?.recipient?.let { navigationCallback.onUserClick(it, 1f) }
+                activity?.recipient?.let {
+                    navigationCallback.navigate(
+                        AnimeDestinations.User(
+                            userId = it.id.toString(),
+                            sharedTransitionKey = userSharedTransitionKey,
+                            headerParams = UserHeaderParams(
+                                name = it.name,
+                                bannerImage = null,
+                                coverImage = userImageState.toImageState(),
+                            )
+                        )
+                    )
+                }
             }
     ) {
         Icon(
@@ -498,12 +518,13 @@ fun ColumnScope.MessageActivityCardContent(
                     highlight = PlaceholderHighlight.shimmer(),
                 )
         )
-        val image = activity?.recipient?.avatar?.large
-        if (activity == null || image != null) {
+        if (activity == null || userImage != null) {
             UserAvatarImage(
-                image = image,
+                imageState = userImageState,
+                image = userImageState.request().build(),
                 modifier = Modifier
                     .size(32.dp)
+                    .sharedElement(userSharedTransitionKey, "userImage")
                     .clip(RoundedCornerShape(12.dp))
                     .placeholder(
                         visible = activity == null,
@@ -627,16 +648,15 @@ private fun ListActivitySmallCard(
 ) {
     val content: @Composable ColumnScope.() -> Unit = {
         ListActivityCardContent(
-            screenKey = screenKey,
             viewer = viewer,
             activity = activity,
-            showMedia = showMedia,
             user = activity?.user,
             entry = entry,
             liked = liked,
             subscribed = subscribed,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
+            showMedia = showMedia,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
             allowUserClick = allowUserClick,
@@ -662,7 +682,6 @@ private fun ListActivitySmallCard(
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun ColumnScope.ListActivityCardContent(
-    screenKey: String,
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     user: UserNavigationData?,
@@ -684,7 +703,6 @@ fun ColumnScope.ListActivityCardContent(
         val image = user?.avatar?.large
         if (showUser && (activity == null || image != null)) {
             UserImage(
-                screenKey = screenKey,
                 loading = activity == null,
                 user = user,
                 clickable = allowUserClick,
@@ -920,22 +938,35 @@ fun ActivityStatusIcons(
 
 @Composable
 private fun UserImage(
-    screenKey: String,
     loading: Boolean,
     user: UserNavigationData?,
     clickable: Boolean = true,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val navigationCallback = LocalNavigationCallback.current
+    val imageState = rememberCoilImageState(user?.avatar?.large)
+    val sharedTransitionKey = user?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     UserAvatarImage(
-        image = user?.avatar?.large,
+        imageState = imageState,
+        image = imageState.request().build(),
         modifier = Modifier
             .size(40.dp)
+            .sharedElement(sharedTransitionKey, "user_image")
             .clip(shape)
             .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
             .clickable(enabled = clickable) {
                 if (user != null) {
-                    navigationCallback.onUserClick(user, 1f)
+                    navigationCallback.navigate(
+                        AnimeDestinations.User(
+                            userId = user.id.toString(),
+                            sharedTransitionKey = sharedTransitionKey,
+                            headerParams = UserHeaderParams(
+                                name = user.name,
+                                bannerImage = null,
+                                coverImage = imageState.toImageState(),
+                            )
+                        )
+                    )
                 }
             }
             .placeholder(

@@ -58,11 +58,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.coroutines.CoroutineScope

@@ -9,7 +9,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderPar
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
-import com.thekeeperofpie.artistalleydatabase.compose.ImageState
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
+import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import kotlinx.serialization.Serializable
@@ -22,6 +23,7 @@ object AnimeDestinations {
         typeOf<MediaSeason?>() to CustomNavTypes.NullableEnumType<MediaSeason>(),
         typeOf<MediaType?>() to CustomNavTypes.NullableEnumType<MediaType>(),
         typeOf<StaffHeaderParams?>() to CustomNavTypes.SerializableParcelableType<StaffHeaderParams>(),
+        typeOf<UserHeaderParams?>() to CustomNavTypes.SerializableParcelableType<UserHeaderParams>(),
     )
 
     @Serializable
@@ -116,5 +118,12 @@ object AnimeDestinations {
         val staffId: String,
         val sharedTransitionKey: SharedTransitionKey?,
         val headerParams: StaffHeaderParams? = null,
+    )
+
+    @Serializable
+    data class User(
+        val userId: String,
+        val sharedTransitionKey: SharedTransitionKey?,
+        val headerParams: UserHeaderParams? = null,
     )
 }

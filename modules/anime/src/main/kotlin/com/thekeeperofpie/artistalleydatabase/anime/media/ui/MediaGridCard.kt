@@ -34,7 +34,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
@@ -52,13 +51,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
@@ -77,21 +75,21 @@ object MediaGridCard {
         label: @Composable() (ColumnScope.(textColor: Color) -> Unit) = {},
     ) {
         val sharedTransitionKey = entry?.media?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
-        val colorCalculationState = LocalColorCalculationState.current
-        val colors = colorCalculationState.getColors(entry?.media?.id?.toString())
+        val coverImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge)
+        val colors = coverImageState.colors
         val animationProgress by animateIntAsState(
-            if (colors.first.isUnspecified) 0 else 255,
+            if (colors.containerColor.isUnspecified) 0 else 255,
             label = "Media grid card color fade in",
         )
 
         val surfaceColor = entry?.color ?: MaterialTheme.colorScheme.surface
         val containerColor = when {
-            colors.first.isUnspecified || animationProgress == 0 -> surfaceColor
-            animationProgress == 255 -> colors.first
+            colors.containerColor.isUnspecified || animationProgress == 0 -> surfaceColor
+            animationProgress == 255 -> colors.containerColor
             else -> Color(
                 ColorUtils.compositeColors(
                     ColorUtils.setAlphaComponent(
-                        colors.first.toArgb(),
+                        colors.containerColor.toArgb(),
                         animationProgress
                     ),
                     surfaceColor.toArgb()
@@ -105,7 +103,6 @@ object MediaGridCard {
                 .fillMaxWidth()
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
         ) {
-            val coverImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge)
             val navigationCallback = LocalNavigationCallback.current
             val ignoreController = LocalIgnoreController.current
             val title = entry?.media?.title?.primaryTitle()
@@ -229,25 +226,14 @@ object MediaGridCard {
     ) {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
-            val colorCalculationState = LocalColorCalculationState.current
             MediaCoverImage(
                 imageState = imageState,
                 image = imageState.request()
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
                         width = Dimension.Pixels(LocalDensity.current.run { 120.dp.roundToPx() }),
                         height = Dimension.Undefined
                     )
-                    .listener(onSuccess = { _, result ->
-                        entry?.media?.id?.let { mediaId ->
-                            ComposeColorUtils.calculatePalette(
-                                id = mediaId.toString(),
-                                image = result.image,
-                                colorCalculationState = colorCalculationState,
-                            )
-                        }
-                    })
                     .build(),
                 modifier = Modifier
                     .sharedElement(sharedTransitionKey, "media_image")

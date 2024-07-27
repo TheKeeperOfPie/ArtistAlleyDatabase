@@ -89,7 +89,6 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.allowHardware
 import coil3.size.Dimension
 import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.HomeMedia
@@ -134,16 +133,17 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.itemsIndexed
 import com.thekeeperofpie.artistalleydatabase.anime.utils.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.conditionallyNonNull
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
@@ -151,8 +151,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateEnterExit
@@ -163,7 +161,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 @Suppress("NAME_SHADOWING")
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
     ExperimentalSharedTransitionApi::class, ExperimentalCoilApi::class
 )
 object AnimeHomeScreen {
@@ -752,15 +751,15 @@ object AnimeHomeScreen {
         val media = entry?.media
         val mediaId = media?.id?.toString()
 
-        val colorCalculationState = LocalColorCalculationState.current
-        val colors = colorCalculationState.getColors(mediaId)
-        val containerColor = colors.first.takeOrElse {
+        val coverImageState =
+            rememberCoilImageState(media?.coverImage?.extraLarge, heightStartThreshold = 3 / 4f)
+        val colors = coverImageState.colors
+        val containerColor = colors.containerColor.takeOrElse {
             media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
                 ?: MaterialTheme.colorScheme.surface
         }
 
         val navigationCallback = LocalNavigationCallback.current
-        val coverImageState = rememberCoilImageState(media?.coverImage?.extraLarge)
         val title = media?.title?.primaryTitle()
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(media?.id.toString())
         val onClick = rememberCallback {
@@ -825,24 +824,11 @@ object AnimeHomeScreen {
             val coilHeight = Dimension.Pixels(
                 density.run { CURRENT_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
             )
-            val colorCalculationState = LocalColorCalculationState.current
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
                 imageState = coverImageState,
                 image = coverImageState.request()
-                    .allowHardware(colorCalculationState.allowHardware(mediaId))
                     .size(width = coilWidth, height = coilHeight)
-                    .listener(onSuccess = { _, result ->
-                        if (mediaId != null) {
-                            ComposeColorUtils.calculatePalette(
-                                id = mediaId,
-                                image = result.image,
-                                colorCalculationState = colorCalculationState,
-                                heightStartThreshold = 3 / 4f,
-                                selectMaxPopulation = true,
-                            )
-                        }
-                    })
                     .build(),
                 modifier = Modifier
                     .sharedElement(sharedContentState)
@@ -927,13 +913,6 @@ object AnimeHomeScreen {
         modifier: Modifier = Modifier,
     ) {
         val mediaId = media?.id?.toString()
-        val colorCalculationState = LocalColorCalculationState.current
-        val calculatedContainerColor = colorCalculationState.getColors(mediaId).first
-        val containerColor = calculatedContainerColor.takeOrElse {
-            media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-                ?: MaterialTheme.colorScheme.surface
-        }
-
         val navigationCallback = LocalNavigationCallback.current
         val title = MediaUtils.userPreferredTitle(
             userPreferred = media?.title?.userPreferred,
@@ -945,11 +924,15 @@ object AnimeHomeScreen {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         val sharedTransitionKey =
             media?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
-        val coverImageState = rememberCoilImageState(media?.coverImage?.extraLarge)
+        val coverImageState =
+            rememberCoilImageState(media?.coverImage?.extraLarge, heightStartThreshold = 3 / 4f)
+        val containerColor = coverImageState.colors.containerColor.takeOrElse {
+            media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+                ?: MaterialTheme.colorScheme.surface
+        }
+
         ElevatedCard(
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = containerColor,
-            ),
+            colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
             modifier = modifier
                 .height(MEDIA_ROW_IMAGE_HEIGHT)
                 .widthIn(min = MEDIA_ROW_IMAGE_WIDTH)
@@ -990,7 +973,6 @@ object AnimeHomeScreen {
                 media = media,
                 mediaStatusAware = mediaStatusAware,
                 viewer = viewer,
-                allowHardware = { colorCalculationState.allowHardware(mediaId) },
                 onClickListEdit = onClickListEdit,
                 textColor = ComposeColorUtils.bestTextColor(containerColor),
                 title = title,
@@ -1004,7 +986,6 @@ object AnimeHomeScreen {
         media: HomeMedia?,
         mediaStatusAware: MediaStatusAware?,
         viewer: AniListViewer?,
-        allowHardware: @Composable () -> Boolean,
         textColor: Color?,
         title: String?,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -1021,23 +1002,10 @@ object AnimeHomeScreen {
             )
 
             val mediaId = media?.id?.toString()
-            val colorCalculationState = LocalColorCalculationState.current
             CoilImage(
                 state = coverImageState,
                 model = coverImageState.request()
-                    .allowHardware(allowHardware())
                     .size(width = coilWidth, height = coilHeight)
-                    .listener(onSuccess = { _, result ->
-                        if (mediaId != null) {
-                            ComposeColorUtils.calculatePalette(
-                                id = mediaId,
-                                image = result.image,
-                                colorCalculationState = colorCalculationState,
-                                heightStartThreshold = 3 / 4f,
-                                selectMaxPopulation = true,
-                            )
-                        }
-                    })
                     .build(),
                 contentScale = ContentScale.Crop,
                 contentDescription = stringResource(R.string.anime_media_cover_image_content_description),

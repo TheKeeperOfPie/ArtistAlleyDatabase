@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserMediaStatistics
@@ -26,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleNam
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 
 object UserMediaScreen {
@@ -63,7 +61,6 @@ object UserMediaScreen {
             HorizontalDivider()
 
             val navigationCallback = LocalNavigationCallback.current
-            val colorCalculationState = LocalColorCalculationState.current
             when (values[selectedTabIndex]) {
                 UserStatsTab.STATS -> UserStatsBasicScreen(
                     user = user,
@@ -140,9 +137,6 @@ object UserMediaScreen {
                                                 languageOptionStaff
                                             ),
                                             coverImage = imageState.toImageState(),
-                                            colorArgb = colorCalculationState.getColorsNonComposable(
-                                                voiceActor.id.toString()
-                                            ).first.toArgb(),
                                             favorite = null,
                                         )
                                     )
@@ -203,9 +197,6 @@ object UserMediaScreen {
                                             name = staff.name?.primaryName(languageOptionStaff),
                                             subtitle = staff.name?.subtitleName(languageOptionStaff),
                                             coverImage = imageState.toImageState(),
-                                            colorArgb = colorCalculationState.getColorsNonComposable(
-                                                staff.id.toString()
-                                            ).first.toArgb(),
                                             favorite = null,
                                         )
                                     )

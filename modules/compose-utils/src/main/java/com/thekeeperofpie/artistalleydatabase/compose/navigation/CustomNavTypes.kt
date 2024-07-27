@@ -5,7 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.navigation.NavType
-import com.thekeeperofpie.artistalleydatabase.compose.ImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json

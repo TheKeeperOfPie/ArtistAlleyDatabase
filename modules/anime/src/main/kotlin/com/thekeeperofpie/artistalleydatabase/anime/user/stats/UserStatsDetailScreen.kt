@@ -36,13 +36,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionPrefixProvider
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement

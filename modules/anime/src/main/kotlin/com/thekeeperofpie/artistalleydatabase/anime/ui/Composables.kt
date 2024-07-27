@@ -64,13 +64,13 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -486,7 +486,7 @@ fun ListRowSmallImage(
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
             .clickable { onClick() }
             .placeholder(
-                visible = imageState?.imageCacheKey == null,
+                visible = imageState?.success != true,
                 highlight = PlaceholderHighlight.shimmer(),
             )
             .alpha(if (ignored) 0.38f else 1f)

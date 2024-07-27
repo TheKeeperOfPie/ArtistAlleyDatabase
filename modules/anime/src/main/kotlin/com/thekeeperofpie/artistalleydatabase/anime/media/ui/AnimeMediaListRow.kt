@@ -45,7 +45,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
@@ -64,20 +63,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
     ExperimentalCoilApi::class
 )
 object AnimeMediaListRow {
@@ -97,7 +95,8 @@ object AnimeMediaListRow {
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
     ) {
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(entry?.media?.id.toString())
-        val coverImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge)
+        val coverImageState =
+            rememberCoilImageState(entry?.media?.coverImage?.extraLarge, requestColors = true)
         val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             modifier = modifier
@@ -179,9 +178,7 @@ object AnimeMediaListRow {
                         )
                     }
 
-                    val colorCalculationState = LocalColorCalculationState.current
-                    val (containerColor, textColor) =
-                        colorCalculationState.getColors(entry?.media?.id?.toString())
+                    val (containerColor, textColor) = coverImageState.colors
                     val tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS
                     if (tags.isEmpty()) {
                         Spacer(Modifier.height(8.dp))
@@ -225,27 +222,16 @@ object AnimeMediaListRow {
     ) {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
-            val colorCalculationState = LocalColorCalculationState.current
             val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
                 imageState = imageState,
                 image = imageState.request()
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
                         width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
                         height = Dimension.Undefined
                     )
-                    .listener(onSuccess = { _, result ->
-                        entry?.media?.id?.let { mediaId ->
-                            ComposeColorUtils.calculatePalette(
-                                id = mediaId.toString(),
-                                image = result.image,
-                                colorCalculationState = colorCalculationState,
-                            )
-                        }
-                    })
                     .build(),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

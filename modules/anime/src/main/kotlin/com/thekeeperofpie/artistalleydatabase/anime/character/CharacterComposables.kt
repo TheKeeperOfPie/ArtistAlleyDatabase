@@ -76,57 +76,54 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.UpperHalfBiasAlignment
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.colorsOrDefault
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
 fun CharacterSmallCard(
-    screenKey: String,
     id: EntryId,
     sharedTransitionKey: SharedTransitionKey?,
     sharedTransitionIdentifier: String,
     innerSharedTransitionKey: SharedTransitionKey?,
     innerSharedTransitionIdentifier: String,
     image: String?,
-    imageState: CoilImageState? = rememberCoilImageState(image),
-    onClick: () -> Unit,
     innerImage: String?,
+    imageState: CoilImageState? = rememberImageStateBelowInnerImage(image, innerImage),
     innerImageState: CoilImageState? = rememberCoilImageState(innerImage),
+    onClick: () -> Unit,
     onClickInnerImage: (() -> Unit)? = null,
     width: Dp = 100.dp,
     isStaffMain: Boolean = false,
     content: @Composable (textColor: Color) -> Unit,
 ) {
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
-    val colorCalculationState = LocalColorCalculationState.current
-    val colors = colorCalculationState.getColors(id.scopedId)
+    val colors = imageState.colorsOrDefault()
 
     val animationProgress by animateIntAsState(
-        if (colors.first.isUnspecified) 0 else 255,
+        if (colors.containerColor.isUnspecified) 0 else 255,
         label = "Character card color fade in",
     )
 
     val containerColor = when {
-        colors.first.isUnspecified || animationProgress == 0 ->
+        colors.containerColor.isUnspecified || animationProgress == 0 ->
             MaterialTheme.colorScheme.surface
-        animationProgress == 255 -> colors.first
+        animationProgress == 255 -> colors.containerColor
         else -> Color(
             ColorUtils.compositeColors(
                 ColorUtils.setAlphaComponent(
-                    colors.first.toArgb(),
+                    colors.containerColor.toArgb(),
                     animationProgress
                 ),
                 MaterialTheme.colorScheme.surface.toArgb()
@@ -135,12 +132,12 @@ fun CharacterSmallCard(
     }
 
     val textColor = when {
-        colors.second.isUnspecified || animationProgress == 0 -> defaultTextColor
-        animationProgress == 255 -> colors.second
+        colors.textColor.isUnspecified || animationProgress == 0 -> defaultTextColor
+        animationProgress == 255 -> colors.textColor
         else -> Color(
             ColorUtils.compositeColors(
                 ColorUtils.setAlphaComponent(
-                    colors.second.toArgb(),
+                    colors.textColor.toArgb(),
                     animationProgress
                 ),
                 defaultTextColor.toArgb()
@@ -159,23 +156,10 @@ fun CharacterSmallCard(
             val density = LocalDensity.current
             val imageRequest = imageState.request()
                 .crossfade(true)
-                .allowHardware(colorCalculationState.allowHardware(id.scopedId))
                 .size(
                     width = density.run { width.roundToPx() },
                     height = density.run { (width * 1.5f).roundToPx() },
                 )
-                .listener(onSuccess = { _, result ->
-                    ComposeColorUtils.calculatePalette(
-                        id = id.scopedId,
-                        image = result.image,
-                        colorCalculationState = colorCalculationState,
-                        heightStartThreshold = 3 / 4f,
-                        // Only capture left 3/5ths to ignore
-                        // part covered by voice actor
-                        widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
-                        selectMaxPopulation = true,
-                    )
-                })
                 .build()
             val imageModifier = Modifier
                 .size(width = width, height = width * 1.5f)
@@ -325,7 +309,6 @@ private fun CharactersSection(
             contentType = characters.itemContentType { "character" },
         ) {
             CharactersSectionItem(
-                screenKey = screenKey,
                 character = characters[it],
                 showVoiceActorAsMain = false,
             )
@@ -356,7 +339,6 @@ fun CharactersSection(
             ) {
                 val character = charactersDeferred[it]
                 CharactersSectionItem(
-                    screenKey = screenKey,
                     character = character,
                     showVoiceActorAsMain = showVoiceActorAsMain,
                 )
@@ -364,7 +346,6 @@ fun CharactersSection(
         } else {
             items(charactersInitial, key = { it.id }, contentType = { "character" }) {
                 CharactersSectionItem(
-                    screenKey = screenKey,
                     character = it,
                     showVoiceActorAsMain = showVoiceActorAsMain,
                 )
@@ -381,17 +362,15 @@ fun CharactersSection(
 
 @Composable
 fun CharactersSectionItem(
-    screenKey: String,
     character: DetailsCharacter?,
     showVoiceActorAsMain: Boolean,
 ) {
     val navigationCallback = LocalNavigationCallback.current
     val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
-    val colorCalculationState = LocalColorCalculationState.current
     val characterName = character?.character?.name?.primaryName()
     val image = if (showVoiceActorAsMain) voiceActor?.image else character?.image
     val innerImage = if (showVoiceActorAsMain) character?.image else voiceActor?.image
-    val imageState = rememberCoilImageState(image)
+    val imageState = rememberImageStateBelowInnerImage(image, innerImage)
     val innerImageState = rememberCoilImageState(innerImage)
     val characterSharedTransitionKey = character?.id?.let { SharedTransitionKey.makeKeyForId(it) }
     val voiceActorTransitionKey = voiceActor?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -410,7 +389,6 @@ fun CharactersSectionItem(
                         } else {
                             imageState
                         }.toImageState(),
-                        colorArgb = colorCalculationState.getColorsNonComposable(character.id).first.toArgb(),
                     )
                 )
             )
@@ -432,7 +410,6 @@ fun CharactersSectionItem(
                         } else {
                             innerImageState
                         }.toImageState(),
-                        colorArgb = colorCalculationState.getColorsNonComposable(voiceActor.id).first.toArgb(),
                         favorite = null,
                     )
                 )
@@ -440,7 +417,6 @@ fun CharactersSectionItem(
         }
     }
     CharactersSectionItem(
-        screenKey = screenKey,
         character = character,
         id = if (showVoiceActorAsMain) {
             EntryId("anime_staff", voiceActor?.id.orEmpty())
@@ -492,7 +468,6 @@ fun CharactersSectionItem(
 
 @Composable
 fun CharactersSectionItem(
-    screenKey: String,
     character: DetailsCharacter?,
     id: EntryId,
     sharedTransitionKey: SharedTransitionKey?,
@@ -510,7 +485,6 @@ fun CharactersSectionItem(
 
     val navigationCallback = LocalNavigationCallback.current
     CharacterSmallCard(
-        screenKey = screenKey,
         id = id,
         sharedTransitionKey = sharedTransitionKey,
         sharedTransitionIdentifier = sharedTransitionIdentifier,
@@ -553,7 +527,6 @@ fun CharacterCard(
 ) {
     val coverImageState = rememberCoilImageState(character?.character?.image?.large)
     val navigationCallback = LocalNavigationCallback.current
-    val colorCalculationState = LocalColorCalculationState.current
     val characterName = character?.character?.name?.primaryName()
 
     val voiceActor = AniListUtils.selectVoiceActor(
@@ -574,7 +547,6 @@ fun CharacterCard(
                             subtitle = null,
                             favorite = null,
                             coverImage = coverImageState.toImageState(),
-                            colorArgb = colorCalculationState.getColorsNonComposable(it.id.toString()).first.toArgb(),
                         )
                     )
                 )
@@ -702,9 +674,6 @@ fun CharacterCard(
                                             name = voiceActorName,
                                             subtitle = voiceActorSubtitle,
                                             coverImage = voiceActorImageState.toImageState(),
-                                            colorArgb = colorCalculationState.getColorsNonComposable(
-                                                voiceActor.staff.id.toString()
-                                            ).first.toArgb(),
                                             favorite = null,
                                         )
                                     )
@@ -718,3 +687,22 @@ fun CharacterCard(
         }
     }
 }
+
+/**
+ * For use in something like [CharacterSmallCard] where a smaller inner image is shown overlaid
+ * on the bottom right. This will exclude that area from the palette calculation area.
+ */
+@Composable
+fun rememberImageStateBelowInnerImage(
+    uri: String?,
+    innerImage: String?,
+) = rememberCoilImageState(
+    uri = uri,
+    cacheKey = null,
+    heightStartThreshold = 3 / 4f,
+    // Only capture left 3/5ths to ignore
+    // part covered by voice actor
+    widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
+    selectMaxPopulation = true,
+    requestColors = true,
+)

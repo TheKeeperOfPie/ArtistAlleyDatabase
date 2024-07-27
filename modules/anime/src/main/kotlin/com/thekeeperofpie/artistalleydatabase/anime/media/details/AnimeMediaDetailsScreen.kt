@@ -64,6 +64,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -120,19 +121,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHa
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.colorsOrDefault
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
@@ -389,10 +390,9 @@ object AnimeMediaDetailsScreen {
                                 enter = fadeIn(),
                                 exit = fadeOut(),
                             ) {
-                                val containerColor = headerValues.color
-                                    ?: FloatingActionButtonDefaults.containerColor
-                                val contentColor =
-                                    ComposeColorUtils.bestTextColor(containerColor)
+                                val containerColor = headerValues.defaultColor
+                                    .takeOrElse { FloatingActionButtonDefaults.containerColor }
+                                val contentColor = ComposeColorUtils.bestTextColor(containerColor)
                                         ?: contentColorFor(containerColor)
 
                                 val listStatus = viewModel.listStatus
@@ -496,6 +496,7 @@ object AnimeMediaDetailsScreen {
                                     viewer = viewer,
                                     entry = entry.result!!,
                                     entry2Result = entry2,
+                                    coverImageState = coverImageState,
                                     onClickListEdit = onClickListEdit,
                                     expandedState = expandedState,
                                     charactersSection = charactersSection,
@@ -526,6 +527,7 @@ object AnimeMediaDetailsScreen {
         viewer: AniListViewer?,
         entry: Entry,
         entry2Result: LoadingResult<Entry2>,
+        coverImageState: CoilImageState?,
         onClickListEdit: (MediaNavigationData) -> Unit,
         expandedState: ExpandedState,
         charactersSection: LazyListScope.(screenKey: String, entry: Entry) -> Unit,
@@ -597,7 +599,7 @@ object AnimeMediaDetailsScreen {
         val entry2 = entry2Result.result
         if (entry2 != null) {
             statsSection(entry2)
-            tagsSection(entry.mediaId, entry2)
+            tagsSection(entry2, coverImageState)
 
             trailerSection(
                 entry = entry2,
@@ -1024,7 +1026,10 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.tagsSection(mediaId: String, entry: Entry2) {
+    private fun LazyListScope.tagsSection(
+        entry: Entry2,
+        coverImageState: CoilImageState?,
+    ) {
         if (entry.tags.isNotEmpty()) {
             item("tagsHeader") {
                 DetailsSectionHeader(
@@ -1035,7 +1040,6 @@ object AnimeMediaDetailsScreen {
 
             item("tagsSection") {
                 val navigationCallback = LocalNavigationCallback.current
-                val colorCalculationState = LocalColorCalculationState.current
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
@@ -1043,8 +1047,7 @@ object AnimeMediaDetailsScreen {
                         .animateItem()
                 ) {
                     entry.tags.forEach {
-                        val (containerColor, textColor) =
-                            colorCalculationState.getColors(mediaId)
+                        val (containerColor, textColor) = coverImageState.colorsOrDefault()
                         AnimeMediaTagEntry.Chip(
                             tag = it,
                             title = {

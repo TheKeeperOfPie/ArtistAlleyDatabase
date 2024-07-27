@@ -35,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaCompactWithTags
@@ -53,13 +52,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
@@ -83,6 +80,8 @@ object AnimeMediaCompactListRow {
         coverImageState: CoilImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge),
     ) {
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(entry?.media?.id.toString())
+        // Read colors here to request palette calculation
+        val (containerColor, textColor) = coverImageState.colors
         OutlinedCard(
             modifier = modifier
                 // Used to animate persistence of this view across screens
@@ -176,9 +175,6 @@ object AnimeMediaCompactListRow {
                         )
                     }
 
-                    val colorCalculationState = LocalColorCalculationState.current
-                    val (containerColor, textColor) =
-                        colorCalculationState.getColors(entry?.media?.id?.toString())
                     MediaTagRow(
                         loading = entry == null,
                         tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
@@ -216,27 +212,18 @@ object AnimeMediaCompactListRow {
     ) {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
-            val colorCalculationState = LocalColorCalculationState.current
             val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
                 imageState = imageState,
                 image = imageState.request()
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.allowHardware(entry?.media?.id?.toString()))
                     .size(
                         width = Dimension.Pixels(
                             LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
                         ),
                         height = Dimension.Undefined
                     )
-                    .listener(onSuccess = { _, result ->
-                        ComposeColorUtils.calculatePalette(
-                            id = entry?.media?.id.toString(),
-                            image = result.image,
-                            colorCalculationState = colorCalculationState,
-                        )
-                    })
                     .build(),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

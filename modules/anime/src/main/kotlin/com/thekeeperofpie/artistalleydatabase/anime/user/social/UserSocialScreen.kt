@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,12 +19,10 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,24 +34,22 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.ImageRequest
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.UserNavigationData
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 @OptIn(ExperimentalCoilApi::class)
 object UserSocialScreen {
@@ -159,7 +154,6 @@ object UserSocialScreen {
                         contentType = data.itemContentType { "user" },
                     ) {
                         UserPreview(
-                            screenKey = screenKey,
                             user = data[it],
                         )
                     }
@@ -169,53 +163,50 @@ object UserSocialScreen {
     }
 
     @Composable
-    private fun UserPreview(
-        screenKey: String,
-        user: UserNavigationData?,
-    ) {
-        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+    private fun UserPreview(user: UserNavigationData?) {
         val navigationCallback = LocalNavigationCallback.current
+        val imageState = rememberCoilImageState(user?.avatar?.large)
+        val sharedTransitionKey = user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .size(USER_IMAGE_SIZE)
                 .clickable {
                     user?.let {
-                        navigationCallback.onUserClick(it, imageWidthToHeightRatio)
+                        navigationCallback.navigate(
+                            AnimeDestinations.User(
+                                userId = it.id.toString(),
+                                sharedTransitionKey = sharedTransitionKey,
+                                headerParams = UserHeaderParams(
+                                    name = it.name,
+                                    bannerImage = null,
+                                    coverImage = imageState.toImageState(),
+                                )
+                            )
+                        )
                     }
                 }
         ) {
             Box {
                 val dimension =
                     Dimension.Pixels(LocalDensity.current.run { USER_IMAGE_SIZE.roundToPx() })
-                val colorCalculationState = LocalColorCalculationState.current
                 UserAvatarImage(
-                    image = ImageRequest.Builder(LocalContext.current)
-                        .data(user?.avatar?.large)
+                    imageState = imageState,
+                    image = imageState.request()
                         .crossfade(true)
-                        .allowHardware(colorCalculationState.allowHardware(user?.id.toString()))
                         .size(width = dimension, height = dimension)
                         .build(),
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .fillMaxHeight()
                         .size(USER_IMAGE_SIZE)
+                        .sharedElement(sharedTransitionKey, "user_image")
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .placeholder(
                             visible = user == null,
                             highlight = PlaceholderHighlight.shimmer(),
                         )
                         .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop,
-                    onSuccess = {
-                        imageWidthToHeightRatio = it.widthToHeightRatio()
-                        if (user != null) {
-                            ComposeColorUtils.calculatePalette(
-                                id = user.id.toString(),
-                                image = it.result.image,
-                                colorCalculationState = colorCalculationState,
-                            )
-                        }
-                    }
                 )
 
                 Text(

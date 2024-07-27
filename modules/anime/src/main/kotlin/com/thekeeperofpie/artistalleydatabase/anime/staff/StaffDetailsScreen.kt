@@ -42,7 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import kotlinx.coroutines.launch
 

@@ -34,6 +34,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -41,10 +42,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactLi
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 object RecommendationComposables  {
     const val RECOMMENDATIONS_ABOVE_FOLD = 3
@@ -72,15 +78,30 @@ fun RecommendationCard(
             ) {
                 val shape = RoundedCornerShape(12.dp)
                 val navigationCallback = LocalNavigationCallback.current
+                val imageState = rememberCoilImageState(user?.avatar?.large)
+                val sharedTransitionKey = user?.id?.toString()
+                    ?.let { SharedTransitionKey.makeKeyForId(it) }
                 UserAvatarImage(
-                    image = user?.avatar?.large,
+                    imageState = imageState,
+                    image = imageState.request().build(),
                     modifier = Modifier
                         .size(40.dp)
+                        .sharedElement(sharedTransitionKey, "user_image")
                         .clip(shape)
                         .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                         .clickable {
                             user?.let {
-                                navigationCallback.onUserClick(it, 1f)
+                                navigationCallback.navigate(
+                                    AnimeDestinations.User(
+                                        userId = user.id.toString(),
+                                        sharedTransitionKey = sharedTransitionKey,
+                                        headerParams = UserHeaderParams(
+                                            name = user.name,
+                                            bannerImage = null,
+                                            coverImage = imageState.toImageState(),
+                                        )
+                                    )
+                                )
                             }
                         }
                         .placeholder(

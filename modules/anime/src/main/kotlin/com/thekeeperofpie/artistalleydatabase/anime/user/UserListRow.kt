@@ -24,7 +24,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -35,15 +34,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.ImageRequest
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
@@ -57,19 +51,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
     ExperimentalSharedTransitionApi::class, ExperimentalCoilApi::class
 )
 object UserListRow {
@@ -86,34 +80,37 @@ object UserListRow {
         entry: Entry?,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
-        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val avatarImageState = rememberCoilImageState(entry?.user?.avatar?.large)
         val navigationCallback = LocalNavigationCallback.current
-        ElevatedCard(
-            onClick = {
-                if (entry != null) {
-                    navigationCallback.onUserClick(
-                        entry.user,
-                        imageWidthToHeightRatio,
+        val sharedTransitionKey = entry?.user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
+        val onUserClick = {
+            if (entry != null) {
+                navigationCallback.navigate(
+                    AnimeDestinations.User(
+                        userId = entry.user.id.toString(),
+                        sharedTransitionKey = sharedTransitionKey,
+                        headerParams = UserHeaderParams(
+                            name = entry.user.name,
+                            bannerImage = null,
+                            coverImage = avatarImageState.toImageState(),
+                        ),
                     )
-                }
-            },
+                )
+            }
+        }
+        ElevatedCard(
+            onClick = onUserClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = MIN_HEIGHT)
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 UserImage(
-                    screenKey = screenKey,
                     entry = entry,
-                    onClick = {
-                        if (entry != null) {
-                            navigationCallback.onUserClick(
-                                entry.user,
-                                imageWidthToHeightRatio,
-                            )
-                        }
-                    },
-                    onRatioAvailable = { imageWidthToHeightRatio = it }
+                    imageState = avatarImageState,
+                    onClick = onUserClick,
+                    modifier = Modifier.sharedElement(sharedTransitionKey, "user_image")
                 )
 
                 Column(
@@ -143,28 +140,28 @@ object UserListRow {
 
     @Composable
     private fun UserImage(
-        screenKey: String,
         entry: Entry?,
         onClick: () -> Unit,
-        onRatioAvailable: (Float) -> Unit,
+        imageState: CoilImageState,
+        modifier: Modifier,
     ) {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
-        val colorCalculationState = LocalColorCalculationState.current
         UserAvatarImage(
-            image = ImageRequest.Builder(LocalContext.current)
-                .data(entry?.user?.avatar?.large)
+            imageState = imageState,
+            image = imageState.request()
                 .crossfade(true)
-                .allowHardware(colorCalculationState.allowHardware(entry?.user?.id?.toString()))
                 .size(
                     width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
                     height = Dimension.Undefined
                 )
                 .build(),
+            contentScale = ContentScale.Crop,
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
                 .heightIn(min = MIN_HEIGHT)
                 .width(IMAGE_WIDTH)
+                .then(modifier)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .placeholder(
                     visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
@@ -177,18 +174,7 @@ object UserListRow {
                     onLongClickLabel = stringResource(
                         R.string.anime_user_image_long_press_preview
                     ),
-                ),
-            contentScale = ContentScale.Crop,
-            onSuccess = {
-                onRatioAvailable(it.widthToHeightRatio())
-                if (entry != null) {
-                    ComposeColorUtils.calculatePalette(
-                        id = entry.user.id.toString(),
-                        image = it.result.image,
-                        colorCalculationState = colorCalculationState,
-                    )
-                }
-            }
+                )
         )
     }
 
@@ -238,7 +224,8 @@ object UserListRow {
                     val languageOptionMedia = LocalLanguageOptionMedia.current
                     val sharedTransitionKey = it?.media?.id?.toString()
                         ?.let { SharedTransitionKey.makeKeyForId(it) }
-                    val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
+                    val sharedContentState =
+                        rememberSharedContentState(sharedTransitionKey, "media_image")
                     val imageState = rememberCoilImageState(it?.media?.coverImage?.extraLarge)
                     ListRowSmallImage(
                         density = density,

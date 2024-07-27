@@ -10,15 +10,14 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 
 val UpperHalfBiasAlignment = BiasAbsoluteAlignment(0f, -0.5f)
 
@@ -100,40 +99,19 @@ fun StaffCoverImage(
 
 @Composable
 fun UserAvatarImage(
-    image: String?,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Fit,
-    onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
-    contentDescriptionTextRes: Int = R.string.anime_user_image,
-) {
-    // TODO: Shared transition
-    AsyncImage(
-        model = image,
-        contentDescription = stringResource(contentDescriptionTextRes),
-        contentScale = contentScale,
-        alignment = UpperHalfBiasAlignment,
-        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-        onSuccess = onSuccess,
-        modifier = modifier.blurForScreenshotMode(),
-    )
-}
-
-@Composable
-fun UserAvatarImage(
+    imageState: CoilImageState?,
     image: ImageRequest,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
-    onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     contentDescriptionTextRes: Int = R.string.anime_user_image,
 ) {
-    // TODO: Shared element
-    AsyncImage(
+    CoilImage(
+        state = imageState,
         model = image,
         contentDescription = stringResource(contentDescriptionTextRes),
         contentScale = contentScale,
         alignment = UpperHalfBiasAlignment,
         fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-        onSuccess = onSuccess,
         modifier = modifier.blurForScreenshotMode(),
     )
 }

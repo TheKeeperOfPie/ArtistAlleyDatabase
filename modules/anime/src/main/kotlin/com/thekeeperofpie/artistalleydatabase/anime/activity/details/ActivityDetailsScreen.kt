@@ -68,6 +68,7 @@ import com.anilist.ActivityDetailsQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -77,16 +78,21 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCa
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
@@ -361,12 +367,25 @@ private fun ReplyRow(
     val user = replyEntry?.reply?.user
     Column(modifier = Modifier.fillMaxWidth()) {
         val navigationCallback = LocalNavigationCallback.current
+        val imageState = rememberCoilImageState(user?.avatar?.large)
+        val sharedTransitionKey = user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .clickable {
                     if (user != null) {
-                        navigationCallback.onUserClick(user, 1f)
+                        navigationCallback.navigate(
+                            AnimeDestinations.User(
+                                userId = user.id.toString(),
+                                sharedTransitionKey = sharedTransitionKey,
+                                headerParams = UserHeaderParams(
+                                    name = user.name,
+                                    bannerImage = null,
+                                    coverImage = imageState.toImageState(),
+                                )
+                            )
+                        )
                     }
                 }
                 .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 8.dp)
@@ -374,9 +393,11 @@ private fun ReplyRow(
             val image = user?.avatar?.large
             if (replyEntry == null || image != null) {
                 UserAvatarImage(
-                    image = image,
+                    imageState = imageState,
+                    image = imageState.request().build(),
                     modifier = Modifier
                         .size(32.dp)
+                        .sharedElement(sharedTransitionKey, "user_image")
                         .clip(RoundedCornerShape(8.dp))
                         .placeholder(
                             visible = replyEntry == null,

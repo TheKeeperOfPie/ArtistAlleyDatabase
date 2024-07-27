@@ -80,6 +80,7 @@ import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -91,13 +92,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.openForceExternal
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 object ForumComposables {
     const val FORUM_THREADS_ABOVE_FOLD = 3
@@ -236,14 +243,13 @@ fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Mod
             .height(IntrinsicSize.Min)
             .then(modifier),
     ) {
-        ThreadCardContent(screenKey, thread)
+        ThreadCardContent(thread)
     }
 }
 
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun ColumnScope.ThreadCardContent(
-    screenKey: String,
     thread: ForumThread?,
     modifier: Modifier = Modifier,
 ) {
@@ -314,11 +320,16 @@ fun ColumnScope.ThreadCardContent(
             Spacer(Modifier.height(12.dp))
 
             val user = thread?.replyUser ?: thread?.user
-            if (thread == null || user?.avatar?.large != null) {
+            val image = user?.avatar?.large
+            val imageState = rememberCoilImageState(image)
+            val sharedTransitionKey = user?.id?.toString()
+                ?.let { SharedTransitionKey.makeKeyForId(it) }
+            if (thread == null || image != null) {
                 UserImage(
-                    screenKey = screenKey,
                     loading = thread == null,
                     user = user,
+                    sharedTransitionKey = sharedTransitionKey,
+                    imageState = imageState,
                 )
 
                 Spacer(Modifier.height(4.dp))
@@ -475,11 +486,15 @@ fun ThreadAuthor(
         modifier = modifier.padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         val image = user?.avatar?.large
+        val imageState = rememberCoilImageState(image)
+        val sharedTransitionKey = user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         if (loading || image != null) {
             UserImage(
-                screenKey = screenKey,
                 loading = loading,
                 user = user,
+                sharedTransitionKey = sharedTransitionKey,
+                imageState = imageState,
             )
         }
 
@@ -500,21 +515,34 @@ fun ThreadAuthor(
 
 @Composable
 private fun UserImage(
-    screenKey: String,
     loading: Boolean,
     user: UserNavigationData?,
+    sharedTransitionKey: SharedTransitionKey?,
+    imageState: CoilImageState,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val navigationCallback = LocalNavigationCallback.current
     UserAvatarImage(
-        image = user?.avatar?.large,
+        imageState = imageState,
+        image = imageState.request().build(),
         modifier = Modifier
             .size(32.dp)
+            .sharedElement(sharedTransitionKey, "user_image")
             .clip(shape)
             .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
             .clickable {
                 if (user != null) {
-                    navigationCallback.onUserClick(user, 1f)
+                    navigationCallback.navigate(
+                        AnimeDestinations.User(
+                            userId = user.id.toString(),
+                            sharedTransitionKey = sharedTransitionKey,
+                            headerParams = UserHeaderParams(
+                                name = user.name,
+                                bannerImage = null,
+                                coverImage = imageState.toImageState(),
+                            )
+                        )
+                    )
                 }
             }
             .placeholder(
@@ -861,12 +889,24 @@ fun ThreadCommentContent(
     onClickReplyComment: ((String, StableSpanned?) -> Unit)? = null,
 ) {
     val navigationCallback = LocalNavigationCallback.current
+    val imageState = rememberCoilImageState(user?.avatar?.large)
+    val sharedTransitionKey = user?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .clickable {
                 if (user != null) {
-                    navigationCallback.onUserClick(user, 1f)
+                    navigationCallback.navigate(
+                        AnimeDestinations.User(
+                            userId = user.id.toString(),
+                            sharedTransitionKey = sharedTransitionKey,
+                            headerParams = UserHeaderParams(
+                                name = user.name,
+                                bannerImage = null,
+                                coverImage = imageState.toImageState(),
+                            )
+                        )
+                    )
                 }
             }
             .padding(start = 16.dp, end = 4.dp, top = 10.dp, bottom = 8.dp)
@@ -874,9 +914,10 @@ fun ThreadCommentContent(
         val image = user?.avatar?.large
         if (loading || image != null) {
             UserImage(
-                screenKey = screenKey,
                 loading = loading,
                 user = user,
+                sharedTransitionKey = sharedTransitionKey,
+                imageState = imageState,
             )
         }
 

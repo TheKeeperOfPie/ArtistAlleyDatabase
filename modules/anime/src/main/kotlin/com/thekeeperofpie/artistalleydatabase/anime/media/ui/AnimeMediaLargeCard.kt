@@ -28,9 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -46,8 +43,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil3.annotation.ExperimentalCoilApi
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaHeaderData
@@ -64,27 +59,24 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 @OptIn(
-    ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
-    ExperimentalCoilApi::class
+    ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class
 )
 object AnimeMediaLargeCard {
 
@@ -118,7 +110,8 @@ object AnimeMediaLargeCard {
             val navigationCallback = LocalNavigationCallback.current
             val ignoreController = LocalIgnoreController.current
             val title = entry?.primaryTitle()
-            val imageState = rememberCoilImageState(entry?.imageBanner ?: entry?.image)
+            val imageState =
+                rememberCoilImageState(entry?.imageBanner ?: entry?.image, requestColors = true)
             val isBanner = entry?.imageBanner != null
             Box(
                 modifier = Modifier.combinedClickable(
@@ -212,10 +205,7 @@ object AnimeMediaLargeCard {
                                     format = entry.format,
                                 )
                             }
-                            val colorCalculationState = LocalColorCalculationState.current
-                            val (containerColor, textColor) =
-                                colorCalculationState.getColors(entry?.mediaId)
-
+                            val (containerColor, textColor) = imageState.colors
                             MediaTagRow(
                                 loading = entry == null,
                                 tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
@@ -253,36 +243,23 @@ object AnimeMediaLargeCard {
         imageState: CoilImageState,
     ) {
         val foregroundColor = MaterialTheme.colorScheme.surface
-        var loaded by remember(entry?.mediaId) { mutableStateOf(false) }
         val appTheme = LocalAppTheme.current
         val isLightTheme = appTheme == AppThemeSetting.LIGHT
                 || (appTheme == AppThemeSetting.AUTO && !isSystemInDarkTheme())
-        val colorCalculationState = LocalColorCalculationState.current
         val alpha by animateFloatAsState(
-            if (loaded) 1f else 0f,
+            if (imageState.success) 1f else 0f,
             label = "AnimeMediaLargeCard banner image alpha",
         )
         CoilImage(
             state = imageState,
             model = imageState.request()
                 .crossfade(true)
-                .allowHardware(colorCalculationState.allowHardware(entry?.mediaId))
                 .size(
                     width = Dimension.Undefined,
                     height = Dimension.Pixels(
                         LocalDensity.current.run { HEIGHT.roundToPx() / 2 }
                     ),
                 )
-                .listener(onSuccess = { _, result ->
-                    loaded = true
-                    if (entry != null) {
-                        ComposeColorUtils.calculatePalette(
-                            id = entry.mediaId,
-                            image = result.image,
-                            colorCalculationState = colorCalculationState,
-                        )
-                    }
-                })
                 .build(),
             contentScale = ContentScale.Crop,
             contentDescription = stringResource(

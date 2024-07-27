@@ -67,7 +67,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.type.MediaListStatus
@@ -86,12 +85,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionPrefixProvider
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
@@ -259,26 +256,17 @@ object AnimeMediaEditBottomSheet {
                 val navigationCallback = LocalNavigationCallback.current
                 val coverImageState = rememberCoilImageState(coverImage)
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
-                val colorCalculationState = LocalColorCalculationState.current
                 val sharedTransitionKey = SharedTransitionKey.makeKeyForId(mediaId)
                 MediaCoverImage(
                     imageState = coverImageState,
                     image = coverImageState.request()
                         .crossfade(true)
-                        .allowHardware(colorCalculationState.allowHardware(mediaId))
                         .size(
                             width = Dimension.Pixels(
                                 LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
                             ),
                             height = Dimension.Undefined
                         )
-                        .listener(onSuccess = { _, result ->
-                            ComposeColorUtils.calculatePalette(
-                                id = mediaId,
-                                image = result.image,
-                                colorCalculationState = colorCalculationState,
-                            )
-                        })
                         .build(),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

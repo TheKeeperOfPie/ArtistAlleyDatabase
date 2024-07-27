@@ -17,22 +17,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.character.rememberImageStateBelowInnerImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -68,9 +66,10 @@ object StaffMediaScreen {
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         items(entries, { it.id }) {
-                            val imageState = rememberCoilImageState(it.character.image?.large)
-                            val innerImageState = rememberCoilImageState(it.media?.coverImage?.extraLarge)
-                            val colorCalculationState = LocalColorCalculationState.current
+                            val image = it.character.image?.large
+                            val innerImage = it.media?.coverImage?.extraLarge
+                            val imageState = rememberImageStateBelowInnerImage(image, innerImage)
+                            val innerImageState = rememberCoilImageState(innerImage)
                             val languageOptionMedia = LocalLanguageOptionMedia.current
                             val characterName = it.character.name?.primaryName()
                             val characterSharedTransitionKey =
@@ -78,15 +77,14 @@ object StaffMediaScreen {
                             val mediaSharedTransitionKey = it.media?.id?.toString()
                                 ?.let { SharedTransitionKey.makeKeyForId(it) }
                             CharacterSmallCard(
-                                screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                                 id = EntryId("anime_character", it.character.id.toString()),
                                 sharedTransitionKey = characterSharedTransitionKey,
                                 sharedTransitionIdentifier = "character_image",
                                 innerSharedTransitionKey = mediaSharedTransitionKey,
                                 innerSharedTransitionIdentifier = "media_image",
-                                image = imageState.uri,
+                                image = image,
                                 imageState = imageState,
-                                innerImage = innerImageState.uri,
+                                innerImage = innerImage,
                                 innerImageState = innerImageState,
                                 onClick = {
                                     navigationCallback.navigate(
@@ -98,9 +96,6 @@ object StaffMediaScreen {
                                                 subtitle = null,
                                                 favorite = null,
                                                 coverImage = imageState.toImageState(),
-                                                colorArgb = colorCalculationState
-                                                    .getColorsNonComposable(it.character.id.toString())
-                                                    .first.toArgb(),
                                             )
                                         )
                                     )

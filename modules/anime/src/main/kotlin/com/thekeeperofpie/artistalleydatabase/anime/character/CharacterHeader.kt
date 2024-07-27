@@ -25,8 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,14 +39,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.ImageState
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.maybeOverride
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.maybeOverride
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
 import kotlinx.parcelize.Parcelize
@@ -64,20 +59,14 @@ fun CharacterHeader(
     coverImageState: CoilImageState = rememberCoilImageState(headerValues.coverImage),
     onFavoriteChanged: (Boolean) -> Unit,
 ) {
-    val colorCalculationState = LocalColorCalculationState.current
     CoverAndBannerHeader(
         upIconOption = upIconOption,
         headerValues = headerValues,
         coverImageState = coverImageState,
-        coverImageAllowHardware = colorCalculationState.allowHardware(characterId),
         sharedTransitionKey = sharedTransitionKey,
         coverImageSharedTransitionIdentifier = "character_image",
         bannerImageSharedTransitionIdentifier = "character_banner_image",
         progress = progress,
-        color = { headerValues.color(colorCalculationState) },
-        coverImageOnSuccess = {
-            ComposeColorUtils.calculatePalette(characterId, it.result.image, colorCalculationState)
-        },
         menuContent = {
             FavoriteIconButton(
                 favorite = headerValues.favorite,
@@ -166,7 +155,6 @@ data class CharacterHeaderParams(
     val subtitle: String?,
     val coverImage: ImageState?,
     val favorite: Boolean?,
-    val colorArgb: Int? = null,
 ) : Parcelable
 
 class CharacterHeaderValues(
@@ -185,13 +173,4 @@ class CharacterHeaderValues(
 
     @Composable
     fun subtitle() = character()?.name?.subtitleName() ?: params?.subtitle ?: ""
-
-    @Composable
-    fun color(colorCalculationState: ColorCalculationState) =
-        colorCalculationState.getColors(character()?.id?.toString()).first
-            .takeOrElse { params?.colorArgb?.let(::Color) ?: Color.Unspecified }
-
-    fun colorNonComposable(colorCalculationState: ColorCalculationState) =
-        colorCalculationState.getColorsNonComposable(character()?.id?.toString()).first
-            .takeOrElse { params?.colorArgb?.let(::Color) ?: Color.Unspecified }
 }

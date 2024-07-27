@@ -101,11 +101,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
@@ -813,7 +813,6 @@ object Anime2AnimeScreen {
                         .widthIn(max = COLUMN_MAX_WIDTH)
                 ) {
                     StaffListRow(
-                        screenKey = SCREEN_KEY,
                         staffList = { continuation.staff.collectAsLazyPagingItems() },
                         contentPadding = PaddingValues(0.dp),
                         // TODO: View all staff

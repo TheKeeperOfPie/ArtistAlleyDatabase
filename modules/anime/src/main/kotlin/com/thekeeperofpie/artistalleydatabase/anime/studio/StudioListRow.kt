@@ -39,9 +39,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditI
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState

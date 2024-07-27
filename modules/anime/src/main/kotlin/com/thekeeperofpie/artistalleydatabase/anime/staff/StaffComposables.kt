@@ -35,7 +35,6 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -44,13 +43,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -76,7 +73,7 @@ fun LazyListScope.staffSection(
     }
 
     item(key = "$titleRes-section") {
-        StaffListRow(screenKey = screenKey, staffList = { staffList }, roleLines = roleLines)
+        StaffListRow(staffList = { staffList }, roleLines = roleLines)
     }
 }
 
@@ -93,7 +90,6 @@ fun LazyListScope.staffSection(
 
 @Composable
 fun StaffListRow(
-    screenKey: String,
     staffList: @Composable () -> LazyPagingItems<DetailsStaff>,
     roleLines: Int = 1,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
@@ -111,17 +107,19 @@ fun StaffListRow(
             contentType = staffList.itemContentType { "staff" },
         ) {
             val staff = staffList[it]
-            val coverImageState = rememberCoilImageState(staff?.image)
-            val colorCalculationState = LocalColorCalculationState.current
+            val coverImageState = rememberCoilImageState(
+                staff?.image,
+                heightStartThreshold = 3 / 4f,
+                selectMaxPopulation = true,
+            )
             val staffName = staff?.staff?.name?.primaryName()
             val staffSubtitle = staff?.staff?.name?.subtitleName()
             val sharedTransitionKey = staff?.staff?.id?.toString()
                 ?.let { SharedTransitionKey.makeKeyForId(it) }
             StaffSmallCard(
-                screenKey = screenKey,
                 id = EntryId("anime_staff", staff?.id.orEmpty()),
-                imageState = coverImageState,
                 sharedTransitionKey = sharedTransitionKey,
+                imageState = coverImageState,
                 onClick = {
                     if (staff != null) {
                         navigationCallback.navigate(
@@ -132,7 +130,6 @@ fun StaffListRow(
                                     name = staffName,
                                     subtitle = staffSubtitle,
                                     coverImage = coverImageState.toImageState(),
-                                    colorArgb = colorCalculationState.getColorsNonComposable(staff.staff.id.toString()).first.toArgb(),
                                     favorite = null,
                                 )
                             )
@@ -191,7 +188,6 @@ fun StaffListRow(
 
 @Composable
 fun StaffSmallCard(
-    screenKey: String,
     id: EntryId,
     sharedTransitionKey: SharedTransitionKey?,
     imageState: CoilImageState,
@@ -200,22 +196,21 @@ fun StaffSmallCard(
     content: @Composable (textColor: Color) -> Unit,
 ) {
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
-    val colorCalculationState = LocalColorCalculationState.current
-    val colors = colorCalculationState.getColors(id.scopedId)
+    val colors = imageState.colors
 
     val animationProgress by animateIntAsState(
-        if (colors.first.isUnspecified) 0 else 255,
+        if (colors.containerColor.isUnspecified) 0 else 255,
         label = "Staff card color fade in",
     )
 
     val containerColor = when {
-        colors.first.isUnspecified || animationProgress == 0 ->
+        colors.containerColor.isUnspecified || animationProgress == 0 ->
             MaterialTheme.colorScheme.surface
-        animationProgress == 255 -> colors.first
+        animationProgress == 255 -> colors.containerColor
         else -> Color(
             ColorUtils.compositeColors(
                 ColorUtils.setAlphaComponent(
-                    colors.first.toArgb(),
+                    colors.containerColor.toArgb(),
                     animationProgress
                 ),
                 MaterialTheme.colorScheme.surface.toArgb()
@@ -224,12 +219,12 @@ fun StaffSmallCard(
     }
 
     val textColor = when {
-        colors.second.isUnspecified || animationProgress == 0 -> defaultTextColor
-        animationProgress == 255 -> colors.second
+        colors.textColor.isUnspecified || animationProgress == 0 -> defaultTextColor
+        animationProgress == 255 -> colors.textColor
         else -> Color(
             ColorUtils.compositeColors(
                 ColorUtils.setAlphaComponent(
-                    colors.second.toArgb(),
+                    colors.textColor.toArgb(),
                     animationProgress
                 ),
                 defaultTextColor.toArgb()
@@ -249,21 +244,10 @@ fun StaffSmallCard(
             imageState = imageState,
             image = imageState.request()
                 .crossfade(true)
-                .allowHardware(colorCalculationState.allowHardware(id.scopedId))
                 .size(
                     width = density.run { width.roundToPx() },
                     height = density.run { (width * 1.5f).roundToPx() },
                 )
-                .listener(onSuccess = { _, result ->
-                    ComposeColorUtils.calculatePalette(
-                        id = id.scopedId,
-                        image = result.image,
-                        colorCalculationState = colorCalculationState,
-                        heightStartThreshold = 3 / 4f,
-                        widthEndThreshold = 1f,
-                        selectMaxPopulation = true,
-                    )
-                })
                 .build(),
             modifier = Modifier
                 .size(width = width, height = width * 1.5f)

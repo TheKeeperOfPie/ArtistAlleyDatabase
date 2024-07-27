@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -22,10 +21,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 
 object StaffOverviewScreen {
@@ -38,7 +36,6 @@ object StaffOverviewScreen {
         expandedState: StaffDetailsScreen.ExpandedState,
     ) {
         val characters = viewModel.characters.collectAsLazyPagingItems()
-        val colorCalculationState = LocalColorCalculationState.current
         val staffName = entry.staff.name?.primaryName()
         val staffSubtitle = entry.staff.name?.subtitleName()
         LazyColumn(
@@ -68,8 +65,6 @@ object StaffOverviewScreen {
                                 name = staffName,
                                 subtitle = staffSubtitle,
                                 coverImage = coverImageState.toImageState(),
-                                colorArgb = colorCalculationState.getColorsNonComposable(entry.staff.id.toString())
-                                    .first.toArgb(),
                                 favorite = viewModel.favoritesToggleHelper.favorite,
                             )
                         )

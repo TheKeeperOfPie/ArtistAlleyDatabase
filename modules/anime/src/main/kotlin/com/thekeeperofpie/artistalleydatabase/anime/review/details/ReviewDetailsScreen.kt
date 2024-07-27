@@ -47,9 +47,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.ReviewDetailsQuery
 import com.anilist.type.ReviewRating
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -63,15 +60,17 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteT
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -172,25 +171,35 @@ object ReviewDetailsScreen {
                             .height(IntrinsicSize.Min)
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        var userImageWidthToHeightRatio by remember { MutableSingle(1f) }
                         val navigationCallback = LocalNavigationCallback.current
                         val shape = RoundedCornerShape(12.dp)
+                        val imageState = rememberCoilImageState(review.user?.avatar?.large)
+                        val sharedTransitionKey = review.user?.id?.toString()
+                            ?.let { SharedTransitionKey.makeKeyForId(it) }
                         UserAvatarImage(
-                            image = review.user?.avatar?.large,
+                            imageState = imageState,
+                            image = imageState.request().build(),
                             modifier = Modifier
                                 .size(64.dp)
+                                .sharedElement(sharedTransitionKey, "user_image")
                                 .clip(shape)
                                 .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                                 .clickable {
                                     review.user?.let {
-                                        navigationCallback.onUserClick(
-                                            it,
-                                            userImageWidthToHeightRatio
+                                        navigationCallback.navigate(
+                                            AnimeDestinations.User(
+                                                userId = it.id.toString(),
+                                                sharedTransitionKey = sharedTransitionKey,
+                                                headerParams = UserHeaderParams(
+                                                    name = it.name,
+                                                    bannerImage = null,
+                                                    coverImage = imageState.toImageState(),
+                                                )
+                                            )
                                         )
                                     }
                                 },
                             contentScale = ContentScale.FillHeight,
-                            onSuccess = { userImageWidthToHeightRatio = it.widthToHeightRatio() },
                             contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
                         )
 

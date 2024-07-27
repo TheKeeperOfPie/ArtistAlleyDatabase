@@ -97,10 +97,10 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.image.LocalImageColorsState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
@@ -228,7 +228,7 @@ class MainActivity : ComponentActivity() {
                 }
 
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
-                val colorCalculationState = rememberColorCalculationState()
+                val imageColorsState = rememberImageColorsState()
                 CompositionLocalProvider(
                     LocalMonetizationProvider provides monetizationProvider,
                     LocalSubscriptionProvider provides subscriptionProvider,
@@ -244,7 +244,7 @@ class MainActivity : ComponentActivity() {
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
                     LocalMarkwon provides markwon,
                     LocalAnimeComposeSettings provides settings.composeSettingsData(),
-                    LocalColorCalculationState provides colorCalculationState,
+                    LocalImageColorsState provides imageColorsState,
                     LocalIgnoreController provides ignoreController,
                 ) {
                     // TODO: Draw inside insets for applicable screens

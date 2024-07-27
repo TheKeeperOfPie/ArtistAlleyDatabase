@@ -16,7 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteT
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 
 object MediaReviewsScreen {
 

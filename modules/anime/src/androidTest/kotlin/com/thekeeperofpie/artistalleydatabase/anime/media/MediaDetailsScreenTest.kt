@@ -35,9 +35,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension

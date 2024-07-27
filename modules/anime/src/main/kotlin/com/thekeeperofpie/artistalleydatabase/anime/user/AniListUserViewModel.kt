@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -52,6 +53,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
@@ -88,11 +91,12 @@ class AniListUserViewModel @Inject constructor(
     private val markwon: Markwon,
     featureOverrideProvider: FeatureOverrideProvider,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
     val screenKey = "${AnimeNavDestinations.USER.id}-${UUID.randomUUID()}"
-    private var initialized = false
-    val userId = savedStateHandle.get<String>("userId")
+    private val destination = savedStateHandle.toDestination<AnimeDestinations.User>(navigationTypeMap)
+    val userId = destination.userId
 
     var entry by mutableStateOf<AniListUserScreen.Entry?>(null)
     val viewer = aniListApi.authedUser

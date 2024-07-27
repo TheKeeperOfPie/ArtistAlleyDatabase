@@ -36,14 +36,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.CharacterAdvancedSearchQuery.Data.Page.Character
@@ -70,13 +68,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
@@ -101,7 +97,6 @@ object CharacterListRow {
     ) {
         val coverImageState = rememberCoilImageState(entry?.character?.image?.large)
         val navigationCallback = LocalNavigationCallback.current
-        val colorCalculationState = LocalColorCalculationState.current
         val characterName = entry?.character?.name?.primaryName()
         val characterSharedTransitionKey = entry?.character?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
         val onClick = {
@@ -115,8 +110,6 @@ object CharacterListRow {
                             subtitle = null,
                             favorite = null,
                             coverImage = coverImageState.toImageState(),
-                            colorArgb = colorCalculationState.getColorsNonComposable(entry.character.id.toString())
-                                .first.toArgb(),
                         )
                     )
                 )
@@ -134,7 +127,6 @@ object CharacterListRow {
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 CharacterImage(
-                    screenKey = screenKey,
                     imageState = coverImageState,
                     entry = entry,
                     onClick = onClick,
@@ -182,31 +174,19 @@ object CharacterListRow {
 
     @Composable
     private fun CharacterImage(
-        screenKey: String,
         imageState: CoilImageState,
         entry: Entry?,
         onClick: () -> Unit,
     ) {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
-        val colorCalculationState = LocalColorCalculationState.current
         CharacterCoverImage(
             imageState = imageState,
             image = imageState.request()
                 .crossfade(true)
-                .allowHardware(colorCalculationState.allowHardware(entry?.character?.id?.toString()))
                 .size(
                     width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
                     height = Dimension.Undefined
                 )
-                .listener(onSuccess = { _, result ->
-                    if (entry != null) {
-                        ComposeColorUtils.calculatePalette(
-                            entry.character.id.toString(),
-                            result.image,
-                            colorCalculationState,
-                        )
-                    }
-                })
                 .build(),
             modifier = Modifier
                 .fillMaxHeight()
@@ -313,7 +293,6 @@ object CharacterListRow {
             ?: listOf(null, null, null, null, null)
         val density = LocalDensity.current
         val navigationCallback = LocalNavigationCallback.current
-        val colorCalculationState = LocalColorCalculationState.current
         val voiceActor = entry?.voiceActor()
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -344,9 +323,6 @@ object CharacterListRow {
                                         name = voiceActorName,
                                         subtitle = voiceActorSubtitle,
                                         coverImage = voiceActorImageState.toImageState(),
-                                        colorArgb = colorCalculationState.getColorsNonComposable(
-                                            staffId.toString()
-                                        ).first.toArgb(),
                                         favorite = null,
                                     )
                                 )

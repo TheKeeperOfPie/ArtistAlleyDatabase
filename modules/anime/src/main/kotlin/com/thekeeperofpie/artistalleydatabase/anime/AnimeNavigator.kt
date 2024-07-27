@@ -25,7 +25,6 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.anilist.fragment.UserNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
@@ -113,9 +112,9 @@ import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import kotlin.reflect.KClass
@@ -339,7 +338,8 @@ object AnimeNavigator {
                 title = mediaTitle,
                 coverImage = coverImageState.toImageState(),
                 media = media,
-                favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite ?: media?.isFavourite,
+                favorite = mediaDetailsViewModel.favoritesToggleHelper.favorite
+                    ?: media?.isFavourite,
             )
             AnimeMediaDetailsScreen(
                 viewModel = mediaDetailsViewModel,
@@ -606,20 +606,19 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.USER.id
-                    + "?userId={userId}${UserHeaderValues.routeSuffix}",
+        navGraphBuilder.sharedElementComposable<AnimeDestinations.User>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
             ),
-            arguments = navArguments("userId") {
-                type = NavType.StringType
-                nullable = true
-            } + UserHeaderValues.navArguments(),
         ) {
             val viewModel = hiltViewModel<AniListUserViewModel>()
-            val headerValues = UserHeaderValues(it.arguments) { viewModel.entry?.user }
+            val destination = it.toRoute<AnimeDestinations.User>()
+            val headerValues = UserHeaderValues(
+                params = destination.headerParams,
+                user = { viewModel.entry?.user },
+            )
             AniListUserScreen(
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
@@ -1145,16 +1144,6 @@ object AnimeNavigator {
         )
     }
 
-    fun onUserClick(
-        navHostController: NavHostController,
-        user: UserNavigationData,
-        imageWidthToHeightRatio: Float,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.USER.id +
-                "?userId=${user.id}" +
-                UserHeaderValues.routeSuffix(user, imageWidthToHeightRatio)
-    )
-
     fun onUserListClick(
         navHostController: NavHostController,
         userId: String,
@@ -1230,10 +1219,6 @@ object AnimeNavigator {
                     mediaListStatus = null,
                 )
             }
-        }
-
-        fun onUserClick(userNavigationData: UserNavigationData, imageWidthToHeightRatio: Float) {
-            navHostController?.let { onUserClick(it, userNavigationData, imageWidthToHeightRatio) }
         }
 
         fun onCharacterLongClick(id: String) {

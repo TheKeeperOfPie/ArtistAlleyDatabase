@@ -52,13 +52,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.ImageState
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.maybeOverride
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.maybeOverride
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
 import kotlinx.parcelize.Parcelize
@@ -89,25 +88,17 @@ fun MediaHeader(
             titles?.indexOf(defaultTitle)?.coerceAtLeast(0) ?: 0
         )
     }
-    val colorCalculationState = LocalColorCalculationState.current
     CoverAndBannerHeader(
         upIconOption = upIconOption,
         headerValues = headerValues,
         coverImageState = coverImageState,
-        coverImageAllowHardware = colorCalculationState.allowHardware(mediaId),
         sharedTransitionKey = sharedTransitionKey.takeIf { enableCoverImageSharedElement },
         coverImageSharedTransitionIdentifier = "media_image",
         bannerImageSharedTransitionIdentifier = "media_banner_image",
         progress = progress,
-        color = { headerValues.color },
         onClickEnabled = (titles?.size ?: 0) > 1,
         onClick = {
             preferredTitle = (preferredTitle + 1) % (titles?.size ?: 1)
-        },
-        coverImageOnSuccess = {
-            if (mediaId != null) {
-                ComposeColorUtils.calculatePalette(mediaId, it.result.image, colorCalculationState)
-            }
         },
         menuContent = {
             FavoriteIconButton(
@@ -290,7 +281,8 @@ data class MediaHeaderParams(
         subtitleSeasonYear = mediaCompactWithTags?.seasonYear,
         nextEpisode = mediaCompactWithTags?.nextAiringEpisode?.episode,
         nextEpisodeAiringAt = null,
-        colorArgb = mediaCompactWithTags?.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb(),
+        colorArgb = mediaCompactWithTags?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+            ?.toArgb(),
         favorite = favorite,
         type = mediaCompactWithTags?.type,
     )
@@ -321,15 +313,14 @@ class MediaHeaderValues(
     private val params: MediaHeaderParams?,
     private val media: () -> MediaHeaderData?,
     private val favoriteUpdate: () -> Boolean?,
-): DetailsHeaderValues {
-    val color
-        get() = media()?.coverImage?.color
-            ?.let(ComposeColorUtils::hexToColor)
-            ?: params?.colorArgb?.let(::Color)
+) : DetailsHeaderValues {
     override val coverImage
         get() = params?.coverImage.maybeOverride(media()?.coverImage?.extraLarge)
     override val bannerImage
         get() = params?.bannerImage.maybeOverride(media()?.bannerImage)
+    override val defaultColor = media()?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        ?: params?.colorArgb?.let { Color(it) }
+        ?: Color.Unspecified
     val nextEpisode
         get() = media()?.nextAiringEpisode?.episode
             ?: params?.nextEpisode

@@ -6,7 +6,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
-import android.util.Log
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloat
@@ -42,7 +41,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,8 +63,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import coil3.compose.AsyncImagePainter
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
@@ -75,16 +71,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
@@ -94,7 +90,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedEle
 internal fun CoverAndBannerHeader(
     upIconOption: UpIconOption?,
     headerValues: DetailsHeaderValues,
-    coverImageAllowHardware: Boolean,
     modifier: Modifier = Modifier,
     sharedTransitionKey: SharedTransitionKey?,
     coverImageSharedTransitionIdentifier: String,
@@ -102,11 +97,9 @@ internal fun CoverAndBannerHeader(
     pinnedHeight: Dp = 120.dp,
     progress: Float = 0f,
     coverSize: Dp = 256.dp,
-    color: @Composable () -> Color? = { null },
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
     coverImageState: CoilImageState? = rememberCoilImageState(headerValues.coverImage),
-    coverImageOnSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     menuContent: @Composable() (RowScope.() -> Unit)? = null,
     fadeOutMenu: Boolean = true,
     reserveMenuWidth: Boolean = !fadeOutMenu,
@@ -171,14 +164,18 @@ internal fun CoverAndBannerHeader(
                         }
                     }
                     .run {
-                        val color = color()
-                        val hasColor = color?.isSpecified == true
+                        val color = bannerImageState.colors.containerColor.takeOrElse {
+                            coverImageState?.colors?.containerColor?.takeOrElse {
+                                headerValues.defaultColor ?: Color.Unspecified
+                            } ?: Color.Unspecified
+                        }
+                        val hasColor = color.isSpecified
                         val alpha by animateFloatAsState(
                             if (hasColor) 1f else 0f,
                             label = "Banner image background alpha fade",
                         )
                         if (hasColor && alpha > 0f) {
-                            background(color!!.copy(alpha = alpha))
+                            background(color.copy(alpha = alpha))
                         } else this
                     }
                     .blurForScreenshotMode()
@@ -237,18 +234,14 @@ internal fun CoverAndBannerHeader(
                 Box(modifier = Modifier.padding(vertical = 10.dp)) {
                     ElevatedCard(
                         modifier = Modifier
-                            .sharedElement(sharedTransitionKey, coverImageSharedTransitionIdentifier).also {
-                                Log.d("SharedDebug", "header sharedTransitionKey = $sharedTransitionKey, identifier = $coverImageSharedTransitionIdentifier")
-                            }
+                            .sharedElement(sharedTransitionKey, coverImageSharedTransitionIdentifier)
                     ) {
                         val imageHeight = rowHeight - 20.dp
-                        var success by remember { mutableStateOf(false) }
                         val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
                         CoilImage(
                             state = coverImageState,
                             model = coverImageState.request()
                                 .crossfade(true)
-                                .allowHardware(coverImageAllowHardware)
                                 .size(
                                     width = Dimension.Undefined,
                                     height = Dimension.Pixels(
@@ -259,10 +252,6 @@ internal fun CoverAndBannerHeader(
                             contentScale = ContentScale.FillHeight,
                             error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                             fallback = null,
-                            onSuccess = {
-                                success = true
-                                coverImageOnSuccess(it)
-                            },
                             contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                             modifier = Modifier
                                 .height(imageHeight)

@@ -37,7 +37,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -67,21 +66,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
-import com.thekeeperofpie.artistalleydatabase.compose.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
+import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import kotlinx.collections.immutable.ImmutableList
@@ -166,7 +163,6 @@ object CharacterDetailsScreen {
                             viewModel.voiceActorsDeferred.collectAsLazyPagingItems()
                         val voiceActors =
                             voiceActorsDeferred.takeIf { it.itemCount > 0 } ?: voiceActorsInitial
-                        val colorCalculationState = LocalColorCalculationState.current
                         val character = entry.result?.character
                         val characterName = character?.name?.primaryName()
                         val characterSubtitle = character?.name?.subtitleName()
@@ -186,7 +182,6 @@ object CharacterDetailsScreen {
                                 viewer = viewer,
                                 coverImageState = coverImageState,
                                 expandedState = expandedState,
-                                colorCalculationState = colorCalculationState,
                             )
                         }
                     }
@@ -211,7 +206,6 @@ object CharacterDetailsScreen {
         viewer: AniListViewer?,
         coverImageState: CoilImageState,
         expandedState: ExpandedState,
-        colorCalculationState: ColorCalculationState,
     ) {
         if (!entry.description?.value.isNullOrEmpty()) {
             item("descriptionSection", "descriptionSection") {
@@ -240,7 +234,6 @@ object CharacterDetailsScreen {
             coverImageState = coverImageState,
             expanded = expandedState::media,
             onExpandedChange = { expandedState.media = it },
-            colorCalculationState = colorCalculationState,
         )
 
         infoSection(entry = entry)
@@ -415,7 +408,6 @@ object CharacterDetailsScreen {
         coverImageState: CoilImageState,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
-        colorCalculationState: ColorCalculationState,
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
@@ -438,8 +430,6 @@ object CharacterDetailsScreen {
                             subtitle = characterSubtitle,
                             favorite = headerValues.favorite,
                             coverImage = coverImageState.toImageState(),
-                            colorArgb = headerValues.colorNonComposable(colorCalculationState)
-                                .toArgb(),
                         )
                     )
                 )
