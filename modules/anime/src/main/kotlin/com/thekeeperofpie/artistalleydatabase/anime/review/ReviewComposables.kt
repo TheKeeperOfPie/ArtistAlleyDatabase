@@ -42,7 +42,7 @@ import com.anilist.MediaDetails2Query
 import com.anilist.fragment.MediaAndReviewsReview
 import com.anilist.fragment.MediaNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -111,7 +111,7 @@ private fun ColumnScope.ReviewSmallCardContent(
                 .clickable {
                     review?.user?.let {
                         navigationCallback.navigate(
-                            AnimeDestinations.User(
+                            AnimeDestination.User(
                                 userId = it.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
                                 headerParams = UserHeaderParams(

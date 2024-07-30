@@ -32,7 +32,7 @@ import androidx.paging.compose.itemKey
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
@@ -179,7 +179,7 @@ object ReviewsScreen {
                         onClick = { navigationCallback, coverImageState ->
                             if (entry != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.ReviewDetails(
+                                    AnimeDestination.ReviewDetails(
                                         reviewId = entry.review.id.toString(),
                                         headerParams = MediaHeaderParams(
                                             title = mediaTitle,

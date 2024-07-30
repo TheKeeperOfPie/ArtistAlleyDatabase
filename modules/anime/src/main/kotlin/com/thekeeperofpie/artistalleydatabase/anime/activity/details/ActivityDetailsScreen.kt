@@ -68,7 +68,7 @@ import com.anilist.ActivityDetailsQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -192,17 +192,16 @@ object ActivityDetailsScreen {
                                 when (val activity = result?.activity) {
                                     is ActivityDetailsQuery.Data.ListActivityActivity -> {
                                         ListActivitySmallCard(
-                                            screenKey = SCREEN_KEY,
                                             viewer = viewer,
                                             activity = activity,
                                             mediaEntry = result.mediaEntry,
                                             entry = result,
                                             onActivityStatusUpdate = viewModel.toggleHelper::toggle,
+                                            onClickListEdit = editViewModel::initialize,
                                             showActionsRow = true,
                                             onClickDelete = {
                                                 deletePromptData = Either.Left(Unit)
                                             },
-                                            onClickListEdit = editViewModel::initialize,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.TextActivityActivity -> {
@@ -376,7 +375,7 @@ private fun ReplyRow(
                 .clickable {
                     if (user != null) {
                         navigationCallback.navigate(
-                            AnimeDestinations.User(
+                            AnimeDestination.User(
                                 userId = user.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
                                 headerParams = UserHeaderParams(

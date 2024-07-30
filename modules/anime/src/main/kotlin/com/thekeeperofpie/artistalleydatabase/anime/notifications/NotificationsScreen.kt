@@ -107,7 +107,6 @@ object NotificationsScreen {
                                         when (val notification = entry?.notification) {
                                             is NotificationsQuery.Data.Page.ActivityMentionNotificationNotification ->
                                                 ActivityMentionNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     activityEntry = entry.activityEntry,
@@ -117,7 +116,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ActivityMessageNotificationNotification ->
                                                 ActivityMessageNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     activityEntry = entry.activityEntry,
@@ -133,12 +131,10 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.FollowingNotificationNotification ->
                                                 FollowingNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     notification = notification,
                                                 )
                                             is NotificationsQuery.Data.Page.ActivityReplyNotificationNotification ->
                                                 ActivityReplyNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     activityEntry = entry.activityEntry,
@@ -148,7 +144,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification ->
                                                 ActivityReplySubscribedNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     activityEntry = entry.activityEntry,
@@ -158,7 +153,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification ->
                                                 ActivityLikedNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     activityEntry = entry.activityEntry,
@@ -168,7 +162,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification ->
                                                 ActivityReplyLikedNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     activityEntry = entry.activityEntry,
@@ -238,7 +231,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ThreadLikeNotificationNotification ->
                                                 ThreadLikeNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     notification = notification,
                                                 )
                                             is NotificationsQuery.Data.Page.OtherNotification,

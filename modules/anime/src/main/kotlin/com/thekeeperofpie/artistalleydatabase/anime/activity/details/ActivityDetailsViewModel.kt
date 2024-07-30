@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableCo
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
@@ -30,6 +31,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEn
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,9 +57,12 @@ class ActivityDetailsViewModel @Inject constructor(
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    val activityId = savedStateHandle.get<String>("activityId")!!
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.ActivityDetails>(navigationTypeMap)
+    val activityId = destination.activityId
 
     val viewer = aniListApi.authedUser
     val refresh = MutableStateFlow(-1L)

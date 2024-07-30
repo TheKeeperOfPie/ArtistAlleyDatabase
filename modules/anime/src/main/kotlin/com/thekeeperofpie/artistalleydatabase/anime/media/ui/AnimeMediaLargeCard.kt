@@ -48,7 +48,7 @@ import coil3.size.Dimension
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
@@ -119,7 +119,7 @@ object AnimeMediaLargeCard {
                     onClick = {
                         if (entry != null) {
                             navigationCallback.navigate(
-                                AnimeDestinations.MediaDetails(
+                                AnimeDestination.MediaDetails(
                                     mediaId = entry.mediaId,
                                     title = title,
                                     coverImage = if (!isBanner) imageState.toImageState() else ImageState(
@@ -211,10 +211,12 @@ object AnimeMediaLargeCard {
                                 tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
                                 onTagClick = { id, name ->
                                     if (entry != null) {
-                                        navigationCallback.onTagClick(
-                                            entry.type ?: MediaType.ANIME,
-                                            id,
-                                            name
+                                        navigationCallback.navigate(
+                                            AnimeDestination.SearchMedia(
+                                                title = name,
+                                                tagId = id,
+                                                mediaType = entry.type ?: MediaType.ANIME,
+                                            )
                                         )
                                     }
                                 },

@@ -98,7 +98,7 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -151,6 +151,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateEnterExit
@@ -456,7 +457,7 @@ object AnimeHomeScreen {
     ) {
         RowHeader(
             titleRes = R.string.anime_news_home_title,
-            viewAllRoute = AnimeNavDestinations.NEWS.id
+            viewAllRoute = AnimeDestination.News,
         )
 
         val itemCount = data?.size ?: 3
@@ -484,7 +485,7 @@ object AnimeHomeScreen {
     ) {
         RowHeader(
             titleRes = R.string.anime_home_activity_label,
-            viewAllRoute = AnimeNavDestinations.ACTIVITY.id
+            viewAllRoute = AnimeDestination.Activity
         )
 
         this@AnimeHomeScreen.ActivityRow(
@@ -531,17 +532,16 @@ object AnimeHomeScreen {
                         )
                     is UserSocialActivityQuery.Data.Page.ListActivityActivity ->
                         ListActivitySmallCard(
-                            screenKey = SCREEN_KEY,
                             viewer = viewer,
                             activity = activity,
                             mediaEntry = entry.media,
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
                             onClickListEdit = onClickListEdit,
-                            clickable = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .recomposeHighlighter()
+                                .recomposeHighlighter(),
+                            clickable = true
                         )
                     is UserSocialActivityQuery.Data.Page.MessageActivityActivity ->
                         MessageActivitySmallCard(
@@ -558,17 +558,16 @@ object AnimeHomeScreen {
                     is UserSocialActivityQuery.Data.Page.OtherActivity,
                     null,
                     -> ListActivitySmallCard(
-                        screenKey = SCREEN_KEY,
                         viewer = viewer,
                         activity = null,
                         mediaEntry = null,
                         entry = null,
                         onActivityStatusUpdate = onActivityStatusUpdate,
                         onClickListEdit = onClickListEdit,
-                        clickable = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .recomposeHighlighter()
+                            .recomposeHighlighter(),
+                        clickable = true
                     )
                 }
             }
@@ -590,11 +589,12 @@ object AnimeHomeScreen {
         val headerTextRes = mediaViewModel.currentHeaderTextRes
         RowHeader(
             titleRes = headerTextRes,
-            viewAllRoute = viewer?.let {
-                AnimeNavDestinations.USER_LIST.id +
-                        "?mediaType=${mediaViewModel.mediaType.rawValue}" +
-                        "&mediaListStatus=${MediaListStatus.CURRENT.rawValue}"
-            }
+            viewAllRoute = AnimeDestination.UserList(
+                userId = null,
+                userName = null,
+                mediaType = mediaViewModel.mediaType,
+                mediaListStatus = MediaListStatus.CURRENT,
+            ),
         )
 
         SharedTransitionKeyScope("anime_home_current_media_row") {
@@ -645,7 +645,7 @@ object AnimeHomeScreen {
     @Composable
     private fun ColumnScope.RowHeader(
         @StringRes titleRes: Int,
-        viewAllRoute: String?,
+        viewAllRoute: AnimeDestination?,
     ) {
         NavigationHeader(
             titleRes = titleRes,
@@ -765,7 +765,7 @@ object AnimeHomeScreen {
         val onClick = rememberCallback {
             if (media != null) {
                 navigationCallback.navigate(
-                    AnimeDestinations.MediaDetails(
+                    AnimeDestination.MediaDetails(
                         mediaId = media.id.toString(),
                         title = title,
                         coverImage = coverImageState.toImageState(),
@@ -941,7 +941,7 @@ object AnimeHomeScreen {
                     onClick = {
                         if (media != null) {
                             navigationCallback.navigate(
-                                AnimeDestinations.MediaDetails(
+                                AnimeDestination.MediaDetails(
                                     mediaId = media.id.toString(),
                                     title = title,
                                     coverImage = coverImageState.toImageState(),
@@ -1085,7 +1085,7 @@ object AnimeHomeScreen {
     ) {
         RowHeader(
             titleRes = R.string.anime_recommendations_home_title,
-            viewAllRoute = AnimeNavDestinations.RECOMMENDATIONS.id,
+            viewAllRoute = AnimeDestination.Recommendations,
         )
 
         val pagerState = rememberPagerState(data = recommendations, placeholderCount = 3)
@@ -1120,7 +1120,7 @@ object AnimeHomeScreen {
     ) {
         RowHeader(
             titleRes = R.string.anime_reviews_home_title,
-            viewAllRoute = AnimeNavDestinations.REVIEWS.id,
+            viewAllRoute = AnimeDestination.Reviews,
         )
 
         val pagerState = rememberPagerState(data = reviews, placeholderCount = 3)
@@ -1134,28 +1134,32 @@ object AnimeHomeScreen {
         ) {
             val entry = reviews.getOrNull(it)
             val mediaTitle = entry?.media?.media?.title?.primaryTitle()
-            ReviewCard(
-                screenKey = SCREEN_KEY,
-                viewer = viewer,
-                review = entry?.review,
-                media = entry?.media,
-                onClick = { navigationCallback, coverImageState ->
-                    if (entry != null) {
-                        navigationCallback.navigate(
-                            AnimeDestinations.ReviewDetails(
-                                reviewId = entry.review.id.toString(),
-                                headerParams = MediaHeaderParams(
-                                    title = mediaTitle,
-                                    coverImage = coverImageState.toImageState(),
-                                    mediaCompactWithTags = entry.media.media,
-                                    favorite = null,
+            SharedTransitionKeyScope("anime_home_review_${entry?.review?.id}") {
+                val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
+                ReviewCard(
+                    screenKey = SCREEN_KEY,
+                    viewer = viewer,
+                    review = entry?.review,
+                    media = entry?.media,
+                    onClick = { navigationCallback, coverImageState ->
+                        if (entry != null) {
+                            navigationCallback.navigate(
+                                AnimeDestination.ReviewDetails(
+                                    reviewId = entry.review.id.toString(),
+                                    sharedTransitionScopeKey = sharedTransitionScopeKey,
+                                    headerParams = MediaHeaderParams(
+                                        title = mediaTitle,
+                                        coverImage = coverImageState.toImageState(),
+                                        mediaCompactWithTags = entry.media.media,
+                                        favorite = null,
+                                    )
                                 )
                             )
-                        )
-                    }
-                },
-                onClickListEdit = onClickListEdit,
-            )
+                        }
+                    },
+                    onClickListEdit = onClickListEdit,
+                )
+            }
         }
     }
 

@@ -189,7 +189,6 @@ object MediaActivitiesScreen {
                                     ) {
                                         val item = items[it]
                                         ListActivitySmallCard(
-                                            screenKey = SCREEN_KEY,
                                             viewer = viewer,
                                             activity = item?.activity,
                                             entry = item,

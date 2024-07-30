@@ -19,7 +19,7 @@ import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
@@ -65,7 +65,7 @@ class StaffDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
-    private val destination = savedStateHandle.toDestination<AnimeDestinations.StaffDetails>(navigationTypeMap)
+    private val destination = savedStateHandle.toDestination<AnimeDestination.StaffDetails>(navigationTypeMap)
     val staffId = destination.staffId
 
     val viewer = aniListApi.authedUser

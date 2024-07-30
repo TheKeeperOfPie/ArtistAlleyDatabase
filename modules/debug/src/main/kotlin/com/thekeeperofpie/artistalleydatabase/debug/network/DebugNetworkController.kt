@@ -110,10 +110,14 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
                 val requestBodyBuffer = Buffer()
                 graphQlRequest.request.body?.writeTo(requestBodyBuffer)
                 val requestBodyString = requestBodyBuffer.readByteString().utf8()
-                val queryBody = json.decodeFromString<GraphQlQueryBody>(requestBodyString)
-                val operationName = queryBody.operationName.orEmpty()
-                val query = AstPrinter.printAst(Parser().parseDocument(queryBody.query))
-                val variablesJson = queryBody.variables?.let(json::encodeToString).orEmpty()
+                val queryBody = runCatching {
+                    json.decodeFromString<GraphQlQueryBody>(requestBodyString)
+                }.getOrNull()
+                val operationName = queryBody?.operationName.orEmpty()
+                val query = runCatching {
+                    AstPrinter.printAst(Parser().parseDocument(queryBody?.query))
+                }.getOrNull().orEmpty()
+                val variablesJson = queryBody?.variables?.let(json::encodeToString).orEmpty()
                 graphQlDataMutex.withLock {
                     graphQlData += GraphQlData(
                         id = graphQlRequest.id,
@@ -130,8 +134,11 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
 
         scopedApplication.scope.launch(CustomDispatchers.IO) {
             for (graphQlResponse in graphQlResponses) {
-                val responseBody = graphQlResponse.bodyString.takeIf(String::isNotBlank)
-                    ?.let<String, GraphQlResponseBody>(json::decodeFromString)
+                val responseBody = graphQlResponse.bodyString.takeIf(String::isNotBlank)?.let {
+                    runCatching {
+                        json.decodeFromString<GraphQlResponseBody>(it)
+                    }.getOrNull()
+                }
                 val responseJson = GraphQlResponseWithHeaders(
                     headers = graphQlResponse.headers,
                     body = responseBody?.data,

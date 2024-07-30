@@ -49,9 +49,10 @@ import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
+import com.anilist.type.MediaType
 import com.anilist.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
@@ -108,28 +109,29 @@ object AnimeMediaListRow {
         ) {
             val ignoreController = LocalIgnoreController.current
             val title = entry?.media?.title?.primaryTitle()
+            val onClickEntry = {
+                if (entry != null) {
+                    val media = entry.media
+                    navigationCallback.navigate(
+                        AnimeDestination.MediaDetails(
+                            mediaId = media.id.toString(),
+                            title = title,
+                            coverImage = coverImageState.toImageState(),
+                            sharedTransitionKey = sharedTransitionKey,
+                            headerParams = MediaHeaderParams(
+                                coverImage = coverImageState.toImageState(),
+                                title = title,
+                                media = media,
+                            ),
+                        )
+                    )
+                }
+            }
             Row(modifier = Modifier
                 .height(IntrinsicSize.Min)
                 .combinedClickable(
                     enabled = entry != null,
-                    onClick = {
-                        if (entry != null) {
-                            val media = entry.media
-                            navigationCallback.navigate(
-                                AnimeDestinations.MediaDetails(
-                                    mediaId = media.id.toString(),
-                                    title = title,
-                                    coverImage = coverImageState.toImageState(),
-                                    sharedTransitionKey = sharedTransitionKey,
-                                    headerParams = MediaHeaderParams(
-                                        coverImage = coverImageState.toImageState(),
-                                        title = title,
-                                        media = media,
-                                    ),
-                                )
-                            )
-                        }
-                    },
+                    onClick = onClickEntry,
                     onLongClick = {
                         if (entry != null) {
                             ignoreController.toggle(entry.media)
@@ -142,6 +144,7 @@ object AnimeMediaListRow {
                     sharedTransitionKey = sharedTransitionKey,
                     imageState = coverImageState,
                     viewer = viewer,
+                    onClick = onClickEntry,
                     onClickListEdit = onClickListEdit,
                     recommendation = recommendation,
                     onUserRecommendationRating = onUserRecommendationRating,
@@ -188,10 +191,12 @@ object AnimeMediaListRow {
                             tags = tags,
                             onTagClick = { id, name ->
                                 if (entry != null) {
-                                    navigationCallback.onTagClick(
-                                        entry.media.type ?: com.anilist.type.MediaType.ANIME,
-                                        id,
-                                        name
+                                    navigationCallback.navigate(
+                                        AnimeDestination.SearchMedia(
+                                            title = name,
+                                            tagId = id,
+                                            mediaType = entry.media.type ?: MediaType.ANIME,
+                                        )
                                     )
                                 }
                             },
@@ -210,7 +215,7 @@ object AnimeMediaListRow {
         sharedTransitionKey: SharedTransitionKey?,
         imageState: CoilImageState,
         viewer: AniListViewer?,
-        onClick: ((Entry) -> Unit)? = null,
+        onClick: () -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
         recommendation: RecommendationData?,
         onUserRecommendationRating: (
@@ -235,10 +240,6 @@ object AnimeMediaListRow {
                     .build(),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .sharedElement(sharedContentState)
-                    // Clip to match card so that shared element animation keeps rounded corner
-                    .clip(shape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .fillMaxHeight()
                     .heightIn(min = 180.dp)
                     .width(130.dp)
@@ -247,11 +248,13 @@ object AnimeMediaListRow {
                         shape = shape,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
+                    .sharedElement(sharedContentState)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    // Clip to match card so that shared element animation keeps rounded corner
+                    .clip(shape)
                     .combinedClickable(
-                        onClick = { if (entry != null) onClick?.invoke(entry) },
-                        onLongClick = {
-                            imageState.uri?.let(fullscreenImageHandler::openImage)
-                        },
+                        onClick = onClick,
+                        onLongClick = { imageState.uri?.let(fullscreenImageHandler::openImage) },
                         onLongClickLabel = stringResource(
                             R.string.anime_media_cover_image_long_press_preview
                         ),

@@ -28,6 +28,7 @@ import com.anilist.UserByIdQuery
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
@@ -248,10 +249,12 @@ object UserStatsBasicScreen {
                     statistics.meanScore
                 ) to R.string.anime_user_statistics_mean_score,
                 onClick = {
-                    navigationCallback.onUserListClick(
-                        userId = user.id.toString(),
-                        userName = user.name,
-                        mediaType = MediaType.ANIME,
+                    navigationCallback.navigate(
+                        AnimeDestination.UserList(
+                            userId = user.id.toString(),
+                            userName = user.name,
+                            mediaType = MediaType.ANIME,
+                        )
                     )
                 }
             )
@@ -271,10 +274,12 @@ object UserStatsBasicScreen {
                 String.format(LocalConfiguration.currentLocale, "%.1f", statistics.meanScore) to
                         R.string.anime_user_statistics_mean_score,
                 onClick = {
-                    navigationCallback.onUserListClick(
-                        userId = user.id.toString(),
-                        userName = user.name,
-                        mediaType = MediaType.MANGA,
+                    navigationCallback.navigate(
+                        AnimeDestination.UserList(
+                            userId = user.id.toString(),
+                            userName = user.name,
+                            mediaType = MediaType.MANGA,
+                        )
                     )
                 }
             )

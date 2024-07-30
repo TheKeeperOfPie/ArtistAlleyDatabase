@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.ReviewDetailsQuery
 import com.anilist.type.ReviewRating
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -125,7 +125,7 @@ object ReviewDetailsScreen {
                         onCoverImageClick = {
                             entry?.review?.media?.let { media ->
                                 navigationCallback.navigate(
-                                    AnimeDestinations.MediaDetails(
+                                    AnimeDestination.MediaDetails(
                                         mediaId = media.id.toString(),
                                         title = title,
                                         coverImage = coverImageState.toImageState(),
@@ -187,7 +187,7 @@ object ReviewDetailsScreen {
                                 .clickable {
                                     review.user?.let {
                                         navigationCallback.navigate(
-                                            AnimeDestinations.User(
+                                            AnimeDestination.User(
                                                 userId = it.id.toString(),
                                                 sharedTransitionKey = sharedTransitionKey,
                                                 headerParams = UserHeaderParams(

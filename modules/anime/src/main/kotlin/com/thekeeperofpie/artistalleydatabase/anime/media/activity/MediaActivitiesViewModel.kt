@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -71,7 +71,7 @@ class MediaActivitiesViewModel @Inject constructor(
         featureOverrideProvider = featureOverrideProvider,
     )
 
-    private val destination = savedStateHandle.toDestination<AnimeDestinations.MediaActivities>(navigationTypeMap)
+    private val destination = savedStateHandle.toDestination<AnimeDestination.MediaActivities>(navigationTypeMap)
     val mediaId = destination.mediaId
     var entry by mutableStateOf(LoadingResult.empty<MediaActivitiesScreen.Entry>())
         private set

@@ -30,7 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
@@ -217,7 +217,7 @@ object UserStatsDetailScreen {
                                 onClick = { imageState ->
                                     if (media != null) {
                                         navigationCallback.navigate(
-                                            AnimeDestinations.MediaDetails(
+                                            AnimeDestination.MediaDetails(
                                                 mediaNavigationData = media,
                                                 coverImage = imageState.toImageState(),
                                                 languageOptionMedia = languageOptionMedia,

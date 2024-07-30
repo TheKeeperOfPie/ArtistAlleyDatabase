@@ -19,7 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -29,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
-import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -79,7 +78,7 @@ abstract class AnimeHomeMediaViewModel(
 
     protected abstract suspend fun rows(): Flow<List<RowInput>>
 
-    abstract val suggestions: List<Pair<Int, String>>
+    abstract val suggestions: List<Pair<Int, AnimeDestination>>
 
     // It is faster to load the specific current list,
     // but this duplicates with the full user media lists
@@ -301,47 +300,51 @@ abstract class AnimeHomeMediaViewModel(
         currentMediaPreviousSize = settings.currentMediaListSizeAnime,
     ) {
         override val suggestions = listOf(
-            R.string.anime_home_suggestion_popular_all_time to AnimeNavDestinations.SEARCH_MEDIA.id
-                    + "?titleRes=${R.string.anime_home_suggestion_popular_all_time}"
-                    + "&mediaType=${mediaType.name}"
-                    + "&sort=${MediaSortOption.POPULARITY}",
-            R.string.anime_home_suggestion_top to AnimeNavDestinations.SEARCH_MEDIA.id
-                    + "?titleRes=${R.string.anime_home_suggestion_top}"
-                    + "&mediaType=${mediaType.name}"
-                    + "&sort=${MediaSortOption.SCORE}",
+            R.string.anime_home_suggestion_popular_all_time to AnimeDestination.SearchMedia(
+                titleRes = R.string.anime_home_suggestion_popular_all_time,
+                mediaType = mediaType,
+                sort = MediaSortOption.POPULARITY
+            ),
+            R.string.anime_home_suggestion_top to AnimeDestination.SearchMedia(
+                titleRes = R.string.anime_home_suggestion_top,
+                mediaType = mediaType,
+                sort = MediaSortOption.SCORE,
+            ),
         )
 
         override suspend fun rows() = flow {
             val trending = RowInput(
                 id = "anime_trending",
                 titleRes = R.string.anime_home_trending_row_label,
-                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                        + "?titleRes=${R.string.anime_home_trending_screen_title}"
-                        + "&mediaType=${mediaType.name}"
-                        + "&sort=${MediaSortOption.TRENDING}"
+                viewAllRoute = AnimeDestination.SearchMedia(
+                    titleRes = R.string.anime_home_trending_screen_title,
+                    mediaType = mediaType,
+                    sort = MediaSortOption.TRENDING,
+                )
             )
             val popularThisSeason = RowInput(
                 id = "anime_popular_this_season",
                 titleRes = R.string.anime_home_popular_this_season,
-                viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.THIS.name}"
+                viewAllRoute = AnimeDestination.Seasonal(AnimeDestination.Seasonal.Type.THIS)
             )
             val lastAdded = RowInput(
                 id = "anime_last_added",
                 titleRes = R.string.anime_home_last_added,
-                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                        + "?titleRes=${R.string.anime_home_last_added_screen_title}"
-                        + "&mediaType=${mediaType.name}"
-                        + "&sort=${MediaSortOption.ID}"
+                viewAllRoute = AnimeDestination.SearchMedia(
+                    titleRes = R.string.anime_home_last_added_screen_title,
+                    mediaType = mediaType,
+                    sort = MediaSortOption.ID,
+                )
             )
             val popularLastSeason = RowInput(
                 id = "anime_popular_last_season",
                 titleRes = R.string.anime_home_popular_last_season,
-                viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.LAST.name}"
+                viewAllRoute = AnimeDestination.Seasonal(AnimeDestination.Seasonal.Type.LAST)
             )
             val popularNextSeason = RowInput(
                 id = "anime_popular_next_season",
                 titleRes = R.string.anime_home_popular_next_season,
-                viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.NEXT.name}"
+                viewAllRoute = AnimeDestination.Seasonal(AnimeDestination.Seasonal.Type.NEXT)
             )
 
             emit(
@@ -386,40 +389,45 @@ abstract class AnimeHomeMediaViewModel(
         currentMediaPreviousSize = settings.currentMediaListSizeManga,
     ) {
         override val suggestions = listOf(
-            R.string.anime_home_suggestion_popular_all_time to AnimeNavDestinations.SEARCH_MEDIA.id
-                    + "?titleRes=${R.string.anime_home_suggestion_popular_all_time}"
-                    + "&mediaType=${mediaType.name}"
-                    + "&sort=${MediaSortOption.POPULARITY}",
-            R.string.anime_home_suggestion_top to AnimeNavDestinations.SEARCH_MEDIA.id
-                    + "?titleRes=${R.string.anime_home_suggestion_top}"
-                    + "&mediaType=${mediaType.name}"
-                    + "&sort=${MediaSortOption.SCORE}",
+            R.string.anime_home_suggestion_popular_all_time to AnimeDestination.SearchMedia(
+                titleRes = R.string.anime_home_suggestion_popular_all_time,
+                mediaType = mediaType,
+                sort = MediaSortOption.POPULARITY,
+            ),
+            R.string.anime_home_suggestion_top to AnimeDestination.SearchMedia(
+                titleRes = R.string.anime_home_suggestion_top,
+                mediaType = mediaType,
+                sort = MediaSortOption.SCORE,
+            ),
         )
 
         override suspend fun rows() = flow {
             val trending = RowInput(
                 id = "manga_trending",
                 titleRes = R.string.anime_home_trending_row_label,
-                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                        + "?titleRes=${R.string.anime_home_trending_screen_title}"
-                        + "&mediaType=${mediaType.name}"
-                        + "&sort=${MediaSortOption.TRENDING}"
+                viewAllRoute = AnimeDestination.SearchMedia(
+                    titleRes = R.string.anime_home_trending_screen_title,
+                    mediaType = mediaType,
+                    sort = MediaSortOption.TRENDING,
+                )
             )
             val lastAdded = RowInput(
                 id = "manga_last_added",
                 titleRes = R.string.anime_home_last_added,
-                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                        + "?titleRes=${R.string.anime_home_last_added_screen_title}"
-                        + "&mediaType=${mediaType.name}"
-                        + "&sort=${MediaSortOption.ID}"
+                viewAllRoute = AnimeDestination.SearchMedia(
+                    titleRes = R.string.anime_home_last_added_screen_title,
+                    mediaType = mediaType,
+                    sort = MediaSortOption.ID,
+                )
             )
             val topReleasedThisYear = RowInput(
                 id = "manga_top_released_this_year",
                 titleRes = R.string.anime_home_top_released_this_year,
-                viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
-                        + "?titleRes=${R.string.anime_home_top_released_this_year_title}"
-                        + "&mediaType=${mediaType.name}"
-                        + "&sort=${MediaSortOption.SCORE}"
+                viewAllRoute = AnimeDestination.SearchMedia(
+                    titleRes = R.string.anime_home_top_released_this_year_title,
+                    mediaType = mediaType,
+                    sort = MediaSortOption.SCORE,
+                )
             )
             emit(
                 listOf(
@@ -443,7 +451,7 @@ abstract class AnimeHomeMediaViewModel(
     data class RowInput(
         val id: String,
         val titleRes: Int,
-        val viewAllRoute: String,
+        val viewAllRoute: AnimeDestination,
         val list: List<HomeMedia?>? = null,
     )
 }

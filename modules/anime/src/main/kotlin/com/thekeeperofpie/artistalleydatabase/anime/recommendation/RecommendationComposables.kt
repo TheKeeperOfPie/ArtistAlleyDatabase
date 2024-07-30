@@ -34,7 +34,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -92,7 +92,7 @@ fun RecommendationCard(
                         .clickable {
                             user?.let {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.User(
+                                    AnimeDestination.User(
                                         userId = user.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = UserHeaderParams(

@@ -21,7 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
@@ -88,7 +88,7 @@ object StaffMediaScreen {
                                 innerImageState = innerImageState,
                                 onClick = {
                                     navigationCallback.navigate(
-                                        AnimeDestinations.CharacterDetails(
+                                        AnimeDestination.CharacterDetails(
                                             characterId = it.character.id.toString(),
                                             sharedTransitionKey = characterSharedTransitionKey,
                                             headerParams = CharacterHeaderParams(
@@ -103,7 +103,7 @@ object StaffMediaScreen {
                                 onClickInnerImage = {
                                     if (it.media != null) {
                                         navigationCallback.navigate(
-                                            AnimeDestinations.MediaDetails(
+                                            AnimeDestination.MediaDetails(
                                                 mediaNavigationData = it.media,
                                                 coverImage = innerImageState.toImageState(),
                                                 languageOptionMedia = languageOptionMedia,

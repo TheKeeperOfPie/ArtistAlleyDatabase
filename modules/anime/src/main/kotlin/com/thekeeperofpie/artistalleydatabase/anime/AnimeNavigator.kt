@@ -63,7 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharac
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.AnimeMediaDetailsRecommendationsViewModel
@@ -81,7 +80,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsScr
 import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.reviewsSection
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
-import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
@@ -115,6 +113,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import kotlin.reflect.KClass
@@ -145,104 +144,30 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.SEARCH_MEDIA.id
-                    + "?title={title}"
-                    + "&titleRes={titleRes}"
-                    + "&tagId={tagId}"
-                    + "&genre={genre}"
-                    + "&mediaType={mediaType}"
-                    + "&sort={sort}"
-                    + "&year={year}",
-            arguments = navArguments(
-                "title",
-                "titleRes",
-                "tagId",
-                "genre",
-                "mediaType",
-                "sort",
-                "year",
-            ) {
-                type = NavType.StringType
-                nullable = true
-            }
-        ) {
-            val title = it.arguments?.getString("title")
-            val titleRes = it.arguments?.getString("titleRes")?.toIntOrNull()
-            val tagId = it.arguments?.getString("tagId")
-            val genre = it.arguments?.getString("genre")
-            val mediaType = it.arguments?.getString("mediaType")
-                ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
-                ?: MediaType.ANIME
-            val sort = it.arguments?.getString("sort")
-                ?.let {
-                    try {
-                        MediaSortOption.valueOf(it)
-                    } catch (ignored: Throwable) {
-                        null
-                    }
-                }
-                ?: MediaSortOption.TRENDING
-            val year = it.arguments?.getString("year")?.toIntOrNull()
-            val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
-                initialize(
-                    defaultMediaSort = sort,
-                    genre = genre,
-                    year = year,
-                    searchType = if (mediaType == MediaType.MANGA) {
-                        AnimeSearchViewModel.SearchType.MANGA
-                    } else {
-                        AnimeSearchViewModel.SearchType.ANIME
-                    },
-                    // TODO: Explicitly pass lockSort
-                    lockSort = tagId == null && genre == null,
-                )
-            }
+        navGraphBuilder.sharedElementComposable<AnimeDestination.SearchMedia>(navigationTypeMap) {
+            val destination = it.toRoute<AnimeDestination.SearchMedia>()
             MediaSearchScreen(
-                title = if (titleRes != null) {
-                    Either.Left(titleRes)
+                title = if (destination.titleRes != null) {
+                    Either.Left(destination.titleRes)
                 } else {
-                    Either.Right(title.orEmpty())
+                    Either.Right(destination.title.orEmpty())
                 },
                 upIconOption = UpIconOption.Back(navHostController),
-                viewModel = viewModel,
-                tagId = tagId,
-                genre = genre,
+                tagId = destination.tagId,
+                genre = destination.genre,
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.USER_LIST.id +
-                    "?userId={userId}" +
-                    "&userName={userName}" +
-                    "&mediaType={mediaType}" +
-                    "&mediaListStatus={mediaListStatus}",
-            arguments = navArguments(
-                "userId",
-                "userName",
-                "mediaType",
-                "mediaListStatus",
-            ) {
-                type = NavType.StringType
-                nullable = true
-            },
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserList>(
+            navigationTypeMap = navigationTypeMap,
         ) {
-            val arguments = it.arguments!!
-            val userId = arguments.getString("userId")
-            val userName = arguments.getString("userName")
-            val mediaType = arguments.getString("mediaType")
-                ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
-                ?: MediaType.ANIME
-            val mediaListStatus = arguments.getString("mediaListStatus")
-                ?.let {
-                    MediaListStatus.safeValueOf(it).takeUnless { it == MediaListStatus.UNKNOWN__ }
-                }
+            val destination = it.toRoute<AnimeDestination.UserList>()
             UserMediaListScreen(
-                userId = userId,
-                userName = userName,
-                mediaType = mediaType,
+                userId = destination.userId,
+                userName = destination.userName,
+                mediaType = destination.mediaType,
                 upIconOption = UpIconOption.Back(navHostController),
-                mediaListStatus = mediaListStatus,
+                mediaListStatus = destination.mediaListStatus,
                 scrollStateSaver = ScrollStateSaver.fromMap(
                     AnimeNavDestinations.USER_LIST.id,
                     ScrollStateSaver.scrollPositions(),
@@ -250,7 +175,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaDetails>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.MediaDetails>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}" },
@@ -259,7 +184,7 @@ object AnimeNavigator {
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/manga/{mediaId}/.*" },
             ),
             enterTransition = {
-                val destination = targetState.toRoute<AnimeDestinations.MediaDetails>()
+                val destination = targetState.toRoute<AnimeDestination.MediaDetails>()
                 slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Up,
                     // If there's a shared element, delay the slide up to allow
@@ -272,7 +197,7 @@ object AnimeNavigator {
                 )
             }
         ) {
-            val destination = it.toRoute<AnimeDestinations.MediaDetails>()
+            val destination = it.toRoute<AnimeDestination.MediaDetails>()
             val mediaDetailsViewModel = hiltViewModel<AnimeMediaDetailsViewModel>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -418,7 +343,7 @@ object AnimeNavigator {
                         onClickListEdit = onClickListEdit,
                         onClickViewAll = {
                             it.navigate(
-                                AnimeDestinations.MediaRecommendations(
+                                AnimeDestination.MediaRecommendations(
                                     mediaId = mediaDetailsViewModel.mediaId,
                                     headerParams = mediaHeaderParams(),
                                 )
@@ -454,7 +379,7 @@ object AnimeNavigator {
                         onClickListEdit = onClickListEdit,
                         onClickViewAll = {
                             it.navigate(
-                                AnimeDestinations.MediaActivities(
+                                AnimeDestination.MediaActivities(
                                     mediaId = mediaDetailsViewModel.mediaId,
                                     showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
                                     headerParams = mediaHeaderParams(),
@@ -476,9 +401,11 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChanged,
                         onClickViewAll = {
                             val entry = mediaDetailsViewModel.entry.result
-                            it.onForumMediaCategoryClick(
-                                entry?.media?.title?.userPreferred,
-                                mediaDetailsViewModel.mediaId
+                            it.navigate(
+                                AnimeDestination.ForumSearch(
+                                    title = entry?.media?.title?.userPreferred,
+                                    mediaCategoryId = mediaDetailsViewModel.mediaId,
+                                )
                             )
                         },
                         onStatusUpdate = forumThreadsViewModel.threadToggleHelper::toggle,
@@ -499,7 +426,7 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChange,
                         onClickViewAll = {
                             it.navigate(
-                                AnimeDestinations.MediaReviews(
+                                AnimeDestination.MediaReviews(
                                     mediaId = mediaDetailsViewModel.mediaId,
                                     headerParams = mediaHeaderParams()
                                 )
@@ -507,7 +434,7 @@ object AnimeNavigator {
                         },
                         onReviewClick = { navigationCallback, item ->
                             navigationCallback.navigate(
-                                AnimeDestinations.ReviewDetails(
+                                AnimeDestination.ReviewDetails(
                                     reviewId = item.id.toString(),
                                     headerParams = mediaHeaderParams(),
                                 )
@@ -518,7 +445,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.CharacterDetails>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.CharacterDetails>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
@@ -530,7 +457,7 @@ object AnimeNavigator {
             ),
         ) {
             val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>()
-            val destination = it.toRoute<AnimeDestinations.CharacterDetails>()
+            val destination = it.toRoute<AnimeDestination.CharacterDetails>()
             val headerValues = CharacterHeaderValues(
                 params = destination.headerParams,
                 character = { viewModel.entry.result?.character },
@@ -545,10 +472,10 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.CharacterMedias>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.CharacterMedias>(
             navigationTypeMap = navigationTypeMap
         ) {
-            val destination = it.toRoute<AnimeDestinations.CharacterMedias>()
+            val destination = it.toRoute<AnimeDestination.CharacterMedias>()
             val viewModel = hiltViewModel<CharacterMediasViewModel>()
             val headerValues = CharacterHeaderValues(
                 params = destination.headerParams,
@@ -564,7 +491,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.StaffDetails>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.StaffDetails>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}" },
@@ -572,7 +499,7 @@ object AnimeNavigator {
             ),
         ) {
             val viewModel = hiltViewModel<StaffDetailsViewModel>()
-            val destination = it.toRoute<AnimeDestinations.StaffDetails>()
+            val destination = it.toRoute<AnimeDestination.StaffDetails>()
             val headerValues = StaffHeaderValues(
                 params = destination.headerParams,
                 staff = { viewModel.entry?.staff },
@@ -587,11 +514,11 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.StaffCharacters>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.StaffCharacters>(
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<StaffCharactersViewModel>()
-            val destination = it.toRoute<AnimeDestinations.StaffCharacters>()
+            val destination = it.toRoute<AnimeDestination.StaffCharacters>()
             val headerValues = StaffHeaderValues(
                 params = destination.headerParams,
                 staff = { viewModel.entry.result?.staff },
@@ -606,7 +533,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.User>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.User>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}" },
@@ -614,7 +541,7 @@ object AnimeNavigator {
             ),
         ) {
             val viewModel = hiltViewModel<AniListUserViewModel>()
-            val destination = it.toRoute<AnimeDestinations.User>()
+            val destination = it.toRoute<AnimeDestination.User>()
             val headerValues = UserHeaderValues(
                 params = destination.headerParams,
                 user = { viewModel.entry?.user },
@@ -642,33 +569,27 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = "${AnimeNavDestinations.SEASONAL.id}?type={type}",
-            arguments = navArguments("type") {
-                type = NavType.StringType
-                nullable = true
-            },
-        ) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.Seasonal>(navigationTypeMap) {
             SeasonalScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.sharedElementComposable(AnimeNavDestinations.NEWS.id) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.News>(navigationTypeMap) {
             AnimeNewsScreen()
         }
 
-        navGraphBuilder.sharedElementComposable(AnimeNavDestinations.ACTIVITY.id) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.Activity>(navigationTypeMap) {
             AnimeActivityScreen()
         }
 
-        navGraphBuilder.sharedElementComposable(AnimeNavDestinations.NOTIFICATIONS.id) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.Notifications>(navigationTypeMap) {
             NotificationsScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaCharacters>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.MediaCharacters>(
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<MediaCharactersViewModel>()
-            val destination = it.toRoute<AnimeDestinations.MediaCharacters>()
+            val destination = it.toRoute<AnimeDestination.MediaCharacters>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
                 media = { viewModel.entry.result?.media },
@@ -682,11 +603,11 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaReviews>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.MediaReviews>(
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<MediaReviewsViewModel>()
-            val destination = it.toRoute<AnimeDestinations.MediaReviews>()
+            val destination = it.toRoute<AnimeDestination.MediaReviews>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
                 media = { viewModel.entry.result?.media },
@@ -700,23 +621,23 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.REVIEWS.id) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.Reviews>(navigationTypeMap) {
             ReviewsScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
 
-        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.RECOMMENDATIONS.id) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.Recommendations>(navigationTypeMap) {
             RecommendationsScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaRecommendations>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.MediaRecommendations>(
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<MediaRecommendationsViewModel>()
-            val destination = it.toRoute<AnimeDestinations.MediaRecommendations>()
+            val destination = it.toRoute<AnimeDestination.MediaRecommendations>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
                 media = { viewModel.entry.result?.media },
@@ -730,11 +651,11 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.MediaActivities>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.MediaActivities>(
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = hiltViewModel<MediaActivitiesViewModel>()
-            val destination = it.toRoute<AnimeDestinations.MediaActivities>()
+            val destination = it.toRoute<AnimeDestination.MediaActivities>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
                 media = { viewModel.entry.result?.data?.media },
@@ -748,7 +669,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestinations.ReviewDetails>(
+        navGraphBuilder.sharedElementComposable<AnimeDestination.ReviewDetails>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}" },
@@ -758,18 +679,20 @@ object AnimeNavigator {
             ),
         ) {
             val viewModel = hiltViewModel<ReviewDetailsViewModel>()
-            val destination = it.toRoute<AnimeDestinations.ReviewDetails>()
+            val destination = it.toRoute<AnimeDestination.ReviewDetails>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
                 media = { viewModel.entry?.review?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
-            ReviewDetailsScreen(
-                viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
-                headerValues = headerValues,
-            )
+            SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
+                ReviewDetailsScreen(
+                    viewModel = viewModel,
+                    upIconOption = UpIconOption.Back(navHostController),
+                    headerValues = headerValues,
+                )
+            }
         }
 
         navGraphBuilder.sharedElementComposable(
@@ -809,8 +732,8 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.ACTIVITY_DETAILS.id + "?activityId={activityId}",
+        navGraphBuilder.sharedElementComposable<AnimeDestination.ActivityDetails>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}"
@@ -819,14 +742,12 @@ object AnimeNavigator {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}/.*"
                 },
             ),
-            arguments = listOf(
-                navArgument("activityId") {
-                    type = NavType.StringType
-                    nullable = false
-                },
-            ),
         ) {
-            ActivityDetailsScreen(upIconOption = UpIconOption.Back(navHostController))
+            val destination = it.toRoute<AnimeDestination.ActivityDetails>()
+            // TODO: Shared element doesn't actually work
+            SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
+                ActivityDetailsScreen(upIconOption = UpIconOption.Back(navHostController))
+            }
         }
 
         navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.FEATURE_TIERS.id) {
@@ -842,13 +763,8 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.FORUM_SEARCH.id
-                    + "?title={title}"
-                    + "&titleRes={titleRes}"
-                    + "&sort={sort}"
-                    + "&categoryId={categoryId}"
-                    + "&mediaCategoryId={mediaCategoryId}",
+        navGraphBuilder.sharedElementComposable<AnimeDestination.ForumSearch>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
@@ -859,20 +775,11 @@ object AnimeNavigator {
                         "${AniListUtils.ANILIST_BASE_URL}/forum/recent?media={mediaCategoryId}"
                 },
             ),
-            arguments = listOf("title", "titleRes", "sort", "categoryId", "mediaCategoryId")
-                .map {
-                    navArgument(it) {
-                        type = NavType.StringType
-                        nullable = true
-                    }
-                },
         ) {
+            val destination = it.toRoute<AnimeDestination.ForumSearch>()
             ForumSearchScreen(
                 upIconOption = UpIconOption.Back(navHostController),
-                title = it.arguments?.getString("title")
-                    ?: it.arguments?.getString("titleRes")
-                        ?.toIntOrNull()
-                        ?.let { stringResource(it) },
+                title = destination.title ?: destination.titleRes?.let { stringResource(it) },
             )
         }
 
@@ -1125,41 +1032,6 @@ object AnimeNavigator {
         }
     }
 
-    fun onTagClick(
-        navHostController: NavHostController,
-        mediaType: MediaType,
-        tagId: String,
-        tagName: String,
-    ) {
-        navHostController.navigate(
-            AnimeNavDestinations.SEARCH_MEDIA.id +
-                    "?title=$tagName&tagId=$tagId&mediaType=${mediaType.name}"
-        )
-    }
-
-    fun onGenreClick(navHostController: NavHostController, mediaType: MediaType, genre: String) {
-        navHostController.navigate(
-            AnimeNavDestinations.SEARCH_MEDIA.id +
-                    "?title=$genre&genre=$genre&mediaType=${mediaType.name}"
-        )
-    }
-
-    fun onUserListClick(
-        navHostController: NavHostController,
-        userId: String,
-        userName: String?,
-        mediaType: MediaType?,
-        mediaListStatus: MediaListStatus?,
-    ) {
-        navHostController.navigate(
-            AnimeNavDestinations.USER_LIST.id +
-                    "?userId=$userId" +
-                    "&userName=$userName" +
-                    "&mediaType=${mediaType?.rawValue}" +
-                    "&mediaListStatus=${mediaListStatus?.rawValue}"
-        )
-    }
-
     fun onStudioClick(
         navHostController: NavHostController,
         studioId: String,
@@ -1167,13 +1039,6 @@ object AnimeNavigator {
     ) = navHostController.navigate(
         AnimeNavDestinations.STUDIO_MEDIAS.id +
                 "?studioId=$studioId&name=$name"
-    )
-
-    fun onActivityDetailsClick(
-        navHostController: NavHostController,
-        activityId: String,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.ACTIVITY_DETAILS.id + "?activityId=$activityId"
     )
 
     @Composable
@@ -1204,23 +1069,6 @@ object AnimeNavigator {
         private val languageOptionCharacters: AniListLanguageOption = AniListLanguageOption.DEFAULT,
         private val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     ) {
-
-        fun onTagClick(mediaType: MediaType, id: String, name: String) {
-            navHostController?.let { onTagClick(it, mediaType, id, name) }
-        }
-
-        fun onUserListClick(userId: String, userName: String?, mediaType: MediaType?) {
-            navHostController?.let {
-                onUserListClick(
-                    navHostController = it,
-                    userId = userId,
-                    userName = userName,
-                    mediaType = mediaType,
-                    mediaListStatus = null,
-                )
-            }
-        }
-
         fun onCharacterLongClick(id: String) {
             // TODO
         }
@@ -1231,10 +1079,6 @@ object AnimeNavigator {
 
         fun onStudioClick(id: String, name: String) =
             navHostController?.let { onStudioClick(it, id, name) }
-
-        fun onGenreClick(mediaType: MediaType, genre: String) {
-            navHostController?.let { onGenreClick(it, mediaType, genre) }
-        }
 
         fun onClickViewIgnored(mediaType: MediaType? = null) {
             navHostController?.navigate(
@@ -1268,29 +1112,7 @@ object AnimeNavigator {
             navHostController?.navigate(AnimeNavDestinations.SEASONAL.id)
         }
 
-        fun onActivityDetailsClick(activityId: String) {
-            navHostController?.let {
-                onActivityDetailsClick(it, activityId)
-            }
-        }
-
         fun onForumRootClick() = navHostController?.navigate(AnimeNavDestinations.FORUM.id)
-
-        fun onForumSearchClick() = navHostController?.navigate(AnimeNavDestinations.FORUM_SEARCH.id)
-
-        fun onForumCategoryClick(categoryName: String, categoryId: String) {
-            navHostController?.navigate(
-                AnimeNavDestinations.FORUM_SEARCH.id
-                        + "?title=$categoryName&categoryId=$categoryId"
-            )
-        }
-
-        fun onForumMediaCategoryClick(mediaCategoryName: String?, mediaCategoryId: String) {
-            navHostController?.navigate(
-                AnimeNavDestinations.FORUM_SEARCH.id
-                        + "?title=$mediaCategoryName&mediaCategoryId=$mediaCategoryId"
-            )
-        }
 
         fun onForumThreadClick(title: String?, threadId: String) {
             navHostController?.navigate(

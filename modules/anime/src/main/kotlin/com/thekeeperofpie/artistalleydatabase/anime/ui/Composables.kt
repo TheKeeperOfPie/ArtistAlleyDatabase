@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -568,7 +569,7 @@ fun FavoriteIconButton(
 @Composable
 fun NavigationHeader(
     @StringRes titleRes: Int,
-    viewAllRoute: String?,
+    viewAllRoute: AnimeDestination?,
     modifier: Modifier = Modifier,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {

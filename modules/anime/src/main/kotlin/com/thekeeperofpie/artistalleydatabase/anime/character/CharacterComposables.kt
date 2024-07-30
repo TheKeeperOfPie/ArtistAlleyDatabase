@@ -61,7 +61,7 @@ import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -273,7 +273,7 @@ fun LazyListScope.charactersSection(
             text = stringResource(titleRes),
             onClickViewAll = {
                 navigationCallback.navigate(
-                    AnimeDestinations.MediaCharacters(
+                    AnimeDestination.MediaCharacters(
                         mediaId = mediaId,
                         headerParams = mediaHeaderParams,
                     )
@@ -377,7 +377,7 @@ fun CharactersSectionItem(
     val onClickCharacter: () -> Unit = {
         if (character?.character != null) {
             navigationCallback.navigate(
-                AnimeDestinations.CharacterDetails(
+                AnimeDestination.CharacterDetails(
                     characterId = character.id,
                     sharedTransitionKey = characterSharedTransitionKey,
                     headerParams = CharacterHeaderParams(
@@ -399,7 +399,7 @@ fun CharactersSectionItem(
     val onClickVoiceActor: () -> Unit = {
         voiceActor?.let {
             navigationCallback.navigate(
-                AnimeDestinations.StaffDetails(
+                AnimeDestination.StaffDetails(
                     staffId = voiceActor.id.toString(),
                     sharedTransitionKey = voiceActorTransitionKey,
                     headerParams = StaffHeaderParams(
@@ -539,7 +539,7 @@ fun CharacterCard(
         onClick = {
             character?.character?.let {
                 navigationCallback.navigate(
-                    AnimeDestinations.CharacterDetails(
+                    AnimeDestination.CharacterDetails(
                         characterId = character.id.toString(),
                         sharedTransitionKey = characterSharedTransitionKey,
                         headerParams = CharacterHeaderParams(
@@ -667,7 +667,7 @@ fun CharacterCard(
                         .clickable {
                             if (voiceActor != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.StaffDetails(
+                                    AnimeDestination.StaffDetails(
                                         staffId = voiceActor.staff.id.toString(),
                                         sharedTransitionKey = voiceActorSharedTransitionKey,
                                         headerParams = StaffHeaderParams(

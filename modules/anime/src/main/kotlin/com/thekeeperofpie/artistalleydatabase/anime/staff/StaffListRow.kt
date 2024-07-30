@@ -48,7 +48,7 @@ import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
@@ -100,7 +100,7 @@ object StaffListRow {
         val onClick = {
             if (entry != null) {
                 navigationCallback.navigate(
-                    AnimeDestinations.StaffDetails(
+                    AnimeDestination.StaffDetails(
                         staffId = entry.staff.id.toString(),
                         sharedTransitionKey = sharedTransitionKey,
                         headerParams = StaffHeaderParams(
@@ -266,7 +266,7 @@ object StaffListRow {
                     contentDescriptionTextRes = R.string.anime_character_image_content_description,
                     onClick = {
                         navigationCallback.navigate(
-                            AnimeDestinations.CharacterDetails(
+                            AnimeDestination.CharacterDetails(
                                 characterId = it.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
                                 headerParams = CharacterHeaderParams(
@@ -299,7 +299,7 @@ object StaffListRow {
                         contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
                         onClick = {
                             navigationCallback.navigate(
-                                AnimeDestinations.MediaDetails(
+                                AnimeDestination.MediaDetails(
                                     mediaId = it.media.id.toString(),
                                     title = title,
                                     coverImage = imageState.toImageState(),

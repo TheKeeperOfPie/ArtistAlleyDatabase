@@ -48,7 +48,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
@@ -422,7 +422,7 @@ object CharacterDetailsScreen {
             onExpandedChange = onExpandedChange,
             onClickViewAll = {
                 it.navigate(
-                    AnimeDestinations.CharacterMedias(
+                    AnimeDestination.CharacterMedias(
                         characterId = entry.character.id.toString(),
                         sharedTransitionKey = null,
                         headerParams = CharacterHeaderParams(

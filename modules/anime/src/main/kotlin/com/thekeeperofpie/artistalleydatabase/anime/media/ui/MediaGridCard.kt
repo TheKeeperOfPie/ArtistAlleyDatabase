@@ -40,7 +40,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
@@ -112,7 +112,7 @@ object MediaGridCard {
                     onClick = {
                         if (entry != null) {
                             navigationCallback.navigate(
-                                AnimeDestinations.MediaDetails(
+                                AnimeDestination.MediaDetails(
                                     mediaId = entry.media.id.toString(),
                                     title = title,
                                     coverImage = coverImageState.toImageState(),
@@ -144,7 +144,7 @@ object MediaGridCard {
                             onClick = {
                                 if (entry != null) {
                                     navigationCallback.navigate(
-                                        AnimeDestinations.MediaDetails(
+                                        AnimeDestination.MediaDetails(
                                             mediaId = entry.media.id.toString(),
                                             title = title,
                                             coverImage = coverImageState.toImageState(),

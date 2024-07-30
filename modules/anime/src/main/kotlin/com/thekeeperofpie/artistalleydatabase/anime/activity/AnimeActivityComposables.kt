@@ -61,7 +61,7 @@ import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -81,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.collections.immutable.ImmutableList
@@ -150,17 +151,16 @@ fun ActivityList(
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 is UserSocialActivityQuery.Data.Page.ListActivityActivity -> ListActivitySmallCard(
-                                    screenKey = screenKey,
                                     viewer = viewer,
                                     activity = activity,
                                     mediaEntry = entry.media,
-                                    showMedia = showMedia,
                                     entry = entry,
                                     onActivityStatusUpdate = onActivityStatusUpdate,
                                     onClickListEdit = editViewModel::initialize,
+                                    modifier = Modifier.fillMaxWidth(),
                                     allowUserClick = allowUserClick,
                                     clickable = true,
-                                    modifier = Modifier.fillMaxWidth()
+                                    showMedia = showMedia
                                 )
                                 is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> MessageActivitySmallCard(
                                     screenKey = screenKey,
@@ -220,11 +220,12 @@ fun TextActivitySmallCard(
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
 ) {
+    val sharedTransitionKey = activity?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     val content: @Composable ColumnScope.() -> Unit = {
         TextActivityCardContent(
-            screenKey = screenKey,
             viewer = viewer,
             activity = activity,
+            sharedTransitionKey = sharedTransitionKey,
             user = activity?.user,
             entry = entry,
             onActivityStatusUpdate = onActivityStatusUpdate,
@@ -237,9 +238,15 @@ fun TextActivitySmallCard(
 
     if (clickable && activity != null) {
         val navigationCallback = LocalNavigationCallback.current
+        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ElevatedCard(
             onClick = {
-                navigationCallback.onActivityDetailsClick(activity.id.toString())
+                navigationCallback.navigate(
+                    AnimeDestination.ActivityDetails(
+                        activityId = activity.id.toString(),
+                        sharedTransitionScopeKey = sharedTransitionScopeKey,
+                    )
+                )
             },
             modifier = modifier,
             content = content,
@@ -255,9 +262,9 @@ fun TextActivitySmallCard(
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun ColumnScope.TextActivityCardContent(
-    screenKey: String,
     viewer: AniListViewer?,
     activity: TextActivityFragment?,
+    sharedTransitionKey: SharedTransitionKey?,
     user: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -326,13 +333,19 @@ fun ColumnScope.TextActivityCardContent(
 
     if (activity == null || activity.text != null) {
         val navigationCallback = LocalNavigationCallback.current
+        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ImageHtmlText(
             text = activity?.text ?: "Placeholder text",
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current },
             onClickFallback = {
                 if (activity != null && clickable) {
-                    navigationCallback.onActivityDetailsClick(activity.id.toString())
+                    navigationCallback.navigate(
+                        AnimeDestination.ActivityDetails(
+                            activityId = activity.id.toString(),
+                            sharedTransitionScopeKey = sharedTransitionScopeKey,
+                        )
+                    )
                 }
             },
             modifier = Modifier
@@ -367,11 +380,12 @@ fun MessageActivitySmallCard(
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
 ) {
+    val sharedTransitionKey = activity?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     val content: @Composable ColumnScope.() -> Unit = {
         MessageActivityCardContent(
-            screenKey = screenKey,
             viewer = viewer,
             activity = activity,
+            sharedTransitionKey = sharedTransitionKey,
             messenger = activity?.messenger,
             entry = entry,
             onActivityStatusUpdate = onActivityStatusUpdate,
@@ -384,9 +398,15 @@ fun MessageActivitySmallCard(
 
     if (clickable && activity != null) {
         val navigationCallback = LocalNavigationCallback.current
+        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ElevatedCard(
             onClick = {
-                navigationCallback.onActivityDetailsClick(activity.id.toString())
+                navigationCallback.navigate(
+                    AnimeDestination.ActivityDetails(
+                        activityId = activity.id.toString(),
+                        sharedTransitionScopeKey = sharedTransitionScopeKey,
+                    )
+                )
             },
             modifier = modifier,
             content = content,
@@ -401,9 +421,9 @@ fun MessageActivitySmallCard(
 
 @Composable
 fun ColumnScope.MessageActivityCardContent(
-    screenKey: String,
     viewer: AniListViewer?,
     activity: MessageActivityFragment?,
+    sharedTransitionKey: SharedTransitionKey?,
     messenger: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -488,7 +508,7 @@ fun ColumnScope.MessageActivityCardContent(
             .clickable {
                 activity?.recipient?.let {
                     navigationCallback.navigate(
-                        AnimeDestinations.User(
+                        AnimeDestination.User(
                             userId = it.id.toString(),
                             sharedTransitionKey = userSharedTransitionKey,
                             headerParams = UserHeaderParams(
@@ -535,13 +555,19 @@ fun ColumnScope.MessageActivityCardContent(
     }
 
     if (activity == null || activity.message != null) {
+        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ImageHtmlText(
             text = activity?.message ?: "Placeholder text",
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current },
             onClickFallback = {
                 if (activity != null && clickable) {
-                    navigationCallback.onActivityDetailsClick(activity.id.toString())
+                    navigationCallback.navigate(
+                        AnimeDestination.ActivityDetails(
+                            activityId = activity.id.toString(),
+                            sharedTransitionScopeKey = sharedTransitionScopeKey,
+                        )
+                    )
                 }
             },
             modifier = Modifier
@@ -565,7 +591,6 @@ fun ColumnScope.MessageActivityCardContent(
 
 @Composable
 fun ListActivitySmallCard(
-    screenKey: String,
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     entry: ActivityStatusAware?,
@@ -578,7 +603,6 @@ fun ListActivitySmallCard(
     onClickDelete: (String) -> Unit = {},
 ) {
     ListActivitySmallCard(
-        screenKey = screenKey,
         viewer = viewer,
         activity = activity,
         showMedia = false,
@@ -597,7 +621,6 @@ fun ListActivitySmallCard(
 
 @Composable
 fun ListActivitySmallCard(
-    screenKey: String,
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
@@ -612,7 +635,6 @@ fun ListActivitySmallCard(
     onClickDelete: ((String) -> Unit)? = null,
 ) {
     ListActivitySmallCard(
-        screenKey = screenKey,
         viewer = viewer,
         activity = activity,
         showMedia = showMedia,
@@ -631,7 +653,6 @@ fun ListActivitySmallCard(
 
 @Composable
 private fun ListActivitySmallCard(
-    screenKey: String,
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     showMedia: Boolean,
@@ -646,6 +667,8 @@ private fun ListActivitySmallCard(
     onClickDelete: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    val sharedTransitionKey = activity?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
+    val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     val content: @Composable ColumnScope.() -> Unit = {
         ListActivityCardContent(
             viewer = viewer,
@@ -666,14 +689,19 @@ private fun ListActivitySmallCard(
         val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             onClick = {
-                navigationCallback.onActivityDetailsClick(activity.id.toString())
+                navigationCallback.navigate(
+                    AnimeDestination.ActivityDetails(
+                        activityId = activity.id.toString(),
+                        sharedTransitionScopeKey = sharedTransitionScopeKey,
+                    )
+                )
             },
-            modifier = modifier,
+            modifier = modifier.sharedElement(sharedTransitionKey, "activity_card"),
             content = content,
         )
     } else {
         ElevatedCard(
-            modifier = modifier,
+            modifier = modifier.sharedElement(sharedTransitionKey, "activity_card"),
             content = content,
         )
     }
@@ -957,7 +985,7 @@ private fun UserImage(
             .clickable(enabled = clickable) {
                 if (user != null) {
                     navigationCallback.navigate(
-                        AnimeDestinations.User(
+                        AnimeDestination.User(
                             userId = user.id.toString(),
                             sharedTransitionKey = sharedTransitionKey,
                             headerParams = UserHeaderParams(
@@ -1036,17 +1064,16 @@ fun LazyListScope.activitiesSection(
         onClickViewAll = onClickViewAll,
     ) { item, paddingBottom ->
         ListActivitySmallCard(
-            screenKey = screenKey,
             viewer = viewer,
             activity = item.activity,
             entry = item,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
-            clickable = true,
             modifier = Modifier
                 .animateItem()
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom),
+            clickable = true
         )
     }
 }

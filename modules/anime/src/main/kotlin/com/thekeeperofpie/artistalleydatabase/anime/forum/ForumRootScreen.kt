@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.fragment.ForumThread
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -87,7 +88,9 @@ object ForumRootScreen {
                         title = { Text(text = stringResource(R.string.anime_forum_header)) },
                         navigationIcon = { upIconOption?.let { UpIconButton(upIconOption) } },
                         actions = {
-                            IconButton(onClick = { navigationCallback.onForumSearchClick() }) {
+                            IconButton(onClick = {
+                                navigationCallback.navigate(AnimeDestination.ForumSearch())
+                            }) {
                                 Icon(
                                     imageVector = Icons.Filled.Search,
                                     contentDescription = stringResource(
@@ -150,23 +153,26 @@ object ForumRootScreen {
         threadSection(
             titleRes = R.string.anime_forum_root_active_header,
             data.active,
-            AnimeNavDestinations.FORUM_SEARCH.id
-                    + "?titleRes=${R.string.anime_forum_root_active_title}"
-                    + "&sort=${ForumThreadSortOption.REPLIED_AT.name}"
+            AnimeDestination.ForumSearch(
+                titleRes = R.string.anime_forum_root_active_title,
+                sort = ForumThreadSortOption.REPLIED_AT
+            )
         )
         threadSection(
             titleRes = R.string.anime_forum_root_new_header,
             data.new,
-            AnimeNavDestinations.FORUM_SEARCH.id
-                    + "?titleRes=${R.string.anime_forum_root_new_title}"
-                    + "&sort=${ForumThreadSortOption.CREATED_AT.name}"
+            AnimeDestination.ForumSearch(
+                titleRes = R.string.anime_forum_root_new_title,
+                sort = ForumThreadSortOption.CREATED_AT,
+            )
         )
         threadSection(
             titleRes = R.string.anime_forum_root_releases_header,
             data.releases,
-            AnimeNavDestinations.FORUM_SEARCH.id
-                    + "?titleRes=${R.string.anime_forum_root_releases_title}"
-                    + "&categoryId=${ForumCategoryOption.RELEASE_DISCUSSIONS.categoryId}"
+            AnimeDestination.ForumSearch(
+                titleRes = R.string.anime_forum_root_releases_title,
+                categoryId = ForumCategoryOption.RELEASE_DISCUSSIONS.categoryId.toString(),
+            )
         )
     }
 
@@ -190,7 +196,12 @@ object ForumRootScreen {
                     val name = stringResource(it.textRes)
                     SuggestionChip(
                         onClick = {
-                            navigationCallback.onForumCategoryClick(name, it.categoryId.toString())
+                            navigationCallback.navigate(
+                                AnimeDestination.ForumSearch(
+                                    title = name,
+                                    categoryId = it.categoryId.toString(),
+                                )
+                            )
                         },
                         label = { Text(text = name) },
                     )
@@ -199,7 +210,7 @@ object ForumRootScreen {
         }
     }
 
-    private fun LazyListScope.header(@StringRes titleRes: Int, viewAllRoute: String) {
+    private fun LazyListScope.header(@StringRes titleRes: Int, viewAllRoute: AnimeDestination) {
         item("header-$titleRes") {
             NavigationHeader(
                 titleRes = titleRes,
@@ -263,7 +274,7 @@ object ForumRootScreen {
     private fun LazyListScope.threadSection(
         @StringRes titleRes: Int,
         threads: List<ForumThread>,
-        viewAllRoute: String,
+        viewAllRoute: AnimeDestination,
     ) {
         header(titleRes = titleRes, viewAllRoute = viewAllRoute)
         itemsIndexed(

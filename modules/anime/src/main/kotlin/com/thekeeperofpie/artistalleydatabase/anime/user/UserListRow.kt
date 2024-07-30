@@ -40,7 +40,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -87,7 +87,7 @@ object UserListRow {
         val onUserClick = {
             if (entry != null) {
                 navigationCallback.navigate(
-                    AnimeDestinations.User(
+                    AnimeDestination.User(
                         userId = entry.user.id.toString(),
                         sharedTransitionKey = sharedTransitionKey,
                         headerParams = UserHeaderParams(
@@ -237,7 +237,7 @@ object UserListRow {
                         onClick = {
                             if (it?.media != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.MediaDetails(
+                                    AnimeDestination.MediaDetails(
                                         mediaNavigationData = it.media,
                                         coverImage = imageState.toImageState(),
                                         languageOptionMedia = languageOptionMedia,

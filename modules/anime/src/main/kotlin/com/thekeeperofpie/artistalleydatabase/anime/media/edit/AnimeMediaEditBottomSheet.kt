@@ -73,7 +73,7 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
@@ -91,7 +91,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageSta
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionPrefixProvider
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 @Suppress("NAME_SHADOWING")
@@ -270,14 +269,14 @@ object AnimeMediaEditBottomSheet {
                         .build(),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .sharedElement(sharedTransitionKey, "media_image")
+                        .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
+//                        .sharedElement(sharedTransitionKey, "media_image")
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
                         .combinedClickable(
                             onClick = {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.MediaDetails(
+                                    AnimeDestination.MediaDetails(
                                         mediaId = mediaId,
                                         title = initialParams.title,
                                         coverImage = coverImageState.toImageState(),

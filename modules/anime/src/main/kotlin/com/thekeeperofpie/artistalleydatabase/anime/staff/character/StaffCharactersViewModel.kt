@@ -8,7 +8,7 @@ import com.anilist.fragment.CharacterWithRoleAndFavorites
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
@@ -46,7 +46,7 @@ class StaffCharactersViewModel @Inject constructor(
     aniListApi = aniListApi,
     loadingErrorTextRes = R.string.anime_staff_characters_error_loading,
 ) {
-    private val destination = savedStateHandle.toDestination<AnimeDestinations.StaffCharacters>(navigationTypeMap)
+    private val destination = savedStateHandle.toDestination<AnimeDestination.StaffCharacters>(navigationTypeMap)
     val staffId = destination.staffId
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)

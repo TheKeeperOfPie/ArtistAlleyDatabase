@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
@@ -38,7 +38,7 @@ class ReviewDetailsViewModel @Inject constructor(
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestinations.ReviewDetails>(navigationTypeMap)
+    private val destination = savedStateHandle.toDestination<AnimeDestination.ReviewDetails>(navigationTypeMap)
     private val reviewId = destination.reviewId
 
     val viewer = aniListApi.authedUser

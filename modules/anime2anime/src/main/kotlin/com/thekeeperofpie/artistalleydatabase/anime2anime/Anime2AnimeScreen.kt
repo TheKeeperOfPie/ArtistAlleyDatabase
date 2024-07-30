@@ -77,7 +77,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeStringR
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
@@ -492,7 +492,7 @@ object Anime2AnimeScreen {
                         .combinedClickable(
                             onClick = {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.StaffDetails(
+                                    AnimeDestination.StaffDetails(
                                         staffId = voiceActor.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
@@ -550,7 +550,7 @@ object Anime2AnimeScreen {
                 .combinedClickable(
                     onClick = {
                         navigationCallback.navigate(
-                            AnimeDestinations.CharacterDetails(
+                            AnimeDestination.CharacterDetails(
                                 characterId = character.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
                                 headerParams = CharacterHeaderParams(
@@ -589,7 +589,7 @@ object Anime2AnimeScreen {
         OutlinedCard(
             onClick = {
                 navigationCallback.navigate(
-                    AnimeDestinations.StaffDetails(
+                    AnimeDestination.StaffDetails(
                         staffId = staff.id.toString(),
                         sharedTransitionKey = sharedTransitionKey,
                         headerParams = StaffHeaderParams(
@@ -628,7 +628,7 @@ object Anime2AnimeScreen {
                         .combinedClickable(
                             onClick = {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.StaffDetails(
+                                    AnimeDestination.StaffDetails(
                                         staffId = staff.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(

@@ -7,7 +7,7 @@ import androidx.paging.PagingData
 import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
@@ -40,7 +40,7 @@ class CharacterMediasViewModel @Inject constructor(
     aniListApi = aniListApi,
     loadingErrorTextRes = R.string.anime_character_medias_error_loading,
 ) {
-    private val destination = savedStateHandle.toDestination<AnimeDestinations.CharacterMedias>(navigationTypeMap)
+    private val destination = savedStateHandle.toDestination<AnimeDestination.CharacterMedias>(navigationTypeMap)
     val characterId = destination.characterId
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)

@@ -17,7 +17,7 @@ import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserMediaStatistics
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
@@ -82,9 +82,13 @@ object UserMediaScreen {
                     valueToMeanScore = UserMediaStatistics.Genre::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, _, _ ->
-                        navigationCallback.onGenreClick(
-                            if (isAnime) MediaType.ANIME else MediaType.MANGA,
-                            value.genre!!,
+                        val genre = value.genre!!
+                        navigationCallback.navigate(
+                            AnimeDestination.SearchMedia(
+                                title = genre,
+                                genre = genre,
+                                mediaType = if (isAnime) MediaType.ANIME else MediaType.MANGA,
+                            )
                         )
                     },
                 )
@@ -102,11 +106,15 @@ object UserMediaScreen {
                     valueToMeanScore = UserMediaStatistics.Tag::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, _, _ ->
-                        navigationCallback.onTagClick(
-                            if (isAnime) MediaType.ANIME else MediaType.MANGA,
-                            value.tag?.id.toString(),
-                            value.tag?.name.orEmpty()
-                        )
+                        value.tag?.let { tag ->
+                            navigationCallback.navigate(
+                                AnimeDestination.SearchMedia(
+                                    title = tag.name,
+                                    tagId = tag.id.toString(),
+                                    mediaType = if (isAnime) MediaType.ANIME else MediaType.MANGA,
+                                )
+                            )
+                        }
                     },
                 )
                 UserStatsTab.VOICE_ACTORS -> {
@@ -128,7 +136,7 @@ object UserMediaScreen {
                             val voiceActor = value.voiceActor
                             if (voiceActor != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.StaffDetails(
+                                    AnimeDestination.StaffDetails(
                                         staffId = voiceActor.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
@@ -190,7 +198,7 @@ object UserMediaScreen {
                             val staff = value.staff
                             if (staff != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.StaffDetails(
+                                    AnimeDestination.StaffDetails(
                                         staffId = staff.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(

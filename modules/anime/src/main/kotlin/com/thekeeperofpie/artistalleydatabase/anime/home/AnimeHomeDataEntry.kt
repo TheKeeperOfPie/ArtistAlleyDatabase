@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.anilist.fragment.HomeMedia
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
@@ -93,6 +94,6 @@ data class AnimeHomeDataEntry(
         val id: String,
         val titleRes: Int,
         val entries: List<MediaEntry>?,
-        val viewAllRoute: String,
+        val viewAllRoute: AnimeDestination,
     )
 }

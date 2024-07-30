@@ -34,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
@@ -67,6 +68,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -100,7 +103,17 @@ class AnimeSearchViewModel @Inject constructor(
     featureOverrideProvider: FeatureOverrideProvider,
     private val monetizationController: MonetizationController,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
+
+    private val destination = if (savedStateHandle.keys().isEmpty()) {
+        AnimeDestination.SearchMedia(
+            sort = MediaSortOption.SEARCH_MATCH,
+            lockSortOverride = false,
+        )
+    } else {
+        savedStateHandle.toDestination<AnimeDestination.SearchMedia>(navigationTypeMap)
+    }
 
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
@@ -109,7 +122,6 @@ class AnimeSearchViewModel @Inject constructor(
 
     val unlocked = monetizationController.unlocked
 
-    private var initialized = false
     private val tagId = savedStateHandle.get<String?>("tagId")
 
     val animeSortFilterController = AnimeSearchSortFilterController(
@@ -248,10 +260,19 @@ class AnimeSearchViewModel @Inject constructor(
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
     var selectedType by mutableStateOf(
-        if (settings.preferredMediaType.value == MediaType.ANIME) {
-            SearchType.ANIME
-        } else {
-            SearchType.MANGA
+        destination.mediaType?.let {
+            when (it) {
+                MediaType.ANIME,
+                MediaType.UNKNOWN__,
+                -> AnimeSearchViewModel.SearchType.ANIME
+                MediaType.MANGA -> AnimeSearchViewModel.SearchType.MANGA
+            }
+        } ?: run {
+            if (settings.preferredMediaType.value == MediaType.ANIME) {
+                SearchType.ANIME
+            } else {
+                SearchType.MANGA
+            }
         }
     )
     private val results =
@@ -282,6 +303,32 @@ class AnimeSearchViewModel @Inject constructor(
                     content.emit(it as PagingData<AnimeSearchEntry>)
                 }
         }
+
+        // TODO: Move lockSort into destination args?
+        val lockSort =
+            destination.lockSortOverride ?: (destination.tagId == null && destination.genre == null)
+        animeSortFilterController.initialize(
+            viewModel = this,
+            refreshUptimeMillis = refreshUptimeMillis,
+            initialParams = AnimeSortFilterController.InitialParams(
+                tagId = tagId,
+                genre = destination.genre,
+                year = destination.year,
+                defaultSort = destination.sort,
+                lockSort = lockSort,
+            ),
+        )
+        mangaSortFilterController.initialize(
+            viewModel = this,
+            refreshUptimeMillis = refreshUptimeMillis,
+            initialParams = MangaSortFilterController.InitialParams(
+                tagId = tagId,
+                genre = destination.genre,
+                year = destination.year,
+                defaultSort = destination.sort,
+                lockSort = lockSort,
+            ),
+        )
 
         val includeDescriptionFlow =
             MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
@@ -714,42 +761,6 @@ class AnimeSearchViewModel @Inject constructor(
                     results[searchType]!!.emit(it)
                 }
         }
-    }
-
-    fun initialize(
-        defaultMediaSort: MediaSortOption,
-        genre: String? = null,
-        year: Int? = null,
-        searchType: SearchType? = null,
-        lockSort: Boolean,
-    ) {
-        if (initialized) return
-        initialized = true
-        if (searchType != null) {
-            this.selectedType = searchType
-        }
-        animeSortFilterController.initialize(
-            viewModel = this,
-            refreshUptimeMillis = refreshUptimeMillis,
-            initialParams = AnimeSortFilterController.InitialParams(
-                tagId = tagId,
-                genre = genre,
-                year = year,
-                defaultSort = defaultMediaSort,
-                lockSort = lockSort,
-            ),
-        )
-        mangaSortFilterController.initialize(
-            viewModel = this,
-            refreshUptimeMillis = refreshUptimeMillis,
-            initialParams = MangaSortFilterController.InitialParams(
-                tagId = tagId,
-                genre = genre,
-                year = year,
-                defaultSort = defaultMediaSort,
-                lockSort = lockSort,
-            ),
-        )
     }
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }

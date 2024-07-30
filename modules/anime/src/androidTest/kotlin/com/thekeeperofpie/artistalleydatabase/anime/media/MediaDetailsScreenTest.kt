@@ -20,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutabl
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.persistentListOfNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
@@ -175,7 +175,7 @@ class MediaDetailsScreenTest {
                 historyController = historyController,
                 markwon = markwon,
                 savedStateHandle = savedStateHandle,
-                navigationTypeMap = NavigationTypeMap(CustomNavTypes.baseTypeMap + AnimeDestinations.typeMap),
+                navigationTypeMap = NavigationTypeMap(CustomNavTypes.baseTypeMap + AnimeDestination.typeMap),
             )
         )
         val activitiesViewModel = spy(
@@ -337,7 +337,7 @@ class MediaDetailsScreenTest {
                                 val entry = viewModels.mediaDetailsViewModel.entry.result
                                 if (entry != null) {
                                     it.navigate(
-                                        AnimeDestinations.MediaActivities(
+                                        AnimeDestination.MediaActivities(
                                             mediaId = viewModels.mediaDetailsViewModel.mediaId,
                                             showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
                                             headerParams = MediaHeaderParams(

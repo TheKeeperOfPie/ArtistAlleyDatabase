@@ -36,7 +36,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import coil3.annotation.ExperimentalCoilApi
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
@@ -123,7 +123,7 @@ fun StaffListRow(
                 onClick = {
                     if (staff != null) {
                         navigationCallback.navigate(
-                            AnimeDestinations.StaffDetails(
+                            AnimeDestination.StaffDetails(
                                 staffId = staff.staff.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
                                 headerParams = StaffHeaderParams(

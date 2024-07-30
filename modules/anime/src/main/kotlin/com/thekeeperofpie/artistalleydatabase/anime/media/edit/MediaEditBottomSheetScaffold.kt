@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ClickableBottomSheetDragHandle
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -107,7 +108,9 @@ object MediaEditBottomSheetScaffold {
             sheetContent = {
                 AnimeMediaEditBottomSheet(
                     viewModel,
-                    modifier = Modifier.padding(bottom = bottomPadding),
+                    modifier = Modifier
+                        .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1.1f)
+                        .padding(bottom = bottomPadding),
                     onDismiss = {
                         scope.launch { sheetState.hide() }
                             .invokeOnCompletion {

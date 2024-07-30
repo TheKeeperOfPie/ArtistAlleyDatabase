@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaAndReviewsQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
@@ -67,7 +67,7 @@ object MediaReviewsScreen {
                     onClick = {
                         if (review != null) {
                             it.navigate(
-                                AnimeDestinations.ReviewDetails(
+                                AnimeDestination.ReviewDetails(
                                     reviewId = review.id.toString(),
                                     headerParams = MediaHeaderParams(
                                         title = mediaTitle,

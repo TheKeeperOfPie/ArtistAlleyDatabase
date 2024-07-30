@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.notifications
 
 import android.text.format.DateUtils
@@ -19,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -42,7 +39,7 @@ import com.anilist.fragment.ForumThread
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
@@ -60,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageSta
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import java.time.Instant
@@ -122,7 +120,6 @@ fun NotificationPlaceholderCard() {
 
 @Composable
 fun ActivityMentionNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: ActivityMentionNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
@@ -131,22 +128,34 @@ fun ActivityMentionNotificationCard(
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
-    val imageState = rememberCoilImageState(notification.user?.avatar?.large)
-    val sharedTransitionKey = notification.user?.id?.toString()
-        ?.let { SharedTransitionKey.makeKeyForId(it) }
-    ElevatedCard(onClick = { activityEntry?.id?.let(navigationCallback::onActivityDetailsClick) }) {
+    val activitySharedTransitionKey =
+        SharedTransitionKey.makeKeyForId(notification.activityId.toString())
+    val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
+    ElevatedCard(onClick = {
+        activityEntry?.id?.let {
+            navigationCallback.navigate(
+                AnimeDestination.ActivityDetails(
+                    activityId = it,
+                    sharedTransitionScopeKey = sharedTransitionScopeKey,
+                )
+            )
+        }
+    }) {
+        val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
+        val userSharedTransitionKey = notification.user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         ContextHeader(
             user = notification.user,
-            sharedTransitionKey = sharedTransitionKey,
-            imageState = imageState,
+            sharedTransitionKey = userSharedTransitionKey,
+            imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
         )
 
         ActivityCard(
-            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
+            sharedTransitionKey = activitySharedTransitionKey,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
@@ -156,7 +165,6 @@ fun ActivityMentionNotificationCard(
 
 @Composable
 fun ActivityMessageNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ActivityMessageNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
@@ -164,22 +172,34 @@ fun ActivityMessageNotificationCard(
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
-    val imageState = rememberCoilImageState(notification.user?.avatar?.large)
-    val sharedTransitionKey = notification.user?.id?.toString()
-        ?.let { SharedTransitionKey.makeKeyForId(it) }
-    ElevatedCard(onClick = { activityEntry?.id?.let(navigationCallback::onActivityDetailsClick) }) {
+    val activitySharedTransitionKey =
+        SharedTransitionKey.makeKeyForId(notification.activityId.toString())
+    val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
+    ElevatedCard(onClick = {
+        activityEntry?.id?.let {
+            navigationCallback.navigate(
+                AnimeDestination.ActivityDetails(
+                    activityId = it,
+                    sharedTransitionScopeKey = sharedTransitionScopeKey,
+                )
+            )
+        }
+    }) {
+        val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
+        val userSharedTransitionKey = notification.user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         ContextHeader(
             user = notification.user,
-            sharedTransitionKey = sharedTransitionKey,
-            imageState = imageState,
+            sharedTransitionKey = userSharedTransitionKey,
+            imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
         )
 
         ActivityCard(
-            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
+            sharedTransitionKey = activitySharedTransitionKey,
             mediaEntry = null,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
@@ -189,7 +209,6 @@ fun ActivityMessageNotificationCard(
 
 @Composable
 fun ActivityReplyNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: ActivityReplyNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
@@ -198,24 +217,34 @@ fun ActivityReplyNotificationCard(
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
-    val imageState = rememberCoilImageState(notification.user?.avatar?.large)
-    val sharedTransitionKey = notification.user?.id?.toString()
-        ?.let { SharedTransitionKey.makeKeyForId(it) }
+    val activitySharedTransitionKey =
+        SharedTransitionKey.makeKeyForId(notification.activityId.toString())
+    val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
-        notification.activityId.toString().let(navigationCallback::onActivityDetailsClick)
+        notification.activityId.toString().let {
+            navigationCallback.navigate(
+                AnimeDestination.ActivityDetails(
+                    activityId = it,
+                    sharedTransitionScopeKey = sharedTransitionScopeKey,
+                )
+            )
+        }
     }) {
+        val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
+        val userSharedTransitionKey = notification.user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         ContextHeader(
             user = notification.user,
-            sharedTransitionKey = sharedTransitionKey,
-            imageState = imageState,
+            sharedTransitionKey = userSharedTransitionKey,
+            imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
         )
 
         ActivityCard(
-            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
+            sharedTransitionKey = activitySharedTransitionKey,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
@@ -225,7 +254,6 @@ fun ActivityReplyNotificationCard(
 
 @Composable
 fun ActivityReplySubscribedNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: ActivityReplySubscribedNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
@@ -234,24 +262,32 @@ fun ActivityReplySubscribedNotificationCard(
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
-    val imageState = rememberCoilImageState(notification.user?.avatar?.large)
-    val sharedTransitionKey = notification.user?.id?.toString()
-        ?.let { SharedTransitionKey.makeKeyForId(it) }
+    val activitySharedTransitionKey =
+        SharedTransitionKey.makeKeyForId(notification.activityId.toString())
+    val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
-        notification.activityId.toString().let(navigationCallback::onActivityDetailsClick)
+        navigationCallback.navigate(
+            AnimeDestination.ActivityDetails(
+                activityId = notification.activityId.toString(),
+                sharedTransitionScopeKey = sharedTransitionScopeKey,
+            )
+        )
     }) {
+        val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
+        val userSharedTransitionKey = notification.user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         ContextHeader(
             user = notification.user,
-            sharedTransitionKey = sharedTransitionKey,
-            imageState = imageState,
+            sharedTransitionKey = userSharedTransitionKey,
+            imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
         )
 
         ActivityCard(
-            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
+            sharedTransitionKey = activitySharedTransitionKey,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
@@ -261,7 +297,6 @@ fun ActivityReplySubscribedNotificationCard(
 
 @Composable
 fun ActivityLikedNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: ActivityLikeNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
@@ -270,24 +305,32 @@ fun ActivityLikedNotificationCard(
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
-    val imageState = rememberCoilImageState(notification.user?.avatar?.large)
-    val sharedTransitionKey = notification.user?.id?.toString()
-        ?.let { SharedTransitionKey.makeKeyForId(it) }
+    val activitySharedTransitionKey =
+        SharedTransitionKey.makeKeyForId(notification.activityId.toString())
+    val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
-        notification.activityId.toString().let(navigationCallback::onActivityDetailsClick)
+        navigationCallback.navigate(
+            AnimeDestination.ActivityDetails(
+                activityId = notification.activityId.toString(),
+                sharedTransitionScopeKey = sharedTransitionScopeKey,
+            )
+        )
     }) {
+        val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
+        val userSharedTransitionKey = notification.user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         ContextHeader(
             user = notification.user,
-            sharedTransitionKey = sharedTransitionKey,
-            imageState = imageState,
+            sharedTransitionKey = userSharedTransitionKey,
+            imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
         )
 
         ActivityCard(
-            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
+            sharedTransitionKey = activitySharedTransitionKey,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
@@ -297,7 +340,6 @@ fun ActivityLikedNotificationCard(
 
 @Composable
 fun ActivityReplyLikedNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: ActivityReplyLikeNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
@@ -306,24 +348,32 @@ fun ActivityReplyLikedNotificationCard(
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
-    val imageState = rememberCoilImageState(notification.user?.avatar?.large)
-    val sharedTransitionKey = notification.user?.id?.toString()
-        ?.let { SharedTransitionKey.makeKeyForId(it) }
+    val activitySharedTransitionKey =
+        SharedTransitionKey.makeKeyForId(notification.activityId.toString())
+    val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
-        notification.activityId.toString().let(navigationCallback::onActivityDetailsClick)
+        navigationCallback.navigate(
+            AnimeDestination.ActivityDetails(
+                activityId = notification.activityId.toString(),
+                sharedTransitionScopeKey = sharedTransitionScopeKey,
+            )
+        )
     }) {
+        val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
+        val userSharedTransitionKey = notification.user?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         ContextHeader(
             user = notification.user,
-            sharedTransitionKey = sharedTransitionKey,
-            imageState = imageState,
+            sharedTransitionKey = userSharedTransitionKey,
+            imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
         )
 
         ActivityCard(
-            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
+            sharedTransitionKey = activitySharedTransitionKey,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
@@ -343,7 +393,7 @@ fun AiringNotificationCard(
     ElevatedCard(onClick = {
         notification.mediaId?.let {
             navigationCallback.navigate(
-                AnimeDestinations.MediaDetails(
+                AnimeDestination.MediaDetails(
                     mediaId = it,
                     title = null,
                     coverImage = null,
@@ -377,7 +427,6 @@ fun AiringNotificationCard(
 
 @Composable
 fun FollowingNotificationCard(
-    screenKey: String,
     notification: NotificationsQuery.Data.Page.FollowingNotificationNotification,
 ) {
     val navigationCallback = LocalNavigationCallback.current
@@ -387,7 +436,7 @@ fun FollowingNotificationCard(
     ElevatedCard(onClick = {
         notification.user?.let {
             navigationCallback.navigate(
-                AnimeDestinations.User(
+                AnimeDestination.User(
                     userId = it.id.toString(),
                     sharedTransitionKey = sharedTransitionKey,
                     headerParams = UserHeaderParams(
@@ -422,7 +471,7 @@ fun RelatedMediaAdditionNotificationCard(
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationCallback.navigate(
-                AnimeDestinations.MediaDetails(
+                AnimeDestination.MediaDetails(
                     mediaId = it,
                     title = null,
                     coverImage = null,
@@ -464,7 +513,7 @@ fun MediaDataChangeNotificationCard(
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationCallback.navigate(
-                AnimeDestinations.MediaDetails(
+                AnimeDestination.MediaDetails(
                     mediaId = it,
                     title = null,
                     coverImage = null,
@@ -556,7 +605,7 @@ fun MediaMergeNotificationCard(
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationCallback.navigate(
-                AnimeDestinations.MediaDetails(
+                AnimeDestination.MediaDetails(
                     mediaId = it,
                     title = null,
                     coverImage = null,
@@ -762,7 +811,6 @@ private fun ThreadAndCommentNotificationCard(
 
 @Composable
 fun ThreadLikeNotificationCard(
-    screenKey: String,
     notification: NotificationsQuery.Data.Page.ThreadLikeNotificationNotification,
 ) {
     val navigationCallback = LocalNavigationCallback.current
@@ -825,7 +873,7 @@ private fun ContextHeader(
                 .clickable {
                     if (user != null) {
                         navigationCallback.navigate(
-                            AnimeDestinations.User(
+                            AnimeDestination.User(
                                 userId = user.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
                                 headerParams = UserHeaderParams(
@@ -859,9 +907,9 @@ private fun ContextHeader(
 
 @Composable
 private fun ActivityCard(
-    screenKey: String,
     viewer: AniListViewer?,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
+    sharedTransitionKey: SharedTransitionKey?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
@@ -869,11 +917,19 @@ private fun ActivityCard(
     // TODO: Load activity manually if notification doesn't provide it
     val activity = activityEntry?.activity ?: return
     val navigationCallback = LocalNavigationCallback.current
+    val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     OutlinedCard(
         onClick = {
-            activityEntry?.id?.let { navigationCallback.onActivityDetailsClick(it) }
+            navigationCallback.navigate(
+                AnimeDestination.ActivityDetails(
+                    activityId = activityEntry.id,
+                    sharedTransitionScopeKey = sharedTransitionScopeKey,
+                )
+            )
         },
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier
+            .sharedElement(sharedTransitionKey, "activity_card")
+            .padding(8.dp)
     ) {
         when (activity) {
             is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> ListActivityCardContent(
@@ -887,30 +943,30 @@ private fun ActivityCard(
                 onClickListEdit = onClickListEdit,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> MessageActivityCardContent(
-                screenKey = screenKey,
                 viewer = viewer,
                 activity = activity,
+                sharedTransitionKey = sharedTransitionKey,
                 messenger = activity.messenger,
                 entry = activityEntry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 clickable = true,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> TextActivityCardContent(
-                screenKey = screenKey,
                 viewer = viewer,
                 activity = activity,
-                entry = activityEntry,
+                sharedTransitionKey = sharedTransitionKey,
                 user = activity.user,
+                entry = activityEntry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 clickable = true,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
             -> TextActivityCardContent(
-                screenKey = screenKey,
-                activity = null,
                 viewer = viewer,
-                entry = null,
+                activity = null,
+                sharedTransitionKey = null,
                 user = null,
+                entry = null,
                 onActivityStatusUpdate = onActivityStatusUpdate,
             )
         }

@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -39,6 +40,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsContro
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -66,7 +69,10 @@ class SeasonalViewModel @Inject constructor(
     mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
+
+    private val destination = savedStateHandle.toDestination<AnimeDestination.Seasonal>(navigationTypeMap)
 
     val viewer = aniListApi.authedUser
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
@@ -75,18 +81,10 @@ class SeasonalViewModel @Inject constructor(
     private val pages = LruCache<Int, Page>(10)
     private val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
 
-    private val type = savedStateHandle.get<String?>("type")?.let {
-        try {
-            Type.valueOf(it)
-        } catch (ignored: Throwable) {
-            null
-        }
-    } ?: Type.THIS
-
-    var initialPage = when (type) {
-        Type.LAST -> Int.MAX_VALUE / 2 - 1
-        Type.THIS -> Int.MAX_VALUE / 2
-        Type.NEXT -> Int.MAX_VALUE / 2 + 1
+    var initialPage = when (destination.type) {
+        AnimeDestination.Seasonal.Type.LAST -> Int.MAX_VALUE / 2 - 1
+        AnimeDestination.Seasonal.Type.THIS -> Int.MAX_VALUE / 2
+        AnimeDestination.Seasonal.Type.NEXT -> Int.MAX_VALUE / 2 + 1
     }
 
     val sortFilterController = AnimeSortFilterController(
@@ -130,12 +128,6 @@ class SeasonalViewModel @Inject constructor(
         }
 
         return pageData.content.collectAsLazyPagingItems()
-    }
-
-    enum class Type {
-        LAST,
-        THIS,
-        NEXT,
     }
 
     inner class Page(seasonYear: Pair<MediaSeason, Int>) {

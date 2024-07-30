@@ -53,7 +53,7 @@ import com.anilist.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
@@ -102,7 +102,7 @@ object CharacterListRow {
         val onClick = {
             if (entry != null) {
                 navigationCallback.navigate(
-                    AnimeDestinations.CharacterDetails(
+                    AnimeDestination.CharacterDetails(
                         characterId = entry.character.id.toString(),
                         sharedTransitionKey = characterSharedTransitionKey,
                         headerParams = CharacterHeaderParams(
@@ -316,7 +316,7 @@ object CharacterListRow {
                         contentDescriptionTextRes = R.string.anime_staff_image_content_description,
                         onClick = {
                             navigationCallback.navigate(
-                                AnimeDestinations.StaffDetails(
+                                AnimeDestination.StaffDetails(
                                     staffId = voiceActor.id.toString(),
                                     sharedTransitionKey = sharedTransitionKey,
                                     headerParams = StaffHeaderParams(
@@ -354,7 +354,7 @@ object CharacterListRow {
                         onClick = {
                             if (item != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.MediaDetails(
+                                    AnimeDestination.MediaDetails(
                                         mediaNavigationData = item.media,
                                         coverImage = imageState.toImageState(),
                                         languageOptionMedia = languageOptionMedia,

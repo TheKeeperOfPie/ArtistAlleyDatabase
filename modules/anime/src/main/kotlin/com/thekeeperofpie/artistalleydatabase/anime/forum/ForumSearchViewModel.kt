@@ -14,10 +14,13 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +38,10 @@ class ForumSearchViewModel @Inject constructor(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
+
+    private val destination = savedStateHandle.toDestination<AnimeDestination.ForumSearch>(navigationTypeMap)
 
     val sortFilterController = ForumSubsectionSortFilterController(
         screenKey = AnimeNavDestinations.FORUM_SEARCH.id,
@@ -51,18 +57,11 @@ class ForumSearchViewModel @Inject constructor(
         MutableStateFlow(PagingData.empty<ForumThreadSearchQuery.Data.Page.Thread>())
 
     init {
-        val defaultSort = savedStateHandle.get<String?>("sort")?.let {
-            try {
-                ForumThreadSortOption.valueOf(it)
-            } catch (ignored: Throwable) {
-                null
-            }
-        }
         sortFilterController.initialize(
             ForumSubsectionSortFilterController.InitialParams(
-                defaultSort = defaultSort,
-                categoryId = savedStateHandle["categoryId"],
-                mediaCategoryId = savedStateHandle["mediaCategoryId"],
+                defaultSort = destination.sort,
+                categoryId = destination.categoryId,
+                mediaCategoryId = destination.mediaCategoryId,
             )
         )
 

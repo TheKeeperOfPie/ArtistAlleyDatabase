@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StudioListRowFragment
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
@@ -159,7 +159,7 @@ object StudioListRow {
                         onClick = {
                             if (item != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.MediaDetails(
+                                    AnimeDestination.MediaDetails(
                                         mediaId = item.media.id.toString(),
                                         title = title,
                                         coverImage = imageState.toImageState(),

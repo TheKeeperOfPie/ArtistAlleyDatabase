@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.CharacterWithRole
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
@@ -34,7 +34,7 @@ class MediaCharactersViewModel @Inject constructor(
     aniListApi = aniListApi,
     loadingErrorTextRes = R.string.anime_characters_error_loading,
 ) {
-    private val destination = savedStateHandle.toDestination<AnimeDestinations.MediaCharacters>(navigationTypeMap)
+    private val destination = savedStateHandle.toDestination<AnimeDestination.MediaCharacters>(navigationTypeMap)
     val mediaId = destination.mediaId
 
     override val sortFilterController =

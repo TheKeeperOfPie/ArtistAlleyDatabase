@@ -97,6 +97,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.orEmpty
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -393,7 +394,7 @@ object AnimeMediaDetailsScreen {
                                 val containerColor = headerValues.defaultColor
                                     .takeOrElse { FloatingActionButtonDefaults.containerColor }
                                 val contentColor = ComposeColorUtils.bestTextColor(containerColor)
-                                        ?: contentColorFor(containerColor)
+                                    ?: contentColorFor(containerColor)
 
                                 val listStatus = viewModel.listStatus
                                 val status = listStatus?.entry?.status
@@ -692,9 +693,12 @@ object AnimeMediaDetailsScreen {
             genres.forEach {
                 AssistChip(
                     onClick = {
-                        navigationCallback.onGenreClick(
-                            mediaType ?: MediaType.ANIME,
-                            it.name
+                        navigationCallback.navigate(
+                            AnimeDestination.SearchMedia(
+                                title = it.name,
+                                genre = it.name,
+                                mediaType = mediaType ?: MediaType.ANIME,
+                            )
                         )
                     },
                     onLongClickLabel = stringResource(
@@ -1062,10 +1066,12 @@ object AnimeMediaDetailsScreen {
                                 }
                             },
                             onTagClick = { id, name ->
-                                navigationCallback.onTagClick(
-                                    entry.media.type ?: MediaType.ANIME,
-                                    id,
-                                    name,
+                                navigationCallback.navigate(
+                                    AnimeDestination.SearchMedia(
+                                        title = name,
+                                        tagId = id,
+                                        mediaType = entry.media.type ?: MediaType.ANIME,
+                                    )
                                 )
                             },
                             containerColor = containerColor,

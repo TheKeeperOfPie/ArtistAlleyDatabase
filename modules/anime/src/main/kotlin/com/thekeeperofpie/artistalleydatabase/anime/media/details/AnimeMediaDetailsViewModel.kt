@@ -14,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -74,7 +74,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     val screenKey = "${AnimeNavDestinations.MEDIA_DETAILS.id}-${UUID.randomUUID()}"
     val viewer = aniListApi.authedUser
-    val mediaId = savedStateHandle.toDestination<AnimeDestinations.MediaDetails>(navigationTypeMap).mediaId
+    val mediaId = savedStateHandle.toDestination<AnimeDestination.MediaDetails>(navigationTypeMap).mediaId
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)

@@ -37,7 +37,7 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.UserNavigationData
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
@@ -175,7 +175,7 @@ object UserSocialScreen {
                 .clickable {
                     user?.let {
                         navigationCallback.navigate(
-                            AnimeDestinations.User(
+                            AnimeDestination.User(
                                 userId = it.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
                                 headerParams = UserHeaderParams(

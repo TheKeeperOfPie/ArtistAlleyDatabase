@@ -28,12 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
-import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
@@ -235,18 +232,11 @@ object AnimeRootScreen {
                             bottomNavigationState = bottomNavigationState,
                         )
                         AnimeRootNavDestination.SEARCH -> {
-                            val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
-                                initialize(
-                                    defaultMediaSort = MediaSortOption.SEARCH_MATCH,
-                                    lockSort = false,
-                                )
-                            }
                             AnimeSearchScreen(
                                 upIconOption = upIconOption,
-                                viewModel = viewModel,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeRootNavDestination.SEARCH.id,
-                                    scrollPositions
+                                    scrollPositions,
                                 ),
                                 bottomNavigationState = bottomNavigationState,
                             )

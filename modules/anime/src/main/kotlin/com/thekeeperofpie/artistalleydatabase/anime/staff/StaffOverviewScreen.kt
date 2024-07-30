@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
@@ -58,7 +58,7 @@ object StaffOverviewScreen {
                 characters = characters,
                 onClickViewAll = {
                     it.navigate(
-                        AnimeDestinations.StaffCharacters(
+                        AnimeDestination.StaffCharacters(
                             staffId = entry.staff.id.toString(),
                             sharedTransitionKey = null,
                             headerParams = StaffHeaderParams(

@@ -80,7 +80,7 @@ import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -435,7 +435,14 @@ fun ThreadCategoryRow(thread: ForumThread, modifier: Modifier = Modifier) {
         // TODO: Enforce unique IDs
         items(categories, { "category-${it.id}" }) {
             SuggestionChip(
-                onClick = { navigationCallback.onForumCategoryClick(it.name, it.id.toString()) },
+                onClick = {
+                    navigationCallback.navigate(
+                        AnimeDestination.ForumSearch(
+                            title = it.name,
+                            categoryId = it.id.toString(),
+                        )
+                    )
+                },
                 label = { Text(it.name) }
             )
         }
@@ -443,9 +450,11 @@ fun ThreadCategoryRow(thread: ForumThread, modifier: Modifier = Modifier) {
             it.title?.primaryTitle()?.let { title ->
                 SuggestionChip(
                     onClick = {
-                        navigationCallback.onForumMediaCategoryClick(
-                            title,
-                            it.id.toString()
+                        navigationCallback.navigate(
+                            AnimeDestination.ForumSearch(
+                                title = title,
+                                mediaCategoryId = it.id.toString(),
+                            )
                         )
                     },
                     label = { Text(text = title) }
@@ -533,7 +542,7 @@ private fun UserImage(
             .clickable {
                 if (user != null) {
                     navigationCallback.navigate(
-                        AnimeDestinations.User(
+                        AnimeDestination.User(
                             userId = user.id.toString(),
                             sharedTransitionKey = sharedTransitionKey,
                             headerParams = UserHeaderParams(
@@ -897,7 +906,7 @@ fun ThreadCommentContent(
             .clickable {
                 if (user != null) {
                     navigationCallback.navigate(
-                        AnimeDestinations.User(
+                        AnimeDestination.User(
                             userId = user.id.toString(),
                             sharedTransitionKey = sharedTransitionKey,
                             headerParams = UserHeaderParams(

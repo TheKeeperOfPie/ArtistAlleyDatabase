@@ -16,7 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
@@ -60,7 +60,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestinations.CharacterDetails>(navigationTypeMap)
+    private val destination = savedStateHandle.toDestination<AnimeDestination.CharacterDetails>(navigationTypeMap)
     val characterId = destination.characterId
 
     val viewer = aniListApi.authedUser

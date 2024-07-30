@@ -48,10 +48,14 @@ val LocalSharedTransitionPrefixKeys = staticCompositionLocalOf<String> { "" }
 @Composable
 fun <T> T.SharedTransitionKeyScope(vararg prefixKeys: String?, content: @Composable T.() -> Unit) {
     val currentPrefix = LocalSharedTransitionPrefixKeys.current
-    CompositionLocalProvider(
-        LocalSharedTransitionPrefixKeys provides "$currentPrefix-${prefixKeys.joinToString(separator = "-")}",
-    ) {
+    val suffix = if (prefixKeys.isEmpty()) "" else "-${prefixKeys.joinToString(separator = "-")}"
+    val scopeKey = "$currentPrefix$suffix"
+    if (scopeKey.isEmpty()) {
         content()
+    } else {
+        CompositionLocalProvider(LocalSharedTransitionPrefixKeys provides scopeKey) {
+            content()
+        }
     }
 }
 
@@ -212,7 +216,7 @@ fun Modifier.animateSharedTransitionWithOtherState(
     sharedContentState ?: return this
     return with(LocalSharedTransitionScope.current) {
         renderInSharedTransitionScopeOverlay(
-            renderInOverlay = { sharedContentState.isMatchFound },
+            renderInOverlay = { isTransitionActive && sharedContentState.isMatchFound },
             zIndexInOverlay = zIndexInOverlay,
         )
             .conditionally(!disableAnimateEnterExit && sharedContentState.isMatchFound) {

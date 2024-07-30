@@ -197,5 +197,5 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     @IntoSet
-    fun provideNavigationTypeMap(): @JvmSuppressWildcards Map<KType, NavType<*>> = AnimeDestinations.typeMap
+    fun provideNavigationTypeMap(): @JvmSuppressWildcards Map<KType, NavType<*>> = AnimeDestination.typeMap
 }

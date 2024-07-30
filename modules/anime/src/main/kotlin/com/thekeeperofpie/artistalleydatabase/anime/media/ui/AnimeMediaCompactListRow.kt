@@ -41,7 +41,7 @@ import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
@@ -84,10 +84,10 @@ object AnimeMediaCompactListRow {
         val (containerColor, textColor) = coverImageState.colors
         OutlinedCard(
             modifier = modifier
-                // Used to animate persistence of this view across screens
-                .sharedElement(sharedTransitionKey, "media_compact_list_row")
                 .fillMaxWidth()
                 .heightIn(min = DEFAULT_IMAGE_HEIGHT)
+                // Used to animate persistence of this view across screens
+                .sharedElement(sharedTransitionKey, "media_compact_list_row")
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
         ) {
             val navigationCallback = LocalNavigationCallback.current
@@ -101,7 +101,7 @@ object AnimeMediaCompactListRow {
                         onClick = {
                             if (entry != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestinations.MediaDetails(
+                                    AnimeDestination.MediaDetails(
                                         mediaId = entry.media.id.toString(),
                                         title = title,
                                         coverImage = coverImageState.toImageState(),
@@ -130,7 +130,7 @@ object AnimeMediaCompactListRow {
                     onClick = {
                         if (entry != null) {
                             navigationCallback.navigate(
-                                AnimeDestinations.MediaDetails(
+                                AnimeDestination.MediaDetails(
                                     mediaId = entry.media.id.toString(),
                                     title = title,
                                     coverImage = coverImageState.toImageState(),
@@ -180,10 +180,12 @@ object AnimeMediaCompactListRow {
                         tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
                         onTagClick = { id, name ->
                             if (entry != null) {
-                                navigationCallback.onTagClick(
-                                    entry.media.type ?: MediaType.ANIME,
-                                    id,
-                                    name
+                                navigationCallback.navigate(
+                                    AnimeDestination.SearchMedia(
+                                        title = name,
+                                        tagId = id,
+                                        mediaType = entry.media.type ?: MediaType.ANIME,
+                                    )
                                 )
                             }
                         },
