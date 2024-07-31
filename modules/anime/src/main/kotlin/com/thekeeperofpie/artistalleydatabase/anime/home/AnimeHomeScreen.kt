@@ -271,7 +271,9 @@ object AnimeHomeScreen {
 
                             val unlocked by viewModel.unlocked.collectAsState(initial = false)
                             if (unlocked) {
-                                IconButton(onClick = navigationCallback::onForumRootClick) {
+                                IconButton(onClick = {
+                                    navigationCallback.navigate(AnimeDestination.Forum)
+                                }) {
                                     Icon(
                                         imageVector = Icons.Filled.Forum,
                                         contentDescription = stringResource(
@@ -292,7 +294,9 @@ object AnimeHomeScreen {
                                         }
                                     }
                                 }) {
-                                    IconButton(onClick = navigationCallback::onNotificationsClick) {
+                                    IconButton(onClick = {
+                                        navigationCallback.navigate(AnimeDestination.Notifications)
+                                    }) {
                                         Icon(
                                             imageVector = Icons.Filled.Notifications,
                                             contentDescription = stringResource(

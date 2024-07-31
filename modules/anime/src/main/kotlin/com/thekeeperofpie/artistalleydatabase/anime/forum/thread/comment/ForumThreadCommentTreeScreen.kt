@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadComment
@@ -228,9 +229,11 @@ object ForumThreadCommentTreeScreen {
                                         )
                                         val navigationCallback = LocalNavigationCallback.current
                                         TextButton(onClick = {
-                                            navigationCallback.onForumThreadClick(
-                                                title = entry.result?.thread?.title,
-                                                viewModel.threadId,
+                                            navigationCallback.navigate(
+                                                AnimeDestination.ForumThread(
+                                                    threadId = viewModel.threadId,
+                                                    title = entry.result?.thread?.title,
+                                                )
                                             )
                                         }) {
                                             Text(

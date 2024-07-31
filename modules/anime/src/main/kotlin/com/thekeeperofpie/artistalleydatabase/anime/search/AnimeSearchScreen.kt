@@ -49,7 +49,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
@@ -171,9 +171,7 @@ object AnimeSearchScreen {
                                 val navigationCallback = LocalNavigationCallback.current
                                 Button(
                                     onClick = {
-                                        navigationCallback.navigate(
-                                            AnimeNavDestinations.FEATURE_TIERS.id
-                                        )
+                                        navigationCallback.navigate(AnimeDestination.FeatureTiers)
                                     }
                                 ) {
                                     Text(

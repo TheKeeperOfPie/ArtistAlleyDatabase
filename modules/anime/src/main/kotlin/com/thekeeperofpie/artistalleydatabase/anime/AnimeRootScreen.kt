@@ -136,12 +136,14 @@ object AnimeRootScreen {
                                                 text = { Text(stringResource(R.string.anime_root_menu_ignored)) },
                                                 onClick = {
                                                     dismissMenu(destination)
-                                                    navigationCallback.onClickViewIgnored(
-                                                        if (destination == AnimeRootNavDestination.ANIME) {
-                                                            MediaType.ANIME
-                                                        } else {
-                                                            MediaType.MANGA
-                                                        }
+                                                    navigationCallback.navigate(
+                                                        AnimeDestination.Ignored(
+                                                            mediaType = if (destination == AnimeRootNavDestination.ANIME) {
+                                                                MediaType.ANIME
+                                                            } else {
+                                                                MediaType.MANGA
+                                                            }
+                                                        )
                                                     )
                                                 },
                                             )
@@ -149,12 +151,14 @@ object AnimeRootScreen {
                                                 text = { Text(stringResource(R.string.anime_root_menu_history)) },
                                                 onClick = {
                                                     dismissMenu(destination)
-                                                    navigationCallback.onClickViewMediaHistory(
-                                                        if (destination == AnimeRootNavDestination.ANIME) {
-                                                            MediaType.ANIME
-                                                        } else {
-                                                            MediaType.MANGA
-                                                        }
+                                                    navigationCallback.navigate(
+                                                        AnimeDestination.MediaHistory(
+                                                            mediaType = if (destination == AnimeRootNavDestination.ANIME) {
+                                                                MediaType.ANIME
+                                                            } else {
+                                                                MediaType.MANGA
+                                                            },
+                                                        )
                                                     )
                                                 },
                                             )

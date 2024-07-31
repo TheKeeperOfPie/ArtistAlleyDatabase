@@ -98,7 +98,14 @@ object UserSocialScreen {
                 data = following,
                 titleRes = R.string.anime_user_social_following,
                 emptyTextRes = R.string.anime_user_social_not_following_anyone,
-                onClickViewAll = { navigationCallback.onFollowingClick(userId, user?.name) },
+                onClickViewAll = {
+                    navigationCallback.navigate(
+                        AnimeDestination.UserFollowing(
+                            userId = userId,
+                            userName = user?.name,
+                        )
+                    )
+                },
             )
 
             if (followers.itemCount > 0) {
@@ -107,7 +114,14 @@ object UserSocialScreen {
                     data = followers,
                     titleRes = R.string.anime_user_social_followers,
                     emptyTextRes = null,
-                    onClickViewAll = { navigationCallback.onFollowersClick(userId, user?.name) },
+                    onClickViewAll = {
+                        navigationCallback.navigate(
+                            AnimeDestination.UserFollowers(
+                                userId = userId,
+                                userName = user?.name,
+                            )
+                        )
+                    },
                 )
             }
         }

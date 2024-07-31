@@ -20,15 +20,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
@@ -111,7 +108,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.navArguments
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
@@ -168,10 +164,7 @@ object AnimeNavigator {
                 mediaType = destination.mediaType,
                 upIconOption = UpIconOption.Back(navHostController),
                 mediaListStatus = destination.mediaListStatus,
-                scrollStateSaver = ScrollStateSaver.fromMap(
-                    AnimeNavDestinations.USER_LIST.id,
-                    ScrollStateSaver.scrollPositions(),
-                ),
+                scrollStateSaver = ScrollStateSaver(),
             )
         }
 
@@ -546,13 +539,7 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.IGNORED.id + "?mediaType={mediaType}",
-            arguments = navArguments("mediaType") {
-                type = NavType.StringType
-                nullable = true
-            },
-        ) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.Ignored>(navigationTypeMap) {
             AnimeIgnoreScreen(UpIconOption.Back(navHostController))
         }
 
@@ -688,39 +675,26 @@ object AnimeNavigator {
             }
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.STUDIO_MEDIAS.id
-                    + "?studioId={studioId}&name={name}&favorite={favorite}",
+        navGraphBuilder.sharedElementComposable<AnimeDestination.StudioMedias>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/studio/{studioId}" },
                 navDeepLink {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/studio/{studioId}/.*"
                 },
             ),
-            arguments = listOf(
-                navArgument("studioId") {
-                    type = NavType.StringType
-                    nullable = false
-                },
-            ) + navArguments("name", "favorite") {
-                type = NavType.StringType
-                nullable = true
-            },
         ) {
-            val arguments = it.arguments!!
-            val name = arguments.getString("name")
-            val favorite = arguments.getString("favorite")?.toBooleanStrictOrNull()
-
+            val destination = it.toRoute<AnimeDestination.StudioMedias>()
             val viewModel = hiltViewModel<StudioMediasViewModel>()
 
             StudioMediasScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
-                name = { viewModel.entry.result?.studio?.name ?: name ?: "" },
+                name = { viewModel.entry.result?.studio?.name ?: destination.name ?: "" },
                 favorite = {
                     viewModel.favoritesToggleHelper.favorite
                         ?: viewModel.entry.result?.studio?.isFavourite
-                        ?: favorite
+                        ?: destination.favorite
                 },
             )
         }
@@ -743,14 +717,14 @@ object AnimeNavigator {
             }
         }
 
-        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.FEATURE_TIERS.id) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.FeatureTiers>(navigationTypeMap) {
             UnlockScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 onClickSettings = null,
             )
         }
 
-        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.FORUM.id) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.Forum>(navigationTypeMap) {
             ForumRootScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
@@ -777,25 +751,14 @@ object AnimeNavigator {
         }
 
         // TODO: Forum deep links
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.FORUM_THREAD.id
-                    + "?threadId={threadId}"
-                    + "&title={title}",
+        navGraphBuilder.sharedElementComposable<AnimeDestination.ForumThread>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}"
                 },
                 navDeepLink {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/.*"
-                },
-            ),
-            arguments = listOf(
-                navArgument("threadId") {
-                    type = NavType.StringType
-                },
-                navArgument("title") {
-                    type = NavType.StringType
-                    nullable = true
                 },
             ),
         ) {
@@ -805,11 +768,8 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.FORUM_THREAD_COMMENT.id
-                    + "?threadId={threadId}"
-                    + "&commentId={commentId}"
-                    + "&title={title}",
+        navGraphBuilder.sharedElementComposable<AnimeDestination.ForumThreadComment>(
+            navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
@@ -820,18 +780,6 @@ object AnimeNavigator {
                         "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}/.*"
                 },
             ),
-            arguments = listOf(
-                navArgument("threadId") {
-                    type = NavType.StringType
-                },
-                navArgument("commentId") {
-                    type = NavType.StringType
-                },
-                navArgument("title") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ),
         ) {
             ForumThreadCommentTreeScreen(
                 upIconOption = UpIconOption.Back(navHostController),
@@ -839,198 +787,121 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.MEDIA_HISTORY.id + "?mediaType={mediaType}",
-            arguments = listOf(
-                navArgument("mediaType") {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            )
-        ) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.MediaHistory>(navigationTypeMap) {
             MediaHistoryScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.USER_FOLLOWING.id
-                    + "?userId={userId}"
-                    + "&userName={userName}",
-            arguments = listOf("userId", "userName").map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
-        ) {
-            val userId = it.arguments?.getString("userId")
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFollowing>(navigationTypeMap) {
+            val destination = it.toRoute<AnimeDestination.UserFollowing>()
             val viewModel = hiltViewModel<UserListViewModel.Following>()
             UserListScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
                 title = {
-                    if (userId == null) {
+                    if (destination.userId == null) {
                         stringResource(R.string.anime_user_following_you)
                     } else {
                         stringResource(
                             R.string.anime_user_following_user,
-                            it.arguments?.getString("userName").orEmpty()
+                            destination.userName.orEmpty()
                         )
                     }
                 },
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.USER_FOLLOWERS.id
-                    + "?userId={userId}"
-                    + "&userName={userName}",
-            arguments = listOf("userId", "userName").map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
-        ) {
-            val userId = it.arguments?.getString("userId")
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFollowers>(navigationTypeMap) {
+            val destination = it.toRoute<AnimeDestination.UserFollowers>()
             val viewModel = hiltViewModel<UserListViewModel.Followers>()
             UserListScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
                 title = {
-                    if (userId == null) {
+                    if (destination.userId == null) {
                         stringResource(R.string.anime_user_followers_you)
                     } else {
                         stringResource(
                             R.string.anime_user_followers_user,
-                            it.arguments?.getString("userName").orEmpty()
+                            destination.userName.orEmpty()
                         )
                     }
                 },
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.USER_FAVORITE_MEDIA.id
-                    + "?userId={userId}"
-                    + "&userName={userName}"
-                    + "&mediaType={mediaType}",
-            arguments = listOf("userId", "userName", "mediaType").map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
-        ) {
-            val userId = it.arguments?.getString("userId")
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteMedia>(navigationTypeMap) {
+            val destination = it.toRoute<AnimeDestination.UserFavoriteMedia>()
             val viewModel: UserFavoriteMediaViewModel = hiltViewModel()
-            val userName = it.arguments?.getString("userName").orEmpty()
             UserFavoriteMediaScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
                 title = {
                     if (viewModel.mediaType == MediaType.ANIME) {
-                        if (userId == null) {
+                        if (destination.userId == null) {
                             stringResource(R.string.anime_user_favorite_anime_you)
                         } else {
-                            stringResource(R.string.anime_user_favorite_anime_user, userName)
+                            stringResource(R.string.anime_user_favorite_anime_user, destination.userName.orEmpty())
                         }
                     } else {
-                        if (userId == null) {
+                        if (destination.userId == null) {
                             stringResource(R.string.anime_user_favorite_manga_you)
                         } else {
-                            stringResource(R.string.anime_user_favorite_manga_user, userName)
+                            stringResource(R.string.anime_user_favorite_manga_user, destination.userName.orEmpty())
                         }
                     }
                 },
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.USER_FAVORITE_CHARACTERS.id
-                    + "?userId={userId}"
-                    + "&userName={userName}",
-            arguments = listOf("userId", "userName").map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
-        ) {
-            val userId = it.arguments?.getString("userId")
-            val userName = it.arguments?.getString("userName").orEmpty()
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteCharacters>(navigationTypeMap) {
+            val destination = it.toRoute<AnimeDestination.UserFavoriteCharacters>()
             UserFavoriteCharactersScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 title = {
-                    if (userId == null) {
+                    if (destination.userId == null) {
                         stringResource(R.string.anime_user_favorite_characters_you)
                     } else {
-                        stringResource(R.string.anime_user_favorite_characters_user, userName)
+                        stringResource(R.string.anime_user_favorite_characters_user, destination.userName.orEmpty())
                     }
                 },
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.USER_FAVORITE_STAFF.id
-                    + "?userId={userId}"
-                    + "&userName={userName}",
-            arguments = listOf("userId", "userName").map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
-        ) {
-            val userId = it.arguments?.getString("userId")
-            val userName = it.arguments?.getString("userName").orEmpty()
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteStaff>(navigationTypeMap) {
+            val destination = it.toRoute<AnimeDestination.UserFavoriteStaff>()
             UserFavoriteStaffScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 title = {
-                    if (userId == null) {
+                    if (destination.userId == null) {
                         stringResource(R.string.anime_user_favorite_staff_you)
                     } else {
-                        stringResource(R.string.anime_user_favorite_staff_user, userName)
+                        stringResource(R.string.anime_user_favorite_staff_user, destination.userName.orEmpty())
                     }
                 },
             )
         }
 
-        navGraphBuilder.sharedElementComposable(
-            route = AnimeNavDestinations.USER_FAVORITE_STUDIOS.id
-                    + "?userId={userId}"
-                    + "&userName={userName}",
-            arguments = listOf("userId", "userName").map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteStudios>(
+            navigationTypeMap
         ) {
-            val userId = it.arguments?.getString("userId")
-            val userName = it.arguments?.getString("userName").orEmpty()
+            val destination = it.toRoute<AnimeDestination.UserFavoriteStudios>()
             UserFavoriteStudiosScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 title = {
-                    if (userId == null) {
+                    if (destination.userId == null) {
                         stringResource(R.string.anime_user_favorite_studios_you)
                     } else {
-                        stringResource(R.string.anime_user_favorite_studios_user, userName)
+                        stringResource(
+                            R.string.anime_user_favorite_studios_user,
+                            destination.userName.orEmpty(),
+                        )
                     }
                 },
             )
         }
     }
-
-    fun onStudioClick(
-        navHostController: NavHostController,
-        studioId: String,
-        name: String,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.STUDIO_MEDIAS.id +
-                "?studioId=$studioId&name=$name"
-    )
 
     @Composable
     fun UserMediaListScreen(
@@ -1056,101 +927,11 @@ object AnimeNavigator {
         // Null to make previews easier
         private val navHostController: NavHostController? = null,
         private val cdEntryNavigator: CdEntryNavigator? = null,
-        private val languageOptionMedia: AniListLanguageOption = AniListLanguageOption.DEFAULT,
-        private val languageOptionCharacters: AniListLanguageOption = AniListLanguageOption.DEFAULT,
-        private val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     ) {
-        fun onCharacterLongClick(id: String) {
-            // TODO
-        }
-
-        fun onStaffLongClick(id: String) {
-            // TODO
-        }
-
-        fun onStudioClick(id: String, name: String) =
-            navHostController?.let { onStudioClick(it, id, name) }
-
-        fun onClickViewIgnored(mediaType: MediaType? = null) {
-            navHostController?.navigate(
-                AnimeNavDestinations.IGNORED.id
-                        + "?mediaType=${mediaType?.rawValue}"
-            )
-        }
-
-        fun onClickViewMediaHistory(mediaType: MediaType? = null) {
-            navHostController?.navigate(
-                AnimeNavDestinations.MEDIA_HISTORY.id
-                        + "?mediaType=${mediaType?.rawValue}"
-            )
-        }
-
         fun onCdEntryClick(model: CdEntryGridModel, imageCornerDp: Dp?) {
             navHostController?.let {
                 cdEntryNavigator?.onCdEntryClick(it, listOf(model.id.valueId), imageCornerDp)
             }
-        }
-
-        fun onNotificationsClick() {
-            navHostController?.navigate(AnimeNavDestinations.NOTIFICATIONS.id)
-        }
-
-        fun onForumRootClick() = navHostController?.navigate(AnimeNavDestinations.FORUM.id)
-
-        fun onForumThreadClick(title: String?, threadId: String) {
-            navHostController?.navigate(
-                AnimeNavDestinations.FORUM_THREAD.id
-                        + "?title=$title&threadId=$threadId"
-            )
-        }
-
-        fun onForumThreadCommentClick(title: String?, threadId: String, commentId: String) {
-            navHostController?.navigate(
-                AnimeNavDestinations.FORUM_THREAD_COMMENT.id
-                        + "?title=$title&threadId=$threadId&commentId=$commentId"
-            )
-        }
-
-        fun onFollowingClick(userId: String?, userName: String?) {
-            navHostController?.navigate(
-                AnimeNavDestinations.USER_FOLLOWING.id
-                        + "?userId=$userId&userName=$userName"
-            )
-        }
-
-        fun onFollowersClick(userId: String?, userName: String?) {
-            navHostController?.navigate(
-                AnimeNavDestinations.USER_FOLLOWERS.id
-                        + "?userId=$userId&userName=$userName"
-            )
-        }
-
-        fun onUserFavoriteMediaClick(userId: String?, userName: String?, mediaType: MediaType) {
-            navHostController?.navigate(
-                AnimeNavDestinations.USER_FAVORITE_MEDIA.id
-                        + "?userId=$userId&userName=$userName&mediaType=${mediaType.rawValue}"
-            )
-        }
-
-        fun onUserFavoriteCharactersClick(userId: String?, userName: String?) {
-            navHostController?.navigate(
-                AnimeNavDestinations.USER_FAVORITE_CHARACTERS.id
-                        + "?userId=$userId&userName=$userName"
-            )
-        }
-
-        fun onUserFavoriteStaffClick(userId: String?, userName: String?) {
-            navHostController?.navigate(
-                AnimeNavDestinations.USER_FAVORITE_STAFF.id
-                        + "?userId=$userId&userName=$userName"
-            )
-        }
-
-        fun onUserFavoriteStudiosClick(userId: String?, userName: String?) {
-            navHostController?.navigate(
-                AnimeNavDestinations.USER_FAVORITE_STUDIOS.id
-                        + "?userId=$userId&userName=$userName"
-            )
         }
 
         fun navigate(route: String) = navHostController?.navigate(route)

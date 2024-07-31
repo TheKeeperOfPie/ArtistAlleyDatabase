@@ -10,6 +10,7 @@ import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -19,6 +20,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,9 +40,11 @@ class UserFavoriteStudiosViewModel @Inject constructor(
     ignoreController: IgnoreController,
     settings: AnimeSettings,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    val userId = savedStateHandle.get<String?>("userId")
+    private val destination = savedStateHandle.toDestination<AnimeDestination.UserFavoriteStudios>(navigationTypeMap)
+    val userId = destination.userId
     val viewer = aniListApi.authedUser
     val studios = MutableStateFlow(PagingData.empty<StudioListRow.Entry>())
 

@@ -114,7 +114,14 @@ object ForumComposables {
 fun ThreadCompactCard(thread: ForumThread, modifier: Modifier = Modifier) {
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(
-        onClick = { navigationCallback.onForumThreadClick(thread.title, thread.id.toString()) },
+        onClick = {
+            navigationCallback.navigate(
+                AnimeDestination.ForumThread(
+                    threadId = thread.id.toString(),
+                    title = thread.title,
+                )
+            )
+        },
         modifier = modifier,
     ) {
         Text(
@@ -139,7 +146,12 @@ fun ThreadSmallCard(
     val thread = entry.thread
     ElevatedCard(
         onClick = {
-            navigationCallback.onForumThreadClick(thread.title, thread.id.toString())
+            navigationCallback.navigate(
+                AnimeDestination.ForumThread(
+                    threadId = thread.id.toString(),
+                    title = thread.title,
+                )
+            )
         },
         modifier = Modifier
             .height(IntrinsicSize.Min)
@@ -236,7 +248,12 @@ fun ThreadCard(thread: ForumThread?, modifier: Modifier = Modifier) {
     ElevatedCard(
         onClick = {
             if (thread != null) {
-                navigationCallback.onForumThreadClick(thread.title, thread.id.toString())
+                navigationCallback.navigate(
+                    AnimeDestination.ForumThread(
+                        threadId = thread.id.toString(),
+                        title = thread.title,
+                    )
+                )
             }
         },
         modifier = Modifier

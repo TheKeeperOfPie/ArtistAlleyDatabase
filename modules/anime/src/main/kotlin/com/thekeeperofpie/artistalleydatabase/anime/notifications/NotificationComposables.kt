@@ -733,10 +733,12 @@ private fun ThreadAndCommentNotificationCard(
     ElevatedCard(onClick = {
         val commentId = entry?.comment?.id?.toString()
         if (threadId != null && commentId != null) {
-            navigationCallback.onForumThreadCommentClick(
-                title = thread.title,
-                threadId = threadId,
-                commentId = commentId,
+            navigationCallback.navigate(
+                AnimeDestination.ForumThreadComment(
+                    threadId = threadId,
+                    commentId = commentId,
+                    title = thread.title,
+                )
             )
         }
     }) {
@@ -757,9 +759,11 @@ private fun ThreadAndCommentNotificationCard(
                 thread = thread,
                 modifier = Modifier.clickable {
                     if (threadId != null) {
-                        navigationCallback.onForumThreadClick(
-                            title = thread.title,
-                            threadId = threadId,
+                        navigationCallback.navigate(
+                            AnimeDestination.ForumThread(
+                                threadId = threadId,
+                                title = thread.title,
+                            )
                         )
                     }
                 }
@@ -774,10 +778,12 @@ private fun ThreadAndCommentNotificationCard(
                         .heightIn(max = 140.dp)
                         .verticalScroll(rememberScrollState())
                         .clickable {
-                            navigationCallback.onForumThreadCommentClick(
-                                title = thread.title,
-                                threadId = threadId,
-                                commentId = comment.id.toString(),
+                            navigationCallback.navigate(
+                                AnimeDestination.ForumThreadComment(
+                                    threadId = threadId,
+                                    commentId = comment.id.toString(),
+                                    title = thread.title,
+                                )
                             )
                         }
                 ) {
@@ -810,9 +816,11 @@ fun ThreadLikeNotificationCard(
         ?.let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         if (thread != null) {
-            navigationCallback.onForumThreadClick(
-                title = thread.title,
-                threadId = thread.id.toString(),
+            navigationCallback.navigate(
+                AnimeDestination.ForumThread(
+                    threadId = thread.id.toString(),
+                    title = thread.title,
+                )
             )
         }
     }) {

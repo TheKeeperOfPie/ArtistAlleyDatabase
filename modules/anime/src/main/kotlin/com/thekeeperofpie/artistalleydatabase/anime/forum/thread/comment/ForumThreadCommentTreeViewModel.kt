@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 
 import android.os.SystemClock
-import android.text.Spanned
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumUtils
@@ -29,6 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -47,6 +49,7 @@ import javax.inject.Inject
 class ForumThreadCommentTreeViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
     val markwon: Markwon,
     mediaListStatusController: MediaListStatusController,
     threadStatusController: ForumThreadStatusController,
@@ -55,8 +58,9 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
     settings: AnimeSettings,
 ) : ViewModel() {
 
-    val threadId = savedStateHandle.get<String>("threadId")!!
-    val commentId = savedStateHandle.get<String>("commentId")!!
+    private val destination = savedStateHandle.toDestination<AnimeDestination.ForumThreadComment>(navigationTypeMap)
+    val threadId = destination.threadId
+    val commentId = destination.commentId
     val viewer = aniListApi.authedUser
     val refresh = MutableStateFlow(-1L)
     var entry by mutableStateOf(LoadingResult.loading<ForumThreadEntry>())

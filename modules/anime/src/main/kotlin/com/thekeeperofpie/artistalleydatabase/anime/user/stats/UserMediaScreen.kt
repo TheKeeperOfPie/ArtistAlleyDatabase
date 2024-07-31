@@ -173,7 +173,12 @@ object UserMediaScreen {
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, _, _ ->
                         value.studio?.let {
-                            navigationCallback.onStudioClick(it.id.toString(), it.name)
+                            navigationCallback.navigate(
+                                AnimeDestination.StudioMedias(
+                                    studioId = it.id.toString(),
+                                    name = it.name,
+                                )
+                            )
                         }
                     },
                 )

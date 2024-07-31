@@ -36,6 +36,7 @@ import com.anilist.UserByIdQuery
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -49,7 +50,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class
 )
 object UserOverviewScreen {
@@ -104,7 +106,13 @@ object UserOverviewScreen {
                 entries = anime,
                 forceListEditIcon = true,
                 onClickViewAll = {
-                    navigationCallback.onUserFavoriteMediaClick(userId, user.name, MediaType.ANIME)
+                    navigationCallback.navigate(
+                        AnimeDestination.UserFavoriteMedia(
+                            userId = userId,
+                            userName = user.name,
+                            mediaType = MediaType.ANIME,
+                        )
+                    )
                 },
                 viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_anime_content_description,
             )
@@ -116,7 +124,13 @@ object UserOverviewScreen {
                 entries = manga,
                 forceListEditIcon = true,
                 onClickViewAll = {
-                    navigationCallback.onUserFavoriteMediaClick(userId, user.name, MediaType.MANGA)
+                    navigationCallback.navigate(
+                        AnimeDestination.UserFavoriteMedia(
+                            userId = userId,
+                            userName = user.name,
+                            mediaType = MediaType.MANGA,
+                        )
+                    )
                 },
                 viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_manga_content_description,
             )
@@ -124,14 +138,28 @@ object UserOverviewScreen {
             charactersSection(
                 titleRes = R.string.anime_user_favorite_characters_label,
                 characters = characters,
-                onClickViewAll = { it.onUserFavoriteCharactersClick(userId, user.name) },
+                onClickViewAll = {
+                    it.navigate(
+                        AnimeDestination.UserFavoriteCharacters(
+                            userId = userId,
+                            userName = user.name,
+                        )
+                    )
+                },
                 viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_character_content_description,
             )
 
             staffSection(
                 titleRes = R.string.anime_user_favorite_staff_label,
                 staffList = staff,
-                onClickViewAll = { it.onUserFavoriteStaffClick(userId, user.name) },
+                onClickViewAll = {
+                    it.navigate(
+                        AnimeDestination.UserFavoriteStaff(
+                            userId = userId,
+                            userName = user.name,
+                        )
+                    )
+                },
                 viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_staff_content_description,
             )
 
@@ -141,7 +169,14 @@ object UserOverviewScreen {
                 editViewModel = editViewModel,
                 studios = studios.studios,
                 hasMore = studios.hasMore,
-                onClickViewAll = { it.onUserFavoriteStudiosClick(userId, user.name) },
+                onClickViewAll = {
+                    it.navigate(
+                        AnimeDestination.UserFavoriteStudios(
+                            userId = userId,
+                            userName = user.name
+                        )
+                    )
+                },
                 viewAllContentDescriptionTextRes = R.string.anime_user_favorite_media_view_all_studios_content_description,
             )
 

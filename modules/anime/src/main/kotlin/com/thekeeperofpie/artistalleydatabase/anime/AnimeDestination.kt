@@ -62,12 +62,36 @@ sealed interface AnimeDestination {
     ) : AnimeDestination
 
     @Serializable
+    data object FeatureTiers : AnimeDestination
+
+    @Serializable
+    data object Forum : AnimeDestination
+
+    @Serializable
     data class ForumSearch(
         val title: String? = null,
         val titleRes: Int? = null,
         val sort: ForumThreadSortOption? = null,
         val categoryId: String? = null,
         val mediaCategoryId: String? = null,
+    ) : AnimeDestination
+
+    @Serializable
+    data class ForumThread(
+        val threadId: String,
+        val title: String? = null,
+    ) : AnimeDestination
+
+    @Serializable
+    data class ForumThreadComment(
+        val threadId: String,
+        val commentId: String,
+        val title: String? = null,
+    ) : AnimeDestination
+
+    @Serializable
+    data class Ignored(
+        val mediaType: MediaType?,
     ) : AnimeDestination
 
     @Serializable
@@ -126,6 +150,11 @@ sealed interface AnimeDestination {
     }
 
     @Serializable
+    data class MediaHistory(
+        val mediaType: MediaType?,
+    ) : AnimeDestination
+
+    @Serializable
     data object News : AnimeDestination
 
     @Serializable
@@ -180,10 +209,55 @@ sealed interface AnimeDestination {
     ) : AnimeDestination
 
     @Serializable
+    data class StudioMedias(
+        val studioId: String,
+        val name: String? = null,
+        // TODO: Favorite is never actually passed in
+        val favorite: Boolean? = null,
+    ) : AnimeDestination
+
+    @Serializable
     data class User(
         val userId: String? = null,
         val sharedTransitionKey: SharedTransitionKey? = null,
         val headerParams: UserHeaderParams? = null,
+    ) : AnimeDestination
+
+    @Serializable
+    data class UserFavoriteCharacters(
+        val userId: String?,
+        val userName: String? = null,
+    ) : AnimeDestination
+
+    @Serializable
+    data class UserFavoriteMedia(
+        val userId: String?,
+        val userName: String? = null,
+        val mediaType: MediaType,
+    ) : AnimeDestination
+
+    @Serializable
+    data class UserFavoriteStaff(
+        val userId: String?,
+        val userName: String? = null,
+    ) : AnimeDestination
+
+    @Serializable
+    data class UserFavoriteStudios(
+        val userId: String?,
+        val userName: String? = null,
+    ) : AnimeDestination
+
+    @Serializable
+    data class UserFollowers(
+        val userId: String?,
+        val userName: String? = null,
+    ) : AnimeDestination
+
+    @Serializable
+    data class UserFollowing(
+        val userId: String?,
+        val userName: String? = null,
     ) : AnimeDestination
 
     @Serializable

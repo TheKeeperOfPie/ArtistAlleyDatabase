@@ -63,9 +63,11 @@ object StudioListRow {
         ElevatedCard(
             onClick = {
                 if (entry != null) {
-                    navigationCallback.onStudioClick(
-                        entry.studio.id.toString(),
-                        entry.studio.name
+                    navigationCallback.navigate(
+                        AnimeDestination.StudioMedias(
+                            studioId = entry.studio.id.toString(),
+                            name = entry.studio.name,
+                        )
                     )
                 }
             },

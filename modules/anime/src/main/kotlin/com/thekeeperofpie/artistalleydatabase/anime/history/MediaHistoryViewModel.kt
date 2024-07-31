@@ -18,6 +18,7 @@ import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -26,6 +27,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChange
 import com.thekeeperofpie.artistalleydatabase.anime.utils.RequestBatcher
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,12 +48,13 @@ class MediaHistoryViewModel @Inject constructor(
     val ignoreController: IgnoreController,
     private val historyDao: AnimeHistoryDao,
     savedStateHandle: SavedStateHandle,
+    navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.MediaHistory>(navigationTypeMap)
     val enabled = settings.mediaHistoryEnabled
-    var selectedType by mutableStateOf(savedStateHandle.get<String?>("mediaType")
-        ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
-        ?: settings.preferredMediaType.value)
+    var selectedType by mutableStateOf(destination.mediaType ?: settings.preferredMediaType.value)
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")

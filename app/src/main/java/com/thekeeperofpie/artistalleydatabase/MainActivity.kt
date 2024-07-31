@@ -75,7 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -221,9 +221,6 @@ class MainActivity : ComponentActivity() {
                     AnimeNavigator.NavigationCallback(
                         navHostController = navHostController,
                         cdEntryNavigator = cdEntryNavigator,
-                        languageOptionMedia = languageOptionMedia,
-                        languageOptionCharacters = languageOptionCharacters,
-                        languageOptionStaff = languageOptionStaff,
                     )
                 }
 
@@ -550,15 +547,17 @@ class MainActivity : ComponentActivity() {
                                         )
                                     },
                                     onClickFeatureTiers = {
-                                        navigationCallback.navigate(
-                                            AnimeNavDestinations.FEATURE_TIERS.id
-                                        )
+                                        navigationCallback.navigate(AnimeDestination.FeatureTiers)
                                     },
                                     onClickViewMediaHistory = {
-                                        navigationCallback.onClickViewMediaHistory(null)
+                                        navigationCallback.navigate(
+                                            AnimeDestination.MediaHistory(mediaType = null)
+                                        )
                                     },
                                     onClickViewMediaIgnore = {
-                                        navigationCallback.onClickViewIgnored()
+                                        navigationCallback.navigate(
+                                            AnimeDestination.Ignored(mediaType = null)
+                                        )
                                     },
                                 )
                             }
