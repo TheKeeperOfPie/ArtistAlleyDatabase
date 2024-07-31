@@ -33,7 +33,6 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -50,8 +49,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
 @OptIn(ExperimentalMaterial3Api::class)
 object ReviewsScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.REVIEWS.id
-
     @Composable
     operator fun invoke(
         viewModel: ReviewsViewModel = hiltViewModel(),
@@ -60,7 +57,6 @@ object ReviewsScreen {
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
         ) {
             val scrollBehavior =
@@ -171,11 +167,9 @@ object ReviewsScreen {
                     val entry = reviews[it]
                     val mediaTitle = entry?.media?.media?.title?.primaryTitle()
                     ReviewCard(
-                        screenKey = SCREEN_KEY,
                         viewer = viewer,
                         review = entry?.review,
                         media = entry?.media,
-                        showMedia = showMedia,
                         onClick = { navigationCallback, coverImageState ->
                             if (entry != null) {
                                 navigationCallback.navigate(
@@ -196,6 +190,7 @@ object ReviewsScreen {
                                 editViewModel.initialize(entry.media.media)
                             }
                         },
+                        showMedia = showMedia,
                     )
                 }
             }

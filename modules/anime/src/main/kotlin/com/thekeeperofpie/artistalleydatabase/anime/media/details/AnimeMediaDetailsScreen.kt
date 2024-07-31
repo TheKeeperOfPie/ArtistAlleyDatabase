@@ -189,28 +189,25 @@ object AnimeMediaDetailsScreen {
         sharedTransitionKey: SharedTransitionKey?,
         coverImageState: CoilImageState?,
         charactersCount: (Entry?) -> Int,
-        charactersSection: LazyListScope.(screenKey: String, entry: Entry) -> Unit,
+        charactersSection: LazyListScope.(entry: Entry) -> Unit,
         staffCount: () -> Int,
-        staffSection: LazyListScope.(screenKey: String) -> Unit,
+        staffSection: LazyListScope.() -> Unit,
         songsSectionMetadata: SectionIndexInfo.SectionMetadata?,
         songsSection: LazyListScope.(
-            screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
         cdsSectionMetadata: SectionIndexInfo.SectionMetadata?,
-        cdsSection: LazyListScope.(screenKey: String) -> Unit,
+        cdsSection: LazyListScope.() -> Unit,
         requestLoadMedia2: () -> Unit,
         recommendationsSectionMetadata: SectionIndexInfo.SectionMetadata,
         recommendationsSection: LazyListScope.(
-            screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
         ) -> Unit,
         activitiesSectionMetadata: SectionIndexInfo.SectionMetadata,
         activitiesSection: LazyListScope.(
-            screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
@@ -222,7 +219,6 @@ object AnimeMediaDetailsScreen {
         ) -> Unit,
         reviewsSectionMetadata: SectionIndexInfo.SectionMetadata,
         reviewsSection: LazyListScope.(
-            screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
@@ -271,8 +267,8 @@ object AnimeMediaDetailsScreen {
         ) {
             val editViewModel = hiltViewModel<MediaEditViewModel>()
             val onClickListEdit = rememberCallback(editViewModel::initialize)
+            // TODO: Pass media type if known so that open external works even if entry can't be loaded?
             MediaEditBottomSheetScaffold(
-                screenKey = viewModel.screenKey,
                 viewModel = editViewModel,
                 topBar = {
                     CollapsingToolbar(
@@ -531,22 +527,19 @@ object AnimeMediaDetailsScreen {
         coverImageState: CoilImageState?,
         onClickListEdit: (MediaNavigationData) -> Unit,
         expandedState: ExpandedState,
-        charactersSection: LazyListScope.(screenKey: String, entry: Entry) -> Unit,
-        staffSection: LazyListScope.(screenKey: String) -> Unit,
+        charactersSection: LazyListScope.(entry: Entry) -> Unit,
+        staffSection: LazyListScope.() -> Unit,
         songsSection: LazyListScope.(
-            screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
-        cdsSection: LazyListScope.(screenKey: String) -> Unit,
+        cdsSection: LazyListScope.() -> Unit,
         recommendationsSection: LazyListScope.(
-            screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
         ) -> Unit,
         activitiesSection: LazyListScope.(
-            screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
@@ -556,12 +549,10 @@ object AnimeMediaDetailsScreen {
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
         reviewsSection: LazyListScope.(
-            screenKey: String,
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
     ) {
-        val screenKey = viewModel.screenKey
         if (entry.genres.isNotEmpty()) {
             item("genreSection", "genreSection") {
                 GenreSection(genres = entry.genres, mediaType = entry.media.type)
@@ -578,10 +569,9 @@ object AnimeMediaDetailsScreen {
             }
         }
 
-        charactersSection(screenKey, entry)
+        charactersSection(entry)
 
         relationsSection(
-            screenKey = screenKey,
             onClickListEdit = onClickListEdit,
             viewer = viewer,
             entry = entry,
@@ -591,11 +581,11 @@ object AnimeMediaDetailsScreen {
 
         infoSection(entry)
 
-        songsSection(screenKey, expandedState::songs) { expandedState.songs = it }
+        songsSection(expandedState::songs) { expandedState.songs = it }
 
-        cdsSection(screenKey)
+        cdsSection()
 
-        staffSection(screenKey)
+        staffSection()
 
         val entry2 = entry2Result.result
         if (entry2 != null) {
@@ -652,14 +642,12 @@ object AnimeMediaDetailsScreen {
         }
 
         recommendationsSection(
-            screenKey,
             expandedState::recommendations,
             { expandedState.recommendations = it },
             onClickListEdit,
         )
 
         activitiesSection(
-            screenKey,
             expandedState::activities,
             { expandedState.activities = it },
             onClickListEdit,
@@ -668,7 +656,6 @@ object AnimeMediaDetailsScreen {
         forumThreadsSection(expandedState::forumThreads) { expandedState.forumThreads = it }
 
         reviewsSection(
-            screenKey,
             expandedState::reviews,
             { expandedState.reviews = it },
         )
@@ -716,7 +703,6 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.relationsSection(
-        screenKey: String,
         viewer: AniListViewer?,
         entry: Entry,
         relationsExpanded: () -> Boolean,
@@ -724,7 +710,6 @@ object AnimeMediaDetailsScreen {
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         mediaListSection(
-            screenKey = screenKey,
             onClickListEdit = onClickListEdit,
             viewer = viewer,
             titleRes = R.string.anime_media_details_relations_label,

@@ -151,7 +151,6 @@ class MediaEditBottomSheetTest {
         SharedTransitionLayout {
             CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                 MediaEditBottomSheetScaffold(
-                    screenKey = "test",
                     topBar = { TopAppBar(title = { Text(text = "Top bar title") }) }) {
                     Box(
                         modifier = Modifier

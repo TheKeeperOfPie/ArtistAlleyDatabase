@@ -33,10 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 object StaffStaffScreen {
 
     @Composable
-    operator fun invoke(
-        screenKey: String,
-        staffTimeline: StaffDetailsViewModel.StaffTimeline,
-    ) {
+    operator fun invoke(staffTimeline: StaffDetailsViewModel.StaffTimeline) {
         val viewModel = hiltViewModel<StaffDetailsViewModel>()
         val viewer by viewModel.viewer.collectAsState()
         val editViewModel = hiltViewModel<MediaEditViewModel>()

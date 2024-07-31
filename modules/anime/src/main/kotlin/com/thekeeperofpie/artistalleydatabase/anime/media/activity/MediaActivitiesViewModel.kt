@@ -18,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortFilterController
@@ -64,7 +63,6 @@ class MediaActivitiesViewModel @Inject constructor(
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
     val activitySortFilterController = ActivitySortFilterController(
-        screenKey = AnimeNavDestinations.MEDIA_ACTIVITIES.id,
         scope = viewModelScope,
         aniListApi = aniListApi,
         settings = settings,

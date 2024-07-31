@@ -36,7 +36,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -50,8 +49,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaHistoryScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.MEDIA_HISTORY.id
-
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption? = null,
@@ -61,7 +58,6 @@ object MediaHistoryScreen {
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         val snackbarHostState = remember { SnackbarHostState() }
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -167,7 +163,6 @@ object MediaHistoryScreen {
                                 val entry =
                                     networkEntry ?: viewModel.placeholder(it, mediaType)
                                 MediaViewOptionRow(
-                                    screenKey = SCREEN_KEY,
                                     mediaViewOption = viewModel.mediaViewOption,
                                     viewer = viewer,
                                     onClickListEdit = editViewModel::initialize,

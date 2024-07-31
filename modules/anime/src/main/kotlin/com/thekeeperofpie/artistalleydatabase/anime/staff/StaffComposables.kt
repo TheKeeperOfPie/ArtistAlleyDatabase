@@ -53,7 +53,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedEle
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 fun LazyListScope.staffSection(
-    screenKey: String,
     @StringRes titleRes: Int?,
     staffList: LazyPagingItems<DetailsStaff>,
     roleLines: Int = 1,
@@ -75,17 +74,6 @@ fun LazyListScope.staffSection(
     item(key = "$titleRes-section") {
         StaffListRow(staffList = { staffList }, roleLines = roleLines)
     }
-}
-
-fun LazyListScope.staffSection(
-    screenKey: String,
-    sectionKey: String?,
-    @StringRes titleRes: Int?,
-    staffList: @Composable () -> LazyPagingItems<DetailsStaff>,
-    roleLines: Int = 1,
-    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
-    @StringRes viewAllContentDescriptionTextRes: Int? = null,
-) {
 }
 
 @Composable

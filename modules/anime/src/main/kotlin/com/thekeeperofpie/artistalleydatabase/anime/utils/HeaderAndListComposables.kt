@@ -87,13 +87,12 @@ fun <ListEntryType : Any> HeaderAndListScreen(
 
 @Composable
 fun <ListEntryType : Any> HeaderAndMediaListScreen(
-    screenKey: String,
     viewModel: HeaderAndListViewModel<*, *, ListEntryType, *, *>,
     editViewModel: MediaEditViewModel,
     @StringRes headerTextRes: Int?,
-    header: @Composable (BoxScope.(progress: Float) -> Unit),
+    header: @Composable() (BoxScope.(progress: Float) -> Unit),
     itemKey: (ListEntryType) -> Any,
-    item: @Composable (LazyGridItemScope.(ListEntryType?) -> Unit),
+    item: @Composable() (LazyGridItemScope.(ListEntryType?) -> Unit),
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -114,7 +113,6 @@ fun <ListEntryType : Any> HeaderAndMediaListScreen(
 
     val sortFilterController = viewModel.sortFilterController
     MediaEditBottomSheetScaffold(
-        screenKey = screenKey,
         viewModel = editViewModel,
         snackbarHostState = snackbarHostState,
     ) {

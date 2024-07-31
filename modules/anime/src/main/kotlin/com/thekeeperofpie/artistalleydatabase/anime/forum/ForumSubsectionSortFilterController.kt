@@ -19,7 +19,6 @@ import kotlinx.coroutines.FlowPreview
 
 @OptIn(FlowPreview::class)
 class ForumSubsectionSortFilterController(
-    screenKey: String,
     scope: CoroutineScope,
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
@@ -51,7 +50,6 @@ class ForumSubsectionSortFilterController(
     )
 
     private val mediaSection = MediaSearchSortFilterSection(
-        screenKey = screenKey,
         titleTextRes = R.string.anime_forum_filter_media_label,
         titleDropdownContentDescriptionRes = R.string.anime_forum_filter_media_expand_content_description,
         scope = scope,

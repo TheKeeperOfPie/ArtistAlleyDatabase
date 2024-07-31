@@ -61,7 +61,6 @@ object EntryHomeScreen {
 
     @Composable
     operator fun <GridModel : EntryGridModel> invoke(
-        screenKey: String,
         onClickNav: () -> Unit,
         query: () -> String,
         onQueryChange: (String) -> Unit,
@@ -108,17 +107,16 @@ object EntryHomeScreen {
                 }
             }
             EntryGrid(
-                imageScreenKey = screenKey,
                 entries = entries,
                 entriesSize = {
                     val isQueryNotEmpty by remember { derivedStateOf { query().isNotEmpty() } }
                     entries().itemCount.takeIf { isQueryNotEmpty }
                 },
+                contentPadding = topBarPadding,
+                topOffset = topOffset,
                 selectedItems = selectedItems,
                 onClickEntry = onClickEntry,
                 onLongClickEntry = onLongClickEntry,
-                contentPadding = topBarPadding,
-                topOffset = topOffset,
             )
         }
     }

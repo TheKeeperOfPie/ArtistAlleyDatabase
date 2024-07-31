@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
@@ -45,7 +44,6 @@ class RecommendationsViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
 
     val sortFilterController = RecommendationSortFilterController(
-        screenKey = AnimeNavDestinations.RECOMMENDATIONS.id,
         scope = viewModelScope,
         aniListApi = aniListApi,
         settings,

@@ -42,7 +42,6 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
@@ -60,8 +59,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaSearchScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.SEARCH_MEDIA.id
-
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,
@@ -74,7 +71,6 @@ object MediaSearchScreen {
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
         ) {
             val sortFilterController = when (viewModel.selectedType) {
@@ -173,7 +169,6 @@ object MediaSearchScreen {
                                 ) {
                                     val item = content[it] as? AnimeSearchEntry.Media
                                     MediaViewOptionRow(
-                                        screenKey = SCREEN_KEY,
                                         mediaViewOption = viewModel.mediaViewOption,
                                         viewer = viewer,
                                         onClickListEdit = editViewModel::initialize,

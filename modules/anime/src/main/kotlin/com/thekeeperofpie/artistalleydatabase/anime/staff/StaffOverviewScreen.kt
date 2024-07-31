@@ -14,7 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -53,7 +52,6 @@ object StaffOverviewScreen {
             }
 
             charactersSection(
-                screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                 titleRes = R.string.anime_staff_details_characters_label,
                 characters = characters,
                 onClickViewAll = {

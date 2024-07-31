@@ -58,17 +58,13 @@ object RecommendationComposables  {
 
 @Composable
 fun RecommendationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     user: UserNavigationData?,
     media: AnimeMediaCompactListRow.Entry?,
     mediaRecommendation: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
     recommendation: RecommendationData?,
-    onUserRecommendationRating: (
-        recommendation: RecommendationData,
-        newRating: RecommendationRating,
-    ) -> Unit = { _, _ -> },
+    onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
 ) {
     ElevatedCard(modifier = Modifier.recomposeHighlighter()) {
         if (user != null || media == null) {
@@ -225,17 +221,13 @@ fun RecommendationCard(
 }
 
 fun LazyListScope.recommendationsSection(
-    screenKey: String,
     viewer: AniListViewer?,
     entry: AnimeMediaDetailsRecommendationsViewModel.RecommendationsEntry?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
-    onUserRecommendationRating: (
-        recommendation: RecommendationData,
-        newRating: RecommendationRating,
-    ) -> Unit = { _, _ -> },
+    onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
 ) {
     listSection(
         titleRes = R.string.anime_media_details_recommendations_label,

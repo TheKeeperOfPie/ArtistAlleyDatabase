@@ -8,7 +8,8 @@ fun OkHttpClient.Builder.addLoggingInterceptors(
     tag: String,
     networkSettings: NetworkSettings,
 ) = apply {
-    if (BuildConfig.DEBUG) {
+    @Suppress("KotlinConstantConditions")
+    if (BuildConfig.BUILD_TYPE == "debug" || BuildConfig.BUILD_TYPE == "internal") {
         addInterceptor(HttpLoggingInterceptor {
             Log.d(tag, "OkHttp request: $it")
         }.apply {

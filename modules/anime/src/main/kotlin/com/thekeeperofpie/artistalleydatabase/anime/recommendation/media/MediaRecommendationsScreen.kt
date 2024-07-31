@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.MediaAndRecommendationsQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
@@ -19,8 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScre
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
 object MediaRecommendationsScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id
 
     @Composable
     operator fun invoke(
@@ -34,7 +31,6 @@ object MediaRecommendationsScreen {
         val viewer by viewModel.viewer.collectAsState()
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         HeaderAndMediaListScreen(
-            screenKey = SCREEN_KEY,
             viewModel = viewModel,
             editViewModel = editViewModel,
             headerTextRes = R.string.anime_recommendations_header,

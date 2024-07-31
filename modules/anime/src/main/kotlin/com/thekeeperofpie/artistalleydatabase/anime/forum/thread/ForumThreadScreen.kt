@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadComment
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadDeleteCommentPrompt
@@ -73,8 +72,6 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ForumThreadScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.FORUM_THREAD.id
 
     @Composable
     operator fun invoke(
@@ -142,9 +139,8 @@ object ForumThreadScreen {
             val editViewModel = hiltViewModel<MediaEditViewModel>()
             val viewer by viewModel.viewer.collectAsState()
             MediaEditBottomSheetScaffold(
-                screenKey = SCREEN_KEY,
-                viewModel = editViewModel,
                 modifier = Modifier.padding(PaddingValues(top = it.calculateTopPadding())),
+                viewModel = editViewModel,
             ) {
                 Scaffold(
                     floatingActionButton = {
@@ -197,7 +193,6 @@ object ForumThreadScreen {
                             val threadEntry = entry.result
                             item("threadHeader") {
                                 ThreadHeader(
-                                    screenKey = SCREEN_KEY,
                                     threadId = viewModel.threadId,
                                     viewer = viewer,
                                     entry = threadEntry,
@@ -298,7 +293,6 @@ object ForumThreadScreen {
                                 ) {
                                     val commentEntry = comments[indexPrefix + it]
                                     ThreadComment(
-                                        screenKey = SCREEN_KEY,
                                         threadId = viewModel.threadId,
                                         viewer = viewer,
                                         entry = commentEntry,

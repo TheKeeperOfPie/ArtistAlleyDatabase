@@ -19,7 +19,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -34,8 +33,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object AnimeActivityScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.ACTIVITY.id
-
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     operator fun invoke(
@@ -48,7 +45,6 @@ object AnimeActivityScreen {
         )
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
         ) {
             val scrollBehavior =
@@ -134,7 +130,6 @@ object AnimeActivityScreen {
                         else -> throw IllegalArgumentException("Invalid page")
                     }
                     ActivityList(
-                        screenKey = SCREEN_KEY,
                         editViewModel = editViewModel,
                         viewer = viewer,
                         activities = activities,

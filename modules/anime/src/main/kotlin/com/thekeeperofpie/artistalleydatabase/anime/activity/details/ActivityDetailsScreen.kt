@@ -69,7 +69,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
@@ -102,8 +101,6 @@ import java.time.ZoneOffset
 )
 object ActivityDetailsScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.ACTIVITY_DETAILS.id
-
     @Composable
     operator fun invoke(
         viewModel: ActivityDetailsViewModel = hiltViewModel(),
@@ -130,7 +127,6 @@ object ActivityDetailsScreen {
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
         ) {
             val refresh by viewModel.refresh.collectAsState()
@@ -206,9 +202,8 @@ object ActivityDetailsScreen {
                                     }
                                     is ActivityDetailsQuery.Data.TextActivityActivity -> {
                                         TextActivitySmallCard(
-                                            screenKey = SCREEN_KEY,
-                                            activity = activity,
                                             viewer = viewer,
+                                            activity = activity,
                                             entry = result,
                                             onActivityStatusUpdate = viewModel.toggleHelper::toggle,
                                             showActionsRow = true,
@@ -219,9 +214,8 @@ object ActivityDetailsScreen {
                                     }
                                     is ActivityDetailsQuery.Data.MessageActivityActivity -> {
                                         MessageActivitySmallCard(
-                                            screenKey = SCREEN_KEY,
-                                            activity = activity,
                                             viewer = viewer,
+                                            activity = activity,
                                             entry = result,
                                             onActivityStatusUpdate = viewModel.toggleHelper::toggle,
                                             showActionsRow = true,
@@ -234,9 +228,8 @@ object ActivityDetailsScreen {
                                     null,
                                     -> {
                                         TextActivitySmallCard(
-                                            screenKey = SCREEN_KEY,
-                                            activity = null,
                                             viewer = viewer,
+                                            activity = null,
                                             entry = result,
                                             onActivityStatusUpdate = viewModel.toggleHelper::toggle,
                                         )
@@ -262,7 +255,6 @@ object ActivityDetailsScreen {
                             ) {
                                 val replyEntry = replies[it]
                                 ReplyRow(
-                                    screenKey = SCREEN_KEY,
                                     viewer = viewer,
                                     replyEntry = replyEntry,
                                     onStatusUpdate = viewModel.replyToggleHelper::toggleLike,
@@ -357,7 +349,6 @@ private fun LazyListScope.centeredMessage(@StringRes textRes: Int) {
 
 @Composable
 private fun ReplyRow(
-    screenKey: String,
     viewer: AniListViewer?,
     replyEntry: ActivityDetailsViewModel.Entry.ReplyEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,

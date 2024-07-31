@@ -39,19 +39,12 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
         navGraphBuilder.sharedElementComposable(ArtNavDestinations.HOME.id) {
             val viewModel = hiltViewModel<ArtSearchViewModel>()
             EntryHomeScreen(
-                screenKey = ArtNavDestinations.HOME.id,
                 onClickNav = onClickNav,
                 query = { viewModel.query },
                 onQueryChange = viewModel::onQuery,
                 sections = viewModel.sections,
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },
-                onClickAddFab = {
-                    navHostController.navToEntryDetails(
-                        route = ArtNavDestinations.ENTRY_DETAILS.id,
-                        emptyList(),
-                    )
-                },
                 onClickEntry = { index, entry ->
                     if (viewModel.selectedEntries.isNotEmpty()) {
                         viewModel.selectEntry(index, entry)
@@ -63,6 +56,12 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                     }
                 },
                 onLongClickEntry = viewModel::selectEntry,
+                onClickAddFab = {
+                    navHostController.navToEntryDetails(
+                        route = ArtNavDestinations.ENTRY_DETAILS.id,
+                        emptyList(),
+                    )
+                },
                 onClickClear = viewModel::clearSelected,
                 onClickEdit = {
                     navHostController.navToEntryDetails(

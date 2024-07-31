@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaAndReviewsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
@@ -19,8 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 
 object MediaReviewsScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.MEDIA_REVIEWS.id
 
     @Composable
     operator fun invoke(
@@ -62,7 +59,6 @@ object MediaReviewsScreen {
             itemKey = { it.id },
             item = { review ->
                 ReviewSmallCard(
-                    screenKey = SCREEN_KEY,
                     review = review,
                     onClick = {
                         if (review != null) {

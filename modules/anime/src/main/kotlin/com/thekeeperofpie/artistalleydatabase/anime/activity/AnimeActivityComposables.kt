@@ -94,7 +94,6 @@ object AnimeActivityComposables {
 
 @Composable
 fun ActivityList(
-    screenKey: String,
     editViewModel: MediaEditViewModel,
     viewer: AniListViewer?,
     activities: LazyPagingItems<ActivityEntry>,
@@ -141,14 +140,13 @@ fun ActivityList(
                             val entry = activities[it]
                             when (val activity = entry?.activity) {
                                 is UserSocialActivityQuery.Data.Page.TextActivityActivity -> TextActivitySmallCard(
-                                    screenKey = screenKey,
                                     viewer = viewer,
                                     activity = activity,
                                     entry = entry,
                                     onActivityStatusUpdate = onActivityStatusUpdate,
+                                    modifier = Modifier.fillMaxWidth(),
                                     allowUserClick = allowUserClick,
-                                    clickable = true,
-                                    modifier = Modifier.fillMaxWidth()
+                                    clickable = true
                                 )
                                 is UserSocialActivityQuery.Data.Page.ListActivityActivity -> ListActivitySmallCard(
                                     viewer = viewer,
@@ -163,21 +161,19 @@ fun ActivityList(
                                     showMedia = showMedia
                                 )
                                 is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> MessageActivitySmallCard(
-                                    screenKey = screenKey,
                                     viewer = viewer,
                                     activity = activity,
                                     entry = entry,
                                     onActivityStatusUpdate = onActivityStatusUpdate,
+                                    modifier = Modifier.fillMaxWidth(),
                                     allowUserClick = allowUserClick,
-                                    clickable = true,
-                                    modifier = Modifier.fillMaxWidth()
+                                    clickable = true
                                 )
                                 is UserSocialActivityQuery.Data.Page.OtherActivity,
                                 null,
                                 -> TextActivitySmallCard(
-                                    screenKey = screenKey,
-                                    activity = null,
                                     viewer = viewer,
+                                    activity = null,
                                     entry = null,
                                     onActivityStatusUpdate = onActivityStatusUpdate,
                                     modifier = Modifier.fillMaxWidth()
@@ -209,7 +205,6 @@ fun ActivityList(
 
 @Composable
 fun TextActivitySmallCard(
-    screenKey: String,
     viewer: AniListViewer?,
     activity: TextActivityFragment?,
     entry: ActivityStatusAware?,
@@ -369,7 +364,6 @@ fun ColumnScope.TextActivityCardContent(
 
 @Composable
 fun MessageActivitySmallCard(
-    screenKey: String,
     viewer: AniListViewer?,
     activity: MessageActivityFragment?,
     entry: ActivityStatusAware?,
@@ -1005,7 +999,6 @@ private fun UserImage(
 }
 
 fun LazyListScope.activitiesSection(
-    screenKey: String,
     viewer: AniListViewer?,
     activityTab: AnimeMediaDetailsActivityViewModel.ActivityTab,
     activities: ImmutableList<AnimeMediaDetailsActivityViewModel.ActivityEntry>?,

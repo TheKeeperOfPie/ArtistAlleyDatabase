@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import com.anilist.ReviewDetailsQuery
 import com.anilist.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
@@ -76,8 +75,6 @@ import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ReviewDetailsScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.REVIEW_DETAILS.id
 
     @Composable
     operator fun invoke(

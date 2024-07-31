@@ -298,14 +298,14 @@ class MediaDetailsScreenTest {
                     sharedTransitionKey = SharedTransitionKey.makeKeyForId("1234"),
                     coverImageState = coverImageState,
                     charactersCount = { 0 },
-                    charactersSection = { _, _ -> },
+                    charactersSection = { _ -> },
                     staffCount = { 0 },
                     staffSection = {},
                     requestLoadMedia2 = {},
                     recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                    recommendationsSection = { _, _, _, _ -> },
+                    recommendationsSection = { _, _, _ -> },
                     songsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                    songsSection = { _, _, _ -> },
+                    songsSection = { _, _ -> },
                     cdsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
                     cdsSection = {},
                     activitiesSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
@@ -318,9 +318,8 @@ class MediaDetailsScreenTest {
                         hasMore = true,
                         addOneForViewer = true,
                     ),
-                    activitiesSection = { screenKey, expanded, onExpandedChanged, onClickListEdit ->
+                    activitiesSection = { expanded, onExpandedChanged, onClickListEdit ->
                         activitiesSection(
-                            screenKey = screenKey,
                             viewer = viewer,
                             onActivityStatusUpdate = viewModels.activitiesViewModel.activityToggleHelper::toggle,
                             activityTab = activityTab,
@@ -356,7 +355,7 @@ class MediaDetailsScreenTest {
                     forumThreadsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
                     forumThreadsSection = { _, _ -> },
                     reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                    reviewsSection = { screenKey, expanded, onExpandedChange -> },
+                    reviewsSection = { expanded, onExpandedChange -> },
                 )
             }
         }

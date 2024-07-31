@@ -72,7 +72,6 @@ object AnimeSongComposables {
     context (LazyListScope)
     fun songsSection(
         viewModel: AnimeSongsViewModel,
-        screenKey: String,
         songsExpanded: () -> Boolean,
         onSongsExpandedChange: (Boolean) -> Unit,
     ) {
@@ -86,7 +85,6 @@ object AnimeSongComposables {
             onExpandedChange = onSongsExpandedChange,
         ) { item, paddingBottom ->
             AnimeThemeRow(
-                screenKey,
                 viewModel = viewModel,
                 entry = item,
                 modifier = Modifier
@@ -98,7 +96,6 @@ object AnimeSongComposables {
 
     @Composable
     private fun AnimeThemeRow(
-        screenKey: String,
         viewModel: AnimeSongsViewModel,
         entry: AnimeSongEntry,
         modifier: Modifier = Modifier,

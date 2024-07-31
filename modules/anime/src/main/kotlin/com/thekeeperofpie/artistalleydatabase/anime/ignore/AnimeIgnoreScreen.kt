@@ -32,7 +32,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -46,8 +45,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 @OptIn(ExperimentalMaterial3Api::class)
 object AnimeIgnoreScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.IGNORED.id
-
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,
@@ -56,10 +53,9 @@ object AnimeIgnoreScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
             topBar = { TopBar(viewModel, upIconOption, scrollBehavior) },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         ) { scaffoldPadding ->
             val content = viewModel.content.collectAsLazyPagingItems()
             val refreshing = content.loadState.refresh is LoadState.Loading
@@ -110,7 +106,6 @@ object AnimeIgnoreScreen {
                                         val entry =
                                             networkEntry ?: viewModel.placeholder(index, mediaType)
                                         MediaViewOptionRow(
-                                            screenKey = SCREEN_KEY,
                                             mediaViewOption = viewModel.mediaViewOption,
                                             viewer = viewer,
                                             onClickListEdit = editViewModel::initialize,

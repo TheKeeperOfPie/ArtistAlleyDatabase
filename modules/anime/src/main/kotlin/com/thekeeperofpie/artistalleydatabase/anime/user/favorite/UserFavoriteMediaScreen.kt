@@ -30,7 +30,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -48,8 +47,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
 @OptIn(ExperimentalMaterial3Api::class)
 object UserFavoriteMediaScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.USER_FAVORITE_MEDIA.id
-
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption? = null,
@@ -65,9 +62,9 @@ object UserFavoriteMediaScreen {
             skipHiddenState = false,
         )
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            modifier = Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
-            sheetState = editSheetState,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                     TopAppBar(
@@ -100,8 +97,7 @@ object UserFavoriteMediaScreen {
                     )
                 }
             },
-            modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+            sheetState = editSheetState
         ) { scaffoldPadding ->
             val media = viewModel.media.collectAsLazyPagingItems()
             val refreshing = media.loadState.refresh is LoadState.Loading
@@ -148,7 +144,6 @@ object UserFavoriteMediaScreen {
                                 ) {
                                     val entry = media[it]
                                     MediaViewOptionRow(
-                                        screenKey = SCREEN_KEY,
                                         mediaViewOption = viewModel.mediaViewOption,
                                         viewer = viewer,
                                         onClickListEdit = editViewModel::initialize,

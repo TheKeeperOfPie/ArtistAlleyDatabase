@@ -35,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StaffDetailsQuery.Data.Staff
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -48,8 +47,6 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object StaffDetailsScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.STAFF_DETAILS.id
 
     @Composable
     operator fun invoke(
@@ -77,7 +74,7 @@ object StaffDetailsScreen {
             }
         }
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
@@ -97,8 +94,7 @@ object StaffDetailsScreen {
                         },
                     )
                 }
-            },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            }
         ) { scaffoldPadding ->
             Column(modifier = Modifier.padding(scaffoldPadding)) {
                 val entry = viewModel.entry
@@ -160,10 +156,7 @@ object StaffDetailsScreen {
                                 mediaTimeline = mediaTimeline,
                                 onRequestYear = viewModel::onRequestMediaYear,
                             )
-                            StaffTab.STAFF -> StaffStaffScreen(
-                                screenKey = SCREEN_KEY,
-                                staffTimeline = staffTimeline,
-                            )
+                            StaffTab.STAFF -> StaffStaffScreen(staffTimeline = staffTimeline)
                         }
                     }
                 }

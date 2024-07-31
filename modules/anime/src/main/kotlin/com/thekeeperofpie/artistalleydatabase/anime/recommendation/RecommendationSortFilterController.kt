@@ -16,7 +16,6 @@ import kotlinx.coroutines.FlowPreview
 
 @OptIn(FlowPreview::class)
 class RecommendationSortFilterController(
-    screenKey: String,
     scope: CoroutineScope,
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
@@ -39,7 +38,6 @@ class RecommendationSortFilterController(
     )
 
     private val sourceMediaSection = MediaSearchSortFilterSection(
-        screenKey = screenKey,
         id = "sourceMedia",
         titleTextRes = R.string.anime_recommendation_filter_source_media_label,
         titleDropdownContentDescriptionRes = R.string.anime_recommendation_filter_source_media_expand_content_description,
@@ -50,7 +48,6 @@ class RecommendationSortFilterController(
     )
 
     private val targetMediaSection = MediaSearchSortFilterSection(
-        screenKey = screenKey,
         id = "targetMedia",
         titleTextRes = R.string.anime_recommendation_filter_target_media_label,
         titleDropdownContentDescriptionRes = R.string.anime_recommendation_filter_target_media_expand_content_description,

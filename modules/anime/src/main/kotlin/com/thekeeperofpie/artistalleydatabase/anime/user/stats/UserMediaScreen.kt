@@ -29,8 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 
 object UserMediaScreen {
 
-    private const val SCREEN_KEY = "anime_user_media"
-
     @Composable
     operator fun invoke(
         user: () -> UserByIdQuery.Data.User?,

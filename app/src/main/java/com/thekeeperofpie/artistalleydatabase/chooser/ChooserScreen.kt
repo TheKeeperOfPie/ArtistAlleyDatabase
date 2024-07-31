@@ -66,14 +66,13 @@ object ChooserScreen {
         ) { paddingValues ->
             Column {
                 EntryGrid.EntriesGrid(
-                    imageScreenKey = "chooser",
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .weight(1f, true),
                     entries = entries,
                     selectedItems = selectedItems,
                     onClickEntry = onClickEntry,
-                    onLongClickEntry = onLongClickEntry,
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .weight(1f, true)
+                    onLongClickEntry = onLongClickEntry
                 )
 
 

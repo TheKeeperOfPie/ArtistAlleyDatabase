@@ -68,7 +68,6 @@ object ReviewComposables {
 
 @Composable
 fun ReviewSmallCard(
-    screenKey: String,
     review: MediaAndReviewsReview?,
     onClick: (AnimeNavigator.NavigationCallback) -> Unit,
     modifier: Modifier = Modifier,
@@ -81,16 +80,13 @@ fun ReviewSmallCard(
                 onClick = { onClick(navigationCallback) },
             ),
     ) {
-        ReviewSmallCardContent(screenKey, review)
+        ReviewSmallCardContent(review)
     }
 }
 
 @Suppress("UnusedReceiverParameter")
 @Composable
-private fun ColumnScope.ReviewSmallCardContent(
-    screenKey: String,
-    review: MediaAndReviewsReview?,
-) {
+private fun ColumnScope.ReviewSmallCardContent(review: MediaAndReviewsReview?) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
@@ -186,7 +182,6 @@ private fun ColumnScope.ReviewSmallCardContent(
 
 @Composable
 fun ReviewCard(
-    screenKey: String,
     viewer: AniListViewer?,
     review: MediaAndReviewsReview?,
     media: AnimeMediaCompactListRow.Entry?,
@@ -205,7 +200,7 @@ fun ReviewCard(
             )
             .recomposeHighlighter()
     ) {
-        ReviewSmallCardContent(screenKey, review)
+        ReviewSmallCardContent(review)
 
         if (showMedia) {
             SharedTransitionKeyScope("anime_home_review", review?.id.toString()) {
@@ -331,7 +326,6 @@ fun ReviewRatingIconsSection(
 }
 
 fun LazyListScope.reviewsSection(
-    screenKey: String,
     entry: AnimeMediaDetailsReviewsViewModel.ReviewsEntry?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
@@ -351,7 +345,6 @@ fun LazyListScope.reviewsSection(
         viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
     ) { item, paddingBottom ->
         ReviewSmallCard(
-            screenKey = screenKey,
             review = item,
             onClick = { onReviewClick(it, item) },
             modifier = Modifier

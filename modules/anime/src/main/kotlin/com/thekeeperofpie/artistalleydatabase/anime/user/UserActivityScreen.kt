@@ -20,7 +20,6 @@ object UserActivityScreen {
         val sortFilterController = viewModel.activitySortFilterController
         SortFilterBottomScaffold(sortFilterController = sortFilterController) {
             ActivityList(
-                screenKey = viewModel.screenKey,
                 editViewModel = editViewModel,
                 viewer = viewer,
                 activities = viewModel.activities.collectAsLazyPagingItems(),

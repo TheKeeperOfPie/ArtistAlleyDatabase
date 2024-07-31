@@ -52,7 +52,6 @@ object StudioListRow {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -91,12 +90,11 @@ object StudioListRow {
                 }
 
                 MediaRow(
-                    screenKey = screenKey,
                     viewer = viewer,
                     entry = entry,
+                    onClickListEdit = onClickListEdit,
                     mediaWidth = mediaWidth,
                     mediaHeight = mediaHeight,
-                    onClickListEdit = onClickListEdit,
                 )
             }
         }
@@ -119,7 +117,6 @@ object StudioListRow {
 
     @Composable
     private fun MediaRow(
-        screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
         onClickListEdit: (MediaNavigationData) -> Unit,

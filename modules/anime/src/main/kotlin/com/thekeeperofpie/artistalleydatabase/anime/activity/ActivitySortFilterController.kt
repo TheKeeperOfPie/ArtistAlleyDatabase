@@ -31,7 +31,6 @@ import java.time.ZoneOffset
 
 @OptIn(FlowPreview::class)
 class ActivitySortFilterController(
-    screenKey: String,
     scope: CoroutineScope,
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
@@ -109,7 +108,6 @@ class ActivitySortFilterController(
     }
 
     private val mediaSection = MediaSearchSortFilterSection(
-        screenKey = screenKey,
         titleTextRes = R.string.anime_activity_filter_media_label,
         titleDropdownContentDescriptionRes = R.string.anime_activity_filter_media_expand_content_description,
         scope = scope,

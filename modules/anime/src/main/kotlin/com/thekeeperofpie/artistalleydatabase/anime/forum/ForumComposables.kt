@@ -231,7 +231,7 @@ fun ThreadSmallCard(
 }
 
 @Composable
-fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Modifier) {
+fun ThreadCard(thread: ForumThread?, modifier: Modifier = Modifier) {
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(
         onClick = {
@@ -484,7 +484,6 @@ fun ThreadCommentTimestamp(loading: Boolean, aniListTimestamp: Int?) {
 
 @Composable
 fun ThreadAuthor(
-    screenKey: String,
     loading: Boolean,
     user: UserNavigationData?,
     aniListTimestamp: Int?,
@@ -563,7 +562,6 @@ private fun UserImage(
 
 @Composable
 fun ThreadHeader(
-    screenKey: String,
     threadId: String,
     viewer: AniListViewer?,
     entry: ForumThreadEntry?,
@@ -588,7 +586,6 @@ fun ThreadHeader(
                 )
 
                 ThreadAuthor(
-                    screenKey = screenKey,
                     loading = entry == null,
                     user = thread?.user,
                     aniListTimestamp = thread?.createdAt,
@@ -833,7 +830,6 @@ fun ThreadDeleteCommentPrompt(
 // TODO: Add updatedAt timestamp
 @Composable
 fun ThreadComment(
-    screenKey: String,
     threadId: String,
     viewer: AniListViewer?,
     entry: ForumCommentEntry?,
@@ -846,7 +842,6 @@ fun ThreadComment(
     val comment = entry?.comment
     Column(modifier = Modifier.fillMaxWidth()) {
         ThreadCommentContent(
-            screenKey = screenKey,
             threadId = threadId,
             viewer = viewer,
             loading = entry == null,
@@ -865,7 +860,6 @@ fun ThreadComment(
         if (!children.isNullOrEmpty()) {
             children.forEach {
                 ThreadCommentChild(
-                    screenKey = screenKey,
                     threadId = threadId,
                     viewer = viewer,
                     level = 1,
@@ -883,7 +877,6 @@ fun ThreadComment(
 
 @Composable
 fun ThreadCommentContent(
-    screenKey: String,
     threadId: String,
     viewer: AniListViewer?,
     loading: Boolean,
@@ -1074,7 +1067,6 @@ fun ThreadCommentContent(
 
 @Composable
 fun ColumnScope.ThreadCommentChild(
-    screenKey: String,
     threadId: String,
     viewer: AniListViewer?,
     level: Int,
@@ -1095,7 +1087,6 @@ fun ColumnScope.ThreadCommentChild(
             )
     ) {
         ThreadCommentContent(
-            screenKey = screenKey,
             threadId = threadId,
             viewer = viewer,
             loading = false,
@@ -1113,7 +1104,6 @@ fun ColumnScope.ThreadCommentChild(
 
     child.childComments.forEach {
         ThreadCommentChild(
-            screenKey = screenKey,
             threadId = threadId,
             viewer = viewer,
             level = level + 1,

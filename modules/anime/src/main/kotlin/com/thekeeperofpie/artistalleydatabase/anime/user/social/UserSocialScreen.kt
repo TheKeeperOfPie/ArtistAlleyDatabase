@@ -58,7 +58,6 @@ object UserSocialScreen {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         userId: String?,
         user: UserNavigationData?,
         bottomNavigationState: BottomNavigationState?,
@@ -95,7 +94,6 @@ object UserSocialScreen {
             }
 
             usersRow(
-                screenKey = screenKey,
                 key = "following",
                 data = following,
                 titleRes = R.string.anime_user_social_following,
@@ -105,7 +103,6 @@ object UserSocialScreen {
 
             if (followers.itemCount > 0) {
                 usersRow(
-                    screenKey = screenKey,
                     key = "followers",
                     data = followers,
                     titleRes = R.string.anime_user_social_followers,
@@ -117,7 +114,6 @@ object UserSocialScreen {
     }
 
     private fun LazyListScope.usersRow(
-        screenKey: String,
         key: String,
         data: LazyPagingItems<out UserNavigationData>,
         @StringRes titleRes: Int,

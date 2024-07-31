@@ -73,7 +73,6 @@ object AniListUserScreen {
         )
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = viewModel.screenKey,
             viewModel = editViewModel,
             topBar = {
                 CollapsingToolbar(
@@ -229,7 +228,6 @@ object AniListUserScreen {
                                     bottomNavigationState = bottomNavigationState,
                                 )
                                 UserTab.SOCIAL -> UserSocialScreen(
-                                    screenKey = viewModel.screenKey,
                                     userId = viewModel.userId,
                                     user = viewModel.entry?.user,
                                     bottomNavigationState = bottomNavigationState,

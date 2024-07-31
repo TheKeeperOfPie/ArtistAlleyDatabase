@@ -45,14 +45,12 @@ object UserListScreen {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         upIconOption: UpIconOption?,
         viewModel: UserListViewModel,
         title: @Composable () -> String,
     ) {
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = screenKey,
             viewModel = editViewModel,
         ) {
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -116,7 +114,6 @@ object UserListScreen {
                                         contentType = users.itemContentType { "item" },
                                     ) {
                                         UserListRow(
-                                            screenKey = screenKey,
                                             viewer = viewer,
                                             entry = users[it],
                                             onClickListEdit = editViewModel::initialize,

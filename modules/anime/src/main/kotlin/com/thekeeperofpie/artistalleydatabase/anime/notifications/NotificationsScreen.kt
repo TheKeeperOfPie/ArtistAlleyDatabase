@@ -22,7 +22,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.NotificationsQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -37,8 +36,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 @OptIn(ExperimentalMaterial3Api::class)
 object NotificationsScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.NOTIFICATIONS.id
-
     @Composable
     operator fun invoke(
         viewModel: NotificationsViewModel = hiltViewModel(),
@@ -49,7 +46,7 @@ object NotificationsScreen {
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
             topBar = {
                 AppBar(
@@ -57,8 +54,7 @@ object NotificationsScreen {
                     upIconOption = upIconOption,
                     scrollBehavior = scrollBehavior,
                 )
-            },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            }
         ) {
             Box(
                 modifier = Modifier
@@ -199,7 +195,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification ->
                                                 ThreadCommentMentionNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     entry = entry.commentEntry,
@@ -207,7 +202,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification ->
                                                 ThreadCommentLikeNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     entry = entry.commentEntry,
@@ -215,7 +209,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification ->
                                                 ThreadCommentReplyNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     entry = entry.commentEntry,
@@ -223,7 +216,6 @@ object NotificationsScreen {
                                                 )
                                             is NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification ->
                                                 ThreadCommentSubscribedNotificationCard(
-                                                    screenKey = SCREEN_KEY,
                                                     viewer = viewer,
                                                     notification = notification,
                                                     entry = entry.commentEntry,

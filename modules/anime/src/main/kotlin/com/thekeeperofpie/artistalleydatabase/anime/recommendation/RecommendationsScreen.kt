@@ -28,7 +28,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -43,8 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
 @OptIn(ExperimentalMaterial3Api::class)
 object RecommendationsScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.RECOMMENDATIONS.id
-
     @Composable
     operator fun invoke(
         viewModel: RecommendationsViewModel = hiltViewModel(),
@@ -52,7 +49,6 @@ object RecommendationsScreen {
     ) {
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
         ) {
             val scrollBehavior =
@@ -126,18 +122,17 @@ object RecommendationsScreen {
                 ) {
                     val entry = recommendations[it]
                     RecommendationCard(
-                        screenKey = SCREEN_KEY,
                         viewer = viewer,
                         user = entry?.user,
                         media = entry?.media,
                         mediaRecommendation = entry?.mediaRecommendation,
-                        recommendation = entry?.data,
-                        onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                         onClickListEdit = {
                             if (entry != null) {
                                 editViewModel.initialize(entry.media.media)
                             }
                         },
+                        recommendation = entry?.data,
+                        onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                     )
                 }
             }

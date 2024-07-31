@@ -61,7 +61,6 @@ object EntryGrid {
 
     @Composable
     operator fun <T : EntryGridModel> invoke(
-        imageScreenKey: String,
         entries: @Composable () -> LazyPagingItems<T>,
         entriesSize: @Composable () -> Int?,
         paddingValues: PaddingValues? = null,
@@ -80,15 +79,14 @@ object EntryGrid {
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 EntriesGrid(
-                    imageScreenKey = imageScreenKey,
+                    modifier = Modifier
+                        .weight(1f, true),
+                    contentPadding = contentPadding,
                     entries = entries,
                     selectedItems = selectedItems,
                     onClickEntry = onClickEntry,
                     onLongClickEntry = onLongClickEntry,
-                    gridState = gridState,
-                    contentPadding = contentPadding,
-                    modifier = Modifier
-                        .weight(1f, true)
+                    gridState = gridState
                 )
             }
 
@@ -125,7 +123,6 @@ object EntryGrid {
 
     @Composable
     fun <T : EntryGridModel> EntriesGrid(
-        imageScreenKey: String,
         modifier: Modifier = Modifier,
         contentPadding: PaddingValues? = null,
         entries: @Composable () -> LazyPagingItems<T>,
@@ -155,7 +152,6 @@ object EntryGrid {
                 contentType = entries.itemContentType { "entry" }
             ) {
                 Entry(
-                    imageScreenKey,
                     expectedWidth,
                     it,
                     entries[it],
@@ -170,14 +166,12 @@ object EntryGrid {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun <T : EntryGridModel> Entry(
-        imageScreenKey: String,
         expectedWidth: Dimension.Pixels,
         index: Int,
         entry: T? = null,
         selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
-        onSharedElementFractionChanged: ((fraction: Float) -> Unit)? = null,
     ) {
         val entryModifier = Modifier.fillMaxWidth()
         if (entry == null) {

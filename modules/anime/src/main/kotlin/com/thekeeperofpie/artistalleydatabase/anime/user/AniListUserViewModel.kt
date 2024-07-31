@@ -26,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
@@ -77,7 +76,6 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import java.util.UUID
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -94,7 +92,6 @@ class AniListUserViewModel @Inject constructor(
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    val screenKey = "${AnimeNavDestinations.USER.id}-${UUID.randomUUID()}"
     private val destination = savedStateHandle.toDestination<AnimeDestination.User>(navigationTypeMap)
     val userId = destination.userId
 
@@ -115,7 +112,6 @@ class AniListUserViewModel @Inject constructor(
     val mangaStats = States.Manga(viewModelScope, aniListApi)
 
     val activitySortFilterController = ActivitySortFilterController(
-        screenKey = AnimeNavDestinations.ACTIVITY.id,
         scope = viewModelScope,
         aniListApi = aniListApi,
         settings = settings,

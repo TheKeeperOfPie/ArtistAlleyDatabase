@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.CharacterAndMediasQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
@@ -21,8 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 
 object CharacterMediasScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.CHARACTER_MEDIAS.id
-
     @Composable
     operator fun invoke(
         viewModel: CharacterMediasViewModel,
@@ -33,7 +30,6 @@ object CharacterMediasScreen {
         val viewer by viewModel.viewer.collectAsState()
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         HeaderAndMediaListScreen(
-            screenKey = SCREEN_KEY,
             viewModel = viewModel,
             editViewModel = editViewModel,
             headerTextRes = R.string.anime_character_medias_header,

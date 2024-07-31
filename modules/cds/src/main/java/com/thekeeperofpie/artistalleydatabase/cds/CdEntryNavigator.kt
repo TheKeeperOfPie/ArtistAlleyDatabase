@@ -40,14 +40,12 @@ class CdEntryNavigator : BrowseSelectionNavigator {
         navGraphBuilder.sharedElementComposable(CdNavDestinations.HOME.id) {
             val viewModel = hiltViewModel<CdSearchViewModel>()
             EntryHomeScreen(
-                screenKey = CdNavDestinations.HOME.id,
                 onClickNav = onClickNav,
                 query = { viewModel.query },
                 onQueryChange = viewModel::onQuery,
                 sections = viewModel.sections,
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },
-                onClickAddFab = { onCdEntryClick(navHostController, emptyList()) },
                 onClickEntry = { index, entry ->
                     if (viewModel.selectedEntries.isNotEmpty()) {
                         viewModel.selectEntry(index, entry)
@@ -56,6 +54,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                     }
                 },
                 onLongClickEntry = viewModel::selectEntry,
+                onClickAddFab = { onCdEntryClick(navHostController, emptyList()) },
                 onClickClear = viewModel::clearSelected,
                 onClickEdit = {
                     onCdEntryClick(

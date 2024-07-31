@@ -117,7 +117,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 )
 object Anime2AnimeScreen {
 
-    private const val SCREEN_KEY = "Anime2Anime"
     private val COLUMN_MAX_WIDTH = 460.dp
 
     @Composable
@@ -196,7 +195,7 @@ object Anime2AnimeScreen {
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -209,8 +208,7 @@ object Anime2AnimeScreen {
                         navigationIcon = { upIconOption?.let { UpIconButton(it) } },
                     )
                 }
-            },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            }
         ) {
             Box {
                 val refreshing by remember { derivedStateOf { startMedia().loading || targetMedia().loading } }
@@ -830,7 +828,6 @@ object Anime2AnimeScreen {
                         .widthIn(max = COLUMN_MAX_WIDTH)
                 ) {
                     CharactersSection(
-                        screenKey = SCREEN_KEY,
                         charactersInitial = emptyList(),
                         charactersDeferred = { continuation.characters.collectAsLazyPagingItems() },
                         contentPadding = PaddingValues(0.dp),

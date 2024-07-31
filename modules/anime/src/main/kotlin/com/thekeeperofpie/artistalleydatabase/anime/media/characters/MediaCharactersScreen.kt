@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
@@ -37,7 +36,6 @@ object MediaCharactersScreen {
 
     private val MIN_IMAGE_HEIGHT = 100.dp
     private val IMAGE_WIDTH = 72.dp
-    private val SCREEN_KEY = AnimeNavDestinations.MEDIA_CHARACTERS.id
 
     @Composable
     operator fun invoke(
@@ -143,10 +141,9 @@ object MediaCharactersScreen {
             itemKey = { it.id },
             item = {
                 CharacterCard(
-                    screenKey = SCREEN_KEY,
-                    character = it,
                     imageWidth = IMAGE_WIDTH,
                     minHeight = MIN_IMAGE_HEIGHT,
+                    character = it,
                     voiceActorLanguage = voiceActorLanguage,
                 )
             },

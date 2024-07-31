@@ -34,7 +34,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.MediaActivityQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -52,8 +51,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
 
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaActivitiesScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.MEDIA_ACTIVITIES.id
 
     @Composable
     operator fun invoke(
@@ -84,7 +81,6 @@ object MediaActivitiesScreen {
         }
 
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             topBar = {
                 CollapsingToolbar(

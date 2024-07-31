@@ -27,7 +27,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -42,8 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
 
 @OptIn(ExperimentalMaterial3Api::class)
 object UserFavoriteCharactersScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.USER_FAVORITE_CHARACTERS.id
 
     @Composable
     operator fun invoke(
@@ -60,9 +57,9 @@ object UserFavoriteCharactersScreen {
             skipHiddenState = false,
         )
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            modifier = Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
-            sheetState = editSheetState,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                     TopAppBar(
@@ -80,8 +77,7 @@ object UserFavoriteCharactersScreen {
                     )
                 }
             },
-            modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+            sheetState = editSheetState
         ) { scaffoldPadding ->
             val characters = viewModel.characters.collectAsLazyPagingItems()
             val refreshing = characters.loadState.refresh is LoadState.Loading
@@ -121,7 +117,6 @@ object UserFavoriteCharactersScreen {
                                 ) {
                                     val entry = characters[it]
                                     CharacterListRow(
-                                        screenKey = SCREEN_KEY,
                                         viewer = viewer,
                                         entry = entry,
                                         onClickListEdit = editViewModel::initialize,

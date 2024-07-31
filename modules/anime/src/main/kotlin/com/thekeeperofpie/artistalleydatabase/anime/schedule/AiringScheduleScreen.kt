@@ -45,7 +45,7 @@ import com.anilist.AiringScheduleQuery
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -65,8 +65,6 @@ import java.time.LocalDate
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object AiringScheduleScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.AIRING_SCHEDULE.id
-
     @Composable
     operator fun invoke(
         viewModel: AiringScheduleViewModel = hiltViewModel(),
@@ -80,8 +78,8 @@ object AiringScheduleScreen {
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
+        // TODO: Use a better leaf
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -95,7 +93,13 @@ object AiringScheduleScreen {
                             },
                             actions = {
                                 val navigationCallback = LocalNavigationCallback.current
-                                IconButton(onClick = navigationCallback::onSeasonalClick) {
+                                IconButton(onClick = {
+                                    navigationCallback.navigate(
+                                        AnimeDestination.Seasonal(
+                                            type = AnimeDestination.Seasonal.Type.THIS,
+                                        )
+                                    )
+                                }) {
                                     Icon(
                                         imageVector = when (AniListUtils.getCurrentSeasonYear().first) {
                                             MediaSeason.WINTER -> Icons.Filled.AcUnit

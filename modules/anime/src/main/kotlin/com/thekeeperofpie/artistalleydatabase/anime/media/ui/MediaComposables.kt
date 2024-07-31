@@ -78,7 +78,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import kotlinx.collections.immutable.ImmutableList
 
 fun <T> LazyListScope.mediaListSection(
-    screenKey: String,
     onClickListEdit: (MediaNavigationData) -> Unit,
     viewer: AniListViewer?,
     @StringRes titleRes: Int,
@@ -88,7 +87,7 @@ fun <T> LazyListScope.mediaListSection(
     hasMoreValues: Boolean,
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
-    label: (@Composable (T) -> Unit)? = null,
+    label: @Composable() ((T) -> Unit)? = null,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) = listSection(
@@ -117,7 +116,6 @@ fun <T> LazyListScope.mediaListSection(
 }
 
 fun LazyListScope.mediaHorizontalRow(
-    screenKey: String,
     viewer: AniListViewer?,
     editViewModel: MediaEditViewModel,
     @StringRes titleRes: Int,
@@ -504,7 +502,6 @@ fun MediaGenrePreview(
 
 @Composable
 fun MediaViewOptionRow(
-    screenKey: String,
     mediaViewOption: MediaViewOption,
     viewer: AniListViewer?,
     onClickListEdit: (MediaNavigationData) -> Unit,

@@ -27,7 +27,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -42,8 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
 
 @OptIn(ExperimentalMaterial3Api::class)
 object UserFavoriteStudiosScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.USER_FAVORITE_CHARACTERS.id
 
     @Composable
     operator fun invoke(
@@ -60,9 +57,9 @@ object UserFavoriteStudiosScreen {
             skipHiddenState = false,
         )
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            modifier = Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
-            sheetState = editSheetState,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                     TopAppBar(
@@ -80,8 +77,7 @@ object UserFavoriteStudiosScreen {
                     )
                 }
             },
-            modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+            sheetState = editSheetState
         ) { scaffoldPadding ->
             val studios = viewModel.studios.collectAsLazyPagingItems()
             val refreshing = studios.loadState.refresh is LoadState.Loading
@@ -121,7 +117,6 @@ object UserFavoriteStudiosScreen {
                                 ) {
                                     val entry = studios[it]
                                     StudioListRow(
-                                        screenKey = SCREEN_KEY,
                                         viewer = viewer,
                                         entry = entry,
                                         onClickListEdit = editViewModel::initialize,

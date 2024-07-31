@@ -646,14 +646,12 @@ fun MediaMergeNotificationCard(
 
 @Composable
 fun ThreadCommentMentionNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
 ) {
     ThreadAndCommentNotificationCard(
-        screenKey = screenKey,
         viewer = viewer,
         user = notification.user,
         context = notification.context,
@@ -666,14 +664,12 @@ fun ThreadCommentMentionNotificationCard(
 
 @Composable
 fun ThreadCommentLikeNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
 ) {
     ThreadAndCommentNotificationCard(
-        screenKey = screenKey,
         viewer = viewer,
         user = notification.user,
         context = notification.context,
@@ -686,14 +682,12 @@ fun ThreadCommentLikeNotificationCard(
 
 @Composable
 fun ThreadCommentReplyNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
 ) {
     ThreadAndCommentNotificationCard(
-        screenKey = screenKey,
         viewer = viewer,
         user = notification.user,
         context = notification.context,
@@ -706,14 +700,12 @@ fun ThreadCommentReplyNotificationCard(
 
 @Composable
 fun ThreadCommentSubscribedNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
 ) {
     ThreadAndCommentNotificationCard(
-        screenKey = screenKey,
         viewer = viewer,
         user = notification.user,
         context = notification.context,
@@ -726,7 +718,6 @@ fun ThreadCommentSubscribedNotificationCard(
 
 @Composable
 private fun ThreadAndCommentNotificationCard(
-    screenKey: String,
     viewer: AniListViewer?,
     user: UserNavigationData?,
     context: String?,
@@ -791,7 +782,6 @@ private fun ThreadAndCommentNotificationCard(
                         }
                 ) {
                     ThreadCommentContent(
-                        screenKey = screenKey,
                         threadId = threadId,
                         viewer = viewer,
                         loading = false,

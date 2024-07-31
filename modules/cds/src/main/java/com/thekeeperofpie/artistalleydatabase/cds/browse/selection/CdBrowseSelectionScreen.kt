@@ -68,10 +68,9 @@ object CdBrowseSelectionScreen {
                         )
                     } else {
                         EntryGrid(
-                            imageScreenKey = "selection",
-                            paddingValues = paddingValues,
                             entries = entries,
                             entriesSize = { entries().itemCount },
+                            paddingValues = paddingValues,
                             selectedItems = selectedItems,
                             onClickEntry = onClickEntry,
                             onLongClickEntry = onLongClickEntry,

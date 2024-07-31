@@ -75,8 +75,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeSearchScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.SEARCH.id
-
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption? = null,
@@ -94,10 +92,9 @@ object AnimeSearchScreen {
             skipHiddenState = false,
         )
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
-            sheetState = editSheetState,
             bottomNavigationState = bottomNavigationState,
+            sheetState = editSheetState,
         ) {
             val sortFilterController = when (viewModel.selectedType) {
                 AnimeSearchViewModel.SearchType.ANIME -> viewModel.animeSortFilterController
@@ -248,32 +245,27 @@ object AnimeSearchScreen {
                                     ) { data ->
                                         when (data) {
                                             is AnimeSearchEntry.Media -> MediaViewOptionRow(
-                                                screenKey = SCREEN_KEY,
                                                 mediaViewOption = viewModel.mediaViewOption,
                                                 viewer = viewer,
                                                 onClickListEdit = onClickListEdit,
                                                 entry = data.entry,
                                             )
                                             is AnimeSearchEntry.Character -> CharacterListRow(
-                                                screenKey = SCREEN_KEY,
                                                 viewer = viewer,
                                                 entry = data.entry,
                                                 onClickListEdit = onClickListEdit,
                                             )
                                             is AnimeSearchEntry.Staff -> StaffListRow(
-                                                screenKey = SCREEN_KEY,
                                                 viewer = viewer,
                                                 entry = data.entry,
                                                 onClickListEdit = onClickListEdit,
                                             )
                                             is AnimeSearchEntry.Studio -> StudioListRow(
-                                                screenKey = SCREEN_KEY,
                                                 viewer = viewer,
                                                 entry = data.entry,
                                                 onClickListEdit = onClickListEdit,
                                             )
                                             is AnimeSearchEntry.User -> UserListRow(
-                                                screenKey = SCREEN_KEY,
                                                 viewer = viewer,
                                                 entry = data.entry,
                                                 onClickListEdit = onClickListEdit,
@@ -283,7 +275,6 @@ object AnimeSearchScreen {
                                                 AnimeSearchViewModel.SearchType.ANIME,
                                                 AnimeSearchViewModel.SearchType.MANGA,
                                                 -> MediaViewOptionRow(
-                                                    screenKey = SCREEN_KEY,
                                                     mediaViewOption = viewModel.mediaViewOption,
                                                     viewer = viewer,
                                                     onClickListEdit = onClickListEdit,
@@ -291,28 +282,24 @@ object AnimeSearchScreen {
                                                 )
                                                 AnimeSearchViewModel.SearchType.CHARACTER ->
                                                     CharacterListRow(
-                                                        screenKey = SCREEN_KEY,
                                                         viewer = viewer,
                                                         entry = null,
                                                         onClickListEdit = {},
                                                     )
                                                 AnimeSearchViewModel.SearchType.STAFF ->
                                                     StaffListRow(
-                                                        screenKey = SCREEN_KEY,
                                                         viewer = viewer,
                                                         entry = null,
                                                         onClickListEdit = {},
                                                     )
                                                 AnimeSearchViewModel.SearchType.STUDIO ->
                                                     StudioListRow(
-                                                        screenKey = SCREEN_KEY,
                                                         viewer = viewer,
                                                         entry = null,
                                                         onClickListEdit = {},
                                                     )
                                                 AnimeSearchViewModel.SearchType.USER ->
                                                     UserListRow(
-                                                        screenKey = SCREEN_KEY,
                                                         viewer = viewer,
                                                         entry = null,
                                                         onClickListEdit = {},

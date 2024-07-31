@@ -98,9 +98,8 @@ object UserOverviewScreen {
 
             // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
             mediaHorizontalRow(
-                screenKey = viewModel.screenKey,
-                editViewModel = editViewModel,
                 viewer = viewer,
+                editViewModel = editViewModel,
                 titleRes = R.string.anime_user_favorite_anime_label,
                 entries = anime,
                 forceListEditIcon = true,
@@ -111,9 +110,8 @@ object UserOverviewScreen {
             )
 
             mediaHorizontalRow(
-                screenKey = viewModel.screenKey,
-                editViewModel = editViewModel,
                 viewer = viewer,
+                editViewModel = editViewModel,
                 titleRes = R.string.anime_user_favorite_manga_label,
                 entries = manga,
                 forceListEditIcon = true,
@@ -124,7 +122,6 @@ object UserOverviewScreen {
             )
 
             charactersSection(
-                screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_characters_label,
                 characters = characters,
                 onClickViewAll = { it.onUserFavoriteCharactersClick(userId, user.name) },
@@ -132,7 +129,6 @@ object UserOverviewScreen {
             )
 
             staffSection(
-                screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_staff_label,
                 staffList = staff,
                 onClickViewAll = { it.onUserFavoriteStaffClick(userId, user.name) },
@@ -141,7 +137,6 @@ object UserOverviewScreen {
 
             val studios = viewModel.studios
             favoriteStudiosSection(
-                screenKey = viewModel.screenKey,
                 viewer = viewer,
                 editViewModel = editViewModel,
                 studios = studios.studios,
@@ -219,7 +214,6 @@ object UserOverviewScreen {
     }
 
     private fun LazyListScope.favoriteStudiosSection(
-        screenKey: String,
         viewer: AniListViewer?,
         editViewModel: MediaEditViewModel,
         studios: List<StudioListRow.Entry>,
@@ -243,19 +237,18 @@ object UserOverviewScreen {
             contentType = { _, _ -> "studio" },
         ) { index, item ->
             StudioListRow(
-                screenKey = screenKey,
                 viewer = viewer,
                 entry = item,
                 onClickListEdit = editViewModel::initialize,
-                mediaWidth = 64.dp,
-                mediaHeight = 96.dp,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
                         bottom = if (index == studios.lastIndex && !hasMore) 0.dp else 16.dp,
-                    )
+                    ),
+                mediaWidth = 64.dp,
+                mediaHeight = 96.dp
             )
         }
 

@@ -99,7 +99,6 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
@@ -168,7 +167,6 @@ import kotlinx.coroutines.flow.Flow
 )
 object AnimeHomeScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.HOME.id
     private val CURRENT_ROW_IMAGE_HEIGHT = 144.dp
     private val CURRENT_ROW_IMAGE_WIDTH = 96.dp
     private val MEDIA_ROW_IMAGE_HEIGHT = 180.dp
@@ -230,9 +228,12 @@ object AnimeHomeScreen {
         val onClickIncrementProgress = rememberCallback(editViewModel::incrementProgress)
         val viewer by viewModel.viewer.collectAsState()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            modifier = Modifier
+                .conditionallyNonNull(bottomNavigationState) {
+                    nestedScroll(it.nestedScrollConnection)
+                }
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
-            bottomNavigationState = bottomNavigationState,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                     TopAppBar(
@@ -302,7 +303,9 @@ object AnimeHomeScreen {
                                 }
                             }
 
-                            IconButton(onClick = navigationCallback::onAiringScheduleClick) {
+                            IconButton(onClick = {
+                                navigationCallback.navigate(AnimeDestination.AiringSchedule)
+                            }) {
                                 Icon(
                                     imageVector = Icons.Filled.CalendarMonth,
                                     contentDescription = stringResource(
@@ -319,11 +322,7 @@ object AnimeHomeScreen {
                     )
                 }
             },
-            modifier = Modifier
-                .conditionallyNonNull(bottomNavigationState) {
-                    nestedScroll(it.nestedScrollConnection)
-                }
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
+            bottomNavigationState = bottomNavigationState
         ) {
             Box(
                 modifier = Modifier
@@ -520,15 +519,14 @@ object AnimeHomeScreen {
                 when (val activity = entry?.activity) {
                     is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
                         TextActivitySmallCard(
-                            screenKey = SCREEN_KEY,
                             viewer = viewer,
                             activity = activity,
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
-                            clickable = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .recomposeHighlighter()
+                                .recomposeHighlighter(),
+                            clickable = true
                         )
                     is UserSocialActivityQuery.Data.Page.ListActivityActivity ->
                         ListActivitySmallCard(
@@ -545,15 +543,14 @@ object AnimeHomeScreen {
                         )
                     is UserSocialActivityQuery.Data.Page.MessageActivityActivity ->
                         MessageActivitySmallCard(
-                            screenKey = SCREEN_KEY,
                             viewer = viewer,
                             activity = activity,
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
-                            clickable = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .recomposeHighlighter()
+                                .recomposeHighlighter(),
+                            clickable = true
                         )
                     is UserSocialActivityQuery.Data.Page.OtherActivity,
                     null,
@@ -1099,14 +1096,13 @@ object AnimeHomeScreen {
         ) {
             val entry = recommendations.getOrNull(it)
             RecommendationCard(
-                screenKey = SCREEN_KEY,
                 viewer = viewer,
                 user = entry?.user,
                 media = entry?.media,
                 mediaRecommendation = entry?.mediaRecommendation,
+                onClickListEdit = editViewModel::initialize,
                 recommendation = entry?.data,
                 onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
-                onClickListEdit = editViewModel::initialize,
             )
         }
     }
@@ -1137,7 +1133,6 @@ object AnimeHomeScreen {
             SharedTransitionKeyScope("anime_home_review_${entry?.review?.id}") {
                 val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
                 ReviewCard(
-                    screenKey = SCREEN_KEY,
                     viewer = viewer,
                     review = entry?.review,
                     media = entry?.media,

@@ -75,7 +75,6 @@ object UserListRow {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -128,7 +127,6 @@ object UserListRow {
                     Spacer(Modifier.weight(1f))
 
                     MediaRow(
-                        screenKey = screenKey,
                         viewer = viewer,
                         entry = entry,
                         onClickListEdit = onClickListEdit,
@@ -195,7 +193,6 @@ object UserListRow {
 
     @Composable
     private fun MediaRow(
-        screenKey: String,
         viewer: AniListViewer?,
         entry: Entry?,
         onClickListEdit: (MediaNavigationData) -> Unit,

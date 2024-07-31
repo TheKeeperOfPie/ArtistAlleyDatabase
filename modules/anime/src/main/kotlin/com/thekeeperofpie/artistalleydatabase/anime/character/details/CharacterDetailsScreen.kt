@@ -49,7 +49,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
@@ -89,7 +88,6 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalMaterial3Api::class)
 object CharacterDetailsScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.CHARACTER_DETAILS.id
     private const val MEDIA_ABOVE_FOLD = 3
 
     @Composable
@@ -124,7 +122,7 @@ object CharacterDetailsScreen {
         ) {
             val editViewModel = hiltViewModel<MediaEditViewModel>()
             MediaEditBottomSheetScaffold(
-                screenKey = SCREEN_KEY,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 viewModel = editViewModel,
                 topBar = {
                     CollapsingToolbar(
@@ -145,8 +143,7 @@ object CharacterDetailsScreen {
                             },
                         )
                     }
-                },
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                }
             ) { scaffoldPadding ->
                 val expandedState = rememberExpandedState()
                 val finalError = entry.result == null && !entry.loading
@@ -218,7 +215,6 @@ object CharacterDetailsScreen {
         }
 
         staffSection(
-            screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             titleRes = R.string.anime_character_details_voice_actors_label,
             staffList = voiceActors,
             roleLines = 1,
@@ -410,7 +406,6 @@ object CharacterDetailsScreen {
         onExpandedChange: (Boolean) -> Unit,
     ) {
         mediaListSection(
-            screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             onClickListEdit = editViewModel::initialize,
             viewer = viewer,
             titleRes = R.string.anime_character_details_media_label,
@@ -420,21 +415,6 @@ object CharacterDetailsScreen {
             hasMoreValues = entry.mediaHasMore,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
-            onClickViewAll = {
-                it.navigate(
-                    AnimeDestination.CharacterMedias(
-                        characterId = entry.character.id.toString(),
-                        sharedTransitionKey = null,
-                        headerParams = CharacterHeaderParams(
-                            name = characterName,
-                            subtitle = characterSubtitle,
-                            favorite = headerValues.favorite,
-                            coverImage = coverImageState.toImageState(),
-                        )
-                    )
-                )
-            },
-            viewAllContentDescriptionTextRes = R.string.anime_character_details_view_all_content_description,
             label = {
                 it.characterRole?.let {
                     Text(
@@ -450,7 +430,22 @@ object CharacterDetailsScreen {
                             )
                     )
                 }
-            }
+            },
+            onClickViewAll = {
+                it.navigate(
+                    AnimeDestination.CharacterMedias(
+                        characterId = entry.character.id.toString(),
+                        sharedTransitionKey = null,
+                        headerParams = CharacterHeaderParams(
+                            name = characterName,
+                            subtitle = characterSubtitle,
+                            favorite = headerValues.favorite,
+                            coverImage = coverImageState.toImageState(),
+                        )
+                    )
+                )
+            },
+            viewAllContentDescriptionTextRes = R.string.anime_character_details_view_all_content_description
         )
     }
 

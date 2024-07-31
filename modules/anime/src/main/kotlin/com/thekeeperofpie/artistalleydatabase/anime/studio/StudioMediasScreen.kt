@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StudioMediasQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -24,8 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 @OptIn(ExperimentalMaterial3Api::class)
 object StudioMediasScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.STUDIO_MEDIAS.id
-
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,
@@ -37,7 +34,6 @@ object StudioMediasScreen {
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         HeaderAndMediaListScreen(
-            screenKey = SCREEN_KEY,
             viewModel = viewModel,
             editViewModel = editViewModel,
             headerTextRes = null,

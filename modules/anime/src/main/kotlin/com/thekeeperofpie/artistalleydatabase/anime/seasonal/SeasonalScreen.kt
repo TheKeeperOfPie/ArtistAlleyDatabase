@@ -47,7 +47,6 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
@@ -68,8 +67,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object SeasonalScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.SEASONAL.id
-
     @Composable
     operator fun invoke(
         viewModel: SeasonalViewModel = hiltViewModel<SeasonalViewModel>(),
@@ -83,7 +80,6 @@ object SeasonalScreen {
         val currentSeasonYear = remember { AniListUtils.getCurrentSeasonYear() }
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
         ) {
             val scrollBehavior =
@@ -290,7 +286,6 @@ object SeasonalScreen {
                         ) { index ->
                             val item = content[index]
                             MediaViewOptionRow(
-                                screenKey = SCREEN_KEY,
                                 mediaViewOption = viewModel.mediaViewOption,
                                 viewer = viewer,
                                 onClickListEdit = editViewModel::initialize,

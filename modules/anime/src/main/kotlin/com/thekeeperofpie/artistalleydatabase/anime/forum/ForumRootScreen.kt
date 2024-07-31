@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.fragment.ForumThread
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -64,8 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
 )
 object ForumRootScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.FORUM.id
 
     @Composable
     operator fun invoke(
@@ -283,7 +280,6 @@ object ForumRootScreen {
             contentType = { _, _ -> "thread" },
         ) { index, item ->
             ThreadCard(
-                screenKey = SCREEN_KEY,
                 thread = item,
                 modifier = Modifier
                     .padding(

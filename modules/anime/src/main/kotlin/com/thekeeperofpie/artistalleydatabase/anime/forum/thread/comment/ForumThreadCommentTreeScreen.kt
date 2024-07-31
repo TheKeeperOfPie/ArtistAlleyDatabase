@@ -48,7 +48,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadComment
@@ -72,8 +71,6 @@ import kotlinx.coroutines.launch
 // TODO: Dedupe this with the full thread screen
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object ForumThreadCommentTreeScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.FORUM_THREAD_COMMENT.id
 
     @Composable
     operator fun invoke(
@@ -141,9 +138,8 @@ object ForumThreadCommentTreeScreen {
             val editViewModel = hiltViewModel<MediaEditViewModel>()
             val viewer by viewModel.viewer.collectAsState()
             MediaEditBottomSheetScaffold(
-                screenKey = SCREEN_KEY,
-                viewModel = editViewModel,
                 modifier = Modifier.padding(PaddingValues(top = it.calculateTopPadding())),
+                viewModel = editViewModel,
             ) {
                 Scaffold(
                     floatingActionButton = {
@@ -192,7 +188,6 @@ object ForumThreadCommentTreeScreen {
                             val threadEntry = entry.result
                             item("threadHeader") {
                                 ThreadHeader(
-                                    screenKey = SCREEN_KEY,
                                     threadId = viewModel.threadId,
                                     viewer = viewer,
                                     entry = threadEntry,
@@ -290,7 +285,6 @@ object ForumThreadCommentTreeScreen {
                                     contentType = { "comment" },
                                 ) {
                                     ThreadComment(
-                                        screenKey = SCREEN_KEY,
                                         threadId = viewModel.threadId,
                                         viewer = viewer,
                                         entry = it,

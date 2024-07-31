@@ -232,7 +232,6 @@ fun CharacterSmallCard(
 }
 
 fun LazyListScope.charactersSection(
-    screenKey: String,
     @StringRes titleRes: Int,
     characters: LazyPagingItems<DetailsCharacter>,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
@@ -251,14 +250,12 @@ fun LazyListScope.charactersSection(
 
     item("charactersSection-$titleRes") {
         CharactersSection(
-            screenKey = screenKey,
             characters = characters,
         )
     }
 }
 
 fun LazyListScope.charactersSection(
-    screenKey: String,
     @StringRes titleRes: Int,
     mediaId: String,
     mediaHeaderParams: MediaHeaderParams,
@@ -286,7 +283,6 @@ fun LazyListScope.charactersSection(
 
     item("charactersSection-$titleRes") {
         CharactersSection(
-            screenKey = screenKey,
             charactersInitial = charactersInitial,
             charactersDeferred = { charactersDeferred() },
         )
@@ -295,7 +291,6 @@ fun LazyListScope.charactersSection(
 
 @Composable
 private fun CharactersSection(
-    screenKey: String,
     characters: LazyPagingItems<DetailsCharacter>,
 ) {
     LazyRow(
@@ -318,7 +313,6 @@ private fun CharactersSection(
 
 @Composable
 fun CharactersSection(
-    screenKey: String,
     charactersInitial: List<DetailsCharacter>,
     charactersDeferred: @Composable () -> LazyPagingItems<DetailsCharacter>,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
@@ -519,7 +513,6 @@ fun CharactersSectionItem(
 
 @Composable
 fun CharacterCard(
-    screenKey: String,
     imageWidth: Dp,
     minHeight: Dp,
     character: DetailsCharacter?,

@@ -75,7 +75,6 @@ import kotlinx.coroutines.launch
 // TODO: Refactor this code so it can be shared with AADB functionality
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 class MediaSearchSortFilterSection(
-    private val screenKey: String,
     id: String = "mediaSearch",
     @StringRes private val titleTextRes: Int,
     @StringRes private val titleDropdownContentDescriptionRes: Int,

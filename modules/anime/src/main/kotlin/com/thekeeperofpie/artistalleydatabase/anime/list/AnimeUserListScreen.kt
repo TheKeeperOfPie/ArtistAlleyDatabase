@@ -57,7 +57,6 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -96,8 +95,6 @@ import kotlinx.coroutines.launch
 )
 object AnimeUserListScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.USER_LIST.id
-
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption? = null,
@@ -116,10 +113,9 @@ object AnimeUserListScreen {
             skipHiddenState = false,
         )
         MediaEditBottomSheetScaffold(
-            screenKey = AnimeNavDestinations.USER_LIST.id,
-            sheetState = editSheetState,
             viewModel = editViewModel,
             bottomNavigationState = bottomNavigationState,
+            sheetState = editSheetState,
             snackbarHostState = snackbarHostState,
         ) {
             val entry = viewModel.entry

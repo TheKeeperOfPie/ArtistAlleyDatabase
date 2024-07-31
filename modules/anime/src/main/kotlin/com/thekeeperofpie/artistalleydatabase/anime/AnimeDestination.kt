@@ -45,6 +45,9 @@ sealed interface AnimeDestination {
     ) : AnimeDestination
 
     @Serializable
+    data object AiringSchedule : AnimeDestination
+
+    @Serializable
     data class CharacterDetails(
         val characterId: String,
         val sharedTransitionKey: SharedTransitionKey? = null,
@@ -178,7 +181,7 @@ sealed interface AnimeDestination {
 
     @Serializable
     data class User(
-        val userId: String,
+        val userId: String? = null,
         val sharedTransitionKey: SharedTransitionKey? = null,
         val headerParams: UserHeaderParams? = null,
     ) : AnimeDestination

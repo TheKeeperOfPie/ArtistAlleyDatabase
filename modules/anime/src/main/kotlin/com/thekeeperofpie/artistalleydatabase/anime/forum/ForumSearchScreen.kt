@@ -37,7 +37,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
@@ -53,8 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
 )
 object ForumSearchScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.FORUM_SEARCH.id
 
     @Composable
     operator fun invoke(
@@ -122,7 +119,6 @@ object ForumSearchScreen {
                         ) {
                             val thread = content[it]
                             ThreadCard(
-                                screenKey = SCREEN_KEY,
                                 thread = thread,
                             )
                         }

@@ -276,9 +276,8 @@ object AnimeNavigator {
                     charactersDeferred.itemCount
                         .coerceAtLeast(charactersViewModel.charactersInitial.size)
                 },
-                charactersSection = { screenKey, entry ->
+                charactersSection = { entry ->
                     charactersSection(
-                        screenKey = screenKey,
                         titleRes = R.string.anime_media_details_characters_label,
                         charactersInitial = charactersViewModel.charactersInitial,
                         charactersDeferred = { charactersDeferred },
@@ -290,7 +289,6 @@ object AnimeNavigator {
                 staffCount = { staff.itemCount },
                 staffSection = {
                     staffSection(
-                        screenKey = it,
                         titleRes = R.string.anime_media_details_staff_label,
                         staffList = staff,
                     )
@@ -300,9 +298,8 @@ object AnimeNavigator {
                     aboveFold = AnimeSongComposables.SONGS_ABOVE_FOLD,
                     hasMore = false,
                 ),
-                songsSection = { screenKey, expanded, onExpandedChange ->
+                songsSection = { expanded, onExpandedChange ->
                     AnimeSongComposables.songsSection(
-                        screenKey = screenKey,
                         viewModel = songsViewModel,
                         songsExpanded = expanded,
                         onSongsExpandedChange = onExpandedChange,
@@ -314,9 +311,8 @@ object AnimeNavigator {
                     override fun count(viewer: AniListViewer?, expanded: Boolean) =
                         if (hasCds) 2 else 0
                 },
-                cdsSection = { screenKey ->
+                cdsSection = {
                     cdsSection(
-                        screenKey = screenKey,
                         cdEntries = cdsViewModel.cdEntries,
                         onClickEntry = { _, entry ->
                             navigationCallback.onCdEntryClick(
@@ -332,10 +328,9 @@ object AnimeNavigator {
                     aboveFold = RecommendationComposables.RECOMMENDATIONS_ABOVE_FOLD,
                     hasMore = recommendationsViewModel.recommendations?.hasMore ?: true,
                 ),
-                recommendationsSection = { screenKey, expanded, onExpandedChange, onClickListEdit ->
+                recommendationsSection = { expanded, onExpandedChange, onClickListEdit ->
                     val entry = recommendationsViewModel.recommendations
                     recommendationsSection(
-                        screenKey = screenKey,
                         viewer = viewer,
                         entry = entry,
                         expanded = expanded,
@@ -362,9 +357,8 @@ object AnimeNavigator {
                     hasMore = true,
                     addOneForViewer = true,
                 ),
-                activitiesSection = { screenKey, expanded, onExpandedChanged, onClickListEdit ->
+                activitiesSection = { expanded, onExpandedChanged, onClickListEdit ->
                     activitiesSection(
-                        screenKey = screenKey,
                         viewer = viewer,
                         onActivityStatusUpdate = activitiesViewModel.activityToggleHelper::toggle,
                         activityTab = activityTab,
@@ -418,9 +412,8 @@ object AnimeNavigator {
                     aboveFold = ReviewComposables.REVIEWS_ABOVE_FOLD,
                     hasMore = reviewsViewModel.reviews?.hasMore ?: false,
                 ),
-                reviewsSection = { screenKey, expanded, onExpandedChange ->
+                reviewsSection = { expanded, onExpandedChange ->
                     reviewsSection(
-                        screenKey = screenKey,
                         entry = reviewsViewModel.reviews,
                         expanded = expanded,
                         onExpandedChange = onExpandedChange,
@@ -563,7 +556,7 @@ object AnimeNavigator {
             AnimeIgnoreScreen(UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.sharedElementComposable(route = AnimeNavDestinations.AIRING_SCHEDULE.id) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.AiringSchedule>(navigationTypeMap) {
             AiringScheduleScreen(
                 onClickBack = { navHostController.navigateUp() },
             )
@@ -874,7 +867,6 @@ object AnimeNavigator {
             val userId = it.arguments?.getString("userId")
             val viewModel = hiltViewModel<UserListViewModel.Following>()
             UserListScreen(
-                screenKey = AnimeNavDestinations.USER_FOLLOWING.id,
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
                 title = {
@@ -904,7 +896,6 @@ object AnimeNavigator {
             val userId = it.arguments?.getString("userId")
             val viewModel = hiltViewModel<UserListViewModel.Followers>()
             UserListScreen(
-                screenKey = AnimeNavDestinations.USER_FOLLOWERS.id,
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
                 title = {
@@ -1102,14 +1093,6 @@ object AnimeNavigator {
 
         fun onNotificationsClick() {
             navHostController?.navigate(AnimeNavDestinations.NOTIFICATIONS.id)
-        }
-
-        fun onAiringScheduleClick() {
-            navHostController?.navigate(AnimeNavDestinations.AIRING_SCHEDULE.id)
-        }
-
-        fun onSeasonalClick() {
-            navHostController?.navigate(AnimeNavDestinations.SEASONAL.id)
         }
 
         fun onForumRootClick() = navHostController?.navigate(AnimeNavDestinations.FORUM.id)

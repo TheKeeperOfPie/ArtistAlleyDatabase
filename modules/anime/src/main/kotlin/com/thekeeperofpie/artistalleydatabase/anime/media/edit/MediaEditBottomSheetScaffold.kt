@@ -33,10 +33,9 @@ object MediaEditBottomSheetScaffold {
 
     @Composable
     operator fun invoke(
-        screenKey: String,
         modifier: Modifier = Modifier,
         viewModel: MediaEditViewModel = hiltViewModel(),
-        topBar: @Composable (() -> Unit)? = null,
+        topBar: @Composable() (() -> Unit)? = null,
         bottomNavigationState: BottomNavigationState? = null,
         sheetState: SheetState = rememberStandardBottomSheetState(
             initialValue = SheetValue.Hidden,

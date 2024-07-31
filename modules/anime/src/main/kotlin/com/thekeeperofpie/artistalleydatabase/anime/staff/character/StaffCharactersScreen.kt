@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StaffAndCharactersQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
@@ -24,8 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffCharactersScreen {
 
-    private val SCREEN_KEY = AnimeNavDestinations.STAFF_CHARACTERS.id
-
     @Composable
     operator fun invoke(
         viewModel: StaffCharactersViewModel,
@@ -35,7 +32,6 @@ object StaffCharactersScreen {
     ) {
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
         ) {
             val viewer by viewModel.viewer.collectAsState()
@@ -58,12 +54,11 @@ object StaffCharactersScreen {
                 itemKey = { it.character.id },
                 item = {
                     CharacterListRow(
-                        screenKey = SCREEN_KEY,
                         viewer = viewer,
                         entry = it,
-                        showRole = true,
                         onClickListEdit = editViewModel::initialize,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                        showRole = true
                     )
                 },
                 modifier = Modifier.padding(it)

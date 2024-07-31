@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -44,7 +43,6 @@ class ForumSearchViewModel @Inject constructor(
     private val destination = savedStateHandle.toDestination<AnimeDestination.ForumSearch>(navigationTypeMap)
 
     val sortFilterController = ForumSubsectionSortFilterController(
-        screenKey = AnimeNavDestinations.FORUM_SEARCH.id,
         scope = viewModelScope,
         aniListApi = aniListApi,
         settings = settings,
