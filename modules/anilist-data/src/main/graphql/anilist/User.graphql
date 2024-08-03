@@ -438,9 +438,7 @@ fragment UserFavoriteMedia on Media {
     genres
     source
     startDate {
-        year
-        month
-        day
+        ...AniListDate
     }
     externalLinks {
         siteId

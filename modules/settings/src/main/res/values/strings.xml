@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_nav_drawer">Settings</string>
+    <string name="settings_ignore_viewer">Ignore Viewer</string>
     <string name="settings_clear_aniList_cache">Clear AniList cache</string>
     <string name="settings_clear_vgmdb_cache">Clear VGMdb cache</string>
     <string name="settings_database_fetch">Sync remote models to local database</string>

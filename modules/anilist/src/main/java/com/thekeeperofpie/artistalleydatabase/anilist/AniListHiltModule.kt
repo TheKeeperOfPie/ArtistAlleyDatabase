@@ -81,8 +81,11 @@ class AniListHiltModule {
 
     @Singleton
     @Provides
-    fun provideAniListOAuthStore(application: Application, masterKey: MasterKey) =
-        AniListOAuthStore(application, masterKey)
+    fun provideAniListOAuthStore(
+        scopedApplication: ScopedApplication,
+        masterKey: MasterKey,
+        aniListSettings: AniListSettings,
+    ) = AniListOAuthStore(scopedApplication, masterKey, aniListSettings)
 
     @Singleton
     @Provides

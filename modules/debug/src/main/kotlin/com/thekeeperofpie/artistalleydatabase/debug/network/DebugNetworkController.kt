@@ -62,6 +62,10 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
             }
 
             val responseBody = response.body
+            if (responseBody != null && responseBody.buffer.size > 10_000) {
+                return response
+            }
+
             val responseBodyString = responseBody?.readString(Charset.defaultCharset()).toString()
             graphQlResponses.trySend(
                 GraphQlResponse(

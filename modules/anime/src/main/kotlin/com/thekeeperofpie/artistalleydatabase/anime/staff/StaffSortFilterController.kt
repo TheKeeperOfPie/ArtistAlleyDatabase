@@ -31,7 +31,7 @@ class StaffSortFilterController(
         headerTextRes = R.string.anime_staff_filter_sort_label,
     ).apply {
         if (!allowRelevanceSort) {
-            sortOptions = sortOptions.filter { it.value != StaffSortOption.RELEVANCE }
+            setOptions(StaffSortOption.entries.filter { it != StaffSortOption.RELEVANCE })
         }
     }
 

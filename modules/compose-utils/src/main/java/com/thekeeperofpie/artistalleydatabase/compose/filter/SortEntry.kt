@@ -19,6 +19,14 @@ data class SortEntry<T : SortOption>(
     }
 }
 
+fun <T : SortOption> List<SortEntry<T>>.withSelectedOption(default: T?) =map {
+    if (it.value == default) {
+        it.copy(state = FilterIncludeExcludeState.INCLUDE)
+    } else {
+        it
+    }
+}
+
 fun <T : SortOption> List<SortEntry<T>>.selectedOption(default: T) =
     firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
         ?.value

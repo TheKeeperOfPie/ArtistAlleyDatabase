@@ -143,15 +143,14 @@ class AnimeSearchViewModel @Inject constructor(
         mediaGenresController: MediaGenresController,
         mediaLicensorsController: MediaLicensorsController,
     ) : AnimeSortFilterController<MediaSortOption>(
-        scope = scope,
         sortTypeEnumClass = MediaSortOption::class,
+        scope = scope,
         aniListApi = aniListApi,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
         mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
-        userScoreEnabled = false,
     ) {
 
         override val suggestionsSection = SortFilterSection.Suggestions(
@@ -167,7 +166,7 @@ class AnimeSearchViewModel @Inject constructor(
                         )
                         statusSection.setIncluded(MediaStatus.FINISHED, locked = false)
                         formatSection.setIncluded(MediaFormat.TV, locked = false)
-                        listStatusSection.setExcluded(null, locked = false)
+                        myListStatusSection.setExcluded(null, locked = false)
                         airingDate = AiringDate.Basic() to airingDate.second
                         airingDateIsAdvanced = false
                     }
@@ -184,7 +183,7 @@ class AnimeSearchViewModel @Inject constructor(
                             year.toString(),
                         ) to airingDate.second
                         airingDateIsAdvanced = false
-                        listStatusSection.clear()
+                        myListStatusSection.clear()
                     }
                     AnimeFilterSuggestion.CURRENT_SEASON -> {
                         sortSection.changeSelected(
@@ -199,7 +198,7 @@ class AnimeSearchViewModel @Inject constructor(
                             year.toString(),
                         ) to airingDate.second
                         airingDateIsAdvanced = false
-                        listStatusSection.clear()
+                        myListStatusSection.clear()
                     }
                     AnimeFilterSuggestion.NEXT_SEASON -> {
                         sortSection.changeSelected(
@@ -214,11 +213,19 @@ class AnimeSearchViewModel @Inject constructor(
                             year.toString(),
                         ) to airingDate.second
                         airingDateIsAdvanced = false
-                        listStatusSection.clear()
+                        myListStatusSection.clear()
                     }
                 }
             }
         )
+
+        init {
+            sortSection.setOptions(
+                MediaSortOption.entries
+                    .filter { it != MediaSortOption.VOLUMES }
+                    .filter { it != MediaSortOption.CHAPTERS }
+            )
+        }
 
         enum class AnimeFilterSuggestion(private val textRes: Int) :
             SortFilterSection.Suggestions.Suggestion {
@@ -242,8 +249,9 @@ class AnimeSearchViewModel @Inject constructor(
         mediaTagsController = mediaTagsController,
         mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
-        userScoreEnabled = false,
-    )
+    ).apply {
+        sortSection.setOptions(MediaSortOption.entries.filter { it != MediaSortOption.EPISODES })
+    }
 
     val characterSortFilterController =
         CharacterSortFilterController(viewModelScope, settings, featureOverrideProvider)
@@ -308,8 +316,6 @@ class AnimeSearchViewModel @Inject constructor(
         val lockSort =
             destination.lockSortOverride ?: (destination.tagId == null && destination.genre == null)
         animeSortFilterController.initialize(
-            viewModel = this,
-            refreshUptimeMillis = refreshUptimeMillis,
             initialParams = AnimeSortFilterController.InitialParams(
                 tagId = tagId,
                 genre = destination.genre,
@@ -319,8 +325,6 @@ class AnimeSearchViewModel @Inject constructor(
             ),
         )
         mangaSortFilterController.initialize(
-            viewModel = this,
-            refreshUptimeMillis = refreshUptimeMillis,
             initialParams = MangaSortFilterController.InitialParams(
                 tagId = tagId,
                 genre = destination.genre,

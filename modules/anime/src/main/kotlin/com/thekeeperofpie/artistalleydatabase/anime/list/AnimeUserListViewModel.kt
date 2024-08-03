@@ -5,8 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anilist.fragment.AniListDate
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
@@ -58,6 +60,7 @@ class AnimeUserListViewModel @Inject constructor(
     private val userMediaListController: UserMediaListController,
     private val featureOverrideProvider: FeatureOverrideProvider,
     private val mediaListStatusController: MediaListStatusController,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     companion object {
@@ -84,7 +87,7 @@ class AnimeUserListViewModel @Inject constructor(
     lateinit var mediaType: MediaType
         private set
 
-    lateinit var sortFilterController: MediaSortFilterController<*, *>
+    lateinit var sortFilterController: MediaSortFilterController<MediaListSortOption, *>
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -100,24 +103,25 @@ class AnimeUserListViewModel @Inject constructor(
         this.mediaType = mediaType
         this.userName = userName
         this.mediaListStatus = status
+        val defaultSort = if (userId == null) {
+            MediaListSortOption.MY_UPDATED_TIME
+        } else {
+            MediaListSortOption.THEIR_UPDATED_TIME
+        }
         sortFilterController = if (mediaType == MediaType.ANIME) {
-            AnimeSortFilterController(
+            AnimeUserListSortFilterController(
                 scope = viewModelScope,
-                sortTypeEnumClass = MediaListSortOption::class,
                 aniListApi = aniListApi,
                 settings = settings,
                 featureOverrideProvider = featureOverrideProvider,
                 mediaTagsController = mediaTagsController,
                 mediaGenresController = mediaGenresController,
                 mediaLicensorsController = mediaLicensorsController,
-                userScoreEnabled = true,
+                targetUserId = userId,
             ).apply {
                 initialize(
-                    viewModel = this@AnimeUserListViewModel,
-                    refreshUptimeMillis = refreshUptimeMillis,
                     initialParams = AnimeSortFilterController.InitialParams(
-                        onListEnabled = false,
-                        defaultSort = MediaListSortOption.UPDATED_TIME,
+                        defaultSort = defaultSort,
                         lockSort = false,
                         mediaListStatus = status,
                         lockMediaListStatus = status != null,
@@ -125,8 +129,7 @@ class AnimeUserListViewModel @Inject constructor(
                 )
             }
         } else {
-            MangaSortFilterController(
-                sortTypeEnumClass = MediaListSortOption::class,
+            MangaUserListSortFilterController(
                 scope = viewModelScope,
                 aniListApi = aniListApi,
                 settings = settings,
@@ -134,18 +137,29 @@ class AnimeUserListViewModel @Inject constructor(
                 mediaTagsController = mediaTagsController,
                 mediaGenresController = mediaGenresController,
                 mediaLicensorsController = mediaLicensorsController,
-                userScoreEnabled = true,
+                targetUserId = userId,
             ).apply {
                 initialize(
-                    viewModel = this@AnimeUserListViewModel,
-                    refreshUptimeMillis = refreshUptimeMillis,
                     initialParams = MangaSortFilterController.InitialParams(
-                        onListEnabled = false,
-                        defaultSort = MediaListSortOption.UPDATED_TIME,
+                        defaultSort = defaultSort,
                         lockSort = false,
                         mediaListStatus = status,
                         lockMediaListStatus = status != null,
                     )
+                )
+            }
+        }
+
+        viewModelScope.launch(CustomDispatchers.Main) {
+            viewer.collectLatest { viewer ->
+                sortFilterController.sortSection.setOptions(
+                    MediaListSortOption.entries.filter {
+                        when (it.forDifferentUser) {
+                            true -> userId != null
+                            false -> viewer != null
+                            null -> true
+                        }
+                    }
                 )
             }
         }
@@ -203,17 +217,12 @@ class AnimeUserListViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .flatMapLatest(mediaListStatusController::allChanges)
 
-            @Suppress("UNCHECKED_CAST")
             combine(
                 response,
                 mediaUpdates,
                 snapshotFlow { query }.debounce(500.milliseconds),
-                (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.filterParams
-                    ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).filterParams,
-                snapshotFlow {
-                    (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.tagShowWhenSpoiler
-                        ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).tagShowWhenSpoiler
-                },
+                sortFilterController.filterParams,
+                snapshotFlow { sortFilterController.tagShowWhenSpoiler },
                 ::FilterParams
             ).flatMapLatest { (lists, mediaUpdates, query, filterParams, showTagWhenSpoiler) ->
                 combine(
@@ -255,12 +264,29 @@ class AnimeUserListViewModel @Inject constructor(
                                 .flatMap { it.entries }
                                 .let {
                                     FilterIncludeExcludeState.applyFiltering(
-                                        filterParams.listStatuses,
+                                        filterParams.myListStatuses,
                                         it,
-                                        { listOfNotNull(it.mediaListStatus) },
+                                        {
+                                            listOfNotNull(it.mediaListStatus)
+                                        },
                                     )
                                 }
-                                .toFilteredEntries(query, filterParams, showTagWhenSpoiler)
+                                .let {
+                                    if (filterParams.theirListStatuses == null) it else {
+                                        FilterIncludeExcludeState.applyFiltering(
+                                            filterParams.theirListStatuses,
+                                            it,
+                                            {
+                                                listOfNotNull(it.authorData?.status)
+                                            },
+                                        )
+                                    }
+                                }
+                                .toFilteredEntries(
+                                    query = query,
+                                    filterParams = filterParams,
+                                    showTagWhenSpoiler = showTagWhenSpoiler,
+                                )
                                 .mapEntries(),
                             lists = allLists
                                 .sortedBy { SORT_ORDER.indexOf(it.status) }
@@ -270,9 +296,9 @@ class AnimeUserListViewModel @Inject constructor(
                                         scoreFormat = it.scoreFormat,
                                         entries = it.entries
                                             .toFilteredEntries(
-                                                query,
-                                                filterParams,
-                                                showTagWhenSpoiler,
+                                                query = query,
+                                                filterParams = filterParams,
+                                                showTagWhenSpoiler = showTagWhenSpoiler,
                                             )
                                             .mapEntries(),
                                     )
@@ -305,7 +331,39 @@ class AnimeUserListViewModel @Inject constructor(
             showTagWhenSpoiler = showTagWhenSpoiler,
             entries = this,
             media = { it.media },
-        )
+        ).let {
+            val theirScore = filterParams.theirScore
+            var filteredByTheirScore = it
+            if (theirScore != null) {
+                val theirScoreStart = theirScore.startInt ?: 0
+                val theirScoreEnd = theirScore.endInt
+                if (theirScoreStart > 0) {
+                    filteredByTheirScore = filteredByTheirScore.filter {
+                        it.authorData?.rawScore.let { it != null && it >= theirScoreStart }
+                    }
+                }
+                if (theirScoreEnd != null) {
+                    // TODO: How should this handle null?
+                    filteredByTheirScore = filteredByTheirScore.filter {
+                        it.authorData?.rawScore.let { it == null || it <= theirScoreEnd }
+                    }
+                }
+            }
+            filteredByTheirScore
+        }.run {
+            if (filterParams.onList == null) return@run this
+            if (filterParams.onList) {
+                filter {
+                    it.mediaListStatus != null
+                            && it.mediaListStatus != MediaListStatus.UNKNOWN__
+                }
+            } else {
+                filter {
+                    it.mediaListStatus == null
+                            || it.mediaListStatus == MediaListStatus.UNKNOWN__
+                }
+            }
+        }
 
         if (query.isNotBlank()) {
             filteredEntries = filteredEntries.filter {
@@ -331,25 +389,20 @@ class AnimeUserListViewModel @Inject constructor(
                         compareBy { it.media.mediaListEntry?.progressVolumes }
                     }
                     MediaListSortOption.PRIORITY -> compareBy { it.media.mediaListEntry?.priority }
-                    MediaListSortOption.STARTED_ON ->
-                        compareBy<UserMediaListController.MediaEntry, Int?>(nullsLast()) {
-                            it.media.startDate?.year
-                        }
-                            .thenBy(nullsLast()) { it.media.startDate?.month }
-                            .thenBy(nullsLast()) { it.media.startDate?.day }
-                    MediaListSortOption.FINISHED_ON ->
-                        compareBy<UserMediaListController.MediaEntry, Int?>(nullsLast()) {
-                            it.media.endDate?.year
-                        }
-                            .thenBy(nullsLast()) { it.media.endDate?.month }
-                            .thenBy(nullsLast()) { it.media.endDate?.day }
-                    MediaListSortOption.ADDED_TIME -> compareBy { it.media.mediaListEntry?.createdAt }
-                    MediaListSortOption.UPDATED_TIME -> compareBy { it.media.mediaListEntry?.updatedAt }
+                    MediaListSortOption.MY_STARTED_ON -> compareByAniListDate { it.media.startDate }
+                    MediaListSortOption.MY_FINISHED_ON -> compareByAniListDate { it.media.endDate }
+                    MediaListSortOption.THEIR_STARTED_ON -> compareByAniListDate { it.authorData?.startedAt }
+                    MediaListSortOption.THEIR_FINISHED_ON -> compareByAniListDate { it.authorData?.completedAt }
+                    MediaListSortOption.MY_ADDED_TIME -> compareBy { it.media.mediaListEntry?.createdAt }
+                    MediaListSortOption.MY_UPDATED_TIME -> compareBy { it.media.mediaListEntry?.updatedAt }
+                    MediaListSortOption.THEIR_ADDED_TIME -> compareBy { it.authorData?.createdAt }
+                    MediaListSortOption.THEIR_UPDATED_TIME -> compareBy { it.authorData?.updatedAt }
                     MediaListSortOption.TITLE_ROMAJI -> compareBy { it.media.title?.romaji }
                     MediaListSortOption.TITLE_ENGLISH -> compareBy { it.media.title?.english }
                     MediaListSortOption.TITLE_NATIVE -> compareBy { it.media.title?.native }
                     MediaListSortOption.POPULARITY -> compareBy { it.media.popularity }
-                    MediaListSortOption.USER_SCORE -> compareBy { it.scoreRaw }
+                    MediaListSortOption.MY_SCORE -> compareBy { it.scoreRaw }
+                    MediaListSortOption.THEIR_SCORE -> compareBy { it.authorData?.rawScore }
                 }
 
             val comparator = nullsFirst(baseComparator).let {
@@ -376,6 +429,11 @@ class AnimeUserListViewModel @Inject constructor(
         }
             .distinctBy { it.entry.media.id }
     }
+
+    private fun <Input> compareByAniListDate(toDate: (Input) -> AniListDate?): Comparator<Input> =
+        compareBy<Input, Int?>(nullsLast()) { toDate(it)?.year }
+            .thenBy(nullsLast()) { toDate(it)?.month }
+            .thenBy(nullsLast()) { toDate(it)?.day }
 
     private data class FilterParams(
         val response: LoadingResult<List<UserMediaListController.ListEntry>>,

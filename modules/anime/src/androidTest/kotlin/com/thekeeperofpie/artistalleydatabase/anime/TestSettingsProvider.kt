@@ -25,6 +25,7 @@ class TestSettingsProvider : NetworkSettings, AniListSettings, AnimeSettings, Mo
     override val enableNetworkCaching = MutableStateFlow(false)
 
     override val aniListViewer = MutableStateFlow<AniListViewer?>(null)
+    override val ignoreViewer = MutableStateFlow(false)
 
     override val savedAnimeFilters = MutableStateFlow(emptyMap<String, FilterData>())
     override val showAdult = MutableStateFlow(false)

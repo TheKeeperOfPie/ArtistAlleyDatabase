@@ -268,6 +268,10 @@ class SettingsViewModel @Inject constructor(
         icon = Icons.Filled.Build,
         labelTextRes = R.string.settings_subsection_debug_label,
         children = listOf(
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_ignore_viewer,
+                property = settings.ignoreViewer,
+            ),
             SettingsSection.Button(
                 labelTextRes = R.string.settings_clear_aniList_cache,
                 buttonTextRes = R.string.settings_clear,

@@ -41,6 +41,6 @@ object SettingsHiltModule {
 
     @Singleton
     @Provides
-    fun provideAniListSettings(settingsProvider: SettingsProvider) =
-        settingsProvider as AniListSettings
+    fun provideAniListSettings(settingsProvider: SettingsProvider): AniListSettings =
+        settingsProvider
 }

@@ -32,7 +32,7 @@ class CharacterMediaSortFilterController(
         headerTextRes = R.string.anime_character_media_filter_sort_label,
     ).apply {
         if (!allowRelevanceSort) {
-            sortOptions = sortOptions.filter { it.value != MediaSortOption.SEARCH_MATCH }
+            setOptions(MediaSortOption.entries.filter { it != MediaSortOption.SEARCH_MATCH })
         }
     }
 

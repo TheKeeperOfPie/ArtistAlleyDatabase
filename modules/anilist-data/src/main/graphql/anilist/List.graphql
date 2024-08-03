@@ -7,9 +7,7 @@ fragment UserMediaListMedia on Media {
     }
     synonyms
     endDate {
-        year
-        month
-        day
+        ...AniListDate
     }
     updatedAt
 }
@@ -73,7 +71,16 @@ query UserMediaList(
                     ...UserMediaListMedia
                 }
                 score(format: POINT_100)
+                status
                 progress
+                createdAt
+                updatedAt
+                startedAt {
+                    ...AniListDate
+                }
+                completedAt {
+                    ...AniListDate
+                }
             }
             name
             status

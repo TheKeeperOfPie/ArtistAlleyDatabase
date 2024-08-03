@@ -7,8 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.anilist.LicensorsQuery
 import com.anilist.fragment.MediaPreview
@@ -36,7 +34,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -51,7 +48,7 @@ import kotlin.reflect.KClass
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class MediaSortFilterController<SortType : SortOption, ParamsType : MediaSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass: KClass<SortType>,
-    scope: CoroutineScope,
+    protected val scope: CoroutineScope,
     protected val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
@@ -59,7 +56,6 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaGenresController: MediaGenresController,
     private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
-    userScoreEnabled: Boolean,
 ) : AnimeSettingsSortFilterController<MediaSortFilterController.FilterParams<SortType>>(
     scope = scope,
     settings = settings,
@@ -68,19 +64,11 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private var initialized = false
     protected var initialParams by mutableStateOf<ParamsType?>(null)
 
-    protected val sortSection = SortFilterSection.Sort(
+    val sortSection = SortFilterSection.Sort(
         enumClass = sortTypeEnumClass,
         defaultEnabled = null,
         headerTextRes = R.string.anime_media_filter_sort_label,
-    ).apply {
-        sortOptions = if (mediaType == MediaType.ANIME) {
-            sortOptions.filter { it.value != MediaSortOption.VOLUMES }
-                .filter { it.value != MediaSortOption.CHAPTERS }
-        } else {
-            sortOptions.filter { it.value != MediaSortOption.EPISODES }
-
-        }
-    }
+    )
 
     protected val statusSection = SortFilterSection.Filter(
         titleRes = R.string.anime_media_filter_status_label,
@@ -96,10 +84,10 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         valueToText = { stringResource(it.value.toTextRes()) },
     )
 
-    protected val listStatusSection = SortFilterSection.Filter(
-        titleRes = R.string.anime_media_filter_list_status_label,
-        titleDropdownContentDescriptionRes = R.string.anime_media_filter_list_status_content_description,
-        includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_list_status_chip_state_content_description,
+    protected val myListStatusSection = SortFilterSection.Filter(
+        titleRes = R.string.anime_media_filter_list_my_status_label,
+        titleDropdownContentDescriptionRes = R.string.anime_media_filter_list_my_status_content_description,
+        includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_list_my_status_chip_state_content_description,
         values = listOf(
             MediaListStatus.CURRENT,
             MediaListStatus.PLANNING,
@@ -120,15 +108,6 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
             )
         },
     )
-
-    // TODO: ScoreFormat support
-    protected val userScoreSection = if (userScoreEnabled) {
-        SortFilterSection.Range(
-            titleRes = R.string.anime_media_filter_user_score_label,
-            titleDropdownContentDescriptionRes = R.string.anime_media_filter_user_score_expand_content_description,
-            initialData = RangeData(100, hardMax = true),
-        )
-    } else null
 
     protected val genreSection = SortFilterSection.Filter(
         titleRes = R.string.anime_media_filter_genre_label,
@@ -257,57 +236,13 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
 
     open val suggestionsSection: SortFilterSection? = null
 
-    override var sections by mutableStateOf(emptyList<SortFilterSection>())
+    override val sections get() = internalSections
 
-    protected fun initialize(
-        viewModel: ViewModel,
-        refreshUptimeMillis: MutableStateFlow<*>,
-        initialParams: InitialParams<SortType>,
-    ) {
-        if (initialized) return
-        initialized = true
-        if (initialParams.tagId != null) {
-            tagRank = "60"
-        }
+    // This is kept separate so children can access the set
+    protected open var internalSections by mutableStateOf(emptyList<SortFilterSection>())
 
-        viewModel.viewModelScope.launch(CustomDispatchers.Main) {
-            mediaGenresController.genres
-                .flatMapLatest { genres ->
-                    settings.showAdult.mapLatest { showAdult ->
-                        FilterEntry.values(genres.filter { showAdult || it != "Hentai" })
-                            .map {
-                                it.transformIf(it.value == initialParams.genre) {
-                                    copy(
-                                        state = FilterIncludeExcludeState.INCLUDE,
-                                        clickable = false,
-                                    )
-                                }
-                            }
-                    }
-                }
-                .catch { /* TODO: Error message */ }
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest(genreSection::setDefaultValues)
-        }
-
-        viewModel.viewModelScope.launch(CustomDispatchers.Main) {
-            mediaTagsController.tags
-                .map {
-                    it.mapValues { (_, section) ->
-                        section.replace { tag ->
-                            tag.transformIf(tag.id == initialParams.tagId) {
-                                copy(
-                                    state = FilterIncludeExcludeState.INCLUDE,
-                                    clickable = false,
-                                )
-                            }
-                        }
-                    }
-                }
-                .collectLatest { tagsByCategory = it }
-        }
-
-        viewModel.viewModelScope.launch(CustomDispatchers.Main) {
+    init {
+        scope.launch(CustomDispatchers.Main) {
             val licensors = if (mediaType == MediaType.ANIME) {
                 mediaLicensorsController.anime
             } else {
@@ -339,6 +274,51 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         }
     }
 
+    protected fun initialize(initialParams: InitialParams<SortType>) {
+        if (initialized) return
+        initialized = true
+        if (initialParams.tagId != null) {
+            tagRank = "60"
+        }
+
+        scope.launch(CustomDispatchers.Main) {
+            mediaGenresController.genres
+                .flatMapLatest { genres ->
+                    settings.showAdult.mapLatest { showAdult ->
+                        FilterEntry.values(genres.filter { showAdult || it != "Hentai" })
+                            .map {
+                                it.transformIf(it.value == initialParams.genre) {
+                                    copy(
+                                        state = FilterIncludeExcludeState.INCLUDE,
+                                        clickable = false,
+                                    )
+                                }
+                            }
+                    }
+                }
+                .catch { /* TODO: Error message */ }
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest(genreSection::setDefaultValues)
+        }
+
+        scope.launch(CustomDispatchers.Main) {
+            mediaTagsController.tags
+                .map {
+                    it.mapValues { (_, section) ->
+                        section.replace { tag ->
+                            tag.transformIf(tag.id == initialParams.tagId) {
+                                copy(
+                                    state = FilterIncludeExcludeState.INCLUDE,
+                                    clickable = false,
+                                )
+                            }
+                        }
+                    }
+                }
+                .collectLatest { tagsByCategory = it }
+        }
+    }
+
     fun <Entry : MediaStatusAware> filterMedia(
         result: PagingData<Entry>,
         transform: (Entry) -> MediaPreview,
@@ -352,7 +332,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                 }
             }.filter { it.state == FilterIncludeExcludeState.INCLUDE }
 
-            Triple(includedTags, tagShowWhenSpoiler, listStatusSection.filterOptions)
+            Triple(includedTags, tagShowWhenSpoiler, myListStatusSection.filterOptions)
         }
             .flowOn(CustomDispatchers.Main),
     ) { pagingData, triple ->
@@ -398,9 +378,11 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         val tagsByCategory: Map<String, TagSection>,
         val tagRank: Int?,
         val statuses: List<FilterEntry<MediaStatus>>,
-        val listStatuses: List<FilterEntry<MediaListStatus>>,
+        val myListStatuses: List<FilterEntry<MediaListStatus>>,
+        val theirListStatuses: List<FilterEntry<MediaListStatus>>?,
         val onList: Boolean?,
-        val userScore: RangeData?,
+        val myScore: RangeData?,
+        val theirScore: RangeData?,
         val formats: List<FilterEntry<MediaFormat>>,
         val averageScoreRange: RangeData,
         val episodesRange: RangeData?,

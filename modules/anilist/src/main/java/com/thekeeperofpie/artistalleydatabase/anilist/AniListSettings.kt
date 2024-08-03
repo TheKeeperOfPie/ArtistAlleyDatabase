@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 interface AniListSettings {
     val aniListViewer: MutableStateFlow<AniListViewer?>
+    val ignoreViewer: MutableStateFlow<Boolean>
 }

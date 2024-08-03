@@ -54,15 +54,20 @@
     <string name="anime_media_list_sort_status">Status</string>
     <string name="anime_media_list_sort_progress">Progress</string>
     <string name="anime_media_list_sort_priority">Priority</string>
-    <string name="anime_media_list_sort_started_on">Start date</string>
-    <string name="anime_media_list_sort_finished_on">Finish date</string>
-    <string name="anime_media_list_sort_added_time">Last added</string>
-    <string name="anime_media_list_sort_updated_time">Last updated</string>
+    <string name="anime_media_list_sort_my_started_on">My start date</string>
+    <string name="anime_media_list_sort_my_finished_on">My finish date</string>
+    <string name="anime_media_list_sort_their_started_on">Their start date</string>
+    <string name="anime_media_list_sort_their_finished_on">Their finish date</string>
+    <string name="anime_media_list_sort_my_added_time">My last added</string>
+    <string name="anime_media_list_sort_my_updated_time">My last updated</string>
+    <string name="anime_media_list_sort_their_added_time">Their last added</string>
+    <string name="anime_media_list_sort_their_updated_time">Their last updated</string>
     <string name="anime_media_list_sort_title_romaji">Title (Romaji)</string>
     <string name="anime_media_list_sort_title_english">Title (English)</string>
     <string name="anime_media_list_sort_title_native">Title (native)</string>
     <string name="anime_media_list_sort_title_popularity">Popularity</string>
-    <string name="anime_media_list_sort_title_user_score">User score</string>
+    <string name="anime_media_list_sort_title_my_score">My score</string>
+    <string name="anime_media_list_sort_title_their_score">Their score</string>
 
     <string name="anime_media_filter_fab_content_description">Media list filter options</string>
     <string name="anime_media_filter_sort_label">Sort</string>
@@ -89,13 +94,18 @@
     <string name="anime_media_filter_status_content_description">Status filter expand</string>
     <string name="anime_media_filter_status_chip_state_content_description">Status chip state</string>
 
-    <string name="anime_media_filter_list_status_label">User list status</string>
-    <string name="anime_media_filter_list_status_content_description">User list status filter expand</string>
-    <string name="anime_media_filter_list_status_chip_state_content_description">User list status chip state</string>
+    <string name="anime_media_filter_list_my_status_label">My list status</string>
+    <string name="anime_media_filter_list_my_status_content_description">My list status filter expand</string>
+    <string name="anime_media_filter_list_my_status_chip_state_content_description">My list status chip state</string>
+    <string name="anime_media_filter_list_their_status_label">Their list status</string>
+    <string name="anime_media_filter_list_their_status_content_description">Their list status filter expand</string>
+    <string name="anime_media_filter_list_their_status_chip_state_content_description">Their list status chip state</string>
     <string name="anime_media_filter_list_status_on_list">On list</string>
 
-    <string name="anime_media_filter_user_score_label">User score</string>
-    <string name="anime_media_filter_user_score_expand_content_description">User score filter expand</string>
+    <string name="anime_media_filter_user_my_score_label">My score</string>
+    <string name="anime_media_filter_user_my_score_expand_content_description">My score filter expand</string>
+    <string name="anime_media_filter_user_their_score_label">Their score</string>
+    <string name="anime_media_filter_user_their_score_expand_content_description">Their score filter expand</string>
     <string name="anime_media_filter_user_score_label_start">Start</string>
     <string name="anime_media_filter_user_score_label_end">End</string>
 

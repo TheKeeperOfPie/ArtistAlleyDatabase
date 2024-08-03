@@ -28,7 +28,7 @@ class UserFollowSortFilterController(
         defaultEnabled = UserSortOption.ID,
         headerTextRes = R.string.anime_user_filter_sort_label,
     ).apply {
-        sortOptions = sortOptions.filterNot { it.value == UserSortOption.SEARCH_MATCH }
+        setOptions(UserSortOption.entries.filter { it != UserSortOption.SEARCH_MATCH })
     }
 
     override var sections = listOf(

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.compose.filter
 
+import androidx.annotation.MainThread
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -80,8 +81,11 @@ sealed class SortFilterSection(val id: String) {
         val defaultSortAscending: Boolean = false,
         private val onSortSelected: (SortType?) -> Unit = {},
         private val onSortAscendingChange: (Boolean) -> Unit = {},
+        private var options: List<SortType> = enumClass.java.enumConstants?.toList().orEmpty(),
     ) : SortFilterSection(headerTextRes) {
-        var sortOptions by mutableStateOf(SortEntry.options(enumClass, defaultEnabled))
+        var sortOptions
+                by mutableStateOf(options.map(::SortEntry).withSelectedOption(defaultEnabled))
+            private set
         var sortAscending by mutableStateOf(defaultSortAscending)
         var clickable by mutableStateOf(true)
 
@@ -92,9 +96,19 @@ sealed class SortFilterSection(val id: String) {
                 && sortOptions.filter { it.state != FilterIncludeExcludeState.DEFAULT }
             .map { it.value } != listOf(defaultEnabled)
 
+        @MainThread
+        fun setOptions(options: List<SortType>) {
+            this.options = options
+            var filteredOptions = sortOptions.filter { options.contains(it.value) }
+            if (filteredOptions.none { it.state == FilterIncludeExcludeState.INCLUDE }) {
+                filteredOptions = filteredOptions.withSelectedOption(defaultEnabled)
+            }
+            sortOptions = filteredOptions
+        }
+
         fun changeDefault(defaultEnabled: SortType, sortAscending: Boolean, lockSort: Boolean) {
             this.defaultEnabled = defaultEnabled
-            sortOptions = SortEntry.options(enumClass, defaultEnabled)
+            sortOptions = sortOptions.withSelectedOption(defaultEnabled)
             onSortSelected(defaultEnabled)
             changeSortAscending(sortAscending)
             clickable = !lockSort
@@ -108,7 +122,7 @@ sealed class SortFilterSection(val id: String) {
         }
 
         override fun clear() {
-            sortOptions = SortEntry.options(enumClass, defaultEnabled)
+            sortOptions = options.map(::SortEntry).withSelectedOption(defaultEnabled)
             onSortSelected(defaultEnabled)
             changeSortAscending(defaultSortAscending)
         }
@@ -121,6 +135,7 @@ sealed class SortFilterSection(val id: String) {
         private fun onSelected(selected: SortType) {
             val list = sortOptions.toMutableList()
             val existing = list.withIndex().first { it.value.value == selected }
+            if (existing == selected) return
             val newOption = if (existing.value.state == FilterIncludeExcludeState.INCLUDE) {
                 list[(existing.index + 1) % list.size].value
             } else {

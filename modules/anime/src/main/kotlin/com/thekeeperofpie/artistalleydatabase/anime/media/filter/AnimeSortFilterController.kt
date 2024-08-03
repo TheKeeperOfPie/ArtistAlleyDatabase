@@ -7,8 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -28,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -46,7 +43,6 @@ open class AnimeSortFilterController<SortType : SortOption>(
     mediaTagsController: MediaTagsController,
     mediaGenresController: MediaGenresController,
     mediaLicensorsController: MediaLicensorsController,
-    userScoreEnabled: Boolean,
 ) : MediaSortFilterController<SortType, AnimeSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
     scope = scope,
@@ -57,7 +53,6 @@ open class AnimeSortFilterController<SortType : SortOption>(
     mediaGenresController = mediaGenresController,
     mediaLicensorsController = mediaLicensorsController,
     mediaType = MediaType.ANIME,
-    userScoreEnabled = userScoreEnabled,
 ) {
     protected val formatSection = SortFilterSection.Filter(
         titleRes = R.string.anime_media_filter_format_label,
@@ -80,7 +75,7 @@ open class AnimeSortFilterController<SortType : SortOption>(
     protected var airingDateIsAdvanced by mutableStateOf(false)
     private var airingDateShown by mutableStateOf<Boolean?>(null)
 
-    private val airingDateSection = object : SortFilterSection.Custom("airingDate") {
+    protected val airingDateSection = object : SortFilterSection.Custom("airingDate") {
         override fun showingPreview() =
             when (val data = if (airingDateIsAdvanced) airingDate.second else airingDate.first) {
                 is AiringDate.Advanced -> (data.startDate != null) || (data.endDate != null)
@@ -137,26 +132,19 @@ open class AnimeSortFilterController<SortType : SortOption>(
         }
     }
 
-    private val episodesSection = SortFilterSection.Range(
+    protected val episodesSection = SortFilterSection.Range(
         titleRes = R.string.anime_media_filter_episodes_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_episodes_expand_content_description,
         initialData = RangeData(151),
         unboundedMax = true,
     )
 
-    override var sections by mutableStateOf(emptyList<SortFilterSection>())
+    override val sections get() = internalSections
+    override var internalSections by mutableStateOf(emptyList<SortFilterSection>())
 
-    fun initialize(
-        viewModel: ViewModel,
-        refreshUptimeMillis: MutableStateFlow<*>,
-        initialParams: InitialParams<SortType>,
-    ) {
-        super.initialize(
-            viewModel,
-            refreshUptimeMillis,
-            initialParams,
-        )
-        viewModel.viewModelScope.launch(CustomDispatchers.Main) {
+    open fun initialize(initialParams: InitialParams<SortType>) {
+        super.initialize(initialParams)
+        scope.launch(CustomDispatchers.Main) {
             aniListApi.authedUser
                 .mapLatest { viewer ->
                     listOfNotNull(
@@ -174,7 +162,7 @@ open class AnimeSortFilterController<SortType : SortOption>(
                         genreSection,
                         tagSection,
                         airingDateSection.takeIf { initialParams.airingDateEnabled },
-                        listStatusSection.takeIf { viewer != null }?.apply {
+                        myListStatusSection.takeIf { viewer != null }?.apply {
                             if (initialParams.onListEnabled) {
                                 if (filterOptions.none { it.value == null }) {
                                     filterOptions =
@@ -193,7 +181,6 @@ open class AnimeSortFilterController<SortType : SortOption>(
                                 )
                             }
                         },
-                        userScoreSection,
                         episodesSection,
                         sourceSection,
                         licensedBySection,
@@ -211,7 +198,7 @@ open class AnimeSortFilterController<SortType : SortOption>(
                         SortFilterSection.Spacer(height = 32.dp),
                     )
                 }
-                .collectLatest { sections = it }
+                .collectLatest { internalSections = it }
         }
     }
 
@@ -224,16 +211,15 @@ open class AnimeSortFilterController<SortType : SortOption>(
         tagsByCategory = tagsByCategoryFiltered.collectAsState(emptyMap()).value,
         tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
         statuses = statusSection.filterOptions,
-        listStatuses = listStatusSection.filterOptions.filter { it.value != null }
+        myListStatuses = myListStatusSection.filterOptions.filter { it.value != null }
                 as List<FilterEntry<MediaListStatus>>,
-        onList = when (listStatusSection.filterOptions.find { it.value == null }?.state) {
+        onList = when (myListStatusSection.filterOptions.find { it.value == null }?.state) {
             FilterIncludeExcludeState.INCLUDE -> true
             FilterIncludeExcludeState.EXCLUDE -> false
             FilterIncludeExcludeState.DEFAULT,
             null,
             -> null
         },
-        userScore = userScoreSection?.data,
         formats = formatSection.filterOptions,
         averageScoreRange = averageScoreSection.data,
         episodesRange = episodesSection.data,
@@ -245,6 +231,10 @@ open class AnimeSortFilterController<SortType : SortOption>(
             ?: if (airingDateIsAdvanced) airingDate.second else airingDate.first,
         sources = sourceSection.filterOptions,
         licensedBy = licensedBySection.children.flatMap { it.filterOptions },
+        // TODO: See if these can be pushed down
+        theirListStatuses = null,
+        myScore = null,
+        theirScore = null,
     )
 
     fun onAiringDateChange(start: Boolean, selectedMillis: Long?) {

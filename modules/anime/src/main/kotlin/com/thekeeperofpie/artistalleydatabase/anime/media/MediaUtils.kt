@@ -577,7 +577,7 @@ object MediaUtils {
                     val season = airingDate.season
                     val seasonYear = airingDate.seasonYear.toIntOrNull()
                     (seasonYear == null || media(it).seasonYear == seasonYear)
-                            && (season == null || media(it).season == season)
+                            && (season == null || media(it).season == season.toAniListSeason())
                 }
             }
             is AiringDate.Advanced -> {
@@ -681,18 +681,19 @@ object MediaUtils {
             }
         }
 
-        val userScore = filterParams.userScore
-        if (userScore != null) {
-            val userScoreStart = userScore.startInt ?: 0
-            val userScoreEnd = userScore.endInt
-            if (userScoreStart > 0) {
+        val myScore = filterParams.myScore
+        if (myScore != null) {
+            val myScoreStart = myScore.startInt ?: 0
+            val myScoreEnd = myScore.endInt
+            if (myScoreStart > 0) {
                 filteredEntries = filteredEntries.filter {
-                    it.scoreRaw.let { it != null && it >= userScoreStart }
+                    it.scoreRaw.let { it != null && it >= myScoreStart }
                 }
             }
-            if (userScoreEnd != null) {
+            if (myScoreEnd != null) {
+                // TODO: How should this handle null?
                 filteredEntries = filteredEntries.filter {
-                    it.scoreRaw.let { it != null && it <= userScoreEnd }
+                    it.scoreRaw.let { it == null || it <= myScoreEnd }
                 }
             }
         }

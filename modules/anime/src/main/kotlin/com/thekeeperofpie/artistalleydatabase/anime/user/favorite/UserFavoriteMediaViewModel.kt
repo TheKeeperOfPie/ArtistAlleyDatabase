@@ -156,6 +156,7 @@ class UserFavoriteMediaViewModel @Inject constructor(
         override val source: MediaSource? = media.source,
         override val startDate: MediaPreviewWithDescription.StartDate? = media.startDate?.let {
             object : MediaPreviewWithDescription.StartDate {
+                override val __typename = "Default"
                 override val year = it.year
                 override val month = it.month
                 override val day = it.day

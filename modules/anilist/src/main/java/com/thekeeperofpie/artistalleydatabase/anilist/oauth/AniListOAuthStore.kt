@@ -8,16 +8,22 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityOptionsCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class AniListOAuthStore(
-    application: Application,
+    application: ScopedApplication,
     masterKey: MasterKey,
+    aniListSettings: AniListSettings,
 ) : NetworkAuthProvider {
 
     companion object {
@@ -46,14 +52,24 @@ class AniListOAuthStore(
     }
 
     private val sharedPreferences = EncryptedSharedPreferences.create(
-        application,
+        application.app,
         SHARED_PREFS_FILE_NAME,
         masterKey,
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    val authToken = MutableStateFlow(sharedPreferences.getString(KEY_AUTH_TOKEN, null))
+    private val authTokenState = MutableStateFlow(sharedPreferences.getString(KEY_AUTH_TOKEN, null))
+    val authToken = combine(
+        authTokenState,
+        aniListSettings.ignoreViewer
+    ) { authToken, ignore -> authToken.takeUnless { ignore } }
+        .stateIn(
+            scope = application.scope,
+            started = SharingStarted.Eagerly,
+            initialValue = null,
+        )
+
     private val authTokenMutex = Mutex()
 
     override val authHeader get() = authToken.value?.let { "Bearer $it" }
@@ -74,7 +90,7 @@ class AniListOAuthStore(
             .commit()
 
         authTokenMutex.withLock {
-            authToken.emit(token)
+            authTokenState.emit(token)
         }
     }
 
@@ -85,7 +101,7 @@ class AniListOAuthStore(
             .commit()
 
         authTokenMutex.withLock {
-            authToken.emit(null)
+            authTokenState.emit(null)
         }
     }
 }

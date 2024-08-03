@@ -88,23 +88,20 @@ class SeasonalViewModel @Inject constructor(
     }
 
     val sortFilterController = AnimeSortFilterController(
-        scope = viewModelScope,
         sortTypeEnumClass = MediaSortOption::class,
+        scope = viewModelScope,
         aniListApi = aniListApi,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
         mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
-        userScoreEnabled = false,
     )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
     init {
         sortFilterController.initialize(
-            viewModel = this,
-            refreshUptimeMillis = refreshUptimeMillis,
             initialParams = AnimeSortFilterController.InitialParams(
                 airingDateEnabled = false,
                 defaultSort = MediaSortOption.POPULARITY,

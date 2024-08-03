@@ -6,6 +6,7 @@ import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.MasterKey
 import com.anilist.UserMediaListQuery
 import com.anilist.ViewerMediaListQuery
+import com.anilist.fragment.AniListDate
 import com.anilist.fragment.GeneralMediaTag
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.fragment.UserMediaListMedia
@@ -50,6 +51,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 
@@ -322,7 +324,7 @@ class UserMediaListController(
             status = list.status,
             scoreFormat = scoreFormat,
             entries = list.entries?.filterNotNull()
-                ?.map { MediaEntry(list.status, it) }
+                ?.map(::MediaEntry)
                 .orEmpty()
         )
     }
@@ -341,14 +343,17 @@ class UserMediaListController(
         val authorData: AuthorData? = null,
     ) : MediaStatusAware {
         constructor(
-            status: MediaListStatus?,
             entry: UserMediaListQuery.Data.MediaListCollection.List.Entry,
         ) : this(
             media = Media(entry.media),
             authorData = AuthorData(
-                status = status,
+                status = entry.status,
                 rawScore = entry.score,
                 progress = entry.progress,
+                createdAt = entry.createdAt,
+                updatedAt = entry.updatedAt,
+                startedAt = entry.startedAt,
+                completedAt = entry.completedAt,
             ),
         )
 
@@ -357,7 +362,17 @@ class UserMediaListController(
             val status: MediaListStatus?,
             val rawScore: Double?,
             val progress: Int?,
+            val createdAt: Int?,
+            val updatedAt: Int?,
+            val startedAt: AniListDate?,
+            val completedAt: AniListDate?,
         )
+
+        @Serializer(forClass = MediaPreviewWithDescription.StartDate::class)
+        object StartDateSerializer
+
+        @Serializer(forClass = AniListDate::class)
+        object AniListDateSerializer
 
         @Serializable
         data class Media(
@@ -383,11 +398,13 @@ class UserMediaListController(
             override val tags: List<Tag?>? = null,
             override val genres: List<String?>? = null,
             override val source: MediaSource? = null,
-            override val startDate: Date? = null,
+            @Serializable(with = StartDateSerializer::class)
+            override val startDate: MediaPreviewWithDescription.StartDate? = null,
             override val externalLinks: List<ExternalLink?>? = null,
             override val description: String? = null,
             val synonyms: List<String?>? = null,
-            val endDate: Date? = null,
+            @Serializable(with = AniListDateSerializer::class)
+            val endDate: AniListDate? = null,
             val updatedAt: Int? = null,
         ) : MediaPreviewWithDescription {
             constructor(media: UserMediaListMedia) : this(
@@ -413,11 +430,11 @@ class UserMediaListController(
                 tags = media.tags?.filterNotNull()?.map(::Tag),
                 genres = media.genres,
                 source = media.source,
-                startDate = media.startDate?.let(::Date),
+                startDate = media.startDate,
                 externalLinks = media.externalLinks?.filterNotNull()?.map(::ExternalLink),
                 description = media.description,
                 synonyms = media.synonyms,
-                endDate = media.endDate?.let(::Date),
+                endDate = media.endDate,
                 updatedAt = media.updatedAt,
             )
 
@@ -503,29 +520,6 @@ class UserMediaListController(
                     isGeneralSpoiler = tag.isGeneralSpoiler,
                     isMediaSpoiler = tag.isMediaSpoiler,
                     rank = tag.rank,
-                )
-            }
-
-            @Serializable
-            data class Date(
-                override val year: Int? = null,
-                override val month: Int? = null,
-                override val day: Int? = null,
-            ) : MediaPreviewWithDescription.StartDate, UserMediaListMedia.EndDate {
-                constructor(
-                    startDate: UserMediaListMedia.StartDate,
-                ) : this(
-                    year = startDate.year,
-                    month = startDate.month,
-                    day = startDate.day,
-                )
-
-                constructor(
-                    endDate: UserMediaListMedia.EndDate,
-                ) : this(
-                    year = endDate.year,
-                    month = endDate.month,
-                    day = endDate.day,
                 )
             }
 

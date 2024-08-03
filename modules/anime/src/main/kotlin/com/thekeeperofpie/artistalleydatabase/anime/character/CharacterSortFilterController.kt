@@ -31,7 +31,7 @@ class CharacterSortFilterController(
         headerTextRes = R.string.anime_character_filter_sort_label,
     ).apply {
         if (!allowRelevanceSort) {
-            sortOptions = sortOptions.filter { it.value != CharacterSortOption.RELEVANCE }
+            setOptions(CharacterSortOption.entries.filter { it != CharacterSortOption.RELEVANCE })
         }
     }
 

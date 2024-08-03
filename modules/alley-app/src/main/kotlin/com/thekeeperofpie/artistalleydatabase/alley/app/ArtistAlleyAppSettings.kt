@@ -5,12 +5,15 @@ import android.content.SharedPreferences
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
-class ArtistAlleyAppSettings(private val application: ScopedApplication) : ArtistAlleySettings {
+class ArtistAlleyAppSettings(private val application: ScopedApplication) : ArtistAlleySettings,
+    AniListSettings {
 
     private val sharedPrefs =
         application.app.getSharedPreferences("shared_prefs", Context.MODE_PRIVATE)
@@ -27,6 +30,9 @@ class ArtistAlleyAppSettings(private val application: ScopedApplication) : Artis
     override val showOnlyConfirmedTags = boolean("showOnlyConfirmedTags", false)
     override val showOnlyFavorites = boolean("showOnlyFavorites", false)
     override val forceOneDisplayColumn = boolean("forceOneDisplayColumn", false)
+
+    override val aniListViewer = MutableStateFlow<AniListViewer?>(null)
+    override val ignoreViewer = MutableStateFlow(false)
 
     private fun long(key: String, default: Long = -1L) = initialize(
         key,

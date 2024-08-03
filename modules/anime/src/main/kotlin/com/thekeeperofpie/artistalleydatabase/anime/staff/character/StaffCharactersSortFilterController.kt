@@ -29,10 +29,9 @@ class StaffCharactersSortFilterController(
         defaultEnabled = CharacterSortOption.FAVORITES,
         headerTextRes = R.string.anime_staff_characters_filter_sort_label,
     ).apply {
-        sortOptions = sortOptions.filter {
-            it.value != CharacterSortOption.SEARCH_MATCH
-                    && it.value != CharacterSortOption.RELEVANCE
-        }
+        setOptions(CharacterSortOption.entries.filter {
+            it != CharacterSortOption.SEARCH_MATCH && it != CharacterSortOption.RELEVANCE
+        })
     }
 
     private val nameLanguageSection = SortFilterSection.Dropdown(

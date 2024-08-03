@@ -29,7 +29,7 @@ class StudioMediaSortFilterController(
         defaultEnabled = MediaSortOption.TRENDING,
         headerTextRes = R.string.anime_studio_media_filter_sort_label,
     ).apply {
-        sortOptions = sortOptions.filter { it.value != MediaSortOption.SEARCH_MATCH }
+        setOptions(MediaSortOption.entries.filter { it != MediaSortOption.SEARCH_MATCH })
     }
 
     private val mainSection = SortFilterSection.TriStateBoolean(

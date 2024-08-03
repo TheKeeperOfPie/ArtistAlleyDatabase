@@ -144,6 +144,7 @@ class SettingsProvider(
 
     // Not exported
     override val aniListViewer = MutableStateFlow<AniListViewer?>(deserialize("aniListViewer"))
+    override val ignoreViewer = MutableStateFlow(deserialize("ignoreViewer") ?: false)
     override val lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
     override val lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
     val screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
@@ -209,6 +210,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::navDrawerStartDestination)
         subscribeProperty(scope, ::hideStatusBar)
         subscribeProperty(scope, ::aniListViewer)
+        subscribeProperty(scope, ::ignoreViewer)
         subscribeProperty(scope, ::lastCrash)
         subscribeProperty(scope, ::lastCrashShown)
         subscribeProperty(scope, ::screenshotMode)

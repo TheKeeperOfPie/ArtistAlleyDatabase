@@ -10,8 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -30,8 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -39,8 +35,8 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlin.reflect.KClass
 
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class MangaSortFilterController<SortType : SortOption>(
+@OptIn(ExperimentalCoroutinesApi::class)
+open class MangaSortFilterController<SortType : SortOption>(
     sortTypeEnumClass: KClass<SortType>,
     scope: CoroutineScope,
     aniListApi: AuthedAniListApi,
@@ -49,7 +45,6 @@ class MangaSortFilterController<SortType : SortOption>(
     mediaTagsController: MediaTagsController,
     mediaGenresController: MediaGenresController,
     mediaLicensorsController: MediaLicensorsController,
-    userScoreEnabled: Boolean,
 ) : MediaSortFilterController<SortType, MangaSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
     scope = scope,
@@ -60,9 +55,8 @@ class MangaSortFilterController<SortType : SortOption>(
     mediaGenresController = mediaGenresController,
     mediaLicensorsController = mediaLicensorsController,
     mediaType = MediaType.MANGA,
-    userScoreEnabled = userScoreEnabled,
 ) {
-    private val formatSection = SortFilterSection.Filter(
+    protected val formatSection = SortFilterSection.Filter(
         titleRes = R.string.anime_media_filter_format_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_format_content_description,
         includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_format_chip_state_content_description,
@@ -77,7 +71,7 @@ class MangaSortFilterController<SortType : SortOption>(
     private var releaseDate by mutableStateOf(AiringDate.Advanced())
     private var releaseDateShown by mutableStateOf<Boolean?>(null)
 
-    private val releaseDateSection = object : SortFilterSection.Custom("releaseDate") {
+    protected val releaseDateSection = object : SortFilterSection.Custom("releaseDate") {
 
         override fun showingPreview() = releaseDate.summaryText() != null
 
@@ -117,13 +111,13 @@ class MangaSortFilterController<SortType : SortOption>(
     }
 
     // TODO: Fix volumes/chapters range search
-    private val volumesSection = SortFilterSection.Range(
+    protected val volumesSection = SortFilterSection.Range(
         titleRes = R.string.anime_media_filter_volumes_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_volumes_expand_content_description,
         initialData = RangeData(151),
         unboundedMax = true,
     )
-    private val chaptersSection = SortFilterSection.Range(
+    protected val chaptersSection = SortFilterSection.Range(
         titleRes = R.string.anime_media_filter_chapters_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_chapters_expand_content_description,
         initialData = RangeData(151),
@@ -132,17 +126,9 @@ class MangaSortFilterController<SortType : SortOption>(
 
     override var sections by mutableStateOf(emptyList<SortFilterSection>())
 
-    fun initialize(
-        viewModel: ViewModel,
-        refreshUptimeMillis: MutableStateFlow<*>,
-        initialParams: InitialParams<SortType>,
-    ) {
-        super.initialize(
-            viewModel,
-            refreshUptimeMillis,
-            initialParams,
-        )
-        viewModel.viewModelScope.launch(CustomDispatchers.Main) {
+    open fun initialize(initialParams: InitialParams<SortType>) {
+        super.initialize(initialParams)
+        scope.launch(CustomDispatchers.Main) {
             aniListApi.authedUser
                 .mapLatest { viewer ->
                     listOfNotNull(
@@ -160,26 +146,19 @@ class MangaSortFilterController<SortType : SortOption>(
                         genreSection,
                         tagSection,
                         releaseDateSection.takeIf { initialParams.airingDateEnabled },
-                        listStatusSection.takeIf { viewer != null }?.apply {
-                            if (initialParams.onListEnabled) {
-                                if (filterOptions.none { it.value == null }) {
-                                    filterOptions =
-                                        filterOptions + FilterEntry.FilterEntryImpl(null)
-                                }
+                        myListStatusSection.takeIf { viewer != null }?.apply {
+                            if (filterOptions.none { it.value == null }) {
+                                filterOptions =
+                                    filterOptions + FilterEntry.FilterEntryImpl(null)
+                            }
 
-                                if (initialParams.mediaListStatus != null) {
-                                    setIncluded(
-                                        initialParams.mediaListStatus,
-                                        initialParams.lockMediaListStatus,
-                                    )
-                                }
-                            } else {
-                                if (filterOptions.any { it.value == null }) {
-                                    filterOptions = filterOptions.filter { it.value != null }
-                                }
+                            if (initialParams.mediaListStatus != null) {
+                                setIncluded(
+                                    initialParams.mediaListStatus,
+                                    initialParams.lockMediaListStatus,
+                                )
                             }
                         },
-                        userScoreSection,
                         volumesSection,
                         chaptersSection,
                         sourceSection,
@@ -210,16 +189,15 @@ class MangaSortFilterController<SortType : SortOption>(
         tagsByCategory = tagsByCategoryFiltered.collectAsState(emptyMap()).value,
         tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
         statuses = statusSection.filterOptions,
-        listStatuses = listStatusSection.filterOptions.filter { it.value != null }
+        myListStatuses = myListStatusSection.filterOptions.filter { it.value != null }
                 as List<FilterEntry<MediaListStatus>>,
-        onList = when (listStatusSection.filterOptions.find { it.value == null }?.state) {
+        onList = when (myListStatusSection.filterOptions.find { it.value == null }?.state) {
             FilterIncludeExcludeState.INCLUDE -> true
             FilterIncludeExcludeState.EXCLUDE -> false
             FilterIncludeExcludeState.DEFAULT,
             null,
             -> null
         },
-        userScore = userScoreSection?.data,
         formats = formatSection.filterOptions,
         averageScoreRange = averageScoreSection.data,
         episodesRange = null,
@@ -232,6 +210,9 @@ class MangaSortFilterController<SortType : SortOption>(
             ?: releaseDate,
         sources = sourceSection.filterOptions,
         licensedBy = licensedBySection.children.flatMap { it.filterOptions },
+        theirListStatuses = null,
+        myScore = null,
+        theirScore = null,
     )
 
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
@@ -265,7 +246,6 @@ class MangaSortFilterController<SortType : SortOption>(
         override val genre: String? = null,
         override val year: Int? = null,
         val airingDateEnabled: Boolean = year == null,
-        val onListEnabled: Boolean = true,
         val hideIgnoredEnabled: Boolean = true,
         val defaultSort: SortType?,
         val lockSort: Boolean,

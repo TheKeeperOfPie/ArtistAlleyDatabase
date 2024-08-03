@@ -121,9 +121,7 @@ query CharacterDetails($id: Int!) {
         description
         age
         dateOfBirth {
-            year
-            month
-            day
+            ...AniListDate
         }
         gender
         bloodType

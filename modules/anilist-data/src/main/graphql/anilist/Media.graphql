@@ -43,9 +43,7 @@ fragment MediaPreview on Media {
         rank
     }
     startDate {
-        year
-        month
-        day
+        ...AniListDate
     }
     externalLinks {
         siteId
@@ -166,14 +164,10 @@ fragment MediaDetailsListEntry on MediaList {
     notes
     advancedScores
     startedAt {
-        year
-        month
-        day
+        ...AniListDate
     }
     completedAt {
-        year
-        month
-        day
+        ...AniListDate
     }
     updatedAt
     createdAt
@@ -261,14 +255,10 @@ query MediaDetails($mediaId: Int!) {
         seasonYear
         status
         startDate {
-            year
-            month
-            day
+            ...AniListDate
         }
         endDate {
-            year
-            month
-            day
+            ...AniListDate
         }
         trending
         type

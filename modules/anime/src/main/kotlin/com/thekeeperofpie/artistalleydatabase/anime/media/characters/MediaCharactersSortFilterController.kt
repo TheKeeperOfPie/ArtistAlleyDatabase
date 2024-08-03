@@ -32,7 +32,7 @@ class MediaCharactersSortFilterController(
         defaultEnabled = CharacterSortOption.RELEVANCE,
         headerTextRes = R.string.anime_media_characters_filter_sort_label,
     ).apply {
-        sortOptions = sortOptions.filter { it.value != CharacterSortOption.SEARCH_MATCH }
+        setOptions(CharacterSortOption.entries.filter { it != CharacterSortOption.SEARCH_MATCH })
     }
 
     private val roleSection = SortFilterSection.Filter(

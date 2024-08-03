@@ -30,14 +30,10 @@ query StaffDetails($id: Int!) {
         bloodType
         favourites
         dateOfBirth {
-            year
-            month
-            day
+            ...AniListDate
         }
         dateOfDeath {
-            year
-            month
-            day
+            ...AniListDate
         }
         # TODO: Handle pagination
         characters(sort: [FAVOURITES_DESC], page: 1, perPage: 10) {
@@ -76,9 +72,7 @@ fragment StaffDetailsCharacterMediaPage on MediaConnection {
         node {
             ...MediaNavigationData
             startDate {
-                year
-                month
-                day
+                ...AniListDate
             }
         }
         characters {
@@ -111,9 +105,7 @@ fragment StaffDetailsStaffMediaPage on MediaConnection {
                 color
             }
             startDate {
-                year
-                month
-                day
+                ...AniListDate
             }
         }
         # TODO: Characters don't actually load
