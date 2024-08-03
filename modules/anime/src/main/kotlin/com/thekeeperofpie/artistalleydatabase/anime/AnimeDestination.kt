@@ -187,6 +187,7 @@ sealed interface AnimeDestination {
 
     @Serializable
     data class Seasonal(val type: Type) : AnimeDestination {
+        @Serializable
         enum class Type {
             LAST,
             THIS,

@@ -138,7 +138,7 @@ object Versions {
     const val netflixDgs = "9.0.4"
     const val okhttp = "5.0.0-alpha.14"
     const val skrapeIt = "1.3.0-alpha.1"
-    const val unityAds = "4.12.1"
+    const val unityAds = "4.10.0"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =

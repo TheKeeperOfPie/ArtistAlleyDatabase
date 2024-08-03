@@ -1,7 +1,10 @@
 # Changelog
 
-### Next (13)
+### Next (14)
+
+### 0.48 (13)
 - Fix filters when viewing another user's list
+- Various bug fixes
 
 ### 0.47 (12)
 - Fix activity notification click handling

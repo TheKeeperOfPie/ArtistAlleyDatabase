@@ -30,9 +30,9 @@ android {
     defaultConfig {
         applicationId = "com.thekeeperofpie.anichive"
         minSdk = 28
-        targetSdk = 33
-        versionCode = 12
-        versionName = "0.47"
+        targetSdk = 34
+        versionCode = 13
+        versionName = "0.48"
 
         testInstrumentationRunner = "com.thekeeperofpie.artistalleydatabase.test_utils.CustomAndroidJUnitRunner"
         vectorDrawables {
