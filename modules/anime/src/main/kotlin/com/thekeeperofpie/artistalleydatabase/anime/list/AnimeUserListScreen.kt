@@ -86,7 +86,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -104,7 +103,6 @@ object AnimeUserListScreen {
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
-        val onClickListEdit = rememberCallback(editViewModel::initialize)
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
         val editSheetState = rememberStandardBottomSheetState(
@@ -229,11 +227,10 @@ object AnimeUserListScreen {
                                                     entry = it,
                                                     viewer = viewer,
                                                     viewModel = viewModel,
-                                                    onClickListEdit = onClickListEdit,
+                                                    onClickListEdit = editViewModel::initialize,
                                                     scoreFormat = scoreFormat
                                                         ?: viewer?.scoreFormat,
-                                                    modifier = Modifier
-                                                        .animateItemPlacement(),
+                                                    modifier = Modifier.animateItem(),
                                                 )
                                             }
                                         }

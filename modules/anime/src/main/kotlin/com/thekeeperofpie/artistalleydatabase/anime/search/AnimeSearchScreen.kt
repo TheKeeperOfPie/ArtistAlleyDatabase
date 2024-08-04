@@ -70,7 +70,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeSearchScreen {
@@ -85,7 +84,6 @@ object AnimeSearchScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
-        val onClickListEdit = rememberCallback(editViewModel::initialize)
         val editSheetState = rememberStandardBottomSheetState(
             initialValue = SheetValue.Hidden,
             confirmValueChange = editViewModel::onEditSheetValueChange,
@@ -143,7 +141,7 @@ object AnimeSearchScreen {
                 }
 
                 val selectedType = viewModel.selectedType
-                val unlocked by viewModel.unlocked.collectAsState(false)
+                val unlocked by viewModel.unlocked.collectAsState()
                 val selectedUnlocked = selectedType == AnimeSearchViewModel.SearchType.ANIME
                         || selectedType == AnimeSearchViewModel.SearchType.MANGA
                         || unlocked
@@ -245,28 +243,28 @@ object AnimeSearchScreen {
                                             is AnimeSearchEntry.Media -> MediaViewOptionRow(
                                                 mediaViewOption = viewModel.mediaViewOption,
                                                 viewer = viewer,
-                                                onClickListEdit = onClickListEdit,
+                                                onClickListEdit = editViewModel::initialize,
                                                 entry = data.entry,
                                             )
                                             is AnimeSearchEntry.Character -> CharacterListRow(
                                                 viewer = viewer,
                                                 entry = data.entry,
-                                                onClickListEdit = onClickListEdit,
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                             is AnimeSearchEntry.Staff -> StaffListRow(
                                                 viewer = viewer,
                                                 entry = data.entry,
-                                                onClickListEdit = onClickListEdit,
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                             is AnimeSearchEntry.Studio -> StudioListRow(
                                                 viewer = viewer,
                                                 entry = data.entry,
-                                                onClickListEdit = onClickListEdit,
+                                                onClickListEdit = editViewModel::initialize,
                                             )
                                             is AnimeSearchEntry.User -> UserListRow(
                                                 viewer = viewer,
                                                 entry = data.entry,
-                                                onClickListEdit = onClickListEdit,
+                                                onClickListEdit = editViewModel::initialize,
                                             )
 
                                             null -> when (selectedType) {
@@ -275,7 +273,7 @@ object AnimeSearchScreen {
                                                 -> MediaViewOptionRow(
                                                     mediaViewOption = viewModel.mediaViewOption,
                                                     viewer = viewer,
-                                                    onClickListEdit = onClickListEdit,
+                                                    onClickListEdit = editViewModel::initialize,
                                                     entry = null,
                                                 )
                                                 AnimeSearchViewModel.SearchType.CHARACTER ->

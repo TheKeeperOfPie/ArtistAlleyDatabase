@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -241,7 +240,7 @@ object SortAndFilterComposables {
         }
 
         if (showDivider) {
-            Divider()
+            HorizontalDivider()
         }
     }
 
@@ -331,7 +330,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
     }
 
     if (showDivider) {
-        Divider()
+        HorizontalDivider()
     }
 }
 
@@ -467,7 +466,7 @@ fun CustomFilterSection(
     content()
 
     if (showDivider) {
-        Divider()
+        HorizontalDivider()
     }
 }
 

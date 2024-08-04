@@ -20,8 +20,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowRightAlt
-import androidx.compose.material.icons.filled.Comment
+import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsNone
@@ -223,7 +223,6 @@ fun TextActivitySmallCard(
         TextActivityCardContent(
             viewer = viewer,
             activity = activity,
-            sharedTransitionKey = sharedTransitionKey,
             user = activity?.user,
             entry = entry,
             onActivityStatusUpdate = onActivityStatusUpdate,
@@ -262,7 +261,6 @@ fun TextActivitySmallCard(
 fun ColumnScope.TextActivityCardContent(
     viewer: AniListViewer?,
     activity: TextActivityFragment?,
-    sharedTransitionKey: SharedTransitionKey?,
     user: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -519,7 +517,7 @@ fun ColumnScope.MessageActivityCardContent(
             }
     ) {
         Icon(
-            imageVector = Icons.Filled.ArrowRightAlt,
+            imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
             contentDescription = stringResource(
                 R.string.anime_activity_message_arrow_recipient_icon_content_description
             ),
@@ -884,7 +882,7 @@ fun ActivityStatusIcons(
             imageVector = if (replyCount == 0) {
                 Icons.Outlined.ModeComment
             } else {
-                Icons.Filled.Comment
+                Icons.AutoMirrored.Filled.Comment
             },
             contentDescription = stringResource(
                 R.string.anime_activity_replies_icon_content_description

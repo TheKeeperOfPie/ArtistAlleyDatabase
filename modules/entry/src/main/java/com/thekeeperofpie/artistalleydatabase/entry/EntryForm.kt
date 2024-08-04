@@ -67,13 +67,13 @@ import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -1013,7 +1013,7 @@ fun MultiImageSelectBox(
                     },
                 )
 
-                Divider()
+                HorizontalDivider()
 
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.entry_image_menu_option_edit)) },
@@ -1027,7 +1027,7 @@ fun MultiImageSelectBox(
                     },
                 )
 
-                Divider()
+                HorizontalDivider()
 
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.entry_image_menu_option_crop)) },

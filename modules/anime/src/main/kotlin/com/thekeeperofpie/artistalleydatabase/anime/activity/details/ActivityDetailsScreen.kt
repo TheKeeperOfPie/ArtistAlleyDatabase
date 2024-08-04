@@ -21,15 +21,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -154,7 +154,7 @@ object ActivityDetailsScreen {
                     floatingActionButton = {
                         FloatingActionButton(onClick = { scope.launch { sheetState.expand() } }) {
                             Icon(
-                                Icons.Filled.Reply,
+                                Icons.AutoMirrored.Filled.Reply,
                                 contentDescription = stringResource(
                                     R.string.anime_writing_reply_fab_content_description
                                 ),
@@ -491,6 +491,6 @@ private fun ReplyRow(
                 )
         )
 
-        Divider()
+        HorizontalDivider()
     }
 }

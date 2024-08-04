@@ -62,20 +62,20 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -216,7 +216,7 @@ fun NavMenuIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 fun ArrowBackIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     IconButton(onClick = onClick, modifier = modifier) {
         Icon(
-            imageVector = Icons.Default.ArrowBack,
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = stringResource(
                 R.string.app_bar_back_icon_content_description
             ),
@@ -1461,7 +1461,7 @@ fun twoColumnInfoText(
 ): Boolean {
     if (!bodyOne.isNullOrBlank() && !bodyTwo.isNullOrBlank()) {
         if (showDividerAbove) {
-            Divider()
+            HorizontalDivider()
         }
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             Column(
@@ -1505,7 +1505,7 @@ fun ColumnScope.InfoText(
     showDividerAbove: Boolean = true,
 ) {
     if (showDividerAbove) {
-        Divider()
+        HorizontalDivider()
     }
 
     DetailsSubsectionHeader(label)
@@ -1549,14 +1549,14 @@ fun <T> expandableListInfoText(
                 }
         ) {
             if (showDividerAbove) {
-                Divider()
+                HorizontalDivider()
             }
 
             header?.invoke()
 
             values.take(if (expanded) Int.MAX_VALUE else 3).forEachIndexed { index, value ->
                 if (index != 0) {
-                    Divider(modifier = Modifier.padding(start = 16.dp))
+                    HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
                 }
 
                 val bottomPadding = if (index == values.size - 1) {

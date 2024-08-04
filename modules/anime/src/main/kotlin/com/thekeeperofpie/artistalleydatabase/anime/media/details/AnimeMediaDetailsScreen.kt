@@ -35,13 +35,13 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -69,7 +69,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -77,6 +76,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil3.compose.AsyncImage
 import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsQuery.Data.Media
@@ -141,8 +141,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshInd
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
-import com.thekeeperofpie.artistalleydatabase.compose.rememberLambda
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
@@ -266,7 +264,6 @@ object AnimeMediaDetailsScreen {
                 .pullRefresh(state = pullRefreshState)
         ) {
             val editViewModel = hiltViewModel<MediaEditViewModel>()
-            val onClickListEdit = rememberCallback(editViewModel::initialize)
             // TODO: Pass media type if known so that open external works even if entry can't be loaded?
             MediaEditBottomSheetScaffold(
                 viewModel = editViewModel,
@@ -494,7 +491,7 @@ object AnimeMediaDetailsScreen {
                                     entry = entry.result!!,
                                     entry2Result = entry2,
                                     coverImageState = coverImageState,
-                                    onClickListEdit = onClickListEdit,
+                                    onClickListEdit = editViewModel::initialize,
                                     expandedState = expandedState,
                                     charactersSection = charactersSection,
                                     staffSection = staffSection,
@@ -563,8 +560,8 @@ object AnimeMediaDetailsScreen {
             item("descriptionSection", "descriptionSection") {
                 DescriptionSection(
                     markdownText = entry.description,
-                    expanded = rememberLambda { expandedState.description },
-                    onExpandedChange = rememberCallback<Boolean> { expandedState.description = it },
+                    expanded = { expandedState.description },
+                    onExpandedChange = { expandedState.description = it },
                 )
             }
         }
@@ -955,7 +952,7 @@ object AnimeMediaDetailsScreen {
                     ?.filterNotNull()?.takeIf { it.isNotEmpty() }
                 if (statusDistribution != null) {
 
-                    Divider()
+                    HorizontalDivider()
                     DetailsSubsectionHeader(
                         stringResource(R.string.anime_media_details_status_distribution_label)
                     )
@@ -990,7 +987,7 @@ object AnimeMediaDetailsScreen {
 
                 val scoreDistribution = entry.scoreDistribution
                 if (scoreDistribution.isNotEmpty()) {
-                    Divider()
+                    HorizontalDivider()
                     DetailsSubsectionHeader(
                         stringResource(R.string.anime_media_details_score_distribution_label)
                     )

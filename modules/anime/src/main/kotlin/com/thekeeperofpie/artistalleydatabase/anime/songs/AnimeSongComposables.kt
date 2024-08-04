@@ -28,8 +28,8 @@ import androidx.compose.material.icons.filled.PauseCircleOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -305,7 +305,7 @@ object AnimeSongComposables {
                 if (artists.isNotEmpty()) {
                     artists.forEachIndexed { index, artist ->
                         val isLast = index == artists.lastIndex
-                        Divider()
+                        HorizontalDivider()
                         Row(
                             modifier = Modifier
                                 .height(IntrinsicSize.Min)

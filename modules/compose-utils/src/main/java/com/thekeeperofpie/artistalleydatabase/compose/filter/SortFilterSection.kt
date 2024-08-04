@@ -14,11 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -455,7 +455,7 @@ sealed class SortFilterSection(val id: String) {
             }
 
             if (showDivider) {
-                Divider()
+                HorizontalDivider()
             }
         }
     }
@@ -513,7 +513,7 @@ sealed class SortFilterSection(val id: String) {
             }
 
             if (showDivider) {
-                Divider()
+                HorizontalDivider()
             }
         }
     }
@@ -582,7 +582,7 @@ sealed class SortFilterSection(val id: String) {
             }
 
             if (showDivider) {
-                Divider()
+                HorizontalDivider()
             }
         }
     }
@@ -662,7 +662,7 @@ sealed class SortFilterSection(val id: String) {
         }
 
         if (showDivider) {
-            Divider()
+            HorizontalDivider()
         }
     }
 

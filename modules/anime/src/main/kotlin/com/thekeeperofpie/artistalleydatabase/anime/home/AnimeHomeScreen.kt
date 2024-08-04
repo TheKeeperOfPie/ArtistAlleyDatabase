@@ -37,9 +37,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Forum
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlusOne
@@ -55,6 +55,7 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,7 +89,6 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil3.annotation.ExperimentalCoilApi
 import coil3.size.Dimension
 import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.HomeMedia
@@ -149,7 +149,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshInd
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import com.thekeeperofpie.artistalleydatabase.compose.rememberCallback
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
@@ -163,7 +162,7 @@ import kotlinx.coroutines.flow.Flow
 @Suppress("NAME_SHADOWING")
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalSharedTransitionApi::class, ExperimentalCoilApi::class
+    ExperimentalSharedTransitionApi::class
 )
 object AnimeHomeScreen {
 
@@ -198,7 +197,6 @@ object AnimeHomeScreen {
         var selectedIsAnime by rememberSaveable {
             mutableStateOf(viewModel.preferredMediaType == MediaType.ANIME)
         }
-        val selectedItemTracker = remember { SelectedItemTracker() }
         val mediaViewModel = mediaViewModel(selectedIsAnime)
 
         val activity = viewModel.activity.collectAsLazyPagingItems()
@@ -224,8 +222,6 @@ object AnimeHomeScreen {
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
-        val onClickListEdit = rememberCallback(editViewModel::initialize)
-        val onClickIncrementProgress = rememberCallback(editViewModel::incrementProgress)
         val viewer by viewModel.viewer.collectAsState()
         MediaEditBottomSheetScaffold(
             modifier = Modifier
@@ -235,96 +231,16 @@ object AnimeHomeScreen {
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
             topBar = {
-                EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = stringResource(
-                                    if (selectedIsAnime) {
-                                        R.string.anime_home_label_anime
-                                    } else {
-                                        R.string.anime_home_label_manga
-                                    }
-                                )
-                            )
-                        },
-                        navigationIcon = {
-                            if (upIconOption != null) {
-                                UpIconButton(upIconOption)
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = { selectedIsAnime = !selectedIsAnime }) {
-                                Icon(
-                                    imageVector = if (selectedIsAnime) {
-                                        Icons.Filled.MenuBook
-                                    } else {
-                                        Icons.Filled.Monitor
-                                    },
-                                    contentDescription = stringResource(
-                                        R.string.anime_home_media_type_switch_icon_content_description
-                                    ),
-                                )
-                            }
-
-                            val navigationCallback = LocalNavigationCallback.current
-
-                            val unlocked by viewModel.unlocked.collectAsState(initial = false)
-                            if (unlocked) {
-                                IconButton(onClick = {
-                                    navigationCallback.navigate(AnimeDestination.Forum)
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Forum,
-                                        contentDescription = stringResource(
-                                            R.string.anime_forum_icon_content_description
-                                        ),
-                                    )
-                                }
-                            }
-
-                            if (viewer != null) {
-                                BadgedBox(badge = {
-                                    val unreadCount = viewModel.notificationsController.unreadCount
-                                    if (unreadCount > 0) {
-                                        Badge(modifier = Modifier.offset(x = (-18).dp, y = 6.dp)) {
-                                            Text(
-                                                text = unreadCount.toString()
-                                            )
-                                        }
-                                    }
-                                }) {
-                                    IconButton(onClick = {
-                                        navigationCallback.navigate(AnimeDestination.Notifications)
-                                    }) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Notifications,
-                                            contentDescription = stringResource(
-                                                R.string.anime_notifications_icon_content_description
-                                            ),
-                                        )
-                                    }
-                                }
-                            }
-
-                            IconButton(onClick = {
-                                navigationCallback.navigate(AnimeDestination.AiringSchedule)
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.CalendarMonth,
-                                    contentDescription = stringResource(
-                                        R.string.anime_airing_schedule_icon_content_description
-                                    ),
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
-                            )
-                        ),
-                    )
-                }
+                val unlocked by viewModel.unlocked.collectAsState()
+                TopBar(
+                    scrollBehavior = scrollBehavior,
+                    upIconOption = upIconOption,
+                    selectedIsAnime = selectedIsAnime,
+                    onSelectedIsAnimeChange = { selectedIsAnime = it },
+                    unlocked = { unlocked },
+                    viewer = { viewer },
+                    unreadCount = { viewModel.notificationsController.unreadCount },
+                )
             },
             bottomNavigationState = bottomNavigationState
         ) {
@@ -333,23 +249,19 @@ object AnimeHomeScreen {
                     .padding(it)
                     .pullRefresh(pullRefreshState)
             ) {
-                val onActivityStatusUpdate =
-                    rememberCallback(viewModel.activityToggleHelper::toggle)
-
                 Content(
                     scrollState = scrollStateSaver.scrollState(),
                     bottomNavBarPadding = bottomNavigationState?.bottomNavBarPadding() ?: 0.dp,
                     viewer = viewer,
                     news = viewModel.newsController.newsDateDescending(),
                     activity = viewModel.activity,
-                    onActivityStatusUpdate = onActivityStatusUpdate,
-                    onClickListEdit = onClickListEdit,
-                    onClickIncrementProgress = onClickIncrementProgress,
+                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                    onClickListEdit = editViewModel::initialize,
+                    onClickIncrementProgress = editViewModel::incrementProgress,
                     viewModel = viewModel,
                     mediaViewModel = mediaViewModel,
                     editViewModel = editViewModel,
                     recommendations = recommendations,
-                    selectedItemTracker = selectedItemTracker,
                     reviews = reviews,
                 )
 
@@ -361,6 +273,107 @@ object AnimeHomeScreen {
                         .testTag("rootRefreshIndicator")
                 )
             }
+        }
+    }
+
+    @Composable
+    private fun TopBar(
+        scrollBehavior: TopAppBarScrollBehavior,
+        upIconOption: UpIconOption?,
+        selectedIsAnime: Boolean,
+        onSelectedIsAnimeChange: (Boolean) -> Unit,
+        unlocked: () -> Boolean,
+        viewer: () -> AniListViewer?,
+        unreadCount: () -> Int,
+    ) {
+        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(
+                            if (selectedIsAnime) {
+                                R.string.anime_home_label_anime
+                            } else {
+                                R.string.anime_home_label_manga
+                            }
+                        )
+                    )
+                },
+                navigationIcon = {
+                    if (upIconOption != null) {
+                        UpIconButton(upIconOption)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onSelectedIsAnimeChange(!selectedIsAnime) }) {
+                        Icon(
+                            imageVector = if (selectedIsAnime) {
+                                Icons.AutoMirrored.Filled.MenuBook
+                            } else {
+                                Icons.Filled.Monitor
+                            },
+                            contentDescription = stringResource(
+                                R.string.anime_home_media_type_switch_icon_content_description
+                            ),
+                        )
+                    }
+
+                    val navigationCallback = LocalNavigationCallback.current
+
+                    if (unlocked()) {
+                        IconButton(onClick = {
+                            navigationCallback.navigate(AnimeDestination.Forum)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Forum,
+                                contentDescription = stringResource(
+                                    R.string.anime_forum_icon_content_description
+                                ),
+                            )
+                        }
+                    }
+
+                    if (viewer() != null) {
+                        BadgedBox(badge = {
+                            val unreadCount = unreadCount()
+                            if (unreadCount > 0) {
+                                Badge(modifier = Modifier.offset(x = (-18).dp, y = 6.dp)) {
+                                    Text(
+                                        text = unreadCount.toString()
+                                    )
+                                }
+                            }
+                        }) {
+                            IconButton(onClick = {
+                                navigationCallback.navigate(AnimeDestination.Notifications)
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Notifications,
+                                    contentDescription = stringResource(
+                                        R.string.anime_notifications_icon_content_description
+                                    ),
+                                )
+                            }
+                        }
+                    }
+
+                    IconButton(onClick = {
+                        navigationCallback.navigate(AnimeDestination.AiringSchedule)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.CalendarMonth,
+                            contentDescription = stringResource(
+                                R.string.anime_airing_schedule_icon_content_description
+                            ),
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                        lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
+                    )
+                ),
+            )
         }
     }
 
@@ -378,7 +391,6 @@ object AnimeHomeScreen {
         mediaViewModel: AnimeHomeMediaViewModel,
         editViewModel: MediaEditViewModel,
         recommendations: LazyPagingItems<RecommendationEntry>,
-        selectedItemTracker: SelectedItemTracker,
         reviews: LazyPagingItems<ReviewEntry>,
     ) {
         Column(
@@ -393,7 +405,7 @@ object AnimeHomeScreen {
             }
             NewsRow(data = news, pageSize = pageSize)
 
-            ActivityRow(
+            ActivitySection(
                 viewer = viewer,
                 data = activity,
                 pageSize = pageSize,
@@ -416,6 +428,7 @@ object AnimeHomeScreen {
                 pageSize = pageSize,
             )
 
+            val selectedItemTracker = remember { SelectedItemTracker() }
             val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
             val contentPadding = PaddingValues(
                 start = 16.dp,
@@ -454,7 +467,7 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun ColumnScope.NewsRow(
+    private fun NewsRow(
         data: ImmutableList<AnimeNewsArticleEntry<*>>?,
         pageSize: PageSize,
     ) {
@@ -479,7 +492,7 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun ColumnScope.ActivityRow(
+    private fun ActivitySection(
         viewer: AniListViewer?,
         data: Flow<PagingData<ActivityEntry>>,
         pageSize: PageSize,
@@ -491,7 +504,7 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeDestination.Activity
         )
 
-        this@AnimeHomeScreen.ActivityRow(
+        ActivityRow(
             viewer = viewer,
             data = data,
             pageSize = pageSize,
@@ -644,7 +657,7 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun ColumnScope.RowHeader(
+    private fun RowHeader(
         @StringRes titleRes: Int,
         viewAllRoute: AnimeDestination?,
     ) {
@@ -656,7 +669,7 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun ColumnScope.MediaRow(
+    private fun MediaRow(
         data: AnimeHomeDataEntry.RowData,
         viewer: AniListViewer?,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -750,7 +763,6 @@ object AnimeHomeScreen {
         modifier: Modifier = Modifier,
     ) {
         val media = entry?.media
-        val mediaId = media?.id?.toString()
 
         val coverImageState =
             rememberCoilImageState(media?.coverImage?.extraLarge, heightStartThreshold = 3 / 4f)
@@ -763,29 +775,26 @@ object AnimeHomeScreen {
         val navigationCallback = LocalNavigationCallback.current
         val title = media?.title?.primaryTitle()
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(media?.id.toString())
-        val onClick = rememberCallback {
-            if (media != null) {
-                navigationCallback.navigate(
-                    AnimeDestination.MediaDetails(
-                        mediaId = media.id.toString(),
-                        title = title,
-                        coverImage = coverImageState.toImageState(),
-                        sharedTransitionKey = sharedTransitionKey,
-                        headerParams = MediaHeaderParams(
-                            coverImage = coverImageState.toImageState(),
-                            title = title,
-                            media = media,
-                        ),
-                    )
-                )
-            }
-        }
 
         ElevatedCard(
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = containerColor,
-            ),
-            onClick = onClick,
+            colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
+            onClick = {
+                if (media != null) {
+                    navigationCallback.navigate(
+                        AnimeDestination.MediaDetails(
+                            mediaId = media.id.toString(),
+                            title = title,
+                            coverImage = coverImageState.toImageState(),
+                            sharedTransitionKey = sharedTransitionKey,
+                            headerParams = MediaHeaderParams(
+                                coverImage = coverImageState.toImageState(),
+                                title = title,
+                                media = media,
+                            ),
+                        )
+                    )
+                }
+            },
             modifier = modifier
                 .widthIn(max = CURRENT_ROW_IMAGE_WIDTH)
                 .clip(RoundedCornerShape(12.dp))
@@ -816,7 +825,6 @@ object AnimeHomeScreen {
         coverImageState: CoilImageState,
     ) {
         val media = entry?.media
-        val mediaId = media?.id?.toString()
         Box(modifier = Modifier.recomposeHighlighter()) {
             val density = LocalDensity.current
             val coilWidth = Dimension.Pixels(
@@ -913,7 +921,6 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val mediaId = media?.id?.toString()
         val navigationCallback = LocalNavigationCallback.current
         val title = MediaUtils.userPreferredTitle(
             userPreferred = media?.title?.userPreferred,
@@ -1002,7 +1009,6 @@ object AnimeHomeScreen {
                 density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() / 2 }
             )
 
-            val mediaId = media?.id?.toString()
             CoilImage(
                 state = coverImageState,
                 model = coverImageState.request()
@@ -1077,7 +1083,7 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun ColumnScope.Recommendations(
+    private fun Recommendations(
         viewModel: AnimeHomeViewModel,
         editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
@@ -1114,7 +1120,7 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun ColumnScope.Reviews(
+    private fun Reviews(
         viewer: AniListViewer?,
         reviews: LazyPagingItems<ReviewEntry>,
         pageSize: PageSize,
@@ -1165,7 +1171,7 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun ColumnScope.Suggestions(
+    private fun Suggestions(
         mediaViewModel: AnimeHomeMediaViewModel,
     ) {
         RowHeader(

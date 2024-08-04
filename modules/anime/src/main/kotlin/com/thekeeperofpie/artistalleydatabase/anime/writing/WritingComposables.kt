@@ -23,8 +23,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHostState
@@ -147,7 +147,7 @@ fun WritingSheetContent(
                 .padding(16.dp)
                 .fillMaxWidth()
         )
-        Divider()
+        HorizontalDivider()
         Row(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier

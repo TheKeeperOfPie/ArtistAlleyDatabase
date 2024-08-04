@@ -106,8 +106,9 @@ object AppHiltModule {
     @Singleton
     @Provides
     fun provideMonetizationFeatureOverrideProvider(
+        scopedApplication: ScopedApplication,
         aniListApi: AuthedAniListApi,
-    ): MonetizationOverrideProvider = AppMonetizationOverrideProvider(aniListApi)
+    ): MonetizationOverrideProvider = AppMonetizationOverrideProvider(scopedApplication, aniListApi)
 
     @Singleton
     @Provides

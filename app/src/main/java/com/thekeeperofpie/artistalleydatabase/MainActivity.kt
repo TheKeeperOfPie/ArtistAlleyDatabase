@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -379,7 +379,7 @@ class MainActivity : ComponentActivity() {
                 NavigationDrawerItem(
                     icon = {
                         if (item == NavDrawerItems.ANIME && preferredMediaType == MediaType.MANGA) {
-                            Icon(Icons.Filled.LibraryBooks, contentDescription = null)
+                            Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null)
                         } else {
                             Icon(item.icon, contentDescription = null)
                         }

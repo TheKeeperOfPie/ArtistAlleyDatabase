@@ -26,17 +26,17 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Comment
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Comment
+import androidx.compose.material.icons.automirrored.filled.LastPage
+import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FirstPage
-import androidx.compose.material.icons.filled.LastPage
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.outlined.ModeComment
@@ -104,6 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.openForceExternal
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 
 object ForumComposables {
@@ -245,22 +246,24 @@ fun ThreadSmallCard(
 @Composable
 fun ThreadCard(thread: ForumThread?, modifier: Modifier = Modifier) {
     val navigationCallback = LocalNavigationCallback.current
-    ElevatedCard(
-        onClick = {
-            if (thread != null) {
-                navigationCallback.navigate(
-                    AnimeDestination.ForumThread(
-                        threadId = thread.id.toString(),
-                        title = thread.title,
+    SharedTransitionKeyScope("forum_thread_${thread?.id}") {
+        ElevatedCard(
+            onClick = {
+                if (thread != null) {
+                    navigationCallback.navigate(
+                        AnimeDestination.ForumThread(
+                            threadId = thread.id.toString(),
+                            title = thread.title,
+                        )
                     )
-                )
-            }
-        },
-        modifier = Modifier
-            .height(IntrinsicSize.Min)
-            .then(modifier),
-    ) {
-        ThreadCardContent(thread)
+                }
+            },
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .then(modifier),
+        ) {
+            ThreadCardContent(thread)
+        }
     }
 }
 
@@ -416,7 +419,7 @@ fun ThreadViewReplyCountIcons(viewCount: Int?, replyCount: Int?, modifier: Modif
                 imageVector = if (replyCount == 0) {
                     Icons.Outlined.ModeComment
                 } else {
-                    Icons.Filled.Comment
+                    Icons.AutoMirrored.Filled.Comment
                 },
                 contentDescription = stringResource(
                     R.string.anime_forum_reply_count_icon_content_description
@@ -856,39 +859,41 @@ fun ThreadComment(
 ) {
     // TODO: Child comments
 
-    val comment = entry?.comment
-    Column(modifier = Modifier.fillMaxWidth()) {
-        ThreadCommentContent(
-            threadId = threadId,
-            viewer = viewer,
-            loading = entry == null,
-            commentId = comment?.id?.toString(),
-            commentMarkdown = entry?.commentMarkdown,
-            createdAt = comment?.createdAt,
-            liked = entry?.liked ?: false,
-            likeCount = comment?.likeCount ?: 0,
-            user = entry?.user,
-            onStatusUpdate = onStatusUpdate,
-            onClickDelete = onClickDelete,
-            onClickReplyComment = onClickReplyComment,
-        )
+    SharedTransitionKeyScope("forum_thread_comment_${entry?.comment?.id}") {
+        val comment = entry?.comment
+        Column(modifier = Modifier.fillMaxWidth()) {
+            ThreadCommentContent(
+                threadId = threadId,
+                viewer = viewer,
+                loading = entry == null,
+                commentId = comment?.id?.toString(),
+                commentMarkdown = entry?.commentMarkdown,
+                createdAt = comment?.createdAt,
+                liked = entry?.liked ?: false,
+                likeCount = comment?.likeCount ?: 0,
+                user = entry?.user,
+                onStatusUpdate = onStatusUpdate,
+                onClickDelete = onClickDelete,
+                onClickReplyComment = onClickReplyComment,
+            )
 
-        val children = entry?.children
-        if (!children.isNullOrEmpty()) {
-            children.forEach {
-                ThreadCommentChild(
-                    threadId = threadId,
-                    viewer = viewer,
-                    level = 1,
-                    child = it,
-                    onStatusUpdate = onStatusUpdate,
-                    onClickDelete = onClickDelete,
-                    onClickReplyComment = onClickReplyComment,
-                )
+            val children = entry?.children
+            if (!children.isNullOrEmpty()) {
+                children.forEach {
+                    ThreadCommentChild(
+                        threadId = threadId,
+                        viewer = viewer,
+                        level = 1,
+                        child = it,
+                        onStatusUpdate = onStatusUpdate,
+                        onClickDelete = onClickDelete,
+                        onClickReplyComment = onClickReplyComment,
+                    )
+                }
             }
-        }
 
-        HorizontalDivider()
+            HorizontalDivider()
+        }
     }
 }
 
@@ -1051,7 +1056,7 @@ fun ThreadCommentContent(
                             },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Filled.Reply,
+                                    imageVector = Icons.AutoMirrored.Filled.Reply,
                                     contentDescription = stringResource(
                                         R.string.anime_forum_thread_comment_reply_content_description
                                     )
@@ -1103,20 +1108,22 @@ fun ColumnScope.ThreadCommentChild(
                 shape = RectangleShape,
             )
     ) {
-        ThreadCommentContent(
-            threadId = threadId,
-            viewer = viewer,
-            loading = false,
-            commentId = child.id,
-            commentMarkdown = child.commentMarkdown,
-            createdAt = child.createdAt,
-            liked = child.liked,
-            likeCount = child.likeCount ?: 0,
-            user = child.user,
-            onStatusUpdate = onStatusUpdate,
-            onClickDelete = onClickDelete,
-            onClickReplyComment = onClickReplyComment,
-        )
+        SharedTransitionKeyScope("forum_thread_comment_child_${level}_${child.id}") {
+            ThreadCommentContent(
+                threadId = threadId,
+                viewer = viewer,
+                loading = false,
+                commentId = child.id,
+                commentMarkdown = child.commentMarkdown,
+                createdAt = child.createdAt,
+                liked = child.liked,
+                likeCount = child.likeCount ?: 0,
+                user = child.user,
+                onStatusUpdate = onStatusUpdate,
+                onClickDelete = onClickDelete,
+                onClickReplyComment = onClickReplyComment,
+            )
+        }
     }
 
     child.childComments.forEach {
@@ -1167,7 +1174,7 @@ fun ThreadPageIndicator(
             modifier = Modifier.alpha(if (page > 1) 1f else 0f)
         ) {
             Icon(
-                imageVector = Icons.Filled.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(
                     R.string.anime_forum_thread_comments_page_back_content_description
                 )
@@ -1200,7 +1207,7 @@ fun ThreadPageIndicator(
             modifier = Modifier.alpha(if (page < maxPage) 1f else 0f)
         ) {
             Icon(
-                imageVector = Icons.Filled.ArrowForward,
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = stringResource(
                     R.string.anime_forum_thread_comments_page_forward_content_description
                 )
@@ -1214,7 +1221,7 @@ fun ThreadPageIndicator(
             modifier = Modifier.alpha(if (page < maxPage) 1f else 0f)
         ) {
             Icon(
-                imageVector = Icons.Filled.LastPage,
+                imageVector = Icons.AutoMirrored.Filled.LastPage,
                 contentDescription = stringResource(
                     R.string.anime_forum_thread_comments_page_last_content_description
                 )

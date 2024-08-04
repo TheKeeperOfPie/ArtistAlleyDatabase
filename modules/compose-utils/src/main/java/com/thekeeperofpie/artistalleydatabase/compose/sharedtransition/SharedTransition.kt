@@ -59,6 +59,10 @@ fun <T> T.SharedTransitionKeyScope(vararg prefixKeys: String?, content: @Composa
     }
 }
 
+@Composable
+fun SharedTransitionKeyScope(vararg prefixKeys: String?, content: @Composable () -> Unit) =
+    Unit.SharedTransitionKeyScope(*prefixKeys) { content() }
+
 fun NavGraphBuilder.sharedElementComposable(
     route: String,
     arguments: List<NamedNavArgument> = emptyList(),

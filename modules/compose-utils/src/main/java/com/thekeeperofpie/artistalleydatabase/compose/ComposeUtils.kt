@@ -88,15 +88,6 @@ fun UriHandler.openForceExternal(uri: String) =
     openUri("$uri?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true")
 
 @Composable
-fun <T> rememberLambda(block: () -> T) = remember { block }
-
-@Composable
-fun rememberCallback(block: () -> Unit) = remember { block }
-
-@Composable
-fun <T> rememberCallback(block: (T) -> Unit) = remember { block }
-
-@Composable
 fun <T> debounce(currentValue: T, duration: Duration): T {
     var debounced by remember { mutableStateOf(currentValue) }
     LaunchedEffect(currentValue) {

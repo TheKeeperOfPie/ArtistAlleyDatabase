@@ -13,7 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Reply
+import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -156,7 +156,7 @@ object ForumThreadScreen {
                                 scope.launch { sheetState.expand() }
                             }) {
                                 Icon(
-                                    Icons.Filled.Reply,
+                                    Icons.AutoMirrored.Filled.Reply,
                                     contentDescription = stringResource(
                                         R.string.anime_writing_reply_fab_content_description
                                     ),

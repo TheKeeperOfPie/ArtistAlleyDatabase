@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.monetization
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface MonetizationOverrideProvider {
-    val overrideUnlock: Flow<Boolean>
+    val overrideUnlock: StateFlow<Boolean>
 }

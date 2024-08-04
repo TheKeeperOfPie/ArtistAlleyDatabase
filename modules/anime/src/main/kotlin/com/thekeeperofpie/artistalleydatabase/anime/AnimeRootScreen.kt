@@ -100,7 +100,7 @@ object AnimeRootScreen {
                     modifier = Modifier.height(56.dp)
                 ) {
                     val navigationCallback = LocalNavigationCallback.current
-                    val unlocked by viewModel.unlocked.collectAsState(initial = false)
+                    val unlocked by viewModel.unlocked.collectAsState()
 
                     var showAnimeMenu by remember { mutableStateOf(false) }
                     var showMangaMenu by remember { mutableStateOf(false) }

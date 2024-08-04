@@ -19,9 +19,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -289,7 +289,7 @@ object CharacterDetailsScreen {
                                 .fadingEdgeBottom(show = !expanded)
                         ) {
                             if (contentShown) {
-                                Divider()
+                                HorizontalDivider()
                             }
 
                             DetailsSubsectionHeader(
@@ -298,7 +298,7 @@ object CharacterDetailsScreen {
 
                             alternativeNames.forEachIndexed { index, name ->
                                 if (index != 0) {
-                                    Divider(modifier = Modifier.padding(start = 16.dp))
+                                    HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
                                 }
 
                                 val bottomPadding = if (index == alternativeNames.size - 1
@@ -326,7 +326,7 @@ object CharacterDetailsScreen {
                             if (alternativeNamesSpoiler.isNotEmpty()) {
 
                                 if (alternativeNames.isNotEmpty()) {
-                                    Divider(modifier = Modifier.padding(start = 16.dp))
+                                    HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
                                 }
                                 if (hidden) {
                                     Row(

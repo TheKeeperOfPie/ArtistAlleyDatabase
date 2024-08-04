@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -33,7 +33,7 @@ enum class AnimeRootNavDestination(
     ),
     MANGA(
         "manga_list",
-        Icons.Filled.LibraryBooks,
+        Icons.AutoMirrored.Filled.LibraryBooks,
         R.string.anime_screen_manga,
         requiresAuth = true,
         requiresUnlock = true,

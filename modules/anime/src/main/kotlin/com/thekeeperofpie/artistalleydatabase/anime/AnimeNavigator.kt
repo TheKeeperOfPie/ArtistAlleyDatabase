@@ -12,12 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.navDeepLink
@@ -112,7 +112,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeM
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
-import kotlin.reflect.KClass
 
 object AnimeNavigator {
 
@@ -831,7 +830,9 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteMedia>(navigationTypeMap) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteMedia>(
+            navigationTypeMap
+        ) {
             val destination = it.toRoute<AnimeDestination.UserFavoriteMedia>()
             val viewModel: UserFavoriteMediaViewModel = hiltViewModel()
             UserFavoriteMediaScreen(
@@ -842,20 +843,28 @@ object AnimeNavigator {
                         if (destination.userId == null) {
                             stringResource(R.string.anime_user_favorite_anime_you)
                         } else {
-                            stringResource(R.string.anime_user_favorite_anime_user, destination.userName.orEmpty())
+                            stringResource(
+                                R.string.anime_user_favorite_anime_user,
+                                destination.userName.orEmpty()
+                            )
                         }
                     } else {
                         if (destination.userId == null) {
                             stringResource(R.string.anime_user_favorite_manga_you)
                         } else {
-                            stringResource(R.string.anime_user_favorite_manga_user, destination.userName.orEmpty())
+                            stringResource(
+                                R.string.anime_user_favorite_manga_user,
+                                destination.userName.orEmpty()
+                            )
                         }
                     }
                 },
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteCharacters>(navigationTypeMap) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteCharacters>(
+            navigationTypeMap
+        ) {
             val destination = it.toRoute<AnimeDestination.UserFavoriteCharacters>()
             UserFavoriteCharactersScreen(
                 upIconOption = UpIconOption.Back(navHostController),
@@ -863,13 +872,18 @@ object AnimeNavigator {
                     if (destination.userId == null) {
                         stringResource(R.string.anime_user_favorite_characters_you)
                     } else {
-                        stringResource(R.string.anime_user_favorite_characters_user, destination.userName.orEmpty())
+                        stringResource(
+                            R.string.anime_user_favorite_characters_user,
+                            destination.userName.orEmpty()
+                        )
                     }
                 },
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteStaff>(navigationTypeMap) {
+        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteStaff>(
+            navigationTypeMap
+        ) {
             val destination = it.toRoute<AnimeDestination.UserFavoriteStaff>()
             UserFavoriteStaffScreen(
                 upIconOption = UpIconOption.Back(navHostController),
@@ -877,7 +891,10 @@ object AnimeNavigator {
                     if (destination.userId == null) {
                         stringResource(R.string.anime_user_favorite_staff_you)
                     } else {
-                        stringResource(R.string.anime_user_favorite_staff_user, destination.userName.orEmpty())
+                        stringResource(
+                            R.string.anime_user_favorite_staff_user,
+                            destination.userName.orEmpty()
+                        )
                     }
                 },
             )
@@ -936,11 +953,9 @@ object AnimeNavigator {
 
         fun navigate(route: String) = navHostController?.navigate(route)
 
-        inline fun <reified T : Any> navigate(route: T) = navigate(T::class, route)
+        inline fun <reified T : Any> navigate(route: T) = navigateInternal(route)
 
-        fun <T : Any> navigate(clazz: KClass<T>, route: T) {
-            navHostController?.navigate<T>(route)
-        }
+        fun <T : Any> navigateInternal(route: T) = navHostController?.navigate<T>(route)
 
         fun navigateUp() = navHostController?.navigateUp()
     }

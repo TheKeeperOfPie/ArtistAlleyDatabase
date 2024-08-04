@@ -1,28 +1,27 @@
 package com.thekeeperofpie.artistalleydatabase.monetization
 
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combineStates
 
 class MonetizationController(
     settings: MonetizationSettings,
     overrideProvider: MonetizationOverrideProvider,
 ) {
-    val unlocked = combine(
+    val unlocked = combineStates(
         settings.adsEnabled,
         settings.subscribed,
         settings.unlockAllFeatures,
         overrideProvider.overrideUnlock,
     ) { adsEnabled, subscribed, unlockAllFeatures, overrideUnlock ->
         adsEnabled || subscribed || unlockAllFeatures || overrideUnlock
-    }.distinctUntilChanged()
+    }
 
-    val unlockDatabaseFeatures = combine(
+    val unlockDatabaseFeatures = combineStates(
         settings.subscribed,
         settings.unlockAllFeatures,
         overrideProvider.overrideUnlock,
     ) { subscribed, unlockAllFeatures, overrideUnlock ->
         subscribed || unlockAllFeatures || overrideUnlock
-    }.distinctUntilChanged()
+    }
 
     var adsEnabled = settings.adsEnabled
     var subscribed = settings.subscribed

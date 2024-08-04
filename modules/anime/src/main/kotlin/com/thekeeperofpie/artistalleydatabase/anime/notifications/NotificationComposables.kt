@@ -952,7 +952,6 @@ private fun ActivityCard(
             is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> TextActivityCardContent(
                 viewer = viewer,
                 activity = activity,
-                sharedTransitionKey = sharedTransitionKey,
                 user = activity.user,
                 entry = activityEntry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
@@ -962,7 +961,6 @@ private fun ActivityCard(
             -> TextActivityCardContent(
                 viewer = viewer,
                 activity = null,
-                sharedTransitionKey = null,
                 user = null,
                 entry = null,
                 onActivityStatusUpdate = onActivityStatusUpdate,
