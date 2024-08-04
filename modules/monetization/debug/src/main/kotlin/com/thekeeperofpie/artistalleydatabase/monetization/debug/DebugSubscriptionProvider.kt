@@ -29,7 +29,14 @@ class DebugSubscriptionProvider(
         scopedApplication.scope.launch {
             delay(3.seconds)
             subscriptionDetails.emit(
-                LoadingResult.success(SubscriptionProvider.SubscriptionDetails("debug", Unit))
+                LoadingResult.success(
+                    SubscriptionProvider.SubscriptionDetails(
+                        id = "debug",
+                        value = Unit,
+                        cost = null,
+                        period = null,
+                    )
+                )
             )
         }
     }

@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import kotlinx.coroutines.flow.StateFlow
+import java.time.Period
 
 interface SubscriptionProvider {
 
@@ -24,6 +25,8 @@ interface SubscriptionProvider {
     data class SubscriptionDetails<T>(
         val id: String,
         val value: T,
+        val cost: String?,
+        val period: Period?,
     )
 }
 

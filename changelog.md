@@ -1,6 +1,9 @@
 # Changelog
 
-### Next (14)
+### Next (16)
+
+### 0.50 (15)
+- Add subscription price before button press
 
 ### 0.49 (14)
 - Fix some images not showing up

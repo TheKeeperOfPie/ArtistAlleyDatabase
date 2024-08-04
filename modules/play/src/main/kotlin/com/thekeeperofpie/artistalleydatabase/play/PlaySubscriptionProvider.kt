@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Period
 import kotlin.time.Duration.Companion.seconds
 
 class PlaySubscriptionProvider(
@@ -132,10 +133,20 @@ class PlaySubscriptionProvider(
                 val offerToken = productDetails?.subscriptionOfferDetails?.firstOrNull()?.offerToken
                 val result: LoadingResult<SubscriptionProvider.SubscriptionDetails<*>> =
                     if (offerToken != null) {
+                        val pricingList = productDetails.subscriptionOfferDetails?.firstOrNull()
+                            ?.pricingPhases?.pricingPhaseList?.firstOrNull()
                         LoadingResult.success(
                             SubscriptionProvider.SubscriptionDetails(
                                 id = productDetails.productId,
                                 value = productDetails,
+                                cost = pricingList?.formattedPrice,
+                                period = pricingList?.billingPeriod?.let {
+                                    try {
+                                        Period.parse(it)
+                                    } catch (throwable: Throwable) {
+                                        Period.ofMonths(1)
+                                    }
+                                },
                             )
                         )
                     } else {

@@ -262,7 +262,8 @@ object UnlockScreen {
                     val adsEnabled = adsEnabled()
                     Button(
                         onClick = { onChangeEnableAds(!adsEnabled) },
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
                             .padding(vertical = 10.dp)
                     ) {
                         Text(
@@ -307,10 +308,10 @@ object UnlockScreen {
 
     @Composable
     fun SubscriptionTier(subscribed: () -> Boolean) {
+        val subscriptionProvider = LocalSubscriptionProvider.current
         Tier(
             headerTextRes = R.string.monetization_feature_tier_subscription_header,
             footer = {
-                val subscriptionProvider = LocalSubscriptionProvider.current
                 if (subscriptionProvider == null) {
                     Button(
                         onClick = {},
@@ -348,13 +349,31 @@ object UnlockScreen {
                     val subscription = subscriptionDetails.result
                     val subscribed = subscribed()
                     val uriHandler = LocalUriHandler.current
-                    Box(
-                        contentAlignment = Alignment.Center,
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier
                             .height(IntrinsicSize.Min)
                             .align(Alignment.CenterHorizontally)
-                            .padding(vertical = 10.dp)
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
                     ) {
+                        if (subscription != null) {
+                            val cost = subscription.cost
+                            val period = subscription.period
+                            if (cost != null && period != null) {
+                                val months = period.toTotalMonths()
+                                val periodText = if (months <= 1) {
+                                    "month"
+                                } else {
+                                    "$months months"
+                                }
+                                Text(
+                                    text = "$cost billed every $periodText until you cancel",
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                            }
+                        }
+
                         Button(
                             enabled = subscribed || subscription != null,
                             onClick = {
