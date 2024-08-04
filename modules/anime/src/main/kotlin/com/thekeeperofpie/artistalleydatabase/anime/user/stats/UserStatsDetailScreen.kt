@@ -44,7 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionPrefixProvider
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
@@ -98,23 +98,24 @@ object UserStatsDetailScreen {
             val values = values(statistics)
             if (values.isNotEmpty()) {
                 items(values, key = valueToKey) {
-                    SharedTransitionPrefixProvider("user_stats_details") { }
-                    StatsDetailCard(
-                        value = it,
-                        valueToText = valueToText,
-                        valueToCount = valueToCount,
-                        valueToMinutesWatched = valueToMinutesWatched,
-                        valueToChaptersRead = valueToChaptersRead,
-                        valueToMeanScore = valueToMeanScore,
-                        valueToMediaIds = valueToMediaIds,
-                        onValueClick = onValueClick,
-                        initialItemId = initialItemId,
-                        initialItemImage = initialItemImage,
-                        initialItemSharedTransitionKey = initialItemSharedTransitionKey,
-                        initialItemSharedTransitionIdentifier = initialItemSharedTransitionIdentifier,
-                        state = state,
-                        isAnime = isAnime,
-                    )
+                    SharedTransitionKeyScope("user_stats_details") {
+                        StatsDetailCard(
+                            value = it,
+                            valueToText = valueToText,
+                            valueToCount = valueToCount,
+                            valueToMinutesWatched = valueToMinutesWatched,
+                            valueToChaptersRead = valueToChaptersRead,
+                            valueToMeanScore = valueToMeanScore,
+                            valueToMediaIds = valueToMediaIds,
+                            onValueClick = onValueClick,
+                            initialItemId = initialItemId,
+                            initialItemImage = initialItemImage,
+                            initialItemSharedTransitionKey = initialItemSharedTransitionKey,
+                            initialItemSharedTransitionIdentifier = initialItemSharedTransitionIdentifier,
+                            state = state,
+                            isAnime = isAnime,
+                        )
+                    }
                 }
             }
         }

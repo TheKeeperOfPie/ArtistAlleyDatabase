@@ -90,7 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionPrefixProvider
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 @Suppress("NAME_SHADOWING")
@@ -130,7 +130,7 @@ object AnimeMediaEditBottomSheet {
                         }
                     } else {
                         Column {
-                            SharedTransitionPrefixProvider("media_edit_bottom_sheet") {
+                            SharedTransitionKeyScope("media_edit_bottom_sheet") {
                                 Form(
                                     viewModel = viewModel,
                                     initialParams = initialParams,

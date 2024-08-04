@@ -83,6 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import kotlinx.collections.immutable.ImmutableList
 import java.time.Instant
@@ -138,46 +139,48 @@ fun ActivityList(
                             contentType = activities.itemContentType { it.activityId.type }
                         ) {
                             val entry = activities[it]
-                            when (val activity = entry?.activity) {
-                                is UserSocialActivityQuery.Data.Page.TextActivityActivity -> TextActivitySmallCard(
-                                    viewer = viewer,
-                                    activity = activity,
-                                    entry = entry,
-                                    onActivityStatusUpdate = onActivityStatusUpdate,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    allowUserClick = allowUserClick,
-                                    clickable = true
-                                )
-                                is UserSocialActivityQuery.Data.Page.ListActivityActivity -> ListActivitySmallCard(
-                                    viewer = viewer,
-                                    activity = activity,
-                                    mediaEntry = entry.media,
-                                    entry = entry,
-                                    onActivityStatusUpdate = onActivityStatusUpdate,
-                                    onClickListEdit = editViewModel::initialize,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    allowUserClick = allowUserClick,
-                                    clickable = true,
-                                    showMedia = showMedia
-                                )
-                                is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> MessageActivitySmallCard(
-                                    viewer = viewer,
-                                    activity = activity,
-                                    entry = entry,
-                                    onActivityStatusUpdate = onActivityStatusUpdate,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    allowUserClick = allowUserClick,
-                                    clickable = true
-                                )
-                                is UserSocialActivityQuery.Data.Page.OtherActivity,
-                                null,
-                                -> TextActivitySmallCard(
-                                    viewer = viewer,
-                                    activity = null,
-                                    entry = null,
-                                    onActivityStatusUpdate = onActivityStatusUpdate,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                            SharedTransitionKeyScope("anime_user_activity_card_${entry?.activityId?.valueId}") {
+                                when (val activity = entry?.activity) {
+                                    is UserSocialActivityQuery.Data.Page.TextActivityActivity -> TextActivitySmallCard(
+                                        viewer = viewer,
+                                        activity = activity,
+                                        entry = entry,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        allowUserClick = allowUserClick,
+                                        clickable = true
+                                    )
+                                    is UserSocialActivityQuery.Data.Page.ListActivityActivity -> ListActivitySmallCard(
+                                        viewer = viewer,
+                                        activity = activity,
+                                        mediaEntry = entry.media,
+                                        entry = entry,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        onClickListEdit = editViewModel::initialize,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        allowUserClick = allowUserClick,
+                                        clickable = true,
+                                        showMedia = showMedia
+                                    )
+                                    is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> MessageActivitySmallCard(
+                                        viewer = viewer,
+                                        activity = activity,
+                                        entry = entry,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        allowUserClick = allowUserClick,
+                                        clickable = true
+                                    )
+                                    is UserSocialActivityQuery.Data.Page.OtherActivity,
+                                    null,
+                                    -> TextActivitySmallCard(
+                                        viewer = viewer,
+                                        activity = null,
+                                        entry = null,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
                             }
                         }
 

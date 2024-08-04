@@ -2,6 +2,9 @@
 
 ### Next (14)
 
+### 0.49 (14)
+- Fix some images not showing up
+
 ### 0.48 (13)
 - Fix filters when viewing another user's list
 - Various bug fixes

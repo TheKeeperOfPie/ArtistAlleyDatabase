@@ -1099,15 +1099,17 @@ object AnimeHomeScreen {
             modifier = Modifier.recomposeHighlighter()
         ) {
             val entry = recommendations.getOrNull(it)
-            RecommendationCard(
-                viewer = viewer,
-                user = entry?.user,
-                media = entry?.media,
-                mediaRecommendation = entry?.mediaRecommendation,
-                onClickListEdit = editViewModel::initialize,
-                recommendation = entry?.data,
-                onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
-            )
+            SharedTransitionKeyScope("anime_home_recommendation_card_${entry?.id}") {
+                RecommendationCard(
+                    viewer = viewer,
+                    user = entry?.user,
+                    media = entry?.media,
+                    mediaRecommendation = entry?.mediaRecommendation,
+                    onClickListEdit = editViewModel::initialize,
+                    recommendation = entry?.data,
+                    onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
+                )
+            }
         }
     }
 
