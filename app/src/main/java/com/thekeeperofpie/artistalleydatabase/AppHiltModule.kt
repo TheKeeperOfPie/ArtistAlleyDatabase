@@ -49,6 +49,7 @@ object AppHiltModule {
     @Provides
     fun provideAppDatabase(application: Application) =
         Room.databaseBuilder(application, AppDatabase::class.java, "appDatabase")
+            .fallbackToDestructiveMigrationOnDowngrade(true)
             .build()
 
     @Singleton

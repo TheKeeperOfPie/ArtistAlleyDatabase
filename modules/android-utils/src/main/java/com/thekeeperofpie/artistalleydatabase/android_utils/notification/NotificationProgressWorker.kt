@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -92,12 +94,18 @@ abstract class NotificationProgressWorker(
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
-        return ForegroundInfo(
-            notificationIdOngoing.id,
-            cachedNotificationBuilder
-                .setProgress(1, 0, true)
-                .build()
-        )
+        val notification = cachedNotificationBuilder
+            .setProgress(1, 0, true)
+            .build()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                notificationIdOngoing.id,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+            )
+        } else {
+            ForegroundInfo(notificationIdOngoing.id, notification)
+        }
     }
 
     protected fun setProgress(progress: Int, max: Int) {
