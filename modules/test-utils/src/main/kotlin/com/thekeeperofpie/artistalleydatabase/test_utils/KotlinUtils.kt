@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.test_utils
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asContextElement

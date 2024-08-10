@@ -7,12 +7,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.ListActivityMediaListActivityItem
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -54,13 +52,11 @@ class AnimeMediaDetailsActivityViewModel @Inject constructor(
                     following = result.following?.activities
                         ?.filterIsInstance<ListActivityMediaListActivityItem>()
                         .orEmpty()
-                        .map(::ActivityEntry)
-                        .toImmutableList(),
+                        .map(::ActivityEntry),
                     global = result.global?.activities
                         ?.filterIsInstance<ListActivityMediaListActivityItem>()
                         .orEmpty()
-                        .map(::ActivityEntry)
-                        .toImmutableList(),
+                        .map(::ActivityEntry),
                 )
             }
                 .flatMapLatest { activities ->
@@ -77,14 +73,14 @@ class AnimeMediaDetailsActivityViewModel @Inject constructor(
                                         subscribed = updates[it.activityId]?.subscribed
                                             ?: it.subscribed,
                                     )
-                                }.toImmutableList(),
+                                },
                                 global = activities.global.map {
                                     it.copy(
                                         liked = updates[it.activityId]?.liked ?: it.liked,
                                         subscribed = updates[it.activityId]?.subscribed
                                             ?: it.subscribed,
                                     )
-                                }.toImmutableList(),
+                                },
                             )
                         }
                 }
@@ -99,8 +95,8 @@ class AnimeMediaDetailsActivityViewModel @Inject constructor(
     }
 
     data class ActivitiesEntry(
-        val following: ImmutableList<ActivityEntry>,
-        val global: ImmutableList<ActivityEntry>,
+        val following: List<ActivityEntry>,
+        val global: List<ActivityEntry>,
     )
 
     data class ActivityEntry(

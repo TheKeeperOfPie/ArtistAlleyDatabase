@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.art.sections
 
 import com.hoc081098.flowext.withLatestFrom
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -12,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine

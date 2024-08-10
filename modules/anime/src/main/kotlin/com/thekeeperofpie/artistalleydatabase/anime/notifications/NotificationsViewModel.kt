@@ -8,7 +8,6 @@ import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.NotificationsQuery
 import com.anilist.fragment.ActivityItem.Companion.asListActivity
 import com.hoc081098.flowext.combine
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -27,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi

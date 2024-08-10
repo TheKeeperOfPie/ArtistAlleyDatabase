@@ -13,7 +13,6 @@ import androidx.paging.cachedIn
 import androidx.paging.flatMap
 import com.anilist.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -31,9 +30,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -127,7 +126,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
 
                                         }
                                     )
-                                }.toImmutableList(),
+                                },
                                 description = character.character?.description
                                     ?.let(markwon::toStableMarkdown),
                             )

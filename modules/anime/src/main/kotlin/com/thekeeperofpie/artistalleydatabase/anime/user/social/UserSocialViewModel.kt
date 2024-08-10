@@ -7,9 +7,9 @@ import androidx.paging.cachedIn
 import com.anilist.UserSocialFollowersQuery
 import com.anilist.UserSocialFollowingQuery
 import com.anilist.fragment.PaginationInfo
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job

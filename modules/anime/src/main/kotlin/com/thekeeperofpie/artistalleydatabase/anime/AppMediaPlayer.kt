@@ -20,7 +20,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.hoc081098.flowext.interval
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow

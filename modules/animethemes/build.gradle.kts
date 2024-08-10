@@ -2,7 +2,7 @@ plugins {
     id("module-library")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
-    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {

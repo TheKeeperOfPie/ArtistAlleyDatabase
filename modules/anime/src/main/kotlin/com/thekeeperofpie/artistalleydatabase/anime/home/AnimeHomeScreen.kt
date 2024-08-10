@@ -153,7 +153,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateEn
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 @Suppress("NAME_SHADOWING")
@@ -457,7 +456,7 @@ object AnimeHomeScreen {
 
     @Composable
     private fun NewsRow(
-        data: ImmutableList<AnimeNewsArticleEntry<*>>?,
+        data: List<AnimeNewsArticleEntry<*>>?,
         pageSize: PageSize,
     ) {
         RowHeader(
@@ -571,7 +570,7 @@ object AnimeHomeScreen {
     @Composable
     private fun CurrentMediaRow(
         viewer: AniListViewer?,
-        mediaResult: () -> LoadingResult<ImmutableList<UserMediaListController.MediaEntry>>,
+        mediaResult: () -> LoadingResult<List<UserMediaListController.MediaEntry>>,
         currentMediaPreviousSize: Int,
         onClickListEdit: (MediaNavigationData) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,

@@ -94,7 +94,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.orEmpty
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -145,8 +144,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
@@ -660,7 +657,7 @@ object AnimeMediaDetailsScreen {
 
     @Composable
     private fun LazyItemScope.GenreSection(
-        genres: ImmutableList<Entry.Genre>,
+        genres: List<Entry.Genre>,
         mediaType: MediaType?,
     ) {
         val navigationCallback = LocalNavigationCallback.current
@@ -1314,7 +1311,7 @@ object AnimeMediaDetailsScreen {
     data class Entry(
         val mediaId: String,
         val media: Media,
-        val relations: ImmutableList<Relation>,
+        val relations: List<Relation>,
         val description: StableSpanned?,
     ) {
         val id = EntryId("media", mediaId)
@@ -1339,7 +1336,7 @@ object AnimeMediaDetailsScreen {
             media.title?.native,
         ).distinct() + media.synonyms?.filterNotNull().orEmpty()
 
-        val genres = media.genres?.filterNotNull().orEmpty().map(::Genre).toImmutableList()
+        val genres = media.genres?.filterNotNull().orEmpty().map(::Genre)
 
         val studios = media.studios?.edges?.filterNotNull()?.map {
             Studio(
@@ -1432,8 +1429,7 @@ object AnimeMediaDetailsScreen {
             ?.sortedBy { it.score }
             .orEmpty()
 
-        val streamingEpisodes =
-            media.streamingEpisodes?.filterNotNull()?.toImmutableList().orEmpty()
+        val streamingEpisodes = media.streamingEpisodes?.filterNotNull().orEmpty()
 
         data class Link(
             val id: String,

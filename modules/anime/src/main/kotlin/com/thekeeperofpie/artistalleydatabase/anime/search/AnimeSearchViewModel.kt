@@ -30,7 +30,6 @@ import com.anilist.type.MediaType
 import com.anilist.type.StudioSort
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
@@ -71,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi

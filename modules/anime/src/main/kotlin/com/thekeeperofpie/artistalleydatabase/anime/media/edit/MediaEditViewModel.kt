@@ -10,7 +10,6 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.SimpleResult
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -18,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow

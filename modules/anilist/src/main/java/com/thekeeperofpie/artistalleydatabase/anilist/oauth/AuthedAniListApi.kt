@@ -145,10 +145,10 @@ import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope

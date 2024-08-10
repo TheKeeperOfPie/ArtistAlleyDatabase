@@ -15,8 +15,6 @@ import com.anilist.type.MediaType
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -31,9 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,9 +59,9 @@ abstract class AnimeHomeMediaViewModel(
 ) : ViewModel() {
 
     var entry by mutableStateOf<LoadingResult<AnimeHomeDataEntry>>(LoadingResult.loading())
-    var currentMedia by mutableStateOf<LoadingResult<ImmutableList<UserMediaListController.MediaEntry>>>(
-        LoadingResult.loading<ImmutableList<UserMediaListController.MediaEntry>>()
-            .copy(result = if (currentMediaPreviousSize.value == 0) emptyImmutableList() else null)
+    var currentMedia by mutableStateOf<LoadingResult<List<UserMediaListController.MediaEntry>>>(
+        LoadingResult.loading<List<UserMediaListController.MediaEntry>>()
+            .copy(result = if (currentMediaPreviousSize.value == 0) emptyList() else null)
     )
     val reviews = MutableStateFlow(PagingData.empty<ReviewEntry>())
 
@@ -147,7 +144,7 @@ abstract class AnimeHomeMediaViewModel(
                                         )
                                     }
                                 )
-                            }.toImmutableList()
+                            }
                         }
                     }
                 }

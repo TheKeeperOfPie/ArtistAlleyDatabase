@@ -22,8 +22,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryModel
-import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.observableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

@@ -2,8 +2,8 @@ plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
-    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
-    id(libs.plugins.org.jetbrains.kotlin.plugin.parcelize.get().pluginId)
+    id("org.jetbrains.kotlin.plugin.parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {

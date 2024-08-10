@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils.kotlin
+package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
 import androidx.annotation.VisibleForTesting
 import kotlinx.coroutines.CoroutineDispatcher

@@ -22,7 +22,7 @@ import androidx.paging.compose.itemKey
 import androidx.paging.filter
 import androidx.paging.map
 import com.apollographql.apollo3.api.Optional
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext

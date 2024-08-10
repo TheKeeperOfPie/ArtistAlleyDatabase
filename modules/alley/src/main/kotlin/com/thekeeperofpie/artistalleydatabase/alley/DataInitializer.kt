@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
 import org.apache.commons.csv.CSVFormat
 import java.io.Reader

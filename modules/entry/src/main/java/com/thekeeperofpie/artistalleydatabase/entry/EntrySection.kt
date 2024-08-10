@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
+import com.thekeeperofpie.artistalleydatabase.utils_compose.observableStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview

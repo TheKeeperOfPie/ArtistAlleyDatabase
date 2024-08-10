@@ -2,10 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.anime.forum
 
 import com.anilist.ForumThread_CommentsQuery
 import com.anilist.fragment.ForumThreadComment
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentChild
 import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import io.noties.markwon.Markwon
 
 object ForumUtils {

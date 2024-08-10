@@ -50,6 +50,8 @@ include(
     ":modules:server",
     ":modules:settings",
     ":modules:test-utils",
+    ":modules:utils",
+    ":modules:utils-compose",
     ":modules:vgmdb",
 )
 

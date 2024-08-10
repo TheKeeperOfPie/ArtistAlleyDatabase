@@ -41,7 +41,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
@@ -55,6 +54,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaSearchScreen {

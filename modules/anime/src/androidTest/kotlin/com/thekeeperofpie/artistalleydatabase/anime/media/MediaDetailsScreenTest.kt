@@ -16,8 +16,6 @@ import androidx.lifecycle.SavedStateHandle
 import com.anilist.fragment.ListActivityMediaListActivityItem
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.persistentListOfNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -190,7 +188,7 @@ class MediaDetailsScreenTest {
                 AnimeMediaDetailsScreen.Entry(
                     mediaId = "1234",
                     media = mock(),
-                    relations = emptyImmutableList(),
+                    relations = emptyList(),
                     description = null,
                 )
             )
@@ -209,7 +207,7 @@ class MediaDetailsScreenTest {
     ) {
         whenever(viewModels.activitiesViewModel.activities) {
             AnimeMediaDetailsActivityViewModel.ActivitiesEntry(
-                following = persistentListOfNotNull(
+                following = listOfNotNull(
                     followingId?.let {
                         AnimeMediaDetailsActivityViewModel.ActivityEntry(
                             object : ListActivityMediaListActivityItem {
@@ -235,7 +233,7 @@ class MediaDetailsScreenTest {
                         )
                     }
                 ),
-                global = persistentListOfNotNull(
+                global = listOfNotNull(
                     globalId?.let {
                         AnimeMediaDetailsActivityViewModel.ActivityEntry(
                             object : ListActivityMediaListActivityItem {

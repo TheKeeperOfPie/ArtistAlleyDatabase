@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
 import Versions_gradle.Versions.androidx.activity
+import Versions_gradle.Versions.androidx.annotation
 import Versions_gradle.Versions.androidx.browser
 import Versions_gradle.Versions.androidx.hilt
 import Versions_gradle.Versions.androidx.lifecycle
@@ -31,7 +32,6 @@ import Versions_gradle.Versions.google.userMessagingPlatform
 import Versions_gradle.Versions.junit.four
 import Versions_gradle.Versions.junit.jupiter
 import Versions_gradle.Versions.junit.jupiterAndroid
-import Versions_gradle.Versions.kotlin.collectionsImmutable
 import Versions_gradle.Versions.kotlin.coroutines
 import Versions_gradle.Versions.kotlin.ksp
 import Versions_gradle.Versions.kotlin.serialization
@@ -49,6 +49,7 @@ object Versions {
 
     object androidx {
         const val activity = "1.9.0"
+        const val annotation = "1.9.0-alpha01"
         const val browser = "1.8.0"
         const val core = "1.15.0-alpha01"
         const val hilt = "1.2.0"
@@ -78,6 +79,7 @@ object Versions {
 
     object compose {
         const val core = "1.7.0-beta06"
+        const val plugin = "1.7.0-alpha01"
         const val runtime = "1.7.0-alpha01"
         const val runtimeTracing = "1.0.0-beta01"
     }
@@ -115,7 +117,6 @@ object Versions {
 
     object kotlin {
         const val core = "2.0.10-RC"
-        const val collectionsImmutable = "0.3.7"
         const val coroutines = "1.9.0-RC"
         const val ksp = "2.0.10-RC-1.0.23"
         const val serialization = "1.7.1"
@@ -167,6 +168,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
             create("libs") {
                 fun plugin(id: String) = plugin(id, id)
+                plugin("com.android.library").version(Versions.android.gradle)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
                 plugin("com.autonomousapps.dependency-analysis").version("1.32.0")
                 plugin("com.github.ben-manes.versions").version("0.51.0")
@@ -176,15 +178,18 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("de.mannodermaus.android-junit5").version("1.10.2.0")
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version("2.2.0")
+                plugin("org.jetbrains.compose").version(Versions.compose.plugin)
 
                 with(Versions.kotlin) {
+                    plugin("org.jetbrains.kotlin.multiplatform").version(core)
                     plugin("org.jetbrains.kotlin.plugin.compose").version(core)
-                    plugin("org.jetbrains.kotlin.plugin.parcelize").version(core)
-                    plugin("org.jetbrains.kotlin.plugin.serialization").version(core)
+                    library("org.jetbrains.kotlin.plugin.parcelize:org.jetbrains.kotlin.plugin.parcelize.gradle.plugin:$core")
+                    library("org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin:$core")
                 }
 
                 with(Versions.androidx) {
                     library("androidx.activity:activity-compose:$activity")
+                    library("androidx.annotation:annotation:$annotation", prefix = "androidx")
                     library("androidx.browser:browser:$browser", prefix = "androidx")
                     library("androidx.core:core-ktx:$core")
 
@@ -314,12 +319,12 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     withVersion(coroutines) {
                         library("org.jetbrains.kotlinx:kotlinx-coroutines-android")
                         library("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+                        library("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
                         library("org.jetbrains.kotlinx:kotlinx-coroutines-test")
                     }
                     library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$ksp")
                     library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:$core")
                     library("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$core")
-                    library("org.jetbrains.kotlinx:kotlinx-collections-immutable:$collectionsImmutable")
                     library("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
                 }
 
@@ -366,6 +371,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         )
                     }
                 }
+                library("org.jetbrains.compose:compose-gradle-plugin:${Versions.compose.plugin}")
 
                 prefix("markwon") {
                     withVersion(Versions.markwon) {

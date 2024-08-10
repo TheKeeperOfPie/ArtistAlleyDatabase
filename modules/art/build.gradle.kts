@@ -2,7 +2,7 @@ plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
-    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -16,6 +16,7 @@ dependencies {
     api(project(":modules:compose-utils"))
     api(project(":modules:data"))
     api(project(":modules:entry"))
+    implementation(project(":modules:utils-compose"))
 
     implementation(libs.kotlinx.serialization.json)
 

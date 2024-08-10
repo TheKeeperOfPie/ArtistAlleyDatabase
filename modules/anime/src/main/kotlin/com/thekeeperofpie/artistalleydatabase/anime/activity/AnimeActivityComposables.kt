@@ -90,7 +90,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalShar
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import kotlinx.collections.immutable.ImmutableList
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -1059,7 +1058,7 @@ private fun UserImage(
 fun LazyListScope.activitiesSection(
     viewer: AniListViewer?,
     activityTab: AnimeMediaDetailsActivityViewModel.ActivityTab,
-    activities: ImmutableList<AnimeMediaDetailsActivityViewModel.ActivityEntry>?,
+    activities: List<AnimeMediaDetailsActivityViewModel.ActivityEntry>?,
     onActivityTabChange: (AnimeMediaDetailsActivityViewModel.ActivityTab) -> Unit,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     expanded: () -> Boolean,

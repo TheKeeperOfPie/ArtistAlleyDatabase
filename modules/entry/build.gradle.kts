@@ -2,7 +2,7 @@ plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
-    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("org.jetbrains.kotlin.plugin.serialization")
     alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
@@ -13,6 +13,7 @@ android {
 dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:compose-utils"))
+    implementation(project(":modules:utils-compose"))
 
     api(libs.flowExt)
     implementation(libs.activity.compose)

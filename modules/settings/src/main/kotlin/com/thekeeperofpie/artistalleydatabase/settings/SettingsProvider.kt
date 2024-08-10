@@ -13,7 +13,6 @@ import androidx.security.crypto.MasterKey
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
@@ -31,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.FlowCollector

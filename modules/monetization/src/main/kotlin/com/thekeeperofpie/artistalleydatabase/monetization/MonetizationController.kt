@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.monetization
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 
 class MonetizationController(
     settings: MonetizationSettings,

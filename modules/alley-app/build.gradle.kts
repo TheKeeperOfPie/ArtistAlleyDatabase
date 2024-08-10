@@ -5,7 +5,7 @@ plugins {
     kotlin("android")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
-    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 

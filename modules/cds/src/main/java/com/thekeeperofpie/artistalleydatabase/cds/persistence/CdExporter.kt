@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.cds.persistence
 
 import android.content.Context
-import androidx.work.CoroutineWorker
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
@@ -9,6 +8,8 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryExporter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import java.io.InputStream
@@ -26,7 +27,6 @@ class CdExporter(
     override suspend fun entriesSize() = cdEntryDao.getEntriesSize()
 
     override suspend fun writeEntries(
-        worker: CoroutineWorker,
         jsonWriter: JsonWriter,
         jsonElementConverter: (JsonElement) -> Any?,
         writeEntry: suspend (String, () -> InputStream) -> Unit,
@@ -38,7 +38,7 @@ class CdExporter(
         var stopped = false
         var entriesSize = 0
         cdEntryDao.iterateEntries({ entriesSize = it }) { index, entry ->
-            if (worker.isStopped) {
+            if (!currentCoroutineContext().isActive) {
                 stopped = true
                 return@iterateEntries
             }

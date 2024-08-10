@@ -35,8 +35,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridM
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntry
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL

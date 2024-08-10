@@ -13,7 +13,6 @@ import androidx.paging.PagingData
 import com.anilist.type.MediaType
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emptyImmutableList
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -35,7 +34,6 @@ import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import dagger.hilt.android.testing.HiltAndroidTest
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import io.noties.markwon.Markwon
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -176,7 +174,7 @@ class HomeScreenTest {
         }
         val (viewModel, mediaViewModel) = mockViewModels(isAnime = isAnime)
         whenever(mediaViewModel.currentMedia) {
-            LoadingResult.success(persistentListOf(mock<UserMediaListController.MediaEntry>()))
+            LoadingResult.success(listOf(mock<UserMediaListController.MediaEntry>()))
         }
         composeExtension.use {
             setContent { HomeScreenContent(viewModel, mediaViewModel) }
@@ -199,7 +197,7 @@ class HomeScreenTest {
         }
         val (viewModel, mediaViewModel) = mockViewModels(isAnime = isAnime)
         whenever(mediaViewModel.currentMedia) {
-            LoadingResult.success(persistentListOf())
+            LoadingResult.success(emptyList())
         }
         composeExtension.use {
             setContent { HomeScreenContent(viewModel, mediaViewModel) }
@@ -226,7 +224,7 @@ class HomeScreenTest {
                 if (newsLoading) {
                     null
                 } else {
-                    emptyImmutableList()
+                    emptyList()
                 }
             }
         }

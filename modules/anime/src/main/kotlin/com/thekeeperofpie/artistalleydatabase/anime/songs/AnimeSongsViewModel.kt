@@ -10,12 +10,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -54,7 +52,7 @@ class AnimeSongsViewModel @Inject constructor(
                         if (media?.type == MediaType.ANIME) {
                             try {
                                 val songEntries =
-                                    animeSongsProvider.getSongs(media).toImmutableList()
+                                    animeSongsProvider.getSongs(media)
                                 if (songEntries.isNotEmpty()) {
                                     val songStates = songEntries
                                         .map { AnimeSongState(id = it.id, entry = it) }
@@ -127,7 +125,7 @@ class AnimeSongsViewModel @Inject constructor(
     }
 
     data class AnimeSongs(
-        val entries: ImmutableList<AnimeSongEntry>,
+        val entries: List<AnimeSongEntry>,
     )
 
     // State separated from immutable data so that recomposition is as granular as possible

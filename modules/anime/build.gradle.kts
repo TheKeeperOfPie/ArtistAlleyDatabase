@@ -2,8 +2,8 @@ plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
-    id(libs.plugins.org.jetbrains.kotlin.plugin.parcelize.get().pluginId)
-    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("org.jetbrains.kotlin.plugin.parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization")
     alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
@@ -19,7 +19,6 @@ dependencies {
     api(project(":modules:monetization"))
 
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.collections.immutable)
 
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)

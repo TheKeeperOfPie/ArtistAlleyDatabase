@@ -7,13 +7,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaDetails2Query
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.orEmpty
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
@@ -39,7 +36,7 @@ class AnimeMediaDetailsReviewsViewModel @Inject constructor(
             snapshotFlow { mediaDetailsViewModel.entry2.result?.media }
                 .mapLatest {
                     ReviewsEntry(
-                        reviews = it?.reviews?.nodes?.filterNotNull()?.toImmutableList().orEmpty(),
+                        reviews = it?.reviews?.nodes?.filterNotNull().orEmpty(),
                         hasMore = it?.reviews?.pageInfo?.hasNextPage ?: true,
                     )
                 }
@@ -48,7 +45,7 @@ class AnimeMediaDetailsReviewsViewModel @Inject constructor(
     }
 
     data class ReviewsEntry(
-        val reviews: ImmutableList<MediaDetails2Query.Data.Media.Reviews.Node>,
+        val reviews: List<MediaDetails2Query.Data.Media.Reviews.Node>,
         val hasMore: Boolean,
     )
 }

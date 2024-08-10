@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime2anime
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.Anime2AnimeCountQuery
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -22,10 +20,10 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantDaily
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantRandom
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantUserList
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter

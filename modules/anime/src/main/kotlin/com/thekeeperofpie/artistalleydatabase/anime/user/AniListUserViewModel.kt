@@ -22,7 +22,6 @@ import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -54,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExclud
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope

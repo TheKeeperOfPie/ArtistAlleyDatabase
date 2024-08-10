@@ -15,7 +15,7 @@ import androidx.palette.graphics.get
 import coil3.BitmapImage
 import coil3.Image
 import coil3.annotation.ExperimentalCoilApi
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope

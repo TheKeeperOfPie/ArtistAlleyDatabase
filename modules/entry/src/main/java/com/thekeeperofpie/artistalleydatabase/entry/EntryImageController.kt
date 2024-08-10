@@ -18,7 +18,7 @@ import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

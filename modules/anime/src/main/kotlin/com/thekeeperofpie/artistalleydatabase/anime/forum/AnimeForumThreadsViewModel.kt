@@ -8,17 +8,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -40,9 +38,7 @@ class AnimeForumThreadsViewModel @Inject constructor(
     private val threadStatusController: ForumThreadStatusController,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    var forumThreads by mutableStateOf<LoadingResult<ImmutableList<ForumThreadEntry>>>(
-        LoadingResult.loading()
-    )
+    var forumThreads by mutableStateOf<LoadingResult<List<ForumThreadEntry>>>(LoadingResult.loading())
         private set
 
     val threadToggleHelper =
@@ -87,7 +83,7 @@ class AnimeForumThreadsViewModel @Inject constructor(
                                 it.transformIf(liked != it.liked || subscribed != it.subscribed) {
                                     copy(liked = liked, subscribed = subscribed)
                                 }
-                            }.toImmutableList()
+                            }
                         }
                 }
                 .map(LoadingResult.Companion::success)

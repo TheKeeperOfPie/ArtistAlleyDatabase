@@ -4,7 +4,7 @@ import androidx.collection.LruCache
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.anilist.fragment.PaginationInfo
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.withContext
 
 open class AniListPagingSource2<T : Any>(

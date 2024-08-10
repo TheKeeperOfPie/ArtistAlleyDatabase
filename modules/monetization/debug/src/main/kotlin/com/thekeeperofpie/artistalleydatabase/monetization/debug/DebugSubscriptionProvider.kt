@@ -3,9 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.monetization.debug
 import androidx.activity.ComponentActivity
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch

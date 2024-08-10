@@ -75,13 +75,12 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
-import kotlinx.collections.immutable.ImmutableList
 
 fun <T> LazyListScope.mediaListSection(
     onClickListEdit: (MediaNavigationData) -> Unit,
     viewer: AniListViewer?,
     @StringRes titleRes: Int,
-    values: ImmutableList<T>,
+    values: List<T>,
     valueToEntry: (T) -> AnimeMediaListRow.Entry,
     aboveFold: Int,
     hasMoreValues: Boolean,

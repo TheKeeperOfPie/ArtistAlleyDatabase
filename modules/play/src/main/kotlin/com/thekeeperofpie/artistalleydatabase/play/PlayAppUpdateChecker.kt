@@ -24,8 +24,8 @@ import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.google.android.play.core.ktx.requestCompleteUpdate
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.ktx.updatePriority
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance

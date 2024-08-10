@@ -1,6 +1,6 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package com.thekeeperofpie.artistalleydatabase.android_utils.kotlin
+package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.FlowCollector

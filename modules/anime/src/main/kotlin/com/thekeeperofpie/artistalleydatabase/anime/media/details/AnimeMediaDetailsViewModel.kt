@@ -11,7 +11,6 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.MediaDetailsQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -29,9 +28,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -196,7 +195,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                                 )
                                             }
                                         )
-                                    }.toImmutableList(),
+                                    },
                                     description = descriptionPair?.second,
                                 )
                             }

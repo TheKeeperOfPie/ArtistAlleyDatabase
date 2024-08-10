@@ -141,7 +141,6 @@ class ExportWorker @AssistedInject constructor(
                             JsonWriter.of(it).use { jsonWriter ->
                                 jsonWriter.indent = "    "
                                 exporter.writeEntries(
-                                    this@ExportWorker,
                                     jsonWriter,
                                     jsonElementConverter =
                                     appMoshi.jsonElementAdapter::toJsonValue,

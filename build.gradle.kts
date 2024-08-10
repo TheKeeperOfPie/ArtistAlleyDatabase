@@ -131,6 +131,7 @@ dependencyAnalysis {
                     ":modules:play",
                     ":modules:settings",
                     ":modules:test-utils",
+                    ":modules:utils",
                     ":modules:vgmdb",
 
                     // Testing

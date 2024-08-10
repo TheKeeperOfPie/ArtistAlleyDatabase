@@ -50,6 +50,8 @@
             <option value="$PROJECT_DIR$/modules/server" />
             <option value="$PROJECT_DIR$/modules/settings" />
             <option value="$PROJECT_DIR$/modules/test-utils" />
+            <option value="$PROJECT_DIR$/modules/utils" />
+            <option value="$PROJECT_DIR$/modules/utils-compose" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
           </set>
         </option>

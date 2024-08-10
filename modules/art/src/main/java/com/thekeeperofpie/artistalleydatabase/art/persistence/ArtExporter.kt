@@ -1,13 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.art.persistence
 
 import android.content.Context
-import androidx.work.CoroutineWorker
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryExporter
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import java.io.InputStream
@@ -24,7 +25,6 @@ class ArtExporter(
     override suspend fun entriesSize() = artEntryDao.getEntriesSize()
 
     override suspend fun writeEntries(
-        worker: CoroutineWorker,
         jsonWriter: JsonWriter,
         jsonElementConverter: (JsonElement) -> Any?,
         writeEntry: suspend (String, () -> InputStream) -> Unit,
@@ -36,7 +36,7 @@ class ArtExporter(
         var stopped = false
         var entriesSize = 0
         artEntryDao.iterateEntries({ entriesSize = it }) { index, entry ->
-            if (worker.isStopped) {
+            if (!currentCoroutineContext().isActive) {
                 stopped = true
                 return@iterateEntries
             }

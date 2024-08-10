@@ -10,8 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.RecommendationRating
 import com.hoc081098.flowext.combine
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -19,9 +17,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -134,7 +132,7 @@ class AnimeMediaDetailsRecommendationsViewModel @Inject constructor(
                                         )
                                     }
                                 }
-                            }.toImmutableList(),
+                            },
                             hasMore = media.recommendations?.pageInfo?.hasNextPage
                                 ?: true,
                         )
@@ -147,7 +145,7 @@ class AnimeMediaDetailsRecommendationsViewModel @Inject constructor(
 
 
     data class RecommendationsEntry(
-        val recommendations: ImmutableList<Recommendation>,
+        val recommendations: List<Recommendation>,
         val hasMore: Boolean,
     )
 

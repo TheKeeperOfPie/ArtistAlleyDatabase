@@ -8,11 +8,9 @@ import androidx.compose.runtime.setValue
 import com.rometools.rome.feed.synd.SyndCategory
 import com.rometools.rome.io.SyndFeedInput
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -44,16 +42,16 @@ class AnimeNewsController(
     }
 
     private var job: Job? = null
-    private val news = MutableStateFlow<ImmutableList<AnimeNewsArticleEntry<*>>?>(null)
-    private var newsDateDescending by mutableStateOf<ImmutableList<AnimeNewsArticleEntry<*>>?>(null)
+    private val news = MutableStateFlow<List<AnimeNewsArticleEntry<*>>?>(null)
+    private var newsDateDescending by mutableStateOf<List<AnimeNewsArticleEntry<*>>?>(null)
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun news(): MutableStateFlow<ImmutableList<AnimeNewsArticleEntry<*>>?> {
+    fun news(): MutableStateFlow<List<AnimeNewsArticleEntry<*>>?> {
         startJobIfNeeded()
         return news
     }
 
-    fun newsDateDescending(): ImmutableList<AnimeNewsArticleEntry<*>>? {
+    fun newsDateDescending(): List<AnimeNewsArticleEntry<*>>? {
         startJobIfNeeded()
         return newsDateDescending
     }
@@ -161,13 +159,13 @@ class AnimeNewsController(
                 animeNewsNetworkFiltered,
                 crunchyrollFiltered,
             ) { annNews, crNews ->
-                val combined = (annNews.orEmpty() + crNews.orEmpty()).toImmutableList()
+                val combined = (annNews.orEmpty() + crNews.orEmpty())
                 combined.takeIf { (annNews != null && crNews != null) || it.isNotEmpty() }
             }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest {
                     news.emit(it)
-                    val sortedDateDescending = it?.sortedByDescending { it.date }?.toImmutableList()
+                    val sortedDateDescending = it?.sortedByDescending { it.date }
                     withContext(CustomDispatchers.Main) {
                         newsDateDescending = sortedDateDescending
                     }

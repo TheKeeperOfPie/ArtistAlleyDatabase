@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils.kotlin
+package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job

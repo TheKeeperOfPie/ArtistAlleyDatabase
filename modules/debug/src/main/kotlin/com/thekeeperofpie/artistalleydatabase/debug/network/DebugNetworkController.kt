@@ -7,8 +7,8 @@ import com.apollographql.apollo3.api.http.HttpResponse
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.network_utils.RateLimitUtils
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import graphql.language.AstPrinter
 import graphql.parser.Parser
 import kotlinx.coroutines.channels.BufferOverflow

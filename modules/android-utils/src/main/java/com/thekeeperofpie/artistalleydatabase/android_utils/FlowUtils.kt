@@ -5,7 +5,7 @@ package com.thekeeperofpie.artistalleydatabase.android_utils
 import android.util.Log
 import androidx.annotation.StringRes
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow

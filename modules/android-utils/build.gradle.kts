@@ -9,6 +9,7 @@ android {
 }
 
 dependencies {
+    api(project(":modules:utils"))
     implementation(libs.core.ktx)
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
@@ -20,7 +21,6 @@ dependencies {
     api(libs.androidx.security.crypto)
 
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.collections.immutable)
     runtimeOnly(libs.kotlinx.coroutines.android)
 
     runtimeOnly(libs.room.runtime)
@@ -31,9 +31,6 @@ dependencies {
 
     api(libs.moshi.kotlin)
     ksp(kspProcessors.moshi.kotlin.codegen)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit.test)
 
     compileOnly(libs.compose.runtime)
 }

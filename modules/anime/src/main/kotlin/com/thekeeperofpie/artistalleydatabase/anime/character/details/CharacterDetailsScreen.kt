@@ -80,7 +80,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Duration.Companion.seconds
@@ -451,7 +450,7 @@ object CharacterDetailsScreen {
 
     data class Entry(
         val character: Character,
-        val media: ImmutableList<AnimeCharacterDetailsViewModel.MediaEntry>,
+        val media: List<AnimeCharacterDetailsViewModel.MediaEntry>,
         val description: StableSpanned?,
     ) {
         val voiceActorsInitial = MutableStateFlow(
