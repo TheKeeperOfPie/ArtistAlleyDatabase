@@ -11,8 +11,6 @@ value class SharedTransitionKey private constructor(val key: String) {
         @Composable
         fun makeKeyForId(id: String) = SharedTransitionKey("${LocalSharedTransitionPrefixKeys.current}-$id")
 
-        fun makeKeyLegacy(id: String?) = id?.let(::SharedTransitionKey)
-
         fun deserialize(value: String) = SharedTransitionKey(value)
     }
 }

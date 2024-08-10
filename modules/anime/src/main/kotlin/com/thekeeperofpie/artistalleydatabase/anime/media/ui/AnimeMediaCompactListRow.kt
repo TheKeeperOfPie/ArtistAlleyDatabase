@@ -79,7 +79,7 @@ object AnimeMediaCompactListRow {
         showQuickEdit: Boolean = true,
         coverImageState: CoilImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge),
     ) {
-        val sharedTransitionKey = SharedTransitionKey.makeKeyForId(entry?.media?.id.toString())
+        val sharedTransitionKey = entry?.media?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
         // Read colors here to request palette calculation
         val (containerColor, textColor) = coverImageState.colors
         OutlinedCard(
@@ -206,7 +206,7 @@ object AnimeMediaCompactListRow {
         viewer: AniListViewer?,
         entry: Entry?,
         imageState: CoilImageState,
-        sharedTransitionKey: SharedTransitionKey,
+        sharedTransitionKey: SharedTransitionKey?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (MediaNavigationData) -> Unit,
         forceListEditIcon: Boolean,

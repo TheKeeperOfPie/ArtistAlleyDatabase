@@ -95,7 +95,8 @@ object AnimeMediaListRow {
         recommendation: RecommendationData? = null,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
     ) {
-        val sharedTransitionKey = SharedTransitionKey.makeKeyForId(entry?.media?.id.toString())
+        val sharedTransitionKey = entry?.media?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         val coverImageState =
             rememberCoilImageState(entry?.media?.coverImage?.extraLarge, requestColors = true)
         val navigationCallback = LocalNavigationCallback.current
