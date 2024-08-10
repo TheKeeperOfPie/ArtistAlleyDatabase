@@ -53,9 +53,13 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.UserSocialActivityQuery
+import com.anilist.fragment.ActivityItem
+import com.anilist.fragment.ListActivityActivityItem
 import com.anilist.fragment.ListActivityWithoutMedia
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.MessageActivityActivityItem
 import com.anilist.fragment.MessageActivityFragment
+import com.anilist.fragment.TextActivityActivityItem
 import com.anilist.fragment.TextActivityFragment
 import com.anilist.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
@@ -81,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
@@ -203,6 +208,58 @@ fun ActivityList(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ActivitySmallCard(
+    viewer: AniListViewer?,
+    activity: ActivityItem?,
+    entry: ActivityStatusAware?,
+    mediaEntry: AnimeMediaCompactListRow.Entry?,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
+) {
+    val modifier = Modifier
+        .fillMaxWidth()
+        .recomposeHighlighter()
+    when (activity) {
+        is TextActivityActivityItem ->
+            TextActivitySmallCard(
+                viewer = viewer,
+                activity = activity,
+                entry = entry,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+                modifier = modifier,
+            )
+        is ListActivityActivityItem ->
+            ListActivitySmallCard(
+                viewer = viewer,
+                activity = activity,
+                mediaEntry = mediaEntry,
+                entry = entry,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+                onClickListEdit = onClickListEdit,
+                modifier = modifier,
+            )
+        is MessageActivityActivityItem ->
+            MessageActivitySmallCard(
+                viewer = viewer,
+                activity = activity,
+                entry = entry,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+                modifier = modifier,
+            )
+        else -> ListActivitySmallCard(
+            viewer = viewer,
+            activity = null,
+            mediaEntry = null,
+            entry = null,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
+            clickable = false,
+            modifier = modifier,
+        )
     }
 }
 

@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -56,7 +56,6 @@ class EntryImageController(
         },
         addAllowed = { entryIds.size <= 1 },
         onAdded = {
-            @OptIn(ExperimentalCoroutinesApi::class)
             scopeProvider().launch(Dispatchers.IO.limitedParallelism(8)) {
                 val newImages = it.map {
                     async {
@@ -79,8 +78,8 @@ class EntryImageController(
     )
 
     private var imageCropUri by mutableStateOf<Uri?>(null)
-    private var cropDocumentRequestedIndex by mutableStateOf(-1)
-    private var cropReadyIndex by mutableStateOf(-1)
+    private var cropDocumentRequestedIndex by mutableIntStateOf(-1)
+    private var cropReadyIndex by mutableIntStateOf(-1)
 
     val cropState = CropUtils.CropState(
         imageCropNeedsDocument = { imageCropUri == null },

@@ -265,6 +265,8 @@ fun TablePopup(
                 }
 
                 if (images.size > 1) {
+                    // TODO: Replace
+                    @Suppress("DEPRECATION")
                     HorizontalPagerIndicator(
                         pagerState = pagerState,
                         pageCount = pagerState.pageCount,

@@ -264,6 +264,8 @@ object DetailsScreen {
                             exit = fadeOut(),
                             modifier = Modifier.align(Alignment.BottomCenter)
                         ) {
+                            // TODO: Replace
+                            @Suppress("DEPRECATION")
                             HorizontalPagerIndicator(
                                 pagerState = headerPagerState,
                                 pageCount = headerPagerState.pageCount,
@@ -400,6 +402,8 @@ object DetailsScreen {
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
                 CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                    // TODO: Replace
+                    @Suppress("DEPRECATION")
                     HorizontalPagerIndicator(
                         pagerState = pagerState,
                         pageCount = pagerState.pageCount,

@@ -15,13 +15,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.ConfigurationCompat
 import androidx.core.os.LocaleListCompat
-import coil3.annotation.ExperimentalCoilApi
-import coil3.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import kotlinx.coroutines.delay
@@ -65,10 +62,6 @@ fun LazyListState.showFloatingActionButtonOnVerticalScroll(firstIndexToHide: Int
     }.value
 }
 
-@OptIn(ExperimentalCoilApi::class)
-fun AsyncImagePainter.State.Success.widthToHeightRatio() = result.image.width /
-        result.image.height.coerceAtLeast(0).toFloat()
-
 @Composable
 fun LoadingResult<*>.ErrorSnackbar(snackbarHostState: SnackbarHostState) {
     val errorMessage = error?.first?.let { stringResource(it) }
@@ -110,7 +103,6 @@ fun <T> OnChangeEffect(currentValue: T, onChange: suspend (T) -> Unit) {
 
 val CompositionLocal<Configuration>.currentLocale: Locale
     @Composable get() {
-        val configuration = LocalConfiguration.current
-        return ConfigurationCompat.getLocales(configuration).get(0)
+        return ConfigurationCompat.getLocales(this.current).get(0)
             ?: LocaleListCompat.getDefault()[0]!!
     }

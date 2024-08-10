@@ -8,14 +8,14 @@ import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -82,13 +82,13 @@ internal fun Modifier.placeholderInternal(
     val lastOutline = remember { Ref<Outline>() }
 
     // The current highlight animation progress
-    var highlightProgress: Float by remember { mutableStateOf(0f) }
+    var highlightProgress: Float by remember { mutableFloatStateOf(0f) }
 
     // This is our crossfade transition
     val transitionState = remember { MutableTransitionState(visible) }.apply {
         targetState = visible
     }
-    val transition = updateTransition(transitionState, "placeholder_crossfade")
+    val transition = rememberTransition(transitionState, "placeholder_crossfade")
 
     val placeholderAlpha by transition.animateFloat(
         transitionSpec = placeholderFadeTransitionSpec,

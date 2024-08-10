@@ -63,11 +63,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.DividerDefaults
@@ -86,6 +86,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -137,7 +139,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.debugInspectorInfo
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -178,7 +179,6 @@ import com.thekeeperofpie.compose_proxy.R
 import de.charlex.compose.toAnnotatedString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -378,10 +378,10 @@ fun LinearProgressWithIndicator(text: String, progress: Float?) {
                 )
 
                 LinearProgressIndicator(
-                    progress = progress ?: 0f,
+                    progress = { progress ?: 0f },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 10.dp, bottom = 10.dp)
+                        .padding(top = 10.dp, bottom = 10.dp),
                 )
             }
 
@@ -657,7 +657,7 @@ fun AutoHeightText(
     style: TextStyle = LocalTextStyle.current,
     minTextSizeSp: Float = 2f,
 ) {
-    var realFontSize by remember { mutableStateOf(fontSize.takeOrElse { style.fontSize }.value) }
+    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
     var readyToDraw by remember { mutableStateOf(false) }
     var realOverflow by remember { mutableStateOf(overflow) }
 
@@ -716,7 +716,7 @@ fun AutoWidthText(
     style: TextStyle = LocalTextStyle.current,
     minTextSizeSp: Float = 2f,
 ) {
-    var realFontSize by remember { mutableStateOf(fontSize.takeOrElse { style.fontSize }.value) }
+    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
     var readyToDraw by remember { mutableStateOf(false) }
     var realOverflow by remember { mutableStateOf(overflow) }
 
@@ -775,7 +775,7 @@ fun AutoSizeText(
     style: TextStyle = LocalTextStyle.current,
     minTextSizeSp: Float = 2f,
 ) {
-    var realFontSize by remember { mutableStateOf(fontSize.takeOrElse { style.fontSize }.value) }
+    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
     var readyToDraw by remember { mutableStateOf(false) }
     var realOverflow by remember { mutableStateOf(overflow) }
 
@@ -835,18 +835,24 @@ fun StaticSearchBar(
     onSearch: (String) -> Unit = {},
 ) {
     SearchBar(
-        query = query,
-        onQueryChange = onQueryChange,
-        onSearch = onSearch,
-        active = false,
-        onActiveChange = {},
-        leadingIcon = leadingIcon,
-        placeholder = placeholder,
-        trailingIcon = trailingIcon,
+        inputField = {
+            SearchBarDefaults.InputField(
+                query = query,
+                onQueryChange = onQueryChange,
+                onSearch = onSearch,
+                expanded = false,
+                onExpandedChange = {},
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+            )
+        },
+        expanded = false,
+        onExpandedChange = {},
         content = {},
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
     )
 }
 
@@ -1418,7 +1424,7 @@ fun DetailsSectionHeader(
                 modifier = Modifier.padding(top = 4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.OpenInNew,
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                     contentDescription = viewAllContentDescriptionTextRes?.let {
                         stringResource(it)
                     },
@@ -1832,30 +1838,3 @@ fun ClickableBottomSheetDragHandle(scope: CoroutineScope, sheetState: SheetState
         BottomSheetDefaults.DragHandle()
     }
 }
-
-@Composable
-fun ClickableBottomSheetDragHandle(
-    scope: CoroutineScope,
-    sheetState: androidx.compose.material3.SheetState,
-) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier
-        .fillMaxWidth()
-        .clickable {
-            if (sheetState.currentValue == SheetValue.Expanded) {
-                scope.launch {
-                    try {
-                        sheetState.hide()
-                    } catch (ignored: Throwable) {
-                        sheetState.partialExpand()
-                    }
-                }
-            } else {
-                scope.launch { sheetState.expand() }
-            }
-        }
-        .testTag("bottomSheetDragHandle")
-    ) {
-        BottomSheetDefaults.DragHandle()
-    }
-}
-

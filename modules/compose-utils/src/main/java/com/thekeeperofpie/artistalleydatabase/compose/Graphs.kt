@@ -39,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -293,8 +292,8 @@ private fun <Value> FixedBarChart(
     sliceToText: @Composable (Value) -> String,
     showBarPadding: Boolean = true,
 ) {
-    var split by rememberSaveable { mutableStateOf(0) }
-    var nonZeroSplit by rememberSaveable { mutableStateOf(0) }
+    var split by rememberSaveable { mutableIntStateOf(0) }
+    var nonZeroSplit by rememberSaveable { mutableIntStateOf(0) }
     val format = remember { DecimalFormat("#%") }
     Row(
         verticalAlignment = Alignment.Bottom,

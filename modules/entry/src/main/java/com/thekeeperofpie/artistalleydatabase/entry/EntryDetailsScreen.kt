@@ -89,7 +89,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object EntryDetailsScreen {
 
-    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
         viewModel: EntryDetailsViewModel<*, *>,
@@ -104,7 +103,7 @@ object EntryDetailsScreen {
         onNavigate: (String) -> Unit,
     ) {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
-        var showCropDialogIndex by rememberSaveable { mutableStateOf(-1) }
+        var showCropDialogIndex by rememberSaveable { mutableIntStateOf(-1) }
         val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
             ?.onBackPressedDispatcher
         val pullRefreshState = rememberPullRefreshState(

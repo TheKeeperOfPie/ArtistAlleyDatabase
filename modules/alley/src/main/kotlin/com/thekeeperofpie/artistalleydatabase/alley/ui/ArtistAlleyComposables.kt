@@ -313,6 +313,8 @@ private fun ImagePager(
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
+            // TODO: Replace
+            @Suppress("DEPRECATION")
             HorizontalPagerIndicator(
                 pagerState = pagerState,
                 pageCount = pagerState.pageCount,
