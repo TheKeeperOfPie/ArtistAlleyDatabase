@@ -6,9 +6,9 @@ import androidx.compose.runtime.setValue
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-inline fun <T> observableStateOf(value: T, crossinline onChange: (T) -> Unit) =
+inline fun <T> observableStateOf(initialValue: T, crossinline onChange: (T) -> Unit) =
     object : ReadWriteProperty<Any?, T> {
-        var value by mutableStateOf(value)
+        var value by mutableStateOf(initialValue)
 
         override operator fun getValue(thisRef: Any?, property: KProperty<*>) = value
 

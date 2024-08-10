@@ -38,6 +38,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -54,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
+import kotlinx.coroutines.launch
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -137,13 +139,18 @@ object EntryHomeScreen {
         onConfirmDelete: () -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
+        val bottomSheetState = rememberStandardBottomSheetState(
+            confirmValueChange = { it != SheetValue.Hidden },
+            skipHiddenState = true,
+        )
+        val scope = rememberCoroutineScope()
+        BackHandler(bottomSheetState.targetValue == SheetValue.Expanded) {
+            scope.launch {
+                bottomSheetState.partialExpand()
+            }
+        }
         BottomSheetScaffold(
-            scaffoldState = rememberBottomSheetScaffoldState(
-                bottomSheetState = rememberStandardBottomSheetState(
-                    confirmValueChange = { it != SheetValue.Hidden },
-                    skipHiddenState = true,
-                )
-            ),
+            scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState),
             sheetContent = {
                 SearchFilterSheet(sections = sections, onNavigate = onNavigate)
             },
