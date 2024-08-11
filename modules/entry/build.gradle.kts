@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.coil3.coil.network.okhttp)
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.uuid)
 
     implementation(libs.java.diff.utils)
 

@@ -2,11 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.cds.section
 
 import android.util.Log
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.cds.R
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.emitNotNull
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.suspend1

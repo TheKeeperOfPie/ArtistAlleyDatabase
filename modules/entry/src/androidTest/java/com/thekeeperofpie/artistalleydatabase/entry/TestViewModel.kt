@@ -1,11 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.net.Uri
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import java.io.File
-import java.util.UUID
 
 internal class TestViewModel(
     private val hasError: Boolean = false,
@@ -17,7 +17,7 @@ internal class TestViewModel(
     TestEntry::class,
     mockStrict {
         whenever(filesDir) {
-            testDirectory.resolve(UUID.randomUUID().toString()).apply { mkdirs() }
+            testDirectory.resolve(Uuid.randomUUID().toString()).apply { mkdirs() }
         }
     },
     "test",
@@ -38,7 +38,7 @@ internal class TestViewModel(
         skipIgnoreableErrors: Boolean
     ) = if (hasError && !skipIgnoreableErrors) false else {
         if (entryIds.isEmpty()) {
-            val id = UUID.randomUUID().toString()
+            val id = Uuid.randomUUID().toString()
             entries[id] = TestEntry(id, model!!.data, skipIgnoreableErrors)
         } else {
             entryIds.forEach {

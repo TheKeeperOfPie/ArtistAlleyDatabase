@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import androidx.annotation.WorkerThread
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import kotlinx.coroutines.flow.combine

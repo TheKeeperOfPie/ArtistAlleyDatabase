@@ -6,25 +6,25 @@ import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.benasher44.uuid.Uuid
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.squareup.moshi.JsonClass
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import java.math.BigDecimal
-import java.util.Date
-import java.util.UUID
 
 @Serializable
 @JsonClass(generateAdapter = true)
 @Entity(tableName = "cd_entries")
 data class CdEntry(
     @PrimaryKey
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = Uuid.randomUUID().toString(),
     val catalogId: String? = null,
     val titles: List<String> = emptyList(),
     val performers: List<String> = emptyList(),
@@ -40,10 +40,7 @@ data class CdEntry(
     val tags: List<String> = emptyList(),
     @Serializable(with = Converters.BigDecimalConverter::class)
     val price: BigDecimal? = null,
-    @Serializable(with = Converters.DateConverter::class)
-    val date: Date? = null,
-    @Serializable(with = Converters.DateConverter::class)
-    val lastEditTime: Date? = null,
+    val lastEditTime: Instant? = null,
     val imageWidth: Int? = null,
     val imageHeight: Int? = null,
     val notes: String? = null,
@@ -126,10 +123,7 @@ data class CdEntryFts(
     val tags: List<String>,
     @Serializable(with = Converters.BigDecimalConverter::class)
     val price: BigDecimal?,
-    @Serializable(with = Converters.DateConverter::class)
-    val date: Date?,
-    @Serializable(with = Converters.DateConverter::class)
-    val lastEditTime: Date?,
+    val lastEditTime: Instant?,
     val imageWidth: Int?,
     val imageHeight: Int?,
     val notes: String?,

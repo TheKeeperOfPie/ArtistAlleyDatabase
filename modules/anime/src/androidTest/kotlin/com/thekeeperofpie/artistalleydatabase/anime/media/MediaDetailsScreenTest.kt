@@ -15,7 +15,6 @@ import androidx.compose.ui.test.performScrollToKey
 import androidx.lifecycle.SavedStateHandle
 import com.anilist.fragment.ListActivityMediaListActivityItem
 import com.google.common.truth.Truth.assertThat
-import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -41,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import dagger.hilt.android.testing.HiltAndroidTest
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import io.noties.markwon.Markwon

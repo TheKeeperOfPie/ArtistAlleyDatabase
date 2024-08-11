@@ -4,7 +4,6 @@ import androidx.compose.ui.res.stringResource
 import com.anilist.Anime2AnimeCountQuery
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -15,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 

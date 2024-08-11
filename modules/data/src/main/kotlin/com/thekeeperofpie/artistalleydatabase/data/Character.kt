@@ -1,9 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.data
 
 import android.util.Log
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
-import kotlinx.serialization.decodeFromString
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 
 sealed class Character {
     abstract val id: String

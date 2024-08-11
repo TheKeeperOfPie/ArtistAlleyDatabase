@@ -25,7 +25,6 @@ import androidx.navigation.toRoute
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
@@ -112,6 +111,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeM
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
 
 object AnimeNavigator {
 

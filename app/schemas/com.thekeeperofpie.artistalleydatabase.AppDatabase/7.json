@@ -1,0 +1,1109 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 7,
+    "identityHash": "61b4547d4d01338bdce0d73b3c1626b0",
+    "entities": [
+      {
+        "tableName": "art_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `artists` TEXT NOT NULL, `sourceType` TEXT, `sourceValue` TEXT, `seriesSerialized` TEXT NOT NULL, `seriesSearchable` TEXT NOT NULL, `charactersSerialized` TEXT NOT NULL, `charactersSearchable` TEXT NOT NULL, `tags` TEXT NOT NULL, `price` TEXT, `lastEditTime` INTEGER, `imageWidth` INTEGER, `imageHeight` INTEGER, `printWidth` INTEGER, `printHeight` INTEGER, `notes` TEXT, `artistsLocked` INTEGER, `sourceLocked` INTEGER, `seriesLocked` INTEGER, `charactersLocked` INTEGER, `tagsLocked` INTEGER, `notesLocked` INTEGER, `printSizeLocked` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artists",
+            "columnName": "artists",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceType",
+            "columnName": "sourceType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceValue",
+            "columnName": "sourceValue",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "seriesSerialized",
+            "columnName": "seriesSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesSearchable",
+            "columnName": "seriesSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "charactersSerialized",
+            "columnName": "charactersSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "charactersSearchable",
+            "columnName": "charactersSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastEditTime",
+            "columnName": "lastEditTime",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageWidth",
+            "columnName": "imageWidth",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageHeight",
+            "columnName": "imageHeight",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "printWidth",
+            "columnName": "printWidth",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "printHeight",
+            "columnName": "printHeight",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "locks.artistsLocked",
+            "columnName": "artistsLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.sourceLocked",
+            "columnName": "sourceLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.seriesLocked",
+            "columnName": "seriesLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.charactersLocked",
+            "columnName": "charactersLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.tagsLocked",
+            "columnName": "tagsLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.notesLocked",
+            "columnName": "notesLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.printSizeLocked",
+            "columnName": "printSizeLocked",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "art_entries_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`id` TEXT NOT NULL, `artists` TEXT NOT NULL, `sourceType` TEXT, `sourceValue` TEXT, `seriesSerialized` TEXT NOT NULL, `seriesSearchable` TEXT NOT NULL, `charactersSerialized` TEXT NOT NULL, `charactersSearchable` TEXT NOT NULL, `tags` TEXT NOT NULL, `price` TEXT, `lastEditTime` INTEGER, `imageWidth` INTEGER, `imageHeight` INTEGER, `printWidth` INTEGER, `printHeight` INTEGER, `notes` TEXT, `artistsLocked` INTEGER, `sourceLocked` INTEGER, `seriesLocked` INTEGER, `charactersLocked` INTEGER, `tagsLocked` INTEGER, `notesLocked` INTEGER, `printSizeLocked` INTEGER, content=`art_entries`)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artists",
+            "columnName": "artists",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceType",
+            "columnName": "sourceType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceValue",
+            "columnName": "sourceValue",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "seriesSerialized",
+            "columnName": "seriesSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesSearchable",
+            "columnName": "seriesSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "charactersSerialized",
+            "columnName": "charactersSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "charactersSearchable",
+            "columnName": "charactersSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastEditTime",
+            "columnName": "lastEditTime",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageWidth",
+            "columnName": "imageWidth",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageHeight",
+            "columnName": "imageHeight",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "printWidth",
+            "columnName": "printWidth",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "printHeight",
+            "columnName": "printHeight",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "locks.artistsLocked",
+            "columnName": "artistsLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.sourceLocked",
+            "columnName": "sourceLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.seriesLocked",
+            "columnName": "seriesLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.charactersLocked",
+            "columnName": "charactersLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.tagsLocked",
+            "columnName": "tagsLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.notesLocked",
+            "columnName": "notesLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.printSizeLocked",
+            "columnName": "printSizeLocked",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "rowid"
+          ]
+        },
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "art_entries",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_art_entries_fts_BEFORE_UPDATE BEFORE UPDATE ON `art_entries` BEGIN DELETE FROM `art_entries_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_art_entries_fts_BEFORE_DELETE BEFORE DELETE ON `art_entries` BEGIN DELETE FROM `art_entries_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_art_entries_fts_AFTER_UPDATE AFTER UPDATE ON `art_entries` BEGIN INSERT INTO `art_entries_fts`(`docid`, `id`, `artists`, `sourceType`, `sourceValue`, `seriesSerialized`, `seriesSearchable`, `charactersSerialized`, `charactersSearchable`, `tags`, `price`, `lastEditTime`, `imageWidth`, `imageHeight`, `printWidth`, `printHeight`, `notes`, `artistsLocked`, `sourceLocked`, `seriesLocked`, `charactersLocked`, `tagsLocked`, `notesLocked`, `printSizeLocked`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`artists`, NEW.`sourceType`, NEW.`sourceValue`, NEW.`seriesSerialized`, NEW.`seriesSearchable`, NEW.`charactersSerialized`, NEW.`charactersSearchable`, NEW.`tags`, NEW.`price`, NEW.`lastEditTime`, NEW.`imageWidth`, NEW.`imageHeight`, NEW.`printWidth`, NEW.`printHeight`, NEW.`notes`, NEW.`artistsLocked`, NEW.`sourceLocked`, NEW.`seriesLocked`, NEW.`charactersLocked`, NEW.`tagsLocked`, NEW.`notesLocked`, NEW.`printSizeLocked`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_art_entries_fts_AFTER_INSERT AFTER INSERT ON `art_entries` BEGIN INSERT INTO `art_entries_fts`(`docid`, `id`, `artists`, `sourceType`, `sourceValue`, `seriesSerialized`, `seriesSearchable`, `charactersSerialized`, `charactersSearchable`, `tags`, `price`, `lastEditTime`, `imageWidth`, `imageHeight`, `printWidth`, `printHeight`, `notes`, `artistsLocked`, `sourceLocked`, `seriesLocked`, `charactersLocked`, `tagsLocked`, `notesLocked`, `printSizeLocked`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`artists`, NEW.`sourceType`, NEW.`sourceValue`, NEW.`seriesSerialized`, NEW.`seriesSearchable`, NEW.`charactersSerialized`, NEW.`charactersSearchable`, NEW.`tags`, NEW.`price`, NEW.`lastEditTime`, NEW.`imageWidth`, NEW.`imageHeight`, NEW.`printWidth`, NEW.`printHeight`, NEW.`notes`, NEW.`artistsLocked`, NEW.`sourceLocked`, NEW.`seriesLocked`, NEW.`charactersLocked`, NEW.`tagsLocked`, NEW.`notesLocked`, NEW.`printSizeLocked`); END"
+        ]
+      },
+      {
+        "tableName": "cd_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `catalogId` TEXT, `titles` TEXT NOT NULL, `performers` TEXT NOT NULL, `performersSearchable` TEXT NOT NULL, `composers` TEXT NOT NULL, `composersSearchable` TEXT NOT NULL, `seriesSerialized` TEXT NOT NULL, `seriesSearchable` TEXT NOT NULL, `charactersSerialized` TEXT NOT NULL, `charactersSearchable` TEXT NOT NULL, `discs` TEXT NOT NULL, `tags` TEXT NOT NULL, `price` TEXT, `lastEditTime` INTEGER, `imageWidth` INTEGER, `imageHeight` INTEGER, `notes` TEXT, `catalogIdLocked` INTEGER, `titlesLocked` INTEGER, `performersLocked` INTEGER, `composersLocked` INTEGER, `seriesLocked` INTEGER, `charactersLocked` INTEGER, `discsLocked` INTEGER, `tagsLocked` INTEGER, `priceLocked` INTEGER, `notesLocked` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogId",
+            "columnName": "catalogId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "titles",
+            "columnName": "titles",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "performers",
+            "columnName": "performers",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "performersSearchable",
+            "columnName": "performersSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "composers",
+            "columnName": "composers",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "composersSearchable",
+            "columnName": "composersSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesSerialized",
+            "columnName": "seriesSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesSearchable",
+            "columnName": "seriesSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "charactersSerialized",
+            "columnName": "charactersSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "charactersSearchable",
+            "columnName": "charactersSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discs",
+            "columnName": "discs",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastEditTime",
+            "columnName": "lastEditTime",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageWidth",
+            "columnName": "imageWidth",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageHeight",
+            "columnName": "imageHeight",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "locks.catalogIdLocked",
+            "columnName": "catalogIdLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.titlesLocked",
+            "columnName": "titlesLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.performersLocked",
+            "columnName": "performersLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.composersLocked",
+            "columnName": "composersLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.seriesLocked",
+            "columnName": "seriesLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.charactersLocked",
+            "columnName": "charactersLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.discsLocked",
+            "columnName": "discsLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.tagsLocked",
+            "columnName": "tagsLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.priceLocked",
+            "columnName": "priceLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.notesLocked",
+            "columnName": "notesLocked",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "cd_entries_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`id` TEXT NOT NULL, `catalogId` TEXT, `titles` TEXT NOT NULL, `performers` TEXT NOT NULL, `performersSearchable` TEXT NOT NULL, `composers` TEXT NOT NULL, `composersSearchable` TEXT NOT NULL, `seriesSerialized` TEXT NOT NULL, `seriesSearchable` TEXT NOT NULL, `charactersSerialized` TEXT NOT NULL, `charactersSearchable` TEXT NOT NULL, `discs` TEXT NOT NULL, `tags` TEXT NOT NULL, `price` TEXT, `lastEditTime` INTEGER, `imageWidth` INTEGER, `imageHeight` INTEGER, `notes` TEXT, `catalogIdLocked` INTEGER, `titlesLocked` INTEGER, `performersLocked` INTEGER, `composersLocked` INTEGER, `seriesLocked` INTEGER, `charactersLocked` INTEGER, `discsLocked` INTEGER, `tagsLocked` INTEGER, `priceLocked` INTEGER, `notesLocked` INTEGER, content=`cd_entries`)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogId",
+            "columnName": "catalogId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "titles",
+            "columnName": "titles",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "performers",
+            "columnName": "performers",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "performersSearchable",
+            "columnName": "performersSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "composers",
+            "columnName": "composers",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "composersSearchable",
+            "columnName": "composersSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesSerialized",
+            "columnName": "seriesSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesSearchable",
+            "columnName": "seriesSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "charactersSerialized",
+            "columnName": "charactersSerialized",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "charactersSearchable",
+            "columnName": "charactersSearchable",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discs",
+            "columnName": "discs",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastEditTime",
+            "columnName": "lastEditTime",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageWidth",
+            "columnName": "imageWidth",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageHeight",
+            "columnName": "imageHeight",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "locks.catalogIdLocked",
+            "columnName": "catalogIdLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.titlesLocked",
+            "columnName": "titlesLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.performersLocked",
+            "columnName": "performersLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.composersLocked",
+            "columnName": "composersLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.seriesLocked",
+            "columnName": "seriesLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.charactersLocked",
+            "columnName": "charactersLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.discsLocked",
+            "columnName": "discsLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.tagsLocked",
+            "columnName": "tagsLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.priceLocked",
+            "columnName": "priceLocked",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "locks.notesLocked",
+            "columnName": "notesLocked",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "rowid"
+          ]
+        },
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "cd_entries",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_cd_entries_fts_BEFORE_UPDATE BEFORE UPDATE ON `cd_entries` BEGIN DELETE FROM `cd_entries_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_cd_entries_fts_BEFORE_DELETE BEFORE DELETE ON `cd_entries` BEGIN DELETE FROM `cd_entries_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_cd_entries_fts_AFTER_UPDATE AFTER UPDATE ON `cd_entries` BEGIN INSERT INTO `cd_entries_fts`(`docid`, `id`, `catalogId`, `titles`, `performers`, `performersSearchable`, `composers`, `composersSearchable`, `seriesSerialized`, `seriesSearchable`, `charactersSerialized`, `charactersSearchable`, `discs`, `tags`, `price`, `lastEditTime`, `imageWidth`, `imageHeight`, `notes`, `catalogIdLocked`, `titlesLocked`, `performersLocked`, `composersLocked`, `seriesLocked`, `charactersLocked`, `discsLocked`, `tagsLocked`, `priceLocked`, `notesLocked`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`catalogId`, NEW.`titles`, NEW.`performers`, NEW.`performersSearchable`, NEW.`composers`, NEW.`composersSearchable`, NEW.`seriesSerialized`, NEW.`seriesSearchable`, NEW.`charactersSerialized`, NEW.`charactersSearchable`, NEW.`discs`, NEW.`tags`, NEW.`price`, NEW.`lastEditTime`, NEW.`imageWidth`, NEW.`imageHeight`, NEW.`notes`, NEW.`catalogIdLocked`, NEW.`titlesLocked`, NEW.`performersLocked`, NEW.`composersLocked`, NEW.`seriesLocked`, NEW.`charactersLocked`, NEW.`discsLocked`, NEW.`tagsLocked`, NEW.`priceLocked`, NEW.`notesLocked`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_cd_entries_fts_AFTER_INSERT AFTER INSERT ON `cd_entries` BEGIN INSERT INTO `cd_entries_fts`(`docid`, `id`, `catalogId`, `titles`, `performers`, `performersSearchable`, `composers`, `composersSearchable`, `seriesSerialized`, `seriesSearchable`, `charactersSerialized`, `charactersSearchable`, `discs`, `tags`, `price`, `lastEditTime`, `imageWidth`, `imageHeight`, `notes`, `catalogIdLocked`, `titlesLocked`, `performersLocked`, `composersLocked`, `seriesLocked`, `charactersLocked`, `discsLocked`, `tagsLocked`, `priceLocked`, `notesLocked`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`catalogId`, NEW.`titles`, NEW.`performers`, NEW.`performersSearchable`, NEW.`composers`, NEW.`composersSearchable`, NEW.`seriesSerialized`, NEW.`seriesSearchable`, NEW.`charactersSerialized`, NEW.`charactersSearchable`, NEW.`discs`, NEW.`tags`, NEW.`price`, NEW.`lastEditTime`, NEW.`imageWidth`, NEW.`imageHeight`, NEW.`notes`, NEW.`catalogIdLocked`, NEW.`titlesLocked`, NEW.`performersLocked`, NEW.`composersLocked`, NEW.`seriesLocked`, NEW.`charactersLocked`, NEW.`discsLocked`, NEW.`tagsLocked`, NEW.`priceLocked`, NEW.`notesLocked`); END"
+        ]
+      },
+      {
+        "tableName": "media_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT, `synonyms` TEXT, `title_romaji` TEXT, `title_english` TEXT, `title_native` TEXT, `image_extraLarge` TEXT, `image_large` TEXT, `image_medium` TEXT, `image_color` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "synonyms",
+            "columnName": "synonyms",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title.romaji",
+            "columnName": "title_romaji",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title.english",
+            "columnName": "title_english",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title.native",
+            "columnName": "title_native",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image.extraLarge",
+            "columnName": "image_extraLarge",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image.large",
+            "columnName": "image_large",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image.medium",
+            "columnName": "image_medium",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image.color",
+            "columnName": "image_color",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "character_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mediaIds` TEXT, `mediaTitle` TEXT, `voiceActors` TEXT, `name_first` TEXT, `name_middle` TEXT, `name_last` TEXT, `name_full` TEXT, `name_native` TEXT, `name_alternative` TEXT, `image_large` TEXT, `image_medium` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaIds",
+            "columnName": "mediaIds",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "mediaTitle",
+            "columnName": "mediaTitle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "voiceActors",
+            "columnName": "voiceActors",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.first",
+            "columnName": "name_first",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.middle",
+            "columnName": "name_middle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.last",
+            "columnName": "name_last",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.full",
+            "columnName": "name_full",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.native",
+            "columnName": "name_native",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.alternative",
+            "columnName": "name_alternative",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image.large",
+            "columnName": "image_large",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image.medium",
+            "columnName": "image_medium",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "character_entries_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`id` TEXT NOT NULL, `mediaIds` TEXT, `mediaTitle` TEXT, `voiceActors` TEXT, `name_first` TEXT, `name_middle` TEXT, `name_last` TEXT, `name_full` TEXT, `name_native` TEXT, `name_alternative` TEXT, `image_large` TEXT, `image_medium` TEXT, content=`character_entries`)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaIds",
+            "columnName": "mediaIds",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "mediaTitle",
+            "columnName": "mediaTitle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "voiceActors",
+            "columnName": "voiceActors",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.first",
+            "columnName": "name_first",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.middle",
+            "columnName": "name_middle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.last",
+            "columnName": "name_last",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.full",
+            "columnName": "name_full",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.native",
+            "columnName": "name_native",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name.alternative",
+            "columnName": "name_alternative",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image.large",
+            "columnName": "image_large",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "image.medium",
+            "columnName": "image_medium",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "rowid"
+          ]
+        },
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "character_entries",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_BEFORE_UPDATE BEFORE UPDATE ON `character_entries` BEGIN DELETE FROM `character_entries_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_BEFORE_DELETE BEFORE DELETE ON `character_entries` BEGIN DELETE FROM `character_entries_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_AFTER_UPDATE AFTER UPDATE ON `character_entries` BEGIN INSERT INTO `character_entries_fts`(`docid`, `id`, `mediaIds`, `mediaTitle`, `voiceActors`, `name_first`, `name_middle`, `name_last`, `name_full`, `name_native`, `name_alternative`, `image_large`, `image_medium`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`mediaIds`, NEW.`mediaTitle`, NEW.`voiceActors`, NEW.`name_first`, NEW.`name_middle`, NEW.`name_last`, NEW.`name_full`, NEW.`name_native`, NEW.`name_alternative`, NEW.`image_large`, NEW.`image_medium`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_AFTER_INSERT AFTER INSERT ON `character_entries` BEGIN INSERT INTO `character_entries_fts`(`docid`, `id`, `mediaIds`, `mediaTitle`, `voiceActors`, `name_first`, `name_middle`, `name_last`, `name_full`, `name_native`, `name_alternative`, `image_large`, `image_medium`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`mediaIds`, NEW.`mediaTitle`, NEW.`voiceActors`, NEW.`name_first`, NEW.`name_middle`, NEW.`name_last`, NEW.`name_full`, NEW.`name_native`, NEW.`name_alternative`, NEW.`image_large`, NEW.`image_medium`); END"
+        ]
+      },
+      {
+        "tableName": "album_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `catalogId` TEXT, `names` TEXT NOT NULL, `coverArt` TEXT, `performers` TEXT NOT NULL, `composers` TEXT NOT NULL, `discs` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogId",
+            "columnName": "catalogId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "names",
+            "columnName": "names",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coverArt",
+            "columnName": "coverArt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "performers",
+            "columnName": "performers",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "composers",
+            "columnName": "composers",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discs",
+            "columnName": "discs",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "vgmdb_artists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `names` TEXT NOT NULL, `name` TEXT NOT NULL, `picture` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "names",
+            "columnName": "names",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "picture",
+            "columnName": "picture",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "musical_artists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `image` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "image",
+            "columnName": "image",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "anime_media_history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT, `isAdult` INTEGER, `bannerImage` TEXT, `coverImage` TEXT, `viewedAt` INTEGER NOT NULL, `title_romaji` TEXT, `title_english` TEXT, `title_native` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isAdult",
+            "columnName": "isAdult",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "bannerImage",
+            "columnName": "bannerImage",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "coverImage",
+            "columnName": "coverImage",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "viewedAt",
+            "columnName": "viewedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title.romaji",
+            "columnName": "title_romaji",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title.english",
+            "columnName": "title_english",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title.native",
+            "columnName": "title_native",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "anime_media_ignore",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT, `isAdult` INTEGER, `bannerImage` TEXT, `coverImage` TEXT, `viewedAt` INTEGER NOT NULL, `title_romaji` TEXT, `title_english` TEXT, `title_native` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isAdult",
+            "columnName": "isAdult",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "bannerImage",
+            "columnName": "bannerImage",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "coverImage",
+            "columnName": "coverImage",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "viewedAt",
+            "columnName": "viewedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title.romaji",
+            "columnName": "title_romaji",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title.english",
+            "columnName": "title_english",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title.native",
+            "columnName": "title_native",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '61b4547d4d01338bdce0d73b3c1626b0')"
+    ]
+  }
+}

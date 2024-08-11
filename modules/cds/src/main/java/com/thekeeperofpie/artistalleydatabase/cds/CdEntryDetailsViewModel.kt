@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.cds
 import android.app.Application
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
@@ -35,9 +36,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.util.Date
-import java.util.UUID
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @HiltViewModel
@@ -164,7 +163,7 @@ class CdEntryDetailsViewModel @Inject constructor(
         val allEntryIds = (entryIds + saveImagesResult.keys).toMutableSet()
         if (allEntryIds.isEmpty()) {
             // If there are no images and no existing edits, this will be empty, add a new ID
-            allEntryIds += EntryId(scopedIdType, UUID.randomUUID().toString())
+            allEntryIds += EntryId(scopedIdType, Uuid.randomUUID().toString())
         }
 
         val entryImages = entryImageController.images.groupBy { it.entryId }
@@ -302,7 +301,7 @@ class CdEntryDetailsViewModel @Inject constructor(
                 .filterNot(String?::isNullOrBlank),
             discs = entrySections.discSection.serializedValue(),
             tags = entrySections.tagSection.finalContents().map { it.serializedValue },
-            lastEditTime = Date.from(Instant.now()),
+            lastEditTime = Clock.System.now(),
             imageWidth = null,
             imageHeight = null,
             notes = entrySections.notesSection.value.trim(),

@@ -10,7 +10,6 @@ import androidx.work.WorkerParameters
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.MainActivity
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
@@ -19,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers

@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import com.thekeeperofpie.anichive.BuildConfig
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn

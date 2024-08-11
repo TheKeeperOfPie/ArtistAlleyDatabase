@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.animethemes
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.Anime
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistWithAniList
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream

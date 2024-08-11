@@ -68,7 +68,6 @@ import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
@@ -119,6 +118,7 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import dagger.hilt.android.AndroidEntryPoint
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.launch

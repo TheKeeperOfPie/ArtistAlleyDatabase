@@ -1,9 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.cds.data
 
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
-import java.math.BigDecimal
-import java.util.Date
+import kotlinx.datetime.Instant
 
 data class CdEntryModel(
     val id: String,
@@ -16,8 +16,7 @@ data class CdEntryModel(
     val discs: List<DiscEntry>,
     val tags: List<EntrySection.MultiText.Entry>,
     val price: BigDecimal?,
-    val date: Date?,
-    val lastEditTime: Date?,
+    val lastEditTime: Instant?,
     val imageWidth: Int?,
     val imageHeight: Int?,
     val notes: String?,
@@ -53,7 +52,6 @@ data class CdEntryModel(
         discs = discs,
         tags = tags,
         price = entry.price,
-        date = entry.date,
         lastEditTime = entry.lastEditTime,
         imageWidth = entry.imageWidth,
         imageHeight = entry.imageHeight,

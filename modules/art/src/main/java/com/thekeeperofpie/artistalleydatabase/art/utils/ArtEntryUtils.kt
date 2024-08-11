@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.art.utils
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 
 object ArtEntryUtils {
 

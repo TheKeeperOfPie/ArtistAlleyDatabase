@@ -2,10 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.anilist.character
 
 import com.anilist.fragment.AniListCharacter
 import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.R
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 
 class CharacterRepository(
     application: ScopedApplication,

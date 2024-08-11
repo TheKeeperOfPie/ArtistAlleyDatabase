@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.navigation.NavHostController
+import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -26,7 +27,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.UUID
 
 class EntryImageController(
     private val scopeProvider: () -> CoroutineScope,
@@ -235,7 +235,7 @@ class EntryImageController(
         val imageCropUri = imageCropUri ?: return
         scopeProvider().launch(Dispatchers.IO) {
             val entryId =
-                images[index].entryId ?: EntryId(scopedIdType, UUID.randomUUID().toString())
+                images[index].entryId ?: EntryId(scopedIdType, Uuid.randomUUID().toString())
             val outputFile =
                 EntryUtils.getCropTempFile(application, entryId, index)
             application.contentResolver.openInputStream(imageCropUri)?.use { input ->
@@ -308,7 +308,7 @@ class EntryImageController(
                 async {
                     // Generate a new ID for new entries
                     val entryId =
-                        entryImage.entryId ?: EntryId(scopedIdType, UUID.randomUUID().toString())
+                        entryImage.entryId ?: EntryId(scopedIdType, Uuid.randomUUID().toString())
                     val originalFile = EntryUtils.getImageFile(
                         context = application,
                         entryId = entryId,

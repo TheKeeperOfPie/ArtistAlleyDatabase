@@ -10,11 +10,11 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.yield
 

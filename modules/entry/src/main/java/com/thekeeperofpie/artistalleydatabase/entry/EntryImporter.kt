@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.content.Context
+import com.benasher44.uuid.uuidFrom
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import java.io.File
 import java.io.InputStream
-import java.util.UUID
 
 abstract class EntryImporter(protected val appContext: Context) : Importer {
 
@@ -17,7 +17,7 @@ abstract class EntryImporter(protected val appContext: Context) : Importer {
             try {
                 // Try to resolve the name directly as a UUID,
                 // and if success, consider it a legacy name
-                UUID.fromString(entryName)
+                uuidFrom(entryName)
 
                 val outputFile = EntryUtils.getEntryImageFolder(
                     appContext,

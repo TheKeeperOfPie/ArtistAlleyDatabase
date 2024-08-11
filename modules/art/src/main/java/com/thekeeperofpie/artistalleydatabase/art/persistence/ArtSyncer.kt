@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art.persistence
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.DatabaseSyncer
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
@@ -10,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntrySyncDao
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 
 class ArtSyncer(
     private val appJson: AppJson,

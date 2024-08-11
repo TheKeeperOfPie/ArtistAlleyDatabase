@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.browse
 
 import androidx.compose.runtime.Immutable
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
 
 @Immutable
 data class BrowseEntryModel(

@@ -6,7 +6,6 @@ import android.content.ClipDescription
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -16,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

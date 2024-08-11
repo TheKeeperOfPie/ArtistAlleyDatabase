@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.art
 
 import android.app.Application
 import com.squareup.moshi.Moshi
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.DatabaseSyncer
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
@@ -24,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSyncer
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.character
 
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 
 object CharacterUtils {
 

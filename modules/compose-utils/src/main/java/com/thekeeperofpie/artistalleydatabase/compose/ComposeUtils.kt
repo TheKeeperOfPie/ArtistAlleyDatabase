@@ -19,8 +19,8 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.ConfigurationCompat
 import androidx.core.os.LocaleListCompat
-import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.time.Duration

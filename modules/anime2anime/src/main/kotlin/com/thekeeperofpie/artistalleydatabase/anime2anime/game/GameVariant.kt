@@ -12,7 +12,6 @@ import com.anilist.Anime2AnimeConnectionsQuery
 import com.anilist.Anime2AnimeCountQuery
 import com.anilist.fragment.AniListMedia
 import com.anilist.fragment.Anime2AnimeConnectionsStaffMedia
-import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.LogUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -28,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.debounce
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job

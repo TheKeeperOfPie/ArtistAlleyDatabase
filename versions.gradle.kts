@@ -33,6 +33,7 @@ import Versions_gradle.Versions.junit.four
 import Versions_gradle.Versions.junit.jupiter
 import Versions_gradle.Versions.junit.jupiterAndroid
 import Versions_gradle.Versions.kotlin.coroutines
+import Versions_gradle.Versions.kotlin.datetime
 import Versions_gradle.Versions.kotlin.ksp
 import Versions_gradle.Versions.kotlin.serialization
 import org.gradle.api.initialization.dsl.VersionCatalogBuilder
@@ -75,6 +76,8 @@ object Versions {
 
     const val apollo = "4.0.0-beta.7"
     const val awaitility = "4.2.1"
+    const val benasher44Uuid = "0.8.4"
+    const val bigNum = "0.3.10"
     const val coil = "3.0.0-alpha09"
 
     object compose {
@@ -120,6 +123,7 @@ object Versions {
         const val coroutines = "1.9.0-RC"
         const val ksp = "2.0.10-RC-1.0.23"
         const val serialization = "1.7.1"
+        const val datetime = "0.6.0"
     }
 
     const val kotlinPoet = "1.15.3"
@@ -325,6 +329,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$ksp")
                     library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:$core")
                     library("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$core")
+                    library("org.jetbrains.kotlinx:kotlinx-datetime:$datetime")
                     library("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
                 }
 
@@ -387,8 +392,10 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 library("app.cash.molecule:molecule-runtime:${Versions.molecule}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
+                library("com.benasher44:uuid:${Versions.benasher44Uuid}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
+                library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
                 library("com.neovisionaries:nv-i18n:${Versions.neovisionariesInternationalization}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")

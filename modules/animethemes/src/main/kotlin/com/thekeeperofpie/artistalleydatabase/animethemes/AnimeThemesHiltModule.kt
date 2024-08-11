@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.animethemes
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

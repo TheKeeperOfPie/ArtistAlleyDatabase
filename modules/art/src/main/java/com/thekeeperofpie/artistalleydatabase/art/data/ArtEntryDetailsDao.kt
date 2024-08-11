@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.wrapLikeQuery
-import java.util.Date
+import kotlinx.datetime.Instant
 
 @Dao
 interface ArtEntryDetailsDao : ArtEntryDao {
@@ -480,5 +480,5 @@ interface ArtEntryDetailsDao : ArtEntryDao {
             WHERE id IN (:ids)
         """
     )
-    suspend fun updateLastEditTime(ids: List<String>, lastEditTime: Date?)
+    suspend fun updateLastEditTime(ids: List<String>, lastEditTime: Instant?)
 }

@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.art
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -23,15 +23,14 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.util.Date
-import java.util.UUID
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -217,7 +216,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         val allEntryIds = if (entryIds.isEmpty() && saveImagesResult.isEmpty()) {
             // TODO: There must be a better way to propagate no image saves
             // If no images provided, mock an empty save result
-            setOf(EntryId(scopedIdType, UUID.randomUUID().toString()))
+            setOf(EntryId(scopedIdType, Uuid.randomUUID().toString()))
         } else {
             (entryIds + saveImagesResult.keys).toSet()
         }
@@ -351,7 +350,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             }
         }
 
-        artEntryDao.updateLastEditTime(entryValueIds, Date.from(Instant.now()))
+        artEntryDao.updateLastEditTime(entryValueIds, Clock.System.now())
         return true
     }
 
@@ -430,7 +429,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
                 .map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
             tags = entrySections.tagSection.finalContents().map { it.serializedValue },
-            lastEditTime = Date.from(Instant.now()),
+            lastEditTime = Clock.System.now(),
             imageWidth = null,
             imageHeight = null,
             printWidth = entrySections.printSizeSection.finalWidth(),

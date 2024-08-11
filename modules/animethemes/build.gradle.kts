@@ -10,7 +10,6 @@ android {
 }
 
 dependencies {
-    api(project(":modules:android-utils"))
     api(project(":modules:anime"))
     api(project(":modules:network-utils"))
     implementation(libs.kotlinx.serialization.json)

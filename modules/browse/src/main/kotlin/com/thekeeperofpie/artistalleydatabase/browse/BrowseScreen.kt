@@ -34,10 +34,10 @@ import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

@@ -5,10 +5,8 @@ import androidx.room.Room
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
@@ -19,6 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import dagger.Module
@@ -50,6 +50,7 @@ object AppHiltModule {
     fun provideAppDatabase(application: Application) =
         Room.databaseBuilder(application, AppDatabase::class.java, "appDatabase")
             .fallbackToDestructiveMigrationOnDowngrade(true)
+            .addMigrations(Migration_6_7)
             .build()
 
     @Singleton

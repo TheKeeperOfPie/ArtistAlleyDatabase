@@ -7,17 +7,17 @@ import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.benasher44.uuid.Uuid
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.squareup.moshi.JsonClass
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import java.math.BigDecimal
-import java.util.Date
-import java.util.UUID
 
 @Serializable
 @JsonClass(generateAdapter = true)
@@ -25,7 +25,7 @@ import java.util.UUID
 data class ArtEntry(
     @Discouraged("Prefer entryId")
     @PrimaryKey
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = Uuid.randomUUID().toString(),
     val artists: List<String> = emptyList(),
     val sourceType: String? = null,
     val sourceValue: String? = null,
@@ -38,10 +38,7 @@ data class ArtEntry(
     val tags: List<String> = emptyList(),
     @Serializable(with = Converters.BigDecimalConverter::class)
     val price: BigDecimal? = null,
-    @Serializable(with = Converters.DateConverter::class)
-    val date: Date? = null,
-    @Serializable(with = Converters.DateConverter::class)
-    val lastEditTime: Date? = null,
+    val lastEditTime: Instant? = null,
     val imageWidth: Int? = null,
     val imageHeight: Int? = null,
     val printWidth: Int? = null,
@@ -127,8 +124,7 @@ data class ArtEntryFts(
     val charactersSearchable: List<String>,
     val tags: List<String>,
     val price: BigDecimal?,
-    val date: Date?,
-    val lastEditTime: Date?,
+    val lastEditTime: Instant?,
     val imageWidth: Int?,
     val imageHeight: Int?,
     val printWidth: Int?,

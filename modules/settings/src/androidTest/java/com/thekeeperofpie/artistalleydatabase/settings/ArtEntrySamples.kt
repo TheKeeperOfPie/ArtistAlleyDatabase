@@ -1,9 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
+import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
-import java.time.Instant
-import java.util.Date
-import java.util.UUID
+import kotlinx.datetime.Instant
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -58,8 +57,7 @@ object ArtEntrySamples {
         charactersSearchable = listOf("Lastnameone, Firstnameone, Alternative Name One"),
         tags = listOf("TagOne1", "TagOne2"),
         price = null,
-        date = null,
-        lastEditTime = Date.from(Instant.ofEpochMilli(1660000001234L)),
+        lastEditTime = Instant.fromEpochMilliseconds(1660000001234L),
         imageWidth = 1920,
         imageHeight = 1080,
         printWidth = null,
@@ -87,7 +85,7 @@ object ArtEntrySamples {
 
         return BASE.run {
             copy(
-                id = UUID.randomUUID().toString(),
+                id = Uuid.randomUUID().toString(),
                 artists = artists.map(String::replace),
                 sourceType = sourceType,
                 sourceValue = sourceValue?.replace(),
@@ -96,7 +94,7 @@ object ArtEntrySamples {
                 charactersSerialized = charactersSerialized.map(String::replace),
                 charactersSearchable = charactersSearchable.map(String::replace),
                 tags = tags.map(String::replace),
-                lastEditTime = Date.from(Instant.ofEpochSecond(Random.nextInt().toLong())),
+                lastEditTime = Instant.fromEpochMilliseconds(Random.nextInt().toLong()),
                 imageWidth = uniqueIdentifier.hashCode().absoluteValue.coerceAtLeast(1),
                 imageHeight = uniqueIdentifier.reversed().hashCode().absoluteValue.coerceAtLeast(1),
                 notes = notes?.replace(),

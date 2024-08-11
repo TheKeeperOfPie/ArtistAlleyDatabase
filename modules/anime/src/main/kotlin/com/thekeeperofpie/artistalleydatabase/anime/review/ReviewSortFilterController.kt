@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.review
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -11,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilt
 import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 

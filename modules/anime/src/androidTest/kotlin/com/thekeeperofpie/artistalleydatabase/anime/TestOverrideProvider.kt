@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class TestOverrideProvider : FeatureOverrideProvider, MonetizationOverrideProvider {

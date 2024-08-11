@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.monetization
 
 import androidx.lifecycle.ViewModel
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

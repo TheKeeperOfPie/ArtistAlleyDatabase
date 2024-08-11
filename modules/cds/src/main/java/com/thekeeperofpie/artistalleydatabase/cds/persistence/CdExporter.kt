@@ -2,11 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.cds.persistence
 
 import android.content.Context
 import com.squareup.moshi.JsonWriter
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryExporter
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive

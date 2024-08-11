@@ -10,9 +10,8 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.anilist.fragment.AniListCharacter
 import com.squareup.moshi.JsonClass
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 
 @JsonClass(generateAdapter = true)

@@ -1,31 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import android.app.Application
-import android.net.Uri
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
-import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryFts
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeMediaHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
-import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryFts
@@ -35,6 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
@@ -44,8 +34,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import javax.inject.Singleton
 
 // TODO: Separate these into specific modules
@@ -142,10 +130,11 @@ abstract class AnimeTestHiltModule {
     )
     @TypeConverters(
         value = [
-            Converters.DateConverter::class,
-            Converters.StringListConverter::class,
-            Converters.IntListConverter::class,
             Converters.BigDecimalConverter::class,
+            Converters.InstantConverter::class,
+            Converters.IntListConverter::class,
+            Converters.LocalDateConverter::class,
+            Converters.StringListConverter::class,
             Converters.StringMapConverter::class,
         ]
     )

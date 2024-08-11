@@ -1,9 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.data
 
 import android.util.Log
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
-import kotlinx.serialization.decodeFromString
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 
 sealed interface Series {
     val id: String

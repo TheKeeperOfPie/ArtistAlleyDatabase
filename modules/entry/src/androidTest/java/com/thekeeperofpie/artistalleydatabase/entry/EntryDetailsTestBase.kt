@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import android.net.Uri
 import androidx.navigation.NavHostController
 import com.google.common.truth.Truth.assertThat
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestBase
 import com.thekeeperofpie.artistalleydatabase.test_utils.atLeast
@@ -12,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.untilCalled
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import com.thekeeperofpie.artistalleydatabase.test_utils.withDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
