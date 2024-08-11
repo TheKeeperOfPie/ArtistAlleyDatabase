@@ -2,11 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 
 import com.anilist.fragment.ForumThreadComment
 import com.anilist.fragment.UserNavigationData
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 
 data class ForumCommentEntry(
     val comment: ForumThreadComment,
-    val commentMarkdown: StableSpanned?,
+    val commentMarkdown: MarkdownText?,
     val liked: Boolean = comment.isLiked ?: false,
     val children: List<ForumCommentChild>,
     val user: UserNavigationData? = comment.user?.let {

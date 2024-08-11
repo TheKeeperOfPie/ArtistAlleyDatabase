@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalCoilApi::class)
 
-package com.thekeeperofpie.artistalleydatabase.anime.markdown
+package com.thekeeperofpie.artistalleydatabase.markdown
 
 import android.graphics.drawable.Drawable
 import android.text.Spanned

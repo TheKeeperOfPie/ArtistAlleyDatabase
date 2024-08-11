@@ -48,8 +48,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import kotlinx.coroutines.launch
 
 @Composable
@@ -69,7 +68,7 @@ fun WritingReplyPanelScaffold(
         snackbarHostState = snackbarHostState,
     ),
     @StringRes sendButtonTextRes: Int = R.string.anime_writing_send_button,
-    writingPreview: StableSpanned? = null,
+    writingPreview: MarkdownText? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -114,7 +113,7 @@ fun WritingSheetContent(
     onValueChange: (String) -> Unit,
     onClickSend: () -> Unit,
     @StringRes sendButtonTextRes: Int = R.string.anime_writing_send_button,
-    writingPreview: StableSpanned?,
+    writingPreview: MarkdownText?,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(

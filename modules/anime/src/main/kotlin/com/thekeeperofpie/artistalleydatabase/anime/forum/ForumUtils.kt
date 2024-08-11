@@ -4,9 +4,8 @@ import com.anilist.ForumThread_CommentsQuery
 import com.anilist.fragment.ForumThreadComment
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentChild
-import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
-import io.noties.markwon.Markwon
 
 object ForumUtils {
 
@@ -34,7 +33,7 @@ object ForumUtils {
         return child.childComments.any { needsUpdate(updates, it) }
     }
 
-    fun decodeChild(markwon: Markwon, value: Any): ForumCommentChild? {
+    fun decodeChild(markdown: Markdown, value: Any): ForumCommentChild? {
         try {
             val map = (value as? Map<*, *>) ?: return null
             val id = map["id"] as? Int ?: return null
@@ -52,11 +51,11 @@ object ForumUtils {
             val likeCount = map["likeCount"] as? Int
             val comment = map["comment"] as? String
             val isLiked = map["isLiked"] as? Boolean ?: false
-            val commentMarkdown = comment?.let(markwon::toStableMarkdown)
+            val commentMarkdown = comment?.let(markdown::convertMarkdownText)
 
             val childComments = (map["childComments"] as? List<*>)
                 ?.filterNotNull()
-                ?.mapNotNull { decodeChild(markwon, it) }
+                ?.mapNotNull { decodeChild(markdown, it) }
                 .orEmpty()
 
             return ForumCommentChild(

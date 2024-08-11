@@ -14,9 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeHistoryDao
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreDao
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListSpoilerPlugin
-import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListTempPlugin
-import com.thekeeperofpie.artistalleydatabase.anime.markdown.CoilImagesMarkwonPlugin
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
@@ -27,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsContro
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import dagger.Module
@@ -34,15 +32,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
-import io.noties.markwon.Markwon
-import io.noties.markwon.SoftBreakAddsNewLinePlugin
-import io.noties.markwon.core.CorePlugin
-import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
-import io.noties.markwon.ext.tables.TableAwareMovementMethod
-import io.noties.markwon.ext.tables.TablePlugin
-import io.noties.markwon.html.HtmlPlugin
-import io.noties.markwon.linkify.LinkifyPlugin
-import io.noties.markwon.movement.MovementMethodPlugin
 import okhttp3.OkHttpClient
 import javax.inject.Singleton
 import kotlin.reflect.KType
@@ -162,21 +151,7 @@ object AnimeHiltModule {
 
     @Singleton
     @Provides
-    fun provideMarkwon(application: Application) = Markwon.builderNoCore(application)
-        .usePlugin(CorePlugin.create())
-        .usePlugin(SoftBreakAddsNewLinePlugin.create())
-        .usePlugin(HtmlPlugin.create().apply {
-            allowNonClosedTags(true)
-            addHandler(AniListTempPlugin.CenterAlignTagHandler)
-        })
-        .usePlugin(LinkifyPlugin.create())
-        .usePlugin(TablePlugin.create(application))
-        .usePlugin(MovementMethodPlugin.create(TableAwareMovementMethod.create()))
-        .usePlugin(StrikethroughPlugin.create())
-        .usePlugin(AniListTempPlugin)
-        .usePlugin(AniListSpoilerPlugin)
-        .usePlugin(CoilImagesMarkwonPlugin.create(application))
-        .build()
+    fun provideMarkdown(application: Application) = Markdown(application)
 
     @Singleton
     @Provides

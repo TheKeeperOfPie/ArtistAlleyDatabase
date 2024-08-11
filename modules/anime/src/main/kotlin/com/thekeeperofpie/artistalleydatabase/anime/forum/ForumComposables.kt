@@ -88,13 +88,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntr
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentChild
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
-import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
@@ -106,6 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 
 object ForumComposables {
     const val FORUM_THREADS_ABOVE_FOLD = 3
@@ -789,7 +788,7 @@ fun ThreadHeader(
 @Composable
 fun ThreadDeleteCommentPrompt(
     commentId: String,
-    commentMarkdown: StableSpanned?,
+    commentMarkdown: MarkdownText?,
     deleting: () -> Boolean,
     onDismiss: () -> Unit,
     onConfirmDelete: (String) -> Unit,
@@ -854,8 +853,8 @@ fun ThreadComment(
     viewer: AniListViewer?,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: ((String, StableSpanned?) -> Unit)? = null,
-    onClickReplyComment: ((String, StableSpanned?) -> Unit)? = null,
+    onClickDelete: ((String, MarkdownText?) -> Unit)? = null,
+    onClickReplyComment: ((String, MarkdownText?) -> Unit)? = null,
 ) {
     // TODO: Child comments
 
@@ -903,14 +902,14 @@ fun ThreadCommentContent(
     viewer: AniListViewer?,
     loading: Boolean,
     commentId: String?,
-    commentMarkdown: StableSpanned?,
+    commentMarkdown: MarkdownText?,
     createdAt: Int?,
     liked: Boolean,
     likeCount: Int,
     user: UserNavigationData?,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: ((String, StableSpanned?) -> Unit)? = null,
-    onClickReplyComment: ((String, StableSpanned?) -> Unit)? = null,
+    onClickDelete: ((String, MarkdownText?) -> Unit)? = null,
+    onClickReplyComment: ((String, MarkdownText?) -> Unit)? = null,
 ) {
     val navigationCallback = LocalNavigationCallback.current
     val imageState = rememberCoilImageState(user?.avatar?.large)
@@ -1094,8 +1093,8 @@ fun ColumnScope.ThreadCommentChild(
     level: Int,
     child: ForumCommentChild,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: ((String, StableSpanned?) -> Unit)? = null,
-    onClickReplyComment: ((String, StableSpanned?) -> Unit)? = null,
+    onClickDelete: ((String, MarkdownText?) -> Unit)? = null,
+    onClickReplyComment: ((String, MarkdownText?) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier

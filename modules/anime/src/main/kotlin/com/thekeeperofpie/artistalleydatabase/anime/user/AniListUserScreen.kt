@@ -48,12 +48,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -249,7 +249,7 @@ object AniListUserScreen {
     // TODO: Filter out isAdult
     data class Entry(
         val user: User,
-        val about: StableSpanned?,
+        val about: MarkdownText?,
     ) {
         val statisticsAnime = user.statistics?.anime?.let(::Statistics)
         val statisticsManga = user.statistics?.manga?.let(::Statistics)

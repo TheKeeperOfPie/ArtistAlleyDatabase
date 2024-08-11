@@ -1,5 +1,5 @@
 plugins {
-    id("module-library-multiplatform")
+    id("library-android")
 }
 
 kotlin {

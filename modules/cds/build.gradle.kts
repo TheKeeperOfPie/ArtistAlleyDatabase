@@ -26,7 +26,7 @@ dependencies {
     ksp(kspProcessors.androidx.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    implementation(libs.core.ktx)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material3)

@@ -61,13 +61,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingPlaceholderConte
 import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingPlaceholderKey
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -175,7 +175,7 @@ object ForumThreadScreen {
                         refreshing = refreshing,
                         onRefresh = comments::refresh,
                     )
-                    var deletePromptData by remember { mutableStateOf<Pair<String, StableSpanned?>?>(null) }
+                    var deletePromptData by remember { mutableStateOf<Pair<String, MarkdownText?>?>(null) }
 
                     Box(
                         modifier = Modifier

@@ -37,13 +37,13 @@ import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import dagger.hilt.android.testing.HiltAndroidTest
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -93,7 +93,7 @@ class MediaDetailsScreenTest {
     lateinit var historyController: HistoryController
 
     @Inject
-    lateinit var markwon: Markwon
+    lateinit var markdown: Markdown
 
     @Test
     fun loggedOut_showGlobalActivity() {
@@ -171,7 +171,7 @@ class MediaDetailsScreenTest {
                 settings = settings,
                 favoritesController = favoritesController,
                 historyController = historyController,
-                markwon = markwon,
+                markdown = markdown,
                 savedStateHandle = savedStateHandle,
                 navigationTypeMap = NavigationTypeMap(CustomNavTypes.baseTypeMap + AnimeDestination.typeMap),
             )

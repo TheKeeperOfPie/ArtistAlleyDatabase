@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 
 import com.anilist.fragment.UserNavigationData
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 
 data class ForumCommentChild(
     val id: String,
@@ -9,7 +9,7 @@ data class ForumCommentChild(
     val likeCount: Int? = null,
     val user: User,
     val commentRaw: String? = null,
-    val commentMarkdown: StableSpanned? = null,
+    val commentMarkdown: MarkdownText? = null,
     val liked: Boolean = false,
     val childComments: List<ForumCommentChild>,
 ) {

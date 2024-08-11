@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.markdown
+package com.thekeeperofpie.artistalleydatabase.markdown
 
 import android.text.Layout
 import android.text.style.AlignmentSpan

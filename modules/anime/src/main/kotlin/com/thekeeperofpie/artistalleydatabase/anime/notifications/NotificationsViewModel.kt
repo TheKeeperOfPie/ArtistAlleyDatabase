@@ -24,11 +24,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
-import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -47,7 +46,7 @@ class NotificationsViewModel @Inject constructor(
     private val mediaListStatusController: MediaListStatusController,
     commentStatusController: ForumThreadCommentStatusController,
     private val ignoreController: IgnoreController,
-    markwon: Markwon,
+    markdown: Markdown,
     notificationsController: NotificationsController,
 ) : ViewModel() {
 
@@ -143,7 +142,7 @@ class NotificationsViewModel @Inject constructor(
                             commentEntry = it.comment?.let {
                                 ForumCommentEntry(
                                     comment = it,
-                                    commentMarkdown = it.comment?.let(markwon::toStableMarkdown),
+                                    commentMarkdown = it.comment?.let(markdown::convertMarkdownText),
                                     children = emptyList(),
                                 )
                             }

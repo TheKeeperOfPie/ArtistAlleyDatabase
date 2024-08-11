@@ -32,13 +32,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
-import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -61,7 +60,7 @@ class StaffDetailsViewModel @Inject constructor(
     favoritesController: FavoritesController,
     private val mediaListStatusController: MediaListStatusController,
     val ignoreController: IgnoreController,
-    private val markwon: Markwon,
+    private val markdown: Markdown,
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
@@ -94,7 +93,7 @@ class StaffDetailsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
                 val staff = aniListApi.staffDetails(staffId)
-                val description = staff.description?.let(markwon::toStableMarkdown)
+                val description = staff.description?.let(markdown::convertMarkdownText)
                 val entry = StaffDetailsScreen.Entry(staff, description)
                 withContext(CustomDispatchers.Main) {
                     this@StaffDetailsViewModel.entry = entry

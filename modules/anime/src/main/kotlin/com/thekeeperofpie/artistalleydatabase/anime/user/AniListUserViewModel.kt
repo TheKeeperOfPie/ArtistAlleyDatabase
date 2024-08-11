@@ -46,16 +46,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
-import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -86,7 +85,7 @@ class AniListUserViewModel @Inject constructor(
     private val activityStatusController: ActivityStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
-    private val markwon: Markwon,
+    private val markdown: Markdown,
     featureOverrideProvider: FeatureOverrideProvider,
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
@@ -152,7 +151,7 @@ class AniListUserViewModel @Inject constructor(
                         } else {
                             entry = aniListApi.user(userOrViewerId)
                                 ?.let {
-                                    val about = it.about?.let(markwon::toStableMarkdown)
+                                    val about = it.about?.let(markdown::convertMarkdownText)
                                     AniListUserScreen.Entry(it, about)
                                 }
                         }

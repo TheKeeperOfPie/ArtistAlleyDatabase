@@ -80,7 +80,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.markdown.LocalMarkwon
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
@@ -107,6 +106,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
+import com.thekeeperofpie.artistalleydatabase.markdown.LocalMarkdown
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalSubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
@@ -120,7 +121,6 @@ import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import dagger.hilt.android.AndroidEntryPoint
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.launch
 import java.util.Optional
 import javax.inject.Inject
@@ -175,7 +175,7 @@ class MainActivity : ComponentActivity() {
     lateinit var appMetadataProvider: AppMetadataProvider
 
     @Inject
-    lateinit var markwon: Markwon
+    lateinit var markdown: Markdown
 
     @Inject
     lateinit var navigationTypeMap: NavigationTypeMap
@@ -239,7 +239,7 @@ class MainActivity : ComponentActivity() {
                             (languageOptionVoiceActor to showFallbackVoiceActor),
                     LocalNavigationCallback provides navigationCallback,
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
-                    LocalMarkwon provides markwon,
+                    LocalMarkdown provides markdown,
                     LocalAnimeComposeSettings provides settings.composeSettingsData(),
                     LocalImageColorsState provides imageColorsState,
                     LocalIgnoreController provides ignoreController,

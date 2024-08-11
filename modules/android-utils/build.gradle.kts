@@ -10,7 +10,7 @@ android {
 
 dependencies {
     api(project(":modules:utils"))
-    implementation(libs.core.ktx)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)

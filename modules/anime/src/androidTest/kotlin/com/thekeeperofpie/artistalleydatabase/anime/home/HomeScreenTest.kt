@@ -33,7 +33,6 @@ import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import dagger.hilt.android.testing.HiltAndroidTest
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -89,9 +88,6 @@ class HomeScreenTest {
 
     @Inject
     lateinit var userMediaListController: UserMediaListController
-
-    @Inject
-    lateinit var markwon: Markwon
 
     @ParameterizedTest
     @ValueSource(ints = [0, 1, 2, 3, 4, 5])

@@ -60,13 +60,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import kotlinx.coroutines.launch
 
 // TODO: Dedupe this with the full thread screen
@@ -175,7 +175,7 @@ object ForumThreadCommentTreeScreen {
                         refreshing = refreshing,
                         onRefresh = viewModel::refresh,
                     )
-                    var deletePromptData by remember { mutableStateOf<Pair<String, StableSpanned?>?>(null) }
+                    var deletePromptData by remember { mutableStateOf<Pair<String, MarkdownText?>?>(null) }
 
                     Box(
                         modifier = Modifier
@@ -298,7 +298,7 @@ object ForumThreadCommentTreeScreen {
                                         onClickReplyComment = { commentId, commentMarkdown ->
                                             viewModel.onClickReplyComment(
                                                 commentId,
-                                                commentMarkdown
+                                                commentMarkdown,
                                             )
                                             scope.launch { sheetState.expand() }
                                         }

@@ -1,5 +1,5 @@
 plugins {
-    id("module-library-multiplatform")
+    id("library-kotlin")
     id("com.google.devtools.ksp")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -10,7 +10,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material)
+            implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.uiToolingPreview)
         }

@@ -25,14 +25,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -50,11 +49,11 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-    val markwon: Markwon,
+    private val markdown: Markdown,
     mediaListStatusController: MediaListStatusController,
     threadStatusController: ForumThreadStatusController,
     commentStatusController: ForumThreadCommentStatusController,
-    val ignoreController: IgnoreController,
+    private val ignoreController: IgnoreController,
     settings: AnimeSettings,
 ) : ViewModel() {
 
@@ -83,7 +82,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
             flowForRefreshableContent(refresh, R.string.anime_forum_thread_error_loading) {
                 flowFromSuspend {
                     val thread = aniListApi.forumThread(threadId)
-                    val bodyMarkdown = thread.thread.body?.let(markwon::toStableMarkdown)
+                    val bodyMarkdown = thread.thread.body?.let(markdown::convertMarkdownText)
                     ForumThreadEntry(
                         thread = thread.thread,
                         bodyMarkdown = bodyMarkdown,
@@ -174,9 +173,9 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
                     it.transformResult {
                         it.map {
                             val children = (it.childComments as? List<*>)?.filterNotNull()
-                                ?.mapNotNull { decodeChild(markwon, it) }
+                                ?.mapNotNull { decodeChild(markdown, it) }
                                 .orEmpty()
-                            val commentMarkdown = it.comment?.let(markwon::toStableMarkdown)
+                            val commentMarkdown = it.comment?.let(markdown::convertMarkdownText)
                             ForumCommentEntry(
                                 comment = it,
                                 commentMarkdown = commentMarkdown,
@@ -212,7 +211,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
         refresh.value = SystemClock.uptimeMillis()
     }
 
-    fun onClickReplyComment(commentId: String?, commentMarkdown: StableSpanned?) {
+    fun onClickReplyComment(commentId: String?, commentMarkdown: MarkdownText?) {
         replyData = ReplyData(commentId, commentMarkdown)
     }
 
@@ -264,6 +263,6 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
 
     data class ReplyData(
         val id: String?,
-        val text: StableSpanned?,
+        val text: MarkdownText?,
     )
 }

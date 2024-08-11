@@ -23,14 +23,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.utils.toStableMarkdown
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -60,7 +59,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val settings: AnimeSettings,
     favoritesController: FavoritesController,
     private val historyController: HistoryController,
-    private val markwon: Markwon,
+    private val markdown: Markdown,
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
@@ -125,14 +124,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                         )
                     }
                 }
-                .runningFold(null as Pair<Pair<String?, StableSpanned?>?, LoadingResult<MediaDetailsQuery.Data>>?) { accumulator, loadingResult ->
+                .runningFold(null as Pair<Pair<String?, MarkdownText?>?, LoadingResult<MediaDetailsQuery.Data>>?) { accumulator, loadingResult ->
                     val descriptionRaw = loadingResult.result?.media?.description
                     val previousDescriptionPair = accumulator?.first
                     val description =
                         if (previousDescriptionPair != null && descriptionRaw == previousDescriptionPair.first) {
                             previousDescriptionPair.second
                         } else {
-                            descriptionRaw?.let(markwon::toStableMarkdown)
+                            descriptionRaw?.let(markdown::convertMarkdownText)
                         }
                     descriptionRaw to description to loadingResult
                 }

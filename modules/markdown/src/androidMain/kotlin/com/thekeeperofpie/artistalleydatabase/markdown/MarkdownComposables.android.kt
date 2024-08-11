@@ -1,30 +1,27 @@
-package com.thekeeperofpie.artistalleydatabase.anime.markdown
+package com.thekeeperofpie.artistalleydatabase.markdown
 
 import android.text.TextUtils
 import android.widget.TextView
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
-import io.noties.markwon.Markwon
 
 @Composable
-fun MarkdownText(
-    markdownText: StableSpanned?,
-    modifier: Modifier = Modifier,
-    textColor: Color? = null,
-    maxLines: Int? = null,
-    onOverflowChange: (Boolean) -> Unit = {},
+actual fun MarkdownText(
+    markdownText: MarkdownText?,
+    modifier: Modifier,
+    textColor: Color?,
+    maxLines: Int?,
+    onOverflowChange: (Boolean) -> Unit,
 ) {
     val contentColor = LocalContentColor.current
     val color = (textColor?.takeOrElse { contentColor } ?: contentColor).toArgb()
-    val markwon = LocalMarkwon.current
+    val markdown = LocalMarkdown.current
     val asString = remember(markdownText) { markdownText?.value.toString() }
     AndroidView(
         factory = {
@@ -34,7 +31,7 @@ fun MarkdownText(
                 setTextIsSelectable(true)
                 if (markdownText != null) {
                     setTextColor(color)
-                    markwon.setParsedMarkdown(this, markdownText.value)
+                    markdown.setParsedMarkdown(this, markdownText)
                 }
             }
         },
@@ -42,7 +39,7 @@ fun MarkdownText(
             it.maxLines = maxLines ?: Int.MAX_VALUE
             if (markdownText != null) {
                 it.setTextColor(color)
-                markwon.setParsedMarkdown(it, markdownText.value)
+                markdown.setParsedMarkdown(it, markdownText)
             }
             if (maxLines != null) {
                 it.post {
@@ -65,5 +62,3 @@ fun MarkdownText(
         modifier = modifier,
     )
 }
-
-val LocalMarkwon = staticCompositionLocalOf<Markwon> { throw IllegalStateException() }

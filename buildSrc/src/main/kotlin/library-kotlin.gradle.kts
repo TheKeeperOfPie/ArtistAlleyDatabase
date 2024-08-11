@@ -1,34 +1,17 @@
 @file:Suppress("UnstableApiUsage")
 
+import gradle.kotlin.dsl.accessors._b2937d1b40dda98f7678619569c6e850.kotlin
+import gradle.kotlin.dsl.accessors._b2937d1b40dda98f7678619569c6e850.sourceSets
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 val Project.libs: VersionCatalog
     get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
-    id("com.android.library")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.jetbrains.kotlin.plugin.parcelize")
-}
-
-android {
-    compileSdk = 35
-
-    defaultConfig {
-        minSdk = 28
-    }
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_18
-        }
-    }
-    jvm("desktop")
-
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         jvmToolchain(18)
@@ -38,6 +21,7 @@ kotlin {
             }
         }
         freeCompilerArgs.add("-Xcontext-receivers")
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     sourceSets {

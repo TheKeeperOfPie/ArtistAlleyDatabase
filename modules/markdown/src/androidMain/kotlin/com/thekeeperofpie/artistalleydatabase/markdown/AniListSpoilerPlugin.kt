@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.markdown
+package com.thekeeperofpie.artistalleydatabase.markdown
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -21,7 +21,6 @@ import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.image.AsyncDrawable
 import io.noties.markwon.image.AsyncDrawableSpan
 import java.util.regex.Pattern
-
 
 object AniListSpoilerPlugin : AbstractMarkwonPlugin() {
 

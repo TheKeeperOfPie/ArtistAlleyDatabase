@@ -1,5 +1,6 @@
 plugins {
-    id("compose-library-multiplatform")
+    id("library-android")
+    id("library-compose")
 }
 
 android {

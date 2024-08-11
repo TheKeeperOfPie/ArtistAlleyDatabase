@@ -195,7 +195,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("androidx.activity:activity-compose:$activity")
                     library("androidx.annotation:annotation:$annotation", prefix = "androidx")
                     library("androidx.browser:browser:$browser", prefix = "androidx")
-                    library("androidx.core:core-ktx:$core")
+                    library("androidx.core:core-ktx:$core", prefix = "androidx")
 
                     withVersion(hilt) {
                         library("androidx.hilt:hilt-navigation-compose")
@@ -304,6 +304,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 prefix("coil3") {
                     withVersion(Versions.coil) {
+                        library("io.coil-kt.coil3:coil")
                         library("io.coil-kt.coil3:coil-compose")
                         library("io.coil-kt.coil3:coil-network-okhttp")
                     }

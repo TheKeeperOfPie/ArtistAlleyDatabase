@@ -16,6 +16,7 @@ dependencies {
     api(project(":modules:anilist"))
     api(project(":modules:compose-utils"))
     api(project(":modules:cds"))
+    api(project(":modules:markdown"))
     api(project(":modules:monetization"))
 
     implementation(libs.kotlinx.serialization.json)
@@ -47,12 +48,6 @@ dependencies {
     implementation(libs.androidyoutubeplayer)
 
     implementation(libs.rome)
-
-    api(libs.markwon.core)
-    implementation(libs.markwon.ext.strikethrough)
-    implementation(libs.markwon.ext.tables)
-    api(libs.markwon.html)
-    implementation(libs.markwon.linkify)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)

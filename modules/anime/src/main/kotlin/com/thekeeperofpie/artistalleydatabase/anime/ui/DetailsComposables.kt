@@ -67,11 +67,9 @@ import coil3.request.crossfade
 import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
-import com.thekeeperofpie.artistalleydatabase.compose.StableSpanned
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
@@ -85,6 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnim
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 
 @Composable
 internal fun CoverAndBannerHeader(
@@ -337,7 +336,7 @@ internal fun LazyListScope.detailsLoadingOrError(
 
 @Composable
 internal fun DescriptionSection(
-    markdownText: StableSpanned?,
+    markdownText: MarkdownText?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
 ) {
