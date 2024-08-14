@@ -118,20 +118,22 @@ object Versions {
         const val jupiterAndroid = "1.5.0"
     }
 
+    const val kermit = "2.0.4"
+
     object kotlin {
         const val core = "2.0.10-RC"
         const val coroutines = "1.9.0-RC"
+        const val datetime = "0.6.0"
+        const val io = "0.5.1"
         const val ksp = "2.0.10-RC-1.0.23"
         const val serialization = "1.7.1"
-        const val datetime = "0.6.0"
     }
 
     const val kotlinPoet = "1.15.3"
 
-    // TODO: Versions after don't let changing Dispatcher and breaks instrumentation tests
-    const val ktor = "2.3.4"
+    // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
+    const val ktor = "3.0.0-beta-2"
     const val leakCanary = "3.0-alpha-8"
-    const val rome = "2.1.0"
     const val manifoldGraphql = "2024.1.28"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0-beta05"
@@ -144,6 +146,7 @@ object Versions {
     const val okhttp = "5.0.0-alpha.14"
     const val skrapeIt = "1.3.0-alpha.1"
     const val unityAds = "4.10.0"
+    const val xmlUtil = "0.90.1"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
@@ -187,6 +190,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 with(Versions.kotlin) {
                     plugin("org.jetbrains.kotlin.multiplatform").version(core)
                     plugin("org.jetbrains.kotlin.plugin.compose").version(core)
+                    library("org.jetbrains.kotlin:kotlin-test:$core")
                     library("org.jetbrains.kotlin.plugin.parcelize:org.jetbrains.kotlin.plugin.parcelize.gradle.plugin:$core")
                     library("org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin:$core")
                 }
@@ -311,8 +315,10 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 withVersion(Versions.ktor) {
+                    library("io.ktor:ktor-client-core")
+                    library("io.ktor:ktor-client-okhttp")
                     library("io.ktor:ktor-server-core-jvm")
-                    library("io.ktor:ktor-server-tests-jvm")
+                    library("io.ktor:ktor-server-test-host")
                 }
 
                 with(Versions.apache) {
@@ -331,6 +337,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:$core")
                     library("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$core")
                     library("org.jetbrains.kotlinx:kotlinx-datetime:$datetime")
+                    library("org.jetbrains.kotlinx:kotlinx-io-core:$io")
                     library("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
                 }
 
@@ -391,7 +398,16 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     }
                 }
 
+                prefix("xmlutil") {
+                    withVersion(Versions.xmlUtil) {
+                        library("io.github.pdvrieze.xmlutil:serialization")
+                        library("io.github.pdvrieze.xmlutil:serialization-jvm")
+                        library("io.github.pdvrieze.xmlutil:serialization-android")
+                    }
+                }
+
                 library("app.cash.molecule:molecule-runtime:${Versions.molecule}")
+                library("co.touchlab:kermit:${Versions.kermit}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
                 library("com.benasher44:uuid:${Versions.benasher44Uuid}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
@@ -404,7 +420,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:${Versions.androidyoutubeplayer}",
                     alias = "androidyoutubeplayer"
                 )
-                library("com.rometools:rome:${Versions.rome}")
                 library("com.sebastianneubauer.jsontree:jsontree:${Versions.jsonTree}")
                 library("com.squareup.moshi:moshi-kotlin:${Versions.moshi}")
                 library("com.squareup:javapoet:${Versions.javaPoet}")

@@ -13,11 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
@@ -145,7 +145,7 @@ class AnimeUserListSortFilterController(
 
     @Composable
     override fun filterParams() = super.filterParams().copy(
-        theirListStatuses = theirListStatusSection?.filterOptions as? List<FilterEntry<MediaListStatus>>,
+        theirListStatuses = theirListStatusSection?.filterOptions as? List<com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry<MediaListStatus>>,
         myScore = myScoreSection.data,
         theirScore = theirScoreSection?.data,
     )

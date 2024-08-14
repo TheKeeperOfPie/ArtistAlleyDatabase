@@ -34,5 +34,6 @@ dependencies {
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)
 
-    implementation(libs.ktor.server.tests.jvm)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.server.test.host)
 }

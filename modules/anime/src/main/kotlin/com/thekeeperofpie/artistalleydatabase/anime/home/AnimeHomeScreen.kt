@@ -111,7 +111,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
@@ -152,6 +151,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateEn
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import kotlinx.coroutines.flow.Flow
 
@@ -456,7 +456,7 @@ object AnimeHomeScreen {
 
     @Composable
     private fun NewsRow(
-        data: List<AnimeNewsArticleEntry<*>>?,
+        data: List<AnimeNewsEntry<*>>?,
         pageSize: PageSize,
     ) {
         RowHeader(

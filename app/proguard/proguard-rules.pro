@@ -36,11 +36,6 @@
 # For AndroidX Compose, seems to be a library config error
 -keep class org.xml.sax.helpers.AttributesImpl
 
-# For RSS/Atom parsing, does not ship Proguard rules
--keep class com.rometools.rome.** { *; }
--keep class javax.xml.parsers.SAXParser { *; }
--keep class org.apache.xerces.jaxp.** { *; }
-
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
 -dontwarn java.lang.reflect.AnnotatedType
@@ -392,6 +387,16 @@
 -dontwarn java.lang.Module
 -dontwarn org.graalvm.nativeimage.hosted.RuntimeResourceAccess
 -dontwarn java.lang.invoke.MethodHandleProxies
+-dontwarn io.ktor.client.plugins.HttpCallValidator$Config
+-dontwarn io.ktor.client.plugins.HttpTimeout$HttpTimeoutCapabilityConfiguration
+-dontwarn io.ktor.client.plugins.HttpTimeout$Plugin
+-dontwarn io.ktor.client.plugins.HttpTimeout
+-dontwarn io.ktor.client.plugins.observer.ResponseObserver$Plugin
+-dontwarn io.ktor.client.plugins.observer.ResponseObserver
+-dontwarn io.ktor.util.KtorDsl
+-dontwarn io.ktor.utils.io.CoroutinesKt
+-dontwarn io.ktor.utils.io.core.Input
+-dontwarn okhttp3.internal.Util
 
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
 -dontwarn com.google.errorprone.annotations.CheckReturnValue

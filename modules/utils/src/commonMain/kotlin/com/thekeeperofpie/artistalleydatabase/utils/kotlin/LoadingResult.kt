@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
-import androidx.annotation.StringRes
-
 data class LoadingResult<T>(
     val loading: Boolean = false,
     val success: Boolean = false,
@@ -11,7 +9,8 @@ data class LoadingResult<T>(
     companion object {
         fun <T> loading() = LoadingResult<T>(loading = true)
         fun <T> empty() = LoadingResult<T>()
-        fun <T> error(@StringRes errorTextRes: Int, throwable: Throwable? = null) =
+        // TODO: Support StringResource
+        fun <T> error(errorTextRes: Int, throwable: Throwable? = null) =
             LoadingResult<T>(error = errorTextRes to throwable)
 
         fun <T> success(value: T) = LoadingResult(loading = false, success = true, result = value)

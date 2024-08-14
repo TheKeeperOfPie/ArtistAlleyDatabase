@@ -1,10 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.anime.news
+package com.thekeeperofpie.artistalleydatabase.news
 
 import androidx.compose.runtime.Immutable
-import java.util.Date
+import kotlinx.datetime.Instant
 
 @Immutable
-data class AnimeNewsArticleEntry<Category>(
+data class AnimeNewsEntry<Category>(
     val id: String,
     val type: AnimeNewsType,
     val icon: String?,
@@ -13,6 +13,6 @@ data class AnimeNewsArticleEntry<Category>(
     val description: String?,
     val link: String?,
     val copyright: String?,
-    val date: Date,
+    val date: Instant?,
     val categories: List<Category>,
 )

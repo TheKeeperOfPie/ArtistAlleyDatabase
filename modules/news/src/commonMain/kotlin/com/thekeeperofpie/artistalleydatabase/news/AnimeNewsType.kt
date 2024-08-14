@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.news
+package com.thekeeperofpie.artistalleydatabase.news
 
 enum class AnimeNewsType {
     ANIME_NEWS_NETWORK,

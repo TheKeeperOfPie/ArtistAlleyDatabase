@@ -40,10 +40,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AnimeNewsSmallCard(entry: AnimeNewsArticleEntry<*>?) {
+fun AnimeNewsSmallCard(entry: AnimeNewsEntry<*>?) {
     val uriHandler = LocalUriHandler.current
     val onClick = entry?.link?.let { { uriHandler.openUri(it) } }
     val content: @Composable ColumnScope.() -> Unit = {
@@ -150,7 +151,7 @@ fun AnimeNewsSmallCard(entry: AnimeNewsArticleEntry<*>?) {
                         )
                     }
 
-                    val time = entry?.date?.time
+                    val time = entry?.date?.toEpochMilliseconds()
                     if (entry == null || time != null) {
                         Text(
                             text = time?.let(DateUtils::getRelativeTimeSpanString)

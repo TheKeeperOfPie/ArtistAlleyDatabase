@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.reflect.KClass
 

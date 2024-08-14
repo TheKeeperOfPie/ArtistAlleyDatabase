@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
@@ -79,6 +80,10 @@ abstract class AnimeTestHiltModule {
     @Singleton
     @Binds
     abstract fun provideMonetizationSettings(testSettingsProvider: TestSettingsProvider): MonetizationSettings
+
+    @Singleton
+    @Binds
+    abstract fun provideNewsSettings(testSettingsProvider: TestSettingsProvider): NewsSettings
 
     @Singleton
     @Binds

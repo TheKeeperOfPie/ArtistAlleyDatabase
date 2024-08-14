@@ -13,6 +13,7 @@ android {
 dependencies {
     implementation(project(":modules:android-utils"))
     api(project(":modules:utils"))
+    api(project(":modules:utils-compose"))
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)

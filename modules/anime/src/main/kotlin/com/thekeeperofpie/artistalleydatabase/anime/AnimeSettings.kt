@@ -5,9 +5,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
-import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -18,13 +15,6 @@ interface AnimeSettings {
     val collapseAnimeFiltersOnClose: MutableStateFlow<Boolean>
     val showLessImportantTags: MutableStateFlow<Boolean>
     val showSpoilerTags: MutableStateFlow<Boolean>
-
-    val animeNewsNetworkRegion: MutableStateFlow<AnimeNewsNetworkRegion>
-
-    val animeNewsNetworkCategoriesIncluded: MutableStateFlow<List<AnimeNewsNetworkCategory>>
-    val animeNewsNetworkCategoriesExcluded: MutableStateFlow<List<AnimeNewsNetworkCategory>>
-    val crunchyrollNewsCategoriesIncluded: MutableStateFlow<List<CrunchyrollNewsCategory>>
-    val crunchyrollNewsCategoriesExcluded: MutableStateFlow<List<CrunchyrollNewsCategory>>
 
     val preferredMediaType: MutableStateFlow<MediaType>
     val mediaViewOption: MutableStateFlow<MediaViewOption>

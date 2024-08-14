@@ -20,7 +20,7 @@ dependencyResolutionManagement {
     (extra["versions"] as (DependencyResolutionManagement) -> Unit)(this)
 }
 
-rootProject.name = "Artist Alley Database"
+rootProject.name = "ArtistAlleyDatabase"
 include(
     ":app",
     ":modules:alley",
@@ -48,6 +48,7 @@ include(
     ":modules:musical-artists",
     ":modules:network-utils",
     ":modules:play",
+    ":modules:news",
     ":modules:server",
     ":modules:settings",
     ":modules:test-utils",

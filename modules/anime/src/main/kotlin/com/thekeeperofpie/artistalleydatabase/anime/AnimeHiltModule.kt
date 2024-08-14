@@ -21,10 +21,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
+import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
+import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import dagger.Module
@@ -32,6 +33,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
+import io.ktor.client.HttpClient
 import okhttp3.OkHttpClient
 import javax.inject.Singleton
 import kotlin.reflect.KType
@@ -60,9 +62,9 @@ object AnimeHiltModule {
     @Provides
     fun provideAnimeNewsController(
         scopedApplication: ScopedApplication,
-        okHttpClient: OkHttpClient,
-        animeSettings: AnimeSettings,
-    ) = AnimeNewsController(scopedApplication, okHttpClient, animeSettings)
+        httpClient: HttpClient,
+        newsSettings: NewsSettings,
+    ) = AnimeNewsController(scopedApplication.scope, httpClient, newsSettings)
 
     @Singleton
     @Provides

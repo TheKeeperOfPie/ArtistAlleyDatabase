@@ -1,18 +1,19 @@
-package com.thekeeperofpie.artistalleydatabase.anime.news
+package com.thekeeperofpie.artistalleydatabase.news
 
-import android.os.SystemClock
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.rometools.rome.feed.synd.SyndCategory
-import com.rometools.rome.io.SyndFeedInput
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import co.touchlab.kermit.Logger
+import com.thekeeperofpie.artistalleydatabase.news.ann.ANIME_NEWS_NETWORK_ATOM_URL_PREFIX
+import com.thekeeperofpie.artistalleydatabase.news.cr.CRUNCHYROLL_NEWS_RSS_URL
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.utils.io.readBuffer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,31 +28,30 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import kotlinx.datetime.Clock
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class AnimeNewsController(
-    private val scopedApplication: ScopedApplication,
-    private val okHttpClient: OkHttpClient,
-    private val settings: AnimeSettings,
+    private val scope: CoroutineScope,
+    private val httpClient: HttpClient,
+    private val settings: NewsSettings,
 ) {
     companion object {
         private const val TAG = "AnimeNewsController"
     }
 
     private var job: Job? = null
-    private val news = MutableStateFlow<List<AnimeNewsArticleEntry<*>>?>(null)
-    private var newsDateDescending by mutableStateOf<List<AnimeNewsArticleEntry<*>>?>(null)
+    private val news = MutableStateFlow<List<AnimeNewsEntry<*>>?>(null)
+    private var newsDateDescending by mutableStateOf<List<AnimeNewsEntry<*>>?>(null)
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun news(): MutableStateFlow<List<AnimeNewsArticleEntry<*>>?> {
+    fun news(): MutableStateFlow<List<AnimeNewsEntry<*>>?> {
         startJobIfNeeded()
         return news
     }
 
-    fun newsDateDescending(): List<AnimeNewsArticleEntry<*>>? {
+    fun newsDateDescending(): List<AnimeNewsEntry<*>>? {
         startJobIfNeeded()
         return newsDateDescending
     }
@@ -59,7 +59,7 @@ class AnimeNewsController(
     // TODO: Loading and error indicator
     private fun startJobIfNeeded() {
         if (job != null) return
-        job = scopedApplication.scope.launch(CustomDispatchers.IO) {
+        job = scope.launch(CustomDispatchers.IO) {
             val animeNewsNetwork =
                 combine(settings.animeNewsNetworkRegion, refreshUptimeMillis, ::Pair)
                     .flatMapLatest { (region) ->
@@ -68,13 +68,7 @@ class AnimeNewsController(
                                 runCatching {
                                     fetchFeed(
                                         type = AnimeNewsType.ANIME_NEWS_NETWORK,
-                                        okHttpClient = okHttpClient,
-                                        url = "${AnimeNewsNetworkUtils.NEWS_ATOM_URL_PREFIX}${region.id}",
-                                        mapCategories = { category ->
-                                            AnimeNewsNetworkCategory.entries.find { it.id == category.name }
-                                                ?: AnimeNewsNetworkCategory.UNKNOWN
-                                        },
-                                        ifEmpty = AnimeNewsNetworkCategory.UNKNOWN,
+                                        url = "$ANIME_NEWS_NETWORK_ATOM_URL_PREFIX${region.id}",
                                     )
                                 }
                             }
@@ -89,7 +83,7 @@ class AnimeNewsController(
                     }
                     .map { it?.getOrNull() }
                     .catch {
-                        Log.e(TAG, "Error fetching animeNewsNetwork", it)
+                        Logger.e(TAG, it) { "Error fetching animeNewsNetwork" }
                         emit(null)
                     }
 
@@ -100,13 +94,7 @@ class AnimeNewsController(
                             runCatching {
                                 fetchFeed(
                                     type = AnimeNewsType.CRUNCHYROLL,
-                                    okHttpClient = okHttpClient,
-                                    url = CrunchyrollNewsUtils.NEW_RSS_URL,
-                                    mapCategories = { category ->
-                                        CrunchyrollNewsCategory.entries.find { it.id == category.name }
-                                            ?: CrunchyrollNewsCategory.UNKNOWN
-                                    },
-                                    ifEmpty = CrunchyrollNewsCategory.UNKNOWN,
+                                    url = CRUNCHYROLL_NEWS_RSS_URL,
                                 )
                             }
                         }
@@ -121,7 +109,7 @@ class AnimeNewsController(
                 }
                 .map { it?.getOrNull() }
                 .catch {
-                    Log.e(TAG, "Error fetching crunchyroll", it)
+                    Logger.e(TAG, it) { "Error fetching crunchyroll" }
                     emit(null)
                 }
 
@@ -173,48 +161,18 @@ class AnimeNewsController(
         }
     }
 
-    private fun <Category> fetchFeed(
+    private suspend fun fetchFeed(
         type: AnimeNewsType,
-        okHttpClient: OkHttpClient,
         url: String,
-        mapCategories: (SyndCategory) -> Category,
-        ifEmpty: Category,
-    ) =
-        okHttpClient.newCall(
-            Request.Builder()
-                .url(url)
-                .get()
-                .build()
-        ).execute().body.charStream().use {
-            val feed = SyndFeedInput().build(it)
-            val iconUrl = feed.foreignMarkup
-                .find { it.namespacePrefix == "snf" && it.name == "logo" }
-                ?.children
-                ?.find { it.name == "url" }
-                ?.textNormalize
-            feed.entries.mapIndexed { index, entry ->
-                val imageUrl = entry.foreignMarkup
-                    .find { it.namespacePrefix == "media" && it.name == "thumbnail" }
-                    ?.getAttributeValue("url")
-                AnimeNewsArticleEntry(
-                    id = "$type-$index",
-                    type = type,
-                    icon = feed.icon?.url ?: iconUrl,
-                    image = imageUrl,
-                    title = entry.title,
-                    // Add 3 newlines to force text height measurement to be at least 3 lines tall
-                    description = entry.description?.value.orEmpty() + "\n\n\n",
-                    link = entry.link,
-                    copyright = feed.copyright,
-                    date = entry.publishedDate,
-                    categories = entry.categories
-                        .map(mapCategories)
-                        .ifEmpty { listOf(ifEmpty) },
-                )
-            }
+    ): List<AnimeNewsEntry<*>> {
+        val source = httpClient.get(url).bodyAsChannel().readBuffer()
+        return when (type) {
+            AnimeNewsType.ANIME_NEWS_NETWORK -> NewsXml.parseAnimeNewsNetworkFeed(source)
+            AnimeNewsType.CRUNCHYROLL -> NewsXml.parseCrunchyrollNewsFeed(source)
         }
+    }
 
     fun refresh() {
-        refreshUptimeMillis.value = SystemClock.uptimeMillis()
+        refreshUptimeMillis.value = Clock.System.now().toEpochMilliseconds()
     }
 }

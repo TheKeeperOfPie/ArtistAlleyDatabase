@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_news_network_category_anime">Anime</string>
+    <string name="anime_news_network_category_manga">Manga</string>
+    <string name="anime_news_network_category_live_action">Live action</string>
+    <string name="anime_news_network_category_games">Games</string>
+    <string name="anime_news_network_category_novels">Novels</string>
+    <string name="anime_news_network_category_music">Music</string>
+    <string name="anime_news_network_category_people">People</string>
+    <string name="anime_news_network_category_unknown">Unknown</string>
+    <string name="anime_news_network_category_industry">Industry</string>
+
+    <string name="anime_news_network_region_world">World</string>
+    <string name="anime_news_network_region_usa_canada">USA &amp; Canada</string>
+    <string name="anime_news_network_region_australia_new_zealand">Australia &amp; New-Zealand</string>
+    <string name="anime_news_network_region_india">India</string>
+    <string name="anime_news_network_region_southeast_asia">Southeast Asia</string>
+    <string name="anime_news_network_region_francais">Français</string>
+
+    <string name="anime_news_crunchyroll_category_news">News</string>
+    <string name="anime_news_crunchyroll_category_features">Features</string>
+    <string name="anime_news_crunchyroll_category_guides">Guides</string>
+    <string name="anime_news_crunchyroll_category_interviews">Interviews</string>
+    <string name="anime_news_crunchyroll_category_announcements">Announcements</string>
+    <string name="anime_news_crunchyroll_category_quizzes">Quizzes</string>
+
+    <string name="anime_news_sort_datetime">Datetime</string>
+    <string name="anime_news_sort_title">Title</string>
+    <string name="anime_news_sort_source">Source</string>
+</resources>

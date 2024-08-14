@@ -28,10 +28,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresCont
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -377,7 +377,7 @@ class AnimeUserListViewModel @Inject constructor(
         }
 
         val sortOption = filterParams.sort
-            .find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
+            .find { it.state == com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState.INCLUDE }?.value
         if (sortOption != null) {
             val baseComparator: Comparator<UserMediaListController.MediaEntry> =
                 when (sortOption) {

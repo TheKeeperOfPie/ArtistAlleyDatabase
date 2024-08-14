@@ -20,6 +20,7 @@ dependencies {
     api(libs.flowExt)
     api(libs.androidx.security.crypto)
 
+    api(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)
 

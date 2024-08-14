@@ -11,6 +11,10 @@ plugins {
 
 android {
     compileSdk = 35
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
+    }
 
     defaultConfig {
         minSdk = 28

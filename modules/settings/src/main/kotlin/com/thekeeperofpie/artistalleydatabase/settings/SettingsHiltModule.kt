@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,6 +39,10 @@ object SettingsHiltModule {
     @Provides
     fun provideMonetizationSettings(settingsProvider: SettingsProvider) =
         settingsProvider as MonetizationSettings
+
+    @Singleton
+    @Provides
+    fun provideNewsSettings(settingsProvider: SettingsProvider) = settingsProvider as NewsSettings
 
     @Singleton
     @Provides

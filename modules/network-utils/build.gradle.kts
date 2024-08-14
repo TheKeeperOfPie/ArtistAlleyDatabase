@@ -21,6 +21,9 @@ dependencies {
     debugRuntimeOnly(libs.cronet.embedded)
     implementation(libs.cronet.okhttp)
 
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+
     api(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)

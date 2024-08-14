@@ -33,7 +33,7 @@ dependencies {
 
     testImplementation(project(":modules:anilist-data"))
     testImplementation(libs.junit.jupiter.api)
-    testImplementation(libs.ktor.server.tests.jvm)
+    testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.truth)
     testRuntimeOnly(libs.junit.jupiter.engine)
 }

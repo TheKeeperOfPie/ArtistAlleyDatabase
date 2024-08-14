@@ -8,17 +8,18 @@ import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
-import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
+import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
+import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
+import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
 class TestSettingsProvider : NetworkSettings, AniListSettings, AnimeSettings, MonetizationSettings,
-    EntrySettings {
+    EntrySettings, NewsSettings {
 
     override val networkLoggingLevel =
         MutableStateFlow(NetworkSettings.NetworkLoggingLevel.NONE)

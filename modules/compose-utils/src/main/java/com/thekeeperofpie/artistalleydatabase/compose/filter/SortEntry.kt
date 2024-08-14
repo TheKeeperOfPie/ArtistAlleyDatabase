@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.compose.filter
 
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlin.reflect.KClass
 
 data class SortEntry<T : SortOption>(

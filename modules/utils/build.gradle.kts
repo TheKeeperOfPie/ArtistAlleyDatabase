@@ -3,11 +3,13 @@ plugins {
 }
 
 kotlin {
+    jvm("desktop")
+    // TODO: This target is required to resolve kotlin-test properly, but why?
+    iosX64()
+
     sourceSets {
         commonMain.dependencies {
             api(libs.bignum)
-            api(libs.kotlinx.serialization.json)
-            api(libs.kotlinx.datetime)
         }
     }
 }

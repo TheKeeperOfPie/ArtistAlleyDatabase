@@ -19,15 +19,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
-import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
+import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
+import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
+import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
@@ -52,7 +53,7 @@ class SettingsProvider(
     sharedPreferencesFileName: String = PREFERENCES_NAME,
     private val featureOverrideProvider: FeatureOverrideProvider,
 ) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings, MonetizationSettings,
-    AniListSettings {
+    AniListSettings, NewsSettings {
 
     companion object {
         const val EXPORT_FILE_NAME = "settings.json"

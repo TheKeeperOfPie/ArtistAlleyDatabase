@@ -27,8 +27,14 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             libs.find(
+                "libs.flowExt",
+            ).forEach(::api)
+
+            libs.find(
                 "libs.androidx.annotation",
                 "libs.kotlinx.coroutines.core",
+                "libs.kotlinx.datetime",
+                "libs.kotlinx.serialization.json",
             ).forEach(::implementation)
         }
     }

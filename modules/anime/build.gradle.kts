@@ -18,6 +18,7 @@ dependencies {
     api(project(":modules:cds"))
     api(project(":modules:markdown"))
     api(project(":modules:monetization"))
+    api(project(":modules:news"))
 
     implementation(libs.kotlinx.serialization.json)
 
@@ -46,8 +47,6 @@ dependencies {
     implementation(libs.media3.exoplayer.rtsp)
     implementation(libs.media3.ui)
     implementation(libs.androidyoutubeplayer)
-
-    implementation(libs.rome)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)

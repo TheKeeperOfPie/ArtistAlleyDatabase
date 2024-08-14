@@ -83,11 +83,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.IncludeExcludeIcon
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.roundToInt
