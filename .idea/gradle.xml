@@ -15,6 +15,7 @@
             </builds>
           </compositeBuild>
         </compositeConfiguration>
+        <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
@@ -47,7 +48,7 @@
             <option value="$PROJECT_DIR$/modules/monetization/unity" />
             <option value="$PROJECT_DIR$/modules/musical-artists" />
             <option value="$PROJECT_DIR$/modules/network-utils" />
-             <option value="$PROJECT_DIR$/modules/news" />
+            <option value="$PROJECT_DIR$/modules/news" />
             <option value="$PROJECT_DIR$/modules/play" />
             <option value="$PROJECT_DIR$/modules/server" />
             <option value="$PROJECT_DIR$/modules/settings" />

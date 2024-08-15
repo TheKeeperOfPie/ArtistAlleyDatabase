@@ -45,8 +45,10 @@ object Versions {
     const val accompanist = "0.35.1-alpha"
 
     object android {
-        const val gradle = "8.7.0-alpha03"
+        const val gradle = "8.7.0-alpha06"
     }
+
+    const val androidJunit5 = "1.11.0.0"
 
     object androidx {
         const val activity = "1.9.0"
@@ -54,15 +56,15 @@ object Versions {
         const val browser = "1.8.0"
         const val core = "1.15.0-alpha01"
         const val hilt = "1.2.0"
-        const val lifecycle = "2.8.4"
+        const val lifecycle = "2.9.0-alpha01"
         const val media3 = "1.4.0"
-        const val navigation = "2.8.0-beta06"
-        const val paging = "3.3.1"
+        const val navigation = "2.8.0-beta07"
+        const val paging = "3.3.2"
         const val palette = "1.0.0"
-        const val room = "2.7.0-alpha05"
+        const val room = "2.7.0-alpha06"
         const val securityCrypto = "1.1.0-alpha06"
         const val testExt = "1.2.1"
-        const val testRunner = "1.6.1"
+        const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
         const val work = "2.10.0-alpha02"
     }
@@ -70,34 +72,39 @@ object Versions {
     const val androidyoutubeplayer = "12.1.0"
 
     object apache {
-        const val commonsCompress = "1.26.2"
+        const val commonsCompress = "1.27.0"
         const val commonsCsv = "1.11.0"
     }
 
     const val apollo = "4.0.0-beta.7"
-    const val awaitility = "4.2.1"
+    const val awaitility = "4.2.2"
+    const val barfuinTaskInfo = "2.2.0"
     const val benasher44Uuid = "0.8.4"
+    const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
-    const val coil = "3.0.0-alpha09"
+    const val coil = "3.0.0-alpha10"
 
     object compose {
-        const val core = "1.7.0-beta06"
-        const val plugin = "1.7.0-alpha01"
-        const val runtime = "1.7.0-alpha01"
+        const val core = "1.7.0-beta07"
+        const val plugin = "1.7.0-alpha02"
+        const val runtime = "1.7.0-alpha02"
         const val runtimeTracing = "1.0.0-beta01"
     }
 
     const val cronetEmbedded = "119.6045.31"
-    const val dexmakerInline = "2.28.3"
+
+    // Version 1.33.0 fails with NoSuchMethodError com.google.common.graph.Graphs.reachableNodes
+    const val dependencyAnalysis = "1.32.0"
+    const val dexmakerInline = "2.28.4"
     const val flowExt = "1.0.0-RC"
 
     object google {
         const val appUpdate = "2.1.0"
         const val billing = "7.0.0"
         const val cronetOkHttp = "0.1.0"
-        const val dagger = "2.51.1"
+        const val dagger = "2.52"
         const val ossLicensesPlugin = "0.10.6"
-        const val playServicesAds = "23.2.0"
+        const val playServicesAds = "23.3.0"
         const val playServicesCronet = "18.1.0"
         const val playServicesOssLicenses = "17.1.0"
         const val truth = "1.4.4"
@@ -108,24 +115,25 @@ object Versions {
     const val graphQlJava = "22.1"
     const val htmlText = "1.6.0"
     const val jackson = "2.17.2"
+    const val jaredsBurrowsLicense = "0.9.8"
     const val javaDiffUtils = "4.12"
     const val javaPoet = "1.13.0"
     const val jsonTree = "2.2.0"
 
     object junit {
         const val four = "4.13.2"
-        const val jupiter = "5.11.0-M2"
+        const val jupiter = "5.11.0"
         const val jupiterAndroid = "1.5.0"
     }
 
     const val kermit = "2.0.4"
 
     object kotlin {
-        const val core = "2.0.10-RC"
-        const val coroutines = "1.9.0-RC"
+        const val core = "2.0.20-RC2"
+        const val coroutines = "1.9.0-RC.2"
         const val datetime = "0.6.0"
         const val io = "0.5.1"
-        const val ksp = "2.0.10-RC-1.0.23"
+        const val ksp = "2.0.20-RC2-1.0.24"
         const val serialization = "1.7.1"
     }
 
@@ -134,7 +142,7 @@ object Versions {
     // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
     const val ktor = "3.0.0-beta-2"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.28"
+    const val manifoldGraphql = "2024.1.30"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0-beta05"
     const val mockito = "5.12.0"
@@ -143,10 +151,11 @@ object Versions {
     const val moshi = "1.15.1"
     const val neovisionariesInternationalization = "1.29"
     const val netflixDgs = "9.0.4"
+    const val netflixDgsCodegen = "6.2.2"
     const val okhttp = "5.0.0-alpha.14"
     const val skrapeIt = "1.3.0-alpha.1"
-    const val unityAds = "4.10.0"
-    const val xmlUtil = "0.90.1"
+    const val unityAds = "4.12.2"
+    const val xmlUtil = "0.90.2-beta1"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
@@ -170,21 +179,21 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.google.dagger:hilt-compiler")
                     library("com.google.dagger:hilt-android-compiler")
                 }
-                library("com.squareup.moshi:moshi-kotlin-codegen:1.15.1")
+                library("com.squareup.moshi:moshi-kotlin-codegen:${Versions.moshi}")
             }
 
             create("libs") {
                 fun plugin(id: String) = plugin(id, id)
                 plugin("com.android.library").version(Versions.android.gradle)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
-                plugin("com.autonomousapps.dependency-analysis").version("1.32.0")
-                plugin("com.github.ben-manes.versions").version("0.51.0")
+                plugin("com.autonomousapps.dependency-analysis").version(Versions.dependencyAnalysis)
+                plugin("com.github.ben-manes.versions").version(Versions.benManesVersions)
                 plugin("com.google.dagger.hilt.android").version(Versions.google.dagger)
-                plugin("com.jaredsburrows.license").version("0.9.8")
-                plugin("com.netflix.dgs.codegen").version("6.2.2")
-                plugin("de.mannodermaus.android-junit5").version("1.10.2.0")
+                plugin("com.jaredsburrows.license").version(Versions.jaredsBurrowsLicense)
+                plugin("com.netflix.dgs.codegen").version(Versions.netflixDgsCodegen)
+                plugin("de.mannodermaus.android-junit5").version(Versions.androidJunit5)
                 plugin("io.ktor.plugin").version(Versions.ktor)
-                plugin("org.barfuin.gradle.taskinfo").version("2.2.0")
+                plugin("org.barfuin.gradle.taskinfo").version(Versions.barfuinTaskInfo)
                 plugin("org.jetbrains.compose").version(Versions.compose.plugin)
 
                 with(Versions.kotlin) {

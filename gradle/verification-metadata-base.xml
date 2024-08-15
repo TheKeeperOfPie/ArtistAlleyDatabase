@@ -14,6 +14,7 @@
 
             <!-- buildHealth failure when committing during AGP 8.3.0-alpha14 upgrade -->
             <trust file="kotlin-.*-1.*" regex="true" />
+            <trust file="kotlin-.*-2.0.*" regex="true" />
 
             <!-- Error when building -->
             <trust file="org.gradle.kotlin.*" regex="true" />
