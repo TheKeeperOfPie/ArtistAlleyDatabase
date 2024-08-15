@@ -97,6 +97,7 @@ object Versions {
     const val dependencyAnalysis = "1.32.0"
     const val dexmakerInline = "2.28.4"
     const val flowExt = "1.0.0-RC"
+    const val fluidI18n = "0.13.0"
 
     object google {
         const val appUpdate = "2.1.0"
@@ -149,7 +150,6 @@ object Versions {
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
     const val moshi = "1.15.1"
-    const val neovisionariesInternationalization = "1.29"
     const val netflixDgs = "9.0.4"
     const val netflixDgsCodegen = "6.2.2"
     const val okhttp = "5.0.0-alpha.14"
@@ -423,7 +423,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
-                library("com.neovisionaries:nv-i18n:${Versions.neovisionariesInternationalization}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:${Versions.androidyoutubeplayer}",
@@ -435,6 +434,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.squareup:kotlinpoet:${Versions.kotlinPoet}")
                 library("com.unity3d.ads:unity-ads:${Versions.unityAds}")
                 library("de.charlex.compose:html-text:${Versions.htmlText}")
+                library("io.fluidsonic.country:fluid-country:${Versions.fluidI18n}")
+                library("io.fluidsonic.i18n:fluid-i18n:${Versions.fluidI18n}")
                 library("io.github.hoc081098:FlowExt:${Versions.flowExt}")
                 library("io.github.java-diff-utils:java-diff-utils:${Versions.javaDiffUtils}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")

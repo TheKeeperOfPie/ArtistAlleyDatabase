@@ -86,7 +86,6 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaType
-import com.neovisionaries.i18n.CountryCode
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
@@ -144,6 +143,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import io.fluidsonic.country.Country
+import io.fluidsonic.i18n.name
+import io.fluidsonic.locale.Locale
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
@@ -838,7 +840,8 @@ object AnimeMediaDetailsScreen {
                     labelOne = stringResource(R.string.anime_media_details_licensed_label),
                     bodyOne = entry.licensedTextRes?.let { stringResource(it) },
                     labelTwo = stringResource(R.string.anime_media_details_country_label),
-                    bodyTwo = entry.country,
+                    bodyTwo = Locale.forLanguageTagOrNull(LocalConfiguration.currentLocale.toLanguageTag())
+                        ?.let { entry.country?.name(it) },
                     showDividerAbove = false,
                 )
 
@@ -1324,7 +1327,7 @@ object AnimeMediaDetailsScreen {
         val statusTextRes = media.status.toTextRes()
         val licensedTextRes = media.isLicensed
             ?.let { if (it) UtilsStringR.yes else UtilsStringR.no }
-        val country = CountryCode.getByAlpha2Code(media.countryOfOrigin.toString())?.getName()
+        val country = media.countryOfOrigin?.toString()?.let(Country.Companion::forCodeOrNull)
         val hashtags = media.hashtag?.split("#")
             ?.filter { it.isNotEmpty() }
             ?.map { "#${it.trim()}" }

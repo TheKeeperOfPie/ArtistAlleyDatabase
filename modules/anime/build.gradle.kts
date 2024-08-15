@@ -29,7 +29,6 @@ dependencies {
     api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     runtimeOnly(libs.compose.ui.tooling)
-    implementation(libs.accompanist.flowlayout)
 
     implementation(libs.coil3.coil.compose)
     implementation(libs.coil3.coil.network.okhttp)
@@ -38,7 +37,8 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     api(libs.paging.compose)
 
-    implementation(libs.nv.i18n)
+    implementation(libs.fluid.country)
+    implementation(libs.fluid.i18n)
 
     api(libs.media3.exoplayer)
     implementation(libs.media3.datasource.okhttp)
