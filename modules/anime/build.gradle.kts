@@ -46,7 +46,7 @@ dependencies {
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.exoplayer.rtsp)
     implementation(libs.media3.ui)
-    implementation(libs.androidyoutubeplayer)
+    implementation(libs.youtubeplayer.compose)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)

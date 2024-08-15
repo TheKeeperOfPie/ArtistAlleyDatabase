@@ -74,7 +74,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil3.compose.AsyncImage
@@ -86,10 +85,6 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaType
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -146,9 +141,13 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
 import io.fluidsonic.country.Country
 import io.fluidsonic.i18n.name
 import io.fluidsonic.locale.Locale
+import io.github.ilyapavlovskii.multiplatform.youtubeplayer.SimpleYouTubePlayerOptionsBuilder
+import io.github.ilyapavlovskii.multiplatform.youtubeplayer.YouTubePlayer
+import io.github.ilyapavlovskii.multiplatform.youtubeplayer.YouTubePlayerHostState
+import io.github.ilyapavlovskii.multiplatform.youtubeplayer.YouTubePlayerState
+import io.github.ilyapavlovskii.multiplatform.youtubeplayer.YouTubeVideoId
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(
@@ -590,8 +589,7 @@ object AnimeMediaDetailsScreen {
 
             trailerSection(
                 entry = entry2,
-                playbackPosition = { viewModel.trailerPlaybackPosition },
-                onPlaybackPositionUpdate = { viewModel.trailerPlaybackPosition = it },
+                youTubePlayerHostState = { viewModel.youTubePlayerHostState },
             )
 
             streamingEpisodesSection(
@@ -1068,8 +1066,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.trailerSection(
         entry: Entry2,
-        playbackPosition: () -> Float,
-        onPlaybackPositionUpdate: (Float) -> Unit,
+        youTubePlayerHostState: () -> YouTubePlayerHostState,
     ) {
         val trailer = entry.media.trailer ?: return
         if (trailer.site != "youtube" && trailer.site != "dailymotion") return
@@ -1091,34 +1088,32 @@ object AnimeMediaDetailsScreen {
                         .padding(horizontal = 16.dp)
                         .animateItem()
                 ) {
-                    val player = remember { AtomicReference<YouTubePlayer>(null) }
-                    AndroidView(
-                        factory = {
-                            YouTubePlayerView(it).apply {
-                                lifecycleOwner.lifecycle.addObserver(this)
-                                getYouTubePlayerWhenReady(object : YouTubePlayerCallback {
-                                    override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
-                                        player.set(youTubePlayer)
-                                        youTubePlayer.cueVideo(videoId, playbackPosition())
-                                        youTubePlayer.addListener(object :
-                                            AbstractYouTubePlayerListener() {
-                                            override fun onCurrentSecond(
-                                                youTubePlayer: YouTubePlayer,
-                                                second: Float,
-                                            ) {
-                                                onPlaybackPositionUpdate(second)
-                                            }
-                                        })
-                                    }
-                                })
-                            }
-                        },
-                        onRelease = {
-                            lifecycleOwner.lifecycle.removeObserver(it)
-                            it.release()
-                        },
-                        update = {
-                            lifecycleOwner.lifecycle.addObserver(it)
+                    val playerState = youTubePlayerHostState()
+                    val stateIfReady = playerState.currentState as? YouTubePlayerState.Ready
+                    LaunchedEffect(stateIfReady) {
+                        if (stateIfReady != null) {
+                            playerState.loadVideo(YouTubeVideoId(videoId))
+                        }
+                    }
+
+                    val stateIfPlaying = playerState.currentState as? YouTubePlayerState.Playing
+                    var hasPaused by remember { mutableStateOf(false) }
+                    LaunchedEffect(hasPaused, stateIfPlaying) {
+                        if (!hasPaused && stateIfPlaying != null) {
+                            hasPaused = true
+                            playerState.pause()
+                        }
+                    }
+                    YouTubePlayer(
+                        hostState = playerState,
+                        options = SimpleYouTubePlayerOptionsBuilder.builder {
+                            mute(true)
+                            autoplay(false)
+                            controls(true)
+                            rel(false)
+                            ivLoadPolicy(false)
+                            ccLoadPolicy(false)
+                            fullscreen(false)
                         },
                         modifier = Modifier
                             .fillMaxWidth()

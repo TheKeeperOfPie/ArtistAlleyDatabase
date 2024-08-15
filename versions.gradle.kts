@@ -69,8 +69,6 @@ object Versions {
         const val work = "2.10.0-alpha02"
     }
 
-    const val androidyoutubeplayer = "12.1.0"
-
     object apache {
         const val commonsCompress = "1.27.0"
         const val commonsCsv = "1.11.0"
@@ -155,6 +153,7 @@ object Versions {
     const val okhttp = "5.0.0-alpha.14"
     const val skrapeIt = "1.3.0-alpha.1"
     const val unityAds = "4.12.2"
+    const val youtubePlayerCompose = "2024.07.14-SNAPSHOT"
     const val xmlUtil = "0.90.2-beta1"
 }
 
@@ -424,10 +423,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")
-                library(
-                    "com.pierfrancescosoffritti.androidyoutubeplayer:core:${Versions.androidyoutubeplayer}",
-                    alias = "androidyoutubeplayer"
-                )
                 library("com.sebastianneubauer.jsontree:jsontree:${Versions.jsonTree}")
                 library("com.squareup.moshi:moshi-kotlin:${Versions.moshi}")
                 library("com.squareup:javapoet:${Versions.javaPoet}")
@@ -437,6 +432,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.fluidsonic.country:fluid-country:${Versions.fluidI18n}")
                 library("io.fluidsonic.i18n:fluid-i18n:${Versions.fluidI18n}")
                 library("io.github.hoc081098:FlowExt:${Versions.flowExt}")
+                library("io.github.ilyapavlovskii:youtubeplayer-compose:${Versions.youtubePlayerCompose}")
                 library("io.github.java-diff-utils:java-diff-utils:${Versions.javaDiffUtils}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
                 library("org.awaitility:awaitility:${Versions.awaitility}")
