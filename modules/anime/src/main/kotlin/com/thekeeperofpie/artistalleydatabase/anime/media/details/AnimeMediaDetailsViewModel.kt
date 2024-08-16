@@ -50,7 +50,6 @@ import java.io.IOException
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @HiltViewModel
 class AnimeMediaDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,

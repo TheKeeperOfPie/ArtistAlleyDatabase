@@ -10,8 +10,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -25,7 +25,7 @@ import kotlin.jvm.optionals.getOrNull
 @HiltViewModel
 class AnimeSongsViewModel @Inject constructor(
     private val animeSongsProviderOptional: Optional<AnimeSongsProvider>,
-    val mediaPlayer: AppMediaPlayer,
+    val mediaPlayer: MediaPlayer,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {

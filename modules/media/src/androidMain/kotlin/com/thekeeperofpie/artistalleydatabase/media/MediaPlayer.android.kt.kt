@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime
+package com.thekeeperofpie.artistalleydatabase.media
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -18,9 +18,8 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.hoc081098.flowext.interval
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -33,19 +32,20 @@ import kotlin.time.Duration.Companion.seconds
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @OptIn(ExperimentalCoroutinesApi::class)
-class AppMediaPlayer(
-    application: ScopedApplication,
+actual class MediaPlayer(
+    scope: CoroutineScope,
+    application: Application,
     okHttpClient: OkHttpClient,
-    featureOverrideProvider: FeatureOverrideProvider,
+    enableCache: Boolean,
 ) {
     // TODO: ID doesn't consider nested duplicate screens; unsure if this matters
     var playingState = MutableStateFlow<Pair<String?, Boolean>>(null to false)
     var progress by mutableFloatStateOf(0f)
 
-    val player = ExoPlayer.Builder(application.app)
+    val player = ExoPlayer.Builder(application)
         .setMediaSourceFactory(
             DefaultMediaSourceFactory(
-                DataSourceFactory(application.app, okHttpClient, featureOverrideProvider)
+                DataSourceFactory(application, okHttpClient, enableCache)
             )
         )
         .build()
@@ -57,7 +57,7 @@ class AppMediaPlayer(
                         Player.STATE_IDLE,
                         Player.STATE_BUFFERING,
                         Player.STATE_READY,
-                        -> Unit
+                            -> Unit
                         Player.STATE_ENDED -> {
                             playingState.value = playingState.value.copy(second = false)
                             seekTo(C.TIME_UNSET)
@@ -71,11 +71,11 @@ class AppMediaPlayer(
     private class DataSourceFactory(
         application: Application,
         okHttpClient: OkHttpClient,
-        featureOverrideProvider: FeatureOverrideProvider,
+        enableCache: Boolean,
     ) : DataSource.Factory {
         private val actualFactory = OkHttpDataSource.Factory(okHttpClient)
 
-        private val cache = if (featureOverrideProvider.enableAppMediaPlayerCache) {
+        private val cache = if (enableCache) {
             SimpleCache(
                 File(application.cacheDir, "exoplayer"),
                 LeastRecentlyUsedCacheEvictor(500L * 1024L * 1024L),
@@ -96,7 +96,7 @@ class AppMediaPlayer(
     }
 
     init {
-        application.scope.launch(CustomDispatchers.Main) {
+        scope.launch(Dispatchers.Main) {
             playingState.flatMapLatest {
                 if (it.first != null && it.second) {
                     interval(Duration.ZERO, 1.seconds)
@@ -110,7 +110,7 @@ class AppMediaPlayer(
         }
     }
 
-    fun prepare(id: String, url: String) {
+    actual fun prepare(id: String, url: String) {
         val currentId = playingState.value.first
         playingState.value = id to false
         if (currentId != id) {
@@ -121,7 +121,7 @@ class AppMediaPlayer(
         player.prepare()
     }
 
-    fun pause(id: String?) {
+    actual fun pause(id: String?) {
         val state = playingState.value
         if (id == null) {
             playingState.value = state.copy(second = false)
@@ -133,7 +133,7 @@ class AppMediaPlayer(
         }
     }
 
-    fun playPause(id: String, url: String) {
+    actual fun playPause(id: String, url: String) {
         val state = playingState.value
         if (state.first == id) {
             playingState.value = id to !state.second
@@ -150,14 +150,14 @@ class AppMediaPlayer(
         }
     }
 
-    fun stop(id: String) {
+    actual fun stop(id: String) {
         val state = playingState.value
         if (state.first != id) return
         playingState.value = state.copy(second = false)
         player.stop()
     }
 
-    fun updateProgress(id: String, progress: Float) {
+    actual fun updateProgress(id: String, progress: Float) {
         val state = playingState.value
         if (state.first != id) return
         this.progress = progress

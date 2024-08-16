@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.songs
 
-import android.view.View
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -52,10 +51,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.util.RepeatModeUtil
-import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
@@ -63,6 +58,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.media.MediaPlayerView
+import com.thekeeperofpie.artistalleydatabase.media.rememberMediaPlayerViewState
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeSongComposables {
@@ -229,35 +226,22 @@ object AnimeSongComposables {
                         }
                     }
 
+                    // TODO: Expanding above another entry causes a layout issue
                     if (state.expanded()) {
                         Box {
-                            var linkButtonVisible by remember { mutableStateOf(true) }
-                            AndroidView(
-                                factory = {
-                                    @Suppress("UnsafeOptInUsageError")
-                                    PlayerView(it).apply {
-                                        resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
-                                        setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS)
-                                        setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE)
-                                        setControllerVisibilityListener(
-                                            PlayerView.ControllerVisibilityListener {
-                                                linkButtonVisible = it == View.VISIBLE
-                                            }
-                                        )
-                                    }
-                                },
+                            val mediaPlayerViewState = rememberMediaPlayerViewState()
+                            MediaPlayerView(
+                                mediaPlayer = mediaPlayer,
+                                state = mediaPlayerViewState,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .wrapContentHeight()
-                                    .heightIn(min = 180.dp),
-                                update = { it.player = mediaPlayer.player },
-                                onReset = { it.player = null },
-                                onRelease = { it.player = null },
+                                    .heightIn(min = 180.dp)
                             )
 
                             val uriHandler = LocalUriHandler.current
                             val alpha by animateFloatAsState(
-                                targetValue = if (linkButtonVisible) 1f else 0f,
+                                targetValue = if (mediaPlayerViewState.controlsVisible) 1f else 0f,
                                 label = "Song open link button alpha",
                             )
                             IconButton(

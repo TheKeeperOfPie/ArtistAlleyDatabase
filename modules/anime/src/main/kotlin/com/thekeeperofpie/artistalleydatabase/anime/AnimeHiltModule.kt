@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsContro
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
+import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
@@ -44,11 +45,16 @@ object AnimeHiltModule {
 
     @Singleton
     @Provides
-    fun provideAppMediaPlayer(
+    fun provideMediaPlayer(
         scopedApplication: ScopedApplication,
         okHttpClient: OkHttpClient,
         featureOverrideProvider: FeatureOverrideProvider,
-    ) = AppMediaPlayer(scopedApplication, okHttpClient, featureOverrideProvider)
+    ) = MediaPlayer(
+        scope = scopedApplication.scope,
+        application = scopedApplication.app,
+        okHttpClient = okHttpClient,
+        enableCache = featureOverrideProvider.enableAppMediaPlayerCache,
+    )
 
     @Singleton
     @Provides
@@ -174,5 +180,6 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     @IntoSet
-    fun provideNavigationTypeMap(): @JvmSuppressWildcards Map<KType, NavType<*>> = AnimeDestination.typeMap
+    fun provideNavigationTypeMap(): @JvmSuppressWildcards Map<KType, NavType<*>> =
+        AnimeDestination.typeMap
 }

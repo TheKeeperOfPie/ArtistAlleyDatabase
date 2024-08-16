@@ -41,6 +41,7 @@ include(
     ":modules:dependencies",
     ":modules:entry",
     ":modules:markdown",
+    ":modules:media",
     ":modules:monetization",
     ":modules:monetization:admob",
     ":modules:monetization:debug",

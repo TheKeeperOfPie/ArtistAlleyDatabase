@@ -17,6 +17,7 @@ dependencies {
     api(project(":modules:compose-utils"))
     api(project(":modules:cds"))
     api(project(":modules:markdown"))
+    api(project(":modules:media"))
     api(project(":modules:monetization"))
     api(project(":modules:news"))
 
@@ -40,12 +41,6 @@ dependencies {
     implementation(libs.fluid.country)
     implementation(libs.fluid.i18n)
 
-    api(libs.media3.exoplayer)
-    implementation(libs.media3.datasource.okhttp)
-    implementation(libs.media3.exoplayer.dash)
-    implementation(libs.media3.exoplayer.hls)
-    implementation(libs.media3.exoplayer.rtsp)
-    implementation(libs.media3.ui)
     implementation(libs.youtubeplayer.compose)
 
     runtimeOnly(libs.room.runtime)
