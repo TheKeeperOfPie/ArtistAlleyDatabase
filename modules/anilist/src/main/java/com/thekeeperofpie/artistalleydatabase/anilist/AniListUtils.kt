@@ -14,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month

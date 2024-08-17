@@ -47,7 +47,6 @@ include(
     ":modules:monetization:debug",
     ":modules:monetization:unity",
     ":modules:musical-artists",
-    ":modules:network-utils",
     ":modules:play",
     ":modules:news",
     ":modules:server",
@@ -55,6 +54,7 @@ include(
     ":modules:test-utils",
     ":modules:utils",
     ":modules:utils-compose",
+    ":modules:utils-network",
     ":modules:vgmdb",
 )
 

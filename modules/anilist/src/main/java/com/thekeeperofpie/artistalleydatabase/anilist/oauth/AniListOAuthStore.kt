@@ -11,7 +11,7 @@ import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.BuildConfig
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine

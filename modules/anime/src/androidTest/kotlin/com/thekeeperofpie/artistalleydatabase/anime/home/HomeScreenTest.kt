@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
@@ -8,7 +9,12 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.filterToOne
+import androidx.compose.ui.test.hasTextExactly
+import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import com.anilist.type.MediaType
 import com.google.common.truth.Truth.assertThat
@@ -23,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
@@ -43,7 +50,6 @@ import org.junit.jupiter.api.parallel.ResourceAccessMode
 import org.junit.jupiter.api.parallel.ResourceLock
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import javax.inject.Inject
 
@@ -152,10 +158,10 @@ class HomeScreenTest {
             setContent { HomeScreenContent(viewModel, mediaViewModel) }
             val columnNode = onNodeWithTag("homeColumn")
             args.forEach {
-                val headerIndex = columnNode.fetchSemanticsNode()
-                    .config[SemanticsProperties.IndexForKey]
-                    .invoke("header_$it")
-                assertThat(headerIndex).isAtLeast(0)
+                val text = composeExtension.activity.getString(it)
+                columnNode.onChildren()
+                    .filterToOne(hasTextExactly(text))
+                    .assertExists()
             }
         }
     }
@@ -170,16 +176,22 @@ class HomeScreenTest {
         }
         val (viewModel, mediaViewModel) = mockViewModels(isAnime = isAnime)
         whenever(mediaViewModel.currentMedia) {
-            LoadingResult.success(listOf(mock<UserMediaListController.MediaEntry>()))
+            LoadingResult.success(
+                listOf(
+                    UserMediaListController.MediaEntry(
+                        media = UserMediaListController.MediaEntry.Media(id = 1234),
+                    )
+                )
+            )
         }
         composeExtension.use {
             setContent { HomeScreenContent(viewModel, mediaViewModel) }
 
-            val columnNode = onNodeWithTag("homeColumn")
-            val headerIndex = columnNode.fetchSemanticsNode()
-                .config[SemanticsProperties.IndexForKey]
-                .invoke("header_$currentHeaderRes")
-            assertThat(headerIndex).isAtLeast(0)
+            val text = composeExtension.activity.getString(currentHeaderRes)
+            onNodeWithTag("homeColumn")
+                .onChildren()
+                .filterToOne(hasTextExactly(text))
+                .assertExists()
         }
     }
 
@@ -198,11 +210,11 @@ class HomeScreenTest {
         composeExtension.use {
             setContent { HomeScreenContent(viewModel, mediaViewModel) }
 
-            val columnNode = onNodeWithTag("homeColumn")
-            val headerIndex = columnNode.fetchSemanticsNode()
-                .config[SemanticsProperties.IndexForKey]
-                .invoke("header_$currentHeaderRes")
-            assertThat(headerIndex).isEqualTo(-1)
+            val text = composeExtension.activity.getString(currentHeaderRes)
+            onNodeWithTag("homeColumn")
+                .onChildren()
+                .filterToOne(hasTextExactly(text))
+                .assertDoesNotExist()
         }
     }
 
@@ -245,20 +257,22 @@ class HomeScreenTest {
         }
 
         whenever(viewModel.activity) {
-            val pagingData = if (activityLoading) {
-                PagingData.empty()
-            } else {
-                PagingData.from(emptyList())
-            }
-            MutableStateFlow(pagingData)
+            MutableStateFlow(
+                if (activityLoading) {
+                    PagingData.refreshing()
+                } else {
+                    PagingData.empty()
+                }
+            )
         }
         whenever(viewModel.recommendations) {
-            val pagingData = if (recommendationsLoading) {
-                PagingData.empty()
-            } else {
-                PagingData.from(emptyList())
-            }
-            MutableStateFlow(pagingData)
+            MutableStateFlow(
+                if (recommendationsLoading) {
+                    PagingData.refreshing()
+                } else {
+                    PagingData.empty()
+                }
+            )
         }
 
         val mediaViewModel = spy(
@@ -298,12 +312,13 @@ class HomeScreenTest {
         }
 
         whenever(mediaViewModel.reviews) {
-            val pagingData = if (mediaReviewsLoading) {
-                PagingData.empty()
-            } else {
-                PagingData.from(emptyList())
-            }
-            MutableStateFlow(pagingData)
+            MutableStateFlow(
+                if (mediaReviewsLoading) {
+                    PagingData.refreshing()
+                } else {
+                    PagingData.empty()
+                }
+            )
         }
 
         return viewModel to mediaViewModel
@@ -315,18 +330,29 @@ class HomeScreenTest {
         mediaViewModel: AnimeHomeMediaViewModel,
     ) {
         SharedTransitionLayout {
-            CompositionLocalProvider(
-                LocalSharedTransitionScope provides this,
-                LocalIgnoreController provides ignoreController,
-            ) {
-                AnimeHomeScreen(
-                    viewModel = viewModel,
-                    upIconOption = null,
-                    scrollStateSaver = ScrollStateSaver.STUB,
-                    bottomNavigationState = null,
-                    mediaViewModel = { mediaViewModel },
-                )
+            AnimatedVisibility(visible = true) {
+                CompositionLocalProvider(
+                    LocalSharedTransitionScope provides this@SharedTransitionLayout,
+                    LocalAnimatedVisibilityScope provides this@AnimatedVisibility,
+                    LocalIgnoreController provides ignoreController,
+                ) {
+                    AnimeHomeScreen(
+                        viewModel = viewModel,
+                        upIconOption = null,
+                        scrollStateSaver = ScrollStateSaver.STUB,
+                        bottomNavigationState = null,
+                        mediaViewModel = { mediaViewModel },
+                    )
+                }
             }
         }
     }
+
+    private fun <T : Any> PagingData.Companion.refreshing() = PagingData.empty<T>(
+        LoadStates(
+            refresh = LoadState.Loading,
+            append = LoadState.NotLoading(false),
+            prepend = LoadState.NotLoading(true)
+        )
+    )
 }

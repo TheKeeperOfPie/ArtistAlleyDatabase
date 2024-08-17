@@ -12,7 +12,7 @@ android {
 dependencies {
     api(project(":modules:android-utils"))
     implementation(project(":modules:compose-utils"))
-    implementation(project(":modules:network-utils"))
+    implementation(project(":modules:utils-network"))
 
     api(libs.apollo.runtime)
 

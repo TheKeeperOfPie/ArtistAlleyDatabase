@@ -130,7 +130,7 @@ sealed interface AnimeDestination {
         val coverImage: ImageState? = null,
         // TODO: Corner radius animation
         val headerParams: MediaHeaderParams? = null,
-        val sharedTransitionKey: SharedTransitionKey?,
+        val sharedTransitionKey: SharedTransitionKey? = null,
     ) : AnimeDestination {
         constructor(
             mediaNavigationData: MediaNavigationData,

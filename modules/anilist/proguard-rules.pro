@@ -26,4 +26,4 @@
 # This is generated automatically by the Android Gradle plugin.
 -dontwarn com.thekeeperofpie.artistalleydatabase.compose.SharedComposablesKt
 -dontwarn com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
--dontwarn com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
+-dontwarn com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider

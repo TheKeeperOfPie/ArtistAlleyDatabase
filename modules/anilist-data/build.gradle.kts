@@ -1,11 +1,13 @@
 plugins {
-    id("jvm-library")
+    id("library-android")
+    id("library-kotlin")
+    id("library-desktop")
     alias(libs.plugins.com.apollographql.apollo3.external)
 }
 
 // Need to manually remove some types, as this downloads the default type definitions,
 // which will conflict with codegen
-val aniListSchemaFile: File = project.file("src/main/graphql/anilist/schema.graphqls")
+val aniListSchemaFile: File = project.file("src/commonMain/graphql/anilist/schema.graphqls")
 apollo {
     service("aniList") {
         packageName.set("com.anilist")
@@ -26,7 +28,15 @@ if (!aniListSchemaFile.exists()) {
         .dependsOn("downloadAniListApolloSchemaFromIntrospection")
 }
 
-dependencies {
-    api(libs.apollo.runtime)
-    implementation(libs.jetBrainsCompose.runtime)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            api(libs.apollo.runtime)
+            implementation(libs.jetBrainsCompose.runtime)
+        }
+    }
+}
+
+android {
+    namespace = "com.thekeeperofpie.artistalleydatabase.anilist_data"
 }

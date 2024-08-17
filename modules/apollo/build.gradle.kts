@@ -1,7 +1,12 @@
 plugins {
-    id("jvm-library")
+    id("library-kotlin")
 }
 
-dependencies {
-    api(libs.apollo.compiler)
+kotlin {
+    jvm()
+    sourceSets {
+        commonMain.dependencies {
+            api(libs.apollo.compiler)
+        }
+    }
 }

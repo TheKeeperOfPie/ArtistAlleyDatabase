@@ -1,15 +1,13 @@
-package com.thekeeperofpie.artistalleydatabase.network_utils
+package com.thekeeperofpie.artistalleydatabase.utils_network
 
 import com.apollographql.apollo3.api.http.HttpRequest
 import com.apollographql.apollo3.api.http.HttpResponse
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
-object RateLimitUtils {
+object ApolloRateLimitUtils {
 
     suspend fun rateLimit(
         request: HttpRequest,

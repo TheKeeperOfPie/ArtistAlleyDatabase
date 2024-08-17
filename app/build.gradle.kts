@@ -300,4 +300,8 @@ dependencies {
     implementation(libs.play.services.oss.licenses)
 
     debugImplementation(libs.leakcanary.android)
+
+    releaseRuntimeOnly(libs.cronet.play)
+    "internalRuntimeOnly"(libs.cronet.embedded)
+    debugRuntimeOnly(libs.cronet.embedded)
 }

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
@@ -268,93 +270,100 @@ class MediaDetailsScreenTest {
         viewModels: ViewModels,
     ) {
         SharedTransitionLayout {
-            CompositionLocalProvider(
-                LocalSharedTransitionScope provides this,
-                LocalIgnoreController provides ignoreController,
-            ) {
-                val viewer by viewModels.mediaDetailsViewModel.viewer.collectAsState()
-                val activities = viewModels.activitiesViewModel.activities
-                val (activityTab, onActivityTabChange) = rememberSaveable(viewer, activities) {
-                    mutableStateOf(
-                        if (activities?.following.isNullOrEmpty()) {
-                            AnimeMediaDetailsActivityViewModel.ActivityTab.GLOBAL
-                        } else {
-                            AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING
-                        }
-                    )
-                }
-                val mediaTitle = viewModels.mediaDetailsViewModel.entry.result?.media?.title?.primaryTitle()
-                val coverImageState = rememberCoilImageState(uri = null)
-                AnimeMediaDetailsScreen(
-                    viewModel = viewModels.mediaDetailsViewModel,
-                    upIconOption = UpIconOption.Back {},
-                    headerValues = MediaHeaderValues(
-                        null,
-                        media = { mock() },
-                        favoriteUpdate = { false },
-                    ),
-                    sharedTransitionKey = SharedTransitionKey.makeKeyForId("1234"),
-                    coverImageState = coverImageState,
-                    charactersCount = { 0 },
-                    charactersSection = { _ -> },
-                    staffCount = { 0 },
-                    staffSection = {},
-                    requestLoadMedia2 = {},
-                    recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                    recommendationsSection = { _, _, _ -> },
-                    songsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                    songsSection = { _, _ -> },
-                    cdsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                    cdsSection = {},
-                    activitiesSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
-                        items = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
-                            activities?.following
-                        } else {
-                            activities?.global
-                        },
-                        aboveFold = AnimeActivityComposables.ACTIVITIES_ABOVE_FOLD,
-                        hasMore = true,
-                        addOneForViewer = true,
-                    ),
-                    activitiesSection = { expanded, onExpandedChanged, onClickListEdit ->
-                        activitiesSection(
-                            viewer = viewer,
-                            onActivityStatusUpdate = viewModels.activitiesViewModel.activityToggleHelper::toggle,
-                            activityTab = activityTab,
-                            activities = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
+            AnimatedVisibility(visible = true) {
+                CompositionLocalProvider(
+                    LocalSharedTransitionScope provides this@SharedTransitionLayout,
+                    LocalAnimatedVisibilityScope provides this@AnimatedVisibility,
+                    LocalIgnoreController provides ignoreController,
+                ) {
+                    val viewer by viewModels.mediaDetailsViewModel.viewer.collectAsState()
+                    val activities = viewModels.activitiesViewModel.activities
+                    val (activityTab, onActivityTabChange) = rememberSaveable(
+                        viewer,
+                        activities
+                    ) {
+                        mutableStateOf(
+                            if (activities?.following.isNullOrEmpty()) {
+                                AnimeMediaDetailsActivityViewModel.ActivityTab.GLOBAL
+                            } else {
+                                AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING
+                            }
+                        )
+                    }
+                    val mediaTitle =
+                        viewModels.mediaDetailsViewModel.entry.result?.media?.title?.primaryTitle()
+                    val coverImageState = rememberCoilImageState(uri = null)
+                    AnimeMediaDetailsScreen(
+                        viewModel = viewModels.mediaDetailsViewModel,
+                        upIconOption = UpIconOption.Back {},
+                        headerValues = MediaHeaderValues(
+                            null,
+                            media = { mock() },
+                            favoriteUpdate = { false },
+                        ),
+                        sharedTransitionKey = SharedTransitionKey.makeKeyForId("1234"),
+                        coverImageState = coverImageState,
+                        charactersCount = { 0 },
+                        charactersSection = { _ -> },
+                        staffCount = { 0 },
+                        staffSection = {},
+                        requestLoadMedia2 = {},
+                        recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                        recommendationsSection = { _, _, _ -> },
+                        songsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                        songsSection = { _, _ -> },
+                        cdsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                        cdsSection = {},
+                        activitiesSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
+                            items = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
                                 activities?.following
                             } else {
                                 activities?.global
                             },
-                            onActivityTabChange = onActivityTabChange,
-                            expanded = expanded,
-                            onExpandedChange = onExpandedChanged,
-                            onClickListEdit = onClickListEdit,
-                            onClickViewAll = {
-                                val entry = viewModels.mediaDetailsViewModel.entry.result
-                                if (entry != null) {
-                                    it.navigate(
-                                        AnimeDestination.MediaActivities(
-                                            mediaId = viewModels.mediaDetailsViewModel.mediaId,
-                                            showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
-                                            headerParams = MediaHeaderParams(
-                                                title = mediaTitle,
-                                                coverImage = coverImageState.toImageState(),
-                                                media = entry.media,
-                                                favorite = viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite
-                                                    ?: entry.media.isFavourite,
+                            aboveFold = AnimeActivityComposables.ACTIVITIES_ABOVE_FOLD,
+                            hasMore = true,
+                            addOneForViewer = true,
+                        ),
+                        activitiesSection = { expanded, onExpandedChanged, onClickListEdit ->
+                            activitiesSection(
+                                viewer = viewer,
+                                onActivityStatusUpdate = viewModels.activitiesViewModel.activityToggleHelper::toggle,
+                                activityTab = activityTab,
+                                activities = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
+                                    activities?.following
+                                } else {
+                                    activities?.global
+                                },
+                                onActivityTabChange = onActivityTabChange,
+                                expanded = expanded,
+                                onExpandedChange = onExpandedChanged,
+                                onClickListEdit = onClickListEdit,
+                                onClickViewAll = {
+                                    val entry = viewModels.mediaDetailsViewModel.entry.result
+                                    if (entry != null) {
+                                        it.navigate(
+                                            AnimeDestination.MediaActivities(
+                                                mediaId = viewModels.mediaDetailsViewModel.mediaId,
+                                                showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
+                                                headerParams = MediaHeaderParams(
+                                                    title = mediaTitle,
+                                                    coverImage = coverImageState.toImageState(),
+                                                    media = entry.media,
+                                                    favorite = viewModels.mediaDetailsViewModel.favoritesToggleHelper.favorite
+                                                        ?: entry.media.isFavourite,
+                                                )
                                             )
                                         )
-                                    )
-                                }
-                            },
-                        )
-                    },
-                    forumThreadsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                    forumThreadsSection = { _, _ -> },
-                    reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
-                    reviewsSection = { expanded, onExpandedChange -> },
-                )
+                                    }
+                                },
+                            )
+                        },
+                        forumThreadsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                        forumThreadsSection = { _, _ -> },
+                        reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.Empty,
+                        reviewsSection = { _, _ -> },
+                    )
+                }
             }
         }
     }

@@ -11,7 +11,7 @@ android {
 
 dependencies {
     api(project(":modules:anime"))
-    api(project(":modules:network-utils"))
+    api(project(":modules:utils-network"))
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)

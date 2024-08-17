@@ -48,7 +48,6 @@
             <option value="$PROJECT_DIR$/modules/monetization/debug" />
             <option value="$PROJECT_DIR$/modules/monetization/unity" />
             <option value="$PROJECT_DIR$/modules/musical-artists" />
-            <option value="$PROJECT_DIR$/modules/network-utils" />
             <option value="$PROJECT_DIR$/modules/news" />
             <option value="$PROJECT_DIR$/modules/play" />
             <option value="$PROJECT_DIR$/modules/server" />
@@ -56,6 +55,7 @@
             <option value="$PROJECT_DIR$/modules/test-utils" />
             <option value="$PROJECT_DIR$/modules/utils" />
             <option value="$PROJECT_DIR$/modules/utils-compose" />
+            <option value="$PROJECT_DIR$/modules/utils-network" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
           </set>
         </option>

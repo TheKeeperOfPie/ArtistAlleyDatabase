@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.TestInstancePostProcessor
 import org.junit.runner.Description
 import org.mockito.kotlin.any
+import org.mockito.kotlin.mockingDetails
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
@@ -63,7 +64,11 @@ class HiltInjectExtension : Extension, TestInstancePostProcessor,
             .startMocking()
         ExtendedMockito.`when`(Contexts.getApplication(any())).thenAnswer {
             val application = it.arguments[0] as CustomHiltTestApplication_Application
-            val mockApplication = ExtendedMockito.spy(application)
+            val mockApplication = if (mockingDetails(application).isMock) {
+                application
+            } else {
+                ExtendedMockito.spy(application)
+            }
             ExtendedMockito.doAnswer {
                 threadLocal.get()?.invoke()
                     ?: threadMap.firstNotNullOfOrNull { it.value }?.invoke()

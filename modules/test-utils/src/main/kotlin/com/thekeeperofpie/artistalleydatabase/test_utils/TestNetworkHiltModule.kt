@@ -1,19 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.test_utils
 
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkUtilsHiltModule
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.testing.TestInstallIn
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import javax.inject.Singleton
 
 @Module
-@TestInstallIn(
-    components = [SingletonComponent::class],
-    replaces = [NetworkUtilsHiltModule::class]
-)
+@InstallIn(SingletonComponent::class)
 class TestNetworkHiltModule {
 
     @Singleton

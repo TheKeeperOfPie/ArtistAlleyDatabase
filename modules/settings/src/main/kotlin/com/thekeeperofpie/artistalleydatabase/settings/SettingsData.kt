@@ -10,10 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import kotlinx.serialization.Serializable
 
 @Serializable

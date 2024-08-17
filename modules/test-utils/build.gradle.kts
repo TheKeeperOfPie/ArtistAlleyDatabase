@@ -10,8 +10,8 @@ android {
 
 dependencies {
     api(project(":modules:android-utils"))
-    implementation(project(":modules:network-utils"))
     implementation(project(":modules:server"))
+    implementation(project(":modules:utils-network"))
 
     implementation(libs.dexmaker.mockito.inline.extended)
     implementation(libs.mockito.kotlin)

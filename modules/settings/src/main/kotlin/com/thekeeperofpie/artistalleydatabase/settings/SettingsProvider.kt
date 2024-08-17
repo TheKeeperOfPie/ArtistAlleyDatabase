@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
@@ -32,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.FlowCollector

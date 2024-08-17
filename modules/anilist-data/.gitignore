@@ -1,2 +1,2 @@
 /build
-/src/main/graphql/anilist/schema.graphqls
+/src/**/schema.graphqls

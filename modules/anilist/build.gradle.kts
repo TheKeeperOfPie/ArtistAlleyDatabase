@@ -19,7 +19,7 @@ dependencies {
     api(project(":modules:anilist-data"))
     implementation(project(":modules:compose-utils"))
     api(project(":modules:entry"))
-    api(project(":modules:network-utils"))
+    api(project(":modules:utils-network"))
 
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.normalized.cache)

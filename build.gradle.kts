@@ -59,7 +59,6 @@ dependencyAnalysis {
             }
             onIncorrectConfiguration {
                 exclude(
-                    ":modules:network-utils",
                     "com.apollographql.apollo3:apollo-normalized-cache-sqlite",
                     "io.coil-kt:coil-compose",
                     "org.jetbrains.kotlin:kotlin-stdlib",
@@ -129,7 +128,6 @@ dependencyAnalysis {
                     ":modules:monetization:debug",
                     ":modules:monetization:unity",
                     ":modules:musical-artists",
-                    ":modules:network-utils",
                     ":modules:play",
                     ":modules:settings",
                     ":modules:test-utils",

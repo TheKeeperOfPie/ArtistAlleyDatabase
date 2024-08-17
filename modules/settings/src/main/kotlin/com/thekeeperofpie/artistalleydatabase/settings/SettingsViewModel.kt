@@ -46,9 +46,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao

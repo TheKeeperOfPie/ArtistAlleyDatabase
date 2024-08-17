@@ -8,8 +8,8 @@ import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.network_utils.RateLimitUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
 import graphql.language.AstPrinter
 import graphql.parser.Parser
 import kotlinx.coroutines.channels.BufferOverflow
@@ -46,7 +46,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
                 )
             )
 
-            val response = RateLimitUtils.rateLimit(request, chain) { (response, _) ->
+            val response = ApolloRateLimitUtils.rateLimit(request, chain) { (response, _) ->
                 val responseBody = response.body
                 val responseBodyString =
                     responseBody?.readString(Charset.defaultCharset()).toString()

@@ -22,10 +22,10 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideP
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry

@@ -17,10 +17,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApiWrapper
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

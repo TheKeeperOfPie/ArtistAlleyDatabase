@@ -6,7 +6,7 @@ val Project.libs: VersionCatalog
     get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
 dependencies {
     androidTestImplementation(project(":modules:test-utils"))
-    androidTestImplementation(project(":modules:network-utils"))
+    androidTestImplementation(project(":modules:utils-network"))
 
     libs.find(
         "libs.dexmaker.mockito.inline.extended",
