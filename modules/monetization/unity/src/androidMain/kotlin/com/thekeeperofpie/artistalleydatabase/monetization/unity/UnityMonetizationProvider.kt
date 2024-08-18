@@ -16,8 +16,8 @@ import artistalleydatabase.modules.monetization.unity.generated.resources.unity_
 import artistalleydatabase.modules.monetization.unity.generated.resources.unity_error_initializing_ads_generic
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
+import com.thekeeperofpie.artistalleydatabase.monetization.unity.secrets.UnitySecrets
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
-import com.unity3d.ads.BuildConfig
 import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.UnityAds
 import com.unity3d.services.banners.BannerView
@@ -56,7 +56,7 @@ class UnityMonetizationProvider(
                 factory = {
                     BannerView(
                         activity,
-                        BuildConfig.unityBannerAdUnitId,
+                        UnitySecrets.unityBannerAdUnitId,
                         UnityBannerSize(320, 50),
                     ).apply {
                         load()
@@ -82,7 +82,7 @@ class UnityMonetizationProvider(
         adsInitialized = true
         UnityAds.initialize(
             application,
-            BuildConfig.unityGameId,
+            UnitySecrets.unityGameId,
             testMode,
             object : IUnityAdsInitializationListener {
                 override fun onInitializationComplete() {

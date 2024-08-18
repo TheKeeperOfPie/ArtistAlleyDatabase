@@ -45,6 +45,7 @@ include(
     ":modules:monetization",
     ":modules:monetization:debug",
     ":modules:monetization:unity",
+    ":modules:monetization:unity:secrets",
     ":modules:musical-artists",
     ":modules:play",
     ":modules:news",

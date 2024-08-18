@@ -11,12 +11,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.github.difflib.text.DiffRowGenerator
-import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -101,13 +98,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         viewModelScope.launch(CustomDispatchers.IO) {
             val model = when (type) {
                 Type.ADD -> buildAddModel()
-                Type.SINGLE_EDIT -> {
-                    val model = async { buildSingleEditModel(entryIds.single()) }
-                    // TODO: Move this delay into the UI layer
-                    // Delay to allow the shared element transition to finish
-                    delay(AnimationUtils.multipliedByAnimatorScale(application, 350L))
-                    model.await()
-                }
+                Type.SINGLE_EDIT -> buildSingleEditModel(entryIds.single())
                 Type.MULTI_EDIT -> buildMultiEditModel()
             }
             val (initialEntry, initialImages) = withContext(CustomDispatchers.Main) {

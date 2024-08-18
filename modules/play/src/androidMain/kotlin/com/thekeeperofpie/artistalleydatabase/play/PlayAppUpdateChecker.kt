@@ -12,11 +12,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import artistalleydatabase.modules.play.generated.resources.Res
+import artistalleydatabase.modules.play.generated.resources.play_update_available
+import artistalleydatabase.modules.play.generated.resources.play_update_available_button
+import artistalleydatabase.modules.play.generated.resources.play_update_downloaded
+import artistalleydatabase.modules.play.generated.resources.play_update_downloaded_button
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.ktx.AppUpdateResult
 import com.google.android.play.core.ktx.isFlexibleUpdateAllowed
@@ -33,6 +37,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 class PlayAppUpdateChecker(application: Application) : AppUpdateChecker, DefaultLifecycleObserver {
 
@@ -72,10 +77,10 @@ class PlayAppUpdateChecker(application: Application) : AppUpdateChecker, Default
     @SuppressLint("ComposableNaming")
     @Composable
     override fun applySnackbarState(snackbarHostState: SnackbarHostState) {
-        val availableMessage = stringResource(R.string.play_update_available)
-        val availableAction = stringResource(R.string.play_update_available_button)
-        val downloadedMessage = stringResource(R.string.play_update_downloaded)
-        val downloadedAction = stringResource(R.string.play_update_downloaded_button)
+        val availableMessage = stringResource(Res.string.play_update_available)
+        val availableAction = stringResource(Res.string.play_update_available_button)
+        val downloadedMessage = stringResource(Res.string.play_update_downloaded)
+        val downloadedAction = stringResource(Res.string.play_update_downloaded_button)
         val updateAvailable = updateAvailable
         LaunchedEffect(state, updateAvailable) {
             if (state is AppUpdateResult.Downloaded) {
