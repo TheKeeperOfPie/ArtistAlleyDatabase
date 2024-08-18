@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
 import androidx.annotation.StringRes
@@ -27,7 +25,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -54,7 +51,6 @@ import androidx.core.graphics.ColorUtils
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil3.annotation.ExperimentalCoilApi
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
@@ -83,17 +79,15 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.colorsOrDefault
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
-import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 
 @Composable
 fun CharacterSmallCard(
-    id: EntryId,
     sharedTransitionKey: SharedTransitionKey?,
     sharedTransitionIdentifier: String,
     innerSharedTransitionKey: SharedTransitionKey?,
@@ -367,7 +361,7 @@ fun CharactersSectionItem(
     val imageState = rememberImageStateBelowInnerImage(image, innerImage)
     val innerImageState = rememberCoilImageState(innerImage)
     val characterSharedTransitionKey = character?.id?.let { SharedTransitionKey.makeKeyForId(it) }
-    val voiceActorTransitionKey = voiceActor?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
+    val voiceActorTransitionKey = voiceActor?.id?.let { SharedTransitionKey.makeKeyForId(it) }
     val onClickCharacter: () -> Unit = {
         if (character?.character != null) {
             navigationCallback.navigate(
@@ -394,7 +388,7 @@ fun CharactersSectionItem(
         voiceActor?.let {
             navigationCallback.navigate(
                 AnimeDestination.StaffDetails(
-                    staffId = voiceActor.id.toString(),
+                    staffId = voiceActor.id,
                     sharedTransitionKey = voiceActorTransitionKey,
                     headerParams = StaffHeaderParams(
                         name = voiceActorName,
@@ -411,12 +405,6 @@ fun CharactersSectionItem(
         }
     }
     CharactersSectionItem(
-        character = character,
-        id = if (showVoiceActorAsMain) {
-            EntryId("anime_staff", voiceActor?.id.orEmpty())
-        } else {
-            EntryId("anime_character", character?.id.orEmpty())
-        },
         sharedTransitionKey = if (showVoiceActorAsMain) {
             voiceActorTransitionKey
         } else {
@@ -462,8 +450,6 @@ fun CharactersSectionItem(
 
 @Composable
 fun CharactersSectionItem(
-    character: DetailsCharacter?,
-    id: EntryId,
     sharedTransitionKey: SharedTransitionKey?,
     sharedTransitionIdentifier: String,
     innerSharedTransitionKey: SharedTransitionKey?,
@@ -475,20 +461,16 @@ fun CharactersSectionItem(
     text: @Composable () -> String,
     isStaffMain: Boolean = false,
 ) {
-    val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
-
-    val navigationCallback = LocalNavigationCallback.current
     CharacterSmallCard(
-        id = id,
         sharedTransitionKey = sharedTransitionKey,
         sharedTransitionIdentifier = sharedTransitionIdentifier,
         innerSharedTransitionKey = innerSharedTransitionKey,
         innerSharedTransitionIdentifier = innerSharedTransitionIdentifier,
         image = imageState?.uri,
-        imageState = imageState,
-        onClick = onClick,
         innerImage = innerImageState?.uri,
+        imageState = imageState,
         innerImageState = innerImageState,
+        onClick = onClick,
         onClickInnerImage = onClickInnerImage,
         isStaffMain = isStaffMain,
     ) { textColor ->
@@ -533,7 +515,7 @@ fun CharacterCard(
             character?.character?.let {
                 navigationCallback.navigate(
                     AnimeDestination.CharacterDetails(
-                        characterId = character.id.toString(),
+                        characterId = character.id,
                         sharedTransitionKey = characterSharedTransitionKey,
                         headerParams = CharacterHeaderParams(
                             name = characterName,

@@ -62,12 +62,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.DividerDefaults
@@ -175,6 +173,11 @@ import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.asDrawable
 import coil3.request.ImageRequest
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
+import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import com.thekeeperofpie.compose_proxy.R
 import de.charlex.compose.toAnnotatedString
 import kotlinx.coroutines.CoroutineScope
@@ -198,30 +201,6 @@ fun AppBar(
         scrollBehavior = scrollBehavior,
         colors = colors,
     )
-}
-
-@Composable
-fun NavMenuIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    IconButton(onClick = onClick, modifier = modifier) {
-        Icon(
-            imageVector = Icons.Default.Menu,
-            contentDescription = stringResource(
-                R.string.nav_drawer_icon_content_description
-            ),
-        )
-    }
-}
-
-@Composable
-fun ArrowBackIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    IconButton(onClick = onClick, modifier = modifier) {
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = stringResource(
-                R.string.app_bar_back_icon_content_description
-            ),
-        )
-    }
 }
 
 @Composable

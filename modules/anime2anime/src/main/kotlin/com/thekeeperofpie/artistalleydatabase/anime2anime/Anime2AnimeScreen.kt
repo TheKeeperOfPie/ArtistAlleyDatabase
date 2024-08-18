@@ -95,10 +95,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameContinuation
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.OnChangeEffect
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
@@ -110,6 +107,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedEle
 import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,

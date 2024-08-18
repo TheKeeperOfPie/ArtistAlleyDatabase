@@ -57,11 +57,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)

@@ -35,7 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
-import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
@@ -46,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 

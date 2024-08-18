@@ -42,12 +42,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaActivitiesScreen {

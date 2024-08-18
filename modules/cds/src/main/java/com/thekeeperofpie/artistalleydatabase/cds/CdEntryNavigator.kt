@@ -21,13 +21,13 @@ import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelec
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import kotlin.math.roundToInt
 
 class CdEntryNavigator : BrowseSelectionNavigator {

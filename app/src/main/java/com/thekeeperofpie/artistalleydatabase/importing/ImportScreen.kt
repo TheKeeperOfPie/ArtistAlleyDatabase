@@ -29,7 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.ChooseUriRow
 import com.thekeeperofpie.artistalleydatabase.compose.LinearProgressWithIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 object ImportScreen {
 

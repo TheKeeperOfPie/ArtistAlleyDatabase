@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_drawer_icon_content_description">Open navigation drawer</string>
+    <string name="app_bar_back_icon_content_description">Back</string>
+</resources>

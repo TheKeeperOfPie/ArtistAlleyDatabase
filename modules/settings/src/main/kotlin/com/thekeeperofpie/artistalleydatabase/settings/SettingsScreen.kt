@@ -36,9 +36,9 @@ import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStringR
 
 @OptIn(ExperimentalMaterial3Api::class)

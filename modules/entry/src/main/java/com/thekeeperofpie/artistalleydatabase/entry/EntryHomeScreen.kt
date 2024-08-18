@@ -48,13 +48,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.NavMenuIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import kotlinx.coroutines.launch
 
 @Suppress("NAME_SHADOWING")

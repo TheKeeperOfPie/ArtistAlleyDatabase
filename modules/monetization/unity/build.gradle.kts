@@ -1,5 +1,6 @@
 plugins {
-    id("compose-library")
+    id("library-android")
+    id("library-compose")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
@@ -13,19 +14,19 @@ android {
     namespace = "com.thekeeperofpie.artistalleydatabase.monetization.unity"
 }
 
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            implementation(libs.hilt.android)
+            implementation(libs.unity.ads)
+        }
+        commonMain.dependencies {
+            api(project(":modules:monetization"))
+        }
+    }
+}
+
 dependencies {
-    api(project(":modules:compose-utils"))
-    api(project(":modules:monetization"))
-
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.compose.material.icons.core)
-    implementation(libs.compose.material.icons.extended)
-    implementation(libs.material3)
-
-    implementation(libs.unity.ads)
+    add("kspAndroid", kspProcessors.hilt.compiler)
+    add("kspAndroid", kspProcessors.androidx.hilt.compiler)
 }

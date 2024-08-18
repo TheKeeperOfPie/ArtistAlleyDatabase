@@ -14,7 +14,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
@@ -119,4 +121,11 @@ object AppHiltModule {
         override val versionName = BuildConfig.VERSION_NAME
         override val appIconDrawableRes = R.mipmap.ic_launcher
     }
+
+    @Singleton
+    @Provides
+    fun provideMonetizationController(
+        settings: MonetizationSettings,
+        overrideProvider: MonetizationOverrideProvider,
+    ) = MonetizationController(settings, overrideProvider)
 }

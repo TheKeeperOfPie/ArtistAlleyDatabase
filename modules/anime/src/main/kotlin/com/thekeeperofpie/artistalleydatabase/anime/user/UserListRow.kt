@@ -51,7 +51,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
@@ -61,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,

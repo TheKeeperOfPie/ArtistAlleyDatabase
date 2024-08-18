@@ -45,15 +45,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
-import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)

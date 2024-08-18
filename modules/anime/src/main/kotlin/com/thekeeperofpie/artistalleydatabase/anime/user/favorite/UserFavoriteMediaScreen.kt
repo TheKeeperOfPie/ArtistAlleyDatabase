@@ -37,12 +37,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 object UserFavoriteMediaScreen {

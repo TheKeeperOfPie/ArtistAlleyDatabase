@@ -35,11 +35,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
-import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 

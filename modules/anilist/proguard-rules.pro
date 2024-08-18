@@ -25,5 +25,5 @@
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
 -dontwarn com.thekeeperofpie.artistalleydatabase.compose.SharedComposablesKt
--dontwarn com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+-dontwarn com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 -dontwarn com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider

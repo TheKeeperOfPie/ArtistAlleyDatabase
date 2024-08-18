@@ -70,10 +70,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
@@ -84,6 +80,10 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
 
 @Composable
 internal fun CoverAndBannerHeader(
@@ -165,7 +165,7 @@ internal fun CoverAndBannerHeader(
                     .run {
                         val color = bannerImageState.colors.containerColor.takeOrElse {
                             coverImageState?.colors?.containerColor?.takeOrElse {
-                                headerValues.defaultColor ?: Color.Unspecified
+                                headerValues.defaultColor
                             } ?: Color.Unspecified
                         }
                         val hasColor = color.isSpecified

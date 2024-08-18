@@ -15,8 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 object CharacterMediasScreen {
 

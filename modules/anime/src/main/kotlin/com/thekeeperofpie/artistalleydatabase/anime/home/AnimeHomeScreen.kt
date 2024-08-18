@@ -126,14 +126,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.anime.utils.itemsIndexed
 import com.thekeeperofpie.artistalleydatabase.anime.utils.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
@@ -153,6 +147,12 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberS
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import kotlinx.coroutines.flow.Flow
 
 @Suppress("NAME_SHADOWING")

@@ -71,10 +71,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 
 fun <T> LazyListScope.mediaListSection(
     onClickListEdit: (MediaNavigationData) -> Unit,

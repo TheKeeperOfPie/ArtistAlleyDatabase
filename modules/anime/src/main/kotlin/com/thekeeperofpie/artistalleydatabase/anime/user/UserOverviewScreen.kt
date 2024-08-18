@@ -47,8 +47,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 
 @OptIn(
     ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,

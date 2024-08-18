@@ -42,9 +42,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaHistoryScreen {

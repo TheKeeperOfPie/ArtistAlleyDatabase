@@ -103,15 +103,15 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.CdsFromMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 object AnimeNavigator {
 
@@ -719,6 +719,7 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.FeatureTiers>(navigationTypeMap) {
             UnlockScreen(
                 upIconOption = UpIconOption.Back(navHostController),
+                viewModel = hiltViewModel(),
                 onClickSettings = null,
             )
         }

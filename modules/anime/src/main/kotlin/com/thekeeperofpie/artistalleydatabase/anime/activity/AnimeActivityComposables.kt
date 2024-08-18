@@ -77,7 +77,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
@@ -90,6 +89,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalShar
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import java.time.Instant
 import java.time.ZoneOffset
 

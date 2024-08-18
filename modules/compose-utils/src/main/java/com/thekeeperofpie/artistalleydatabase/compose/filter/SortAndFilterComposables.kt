@@ -50,8 +50,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.compose_proxy.R

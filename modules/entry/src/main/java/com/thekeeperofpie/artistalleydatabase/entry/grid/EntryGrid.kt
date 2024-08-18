@@ -49,11 +49,11 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Dimension
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.R
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.launch
 
 @Suppress("NAME_SHADOWING")

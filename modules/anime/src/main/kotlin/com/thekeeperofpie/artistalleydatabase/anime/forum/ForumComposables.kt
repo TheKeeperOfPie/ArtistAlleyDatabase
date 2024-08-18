@@ -1,9 +1,8 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -93,8 +92,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
@@ -105,6 +102,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 
 object ForumComposables {
     const val FORUM_THREADS_ABOVE_FOLD = 3

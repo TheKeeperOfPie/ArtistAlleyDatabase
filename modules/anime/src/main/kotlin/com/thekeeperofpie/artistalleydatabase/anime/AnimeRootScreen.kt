@@ -28,17 +28,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
-import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.navigationBarEnterAlwaysScrollBehavior
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysNavigationBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigationBarEnterAlwaysScrollBehavior
 
 object AnimeRootScreen {
 
@@ -255,6 +256,7 @@ object AnimeRootScreen {
                         )
                         AnimeRootNavDestination.UNLOCK -> UnlockScreen(
                             upIconOption = upIconOption,
+                            viewModel = hiltViewModel(),
                             bottomNavigationState = bottomNavigationState,
                             onClickSettings = onClickSettings,
                         )

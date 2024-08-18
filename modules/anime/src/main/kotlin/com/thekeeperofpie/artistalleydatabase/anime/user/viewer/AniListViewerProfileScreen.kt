@@ -39,9 +39,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
-import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 
 object AniListViewerProfileScreen {
 

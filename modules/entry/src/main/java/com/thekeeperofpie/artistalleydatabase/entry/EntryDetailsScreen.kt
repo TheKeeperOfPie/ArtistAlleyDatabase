@@ -65,16 +65,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
@@ -84,6 +81,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInS
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -390,7 +389,6 @@ object EntryDetailsScreen {
         )
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     @Composable
     private fun HeaderImage(
         imageState: () -> EntryImageState,

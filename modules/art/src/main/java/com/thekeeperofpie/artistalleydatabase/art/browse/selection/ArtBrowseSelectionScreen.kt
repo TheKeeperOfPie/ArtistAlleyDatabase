@@ -13,9 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridAppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 object ArtBrowseSelectionScreen {
 

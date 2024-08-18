@@ -124,7 +124,6 @@ dependencyAnalysis {
                     ":modules:dependencies",
                     ":modules:entry",
                     ":modules:monetization",
-                    ":modules:monetization:admob",
                     ":modules:monetization:debug",
                     ":modules:monetization:unity",
                     ":modules:musical-artists",

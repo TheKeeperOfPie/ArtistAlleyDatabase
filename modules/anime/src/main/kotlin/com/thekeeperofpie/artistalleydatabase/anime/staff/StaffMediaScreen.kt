@@ -32,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.rememberImageState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffMediaScreen {
@@ -77,14 +76,13 @@ object StaffMediaScreen {
                             val mediaSharedTransitionKey = it.media?.id?.toString()
                                 ?.let { SharedTransitionKey.makeKeyForId(it) }
                             CharacterSmallCard(
-                                id = EntryId("anime_character", it.character.id.toString()),
                                 sharedTransitionKey = characterSharedTransitionKey,
                                 sharedTransitionIdentifier = "character_image",
                                 innerSharedTransitionKey = mediaSharedTransitionKey,
                                 innerSharedTransitionIdentifier = "media_image",
                                 image = image,
-                                imageState = imageState,
                                 innerImage = innerImage,
+                                imageState = imageState,
                                 innerImageState = innerImageState,
                                 onClick = {
                                     navigationCallback.navigate(

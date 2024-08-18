@@ -44,7 +44,6 @@
             <option value="$PROJECT_DIR$/modules/markdown" />
             <option value="$PROJECT_DIR$/modules/media" />
             <option value="$PROJECT_DIR$/modules/monetization" />
-            <option value="$PROJECT_DIR$/modules/monetization/admob" />
             <option value="$PROJECT_DIR$/modules/monetization/debug" />
             <option value="$PROJECT_DIR$/modules/monetization/unity" />
             <option value="$PROJECT_DIR$/modules/musical-artists" />

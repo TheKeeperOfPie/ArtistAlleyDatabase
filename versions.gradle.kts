@@ -17,8 +17,8 @@ import Versions_gradle.Versions.androidx.tracing
 import Versions_gradle.Versions.androidx.work
 import Versions_gradle.Versions.apache.commonsCompress
 import Versions_gradle.Versions.apache.commonsCsv
-import Versions_gradle.Versions.compose.runtime
 import Versions_gradle.Versions.compose.runtimeTracing
+import Versions_gradle.Versions.composeMultiplatform.runtime
 import Versions_gradle.Versions.google.appUpdate
 import Versions_gradle.Versions.google.billing
 import Versions_gradle.Versions.google.cronetOkHttp
@@ -84,9 +84,15 @@ object Versions {
 
     object compose {
         const val core = "1.7.0-beta07"
+        const val runtimeTracing = "1.0.0-beta01"
+    }
+
+    object composeMultiplatform {
+        object androidx {
+            const val navigation = "2.7.0-alpha07"
+        }
         const val plugin = "1.7.0-alpha02"
         const val runtime = "1.7.0-alpha02"
-        const val runtimeTracing = "1.0.0-beta01"
     }
 
     const val cronetEmbedded = "119.6045.31"
@@ -193,7 +199,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("de.mannodermaus.android-junit5").version(Versions.androidJunit5)
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version(Versions.barfuinTaskInfo)
-                plugin("org.jetbrains.compose").version(Versions.compose.plugin)
+                plugin("org.jetbrains.compose").version(Versions.composeMultiplatform.plugin)
 
                 with(Versions.kotlin) {
                     plugin("org.jetbrains.kotlin.multiplatform").version(core)
@@ -386,13 +392,19 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         }
 
                         library("androidx.compose.runtime:runtime-tracing:$runtimeTracing")
-                        library(
-                            "org.jetbrains.compose.runtime:runtime:$runtime",
-                            prefix = "jetBrainsCompose"
-                        )
                     }
                 }
-                library("org.jetbrains.compose:compose-gradle-plugin:${Versions.compose.plugin}")
+
+                prefix("jetBrainsCompose") {
+                    with(Versions.composeMultiplatform) {
+                        library("org.jetbrains.compose:compose-gradle-plugin:$plugin")
+                        library("org.jetbrains.compose.runtime:runtime:$runtime")
+
+                        with(Versions.composeMultiplatform.androidx) {
+                            library("org.jetbrains.androidx.navigation:navigation-compose:$navigation")
+                        }
+                    }
+                }
 
                 prefix("markwon") {
                     withVersion(Versions.markwon) {

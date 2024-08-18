@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -51,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -80,8 +78,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
@@ -92,13 +88,13 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRe
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
 
-@OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class,
-)
+@OptIn(ExperimentalMaterial3Api::class)
 object ActivityDetailsScreen {
 
     @Composable

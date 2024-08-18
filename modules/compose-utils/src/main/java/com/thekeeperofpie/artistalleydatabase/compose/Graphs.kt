@@ -59,6 +59,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.times
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 
 @Composable
 fun <Key, Value> PieChart(

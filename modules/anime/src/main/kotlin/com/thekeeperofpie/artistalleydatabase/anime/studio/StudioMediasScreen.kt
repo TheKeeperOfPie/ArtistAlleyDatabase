@@ -16,8 +16,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 // TODO: Use the same year segmented view as staff screen
 @OptIn(ExperimentalMaterial3Api::class)

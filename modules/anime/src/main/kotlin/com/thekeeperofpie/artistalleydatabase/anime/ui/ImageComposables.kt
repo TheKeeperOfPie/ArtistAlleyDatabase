@@ -14,10 +14,10 @@ import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 
 val UpperHalfBiasAlignment = BiasAbsoluteAlignment(0f, -0.5f)
 

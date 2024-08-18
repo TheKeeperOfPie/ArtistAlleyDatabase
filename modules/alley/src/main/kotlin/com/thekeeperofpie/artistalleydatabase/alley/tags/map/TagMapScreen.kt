@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
-import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 object TagMapScreen {

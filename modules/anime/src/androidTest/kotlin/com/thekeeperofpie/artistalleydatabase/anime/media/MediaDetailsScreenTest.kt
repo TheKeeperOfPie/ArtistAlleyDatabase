@@ -32,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
@@ -44,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import dagger.hilt.android.testing.HiltAndroidTest
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.MutableStateFlow

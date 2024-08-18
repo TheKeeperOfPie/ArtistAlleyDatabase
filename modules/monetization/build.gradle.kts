@@ -1,24 +1,25 @@
 plugins {
-    id("compose-library")
-    id("dagger.hilt.android.plugin")
-    id("com.google.devtools.ksp")
+    id("library-android")
+    id("library-compose")
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.monetization"
 }
 
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            implementation(libs.hilt.android)
+        }
+        commonMain.dependencies {
+            api(project(":modules:utils"))
+            api(project(":modules:utils-compose"))
+        }
+    }
+}
+
 dependencies {
-    api(project(":modules:compose-utils"))
-
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
-
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.compose.material.icons.core)
-    implementation(libs.compose.material.icons.extended)
-    implementation(libs.material3)
+    add("kspAndroid", kspProcessors.hilt.compiler)
+    add("kspAndroid", kspProcessors.androidx.hilt.compiler)
 }

@@ -14,7 +14,6 @@ kotlin {
             implementation(libs.xmlutil.serialization.android)
         }
         commonMain.dependencies {
-            api(compose.components.resources)
             api(libs.kotlinx.io.core)
             api(libs.kotlinx.datetime)
             implementation(project(":modules:utils"))

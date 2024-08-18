@@ -38,7 +38,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
@@ -46,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 object StudioListRow {

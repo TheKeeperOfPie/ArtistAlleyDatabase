@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
-import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 object CrashScreen {

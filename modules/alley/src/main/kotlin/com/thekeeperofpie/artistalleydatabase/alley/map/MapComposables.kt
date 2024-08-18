@@ -60,7 +60,7 @@ import coil3.compose.AsyncImage
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 
 @Composable
 fun TableCell(

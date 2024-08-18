@@ -122,9 +122,9 @@ import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanState
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import kotlinx.coroutines.launch
 
 @Composable
@@ -699,7 +699,6 @@ private fun OpenSectionField(
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier,
 ) {
-    val coroutineScope = rememberCoroutineScope()
     OpenSectionField(
         value = { section.pendingValue },
         onValueChange = { section.pendingValue = it },

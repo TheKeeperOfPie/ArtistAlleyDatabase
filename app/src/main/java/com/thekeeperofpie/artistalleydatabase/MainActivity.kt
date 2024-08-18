@@ -95,7 +95,6 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.image.LocalImageColorsState
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
@@ -120,6 +119,7 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Optional

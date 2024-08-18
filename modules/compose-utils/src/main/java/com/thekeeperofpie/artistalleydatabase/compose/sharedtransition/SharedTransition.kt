@@ -26,8 +26,8 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 

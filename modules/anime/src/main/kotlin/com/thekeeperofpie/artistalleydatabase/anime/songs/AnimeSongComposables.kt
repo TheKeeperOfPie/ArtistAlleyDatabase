@@ -55,11 +55,11 @@ import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayerView
 import com.thekeeperofpie.artistalleydatabase.media.rememberMediaPlayerViewState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeSongComposables {

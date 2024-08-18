@@ -32,12 +32,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 object RecommendationsScreen {

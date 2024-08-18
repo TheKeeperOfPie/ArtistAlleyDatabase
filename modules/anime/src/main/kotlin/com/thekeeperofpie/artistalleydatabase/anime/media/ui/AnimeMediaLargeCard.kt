@@ -61,7 +61,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
@@ -74,6 +73,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnim
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class
