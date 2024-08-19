@@ -1,8 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
-import android.net.Uri
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
@@ -19,8 +17,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SettingsData(
     val artEntryTemplate: ArtEntry? = null,
-    @Serializable(with = Converters.UriConverter::class)
-    val cropDocumentUri: Uri? = null,
+    val cropImageUri: String? = null,
     val networkLoggingLevel: NetworkSettings.NetworkLoggingLevel = NetworkSettings.NetworkLoggingLevel.NONE,
     val enableNetworkCaching: Boolean = false,
     val searchQuery: ArtEntry? = null,

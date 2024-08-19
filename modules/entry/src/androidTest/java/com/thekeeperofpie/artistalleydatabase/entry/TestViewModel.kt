@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.net.Uri
 import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
@@ -9,7 +8,7 @@ import java.io.File
 
 internal class TestViewModel(
     private val hasError: Boolean = false,
-    private val cropUri: Uri? = null,
+    private val cropUri: String? = null,
     val entries: MutableMap<String, TestEntry> = mutableMapOf(),
     private val testDirectory: File,
     appJson: AppJson,

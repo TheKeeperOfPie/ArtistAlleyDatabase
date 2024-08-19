@@ -49,8 +49,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 fun LazyListScope.staffSection(
     @StringRes titleRes: Int?,
@@ -95,73 +95,75 @@ fun StaffListRow(
             contentType = staffList.itemContentType { "staff" },
         ) {
             val staff = staffList[it]
-            val coverImageState = rememberCoilImageState(
-                staff?.image,
-                heightStartThreshold = 3 / 4f,
-                selectMaxPopulation = true,
-            )
-            val staffName = staff?.staff?.name?.primaryName()
-            val staffSubtitle = staff?.staff?.name?.subtitleName()
-            val sharedTransitionKey = staff?.staff?.id?.toString()
-                ?.let { SharedTransitionKey.makeKeyForId(it) }
-            StaffSmallCard(
-                id = EntryId("anime_staff", staff?.id.orEmpty()),
-                sharedTransitionKey = sharedTransitionKey,
-                imageState = coverImageState,
-                onClick = {
-                    if (staff != null) {
-                        navigationCallback.navigate(
-                            AnimeDestination.StaffDetails(
-                                staffId = staff.staff.id.toString(),
-                                sharedTransitionKey = sharedTransitionKey,
-                                headerParams = StaffHeaderParams(
-                                    name = staffName,
-                                    subtitle = staffSubtitle,
-                                    coverImage = coverImageState.toImageState(),
-                                    favorite = null,
+            // Staff can be the same entity but different roles, so wrap with different keys
+            SharedTransitionKeyScope("staff_card", staff?.idWithRole) {
+                val coverImageState = rememberCoilImageState(
+                    staff?.image,
+                    heightStartThreshold = 3 / 4f,
+                    selectMaxPopulation = true,
+                )
+                val staffName = staff?.staff?.name?.primaryName()
+                val staffSubtitle = staff?.staff?.name?.subtitleName()
+                val sharedTransitionKey = staff?.staff?.id?.toString()
+                    ?.let { SharedTransitionKey.makeKeyForId(it) }
+                StaffSmallCard(
+                    sharedTransitionKey = sharedTransitionKey,
+                    imageState = coverImageState,
+                    onClick = {
+                        if (staff != null) {
+                            navigationCallback.navigate(
+                                AnimeDestination.StaffDetails(
+                                    staffId = staff.staff.id.toString(),
+                                    sharedTransitionKey = sharedTransitionKey,
+                                    headerParams = StaffHeaderParams(
+                                        name = staffName,
+                                        subtitle = staffSubtitle,
+                                        coverImage = coverImageState.toImageState(),
+                                        favorite = null,
+                                    )
                                 )
                             )
+                        }
+                    },
+                ) { textColor ->
+                    staff?.role?.let {
+                        AutoHeightText(
+                            text = it,
+                            color = textColor,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                lineBreak = LineBreak(
+                                    strategy = LineBreak.Strategy.Simple,
+                                    strictness = LineBreak.Strictness.Strict,
+                                    wordBreak = LineBreak.WordBreak.Default,
+                                )
+                            ),
+                            minLines = roleLines,
+                            maxLines = roleLines,
+                            minTextSizeSp = 8f,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp, top = 8.dp)
                         )
                     }
-                },
-            ) { textColor ->
-                staff?.role?.let {
+
                     AutoHeightText(
-                        text = it,
+                        text = staff?.name?.primaryName().orEmpty(),
                         color = textColor,
-                        style = MaterialTheme.typography.bodySmall.copy(
+                        style = MaterialTheme.typography.bodyMedium.copy(
                             lineBreak = LineBreak(
-                                strategy = LineBreak.Strategy.Simple,
+                                strategy = LineBreak.Strategy.Balanced,
                                 strictness = LineBreak.Strictness.Strict,
                                 wordBreak = LineBreak.WordBreak.Default,
                             )
                         ),
-                        minLines = roleLines,
-                        maxLines = roleLines,
                         minTextSizeSp = 8f,
+                        minLines = 2,
+                        maxLines = 2,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 12.dp, end = 12.dp, top = 8.dp)
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
                     )
                 }
-
-                AutoHeightText(
-                    text = staff?.name?.primaryName().orEmpty(),
-                    color = textColor,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        lineBreak = LineBreak(
-                            strategy = LineBreak.Strategy.Balanced,
-                            strictness = LineBreak.Strictness.Strict,
-                            wordBreak = LineBreak.WordBreak.Default,
-                        )
-                    ),
-                    minTextSizeSp = 8f,
-                    minLines = 2,
-                    maxLines = 2,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                )
             }
         }
 
@@ -176,7 +178,6 @@ fun StaffListRow(
 
 @Composable
 fun StaffSmallCard(
-    id: EntryId,
     sharedTransitionKey: SharedTransitionKey?,
     imageState: CoilImageState,
     onClick: () -> Unit,

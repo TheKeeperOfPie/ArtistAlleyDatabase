@@ -122,15 +122,16 @@ class EntryImageController(
         }
 
         scopeProvider().launch(Dispatchers.IO) {
-            val uri = settings.cropDocumentUri.value ?: return@launch
+            val serializedUri = settings.cropImageUri.value ?: return@launch
             try {
+                val uri = Uri.parse(serializedUri)
                 application.contentResolver.openOutputStream(uri)?.close()?.run {
                     launch(Dispatchers.Main) {
                         imageCropUri = uri
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading crop URI: $uri")
+                Log.e(TAG, "Error loading crop URI: $serializedUri")
             }
         }
     }
@@ -192,7 +193,7 @@ class EntryImageController(
                 return@launch
             }
 
-            settings.cropDocumentUri.value = uri
+            settings.cropImageUri.value = uri.toString()
             application.contentResolver.openInputStream(imageUri)
                 ?.use { input ->
                     application.contentResolver.openOutputStream(uri)?.use { output ->

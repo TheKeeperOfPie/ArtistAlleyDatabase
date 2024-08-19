@@ -285,7 +285,7 @@ class SettingsViewModel @Inject constructor(
             SettingsSection.Button(
                 labelTextRes = R.string.settings_crop_clear,
                 buttonTextRes = R.string.settings_clear,
-                onClick = { settings.cropDocumentUri.value = null },
+                onClick = { settings.cropImageUri.value = null },
             ),
             SettingsSection.Button(
                 labelTextRes = R.string.settings_clear_aniList_oAuth,

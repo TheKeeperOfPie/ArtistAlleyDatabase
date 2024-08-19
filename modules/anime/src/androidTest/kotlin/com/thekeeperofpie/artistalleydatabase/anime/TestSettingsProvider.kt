@@ -66,5 +66,5 @@ class TestSettingsProvider : NetworkSettings, AniListSettings, AnimeSettings, Mo
     override val subscribed = MutableStateFlow(false)
     override val unlockAllFeatures = MutableStateFlow(false)
 
-    override val cropDocumentUri = MutableStateFlow<Uri?>(null)
+    override val cropImageUri = MutableStateFlow<Uri?>(null)
 }

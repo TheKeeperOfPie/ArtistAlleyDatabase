@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.songs
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,12 +55,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayerView
 import com.thekeeperofpie.artistalleydatabase.media.rememberMediaPlayerViewState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 
-@OptIn(ExperimentalFoundationApi::class)
 object AnimeSongComposables {
 
     const val SONGS_ABOVE_FOLD = 3
@@ -81,13 +80,15 @@ object AnimeSongComposables {
             expanded = songsExpanded,
             onExpandedChange = onSongsExpandedChange,
         ) { item, paddingBottom ->
-            AnimeThemeRow(
-                viewModel = viewModel,
-                entry = item,
-                modifier = Modifier
-                    .animateItem()
-                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-            )
+            SharedTransitionKeyScope("song_row", item.id) {
+                AnimeThemeRow(
+                    viewModel = viewModel,
+                    entry = item,
+                    modifier = Modifier
+                        .animateItem()
+                        .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                )
+            }
         }
     }
 

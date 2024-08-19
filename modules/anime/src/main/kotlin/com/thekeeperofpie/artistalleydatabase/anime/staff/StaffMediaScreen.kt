@@ -32,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.rememberImageState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffMediaScreen {
@@ -65,89 +66,92 @@ object StaffMediaScreen {
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         items(entries, { it.id }) {
-                            val image = it.character.image?.large
-                            val innerImage = it.media?.coverImage?.extraLarge
-                            val imageState = rememberImageStateBelowInnerImage(image, innerImage)
-                            val innerImageState = rememberCoilImageState(innerImage)
-                            val languageOptionMedia = LocalLanguageOptionMedia.current
-                            val characterName = it.character.name?.primaryName()
-                            val characterSharedTransitionKey =
-                                SharedTransitionKey.makeKeyForId(it.character.id.toString())
-                            val mediaSharedTransitionKey = it.media?.id?.toString()
-                                ?.let { SharedTransitionKey.makeKeyForId(it) }
-                            CharacterSmallCard(
-                                sharedTransitionKey = characterSharedTransitionKey,
-                                sharedTransitionIdentifier = "character_image",
-                                innerSharedTransitionKey = mediaSharedTransitionKey,
-                                innerSharedTransitionIdentifier = "media_image",
-                                image = image,
-                                innerImage = innerImage,
-                                imageState = imageState,
-                                innerImageState = innerImageState,
-                                onClick = {
-                                    navigationCallback.navigate(
-                                        AnimeDestination.CharacterDetails(
-                                            characterId = it.character.id.toString(),
-                                            sharedTransitionKey = characterSharedTransitionKey,
-                                            headerParams = CharacterHeaderParams(
-                                                name = characterName,
-                                                subtitle = null,
-                                                favorite = null,
-                                                coverImage = imageState.toImageState(),
+                            SharedTransitionKeyScope("staff_media_card", year?.toString(), it.id) {
+                                val image = it.character.image?.large
+                                val innerImage = it.media?.coverImage?.extraLarge
+                                val imageState =
+                                    rememberImageStateBelowInnerImage(image, innerImage)
+                                val innerImageState = rememberCoilImageState(innerImage)
+                                val languageOptionMedia = LocalLanguageOptionMedia.current
+                                val characterName = it.character.name?.primaryName()
+                                val characterSharedTransitionKey =
+                                    SharedTransitionKey.makeKeyForId(it.character.id.toString())
+                                val mediaSharedTransitionKey = it.media?.id?.toString()
+                                    ?.let { SharedTransitionKey.makeKeyForId(it) }
+                                CharacterSmallCard(
+                                    sharedTransitionKey = characterSharedTransitionKey,
+                                    sharedTransitionIdentifier = "character_image",
+                                    innerSharedTransitionKey = mediaSharedTransitionKey,
+                                    innerSharedTransitionIdentifier = "media_image",
+                                    image = image,
+                                    innerImage = innerImage,
+                                    imageState = imageState,
+                                    innerImageState = innerImageState,
+                                    onClick = {
+                                        navigationCallback.navigate(
+                                            AnimeDestination.CharacterDetails(
+                                                characterId = it.character.id.toString(),
+                                                sharedTransitionKey = characterSharedTransitionKey,
+                                                headerParams = CharacterHeaderParams(
+                                                    name = characterName,
+                                                    subtitle = null,
+                                                    favorite = null,
+                                                    coverImage = imageState.toImageState(),
+                                                )
                                             )
                                         )
-                                    )
-                                },
-                                onClickInnerImage = {
-                                    if (it.media != null) {
-                                        navigationCallback.navigate(
-                                            AnimeDestination.MediaDetails(
-                                                mediaNavigationData = it.media,
-                                                coverImage = innerImageState.toImageState(),
-                                                languageOptionMedia = languageOptionMedia,
-                                                sharedTransitionKey = mediaSharedTransitionKey,
+                                    },
+                                    onClickInnerImage = {
+                                        if (it.media != null) {
+                                            navigationCallback.navigate(
+                                                AnimeDestination.MediaDetails(
+                                                    mediaNavigationData = it.media,
+                                                    coverImage = innerImageState.toImageState(),
+                                                    languageOptionMedia = languageOptionMedia,
+                                                    sharedTransitionKey = mediaSharedTransitionKey,
+                                                )
                                             )
+                                        }
+                                    },
+                                ) { textColor ->
+                                    it.role?.let {
+                                        AutoHeightText(
+                                            text = stringResource(it.toTextRes()),
+                                            color = textColor,
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                lineBreak = LineBreak(
+                                                    strategy = LineBreak.Strategy.Simple,
+                                                    strictness = LineBreak.Strictness.Strict,
+                                                    wordBreak = LineBreak.WordBreak.Default,
+                                                )
+                                            ),
+                                            maxLines = 1,
+                                            minTextSizeSp = 8f,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 12.dp, end = 12.dp, top = 8.dp)
                                         )
                                     }
-                                },
-                            ) { textColor ->
-                                it.role?.let {
-                                    AutoHeightText(
-                                        text = stringResource(it.toTextRes()),
-                                        color = textColor,
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            lineBreak = LineBreak(
-                                                strategy = LineBreak.Strategy.Simple,
-                                                strictness = LineBreak.Strictness.Strict,
-                                                wordBreak = LineBreak.WordBreak.Default,
-                                            )
-                                        ),
-                                        maxLines = 1,
-                                        minTextSizeSp = 8f,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(start = 12.dp, end = 12.dp, top = 8.dp)
-                                    )
-                                }
 
-                                it.character.name?.primaryName()?.let {
-                                    AutoHeightText(
-                                        text = it,
-                                        color = textColor,
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            lineBreak = LineBreak(
-                                                strategy = LineBreak.Strategy.Balanced,
-                                                strictness = LineBreak.Strictness.Strict,
-                                                wordBreak = LineBreak.WordBreak.Default,
-                                            )
-                                        ),
-                                        minTextSizeSp = 8f,
-                                        minLines = 2,
-                                        maxLines = 2,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                                    )
+                                    it.character.name?.primaryName()?.let {
+                                        AutoHeightText(
+                                            text = it,
+                                            color = textColor,
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                lineBreak = LineBreak(
+                                                    strategy = LineBreak.Strategy.Balanced,
+                                                    strictness = LineBreak.Strictness.Strict,
+                                                    wordBreak = LineBreak.WordBreak.Default,
+                                                )
+                                            ),
+                                            minTextSizeSp = 8f,
+                                            minLines = 2,
+                                            maxLines = 2,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

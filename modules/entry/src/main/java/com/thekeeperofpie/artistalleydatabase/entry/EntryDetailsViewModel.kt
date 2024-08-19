@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.app.Application
-import android.net.Uri
 import androidx.activity.OnBackPressedDispatcher
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
@@ -11,7 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.github.difflib.text.DiffRowGenerator
-import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
@@ -258,13 +256,12 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     data class EntryImageTriple(
         val width: Int,
         val height: Int,
-        @Serializable(with = Converters.UriConverter::class)
-        val uri: Uri?,
+        val uri: String?,
     ) {
         constructor(entryImage: EntryImage) : this(
             width = entryImage.finalWidth,
             height = entryImage.finalHeight,
-            uri = entryImage.finalUri,
+            uri = entryImage.finalUri?.toString(),
         )
     }
 }

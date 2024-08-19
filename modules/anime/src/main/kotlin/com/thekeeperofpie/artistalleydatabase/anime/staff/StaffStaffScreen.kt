@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffStaffScreen {
@@ -60,31 +61,37 @@ object StaffStaffScreen {
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         items(entries, { it.id }) { entry ->
-                            MediaGridCard(
-                                entry = entry,
-                                viewer = viewer,
-                                onClickListEdit = editViewModel::initialize,
-                                modifier = Modifier.width(120.dp),
-                                showTypeIcon = true,
-                            ) { textColor ->
-                                entry.role?.let {
-                                    AutoHeightText(
-                                        text = it,
-                                        color = textColor,
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            lineBreak = LineBreak(
-                                                strategy = LineBreak.Strategy.Simple,
-                                                strictness = LineBreak.Strictness.Strict,
-                                                wordBreak = LineBreak.WordBreak.Default,
-                                            )
-                                        ),
-                                        minLines = 2,
-                                        maxLines = 2,
-                                        minTextSizeSp = 8f,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(start = 8.dp, end = 8.dp, top = 8.dp)
-                                    )
+                            SharedTransitionKeyScope(
+                                "staff_staff_card",
+                                year?.toString(),
+                                entry.id,
+                            ) {
+                                MediaGridCard(
+                                    entry = entry,
+                                    viewer = viewer,
+                                    onClickListEdit = editViewModel::initialize,
+                                    modifier = Modifier.width(120.dp),
+                                    showTypeIcon = true,
+                                ) { textColor ->
+                                    entry.role?.let {
+                                        AutoHeightText(
+                                            text = it,
+                                            color = textColor,
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                lineBreak = LineBreak(
+                                                    strategy = LineBreak.Strategy.Simple,
+                                                    strictness = LineBreak.Strictness.Strict,
+                                                    wordBreak = LineBreak.WordBreak.Default,
+                                                )
+                                            ),
+                                            minLines = 2,
+                                            maxLines = 2,
+                                            minTextSizeSp = 8f,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 8.dp, end = 8.dp, top = 8.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

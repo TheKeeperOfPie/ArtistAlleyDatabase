@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.net.Uri
 import androidx.navigation.NavHostController
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
@@ -40,7 +39,7 @@ abstract class EntryDetailsTestBase : TestBase() {
 
     internal fun testViewModel(
         hasError: Boolean = false,
-        cropUri: Uri? = null,
+        cropUri: String? = null,
         vararg existingEntries: TestEntry,
     ) = TestViewModel(
         hasError = hasError,

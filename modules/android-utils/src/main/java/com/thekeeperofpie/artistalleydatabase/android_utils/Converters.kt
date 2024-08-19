@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.android_utils
 
-import android.net.Uri
 import androidx.room.TypeConverter
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.squareup.moshi.JsonAdapter
@@ -236,41 +235,6 @@ object Converters {
                     }
                     writer.endArray()
                 }
-            }
-        }
-    }
-
-    object UriConverter : KSerializer<Uri?> {
-
-        override val descriptor = PrimitiveSerialDescriptor("Uri", PrimitiveKind.STRING)
-
-        @OptIn(ExperimentalSerializationApi::class)
-        override fun deserialize(decoder: Decoder) = if (decoder.decodeNotNullMark()) {
-            deserializeUri(decoder.decodeString())
-        } else {
-            decoder.decodeNull()
-        }
-
-        @OptIn(ExperimentalSerializationApi::class)
-        override fun serialize(encoder: Encoder, value: Uri?) {
-            val serializedValue = serializeUri(value)
-            if (serializedValue == null) {
-                encoder.encodeNull()
-            } else {
-                encoder.encodeNotNullMark()
-                encoder.encodeString(serializedValue)
-            }
-        }
-
-        @TypeConverter
-        fun serializeUri(value: Uri?) = value?.toString()
-
-        @TypeConverter
-        fun deserializeUri(value: String?) = value?.let {
-            try {
-                Uri.parse(it)
-            } catch (e: Exception) {
-                null
             }
         }
     }

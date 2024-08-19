@@ -38,7 +38,7 @@ class SettingsDataSerializationTest {
 
         val data = SettingsData(
             artEntryTemplate = artEntryOne,
-            cropDocumentUri = cropUri,
+            cropImageUri = cropUri,
             networkLoggingLevel = networkLoggingLevel,
             searchQuery = artEntryTwo,
             collapseAnimeFiltersOnClose = true,
@@ -47,7 +47,7 @@ class SettingsDataSerializationTest {
 
         val testParams = listOf(
             artEntryOne to ArtEntry::class to SettingsData::artEntryTemplate,
-            cropUri to Uri::class to SettingsData::cropDocumentUri,
+            cropUri to Uri::class to SettingsData::cropImageUri,
             networkLoggingLevel to NetworkSettings.NetworkLoggingLevel::class to
                     SettingsData::networkLoggingLevel,
             artEntryTwo to ArtEntry::class to SettingsData::searchQuery,

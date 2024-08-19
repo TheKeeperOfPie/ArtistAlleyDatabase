@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.settings
 
 import android.app.Application
 import android.content.SharedPreferences
-import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -70,7 +69,7 @@ class SettingsProvider(
     )
 
     override val artEntryTemplate = MutableStateFlow<ArtEntry?>(deserialize("artEntryTemplate"))
-    override val cropDocumentUri = MutableStateFlow<Uri?>(deserialize("cropDocumentUri"))
+    override val cropImageUri = MutableStateFlow<String?>(deserialize("cropImageUri"))
     override val networkLoggingLevel = MutableStateFlow(
         deserialize("networkLoggingLevel") ?: NetworkSettings.NetworkLoggingLevel.NONE
     )
@@ -166,7 +165,7 @@ class SettingsProvider(
     val settingsData: SettingsData
         get() = SettingsData(
             artEntryTemplate = artEntryTemplate.value,
-            cropDocumentUri = cropDocumentUri.value,
+            cropImageUri = cropImageUri.value,
             networkLoggingLevel = networkLoggingLevel.value,
             enableNetworkCaching = enableNetworkCaching.value,
             searchQuery = searchQuery.value,
@@ -202,7 +201,7 @@ class SettingsProvider(
     // Initialization separated into its own method so that tests can cancel the StateFlow job
     fun initialize(scope: CoroutineScope) {
         subscribeProperty(scope, ::artEntryTemplate)
-        subscribeProperty(scope, ::cropDocumentUri)
+        subscribeProperty(scope, ::cropImageUri)
         subscribeProperty(scope, ::networkLoggingLevel)
         subscribeProperty(scope, ::enableNetworkCaching)
         subscribeProperty(scope, ::searchQuery)
@@ -308,7 +307,7 @@ class SettingsProvider(
 
     suspend fun overwrite(data: SettingsData) {
         artEntryTemplate.emit(data.artEntryTemplate)
-        cropDocumentUri.emit(data.cropDocumentUri)
+        cropImageUri.emit(data.cropImageUri)
         networkLoggingLevel.emit(data.networkLoggingLevel)
         enableNetworkCaching.emit(data.enableNetworkCaching)
         searchQuery.emit(data.searchQuery)
