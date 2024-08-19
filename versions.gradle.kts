@@ -45,7 +45,7 @@ object Versions {
     const val accompanist = "0.35.1-alpha"
 
     object android {
-        const val gradle = "8.7.0-alpha06"
+        const val gradle = "8.7.0-alpha07"
     }
 
     const val androidJunit5 = "1.11.0.0"
@@ -137,7 +137,7 @@ object Versions {
         const val core = "2.0.20-RC2"
         const val coroutines = "1.9.0-RC.2"
         const val datetime = "0.6.0"
-        const val io = "0.5.1"
+        const val io = "0.5.2"
         const val ksp = "2.0.20-RC2-1.0.24"
         const val serialization = "1.7.1"
     }
