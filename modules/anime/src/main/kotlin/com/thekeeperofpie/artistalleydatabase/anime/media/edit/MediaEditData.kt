@@ -7,7 +7,7 @@ import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
-import com.thekeeperofpie.artistalleydatabase.android_utils.SimpleResult
+import com.thekeeperofpie.artistalleydatabase.utils.SimpleResult
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import java.time.LocalDate
 

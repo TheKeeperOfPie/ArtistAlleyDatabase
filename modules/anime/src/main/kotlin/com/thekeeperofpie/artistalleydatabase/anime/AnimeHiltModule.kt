@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime
 import android.app.Application
 import androidx.navigation.NavType
 import androidx.security.crypto.MasterKey
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
@@ -27,8 +26,9 @@ import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,12 +46,13 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideMediaPlayer(
-        scopedApplication: ScopedApplication,
+        scope: ApplicationScope,
+        application: Application,
         okHttpClient: OkHttpClient,
         featureOverrideProvider: FeatureOverrideProvider,
     ) = MediaPlayer(
-        scope = scopedApplication.scope,
-        application = scopedApplication.app,
+        scope = scope,
+        application = application,
         okHttpClient = okHttpClient,
         enableCache = featureOverrideProvider.enableAppMediaPlayerCache,
     )
@@ -59,18 +60,18 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideIgnoreController(
-        scopedApplication: ScopedApplication,
+        scope: ApplicationScope,
         ignoreDao: AnimeIgnoreDao,
         settings: AnimeSettings,
-    ) = IgnoreController(scopedApplication, ignoreDao, settings)
+    ) = IgnoreController(scope, ignoreDao, settings)
 
     @Singleton
     @Provides
     fun provideAnimeNewsController(
-        scopedApplication: ScopedApplication,
+        scope: ApplicationScope,
         httpClient: HttpClient,
         newsSettings: NewsSettings,
-    ) = AnimeNewsController(scopedApplication.scope, httpClient, newsSettings)
+    ) = AnimeNewsController(scope, httpClient, newsSettings)
 
     @Singleton
     @Provides
@@ -79,21 +80,22 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideMediaTagsController(
-        scopedApplication: ScopedApplication,
+        scope: ApplicationScope,
         aniListApi: AuthedAniListApi,
-    ) = MediaTagsController(scopedApplication, aniListApi)
+    ) = MediaTagsController(scope, aniListApi)
 
     @Singleton
     @Provides
     fun provideMediaGenresController(
-        scopedApplication: ScopedApplication,
+        scope: ApplicationScope,
         aniListApi: AuthedAniListApi,
-    ) = MediaGenresController(scopedApplication, aniListApi)
+    ) = MediaGenresController(scope, aniListApi)
 
     @Singleton
     @Provides
     fun provideUserMediaListController(
-        scopedApplication: ScopedApplication,
+        application: Application,
+        scope: ApplicationScope,
         aniListApi: AuthedAniListApi,
         ignoreController: IgnoreController,
         statusController: MediaListStatusController,
@@ -101,7 +103,8 @@ object AnimeHiltModule {
         appJson: AppJson,
         masterKey: MasterKey,
     ) = UserMediaListController(
-        scopedApplication = scopedApplication,
+        application = application,
+        scope = scope,
         aniListApi = aniListApi,
         ignoreController = ignoreController,
         statusController = statusController,
@@ -134,9 +137,9 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideMediaLicensorsController(
-        scopedApplication: ScopedApplication,
+        scope: ApplicationScope,
         aniListApi: AuthedAniListApi,
-    ) = MediaLicensorsController(scopedApplication, aniListApi)
+    ) = MediaLicensorsController(scope, aniListApi)
 
     @Singleton
     @Provides
@@ -149,9 +152,9 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideNotificationsController(
-        scopedApplication: ScopedApplication,
+        scope: ApplicationScope,
         aniListApi: AuthedAniListApi,
-    ) = NotificationsController(scopedApplication, aniListApi)
+    ) = NotificationsController(scope, aniListApi)
 
     @Singleton
     @Provides
@@ -172,10 +175,10 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideHistoryController(
-        scopedApplication: ScopedApplication,
+        scope: ApplicationScope,
         historyDao: AnimeHistoryDao,
         settings: AnimeSettings,
-    ) = HistoryController(scopedApplication, historyDao, settings)
+    ) = HistoryController(scope, historyDao, settings)
 
     @Singleton
     @Provides

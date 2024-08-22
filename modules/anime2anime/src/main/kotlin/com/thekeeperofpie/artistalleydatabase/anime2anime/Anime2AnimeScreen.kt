@@ -106,7 +106,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption

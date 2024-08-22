@@ -24,7 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi

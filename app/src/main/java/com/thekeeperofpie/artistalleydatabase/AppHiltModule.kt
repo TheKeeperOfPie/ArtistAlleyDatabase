@@ -19,9 +19,9 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideP
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import dagger.Module

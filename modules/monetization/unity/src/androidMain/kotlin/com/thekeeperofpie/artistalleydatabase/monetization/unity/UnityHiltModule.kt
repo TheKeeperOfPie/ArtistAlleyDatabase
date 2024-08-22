@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.monetization.unity
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

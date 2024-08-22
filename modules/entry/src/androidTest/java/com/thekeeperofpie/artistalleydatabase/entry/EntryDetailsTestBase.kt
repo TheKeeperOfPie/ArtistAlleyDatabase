@@ -10,7 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.untilCalled
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import com.thekeeperofpie.artistalleydatabase.test_utils.withDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle

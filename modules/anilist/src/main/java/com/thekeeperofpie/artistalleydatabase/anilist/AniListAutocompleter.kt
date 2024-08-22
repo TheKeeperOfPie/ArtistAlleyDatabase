@@ -9,7 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow

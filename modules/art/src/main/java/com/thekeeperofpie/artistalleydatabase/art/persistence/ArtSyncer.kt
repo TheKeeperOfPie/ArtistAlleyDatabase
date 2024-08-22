@@ -9,7 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntrySyncDao
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 
 class ArtSyncer(
     private val appJson: AppJson,

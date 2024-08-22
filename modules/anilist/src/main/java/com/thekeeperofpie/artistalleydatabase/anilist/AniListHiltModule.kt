@@ -17,8 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApiWrapper
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import dagger.Module

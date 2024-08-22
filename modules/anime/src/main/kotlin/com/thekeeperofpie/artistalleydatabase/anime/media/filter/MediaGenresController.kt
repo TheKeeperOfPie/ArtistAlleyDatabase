@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import android.os.SystemClock
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MediaGenresController(scopedApplication: ScopedApplication, aniListApi: AuthedAniListApi) {
+class MediaGenresController(scope: ApplicationScope, aniListApi: AuthedAniListApi) {
 
     val refresh = MutableStateFlow(-1L)
 
@@ -27,7 +27,7 @@ class MediaGenresController(scopedApplication: ScopedApplication, aniListApi: Au
         .catch { emit(emptyList()) }
         .distinctUntilChanged()
         .flowOn(CustomDispatchers.IO)
-        .shareIn(scopedApplication.scope, SharingStarted.Lazily, replay = 1)
+        .shareIn(scope, SharingStarted.Lazily, replay = 1)
 
     fun refresh() {
         refresh.value = SystemClock.uptimeMillis()

@@ -118,7 +118,7 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

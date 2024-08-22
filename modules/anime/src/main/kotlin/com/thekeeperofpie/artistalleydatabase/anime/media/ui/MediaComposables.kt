@@ -51,12 +51,12 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -74,6 +74,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 
 fun <T> LazyListScope.mediaListSection(
@@ -467,7 +469,7 @@ fun MediaTagPreview(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = stringResource(UtilsStringR.close))
+                Text(text = ComposeResourceUtils.stringResource(UtilsStrings.close))
             }
         }
     )
@@ -493,7 +495,7 @@ fun MediaGenrePreview(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = stringResource(UtilsStringR.close))
+                Text(text = ComposeResourceUtils.stringResource(UtilsStrings.close))
             }
         }
     )

@@ -8,7 +8,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AnimationUtils.lerp
+import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils.lerp
 import kotlin.math.max
 
 interface PlaceholderHighlight {

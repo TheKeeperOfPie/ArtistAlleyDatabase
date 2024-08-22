@@ -26,7 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 class ArtEntryNavigator : BrowseSelectionNavigator {

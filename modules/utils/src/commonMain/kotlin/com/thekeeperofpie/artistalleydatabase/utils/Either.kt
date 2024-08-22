@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils.kotlin
+package com.thekeeperofpie.artistalleydatabase.utils
 
 sealed class Either<Left, Right>(private val value: Any?) {
 

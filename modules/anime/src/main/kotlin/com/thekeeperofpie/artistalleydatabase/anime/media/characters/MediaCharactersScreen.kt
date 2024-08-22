@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaAndCharactersQuery
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption

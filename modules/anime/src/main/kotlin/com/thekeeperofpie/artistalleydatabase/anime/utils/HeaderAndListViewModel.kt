@@ -10,13 +10,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.fragment.PaginationInfo
-import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

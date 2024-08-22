@@ -66,13 +66,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.utils_compose.generated.resources.delete
+import artistalleydatabase.modules.utils_compose.generated.resources.no
+import artistalleydatabase.modules.utils_compose.generated.resources.save
+import artistalleydatabase.modules.utils_compose.generated.resources.yes
 import coil3.annotation.ExperimentalCoilApi
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -91,6 +94,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageSta
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
 @Suppress("NAME_SHADOWING")
@@ -159,7 +164,7 @@ object AnimeMediaEditBottomSheet {
                                 CircularProgressIndicator()
                             } else {
                                 Text(
-                                    text = stringResource(UtilsStringR.delete),
+                                    text = ComposeResourceUtils.stringResource(UtilsStrings.delete),
                                     modifier = Modifier.padding(
                                         horizontal = 16.dp,
                                         vertical = 10.dp
@@ -179,7 +184,7 @@ object AnimeMediaEditBottomSheet {
                             CircularProgressIndicator()
                         } else {
                             Text(
-                                text = stringResource(UtilsStringR.save),
+                                text = ComposeResourceUtils.stringResource(UtilsStrings.save),
                                 modifier = Modifier.padding(
                                     horizontal = 16.dp,
                                     vertical = 10.dp
@@ -200,12 +205,12 @@ object AnimeMediaEditBottomSheet {
                         showDelete = false
                         viewModel.onClickDelete()
                     }) {
-                        Text(stringResource(UtilsStringR.yes))
+                        Text(ComposeResourceUtils.stringResource(UtilsStrings.yes))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDelete = false }) {
-                        Text(stringResource(UtilsStringR.no))
+                        Text(ComposeResourceUtils.stringResource(UtilsStrings.no))
                     }
                 },
             )

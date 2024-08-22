@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime2anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.coroutines.CoroutineScope

@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import kotlinx.coroutines.CoroutineScope

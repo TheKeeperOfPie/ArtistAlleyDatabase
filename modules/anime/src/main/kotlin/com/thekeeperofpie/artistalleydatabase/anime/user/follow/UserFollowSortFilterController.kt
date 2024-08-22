@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilt
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 

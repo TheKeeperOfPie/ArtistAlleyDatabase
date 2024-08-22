@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils.kotlin
+package com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization
 
 import kotlinx.serialization.json.Json
 

@@ -62,8 +62,9 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import artistalleydatabase.modules.utils_compose.generated.resources.cancel
+import artistalleydatabase.modules.utils_compose.generated.resources.delete
 import com.anilist.ActivityDetailsQuery
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -87,8 +88,10 @@ import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -299,7 +302,11 @@ object ActivityDetailsScreen {
                                             onClick = { viewModel.delete(deletePromptDataFinal) },
                                             modifier = Modifier.alpha(1f - loadingAlpha)
                                         ) {
-                                            Text(text = stringResource(UtilsStringR.delete))
+                                            Text(
+                                                text = ComposeResourceUtils.stringResource(
+                                                    UtilsStrings.delete
+                                                )
+                                            )
                                         }
                                         CircularProgressIndicator(
                                             modifier = Modifier
@@ -310,7 +317,7 @@ object ActivityDetailsScreen {
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { deletePromptData = null }) {
-                                        Text(text = stringResource(UtilsStringR.cancel))
+                                        Text(text = ComposeResourceUtils.stringResource(UtilsStrings.cancel))
                                     }
                                 }
                             )

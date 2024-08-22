@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils.kotlin
+package com.thekeeperofpie.artistalleydatabase.utils
 
 interface FeatureOverrideProvider {
     val isReleaseBuild: Boolean

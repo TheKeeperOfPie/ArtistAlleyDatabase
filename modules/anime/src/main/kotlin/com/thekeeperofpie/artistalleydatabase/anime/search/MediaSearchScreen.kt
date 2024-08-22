@@ -51,7 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBotto
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption

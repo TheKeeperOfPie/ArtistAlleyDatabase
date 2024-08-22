@@ -10,7 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilter
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 

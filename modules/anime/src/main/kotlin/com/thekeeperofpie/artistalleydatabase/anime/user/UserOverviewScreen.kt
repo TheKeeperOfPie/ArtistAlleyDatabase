@@ -32,9 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
+import artistalleydatabase.modules.utils_compose.generated.resources.view_all
 import com.anilist.UserByIdQuery
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -49,6 +49,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 
 @OptIn(
     ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
@@ -298,7 +300,7 @@ object UserOverviewScreen {
                         .animateItem()
                 ) {
                     Text(
-                        text = stringResource(UtilsStringR.view_all),
+                        text = ComposeResourceUtils.stringResource(UtilsStrings.view_all),
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 10.dp)
                             .align(Alignment.CenterHorizontally)

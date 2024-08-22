@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import android.os.SystemClock
 import com.anilist.MediaTagsQuery
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MediaTagsController(scopedApplication: ScopedApplication, aniListApi: AuthedAniListApi) {
+class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi) {
 
     private val refresh = MutableStateFlow(-1L)
 
@@ -26,7 +26,7 @@ class MediaTagsController(scopedApplication: ScopedApplication, aniListApi: Auth
     }
         .catch { emit(emptyMap()) }
         .flowOn(CustomDispatchers.IO)
-        .shareIn(scopedApplication.scope, SharingStarted.Lazily, replay = 1)
+        .shareIn(scope, SharingStarted.Lazily, replay = 1)
 
     fun refresh() {
         refresh.value = SystemClock.uptimeMillis()

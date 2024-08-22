@@ -79,7 +79,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTra
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AnimationUtils
+import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally

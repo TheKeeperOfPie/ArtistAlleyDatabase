@@ -4,7 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.animethemes.models.Anime
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistWithAniList
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream

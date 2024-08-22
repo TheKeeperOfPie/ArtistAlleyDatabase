@@ -10,7 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest

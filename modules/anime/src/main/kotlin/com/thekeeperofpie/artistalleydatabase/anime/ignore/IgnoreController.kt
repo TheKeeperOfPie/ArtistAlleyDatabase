@@ -5,15 +5,15 @@ import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.time.Instant
 
 class IgnoreController(
-    val scopedApplication: ScopedApplication,
+    private val scope: ApplicationScope,
     private val ignoreDao: AnimeIgnoreDao,
     private val settings: AnimeSettings,
 ) {
@@ -32,7 +32,7 @@ class IgnoreController(
         titleNative: String?,
     ) {
         if (!settings.mediaIgnoreEnabled.value) return
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.IO) {
             try {
                 if (ignoreDao.exists(mediaId)) {
                     ignoreDao.delete(mediaId)
@@ -94,7 +94,7 @@ class IgnoreController(
     )
 
     fun clear() {
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.IO) {
             ignoreDao.deleteAll()
         }
     }

@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import java.io.File
 
 internal class TestViewModel(

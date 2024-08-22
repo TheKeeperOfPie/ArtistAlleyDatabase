@@ -1,12 +1,9 @@
 @file:OptIn(ExperimentalCoroutinesApi::class)
 
-package com.thekeeperofpie.artistalleydatabase.android_utils
+package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
-import android.util.Log
-import androidx.annotation.StringRes
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
+import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,21 +12,19 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.runningFold
-import java.util.LinkedList
 
 fun <T> Flow<T>.nullable() = this as Flow<T?>
 
 fun <T> Flow<T>.distinctWithBuffer(bufferSize: Int): Flow<T> = flow {
-    val past = LinkedList<T>()
+    val past = mutableListOf<T>()
     collect {
         val contains = past.contains(it)
         if (!contains) {
             while (past.size > bufferSize) {
                 past.removeFirst()
             }
-            past.addLast(it)
+            past.add(it)
             emit(it)
         }
     }
@@ -37,7 +32,7 @@ fun <T> Flow<T>.distinctWithBuffer(bufferSize: Int): Flow<T> = flow {
 
 fun <T> flowForRefreshableContent(
     refresh: StateFlow<*>,
-    @StringRes errorTextRes: Int,
+    errorTextRes: Int,
     producer: suspend () -> Flow<T>,
 ) = refresh
     .flatMapLatest {
@@ -45,18 +40,6 @@ fun <T> flowForRefreshableContent(
             .map { LoadingResult(success = true, result = it) }
             .catch { emit(LoadingResult(error = errorTextRes to it)) }
             .startWith(LoadingResult(loading = true, success = true))
-    }
-    .let {
-        if (BuildConfig.DEBUG) {
-            it.onEach {
-                val error = it.error
-                if (error != null) {
-                    Log.d("FlowDebug", "Error loading", error.second)
-                }
-            }
-        } else {
-            it
-        }
     }
     .distinctUntilChanged()
     .runningFold(LoadingResult.loading<T>()) { accumulator, value ->

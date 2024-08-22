@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.data
 
 import android.util.Log
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 
 sealed interface Series {
     val id: String

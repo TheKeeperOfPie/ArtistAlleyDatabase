@@ -18,7 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChange
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

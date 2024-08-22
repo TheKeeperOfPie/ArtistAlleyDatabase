@@ -5,8 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import com.hoc081098.flowext.throttleTime
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class NotificationsController(scopedApplication: ScopedApplication, aniListApi: AuthedAniListApi) {
+class NotificationsController(scope: ApplicationScope, aniListApi: AuthedAniListApi) {
 
     var unreadCount by mutableIntStateOf(0)
         private set
@@ -28,7 +28,7 @@ class NotificationsController(scopedApplication: ScopedApplication, aniListApi: 
     private val forceRefresh = MutableStateFlow(-1L)
 
     init {
-        scopedApplication.scope.launch(CustomDispatchers.Main) {
+        scope.launch(CustomDispatchers.Main) {
             combine(
                 aniListApi.authedUser,
                 refresh.throttleTime(15.minutes),

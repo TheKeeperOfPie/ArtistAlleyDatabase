@@ -30,7 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.annotation.ExperimentalCoilApi
 import com.anilist.fragment.CharacterHeaderData
-import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName

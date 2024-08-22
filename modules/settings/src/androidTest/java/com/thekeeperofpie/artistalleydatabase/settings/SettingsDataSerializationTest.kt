@@ -8,8 +8,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.encodeToString
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.test_utils.withDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.to
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi

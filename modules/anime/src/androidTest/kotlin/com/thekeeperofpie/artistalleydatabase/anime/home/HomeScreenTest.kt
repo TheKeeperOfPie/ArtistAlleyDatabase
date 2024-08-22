@@ -37,7 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestActivity
 import com.thekeeperofpie.artistalleydatabase.test_utils.spyStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import dagger.hilt.android.testing.HiltAndroidTest
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.MutableStateFlow

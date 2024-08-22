@@ -3,8 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 import android.os.SystemClock
 import com.anilist.LicensorsQuery
 import com.anilist.type.ExternalLinkMediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.shareIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MediaLicensorsController(
-    private val scopedApplication: ScopedApplication,
+    private val scope: ApplicationScope,
     private val aniListApi: AuthedAniListApi,
 ) {
     private val refreshUptimeMillis = MutableStateFlow(-1L)
@@ -32,7 +32,7 @@ class MediaLicensorsController(
     }
         .catch { emit(emptyList()) }
         .flowOn(CustomDispatchers.IO)
-        .shareIn(scopedApplication.scope, SharingStarted.Lazily, 1)
+        .shareIn(scope, SharingStarted.Lazily, 1)
 
     fun refresh() {
         refreshUptimeMillis.value = SystemClock.uptimeMillis()

@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdExporter
 import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdImporter
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import dagger.Module

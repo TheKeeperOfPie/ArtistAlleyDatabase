@@ -14,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.yield
 

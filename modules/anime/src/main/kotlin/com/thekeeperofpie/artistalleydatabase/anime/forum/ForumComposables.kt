@@ -76,7 +76,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.fragment.ForumThread
 import com.anilist.fragment.UserNavigationData
-import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

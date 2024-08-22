@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.art.utils
 
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 
 object ArtEntryUtils {
 

@@ -21,7 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter

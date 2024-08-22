@@ -22,7 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview

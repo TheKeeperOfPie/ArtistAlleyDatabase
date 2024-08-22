@@ -62,7 +62,7 @@ import com.anilist.fragment.MessageActivityFragment
 import com.anilist.fragment.TextActivityActivityItem
 import com.anilist.fragment.TextActivityFragment
 import com.anilist.fragment.UserNavigationData
-import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

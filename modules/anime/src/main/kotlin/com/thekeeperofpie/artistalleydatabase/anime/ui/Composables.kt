@@ -59,8 +59,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.utils_compose.generated.resources.cancel
+import artistalleydatabase.modules.utils_compose.generated.resources.confirm
+import artistalleydatabase.modules.utils_compose.generated.resources.show_less
+import artistalleydatabase.modules.utils_compose.generated.resources.show_more
+import artistalleydatabase.modules.utils_compose.generated.resources.view_all
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -72,6 +76,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -240,12 +246,12 @@ fun StartEndDateDialog(
                     },
                     enabled = confirmEnabled,
                 ) {
-                    Text(text = stringResource(UtilsStringR.confirm))
+                    Text(text = ComposeResourceUtils.stringResource(UtilsStrings.confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { onShownForStartDateChange(null) }) {
-                    Text(text = stringResource(UtilsStringR.cancel))
+                    Text(text = ComposeResourceUtils.stringResource(UtilsStrings.cancel))
                 }
             },
             modifier = Modifier.fillMaxSize(),
@@ -375,7 +381,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                     .animateItem()
             ) {
                 Text(
-                    text = stringResource(UtilsStringR.view_all),
+                    text = ComposeResourceUtils.stringResource(UtilsStrings.view_all),
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 10.dp)
                         .align(Alignment.CenterHorizontally)
@@ -405,7 +411,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                             .animateItem()
                     ) {
                         Text(
-                            text = stringResource(UtilsStringR.show_less),
+                            text = ComposeResourceUtils.stringResource(UtilsStrings.show_less),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                                 .align(Alignment.CenterHorizontally)
@@ -423,7 +429,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                         .animateItem()
                 ) {
                     Text(
-                        text = stringResource(UtilsStringR.show_more),
+                        text = ComposeResourceUtils.stringResource(UtilsStrings.show_more),
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 10.dp)
                             .align(Alignment.CenterHorizontally)

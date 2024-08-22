@@ -14,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

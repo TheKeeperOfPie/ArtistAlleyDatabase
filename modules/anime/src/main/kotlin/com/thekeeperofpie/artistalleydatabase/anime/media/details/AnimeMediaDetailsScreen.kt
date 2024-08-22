@@ -76,6 +76,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import artistalleydatabase.modules.utils_compose.generated.resources.no
+import artistalleydatabase.modules.utils_compose.generated.resources.yes
 import coil3.compose.AsyncImage
 import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsQuery.Data.Media
@@ -85,8 +87,6 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -134,9 +134,12 @@ import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOn
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import io.fluidsonic.country.Country
 import io.fluidsonic.i18n.name
@@ -836,7 +839,7 @@ object AnimeMediaDetailsScreen {
             ) {
                 var shown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_licensed_label),
-                    bodyOne = entry.licensedTextRes?.let { stringResource(it) },
+                    bodyOne = entry.licensedTextRes?.let { ComposeResourceUtils.stringResource(it) },
                     labelTwo = stringResource(R.string.anime_media_details_country_label),
                     bodyTwo = Locale.forLanguageTagOrNull(LocalConfiguration.currentLocale.toLanguageTag())
                         ?.let { entry.country?.name(it) },
@@ -1321,7 +1324,7 @@ object AnimeMediaDetailsScreen {
         val formatTextRes = media.format.toTextRes()
         val statusTextRes = media.status.toTextRes()
         val licensedTextRes = media.isLicensed
-            ?.let { if (it) UtilsStringR.yes else UtilsStringR.no }
+            ?.let { if (it) UtilsStrings.yes else UtilsStrings.no }
         val country = media.countryOfOrigin?.toString()?.let(Country.Companion::forCodeOrNull)
         val hashtags = media.hashtag?.split("#")
             ?.filter { it.isNotEmpty() }

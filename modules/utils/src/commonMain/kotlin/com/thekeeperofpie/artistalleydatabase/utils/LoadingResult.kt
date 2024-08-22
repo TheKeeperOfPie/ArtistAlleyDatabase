@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils.kotlin
+package com.thekeeperofpie.artistalleydatabase.utils
 
 data class LoadingResult<T>(
     val loading: Boolean = false,

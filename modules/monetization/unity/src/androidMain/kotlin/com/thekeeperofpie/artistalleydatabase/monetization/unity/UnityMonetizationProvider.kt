@@ -17,7 +17,7 @@ import artistalleydatabase.modules.monetization.unity.generated.resources.unity_
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.unity.secrets.UnitySecrets
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.UnityAds
 import com.unity3d.services.banners.BannerView

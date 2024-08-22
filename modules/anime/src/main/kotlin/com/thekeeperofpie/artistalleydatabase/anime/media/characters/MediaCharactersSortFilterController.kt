@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toT
 import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview

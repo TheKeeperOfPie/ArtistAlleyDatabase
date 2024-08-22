@@ -1,14 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.anime.history
 
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
 import java.time.Instant
 
 class HistoryController(
-    private val scopedApplication: ScopedApplication,
+    private val scope: ApplicationScope,
     private val historyDao: AnimeHistoryDao,
     private val settings: AnimeSettings,
 ) {
@@ -23,7 +23,7 @@ class HistoryController(
         titleNative: String?,
     ) {
         if (!settings.mediaHistoryEnabled.value) return
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.IO) {
             try {
                 historyDao.insertEntry(
                     AnimeMediaHistoryEntry(
@@ -47,7 +47,7 @@ class HistoryController(
     }
 
     fun clear() {
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.IO) {
             try {
                 historyDao.deleteAll()
             } catch (ignored: Throwable) {

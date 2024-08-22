@@ -18,7 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsData
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers

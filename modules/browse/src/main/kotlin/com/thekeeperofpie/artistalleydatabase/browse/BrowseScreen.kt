@@ -36,7 +36,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

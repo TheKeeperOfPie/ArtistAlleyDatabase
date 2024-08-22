@@ -34,13 +34,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import artistalleydatabase.modules.utils_compose.generated.resources.confirm
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 
 object AniListViewerProfileScreen {
@@ -139,7 +141,7 @@ object AniListViewerProfileScreen {
                         value = ""
                         onSubmitAuthToken(token)
                     }) {
-                        Text(stringResource(UtilsStringR.confirm))
+                        Text(ComposeResourceUtils.stringResource(UtilsStrings.confirm))
                     }
 
                     Spacer(Modifier.height(88.dp))

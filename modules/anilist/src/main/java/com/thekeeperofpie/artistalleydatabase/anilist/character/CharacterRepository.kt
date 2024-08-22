@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.R
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 
 class CharacterRepository(
     application: ScopedApplication,

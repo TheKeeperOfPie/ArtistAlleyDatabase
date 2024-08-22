@@ -42,7 +42,7 @@ import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle

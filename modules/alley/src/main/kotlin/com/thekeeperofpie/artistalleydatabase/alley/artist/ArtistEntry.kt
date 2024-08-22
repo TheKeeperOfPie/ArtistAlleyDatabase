@@ -8,7 +8,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.serialization.Serializable
 
 @Serializable

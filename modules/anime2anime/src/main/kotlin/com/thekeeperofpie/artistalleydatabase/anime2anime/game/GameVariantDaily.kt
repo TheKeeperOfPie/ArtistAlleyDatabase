@@ -7,7 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantRandom.Companion.loadRandom
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import kotlinx.coroutines.CoroutineScope
 import kotlin.random.Random
 

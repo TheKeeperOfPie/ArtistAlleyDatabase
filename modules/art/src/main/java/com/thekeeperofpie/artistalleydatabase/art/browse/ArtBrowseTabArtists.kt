@@ -16,7 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow

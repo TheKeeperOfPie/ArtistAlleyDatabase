@@ -10,7 +10,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.anilist.fragment.AniListCharacter
 import com.squareup.moshi.JsonClass
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 

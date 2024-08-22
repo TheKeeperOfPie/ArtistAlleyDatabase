@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import android.app.Application
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.Immutable
@@ -21,16 +22,16 @@ import com.anilist.type.ScoreFormat
 import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.flowFromSuspend
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -64,7 +65,8 @@ import kotlinx.serialization.json.encodeToStream
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalSerializationApi::class)
 class UserMediaListController(
-    private val scopedApplication: ScopedApplication,
+    private val application: Application,
+    private val scope: ApplicationScope,
     private val aniListApi: AuthedAniListApi,
     private val ignoreController: IgnoreController,
     private val statusController: MediaListStatusController,
@@ -81,7 +83,7 @@ class UserMediaListController(
 
     private val includeDescription = MutableStateFlow(false)
 
-    private val cacheDir = scopedApplication.app.cacheDir.resolve("user_media")
+    private val cacheDir = application.cacheDir.resolve("user_media")
     private val cacheMutex = Mutex()
 
     private var anime: Flow<LoadingResult<List<ListEntry>>>
@@ -91,11 +93,11 @@ class UserMediaListController(
         anime = loadCacheAndNetwork(
             loadMediaFromCache(MediaType.ANIME),
             loadMediaFromNetwork(refreshAnime, MediaType.ANIME).foldPreviousResult(),
-        ).shareIn(scopedApplication.scope, SharingStarted.Lazily, replay = 1)
+        ).shareIn(scope, SharingStarted.Lazily, replay = 1)
         manga = loadCacheAndNetwork(
             loadMediaFromCache(MediaType.MANGA),
             loadMediaFromNetwork(refreshManga, MediaType.MANGA).foldPreviousResult(),
-        ).shareIn(scopedApplication.scope, SharingStarted.Lazily, replay = 1)
+        ).shareIn(scope, SharingStarted.Lazily, replay = 1)
     }
 
     private fun <T> loadCacheAndNetwork(
@@ -138,7 +140,7 @@ class UserMediaListController(
                     LoadingResult.empty()
                 } else {
                     EncryptedFile.Builder(
-                        scopedApplication.app,
+                        application,
                         cacheFile,
                         masterKey,
                         EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
@@ -208,7 +210,7 @@ class UserMediaListController(
     ) {
         if (!result.success || result.result == null) return
         val lists = result.result.orEmpty()
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.IO) {
             try {
                 cacheMutex.withLock {
                     if (!cacheDir.exists()) {
@@ -228,15 +230,15 @@ class UserMediaListController(
                     }
 
                     EncryptedFile.Builder(
-                        scopedApplication.app,
+                        application,
                         cacheFile,
                         masterKey,
                         EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
                     ).build()
                         .openFileOutput()
                         .use {
-                        appJson.json.encodeToStream(lists, it)
-                    }
+                            appJson.json.encodeToStream(lists, it)
+                        }
                 }
             } catch (t: Throwable) {
                 if (BuildConfig.DEBUG) {

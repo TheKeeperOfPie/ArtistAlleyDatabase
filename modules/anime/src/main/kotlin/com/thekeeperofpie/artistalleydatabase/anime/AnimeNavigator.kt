@@ -109,7 +109,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeM
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.Either
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
