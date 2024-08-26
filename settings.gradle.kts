@@ -55,6 +55,7 @@ include(
     ":modules:utils",
     ":modules:utils-compose",
     ":modules:utils-network",
+    ":modules:utils-room",
     ":modules:vgmdb",
 )
 

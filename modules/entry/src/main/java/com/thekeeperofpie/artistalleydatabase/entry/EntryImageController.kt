@@ -17,8 +17,11 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import com.benasher44.uuid.Uuid
+import com.eygraber.uri.toAndroidUri
+import com.eygraber.uri.toUri
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,11 +29,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.io.asInputStream
+import kotlinx.io.files.SystemFileSystem
 import java.io.File
 
 class EntryImageController(
     private val scopeProvider: () -> CoroutineScope,
     private val application: Application,
+    private val appFileSystem: AppFileSystem,
     private val settings: EntrySettings,
     private val scopedIdType: String,
     private val onError: (Pair<Int, Exception?>) -> Unit,
@@ -59,10 +65,13 @@ class EntryImageController(
             scopeProvider().launch(Dispatchers.IO.limitedParallelism(8)) {
                 val newImages = it.map {
                     async {
-                        val (width, height) = ImageUtils.getImageWidthHeight(application, it)
+                        val (width, height) = ImageUtils.getImageWidthHeight(
+                            appFileSystem,
+                            it.toUri()
+                        )
                         EntryImage(
                             entryId = entryIds.singleOrNull(),
-                            uri = it,
+                            uri = it.toUri(),
                             width = width ?: 1,
                             height = height ?: 1,
                             contentDescriptionRes = imageContentDescriptionRes,
@@ -101,14 +110,14 @@ class EntryImageController(
 
         entryIds.firstOrNull()?.let {
             val entryImages =
-                EntryUtils.getImages(application, it, imageContentDescriptionRes)
+                EntryUtils.getImages(appFileSystem, it, imageContentDescriptionRes)
                     .toMutableList()
 
             val firstImage = entryImages.firstOrNull()
             val firstUri = firstImage?.uri
             if (firstUri != null) {
                 if (firstImage.width == 1) {
-                    val (width, height) = ImageUtils.getImageWidthHeight(application, firstUri)
+                    val (width, height) = ImageUtils.getImageWidthHeight(appFileSystem, firstUri)
                     if (width != null && height != null) {
                         entryImages[0] = firstImage.copy(width = width, height = height)
                     }
@@ -117,7 +126,7 @@ class EntryImageController(
 
             images += entryImages
             images += entryIds.drop(1).flatMap {
-                EntryUtils.getImages(application, it, imageContentDescriptionRes)
+                EntryUtils.getImages(appFileSystem, it, imageContentDescriptionRes)
             }
         }
 
@@ -143,7 +152,7 @@ class EntryImageController(
             // TODO: Make this more reliable?
             EntryUtils.openInternalImage(navHostController, File(path))
         } else {
-            EntryUtils.openImage(navHostController, uri)
+            EntryUtils.openImage(navHostController, uri.toAndroidUri())
         }
     }
 
@@ -165,7 +174,7 @@ class EntryImageController(
 
             withContext(Dispatchers.Main) {
                 images[index] = images[index].copy(
-                    uri = uri,
+                    uri = uri.toUri(),
                     width = width,
                     height = height,
                     croppedUri = null,
@@ -194,10 +203,10 @@ class EntryImageController(
             }
 
             settings.cropImageUri.value = uri.toString()
-            application.contentResolver.openInputStream(imageUri)
+            appFileSystem.openUri(imageUri)
                 ?.use { input ->
                     application.contentResolver.openOutputStream(uri)?.use { output ->
-                        input.copyTo(output)
+                        input.asInputStream().copyTo(output)
                     }
                 }?.run {
                     launch(Dispatchers.Main) {
@@ -212,10 +221,10 @@ class EntryImageController(
         val imageCropUri = imageCropUri ?: return
         val imageUri = images.getOrNull(index)?.uri ?: return
         scopeProvider().launch(Dispatchers.IO) {
-            application.contentResolver.openInputStream(imageUri)
+            appFileSystem.openUri(imageUri)
                 ?.use { input ->
                     application.contentResolver.openOutputStream(imageCropUri)?.use { output ->
-                        input.copyTo(output)
+                        input.asInputStream().copyTo(output)
                     }
                 }
 
@@ -268,7 +277,7 @@ class EntryImageController(
             launch(Dispatchers.Main) {
                 images[index] = images[index].copy(
                     entryId = entryId,
-                    croppedUri = uri,
+                    croppedUri = uri.toUri(),
                     croppedWidth = width,
                     croppedHeight = height,
                 )
@@ -282,10 +291,10 @@ class EntryImageController(
         val entryIdsSize = withContext(Dispatchers.Main) { entryIds.size }
         if (entryIdsSize > 1) return
 
-        val (width, height) = ImageUtils.getImageWidthHeight(application, uri)
+        val (width, height) = ImageUtils.getImageWidthHeight(appFileSystem, uri.toUri())
         val newImage = EntryImage(
             entryId = entryId,
-            uri = uri,
+            uri = uri.toUri(),
             width = width ?: 1,
             height = height ?: 1,
             contentDescriptionRes = imageContentDescriptionRes,
@@ -333,10 +342,10 @@ class EntryImageController(
                     } else null
 
                     val originalError =
-                        ImageUtils.writeEntryImage(application, originalFile, entryImage.uri)
+                        ImageUtils.writeEntryImage(appFileSystem, originalFile, entryImage.uri)
                     val croppedError = croppedFile?.let {
                         ImageUtils.writeEntryImage(
-                            application,
+                            appFileSystem,
                             croppedFile,
                             entryImage.croppedUri
                         )
@@ -372,12 +381,14 @@ class EntryImageController(
         saveImagesResult: Map<EntryId, List<SaveResult>>,
     ) {
         entryIds.forEach {
-            val entryFolder = EntryUtils.getEntryImageFolder(application, it)
-            if (entryFolder.exists() && entryFolder.isDirectory) {
+            val entryFolder = EntryUtils.getEntryImageFolder(appFileSystem, it)
+            if (SystemFileSystem.exists(entryFolder)
+                && SystemFileSystem.metadataOrNull(entryFolder)?.isDirectory == true) {
                 val writtenFiles = saveImagesResult[it]?.flatMap {
                     listOfNotNull(it.originalFile, it.croppedFile)
                 }.orEmpty()
-                entryFolder.walkTopDown()
+                File(entryFolder.toString())
+                    .walkTopDown()
                     .filter(File::isFile)
                     .filterNot(writtenFiles::contains)
                     .forEach(File::delete)

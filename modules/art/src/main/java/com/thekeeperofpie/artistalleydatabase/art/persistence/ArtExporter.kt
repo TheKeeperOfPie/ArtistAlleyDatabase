@@ -1,65 +1,68 @@
 package com.thekeeperofpie.artistalleydatabase.art.persistence
 
-import android.content.Context
-import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryExporter
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.encodeToJsonElement
-import java.io.InputStream
+import kotlinx.io.Sink
+import kotlinx.io.Source
+import kotlinx.io.writeString
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.io.encodeToSink
 
+@OptIn(ExperimentalSerializationApi::class)
 class ArtExporter(
-    appContext: Context,
+    appFileSystem: AppFileSystem,
     private val artEntryDao: ArtEntryDao,
     private val dataConverter: DataConverter,
     private val appJson: AppJson,
-) : EntryExporter(appContext) {
+) : EntryExporter(appFileSystem) {
 
     override val zipEntryName = "art_entries"
 
     override suspend fun entriesSize() = artEntryDao.getEntriesSize()
 
     override suspend fun writeEntries(
-        jsonWriter: JsonWriter,
-        jsonElementConverter: (JsonElement) -> Any?,
-        writeEntry: suspend (String, () -> InputStream) -> Unit,
-        updateProgress: suspend (progress: Int, max: Int) -> Unit,
+        sink: Sink,
+        writeEntry: suspend (String, () -> Source) -> Unit,
+        updateProgress: suspend (progress: Int, progressMax: Int) -> Unit,
     ): Boolean {
-        jsonWriter.beginObject()
-            .name(zipEntryName)
-            .beginArray()
+        sink.writeString("""{ "$zipEntryName": [""")
         var stopped = false
         var entriesSize = 0
+        var writtenFirst = false
         artEntryDao.iterateEntries({ entriesSize = it }) { index, entry ->
             if (!currentCoroutineContext().isActive) {
                 stopped = true
                 return@iterateEntries
+            }
+            if (writtenFirst) {
+                sink.writeString(",\n")
+            } else {
+                writtenFirst = true
             }
 
             writeImages(entry, writeEntry)
 
             updateProgress(index, entriesSize)
 
-            val jsonValue = jsonElementConverter(appJson.json.encodeToJsonElement(entry))
-            jsonWriter.jsonValue(jsonValue)
+            appJson.json.encodeToSink(entry, sink)
         }
         if (stopped) {
             return false
         }
-        jsonWriter.endArray()
-            .endObject()
+        sink.writeString("""]}""")
 
         return true
     }
 
     private suspend fun writeImages(
         entry: ArtEntry,
-        writeEntry: suspend (String, () -> InputStream) -> Unit,
+        writeEntry: suspend (String, () -> Source) -> Unit,
     ) {
         val series = dataConverter.seriesEntries(entry.series(appJson))
             .map { it.text }

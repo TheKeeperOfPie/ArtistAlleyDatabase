@@ -19,9 +19,10 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideP
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import dagger.Module
@@ -52,6 +53,10 @@ object AppHiltModule {
     @Provides
     fun provideApplicationScope(scopedApplication: ScopedApplication): ApplicationScope =
         scopedApplication.scope
+
+    @Singleton
+    @Provides
+    fun provideAppFileSystem(application: Application) = AppFileSystem(application)
 
     @Singleton
     @Provides

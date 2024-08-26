@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.cds.grid
 
-import android.app.Application
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -23,14 +21,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.cds.R
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
-import java.io.File
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
+import kotlinx.io.files.SystemFileSystem
 
 @OptIn(ExperimentalLayoutApi::class)
 class CdEntryGridModel(
@@ -46,11 +46,11 @@ class CdEntryGridModel(
 
     companion object {
         fun buildFromEntry(
-            application: Application,
+            appFileSystem: AppFileSystem,
             entry: CdEntry,
         ): CdEntryGridModel {
-            val imageUri = EntryUtils.getImageFile(application, entry.entryId)
-                .takeIf(File::exists)
+            val imageUri = EntryUtils.getImageFile(appFileSystem, entry.entryId)
+                ?.takeIf(SystemFileSystem::exists)
                 ?.toUri()
                 ?.buildUpon()
                 ?.appendQueryParameter("width", entry.imageWidth.toString())

@@ -10,6 +10,7 @@ android {
 
 dependencies {
     api(project(":modules:utils"))
+    api(project(":modules:utils-room"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
@@ -29,9 +30,6 @@ dependencies {
     implementation(libs.room.ktx)
     testImplementation(libs.room.testing)
     implementation(libs.room.paging)
-
-    api(libs.moshi.kotlin)
-    ksp(kspProcessors.moshi.kotlin.codegen)
 
     compileOnly(libs.compose.runtime)
 }

@@ -1,10 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.art.browse
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
@@ -17,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ArtBrowseTabTags @Inject constructor(
-    context: Application,
+    appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
 ) : BrowseTabViewModel() {
@@ -60,8 +60,8 @@ class ArtBrowseTabTags @Inject constructor(
                                 .take(1)
                                 .map {
                                     BrowseEntryModel(
-                                        image = EntryUtils.getImageFile(context, it.entryId)
-                                            .toUri().toString(),
+                                        image = EntryUtils.getImageFile(appFileSystem, it.entryId)
+                                            ?.toUri()?.toString(),
                                         text = entry,
                                         queryType = ArtEntryColumn.TAGS.toString(),
                                     )

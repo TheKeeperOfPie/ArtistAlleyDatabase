@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.cds.data
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
 
 @Dao
 interface CdEntryDetailsDao : CdEntryDao {

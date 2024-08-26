@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art.browse.selection
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,8 +16,9 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,10 +29,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ArtBrowseSelectionViewModel @Inject constructor(
-    application: Application,
+    appFileSystem: AppFileSystem,
     private val artEntryBrowseDao: ArtEntryBrowseDao,
     private val appJson: AppJson,
-) : ArtEntryGridViewModel(application, artEntryBrowseDao) {
+) : ArtEntryGridViewModel(appFileSystem, artEntryBrowseDao) {
 
     lateinit var column: ArtEntryColumn
 
@@ -81,7 +81,7 @@ class ArtBrowseSelectionViewModel @Inject constructor(
                             ArtEntryColumn.TAGS -> it.tags.contains(queryValue)
                         }
                     }
-                        .map { ArtEntryGridModel.buildFromEntry(application, appJson, it) }
+                        .map { ArtEntryGridModel.buildFromEntry(appFileSystem, appJson, it) }
                 }
                 .onEach {
                     if (loading) {

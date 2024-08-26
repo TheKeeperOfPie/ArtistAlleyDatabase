@@ -1,6 +1,6 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils
+package com.thekeeperofpie.artistalleydatabase.utils_room
 
-import java.util.Locale
+import kotlinx.serialization.json.Json
 
 object RoomUtils {
 
@@ -8,7 +8,7 @@ object RoomUtils {
 
     fun wrapLikeQuery(query: String) = "%${query.replace(Regex("\\s+"), "%").replaceDoubleQuotes()}%"
 
-    private fun String.replaceDoubleQuotes(): String = this//replace(Regex.fromLiteral("\""), "\"\"")
+    private fun String.replaceDoubleQuotes(): String = replace(Regex.fromLiteral("\""), "\"\"")
 
     fun Boolean.toBit() = if (this) "1" else "0"
 
@@ -21,13 +21,15 @@ object RoomUtils {
         val matchQuery = wrapMatchQuery(query)
         val likeQuery = wrapLikeQuery(query)
         return tryReturnEmptyList(matchFunction, matchQuery)
-            .plus(tryReturnEmptyList(matchFunction, matchQuery.lowercase(Locale.getDefault())))
-            .plus(tryReturnEmptyList(matchFunction, matchQuery.uppercase(Locale.getDefault())))
+            .asSequence()
+            .plus(tryReturnEmptyList(matchFunction, matchQuery.lowercase()))
+            .plus(tryReturnEmptyList(matchFunction, matchQuery.uppercase()))
             .plus(tryReturnEmptyList(likeFunction, likeQuery))
-            .plus(tryReturnEmptyList(likeFunction, likeQuery.lowercase(Locale.getDefault())))
-            .plus(tryReturnEmptyList(likeFunction, likeQuery.uppercase(Locale.getDefault())))
-            .flatMap(JsonUtils::readStringList)
+            .plus(tryReturnEmptyList(likeFunction, likeQuery.lowercase()))
+            .plus(tryReturnEmptyList(likeFunction, likeQuery.uppercase()))
+            .flatMap { Json.decodeFromString<List<String>>(it) }
             .distinct()
+            .toList()
     }
 
     private suspend fun tryReturnEmptyList(

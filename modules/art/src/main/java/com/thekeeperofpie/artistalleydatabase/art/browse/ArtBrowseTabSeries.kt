@@ -1,10 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.art.browse
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -19,8 +17,10 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ArtBrowseTabSeries @Inject constructor(
-    context: Application,
+    appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
     appJson: AppJson,
@@ -78,8 +78,8 @@ class ArtBrowseTabSeries @Inject constructor(
                                     .take(1)
                                     .map {
                                         BrowseEntryModel(
-                                            image = EntryUtils.getImageFile(context, it.entryId)
-                                                .toUri().toString(),
+                                            image = EntryUtils.getImageFile(appFileSystem, it.entryId)
+                                                ?.toUri()?.toString(),
                                             text = databaseText,
                                             queryType = ArtEntryColumn.SERIES.toString(),
                                         )

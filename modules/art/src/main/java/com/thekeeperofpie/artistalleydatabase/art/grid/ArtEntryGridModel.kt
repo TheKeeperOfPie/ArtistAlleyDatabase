@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art.grid
 
-import android.app.Application
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -20,15 +18,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
-import java.io.File
+import kotlinx.io.files.SystemFileSystem
 
 @OptIn(ExperimentalLayoutApi::class)
 class ArtEntryGridModel(
@@ -44,12 +44,12 @@ class ArtEntryGridModel(
 
     companion object {
         fun buildFromEntry(
-            application: Application,
+            appFileSystem: AppFileSystem,
             appJson: AppJson,
             entry: ArtEntry,
         ): ArtEntryGridModel {
-            val imageUri = EntryUtils.getImageFile(application, entry.entryId)
-                .takeIf(File::exists)
+            val imageUri = EntryUtils.getImageFile(appFileSystem, entry.entryId)
+                ?.takeIf(SystemFileSystem::exists)
                 ?.toUri()
                 ?.buildUpon()
                 ?.appendQueryParameter("width", entry.imageWidth.toString())

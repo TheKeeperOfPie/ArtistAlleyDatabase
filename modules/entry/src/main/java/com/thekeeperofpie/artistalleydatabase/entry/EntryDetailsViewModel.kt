@@ -10,10 +10,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.github.difflib.text.DiffRowGenerator
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -25,6 +28,7 @@ import kotlin.reflect.KClass
 abstract class EntryDetailsViewModel<Entry : Any, Model>(
     private val entryClass: KClass<Entry>,
     protected val application: Application,
+    private val appFileSystem: AppFileSystem,
     protected val scopedIdType: String,
     @StringRes private val imageContentDescriptionRes: Int,
     entrySettings: EntrySettings,
@@ -63,6 +67,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     val entryImageController = EntryImageController(
         scopeProvider = { viewModelScope },
         application = application,
+        appFileSystem = appFileSystem,
         settings = entrySettings,
         scopedIdType = scopedIdType,
         onError = { errorResource = it },
@@ -180,7 +185,9 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
 
         val entryId = entryIds.single()
         viewModelScope.launch(CustomDispatchers.IO) {
-            EntryUtils.getEntryImageFolder(application, entryId).deleteRecursively()
+            SystemFileSystem.deleteRecursively(
+                EntryUtils.getEntryImageFolder(appFileSystem, entryId)
+            )
             deleteEntry(entryId)
             withContext(CustomDispatchers.Main) {
                 initialEntryHashCode = null

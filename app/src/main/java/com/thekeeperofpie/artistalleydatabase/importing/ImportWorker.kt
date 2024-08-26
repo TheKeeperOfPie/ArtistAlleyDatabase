@@ -12,20 +12,21 @@ import com.thekeeperofpie.artistalleydatabase.MainActivity
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationProgressWorker
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.export.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsData
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import okio.use
@@ -72,7 +73,6 @@ class ImportWorker @AssistedInject constructor(
         private const val PARALLELISM = 8
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun doWorkInternal() =
         withContext(Dispatchers.IO.limitedParallelism(PARALLELISM)) {
             val inputUri = params.inputData.getString(ImportUtils.KEY_INPUT_CONTENT_URI)
@@ -102,7 +102,7 @@ class ImportWorker @AssistedInject constructor(
                 FileChannel.open(tempZipFile.toPath()).use {
                     ZipFile(it).use { zipFile ->
                         val settingsEntry = zipFile.getEntry(SettingsProvider.EXPORT_FILE_NAME)
-                        if (settingsEntry != null)  {
+                        if (settingsEntry != null) {
                             try {
                                 @OptIn(ExperimentalSerializationApi::class)
                                 val settingsData = zipFile.getInputStream(settingsEntry).use {
@@ -120,7 +120,11 @@ class ImportWorker @AssistedInject constructor(
                             importers.sumOf {
                                 val entry =
                                     zipFile.getEntry("${it.zipEntryName}.json") ?: return@sumOf 0
-                                it.readEntries(zipFile.getInputStream(entry), dryRun, replaceAll)
+                                it.readEntries(
+                                    zipFile.getInputStream(entry).asSource().buffered(),
+                                    dryRun,
+                                    replaceAll,
+                                )
                             }
                         } catch (e: Exception) {
                             Log.d(TAG, "Failure inserting entries", e)
@@ -135,9 +139,9 @@ class ImportWorker @AssistedInject constructor(
                                     async {
                                         importers.find { entry.name.startsWith(it.zipEntryName + "/") }
                                             ?.readInnerFile(
-                                                zipFile.getInputStream(entry),
+                                                zipFile.getInputStream(entry).asSource().buffered(),
                                                 entry.name,
-                                                dryRun
+                                                dryRun,
                                             )
                                     }
                                 }.awaitAll()

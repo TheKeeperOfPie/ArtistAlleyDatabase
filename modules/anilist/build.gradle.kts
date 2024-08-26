@@ -46,9 +46,6 @@ dependencies {
     testImplementation(libs.room.testing)
     implementation(libs.room.paging)
 
-    api(libs.moshi.kotlin)
-    ksp(kspProcessors.moshi.kotlin.codegen)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit.test)
 }

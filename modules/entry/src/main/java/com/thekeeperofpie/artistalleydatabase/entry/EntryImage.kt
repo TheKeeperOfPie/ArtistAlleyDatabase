@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.net.Uri
 import androidx.annotation.StringRes
+import com.eygraber.uri.Uri
 
 data class EntryImage(
     val entryId: EntryId?,

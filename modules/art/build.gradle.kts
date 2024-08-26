@@ -41,9 +41,6 @@ dependencies {
 
     implementation(libs.paging.compose)
 
-    api(libs.moshi.kotlin)
-    ksp(kspProcessors.moshi.kotlin.codegen)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit.test)
 }

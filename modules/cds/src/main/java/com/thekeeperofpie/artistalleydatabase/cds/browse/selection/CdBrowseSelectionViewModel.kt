@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.cds.browse.selection
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,10 +28,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CdBrowseSelectionViewModel @Inject constructor(
-    application: Application,
+    appFileSystem: AppFileSystem,
     private val cdEntryBrowseDao: CdEntryBrowseDao,
     private val vgmdbDataConverter: VgmdbDataConverter,
-) : CdEntryGridViewModel(application, cdEntryBrowseDao) {
+) : CdEntryGridViewModel(appFileSystem, cdEntryBrowseDao) {
 
     lateinit var column: CdEntryColumn
 
@@ -76,7 +76,7 @@ class CdBrowseSelectionViewModel @Inject constructor(
                             }
                         }
                     }
-                        .map { CdEntryGridModel.buildFromEntry(application, it) }
+                        .map { CdEntryGridModel.buildFromEntry(appFileSystem, it) }
                 }
                 .onEach {
                     if (loading) {

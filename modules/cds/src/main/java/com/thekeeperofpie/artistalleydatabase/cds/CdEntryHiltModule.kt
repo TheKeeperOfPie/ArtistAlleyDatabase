@@ -1,9 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
-import android.app.Application
-import com.squareup.moshi.Moshi
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.browse.CdBrowseTabMusicalArtists
@@ -13,7 +9,10 @@ import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdExporter
 import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdImporter
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
+import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import dagger.Module
@@ -43,30 +42,30 @@ object CdEntryHiltModule {
     @Singleton
     @Provides
     fun provideCdExporter(
-        application: Application,
+        appFileSystem: AppFileSystem,
         cdEntryDao: CdEntryDao,
         dataConverter: DataConverter,
         vgmdbDataConverter: VgmdbDataConverter,
         appJson: AppJson
     ): Exporter = CdExporter(
-        appContext = application,
+        appFileSystem = appFileSystem,
         cdEntryDao = cdEntryDao,
         dataConverter = dataConverter,
         vgmdbDataConverter = vgmdbDataConverter,
-        appJson = appJson
+        appJson = appJson,
     )
 
     @IntoSet
     @Singleton
     @Provides
     fun provideCdImporter(
-        application: Application,
+        appFileSystem: AppFileSystem,
         cdEntryDao: CdEntryDao,
-        moshi: Moshi,
+        appJson: AppJson,
     ): Importer = CdImporter(
-        appContext = application,
+        appFileSystem = appFileSystem,
         cdEntryDao = cdEntryDao,
-        moshi = moshi,
+        appJson = appJson,
     )
 
     @Singleton

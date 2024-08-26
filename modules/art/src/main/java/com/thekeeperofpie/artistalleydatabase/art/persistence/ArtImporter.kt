@@ -1,39 +1,34 @@
 package com.thekeeperofpie.artistalleydatabase.art.persistence
 
-import android.content.Context
-import com.squareup.moshi.JsonReader
-import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImporter
-import okio.buffer
-import okio.source
-import java.io.InputStream
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import kotlinx.io.Source
+import kotlinx.io.bytestring.encodeToByteString
+import kotlinx.io.indexOf
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@OptIn(ExperimentalSerializationApi::class)
 class ArtImporter(
-    appContext: Context,
+    appFileSystem: AppFileSystem,
     private val artEntryDao: ArtEntryDao,
-    moshi: Moshi,
-) : EntryImporter(appContext) {
+    private val appJson: AppJson,
+) : EntryImporter(appFileSystem) {
 
     override val zipEntryName = "art_entries"
 
     override val scopedIdType = ArtEntryUtils.SCOPED_ID_TYPE
 
-    private val artEntryAdapter = moshi.adapter(ArtEntry::class.java)!!
-
-    override suspend fun readEntries(
-        input: InputStream,
-        dryRun: Boolean,
-        replaceAll: Boolean
-    ): Int {
+    override suspend fun readEntries(source: Source, dryRun: Boolean, replaceAll: Boolean): Int {
         var count = 0
         artEntryDao.insertEntriesDeferred(dryRun, replaceAll) { insertEntry ->
             count = if (dryRun) {
-                readArtEntriesJson(input) {}
+                readArtEntriesJson(source) {}
             } else {
-                readArtEntriesJson(input, insertEntry)
+                readArtEntriesJson(source, insertEntry)
             }
         }
         return count
@@ -43,32 +38,18 @@ class ArtImporter(
      * @return number of valid entries found
      */
     private suspend fun readArtEntriesJson(
-        input: InputStream,
-        insertEntry: suspend (ArtEntry) -> Unit,
+        source: Source,
+        insertEntries: suspend (Array<ArtEntry>) -> Unit,
     ): Int {
         var count = 0
-        input.source().use {
-            it.buffer().use {
-                val reader = JsonReader.of(it)
-                reader.isLenient = true
-                reader.beginObject()
-                val rootName = reader.nextName()
-                if (rootName != "art_entries") {
-                    reader.skipValue()
-                }
-
-                reader.beginArray()
-
-                while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                    val entry = artEntryAdapter.fromJson(reader) ?: continue
-                    count++
-                    insertEntry(entry)
-                }
-
-                reader.endArray()
-                reader.endObject()
+        val arrayStartIndex = source.indexOf("[".encodeToByteString())
+        source.skip(arrayStartIndex)
+        appJson.json.decodeSequenceIgnoreEndOfFile<ArtEntry>(source)
+            .chunked(10)
+            .forEach {
+                count += it.size
+                insertEntries(it.toTypedArray())
             }
-        }
 
         return count
     }

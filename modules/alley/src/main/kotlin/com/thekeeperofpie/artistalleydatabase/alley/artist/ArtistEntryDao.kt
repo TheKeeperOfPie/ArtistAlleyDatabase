@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSo
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistSeriesConnection
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
 import kotlinx.coroutines.flow.Flow
 
 @Dao

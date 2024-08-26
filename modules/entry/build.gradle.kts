@@ -32,6 +32,7 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.uuid)
+    implementation(libs.uri.kmp)
 
     implementation(libs.java.diff.utils)
 

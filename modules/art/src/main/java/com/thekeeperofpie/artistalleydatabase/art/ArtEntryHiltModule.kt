@@ -1,10 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
-import android.app.Application
-import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.DatabaseSyncer
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
@@ -23,7 +19,10 @@ import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSyncer
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
+import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -55,12 +54,12 @@ object ArtEntryHiltModule {
     @Singleton
     @Provides
     fun provideArtExporter(
-        application: Application,
+        appFileSystem: AppFileSystem,
         artEntryDao: ArtEntryDao,
         dataConverter: DataConverter,
         appJson: AppJson
     ): Exporter = ArtExporter(
-        appContext = application,
+        appFileSystem = appFileSystem,
         artEntryDao = artEntryDao,
         dataConverter = dataConverter,
         appJson = appJson
@@ -70,35 +69,35 @@ object ArtEntryHiltModule {
     @Singleton
     @Provides
     fun provideArtImporter(
-        application: Application,
+        appFileSystem: AppFileSystem,
         artEntryDao: ArtEntryDao,
-        moshi: Moshi,
+        appJson: AppJson,
     ): Importer = ArtImporter(
-        appContext = application,
+        appFileSystem = appFileSystem,
         artEntryDao = artEntryDao,
-        moshi = moshi,
+        appJson = appJson,
     )
 
     @IntoSet
     @Singleton
     @Provides
     fun provideArtBrowseArtists(
-        application: Application,
+        appFileSystem: AppFileSystem,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
-    ): BrowseTabViewModel = ArtBrowseTabArtists(application, artEntryBrowseDao, artEntryNavigator)
+    ): BrowseTabViewModel = ArtBrowseTabArtists(appFileSystem, artEntryBrowseDao, artEntryNavigator)
 
     @IntoSet
     @Singleton
     @Provides
     fun provideArtBrowseCharacters(
-        application: Application,
+        appFileSystem: AppFileSystem,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
         appJson: AppJson,
         characterRepository: CharacterRepository,
     ): BrowseTabViewModel = ArtBrowseTabCharacters(
-        application,
+        appFileSystem,
         artEntryBrowseDao,
         artEntryNavigator,
         appJson,
@@ -109,13 +108,13 @@ object ArtEntryHiltModule {
     @Singleton
     @Provides
     fun provideArtBrowseSeries(
-        application: Application,
+        appFileSystem: AppFileSystem,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
         appJson: AppJson,
         mediaRepository: MediaRepository,
     ): BrowseTabViewModel = ArtBrowseTabSeries(
-        application,
+        appFileSystem,
         artEntryBrowseDao,
         artEntryNavigator,
         appJson,
@@ -126,10 +125,10 @@ object ArtEntryHiltModule {
     @Singleton
     @Provides
     fun provideArtBrowseTags(
-        application: Application,
+        appFileSystem: AppFileSystem,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
-    ): BrowseTabViewModel = ArtBrowseTabTags(application, artEntryBrowseDao, artEntryNavigator)
+    ): BrowseTabViewModel = ArtBrowseTabTags(appFileSystem, artEntryBrowseDao, artEntryNavigator)
 
     @Singleton
     @Provides

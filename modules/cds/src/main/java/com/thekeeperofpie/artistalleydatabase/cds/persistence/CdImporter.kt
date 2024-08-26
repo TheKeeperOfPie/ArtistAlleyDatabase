@@ -1,39 +1,38 @@
 package com.thekeeperofpie.artistalleydatabase.cds.persistence
 
-import android.content.Context
-import com.squareup.moshi.JsonReader
-import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImporter
-import okio.buffer
-import okio.source
-import java.io.InputStream
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import kotlinx.io.Source
+import kotlinx.io.bytestring.encodeToByteString
+import kotlinx.io.indexOf
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@OptIn(ExperimentalSerializationApi::class)
 class CdImporter(
-    appContext: Context,
+    appFileSystem: AppFileSystem,
     private val cdEntryDao: CdEntryDao,
-    moshi: Moshi,
-) : EntryImporter(appContext) {
+    private val appJson: AppJson,
+) : EntryImporter(appFileSystem) {
 
     override val zipEntryName = "cd_entries"
 
     override val scopedIdType = CdEntryUtils.SCOPED_ID_TYPE
 
-    private val cdEntryAdapter = moshi.adapter(CdEntry::class.java)!!
-
     override suspend fun readEntries(
-        input: InputStream,
+        source: Source,
         dryRun: Boolean,
         replaceAll: Boolean
     ): Int {
         var count = 0
-        cdEntryDao.insertEntriesDeferred(dryRun, replaceAll) { insertEntry ->
+        cdEntryDao.insertEntriesDeferred(dryRun, replaceAll) { insertEntries ->
             count = if (dryRun) {
-                readCdEntriesJson(input) {}
+                readCdEntriesJson(source) {}
             } else {
-                readCdEntriesJson(input, insertEntry)
+                readCdEntriesJson(source, insertEntries)
             }
         }
         return count
@@ -43,24 +42,17 @@ class CdImporter(
      * @return number of valid entries found
      */
     private suspend fun readCdEntriesJson(
-        input: InputStream,
-        insertEntry: suspend (CdEntry) -> Unit,
+        source: Source,
+        insertEntries: suspend (Array<CdEntry>) -> Unit,
     ): Int {
         var count = 0
-        input.source().use {
-            it.buffer().use {
-                val reader = JsonReader.of(it)
-                reader.isLenient = true
-                reader.beginObject()
-                val rootName = reader.nextName()
-                if (rootName != "cd_entries") {
-                    reader.skipValue()
-                }
-
-                reader.beginArray()
-
-                while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                    var entry = cdEntryAdapter.fromJson(reader) ?: continue
+        val arrayStartIndex = source.indexOf("[".encodeToByteString())
+        source.skip(arrayStartIndex)
+        appJson.json.decodeSequenceIgnoreEndOfFile<CdEntry>(source)
+            .chunked(10)
+            .map {
+                it.map {
+                    var entry = it
 
                     if (entry.performersSearchable.isEmpty()) {
                         entry = entry.copy(performersSearchable = entry.performers)
@@ -78,14 +70,13 @@ class CdImporter(
                         entry = entry.copy(charactersSearchable = entry.charactersSerialized)
                     }
 
-                    count++
-                    insertEntry(entry)
+                    entry
                 }
-
-                reader.endArray()
-                reader.endObject()
             }
-        }
+            .forEach {
+                count += it.size
+                insertEntries(it.toTypedArray())
+            }
 
         return count
     }

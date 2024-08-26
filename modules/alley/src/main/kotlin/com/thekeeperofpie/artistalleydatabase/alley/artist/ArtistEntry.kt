@@ -6,13 +6,11 @@ import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.squareup.moshi.JsonClass
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.serialization.Serializable
 
 @Serializable
-@JsonClass(generateAdapter = true)
 @Entity(tableName = "artist_entries")
 data class ArtistEntry(
     @PrimaryKey

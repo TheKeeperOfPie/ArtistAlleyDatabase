@@ -10,11 +10,11 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.toBit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.yield
 
@@ -103,12 +103,12 @@ interface CdEntryDao {
     suspend fun insertEntriesDeferred(
         dryRun: Boolean,
         replaceAll: Boolean,
-        block: suspend (insertEntry: suspend (CdEntry) -> Unit) -> Unit
+        block: suspend (insertEntry: suspend (Array<CdEntry>) -> Unit) -> Unit
     ) {
         if (!dryRun && replaceAll) {
             deleteAll()
         }
-        block { insertEntries(it) }
+        block { insertEntries(*it) }
     }
 
     @Delete

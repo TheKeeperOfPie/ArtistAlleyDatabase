@@ -1,20 +1,20 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.content.Context
-import android.net.Uri
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.ExportUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
+import kotlinx.io.Source
 import java.io.File
-import java.io.InputStream
 
-abstract class EntryExporter(protected val appContext: Context) : Exporter {
+abstract class EntryExporter(private val appFileSystem: AppFileSystem) : Exporter {
 
     protected suspend fun writeImages(
         entryId: EntryId,
-        writeEntry: suspend (String, () -> InputStream) -> Unit,
+        writeEntry: suspend (String, () -> Source) -> Unit,
         vararg values: List<String>
     ) {
-        EntryUtils.getImages(appContext, entryId, 0)
+        EntryUtils.getImages(appFileSystem, entryId, 0)
             .forEachIndexed { index, image ->
                 if (image.uri != null) {
                     writeImage(
@@ -54,7 +54,7 @@ abstract class EntryExporter(protected val appContext: Context) : Exporter {
         height: Int,
         label: String,
         cropped: Boolean,
-        writeEntry: suspend (String, () -> InputStream) -> Unit,
+        writeEntry: suspend (String, () -> Source) -> Unit,
         vararg values: List<String>,
     ) {
         val fileName = "$index-$width-$height-$label".let {
@@ -65,6 +65,6 @@ abstract class EntryExporter(protected val appContext: Context) : Exporter {
             values = values
         )
 
-        writeEntry(filePath) { appContext.contentResolver.openInputStream(uri)!! }
+        writeEntry(filePath) { appFileSystem.openUri(uri)!! }
     }
 }

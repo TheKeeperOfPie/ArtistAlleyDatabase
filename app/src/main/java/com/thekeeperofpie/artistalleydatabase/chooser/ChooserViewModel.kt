@@ -15,13 +15,18 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.io.buffered
+import kotlinx.io.files.SystemFileSystem
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class ChooserViewModel @Inject constructor(
     application: Application,
+    appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryDetailsDao,
     dataConverter: DataConverter,
     mediaRepository: MediaRepository,
@@ -29,13 +34,14 @@ class ChooserViewModel @Inject constructor(
     aniListAutocompleter: AniListAutocompleter,
     appJson: AppJson,
 ) : ArtSearchViewModel(
-    application,
-    artEntryDao,
-    dataConverter,
-    mediaRepository,
-    characterRepository,
-    aniListAutocompleter,
-    appJson,
+    application = application,
+    appFileSystem = appFileSystem,
+    artEntryDao = artEntryDao,
+    dataConverter = dataConverter,
+    mediaRepository = mediaRepository,
+    characterRepository = characterRepository,
+    aniListAutocompleter = aniListAutocompleter,
+    appJson = appJson,
 ) {
 
     fun getResults(): Intent? {
@@ -76,13 +82,13 @@ class ChooserViewModel @Inject constructor(
         appPackageName: String,
         entry: ArtEntryGridModel,
     ): Pair<Uri, String>? {
-        val file = EntryUtils.getImageFile(application, entry.value.entryId)
-        if (!file.exists()) {
+        val file = EntryUtils.getImageFile(appFileSystem, entry.value.entryId)
+        if (file == null || !SystemFileSystem.exists(file)) {
             return null
         }
 
         // Some consumers require a file extension to parse the image correctly.
-        val mimeType = ImageUtils.getImageType(file)
+        val mimeType = ImageUtils.getImageType(appFileSystem, file)
         val extension = when (mimeType) {
             "image/jpeg", "image/jpg" -> "jpg"
             "image/png" -> "png"
@@ -92,13 +98,17 @@ class ChooserViewModel @Inject constructor(
 
         // TODO: Find a better solution for the file extension problem
         // TODO: Offer an option to compress before export in case the caller has a size limitation
-        val externalFile = application.filesDir.resolve("external/external.$extension")
-        file.copyTo(externalFile, overwrite = true)
+        val externalFile = appFileSystem.filePath("external/external.$extension")
+        SystemFileSystem.source(file).buffered().use { input ->
+            SystemFileSystem.sink(externalFile).buffered().use { output ->
+                input.transferTo(output)
+            }
+        }
 
         return FileProvider.getUriForFile(
             application,
             "$appPackageName.fileprovider",
-            externalFile
+            File(externalFile.toString()),
         ) to (mimeType ?: "image/*")
     }
 }

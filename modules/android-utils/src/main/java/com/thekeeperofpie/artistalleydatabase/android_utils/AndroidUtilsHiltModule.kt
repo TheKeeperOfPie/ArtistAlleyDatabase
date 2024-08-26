@@ -19,13 +19,5 @@ object AndroidUtilsHiltModule {
 
     @Singleton
     @Provides
-    fun provideAppMoshi() = AppMoshi()
-
-    @Singleton
-    @Provides
-    fun provideMoshi(appMoshi: AppMoshi) = appMoshi.moshi
-
-    @Singleton
-    @Provides
     fun provideAppJson() = AppJson()
 }

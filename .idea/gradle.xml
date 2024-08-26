@@ -56,6 +56,7 @@
             <option value="$PROJECT_DIR$/modules/utils" />
             <option value="$PROJECT_DIR$/modules/utils-compose" />
             <option value="$PROJECT_DIR$/modules/utils-network" />
+            <option value="$PROJECT_DIR$/modules/utils-room" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
           </set>
         </option>

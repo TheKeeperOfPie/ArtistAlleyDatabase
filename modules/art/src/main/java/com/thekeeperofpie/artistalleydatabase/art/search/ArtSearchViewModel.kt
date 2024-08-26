@@ -22,6 +22,8 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,12 +33,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.io.files.SystemFileSystem
 import java.util.WeakHashMap
 import javax.inject.Inject
 
 @HiltViewModel
 open class ArtSearchViewModel @Inject constructor(
     protected val application: Application,
+    protected val appFileSystem: AppFileSystem,
     protected val artEntryDao: ArtEntryDetailsDao,
     private val dataConverter: DataConverter,
     private val mediaRepository: MediaRepository,
@@ -51,7 +55,7 @@ open class ArtSearchViewModel @Inject constructor(
     override val entryGridSelectionController =
         EntryGridSelectionController<ArtEntryGridModel>({ viewModelScope }) {
             it.forEach {
-                EntryUtils.getEntryImageFolder(application, it.id).deleteRecursively()
+                SystemFileSystem.deleteRecursively(EntryUtils.getEntryImageFolder(appFileSystem, it.id))
                 artEntryDao.delete(it.id.valueId)
             }
         }
@@ -126,7 +130,7 @@ open class ArtSearchViewModel @Inject constructor(
             }
             .map {
                 it.map {
-                    ArtEntryGridModel.buildFromEntry(application, appJson, it)
+                    ArtEntryGridModel.buildFromEntry(appFileSystem, appJson, it)
                 }
             }
 }

@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
@@ -42,6 +43,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CdEntryDetailsViewModel @Inject constructor(
     application: Application,
+    appFileSystem: AppFileSystem,
     private val cdEntryDao: CdEntryDetailsDao,
     private val appJson: AppJson,
     private val aniListAutocompleter: AniListAutocompleter,
@@ -56,12 +58,13 @@ class CdEntryDetailsViewModel @Inject constructor(
     private val dataConverter: DataConverter,
     entrySettings: EntrySettings,
 ) : EntryDetailsViewModel<CdEntry, CdEntryModel>(
-    CdEntry::class,
-    application,
-    CdEntryUtils.SCOPED_ID_TYPE,
-    R.string.cd_entry_image_content_description,
-    entrySettings,
-    appJson,
+    entryClass = CdEntry::class,
+    application = application,
+    appFileSystem = appFileSystem,
+    scopedIdType = CdEntryUtils.SCOPED_ID_TYPE,
+    imageContentDescriptionRes = R.string.cd_entry_image_content_description,
+    entrySettings = entrySettings,
+    appJson = appJson,
 ) {
     companion object {
         private const val TAG = "CdEntryDetailsViewModel"

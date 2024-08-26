@@ -12,7 +12,7 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
 
 @Dao
 interface StampRallyEntryDao {

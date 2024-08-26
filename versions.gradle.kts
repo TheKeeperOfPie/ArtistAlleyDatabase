@@ -153,12 +153,12 @@ object Versions {
     const val mockito = "5.12.0"
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
-    const val moshi = "1.15.1"
     const val netflixDgs = "9.0.4"
     const val netflixDgsCodegen = "6.2.2"
     const val okhttp = "5.0.0-alpha.14"
     const val skrapeIt = "1.3.0-alpha.1"
     const val unityAds = "4.12.2"
+    const val uriKmp = "0.0.18"
     const val youtubePlayerCompose = "2024.07.14-SNAPSHOT"
     const val xmlUtil = "0.90.2-beta1"
 }
@@ -184,7 +184,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.google.dagger:hilt-compiler")
                     library("com.google.dagger:hilt-android-compiler")
                 }
-                library("com.squareup.moshi:moshi-kotlin-codegen:${Versions.moshi}")
             }
 
             create("libs") {
@@ -353,6 +352,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.jetbrains.kotlinx:kotlinx-datetime:$datetime")
                     library("org.jetbrains.kotlinx:kotlinx-io-core:$io")
                     library("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
+                    library("org.jetbrains.kotlinx:kotlinx-serialization-json-io:$serialization")
                 }
 
                 with(Versions.junit) {
@@ -430,13 +430,13 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("co.touchlab:kermit:${Versions.kermit}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
                 library("com.benasher44:uuid:${Versions.benasher44Uuid}")
+                library("com.eygraber:uri-kmp:${Versions.uriKmp}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")
                 library("com.sebastianneubauer.jsontree:jsontree:${Versions.jsonTree}")
-                library("com.squareup.moshi:moshi-kotlin:${Versions.moshi}")
                 library("com.squareup:javapoet:${Versions.javaPoet}")
                 library("com.squareup:kotlinpoet:${Versions.kotlinPoet}")
                 library("com.unity3d.ads:unity-ads:${Versions.unityAds}")

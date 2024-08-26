@@ -9,12 +9,10 @@ import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.anilist.fragment.AniListCharacter
-import com.squareup.moshi.JsonClass
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 
-@JsonClass(generateAdapter = true)
 @Entity("character_entries")
 data class CharacterEntry(
     @PrimaryKey

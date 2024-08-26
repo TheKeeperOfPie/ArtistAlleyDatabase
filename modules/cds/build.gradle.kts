@@ -17,6 +17,7 @@ dependencies {
     api(project(":modules:data"))
     api(project(":modules:entry"))
     api(project(":modules:musical-artists"))
+    implementation(project(":modules:utils"))
     api(project(":modules:vgmdb"))
 
     implementation(libs.kotlinx.serialization.json)
@@ -38,9 +39,6 @@ dependencies {
     implementation(libs.room.ktx)
     testImplementation(libs.room.testing)
     implementation(libs.room.paging)
-
-    api(libs.moshi.kotlin)
-    ksp(kspProcessors.moshi.kotlin.codegen)
 
     androidTestImplementation(libs.androidx.junit.test)
 }

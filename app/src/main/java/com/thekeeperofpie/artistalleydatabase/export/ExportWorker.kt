@@ -7,29 +7,28 @@ import android.net.Uri
 import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
-import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.MainActivity
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationProgressWorker
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
+import kotlinx.io.asInputStream
+import kotlinx.io.buffered
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToStream
 import okhttp3.internal.closeQuietly
-import okio.buffer
-import okio.sink
 import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
@@ -44,7 +43,6 @@ class ExportWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val appJson: AppJson,
-    private val appMoshi: AppMoshi,
     private val settingsProvider: SettingsProvider,
     private val exporters: Set<@JvmSuppressWildcards Exporter>,
 ) : NotificationProgressWorker(
@@ -80,7 +78,7 @@ class ExportWorker @AssistedInject constructor(
         private const val PARALLELISM = 8
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class, ExperimentalSerializationApi::class)
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun doWorkInternal(): Result {
         val dispatcher = Dispatchers.IO.limitedParallelism(PARALLELISM)
         return withContext(dispatcher) {
@@ -120,10 +118,7 @@ class ExportWorker @AssistedInject constructor(
                 }) {
                     ByteArrayOutputStream().let {
                         it.use {
-                            appJson.json.encodeToStream(
-                                settingsProvider.settingsData,
-                                it
-                            )
+                            appJson.json.encodeToStream(settingsProvider.settingsData, it)
                         }
                         it.toByteArray()
                     }.let(::ByteArrayInputStream)
@@ -136,32 +131,25 @@ class ExportWorker @AssistedInject constructor(
                     val tempJsonFile = privateExportDir.resolve(exporter.zipEntryName + ".json")
 
                     val startingProgressIndex = entriesSizes.take(index).sum()
-                    val success = tempJsonFile.sink().use {
-                        it.buffer().use {
-                            JsonWriter.of(it).use { jsonWriter ->
-                                jsonWriter.indent = "    "
-                                exporter.writeEntries(
-                                    jsonWriter,
-                                    jsonElementConverter =
-                                    appMoshi.jsonElementAdapter::toJsonValue,
-                                    writeEntry =
-                                    { name, input ->
-                                        zipCreator.addArchiveEntry(
-                                            ZipArchiveEntry(
-                                                tempEntryDir.resolve(
-                                                    name
-                                                ).relativeTo(privateExportDir).path
-                                            ).apply { method = ZipMethod.DEFLATED.code },
-                                            input
-                                        )
-                                    }
-                                ) { progress, _ ->
-                                    setProgress(
-                                        startingProgressIndex + progress,
-                                        entriesSizeMax
-                                    )
-                                }
+                    val success = SystemFileSystem.sink(Path(tempJsonFile.path)).buffered().use {
+                        exporter.writeEntries(
+                            it,
+                            writeEntry =
+                            { name, input ->
+                                zipCreator.addArchiveEntry(
+                                    ZipArchiveEntry(
+                                        tempEntryDir.resolve(
+                                            name
+                                        ).relativeTo(privateExportDir).path
+                                    ).apply { method = ZipMethod.DEFLATED.code },
+                                    { input().asInputStream() }
+                                )
                             }
+                        ) { progress, _ ->
+                            setProgress(
+                                startingProgressIndex + progress,
+                                entriesSizeMax
+                            )
                         }
                     }
 

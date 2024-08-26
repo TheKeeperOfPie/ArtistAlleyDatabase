@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.entry.grid
 
-import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 interface EntryGridModel {

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
-import com.squareup.moshi.rawType
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
@@ -12,9 +11,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import okhttp3.OkHttpClient
-import org.junit.Rule
 import org.junit.jupiter.api.Test
-import org.junit.rules.TemporaryFolder
 
 class ParserTest {
 
@@ -22,9 +19,6 @@ class ParserTest {
         isLenient = true
         prettyPrint = true
     }
-
-    @get:Rule
-    val tempFolder = TemporaryFolder()
 
     private val parser by lazy {
         VgmdbParser(json, OkHttpClient.Builder().build())
@@ -1304,7 +1298,7 @@ class ParserTest {
     private fun List<Any>.encodeListToString() = map {
         when (it) {
             is String -> it
-            else -> json.encodeToString(json.serializersModule.serializer(it.javaClass.rawType), it)
+            else -> json.encodeToString(json.serializersModule.serializer(it::class.javaObjectType), it)
         }
     }
 }

@@ -23,20 +23,20 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 open class ArtEntryDetailsViewModel @Inject constructor(
     application: Application,
+    appFileSystem: AppFileSystem,
     protected val appJson: AppJson,
     protected val artEntryDao: ArtEntryDetailsDao,
     private val dataConverter: DataConverter,
@@ -46,12 +46,13 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     private val artSettings: ArtSettings,
     entrySettings: EntrySettings,
 ) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
-    ArtEntry::class,
-    application,
-    ArtEntryUtils.SCOPED_ID_TYPE,
-    R.string.art_entry_image_content_description,
-    entrySettings,
-    appJson,
+    entryClass = ArtEntry::class,
+    application = application,
+    appFileSystem = appFileSystem,
+    scopedIdType = ArtEntryUtils.SCOPED_ID_TYPE,
+    imageContentDescriptionRes = R.string.art_entry_image_content_description,
+    entrySettings = entrySettings,
+    appJson = appJson,
 ) {
     protected val entrySections = ArtEntrySections()
 

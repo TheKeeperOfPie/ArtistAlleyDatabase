@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.cds.search
 
-import android.app.Application
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -17,6 +16,8 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
@@ -30,11 +31,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.io.files.SystemFileSystem
 import javax.inject.Inject
 
 @HiltViewModel
 class CdSearchViewModel @Inject constructor(
-    private val application: Application,
+    private val appFileSystem: AppFileSystem,
     private val cdEntryDao: CdEntryDetailsDao,
     private val aniListAutocompleter: AniListAutocompleter,
     private val vgmdbApi: VgmdbApi,
@@ -68,7 +70,9 @@ class CdSearchViewModel @Inject constructor(
     override val entryGridSelectionController =
         EntryGridSelectionController<CdEntryGridModel>({ viewModelScope }) {
             it.forEach {
-                EntryUtils.getEntryImageFolder(application, it.id).deleteRecursively()
+                SystemFileSystem.deleteRecursively(
+                    EntryUtils.getEntryImageFolder(appFileSystem, it.id)
+                )
                 cdEntryDao.delete(it.id.valueId)
             }
         }
@@ -138,7 +142,7 @@ class CdSearchViewModel @Inject constructor(
             }
             .map {
                 it.map {
-                    CdEntryGridModel.buildFromEntry(application, it)
+                    CdEntryGridModel.buildFromEntry(appFileSystem, it)
                 }
             }
 }

@@ -2,8 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.art.data
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.wrapLikeQuery
+import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapLikeQuery
 import kotlinx.datetime.Instant
 
 @Dao
@@ -13,7 +12,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.queryListStringColumn(
         query,
         { queryArtistsViaMatch(it, limit, offset) },
         { queryArtistsViaLike(it, limit, offset) }
@@ -79,7 +78,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.queryListStringColumn(
         query,
         { querySeriesViaMatch(it, limit, offset) },
         { querySeriesViaLike(it, limit, offset) }
@@ -118,7 +117,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.queryListStringColumn(
         query,
         { queryCharactersViaMatch(it, limit, offset) },
         { queryCharactersViaLike(it, limit, offset) }
@@ -157,7 +156,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.queryListStringColumn(
         query,
         { queryTagsViaMatch(it, limit, offset) },
         { queryTagsViaLike(it, limit, offset) }

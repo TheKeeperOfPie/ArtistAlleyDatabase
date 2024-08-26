@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.cds.data
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
 import kotlinx.coroutines.flow.Flow
 
 @Dao

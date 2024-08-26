@@ -16,6 +16,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import kotlin.math.abs
 
 abstract class NotificationProgressWorker(
     private val appContext: Context,
@@ -34,6 +35,8 @@ abstract class NotificationProgressWorker(
     companion object {
         private val TAG = NotificationProgressWorker::class.java.name
     }
+
+    private var lastPercentage = 0f
 
     private val cachedNotificationBuilder =
         NotificationCompat.Builder(appContext, notificationChannel.channel)
@@ -109,10 +112,10 @@ abstract class NotificationProgressWorker(
     }
 
     protected fun setProgress(progress: Int, max: Int) {
-        // TODO: Throttle this before it hits system server
+        val percentage = progress / max.coerceAtLeast(1).toFloat()
         setProgressAsync(
             Data.Builder()
-                .putFloat(progressKey, progress / max.coerceAtLeast(1).toFloat())
+                .putFloat(progressKey, lastPercentage)
                 .build()
         )
         if (ContextCompat.checkSelfPermission(
@@ -120,10 +123,15 @@ abstract class NotificationProgressWorker(
                 android.Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
+            // Throttle changes since the user doesn't need to be updated that often
+            if (percentage in (0.01f..0.99f) && abs(lastPercentage - percentage ) < 0.01f) {
+                return
+            }
             NotificationManagerCompat.from(appContext).notify(
                 notificationIdOngoing.id,
                 cachedNotificationBuilder.setProgress(max, progress, false).build()
             )
         }
+        lastPercentage = percentage
     }
 }

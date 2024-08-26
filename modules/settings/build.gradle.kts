@@ -23,6 +23,7 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)
+    implementation(kotlin("reflect"))
 
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)

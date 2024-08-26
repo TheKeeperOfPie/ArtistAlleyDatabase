@@ -10,10 +10,9 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchQuery
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
+import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.toBit
 import kotlinx.coroutines.yield
 
 @Dao
@@ -95,12 +94,12 @@ interface ArtEntryDao {
     suspend fun insertEntriesDeferred(
         dryRun: Boolean,
         replaceAll: Boolean,
-        block: suspend (insertEntry: suspend (ArtEntry) -> Unit) -> Unit,
+        block: suspend (insertEntry: suspend (Array<ArtEntry>) -> Unit) -> Unit,
     ) {
         if (!dryRun && replaceAll) {
             deleteAll()
         }
-        block { insertEntries(it) }
+        block { insertEntries(*it) }
     }
 
     @Delete
@@ -162,50 +161,50 @@ interface ArtEntryDao {
         val queryPieces = mutableListOf<String>()
 
         queryPieces += filterOptions.artists.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "artists:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "artists:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.series.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "seriesSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "seriesSearchable:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.seriesById.map {
             "seriesSerialized:${
-                RoomUtils.wrapMatchQuery(
+                com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(
                     it
                 )
             }"
         }
         queryPieces += filterOptions.characters.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "charactersSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "charactersSearchable:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.charactersById
-            .map { "charactersSerialized:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "charactersSerialized:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.tags.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "tags:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "tags:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
         filterOptions.notes.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "notes:${RoomUtils.wrapMatchQuery(it)}" }
+                .map { "notes:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
         }
         when (val source = filterOptions.source) {
             is SourceType.Convention -> {
                 queryPieces += "sourceType:${source.serializedType}"
                 queryPieces += source.name.takeIf(String::isNotBlank)
                     ?.split(WHITESPACE_REGEX)
-                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    ?.map { "sourceValue:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
                     .orEmpty()
                 source.year
-                    ?.let { "sourceValue:${RoomUtils.wrapMatchQuery(it.toString())}" }
+                    ?.let { "sourceValue:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it.toString())}" }
                     ?.let { queryPieces += it }
                 queryPieces += source.hall.takeIf(String::isNotBlank)
                     ?.split(WHITESPACE_REGEX)
-                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    ?.map { "sourceValue:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
                     .orEmpty()
                 queryPieces += source.booth.takeIf(String::isNotBlank)
                     ?.split(WHITESPACE_REGEX)
-                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    ?.map { "sourceValue:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
                     .orEmpty()
             }
             is SourceType.Custom -> {
                 queryPieces += "sourceType:${source.serializedType}"
                 queryPieces += source.value.takeIf(String::isNotBlank)
                     ?.split(WHITESPACE_REGEX)
-                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    ?.map { "sourceValue:${com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapMatchQuery(it)}" }
                     .orEmpty()
             }
             is SourceType.Online -> TODO()

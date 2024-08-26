@@ -1,13 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.android_utils
 
-import android.app.Application
 import android.content.ContentResolver
-import android.content.Context
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
+import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import kotlinx.io.asInputStream
+import kotlinx.io.buffered
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 import java.io.File
 import java.net.URL
 
@@ -15,7 +18,7 @@ object ImageUtils {
 
     private const val TAG = "ImageUtils"
 
-    fun getImageWidthHeight(context: Context, uri: Uri): Pair<Int?, Int?> {
+    fun getImageWidthHeight(appFileSystem: AppFileSystem, uri: Uri): Pair<Int?, Int?> {
         val options = BitmapFactory.Options().apply {
             this.inJustDecodeBounds = true
         }
@@ -25,8 +28,8 @@ object ImageUtils {
                 uri.scheme == "file"
                         && uri.authority?.isEmpty() == true
                         && uri.path?.startsWith("/android_asset") == true ->
-                    context.assets.open(uri.path!!.removePrefix("/android_asset/"))
-                else -> context.contentResolver.openInputStream(uri)
+                    appFileSystem.application.assets.open(uri.path!!.removePrefix("/android_asset/"))
+                else -> appFileSystem.openUri(uri)?.asInputStream()
             }.use {
                 BitmapFactory.decodeStream(it, null, options)
             }
@@ -46,13 +49,13 @@ object ImageUtils {
             return (imageWidth to imageHeight)
         }
 
-    fun getImageType(file: File): String? {
+    fun getImageType(appFileSystem: AppFileSystem, path: Path): String? {
         val options = BitmapFactory.Options().apply {
             this.inJustDecodeBounds = true
         }
         try {
-            if (!file.exists()) return null
-            file.inputStream().use {
+            if (!SystemFileSystem.exists(path)) return null
+            SystemFileSystem.source(path).buffered().asInputStream().use {
                 BitmapFactory.decodeStream(it, null, options)
             }
         } catch (ignored: Exception) {
@@ -64,7 +67,7 @@ object ImageUtils {
 
     @WorkerThread
     fun writeEntryImage(
-        application: Application,
+        appFileSystem: AppFileSystem,
         outputFile: File,
         imageUri: Uri?
     ): Pair<Int, Exception?>? {
@@ -75,9 +78,9 @@ object ImageUtils {
                 ContentResolver.SCHEME_FILE -> {
                     if (imageUri.path == outputFile.toUri().path) {
                         return null
-                    } else application.contentResolver.openInputStream(imageUri)
+                    } else appFileSystem.openUri(imageUri)?.asInputStream()
                 }
-                else -> application.contentResolver.openInputStream(imageUri)
+                else -> appFileSystem.openUri(imageUri)?.asInputStream()
             }
         } catch (e: Exception) {
             return UtilsStringR.error_fail_to_load_image to e

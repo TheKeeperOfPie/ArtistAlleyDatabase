@@ -9,7 +9,6 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.benasher44.uuid.Uuid
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import com.squareup.moshi.JsonClass
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
@@ -20,7 +19,6 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
-@JsonClass(generateAdapter = true)
 @Entity(tableName = "art_entries")
 data class ArtEntry(
     @Discouraged("Prefer entryId")
@@ -82,7 +80,6 @@ data class ArtEntry(
     }
 
     @Serializable
-    @JsonClass(generateAdapter = true)
     data class Locks(
         val artistsLocked: Boolean? = false,
         val sourceLocked: Boolean? = false,

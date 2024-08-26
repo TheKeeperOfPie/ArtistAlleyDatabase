@@ -94,7 +94,6 @@ dependencyAnalysis {
                     "com.google.dagger:hilt-android",
                     "com.google.truth:truth",
                     "com.squareup.leakcanary:leakcanary-android",
-                    "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
                     "de.mannodermaus.junit5:android-test-runner",
                     "io.coil-kt:coil-compose",

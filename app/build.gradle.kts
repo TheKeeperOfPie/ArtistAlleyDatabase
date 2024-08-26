@@ -291,9 +291,6 @@ dependencies {
     implementation(libs.work.runtime)
     implementation(libs.work.runtime.ktx)
 
-    implementation(libs.moshi.kotlin)
-    ksp(kspProcessors.moshi.kotlin.codegen)
-
     implementation(libs.commons.compress)
     implementation(libs.coil3.coil.network.okhttp)
 
