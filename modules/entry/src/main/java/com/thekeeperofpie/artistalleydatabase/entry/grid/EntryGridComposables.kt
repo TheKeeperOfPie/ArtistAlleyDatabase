@@ -21,10 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import artistalleydatabase.modules.utils_compose.generated.resources.cancel
+import artistalleydatabase.modules.utils_compose.generated.resources.confirm
 import com.thekeeperofpie.artistalleydatabase.entry.R
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 
 @Composable
 fun EntryGridAppBar(
@@ -109,12 +112,12 @@ internal fun EntryGridDeleteDialog(
                 onDismiss()
                 onConfirmDelete()
             }) {
-                Text(stringResource(UtilsStringR.confirm))
+                Text(ComposeResourceUtils.stringResource(UtilsStrings.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(UtilsStringR.cancel))
+                Text(ComposeResourceUtils.stringResource(UtilsStrings.cancel))
             }
         },
     )

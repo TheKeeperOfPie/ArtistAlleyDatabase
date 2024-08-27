@@ -48,7 +48,7 @@ class ArtEntryGridModel(
             appJson: AppJson,
             entry: ArtEntry,
         ): ArtEntryGridModel {
-            val imageUri = EntryUtils.getImageFile(appFileSystem, entry.entryId)
+            val imageUri = EntryUtils.getImagePath(appFileSystem, entry.entryId)
                 ?.takeIf(SystemFileSystem::exists)
                 ?.toUri()
                 ?.buildUpon()

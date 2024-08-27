@@ -60,7 +60,7 @@ class ArtBrowseTabArtists @Inject constructor(
                                 .take(1)
                                 .map {
                                     BrowseEntryModel(
-                                        image = EntryUtils.getImageFile(appFileSystem, it.entryId)
+                                        image = EntryUtils.getImagePath(appFileSystem, it.entryId)
                                             ?.toUri()?.toString(),
                                         text = entry,
                                         queryType = ArtEntryColumn.ARTISTS.toString(),

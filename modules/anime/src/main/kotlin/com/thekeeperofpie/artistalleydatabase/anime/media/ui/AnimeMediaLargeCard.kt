@@ -81,6 +81,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 object AnimeMediaLargeCard {
 
     private val HEIGHT = 200.dp
+    private val DESCRIPTION_PLACEHOLDER =
+        "Some really long placeholder description for a loading media large card, "
+        .repeat(3)
 
     @Composable
     operator fun invoke(
@@ -339,8 +342,7 @@ object AnimeMediaLargeCard {
     @Composable
     private fun ColumnScope.Description(entry: Entry?) {
         val description = if (entry == null) {
-            "Some really long placeholder description for a loading media large card, "
-                .repeat(3)
+            DESCRIPTION_PLACEHOLDER
         } else {
             entry.description
         }

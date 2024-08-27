@@ -65,10 +65,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.utils_compose.generated.resources.cancel
+import artistalleydatabase.modules.utils_compose.generated.resources.exit
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
@@ -82,6 +83,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedEle
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.launch
 
@@ -157,8 +160,12 @@ object EntryDetailsScreen {
             snackbarHost = {
                 val errorRes = viewModel.errorResource
                 SnackbarErrorText(
-                    errorRes?.first,
-                    errorRes?.second,
+                    error = {
+                        errorRes?.first?.leftOrNull()
+                            ?.let { ComposeResourceUtils.stringResource(it) }
+                            ?: errorRes?.first?.rightOrNull()?.let { stringResource(it) }
+                    },
+                    exception = errorRes?.second,
                     onErrorDismiss = { viewModel.errorResource = null },
                 )
             },
@@ -378,12 +385,12 @@ object EntryDetailsScreen {
                     onDismiss()
                     onConfirmExit()
                 }) {
-                    Text(stringResource(UtilsStringR.exit))
+                    Text(ComposeResourceUtils.stringResource(UtilsStrings.exit))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text(stringResource(UtilsStringR.cancel))
+                    Text(ComposeResourceUtils.stringResource(UtilsStrings.cancel))
                 }
             },
         )

@@ -47,17 +47,18 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import artistalleydatabase.modules.utils_compose.generated.resources.clear
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import kotlinx.coroutines.launch
 
-@Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object EntryHomeScreen {
 
@@ -296,7 +297,7 @@ object EntryHomeScreen {
         HorizontalDivider()
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
             TextButton(onClick = { sections.forEach { it.clear() } }) {
-                Text(text = stringResource(UtilsStringR.clear))
+                Text(text = ComposeResourceUtils.stringResource(UtilsStrings.clear))
             }
         }
     }

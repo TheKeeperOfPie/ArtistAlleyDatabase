@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.github.difflib.text.DiffRowGenerator
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -21,6 +22,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
+import org.jetbrains.compose.resources.StringResource
 import kotlin.reflect.KClass
 
 
@@ -54,7 +56,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
 
     var showExitPrompt by mutableStateOf(false)
 
-    var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
+    var errorResource by mutableStateOf<Pair<Either<StringResource, Int>, Throwable?>?>(null)
 
     var sectionsLoading by mutableStateOf(true)
         private set
@@ -70,7 +72,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         appFileSystem = appFileSystem,
         settings = entrySettings,
         scopedIdType = scopedIdType,
-        onError = { errorResource = it },
+        onError = { errorResource = Either.Left<StringResource, Int>(it.first) to it.second },
         imageContentDescriptionRes = imageContentDescriptionRes,
         onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) }
     )

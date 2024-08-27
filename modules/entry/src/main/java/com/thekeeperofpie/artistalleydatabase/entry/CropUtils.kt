@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import artistalleydatabase.modules.utils_compose.generated.resources.confirm
 import com.thekeeperofpie.artistalleydatabase.entry.CropUtils.CROP_IMAGE_FILE_NAME
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 
 /**
  * Reproducing an image crop UI within the app is both extremely difficult and ineffective, as any
@@ -71,7 +73,7 @@ object CropUtils {
                     onConfirm()
                     onDismiss()
                 }) {
-                    Text(stringResource(UtilsStringR.confirm))
+                    Text(ComposeResourceUtils.stringResource(UtilsStrings.confirm))
                 }
             },
         )

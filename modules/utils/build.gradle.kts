@@ -12,6 +12,7 @@ kotlin {
             api(libs.bignum)
             api(libs.kotlinx.io.core)
             api(libs.uri.kmp)
+            implementation(libs.kermit)
         }
     }
 }

@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,6 +27,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ArtistMapViewModel @Inject constructor(
     application: Application,
+    appFileSystem: AppFileSystem,
     artistEntryDao: ArtistEntryDao,
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
@@ -45,7 +47,7 @@ class ArtistMapViewModel @Inject constructor(
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
                 .flowOn(CustomDispatchers.IO)
-                .map { ArtistEntryGridModel.buildFromEntry(application, it) }
+                .map { ArtistEntryGridModel.buildFromEntry(application, appFileSystem, it) }
                 .collectLatest {
                     withContext(CustomDispatchers.Main) {
                         artist = it

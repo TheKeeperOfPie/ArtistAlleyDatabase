@@ -49,7 +49,7 @@ class CdEntryGridModel(
             appFileSystem: AppFileSystem,
             entry: CdEntry,
         ): CdEntryGridModel {
-            val imageUri = EntryUtils.getImageFile(appFileSystem, entry.entryId)
+            val imageUri = EntryUtils.getImagePath(appFileSystem, entry.entryId)
                 ?.takeIf(SystemFileSystem::exists)
                 ?.toUri()
                 ?.buildUpon()

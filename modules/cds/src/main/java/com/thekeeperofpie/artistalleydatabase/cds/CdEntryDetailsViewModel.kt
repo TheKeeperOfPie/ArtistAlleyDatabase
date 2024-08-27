@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import org.jetbrains.compose.resources.StringResource
 import javax.inject.Inject
 
 @HiltViewModel
@@ -127,7 +129,7 @@ class CdEntryDetailsViewModel @Inject constructor(
         baseEntry.catalogId?.let { albumRepository.ensureSaved(listOf(it)) }
             ?.let {
                 if (!skipIgnoreableErrors) {
-                    errorResource = it
+                    errorResource = Either.Right<StringResource, Int>(it.first) to it.second
                     return false
                 }
             }
@@ -137,7 +139,7 @@ class CdEntryDetailsViewModel @Inject constructor(
             .let { mediaRepository.ensureSaved(it) }
             ?.let {
                 if (!skipIgnoreableErrors) {
-                    errorResource = it
+                    errorResource = Either.Right<StringResource, Int>(it.first) to it.second
                     return false
                 }
             }
@@ -147,7 +149,7 @@ class CdEntryDetailsViewModel @Inject constructor(
             .let { characterRepository.ensureSaved(it) }
             ?.let {
                 if (!skipIgnoreableErrors) {
-                    errorResource = it
+                    errorResource = Either.Right<StringResource, Int>(it.first) to it.second
                     return false
                 }
             }
@@ -157,7 +159,7 @@ class CdEntryDetailsViewModel @Inject constructor(
                 .let { artistRepository.ensureSaved(it) }
                 ?.let {
                     if (!skipIgnoreableErrors) {
-                        errorResource = it
+                        errorResource = Either.Right<StringResource, Int>(it.first) to it.second
                         return false
                     }
                 }

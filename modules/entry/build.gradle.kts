@@ -11,9 +11,9 @@ android {
 }
 
 dependencies {
-    api(project(":modules:android-utils"))
     api(project(":modules:compose-utils"))
     implementation(project(":modules:utils-compose"))
+    implementation(project(":modules:utils-room"))
 
     api(libs.flowExt)
     implementation(libs.activity.compose)

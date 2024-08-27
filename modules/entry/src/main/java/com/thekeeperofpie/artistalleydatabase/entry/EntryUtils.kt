@@ -13,7 +13,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
@@ -122,7 +121,7 @@ object EntryUtils {
             }
         }
 
-    fun getImageFile(appFileSystem: AppFileSystem, entryId: EntryId) =
+    fun getImagePath(appFileSystem: AppFileSystem, entryId: EntryId) =
         getEntryImageFolder(appFileSystem, entryId)
             .let {
                 if (!SystemFileSystem.exists(it)) {
@@ -143,18 +142,20 @@ object EntryUtils {
                     files.find { it.name == "0-1-1" } ?: files.firstOrNull()
                 }
 
-    fun getImageFile(
-        context: Context,
+    fun getImagePath(
+        appFileSystem: AppFileSystem,
         entryId: EntryId,
         index: Int,
         width: Int,
         height: Int,
         label: String,
         cropped: Boolean,
-    ) =
-        context.filesDir.resolve(("${entryId.imageFolderName}/${entryId.valueId}/" +
+    ) = appFileSystem.filePath(
+        ("${entryId.imageFolderName}$SystemPathSeparator" +
+                "${entryId.valueId}$SystemPathSeparator" +
                 "$index-$width-$height-$label")
-            .let { if (cropped) "$it-cropped" else it })
+            .let { if (cropped) "$it-cropped" else it }
+    )
 
     // TODO: Store cropped images alongside originals instead of replacing
     fun getCropTempFile(context: Context, entryId: EntryId, index: Int) =
@@ -229,8 +230,9 @@ object EntryUtils {
     }
 
     fun fixImageName(appFileSystem: AppFileSystem, path: Path) {
-        val (width, height) = ImageUtils.getImageWidthHeight(appFileSystem, path.toUri())
-        val newPath = Path(path.parent!!.toString() + SystemPathSeparator + "0-${width ?: 1}-${height ?: 1}")
+        val (width, height) = appFileSystem.getImageWidthHeight(path.toUri())
+        val newPath =
+            Path(path.parent!!.toString() + SystemPathSeparator + "0-${width ?: 1}-${height ?: 1}")
         SystemFileSystem.atomicMove(path, newPath)
     }
 

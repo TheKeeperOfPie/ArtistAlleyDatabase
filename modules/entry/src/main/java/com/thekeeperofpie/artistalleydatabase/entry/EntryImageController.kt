@@ -16,13 +16,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.navigation.NavHostController
+import artistalleydatabase.modules.utils_compose.generated.resources.error_fail_to_crop_image
+import artistalleydatabase.modules.utils_compose.generated.resources.error_fail_to_load_image
 import com.benasher44.uuid.Uuid
 import com.eygraber.uri.toAndroidUri
 import com.eygraber.uri.toUri
-import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.walk
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -30,7 +32,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.asInputStream
+import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
+import org.jetbrains.compose.resources.StringResource
 import java.io.File
 
 class EntryImageController(
@@ -39,7 +43,7 @@ class EntryImageController(
     private val appFileSystem: AppFileSystem,
     private val settings: EntrySettings,
     private val scopedIdType: String,
-    private val onError: (Pair<Int, Exception?>) -> Unit,
+    private val onError: (Pair<StringResource, Throwable?>) -> Unit,
     @StringRes private val imageContentDescriptionRes: Int,
     onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
 ) {
@@ -58,17 +62,14 @@ class EntryImageController(
         images = { images },
         onSelected = ::onImageSelected,
         onSelectError = {
-            onError(UtilsStringR.error_fail_to_load_image to it)
+            onError(UtilsStrings.error_fail_to_load_image to it)
         },
         addAllowed = { entryIds.size <= 1 },
         onAdded = {
             scopeProvider().launch(Dispatchers.IO.limitedParallelism(8)) {
                 val newImages = it.map {
                     async {
-                        val (width, height) = ImageUtils.getImageWidthHeight(
-                            appFileSystem,
-                            it.toUri()
-                        )
+                        val (width, height) = appFileSystem.getImageWidthHeight(it.toUri())
                         EntryImage(
                             entryId = entryIds.singleOrNull(),
                             uri = it.toUri(),
@@ -117,7 +118,7 @@ class EntryImageController(
             val firstUri = firstImage?.uri
             if (firstUri != null) {
                 if (firstImage.width == 1) {
-                    val (width, height) = ImageUtils.getImageWidthHeight(appFileSystem, firstUri)
+                    val (width, height) = appFileSystem.getImageWidthHeight(firstUri)
                     if (width != null && height != null) {
                         entryImages[0] = firstImage.copy(width = width, height = height)
                     }
@@ -197,7 +198,7 @@ class EntryImageController(
             } catch (e: Exception) {
                 Log.e(TAG, "Error persisting URI grant $uri")
                 launch(Dispatchers.Main) {
-                    onError(UtilsStringR.error_fail_to_crop_image to e)
+                    onError(UtilsStrings.error_fail_to_crop_image to e)
                 }
                 return@launch
             }
@@ -291,7 +292,7 @@ class EntryImageController(
         val entryIdsSize = withContext(Dispatchers.Main) { entryIds.size }
         if (entryIdsSize > 1) return
 
-        val (width, height) = ImageUtils.getImageWidthHeight(appFileSystem, uri.toUri())
+        val (width, height) = appFileSystem.getImageWidthHeight(uri.toUri())
         val newImage = EntryImage(
             entryId = entryId,
             uri = uri.toUri(),
@@ -319,8 +320,8 @@ class EntryImageController(
                     // Generate a new ID for new entries
                     val entryId =
                         entryImage.entryId ?: EntryId(scopedIdType, Uuid.randomUUID().toString())
-                    val originalFile = EntryUtils.getImageFile(
-                        context = application,
+                    val originalPath = EntryUtils.getImagePath(
+                        appFileSystem = appFileSystem,
                         entryId = entryId,
                         index = index,
                         width = entryImage.width,
@@ -329,9 +330,9 @@ class EntryImageController(
                         cropped = false
                     )
 
-                    val croppedFile = if (entryImage.croppedUri != null) {
-                        EntryUtils.getImageFile(
-                            context = application,
+                    val croppedPath = if (entryImage.croppedUri != null) {
+                        EntryUtils.getImagePath(
+                            appFileSystem = appFileSystem,
                             entryId = entryId,
                             index = index,
                             width = entryImage.croppedWidth ?: 1,
@@ -341,12 +342,10 @@ class EntryImageController(
                         )
                     } else null
 
-                    val originalError =
-                        ImageUtils.writeEntryImage(appFileSystem, originalFile, entryImage.uri)
-                    val croppedError = croppedFile?.let {
-                        ImageUtils.writeEntryImage(
-                            appFileSystem,
-                            croppedFile,
+                    val originalError = appFileSystem.writeEntryImage(originalPath, entryImage.uri)
+                    val croppedError = croppedPath?.let {
+                        appFileSystem.writeEntryImage(
+                            croppedPath,
                             entryImage.croppedUri
                         )
                     }
@@ -354,9 +353,9 @@ class EntryImageController(
                     SaveResult(
                         entryId = entryId,
                         newEntryId = entryImage.entryId == null,
-                        originalFile = originalFile.takeIf { originalError == null },
-                        croppedFile = croppedFile.takeIf { croppedError == null },
-                        error = croppedError ?: originalError,
+                        originalPath = originalPath.takeIf { originalError == null },
+                        croppedPath = croppedPath.takeIf { croppedError == null },
+                        result = croppedError ?: originalError,
                         width = entryImage.finalWidth,
                         height = entryImage.finalHeight,
                     )
@@ -365,10 +364,10 @@ class EntryImageController(
                 .awaitAll()
         }
 
-        val error = results.find { it.error != null }?.error
-        if (error != null) {
+        val result = results.find { it.result != null }?.result
+        if (result != null && result.isFailure) {
             withContext(Dispatchers.Main) {
-                onError(error)
+                onError(UtilsStrings.error_fail_to_load_image to result.exceptionOrNull())
             }
             return null
         }
@@ -385,13 +384,12 @@ class EntryImageController(
             if (SystemFileSystem.exists(entryFolder)
                 && SystemFileSystem.metadataOrNull(entryFolder)?.isDirectory == true) {
                 val writtenFiles = saveImagesResult[it]?.flatMap {
-                    listOfNotNull(it.originalFile, it.croppedFile)
+                    listOfNotNull(it.originalPath, it.croppedPath)
                 }.orEmpty()
-                File(entryFolder.toString())
-                    .walkTopDown()
-                    .filter(File::isFile)
+                SystemFileSystem.walk(entryFolder)
+                    .filter { SystemFileSystem.metadataOrNull(it)?.isRegularFile == true }
                     .filterNot(writtenFiles::contains)
-                    .forEach(File::delete)
+                    .forEach(SystemFileSystem::delete)
             }
         }
     }
@@ -399,9 +397,9 @@ class EntryImageController(
     data class SaveResult(
         val entryId: EntryId,
         val newEntryId: Boolean,
-        val originalFile: File?,
-        val croppedFile: File?,
-        val error: Pair<Int, Exception?>?,
+        val originalPath: Path?,
+        val croppedPath: Path?,
+        val result: Result<*>?,
         val width: Int,
         val height: Int,
     )

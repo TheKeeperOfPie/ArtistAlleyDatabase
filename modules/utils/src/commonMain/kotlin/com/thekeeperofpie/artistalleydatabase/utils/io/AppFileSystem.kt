@@ -8,6 +8,12 @@ expect class AppFileSystem {
 
     fun cachePath(path: String): Path
     fun filePath(path: String): Path
-
     fun openUri(uri: Uri): Source?
+
+    fun getImageWidthHeight(uri: Uri): Pair<Int?, Int?>
+    fun getImageType(path: Path): String?
+    fun writeEntryImage(
+        outputPath: Path,
+        imageUri: Uri?,
+    ): Result<*>?
 }

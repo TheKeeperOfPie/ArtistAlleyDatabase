@@ -234,41 +234,55 @@ fun SnackbarErrorText(
     exception: Throwable?,
     onErrorDismiss: (() -> Unit)? = null,
 ) {
-    if (errorRes != null) {
-        if (onErrorDismiss == null) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                SnackbarErrorTextInner(errorRes = errorRes, exception = exception)
+    errorRes ?: return
+    SnackbarErrorText(
+        error = { stringResource(errorRes) },
+        exception = exception,
+        onErrorDismiss = onErrorDismiss,
+    )
+}
+
+@Composable
+fun SnackbarErrorText(
+    error: @Composable () -> String?,
+    exception: Throwable?,
+    onErrorDismiss: (() -> Unit)? = null,
+) {
+    val errorMessage = error() ?: return
+    if (onErrorDismiss == null) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            SnackbarErrorTextInner(error = { errorMessage }, exception = exception)
+        }
+    } else {
+        val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = {
+            if (it != SwipeToDismissBoxValue.Settled) {
+                onErrorDismiss()
             }
-        } else {
-            val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = {
-                if (it != SwipeToDismissBoxValue.Settled) {
-                    onErrorDismiss()
-                }
-                true
-            })
-            SwipeToDismissBox(
-                state = dismissState,
-                backgroundContent = {
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.secondary)
-                    )
-                },
-            ) {
-                SnackbarErrorTextInner(errorRes = errorRes, exception = exception)
-            }
+            true
+        })
+        SwipeToDismissBox(
+            state = dismissState,
+            backgroundContent = {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.secondary)
+                )
+            },
+        ) {
+            SnackbarErrorTextInner(error = { errorMessage }, exception = exception)
         }
     }
 }
 
 @Composable
 private fun RowScope.SnackbarErrorTextInner(
-    @StringRes errorRes: Int,
+    error: @Composable () -> String,
     exception: Throwable?,
 ) {
+    val errorString = error()
     Text(
-        text = stringResource(id = errorRes),
+        text = errorString,
         color = MaterialTheme.colorScheme.onSecondary,
         modifier = Modifier
             .weight(1f)
@@ -281,7 +295,6 @@ private fun RowScope.SnackbarErrorTextInner(
     )
 
     if (exception != null) {
-        val errorString = stringResource(id = errorRes)
         TextButton(
             onClick = { Log.d("ArtistAlleyDatabase", errorString, exception) },
             modifier = Modifier
@@ -864,19 +877,21 @@ fun CustomHtmlText(
     onLongClick: (() -> Unit)? = null,
     detectTaps: Boolean = true,
 ) {
-    val annotatedString = Html.fromHtml(text.trim(), Html.FROM_HTML_MODE_LEGACY)
-        .trim()
-        .toAnnotatedString(urlSpanStyle, colorMapping)
-        .let {
-            if (minLines > 1 && maxLines < Int.MAX_VALUE) {
-                buildAnnotatedString {
-                    append(it)
-                    repeat(minLines - 1) {
-                        append("\n")
+    val annotatedString = remember(text) {
+        Html.fromHtml(text.trim(), Html.FROM_HTML_MODE_LEGACY)
+            .trim()
+            .toAnnotatedString(urlSpanStyle, colorMapping)
+            .let {
+                if (minLines > 1 && maxLines < Int.MAX_VALUE) {
+                    buildAnnotatedString {
+                        append(it)
+                        repeat(minLines - 1) {
+                            append("\n")
+                        }
                     }
-                }
-            } else it
-        }
+                } else it
+            }
+    }
 
     HtmlText(
         modifier = modifier,

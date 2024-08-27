@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
 import kotlinx.io.Source
+import kotlinx.io.files.SystemPathSeparator
 import java.io.File
 
 abstract class EntryExporter(private val appFileSystem: AppFileSystem) : Exporter {
@@ -60,11 +60,37 @@ abstract class EntryExporter(private val appFileSystem: AppFileSystem) : Exporte
         val fileName = "$index-$width-$height-$label".let {
             if (cropped) "$it-cropped" else it
         }
-        val filePath = ExportUtils.buildEntryFilePath(
+        val filePath = buildEntryFilePath(
             lastPathSegments = "${entryId.valueId}${File.separator}$fileName",
             values = values
         )
 
         writeEntry(filePath) { appFileSystem.openUri(uri)!! }
     }
+
+    private fun buildEntryFilePath(lastPathSegments: String, vararg values: List<String>) = values
+        .asSequence()
+        .map { it.filter { it.isNotBlank() } }
+        .filter { it.isNotEmpty() }
+        .map {
+            it.joinToString(separator = "-") {
+                it.replace("\\", "\u29F5")
+                    .replace("/", "\u2215")
+                    .replace(":", "\uA789")
+                    .replace("*", "\u204E")
+                    .replace("?", "\uFF1F")
+                    .replace("\"", "\u201D")
+                    .replace("<", "\uFF1C")
+                    .replace(">", "\uFF1E")
+                    .replace("|", "\u23D0")
+            }
+                .take(120)
+        }
+        .fold(mutableListOf<String>()) { list, next ->
+            if ((list.sumOf { it.length } + list.count()) < 850) {
+                list.apply { add(next.take(120)) }
+            } else list
+        }
+        .joinToString(separator = "$SystemPathSeparator")
+        .ifBlank { "Unknown" } + "$SystemPathSeparator$lastPathSegments.jpg"
 }

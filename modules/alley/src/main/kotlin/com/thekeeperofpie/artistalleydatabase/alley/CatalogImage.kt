@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import android.net.Uri
+import com.eygraber.uri.Uri
 
 data class CatalogImage(
     val uri: Uri,

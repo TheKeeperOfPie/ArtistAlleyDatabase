@@ -1,15 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import android.app.Application
-import android.net.Uri
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 
 class ArtistEntryGridModel(
     val value: ArtistEntry,
@@ -30,10 +31,19 @@ class ArtistEntryGridModel(
 
     companion object {
         @WorkerThread
-        fun buildFromEntry(application: Application, entry: ArtistEntry): ArtistEntryGridModel {
+        fun buildFromEntry(
+            application: Application,
+            appFileSystem: AppFileSystem,
+            entry: ArtistEntry,
+        ): ArtistEntryGridModel {
             return ArtistEntryGridModel(
                 value = entry,
-                images = ArtistAlleyUtils.getImages(application, "catalogs", entry.booth),
+                images = ArtistAlleyUtils.getImages(
+                    application,
+                    appFileSystem,
+                    "catalogs",
+                    entry.booth,
+                ),
                 placeholderText = entry.booth,
             )
         }

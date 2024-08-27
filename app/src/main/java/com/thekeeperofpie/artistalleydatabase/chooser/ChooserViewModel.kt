@@ -6,7 +6,6 @@ import android.content.ClipDescription
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -82,13 +81,13 @@ class ChooserViewModel @Inject constructor(
         appPackageName: String,
         entry: ArtEntryGridModel,
     ): Pair<Uri, String>? {
-        val file = EntryUtils.getImageFile(appFileSystem, entry.value.entryId)
-        if (file == null || !SystemFileSystem.exists(file)) {
+        val path = EntryUtils.getImagePath(appFileSystem, entry.value.entryId)
+        if (path == null || !SystemFileSystem.exists(path)) {
             return null
         }
 
         // Some consumers require a file extension to parse the image correctly.
-        val mimeType = ImageUtils.getImageType(appFileSystem, file)
+        val mimeType = appFileSystem.getImageType(path)
         val extension = when (mimeType) {
             "image/jpeg", "image/jpg" -> "jpg"
             "image/png" -> "png"
@@ -99,7 +98,7 @@ class ChooserViewModel @Inject constructor(
         // TODO: Find a better solution for the file extension problem
         // TODO: Offer an option to compress before export in case the caller has a size limitation
         val externalFile = appFileSystem.filePath("external/external.$extension")
-        SystemFileSystem.source(file).buffered().use { input ->
+        SystemFileSystem.source(path).buffered().use { input ->
             SystemFileSystem.sink(externalFile).buffered().use { output ->
                 input.transferTo(output)
             }
