@@ -62,7 +62,6 @@ import com.anilist.fragment.MessageActivityFragment
 import com.anilist.fragment.TextActivityActivityItem
 import com.anilist.fragment.TextActivityFragment
 import com.anilist.fragment.UserNavigationData
-import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -89,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalShar
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import java.time.Instant
 import java.time.ZoneOffset
@@ -229,6 +229,7 @@ fun ActivitySmallCard(
                 activity = activity,
                 entry = entry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
+                clickable = true,
                 modifier = modifier,
             )
         is ListActivityActivityItem ->
@@ -239,6 +240,7 @@ fun ActivitySmallCard(
                 entry = entry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 onClickListEdit = onClickListEdit,
+                clickable = true,
                 modifier = modifier,
             )
         is MessageActivityActivityItem ->
@@ -247,6 +249,7 @@ fun ActivitySmallCard(
                 activity = activity,
                 entry = entry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
+                clickable = true,
                 modifier = modifier,
             )
         else -> ListActivitySmallCard(
