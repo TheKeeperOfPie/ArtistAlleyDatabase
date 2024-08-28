@@ -36,10 +36,10 @@ import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 
 @Suppress("NAME_SHADOWING")
 object ChooserScreen {

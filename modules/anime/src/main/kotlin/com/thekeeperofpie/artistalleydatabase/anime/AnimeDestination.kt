@@ -14,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import kotlinx.serialization.Serializable
 import kotlin.reflect.typeOf
 

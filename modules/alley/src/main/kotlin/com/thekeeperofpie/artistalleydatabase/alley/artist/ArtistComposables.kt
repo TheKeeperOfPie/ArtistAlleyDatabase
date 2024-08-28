@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.skipToLookaheadSize
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 
 @Composable
 fun ArtistTitle(artist: ArtistEntry) {

@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 
 class FullscreenImageHandler {
 

@@ -12,6 +12,7 @@ kotlin {
         commonMain.dependencies {
             api(compose.components.resources)
             implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.kermit)
         }
     }
 }

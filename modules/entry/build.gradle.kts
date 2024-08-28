@@ -11,7 +11,7 @@ android {
 }
 
 dependencies {
-    api(project(":modules:compose-utils"))
+    implementation(project(":modules:utils"))
     implementation(project(":modules:utils-compose"))
     implementation(project(":modules:utils-room"))
 

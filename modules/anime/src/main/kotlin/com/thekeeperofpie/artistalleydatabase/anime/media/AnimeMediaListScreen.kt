@@ -20,9 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.PullRefreshIndicator
-import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
-import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 
 object AnimeMediaListScreen {
 

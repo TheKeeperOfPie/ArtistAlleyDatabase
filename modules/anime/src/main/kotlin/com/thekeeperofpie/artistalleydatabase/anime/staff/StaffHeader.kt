@@ -43,8 +43,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.maybeOverride
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedBounds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable

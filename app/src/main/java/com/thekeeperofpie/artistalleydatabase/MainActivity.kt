@@ -99,8 +99,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.LocalImageColorsStat
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
@@ -120,6 +118,8 @@ import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Optional

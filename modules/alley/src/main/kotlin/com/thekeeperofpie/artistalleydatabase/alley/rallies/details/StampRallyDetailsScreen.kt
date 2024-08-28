@@ -31,8 +31,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 
 object StampRallyDetailsScreen {
 

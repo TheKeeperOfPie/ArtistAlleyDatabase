@@ -17,7 +17,6 @@ import android.text.TextUtils
 import android.text.method.ScrollingMovementMethod
 import android.text.method.Touch
 import android.text.style.ClickableSpan
-import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -26,30 +25,23 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.TransformableState
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -83,12 +75,8 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -98,7 +86,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -109,24 +96,15 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -136,7 +114,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -160,12 +137,10 @@ import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
-import androidx.compose.ui.util.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.os.BuildCompat
 import androidx.core.text.HtmlCompat
@@ -173,11 +148,14 @@ import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.asDrawable
 import coil3.request.ImageRequest
+import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.topBorder
 import com.thekeeperofpie.compose_proxy.R
 import de.charlex.compose.toAnnotatedString
 import kotlinx.coroutines.CoroutineScope
@@ -240,73 +218,6 @@ fun SnackbarErrorText(
         exception = exception,
         onErrorDismiss = onErrorDismiss,
     )
-}
-
-@Composable
-fun SnackbarErrorText(
-    error: @Composable () -> String?,
-    exception: Throwable?,
-    onErrorDismiss: (() -> Unit)? = null,
-) {
-    val errorMessage = error() ?: return
-    if (onErrorDismiss == null) {
-        Row(modifier = Modifier.fillMaxSize()) {
-            SnackbarErrorTextInner(error = { errorMessage }, exception = exception)
-        }
-    } else {
-        val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = {
-            if (it != SwipeToDismissBoxValue.Settled) {
-                onErrorDismiss()
-            }
-            true
-        })
-        SwipeToDismissBox(
-            state = dismissState,
-            backgroundContent = {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.secondary)
-                )
-            },
-        ) {
-            SnackbarErrorTextInner(error = { errorMessage }, exception = exception)
-        }
-    }
-}
-
-@Composable
-private fun RowScope.SnackbarErrorTextInner(
-    error: @Composable () -> String,
-    exception: Throwable?,
-) {
-    val errorString = error()
-    Text(
-        text = errorString,
-        color = MaterialTheme.colorScheme.onSecondary,
-        modifier = Modifier
-            .weight(1f)
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                top = 12.dp,
-                bottom = 12.dp
-            )
-    )
-
-    if (exception != null) {
-        TextButton(
-            onClick = { Log.d("ArtistAlleyDatabase", errorString, exception) },
-            modifier = Modifier
-                .wrapContentWidth()
-                .align(Alignment.CenterVertically),
-        ) {
-            Text(
-                text = stringResource(R.string.log_exception).uppercase(),
-                color = MaterialTheme.colorScheme.onSecondary
-            )
-        }
-    }
 }
 
 @Composable
@@ -394,59 +305,6 @@ fun LinearProgressWithIndicator(text: String, progress: Float?) {
     }
 }
 
-@Suppress("UnnecessaryComposedModifier")
-fun Modifier.topBorder(color: Color, width: Dp = Dp.Hairline): Modifier = border(
-    width,
-    color,
-    startOffsetX = { width.value * density },
-    startOffsetY = { 0f },
-    endOffsetX = { size.width - (width.value * density / 2) },
-    endOffsetY = { 0f }
-)
-
-@Suppress("UnnecessaryComposedModifier")
-fun Modifier.bottomBorder(color: Color, width: Dp = Dp.Hairline): Modifier = border(
-    width,
-    color,
-    startOffsetX = { 0f },
-    startOffsetY = { size.height - (width.value / 2 * density) },
-    endOffsetX = { size.width },
-    endOffsetY = { size.height - (width.value / 2 * density) }
-)
-
-@Suppress("UnnecessaryComposedModifier")
-fun Modifier.border(
-    width: Dp = Dp.Hairline,
-    color: Color,
-    startOffsetX: ContentDrawScope.() -> Float,
-    startOffsetY: ContentDrawScope.() -> Float,
-    endOffsetX: ContentDrawScope.() -> Float,
-    endOffsetY: ContentDrawScope.() -> Float,
-): Modifier = composed(
-    factory = {
-        this.then(
-            Modifier.drawWithCache {
-                onDrawWithContent {
-                    drawContent()
-                    drawLine(
-                        color = color,
-                        start = Offset(startOffsetX(), startOffsetY()),
-                        end = Offset(endOffsetX(), endOffsetY()),
-                        strokeWidth = width.value * density,
-                    )
-                }
-            }
-        )
-    },
-    inspectorInfo = debugInspectorInfo {
-        name = "border"
-        properties["width"] = width
-        properties["color"] = color.value
-        value = color
-        properties["shape"] = RectangleShape
-    }
-)
-
 /**
  * Copy of [ExposedDropdownMenuDefaults.TrailingIcon] to allow custom content descriptions.
  */
@@ -467,25 +325,6 @@ fun TrailingDropdownIconButton(
             modifier = Modifier.rotate(if (expanded) 180f else 0f)
         )
     }
-}
-
-/**
- * Copy of [ExposedDropdownMenuDefaults.TrailingIcon] to allow custom content descriptions.
- */
-@Composable
-fun TrailingDropdownIcon(
-    expanded: Boolean,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.Filled.ArrowDropDown,
-    iconTint: Color = LocalContentColor.current,
-) {
-    Icon(
-        imageVector = icon,
-        tint = iconTint,
-        contentDescription = contentDescription,
-        modifier = modifier.rotate(if (expanded) 180f else 0f)
-    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -813,38 +652,6 @@ fun VerticalDivider(modifier: Modifier = Modifier) {
             .fillMaxHeight()
             .width(DividerDefaults.Thickness)
             .background(color = DividerDefaults.color)
-    )
-}
-
-@Composable
-fun StaticSearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    placeholder: @Composable (() -> Unit)? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    onSearch: (String) -> Unit = {},
-) {
-    SearchBar(
-        inputField = {
-            SearchBarDefaults.InputField(
-                query = query,
-                onQueryChange = onQueryChange,
-                onSearch = onSearch,
-                expanded = false,
-                onExpandedChange = {},
-                placeholder = placeholder,
-                leadingIcon = leadingIcon,
-                trailingIcon = trailingIcon,
-            )
-        },
-        expanded = false,
-        onExpandedChange = {},
-        content = {},
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
     )
 }
 
@@ -1597,118 +1404,6 @@ fun <T> expandableListInfoText(
     }
 
     return true
-}
-
-@Composable
-fun rememberZoomPanState() = rememberSaveable(LocalDensity.current, saver = ZoomPanState.Saver) {
-    ZoomPanState()
-}
-
-class ZoomPanState(
-    initialTranslationX: Float = 0f,
-    initialTranslationY: Float = 0f,
-    initialScale: Float = 1f,
-    var maxTranslationX: Float = 0f,
-    var maxTranslationY: Float = 0f,
-) {
-    var transformableState = TransformableState { zoomChange, panChange, _ ->
-        val translation = translation + panChange
-        val scale = this.scale
-        this.translation = translation.copy(
-            x = translation.x.coerceIn(
-                -maxTranslationX * (scale - 1f),
-                maxTranslationX * (scale - 1f),
-            ),
-            y = translation.y.coerceIn(
-                -maxTranslationY * (scale - 1f),
-                maxTranslationY * (scale - 1f),
-            ),
-        )
-        this.scale = (scale * zoomChange).coerceIn(1f, 5f)
-    }
-
-    companion object {
-        val Saver: Saver<ZoomPanState, *> = listSaver(
-            save = { listOf(it.translation.x, it.translation.y, it.scale) },
-            restore = {
-                ZoomPanState(
-                    initialTranslationX = it[0],
-                    initialTranslationY = it[1],
-                    initialScale = it[2],
-                )
-            }
-        )
-    }
-
-    var translation by mutableStateOf(Offset(initialTranslationX, initialTranslationY))
-    var scale by mutableFloatStateOf(initialScale)
-
-    fun canPanExternal(): Boolean {
-        return scale < 1.1f
-    }
-
-    suspend fun toggleZoom(offset: Offset, size: IntSize) {
-        val scaleTarget: Float
-        val translationTarget: Offset
-        if (scale < 1.1f) {
-            scaleTarget = 2.5f
-            translationTarget = calculateZoomOffset(offset, size, scaleTarget)
-        } else {
-            scaleTarget = 1f
-            translationTarget = Offset.Zero
-        }
-        transformableState.transform(MutatePriority.UserInput) {
-            val scaleStart = scale
-            val translationStart = translation
-            Animatable(0f).animateTo(1f) {
-                scale = lerp(scaleStart, scaleTarget, value)
-                translation = lerp(translationStart, translationTarget, value)
-            }
-        }
-    }
-
-    private fun calculateZoomOffset(tapOffset: Offset, size: IntSize, scale: Float): Offset {
-        val offsetX = (-(tapOffset.x - (size.width / 2f)) * 2f)
-            .coerceIn(-maxTranslationX * (scale - 1f), maxTranslationX * (scale - 1f))
-        val offsetY = (-(tapOffset.y - (size.height / 2f)) * 2f)
-            .coerceIn(-maxTranslationY * (scale - 1f), maxTranslationY * (scale - 1f))
-        return Offset(offsetX, offsetY)
-    }
-}
-
-@Composable
-fun ZoomPanBox(
-    state: ZoomPanState = rememberZoomPanState(),
-    onClick: (() -> Unit)? = null,
-    content: @Composable BoxScope.() -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .onSizeChanged {
-                state.maxTranslationX = it.width / 2f
-                state.maxTranslationY = it.height / 2f
-            }
-            .transformable(
-                state = state.transformableState,
-                canPan = { state.scale > 1.1f },
-                lockRotationOnZoomPan = true
-            )
-            .graphicsLayer(
-                translationX = state.translation.x,
-                translationY = state.translation.y,
-                scaleX = state.scale,
-                scaleY = state.scale,
-            )
-            .conditionally(onClick != null) {
-                clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onClick!!,
-                )
-            },
-        content = content,
-    )
 }
 
 @Composable

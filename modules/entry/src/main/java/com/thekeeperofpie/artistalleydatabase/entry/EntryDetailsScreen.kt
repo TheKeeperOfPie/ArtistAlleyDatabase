@@ -70,22 +70,21 @@ import artistalleydatabase.modules.utils_compose.generated.resources.exit
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
-import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.pullRefresh
-import com.thekeeperofpie.artistalleydatabase.compose.pullrefresh.rememberPullRefreshState
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalAnimatedVisibilityScope
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.animateEnterExit
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.renderInSharedTransitionScopeOverlay
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.topBorder
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -367,7 +366,7 @@ object EntryDetailsScreen {
                                 .weight(1f)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            CustomHtmlText(text = oldText)
+                            Text(text = oldText)
                         }
 
                         Column(
@@ -375,7 +374,7 @@ object EntryDetailsScreen {
                                 .weight(1f)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            CustomHtmlText(text = newText)
+                            Text(text = newText)
                         }
                     }
                 }

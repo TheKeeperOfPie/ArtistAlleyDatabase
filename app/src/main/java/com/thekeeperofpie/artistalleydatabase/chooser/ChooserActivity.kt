@@ -15,11 +15,11 @@ import androidx.lifecycle.withResumed
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

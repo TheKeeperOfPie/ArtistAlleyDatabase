@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.thekeeperofpie.artistalleydatabase.compose.pullrefresh
+package com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset

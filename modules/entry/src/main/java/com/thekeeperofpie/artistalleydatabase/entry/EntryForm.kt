@@ -119,10 +119,10 @@ import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
-import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanState
-import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
-import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
+import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import kotlinx.coroutines.launch

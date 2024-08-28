@@ -48,8 +48,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScr
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.LocalSharedTransitionScope
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

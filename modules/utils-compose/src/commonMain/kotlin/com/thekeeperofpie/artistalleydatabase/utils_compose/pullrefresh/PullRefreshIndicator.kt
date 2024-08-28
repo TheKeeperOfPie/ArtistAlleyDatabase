@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.thekeeperofpie.artistalleydatabase.compose.pullrefresh
+package com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
