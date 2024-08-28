@@ -100,6 +100,7 @@ object Versions {
     // Version 1.33.0 fails with NoSuchMethodError com.google.common.graph.Graphs.reachableNodes
     const val dependencyAnalysis = "1.32.0"
     const val dexmakerInline = "2.28.4"
+    const val diffUtils = "0.7.0"
     const val flowExt = "1.0.0-RC"
     const val fluidI18n = "0.13.0"
 
@@ -121,7 +122,6 @@ object Versions {
     const val htmlText = "1.6.0"
     const val jackson = "2.17.2"
     const val jaredsBurrowsLicense = "0.9.8"
-    const val javaDiffUtils = "4.12"
     const val javaPoet = "1.13.0"
     const val jsonTree = "2.2.0"
 
@@ -445,7 +445,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.fluidsonic.i18n:fluid-i18n:${Versions.fluidI18n}")
                 library("io.github.hoc081098:FlowExt:${Versions.flowExt}")
                 library("io.github.ilyapavlovskii:youtubeplayer-compose:${Versions.youtubePlayerCompose}")
-                library("io.github.java-diff-utils:java-diff-utils:${Versions.javaDiffUtils}")
+                library("io.github.petertrr:kotlin-multiplatform-diff:${Versions.diffUtils}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
                 library("org.awaitility:awaitility:${Versions.awaitility}")
                 library("org.chromium.net:cronet-embedded:${Versions.cronetEmbedded}")

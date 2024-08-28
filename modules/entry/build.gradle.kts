@@ -34,7 +34,7 @@ dependencies {
     implementation(libs.uuid)
     implementation(libs.uri.kmp)
 
-    implementation(libs.java.diff.utils)
+    implementation(libs.kotlin.multiplatform.diff)
 
     androidTestImplementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)

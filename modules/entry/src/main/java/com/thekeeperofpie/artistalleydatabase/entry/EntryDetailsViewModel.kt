@@ -9,12 +9,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import com.github.difflib.text.DiffRowGenerator
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import io.github.petertrr.diffutils.text.DiffRow
+import io.github.petertrr.diffutils.text.DiffRowGenerator
+import io.github.petertrr.diffutils.text.DiffTagGenerator
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.SystemFileSystem
@@ -40,12 +42,18 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     companion object {
 
         // TODO: Move color definitions somewhere else/use theme?
-        private val diffGenerator = DiffRowGenerator.create()
-            .showInlineDiffs(true)
-            .inlineDiffByWord(true)
-            .oldTag { start -> if (start) "<font color=\"red\"><s>" else "</font></s>" }
-            .newTag { start -> if (start) "<font color=\"#39B5E5\"><b>" else "</font></b>" }
-            .build()
+        private val diffGenerator = DiffRowGenerator(
+            showInlineDiffs = true,
+            inlineDiffByWord = true,
+            oldTag = object : DiffTagGenerator {
+                override fun generateOpen(tag: DiffRow.Tag) = "<font color=\"red\"><s>"
+                override fun generateClose(tag: DiffRow.Tag) = "</font></s>"
+            },
+            newTag = object : DiffTagGenerator {
+                override fun generateOpen(tag: DiffRow.Tag) = "<font color=\"#39B5E5\"><b>"
+                override fun generateClose(tag: DiffRow.Tag) = "</font></b>"
+            },
+        )
     }
 
     protected enum class Type {
@@ -143,7 +151,8 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         val images = entryImageController.images.toList()
         val currentImageHashCode = images.hashCode()
         if (initialEntryHashCode == currentEntryHashCode
-            && initialImagesHashCode == currentImageHashCode) {
+            && initialImagesHashCode == currentImageHashCode
+        ) {
             return true
         }
 
@@ -243,12 +252,12 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
 
     abstract suspend fun saveSingleEntry(
         saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
-        skipIgnoreableErrors: Boolean = false
+        skipIgnoreableErrors: Boolean = false,
     ): Boolean
 
     abstract suspend fun saveMultiEditEntry(
         saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
-        skipIgnoreableErrors: Boolean = false
+        skipIgnoreableErrors: Boolean = false,
     ): Boolean
 
     abstract suspend fun deleteEntry(entryId: EntryId)
