@@ -11,7 +11,7 @@ expect class AppFileSystem {
     fun cachePath(path: String): Path
     fun filePath(path: String): Path
     fun openUriSource(uri: Uri): Source?
-    fun openUriSink(uri: Uri, mode: String = "w"): Sink?
+    fun openUriSink(uri: Uri, mode: String = "wt"): Sink?
 
     fun getImageWidthHeight(uri: Uri): Pair<Int?, Int?>
     fun getImageType(path: Path): String?

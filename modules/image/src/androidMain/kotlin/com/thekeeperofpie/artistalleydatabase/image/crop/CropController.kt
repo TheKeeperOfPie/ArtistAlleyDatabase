@@ -39,7 +39,7 @@ actual class CropController(
             val serializedUri = settings.cropImageUri.value ?: return@launch
             try {
                 val uri = Uri.parse(serializedUri)
-                appFileSystem.openUriSink(uri, "")?.close()?.run {
+                appFileSystem.openUriSink(uri)?.close()?.run {
                     launch(Dispatchers.Main) {
                         cropState.imageCropUri = uri
                     }
@@ -70,7 +70,7 @@ actual class CropController(
             settings.cropImageUri.value = cropUri.toString()
             appFileSystem.openUriSource(request.uri)
                 ?.use { input ->
-                    appFileSystem.openUriSink(cropUri, "")?.use { output ->
+                    appFileSystem.openUriSink(cropUri)?.use { output ->
                         input.transferTo(output)
                     }
                 }?.run {
@@ -99,7 +99,7 @@ actual class CropController(
         scope.launch(Dispatchers.IO) {
             appFileSystem.openUriSource(request.uri)
                 ?.use { input ->
-                    appFileSystem.openUriSink(imageCropUri, "")?.use { output ->
+                    appFileSystem.openUriSink(imageCropUri)?.use { output ->
                         input.transferTo(output)
                     }
                 }
@@ -117,6 +117,7 @@ actual class CropController(
     }
 
     actual fun onCropFinished(request: CropState.CropRequest?) {
+        cropState.cropReadyRequest = null
         request ?: return
         val imageCropUri = cropState.imageCropUri ?: return
         scope.launch(Dispatchers.IO) {

@@ -19,7 +19,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.Either
@@ -60,7 +59,6 @@ class CdEntryDetailsViewModel @Inject constructor(
     private val dataConverter: DataConverter,
     settings: CropSettings,
     cropController: CropController,
-    imageHandler: ImageHandler,
 ) : EntryDetailsViewModel<CdEntry, CdEntryModel>(
     entryClass = CdEntry::class,
     appFileSystem = appFileSystem,
@@ -69,7 +67,6 @@ class CdEntryDetailsViewModel @Inject constructor(
     appJson = appJson,
     settings = settings,
     cropController = cropController,
-    imageHandler = imageHandler,
 ) {
     companion object {
         private const val TAG = "CdEntryDetailsViewModel"

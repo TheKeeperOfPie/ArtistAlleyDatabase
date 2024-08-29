@@ -1,8 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.image
 
-import android.app.Application
 import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import artistalleydatabase.modules.image.generated.resources.Res
 import artistalleydatabase.modules.image.generated.resources.open_full_image_content_description
@@ -12,7 +15,13 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import java.io.File
 
-actual class ImageHandler(private val application: Application) {
+@Composable
+actual fun rememberImageHandler(): ImageHandler {
+    val context = LocalContext.current
+    return remember(context) { ImageHandler(context) }
+}
+
+actual class ImageHandler(private val context: Context) {
 
     actual fun openImage(uri: Uri) {
         val path = uri.path
@@ -26,8 +35,8 @@ actual class ImageHandler(private val application: Application) {
 
     private fun openInternalImage(file: File) {
         val imageUri = FileProvider.getUriForFile(
-            application,
-            "${application.packageName}.fileprovider",
+            context,
+            "${context.packageName}.fileprovider",
             file
         )
 
@@ -51,6 +60,6 @@ actual class ImageHandler(private val application: Application) {
             intent,
             runBlocking { getString(Res.string.open_full_image_content_description) },
         )
-        application.startActivity(chooserIntent)
+        context.startActivity(chooserIntent)
     }
 }

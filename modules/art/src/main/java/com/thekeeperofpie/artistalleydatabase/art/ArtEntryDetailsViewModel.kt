@@ -22,7 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.Either
@@ -50,7 +49,6 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     private val artSettings: ArtSettings,
     settings: CropSettings,
     cropController: CropController,
-    imageHandler: ImageHandler,
 ) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
     entryClass = ArtEntry::class,
     appFileSystem = appFileSystem,
@@ -59,7 +57,6 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     appJson = appJson,
     settings = settings,
     cropController = cropController,
-    imageHandler = imageHandler,
 ) {
     protected val entrySections = ArtEntrySections()
 

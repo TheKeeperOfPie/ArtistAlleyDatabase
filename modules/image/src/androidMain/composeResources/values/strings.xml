@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="image_crop_text">Crop requires a shared read-writable file, located at /sdcard/Download/%1$s. It will be used to open the image in Google Photos. Select this in the following screen.</string>
+</resources>

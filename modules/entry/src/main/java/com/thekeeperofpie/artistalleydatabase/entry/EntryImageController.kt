@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.mutableStateListOf
-import androidx.navigation.NavHostController
 import artistalleydatabase.modules.utils_compose.generated.resources.error_fail_to_load_image
 import com.benasher44.uuid.Uuid
 import com.eygraber.uri.Uri
@@ -31,7 +30,6 @@ class EntryImageController(
     private val onError: (Pair<StringResource, Throwable?>) -> Unit,
     @StringRes private val imageContentDescriptionRes: Int,
     onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
-    private val imageHandler: ImageHandler,
 ) {
     private var initialized = false
 
@@ -96,7 +94,7 @@ class EntryImageController(
         }
     }
 
-    fun onClickOpenImage(navHostController: NavHostController, index: Int) {
+    fun onClickOpenImage(imageHandler: ImageHandler, index: Int) {
         val uri = images[index].run { croppedUri ?: uri } ?: return
         imageHandler.openImage(uri)
     }

@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.benasher44.uuid.Uuid
-import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
@@ -16,7 +15,6 @@ internal class TestViewModel(
     private val testDirectory: File,
     appJson: AppJson,
     cropController: CropController,
-    imageHandler: ImageHandler,
 ) : EntryDetailsViewModel<TestEntry, TestModel>(
     TestEntry::class,
     AppFileSystem(mockStrict {
@@ -32,7 +30,6 @@ internal class TestViewModel(
     appJson = appJson,
     settings = TestSettings(cropUri),
     cropController = cropController,
-    imageHandler = imageHandler,
 ) {
 
     override val sections = emptyList<EntrySection>()

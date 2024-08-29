@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
+import com.thekeeperofpie.artistalleydatabase.image.rememberImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
@@ -149,12 +150,13 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                 }
             }
 
+            val imageHandler = rememberImageHandler()
             EntryDetailsScreen(
                 viewModel = viewModel,
                 onClickBack = { navHostController.navigateUp() },
                 imageCornerDp = imageCornerDp,
                 onClickOpenImage = {
-                    viewModel.entryImageController.onClickOpenImage(navHostController, it)
+                    viewModel.entryImageController.onClickOpenImage(imageHandler, it)
                 },
                 onClickSave = { viewModel.onClickSave(navHostController) },
                 onLongClickSave = { viewModel.onLongClickSave(navHostController) },

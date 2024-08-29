@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.Either
@@ -39,7 +38,6 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     private val appJson: AppJson,
     settings: CropSettings,
     val cropController: CropController,
-    imageHandler: ImageHandler,
 ) : ViewModel() {
 
     companion object {
@@ -84,7 +82,6 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         onError = { errorResource = Either.Left<StringResource, Int>(it.first) to it.second },
         imageContentDescriptionRes = imageContentDescriptionRes,
         onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) },
-        imageHandler = imageHandler,
     )
 
     protected lateinit var entryIds: List<EntryId>
