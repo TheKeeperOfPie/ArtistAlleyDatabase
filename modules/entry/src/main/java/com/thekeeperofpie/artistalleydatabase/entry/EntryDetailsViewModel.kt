@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.app.Application
 import androidx.activity.OnBackPressedDispatcher
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
@@ -9,6 +8,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
@@ -17,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import io.github.petertrr.diffutils.text.DiffRow
 import io.github.petertrr.diffutils.text.DiffRowGenerator
 import io.github.petertrr.diffutils.text.DiffTagGenerator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.SystemFileSystem
@@ -27,16 +30,16 @@ import kotlinx.serialization.serializer
 import org.jetbrains.compose.resources.StringResource
 import kotlin.reflect.KClass
 
-
 @OptIn(ExperimentalSerializationApi::class)
 abstract class EntryDetailsViewModel<Entry : Any, Model>(
     private val entryClass: KClass<Entry>,
-    protected val application: Application,
     private val appFileSystem: AppFileSystem,
     protected val scopedIdType: String,
     @StringRes private val imageContentDescriptionRes: Int,
-    entrySettings: EntrySettings,
     private val appJson: AppJson,
+    settings: CropSettings,
+    val cropController: CropController,
+    imageHandler: ImageHandler,
 ) : ViewModel() {
 
     companion object {
@@ -75,14 +78,13 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     var deleting by mutableStateOf(false)
 
     val entryImageController = EntryImageController(
-        scopeProvider = { viewModelScope },
-        application = application,
+        scope = viewModelScope,
         appFileSystem = appFileSystem,
-        settings = entrySettings,
         scopedIdType = scopedIdType,
         onError = { errorResource = Either.Left<StringResource, Int>(it.first) to it.second },
         imageContentDescriptionRes = imageContentDescriptionRes,
-        onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) }
+        onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) },
+        imageHandler = imageHandler,
     )
 
     protected lateinit var entryIds: List<EntryId>
@@ -97,6 +99,14 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     private var initialImagesHashCode: Int? = null
     private var initialImagesSerializedForm: String? = null
     var entrySerializedFormDiff by mutableStateOf("" to "")
+
+    init {
+        viewModelScope.launch(Dispatchers.Main) {
+            cropController.cropResults.collect {
+                entryImageController.onCropResult(it)
+            }
+        }
+    }
 
     fun initialize(entryIds: List<EntryId>) {
         if (this::entryIds.isInitialized) return

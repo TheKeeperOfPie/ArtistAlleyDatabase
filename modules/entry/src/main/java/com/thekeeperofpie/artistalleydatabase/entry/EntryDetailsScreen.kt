@@ -70,7 +70,10 @@ import artistalleydatabase.modules.utils_compose.generated.resources.exit
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.imageFolderName
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropRequestDialog
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
@@ -95,7 +98,7 @@ object EntryDetailsScreen {
         viewModel: EntryDetailsViewModel<*, *>,
         onClickBack: () -> Unit,
         imageCornerDp: Dp? = null,
-        onImageClickOpen: (index: Int) -> Unit = {},
+        onClickOpenImage: (index: Int) -> Unit = {},
         onClickSave: () -> Unit = {},
         onLongClickSave: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
@@ -104,7 +107,6 @@ object EntryDetailsScreen {
         onNavigate: (String) -> Unit,
     ) {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
-        var showCropDialogIndex by rememberSaveable { mutableIntStateOf(-1) }
         val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
             ?.onBackPressedDispatcher
         val pullRefreshState = rememberPullRefreshState(
@@ -179,16 +181,20 @@ object EntryDetailsScreen {
                 HeaderImage(
                     imageState = { viewModel.entryImageController.imageState },
                     imageCornerDp = imageCornerDp,
-                    onImageClickOpen = onImageClickOpen,
-                    cropState = {
-                        val cropState = viewModel.entryImageController.cropState
-                        cropState.copy(onImageRequestCrop = { index ->
-                            if (cropState.imageCropNeedsDocument()) {
-                                showCropDialogIndex = index
-                            } else {
-                                cropState.onImageRequestCrop(index)
-                            }
-                        })
+                    onClickOpenImage = onClickOpenImage,
+                    onClickCropImage = {
+                        val image = viewModel.entryImageController.images[it]
+                        val entryId = image.entryId
+                        val imageUri = image.uri
+                        if (entryId != null && imageUri != null) {
+                            viewModel.cropController.onRequestCrop(
+                                CropState.CropRequest(
+                                    imageFolderName = entryId.imageFolderName,
+                                    id = image.imageId,
+                                    uri = imageUri,
+                                )
+                            )
+                        }
                     },
                     modifier = Modifier.onSizeChanged { imageHeightPixels = it.height }
                 )
@@ -212,18 +218,12 @@ object EntryDetailsScreen {
             }
         }
 
+        CropRequestDialog(viewModel.cropController)
+
         if (showDeleteDialog) {
             EntryGridDeleteDialog(
                 { showDeleteDialog = false },
                 onConfirmDelete
-            )
-        } else if (showCropDialogIndex != -1) {
-            CropUtils.InstructionsDialog(
-                onDismiss = { showCropDialogIndex = -1 },
-                onConfirm = {
-                    viewModel.entryImageController.cropState
-                        .onCropConfirmed(showCropDialogIndex)
-                },
             )
         } else if (viewModel.showExitPrompt) {
             ConfirmExitDialog(
@@ -399,9 +399,9 @@ object EntryDetailsScreen {
     private fun HeaderImage(
         imageState: () -> EntryImageState,
         imageCornerDp: Dp?,
-        cropState: () -> CropUtils.CropState,
         modifier: Modifier = Modifier,
-        onImageClickOpen: (index: Int) -> Unit = {},
+        onClickOpenImage: (index: Int) -> Unit,
+        onClickCropImage: (index: Int) -> Unit,
     ) {
         Box(modifier = modifier) {
             val images = imageState().images()
@@ -411,8 +411,8 @@ object EntryDetailsScreen {
             MultiImageSelectBox(
                 pagerState = pagerState,
                 imageState = imageState,
-                cropState = cropState,
-                onClickOpenImage = onImageClickOpen,
+                onClickOpenImage = onClickOpenImage,
+                onClickCropImage = onClickCropImage,
             ) { entryImage, zoomPanState ->
                 val uri = entryImage.croppedUri ?: entryImage.uri
                 if (uri != null) {

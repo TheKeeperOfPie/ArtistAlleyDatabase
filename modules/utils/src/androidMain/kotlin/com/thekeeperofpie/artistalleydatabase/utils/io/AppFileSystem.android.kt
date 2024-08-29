@@ -6,8 +6,10 @@ import android.graphics.BitmapFactory
 import co.touchlab.kermit.Logger
 import com.eygraber.uri.Uri
 import com.eygraber.uri.toAndroidUri
+import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.asInputStream
+import kotlinx.io.asSink
 import kotlinx.io.asSource
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -29,8 +31,10 @@ actual class AppFileSystem(val application: Application) {
 
     actual fun cachePath(path: String) = Path(application.cacheDir.resolve(path).path)
     actual fun filePath(path: String) = Path(application.filesDir.resolve(path).path)
-    actual fun openUri(uri: Uri): Source? =
+    actual fun openUriSource(uri: Uri): Source? =
         application.contentResolver.openInputStream(uri.toAndroidUri())?.asSource()?.buffered()
+    actual fun openUriSink(uri: Uri, mode: String): Sink? =
+        application.contentResolver.openOutputStream(uri.toAndroidUri(), mode)?.asSink()?.buffered()
 
     actual fun getImageWidthHeight(uri: Uri): Pair<Int?, Int?> {
         val options = BitmapFactory.Options().apply {
@@ -43,7 +47,7 @@ actual class AppFileSystem(val application: Application) {
                         && uri.authority?.isEmpty() == true
                         && uri.path?.startsWith("/android_asset") == true ->
                     application.assets.open(uri.path!!.removePrefix("/android_asset/"))
-                else -> openUri(uri)?.asInputStream()
+                else -> openUriSource(uri)?.asInputStream()
             }.use {
                 BitmapFactory.decodeStream(it, null, options)
             }
@@ -83,9 +87,9 @@ actual class AppFileSystem(val application: Application) {
                 ContentResolver.SCHEME_FILE -> {
                     if (imageUri.path == outputPath.toUri().path) {
                         return null
-                    } else openUri(imageUri)
+                    } else openUriSource(imageUri)
                 }
-                else -> openUri(imageUri)
+                else -> openUriSource(imageUri)
             }
         } catch (e: Exception) {
             return Result.failure<Any>(e)

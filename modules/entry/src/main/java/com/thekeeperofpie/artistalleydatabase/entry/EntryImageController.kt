@@ -1,26 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.app.Application
-import android.content.ContentResolver
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.core.net.toUri
 import androidx.navigation.NavHostController
-import artistalleydatabase.modules.utils_compose.generated.resources.error_fail_to_crop_image
 import artistalleydatabase.modules.utils_compose.generated.resources.error_fail_to_load_image
 import com.benasher44.uuid.Uuid
-import com.eygraber.uri.toAndroidUri
+import com.eygraber.uri.Uri
 import com.eygraber.uri.toUri
+import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.walk
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -31,27 +20,19 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.io.asInputStream
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import org.jetbrains.compose.resources.StringResource
-import java.io.File
 
 class EntryImageController(
-    private val scopeProvider: () -> CoroutineScope,
-    private val application: Application,
+    private val scope: CoroutineScope,
     private val appFileSystem: AppFileSystem,
-    private val settings: EntrySettings,
     private val scopedIdType: String,
     private val onError: (Pair<StringResource, Throwable?>) -> Unit,
     @StringRes private val imageContentDescriptionRes: Int,
     onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
+    private val imageHandler: ImageHandler,
 ) {
-
-    companion object {
-        private const val TAG = "EntryImageController"
-    }
-
     private var initialized = false
 
     private val entryIds = mutableListOf<EntryId>()
@@ -60,13 +41,13 @@ class EntryImageController(
 
     val imageState = EntryImageState(
         images = { images },
-        onSelected = ::onImageSelected,
+        onSelected = { index, uri -> onImageSelected(index, uri?.toUri()) },
         onSelectError = {
             onError(UtilsStrings.error_fail_to_load_image to it)
         },
         addAllowed = { entryIds.size <= 1 },
         onAdded = {
-            scopeProvider().launch(Dispatchers.IO.limitedParallelism(8)) {
+            scope.launch(Dispatchers.IO.limitedParallelism(8)) {
                 val newImages = it.map {
                     async {
                         val (width, height) = appFileSystem.getImageWidthHeight(it.toUri())
@@ -86,23 +67,6 @@ class EntryImageController(
         },
         onSizeResult = onImageSizeResult,
     )
-
-    private var imageCropUri by mutableStateOf<Uri?>(null)
-    private var cropDocumentRequestedIndex by mutableIntStateOf(-1)
-    private var cropReadyIndex by mutableIntStateOf(-1)
-
-    val cropState = CropUtils.CropState(
-        imageCropNeedsDocument = { imageCropUri == null },
-        onImageCropDocumentChosen = ::onImageCropDocumentChosen,
-        onImageRequestCrop = ::onImageRequestCrop,
-        onCropFinished = ::onCropFinished,
-        cropReadyIndex = { cropReadyIndex },
-        onCropConfirmed = { cropDocumentRequestedIndex = it },
-        cropDocumentRequestedIndex = { cropDocumentRequestedIndex },
-    )
-
-    /** Shared utility to easily signal URI invalidation by appending a query param of this value */
-    private var invalidateIteration = 0
 
     fun initialize(entryIds: List<EntryId>) {
         if (initialized) return
@@ -130,31 +94,11 @@ class EntryImageController(
                 EntryUtils.getImages(appFileSystem, it, imageContentDescriptionRes)
             }
         }
-
-        scopeProvider().launch(Dispatchers.IO) {
-            val serializedUri = settings.cropImageUri.value ?: return@launch
-            try {
-                val uri = Uri.parse(serializedUri)
-                application.contentResolver.openOutputStream(uri)?.close()?.run {
-                    launch(Dispatchers.Main) {
-                        imageCropUri = uri
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading crop URI: $serializedUri")
-            }
-        }
     }
 
-    fun onImageClickOpen(navHostController: NavHostController, index: Int) {
+    fun onClickOpenImage(navHostController: NavHostController, index: Int) {
         val uri = images[index].run { croppedUri ?: uri } ?: return
-        val path = uri.path
-        if (uri.scheme == ContentResolver.SCHEME_FILE && path != null) {
-            // TODO: Make this more reliable?
-            EntryUtils.openInternalImage(navHostController, File(path))
-        } else {
-            EntryUtils.openImage(navHostController, uri.toAndroidUri())
-        }
+        imageHandler.openImage(uri)
     }
 
     private fun onImageSelected(index: Int, uri: Uri?) {
@@ -163,19 +107,13 @@ class EntryImageController(
             return
         }
 
-        scopeProvider().launch(Dispatchers.IO) {
-            val inputStream = application.contentResolver.openInputStream(uri) ?: return@launch
-            val (width, height) = inputStream.use {
-                val options = BitmapFactory.Options().apply {
-                    inJustDecodeBounds = true
-                }
-                BitmapFactory.decodeStream(it, null, options)
-                options.outHeight to options.outWidth
-            }
-
+        scope.launch(Dispatchers.IO) {
+            val (width, height) = appFileSystem.getImageWidthHeight(uri)
+            width ?: return@launch
+            height ?: return@launch
             withContext(Dispatchers.Main) {
                 images[index] = images[index].copy(
-                    uri = uri.toUri(),
+                    uri = uri,
                     width = width,
                     height = height,
                     croppedUri = null,
@@ -186,116 +124,15 @@ class EntryImageController(
         }
     }
 
-    private fun onImageCropDocumentChosen(index: Int, uri: Uri?) {
-        uri ?: return
-        val imageUri = images.getOrNull(index)?.uri ?: return
-        scopeProvider().launch(Dispatchers.IO) {
-            try {
-                application.contentResolver.takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "Error persisting URI grant $uri")
-                launch(Dispatchers.Main) {
-                    onError(UtilsStrings.error_fail_to_crop_image to e)
-                }
-                return@launch
-            }
-
-            settings.cropImageUri.value = uri.toString()
-            appFileSystem.openUri(imageUri)
-                ?.use { input ->
-                    application.contentResolver.openOutputStream(uri)?.use { output ->
-                        input.asInputStream().copyTo(output)
-                    }
-                }?.run {
-                    launch(Dispatchers.Main) {
-                        imageCropUri = uri
-                        cropReadyIndex = index
-                    }
-                }
-        }
-    }
-
-    private fun onImageRequestCrop(index: Int) {
-        val imageCropUri = imageCropUri ?: return
-        val imageUri = images.getOrNull(index)?.uri ?: return
-        scopeProvider().launch(Dispatchers.IO) {
-            appFileSystem.openUri(imageUri)
-                ?.use { input ->
-                    application.contentResolver.openOutputStream(imageCropUri)?.use { output ->
-                        input.asInputStream().copyTo(output)
-                    }
-                }
-
-            application.grantUriPermission(
-                CropUtils.PHOTOS_PACKAGE_NAME,
-                imageCropUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            )
-
-            launch(Dispatchers.Main) {
-                cropReadyIndex = index
-            }
-        }
-    }
-
-    private fun onCropFinished(index: Int?) {
-        index ?: return
-        val imageCropUri = imageCropUri ?: return
-        scopeProvider().launch(Dispatchers.IO) {
-            val entryId =
-                images[index].entryId ?: EntryId(scopedIdType, Uuid.randomUUID().toString())
-            val outputFile =
-                EntryUtils.getCropTempFile(application, entryId, index)
-            application.contentResolver.openInputStream(imageCropUri)?.use { input ->
-                outputFile.outputStream().use { output -> input.copyTo(output) }
-            }
-
-            // Clear the temporary crop file contents
-            application.contentResolver.openOutputStream(imageCropUri, "wt")?.use {
-                Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-                    .compress(Bitmap.CompressFormat.PNG, 100, it)
-            }
-
-            val (width, height) = outputFile.inputStream().use {
-                val options = BitmapFactory.Options().apply {
-                    inJustDecodeBounds = true
-                }
-                BitmapFactory.decodeStream(it, null, options)
-                options.outWidth to options.outHeight
-            }
-
-            val uri = outputFile.toUri()
-                .buildUpon()
-                .appendQueryParameter(
-                    "invalidateIteration",
-                    invalidateIteration++.toString()
-                )
-                .build()
-
-            launch(Dispatchers.Main) {
-                images[index] = images[index].copy(
-                    entryId = entryId,
-                    croppedUri = uri.toUri(),
-                    croppedWidth = width,
-                    croppedHeight = height,
-                )
-                cropReadyIndex = -1
-            }
-        }
-    }
-
     @WorkerThread
     suspend fun replaceMainImage(entryId: EntryId?, uri: Uri) {
         val entryIdsSize = withContext(Dispatchers.Main) { entryIds.size }
         if (entryIdsSize > 1) return
 
-        val (width, height) = appFileSystem.getImageWidthHeight(uri.toUri())
+        val (width, height) = appFileSystem.getImageWidthHeight(uri)
         val newImage = EntryImage(
             entryId = entryId,
-            uri = uri.toUri(),
+            uri = uri,
             width = width ?: 1,
             height = height ?: 1,
             contentDescriptionRes = imageContentDescriptionRes,
@@ -382,7 +219,8 @@ class EntryImageController(
         entryIds.forEach {
             val entryFolder = EntryUtils.getEntryImageFolder(appFileSystem, it)
             if (SystemFileSystem.exists(entryFolder)
-                && SystemFileSystem.metadataOrNull(entryFolder)?.isDirectory == true) {
+                && SystemFileSystem.metadataOrNull(entryFolder)?.isDirectory == true
+            ) {
                 val writtenFiles = saveImagesResult[it]?.flatMap {
                     listOfNotNull(it.originalPath, it.croppedPath)
                 }.orEmpty()
@@ -392,6 +230,15 @@ class EntryImageController(
                     .forEach(SystemFileSystem::delete)
             }
         }
+    }
+
+    fun onCropResult(result: CropState.CropResult) {
+        val index = images.indexOfFirst { it.imageId == result.request.id }
+        images[index] = images[index].copy(
+            croppedUri = result.newImageUri,
+            croppedWidth = result.croppedWidth,
+            croppedHeight = result.croppedHeight,
+        )
     }
 
     data class SaveResult(

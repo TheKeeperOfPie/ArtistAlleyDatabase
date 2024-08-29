@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
 class TestSettingsProvider : NetworkSettings, AniListSettings, AnimeSettings, MonetizationSettings,
-    EntrySettings, NewsSettings {
+    CropSettings, NewsSettings {
 
     override val networkLoggingLevel =
         MutableStateFlow(NetworkSettings.NetworkLoggingLevel.NONE)

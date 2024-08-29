@@ -1,9 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
-import android.app.Application
-import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.benasher44.uuid.Uuid
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -20,7 +19,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
@@ -44,12 +45,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CdEntryDetailsViewModel @Inject constructor(
-    application: Application,
     appFileSystem: AppFileSystem,
     private val cdEntryDao: CdEntryDetailsDao,
     private val appJson: AppJson,
     private val aniListAutocompleter: AniListAutocompleter,
-    private val vgmdbApi: VgmdbApi,
+    vgmdbApi: VgmdbApi,
     private val vgmdbJson: VgmdbJson,
     private val vgmdbDataConverter: VgmdbDataConverter,
     private val vgmdbAutocompleter: VgmdbAutocompleter,
@@ -58,15 +58,18 @@ class CdEntryDetailsViewModel @Inject constructor(
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
     private val dataConverter: DataConverter,
-    entrySettings: EntrySettings,
+    settings: CropSettings,
+    cropController: CropController,
+    imageHandler: ImageHandler,
 ) : EntryDetailsViewModel<CdEntry, CdEntryModel>(
     entryClass = CdEntry::class,
-    application = application,
     appFileSystem = appFileSystem,
     scopedIdType = CdEntryUtils.SCOPED_ID_TYPE,
     imageContentDescriptionRes = R.string.cd_entry_image_content_description,
-    entrySettings = entrySettings,
     appJson = appJson,
+    settings = settings,
+    cropController = cropController,
+    imageHandler = imageHandler,
 ) {
     companion object {
         private const val TAG = "CdEntryDetailsViewModel"
@@ -90,7 +93,7 @@ class CdEntryDetailsViewModel @Inject constructor(
             entrySections.catalogAlbumChosen()
                 .collectLatest {
                     if (entryIds.size <= 1) {
-                        it.coverFull?.toUri()?.let {
+                        it.coverFull?.let(Uri::parseOrNull)?.let {
                             entryImageController.replaceMainImage(entryIds.firstOrNull(), it)
                         }
                     }

@@ -21,13 +21,13 @@ import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelec
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import kotlin.math.roundToInt
 
 class CdEntryNavigator : BrowseSelectionNavigator {
@@ -153,8 +153,8 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                 viewModel = viewModel,
                 onClickBack = { navHostController.navigateUp() },
                 imageCornerDp = imageCornerDp,
-                onImageClickOpen = {
-                    viewModel.entryImageController.onImageClickOpen(navHostController, it)
+                onClickOpenImage = {
+                    viewModel.entryImageController.onClickOpenImage(navHostController, it)
                 },
                 onClickSave = { viewModel.onClickSave(navHostController) },
                 onLongClickSave = { viewModel.onLongClickSave(navHostController) },

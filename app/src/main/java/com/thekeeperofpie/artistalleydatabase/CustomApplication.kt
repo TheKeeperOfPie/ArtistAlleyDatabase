@@ -79,6 +79,16 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
         filesDir.resolve("art_entry_images").mkdirs()
         filesDir.resolve("cd_entry_images").mkdirs()
 
+        // Clear any old cropped images
+        try {
+            filesDir.resolve("art_entry_images/crop").deleteRecursively()
+        } catch (ignored: Throwable) {
+        }
+        try {
+            filesDir.resolve("cd_entry_images/crop").deleteRecursively()
+        } catch (ignored: Throwable) {
+        }
+
         // TODO: Figure out a real StrictMode policy
         // Ignore external file:// URIs policy
         StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())

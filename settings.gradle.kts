@@ -40,6 +40,7 @@ include(
     ":modules:debug",
     ":modules:dependencies",
     ":modules:entry",
+    ":modules:image",
     ":modules:markdown",
     ":modules:media",
     ":modules:monetization",

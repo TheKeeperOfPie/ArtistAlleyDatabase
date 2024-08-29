@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils.io
 
 import com.eygraber.uri.Uri
+import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.files.Path
 
@@ -13,7 +14,11 @@ actual class AppFileSystem {
         TODO("Not yet implemented")
     }
 
-    actual fun openUri(uri: Uri): Source? {
+    actual fun openUriSource(uri: Uri): Source? {
+        TODO("Not yet implemented")
+    }
+
+    actual fun openUriSink(uri: Uri, mode: String): Sink? {
         TODO("Not yet implemented")
     }
 

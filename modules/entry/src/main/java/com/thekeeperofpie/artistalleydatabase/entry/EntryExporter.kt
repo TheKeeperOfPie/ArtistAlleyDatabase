@@ -65,7 +65,7 @@ abstract class EntryExporter(private val appFileSystem: AppFileSystem) : Exporte
             values = values
         )
 
-        writeEntry(filePath) { appFileSystem.openUri(uri)!! }
+        writeEntry(filePath) { appFileSystem.openUriSource(uri)!! }
     }
 
     private fun buildEntryFilePath(lastPathSegments: String, vararg values: List<String>) = values

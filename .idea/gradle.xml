@@ -41,6 +41,7 @@
             <option value="$PROJECT_DIR$/modules/debug" />
             <option value="$PROJECT_DIR$/modules/dependencies" />
             <option value="$PROJECT_DIR$/modules/entry" />
+            <option value="$PROJECT_DIR$/modules/image" />
             <option value="$PROJECT_DIR$/modules/markdown" />
             <option value="$PROJECT_DIR$/modules/media" />
             <option value="$PROJECT_DIR$/modules/monetization" />

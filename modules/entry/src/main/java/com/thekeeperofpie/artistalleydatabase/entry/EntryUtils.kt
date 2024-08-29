@@ -1,30 +1,24 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.content.Context
-import android.content.Intent
-import androidx.annotation.MainThread
 import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemPathSeparator
-import java.io.File
 
 object EntryUtils {
-
-    const val SLIDE_DURATION_MS = 350
 
     data class ImageMetadata(
         val path: Path,
@@ -36,7 +30,7 @@ object EntryUtils {
     )
 
     // TODO: Remove this and migrate the folder naming?
-    private val EntryId.imageFolderName: String
+    val EntryId.imageFolderName: String
         get() = when (type) {
             "art_entry" -> "art_entry_images"
             "cd_entry" -> "cd_entry_images"
@@ -46,7 +40,7 @@ object EntryUtils {
 
     @WorkerThread
     fun getEntryImageFolder(appFileSystem: AppFileSystem, entryId: EntryId) =
-        appFileSystem.filePath("${entryId.imageFolderName}/${entryId.valueId}")
+        appFileSystem.filePath("${entryId.imageFolderName}$SystemPathSeparator${entryId.valueId}")
 
     @WorkerThread
     fun getImages(
@@ -61,6 +55,7 @@ object EntryUtils {
                 listOf(
                     EntryImage(
                         entryId = entryId,
+                        imageId = Uuid.randomUUID().toString(),
                         uri = it.toUri(),
                         width = 1,
                         height = 1,
@@ -157,13 +152,6 @@ object EntryUtils {
             .let { if (cropped) "$it-cropped" else it }
     )
 
-    // TODO: Store cropped images alongside originals instead of replacing
-    fun getCropTempFile(context: Context, entryId: EntryId, index: Int) =
-        context.filesDir
-            .resolve("${entryId.imageFolderName}/crop/")
-            .apply { mkdirs() }
-            .resolve("${entryId.valueId}-$index")
-
     fun NavGraphBuilder.entryDetailsComposable(
         route: String,
         block: @Composable (entryIds: List<String>, imageCornerDp: Dp?) -> Unit,
@@ -191,42 +179,6 @@ object EntryUtils {
             path += "?entry_ids=${entryIds.joinToString(separator = "&entry_ids=")}"
         }
         navigate(path)
-    }
-
-    @MainThread
-    fun openInternalImage(navHostController: NavHostController, file: File) {
-        val context = navHostController.context
-        val imageUri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
-
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            setDataAndType(imageUri, "image/*")
-        }
-
-        val chooserIntent = Intent.createChooser(
-            intent,
-            context.getString(R.string.entry_open_full_image_content_description)
-        )
-        context.startActivity(chooserIntent)
-    }
-
-    @MainThread
-    fun openImage(navHostController: NavHostController, uri: android.net.Uri) {
-        val context = navHostController.context
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            setDataAndType(uri, "image/*")
-        }
-
-        val chooserIntent = Intent.createChooser(
-            intent,
-            context.getString(R.string.entry_open_full_image_content_description)
-        )
-        context.startActivity(chooserIntent)
     }
 
     fun fixImageName(appFileSystem: AppFileSystem, path: Path) {

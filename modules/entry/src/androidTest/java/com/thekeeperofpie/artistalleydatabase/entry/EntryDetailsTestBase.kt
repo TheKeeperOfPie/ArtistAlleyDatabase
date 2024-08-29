@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.entry
 
 import androidx.navigation.NavHostController
 import com.google.common.truth.Truth.assertThat
+import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestBase
 import com.thekeeperofpie.artistalleydatabase.test_utils.atLeast
@@ -28,6 +30,12 @@ abstract class EntryDetailsTestBase : TestBase() {
     @Inject
     lateinit var appJson: AppJson
 
+    @Inject
+    lateinit var cropController: CropController
+
+    @Inject
+    lateinit var imageHandler: ImageHandler
+
     @TempDir
     lateinit var testDir: File
 
@@ -47,6 +55,8 @@ abstract class EntryDetailsTestBase : TestBase() {
         entries = existingEntries.associateBy { it.id }.toMutableMap(),
         testDirectory = testDir,
         appJson = appJson,
+        cropController = cropController,
+        imageHandler = imageHandler,
     )
 
     protected suspend fun EntryDetailsViewModel<*, *>.runSaveAndWait(

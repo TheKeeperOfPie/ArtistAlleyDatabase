@@ -11,13 +11,12 @@ android {
 }
 
 dependencies {
+    api(project(":modules:image"))
     implementation(project(":modules:utils"))
     implementation(project(":modules:utils-compose"))
     implementation(project(":modules:utils-room"))
 
     api(libs.flowExt)
-    implementation(libs.activity.compose)
-    implementation(libs.androidx.core.ktx)
     api(libs.compose.animation)
     api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)

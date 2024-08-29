@@ -1,19 +1,23 @@
-package com.thekeeperofpie.artistalleydatabase.entry
+package com.thekeeperofpie.artistalleydatabase.image.crop
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Environment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
-import androidx.lifecycle.ViewModel
+import artistalleydatabase.modules.image.generated.resources.Res
+import artistalleydatabase.modules.image.generated.resources.image_crop_text
+import artistalleydatabase.modules.image.generated.resources.image_crop_title
 import artistalleydatabase.modules.utils_compose.generated.resources.confirm
-import com.thekeeperofpie.artistalleydatabase.entry.CropUtils.CROP_IMAGE_FILE_NAME
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropUtils.CROP_IMAGE_FILE_NAME
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
+import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.files.SystemPathSeparator
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Reproducing an image crop UI within the app is both extremely difficult and ineffective, as any
@@ -33,7 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
  * pointing to `/sdcard/Download/`[CROP_IMAGE_FILE_NAME] (must be this exact path so that
  * a hardcoded `file://` URI will point to it), which creates a persistently read-writable image
  * file for the app to write an entry image to, which will then be passed to Photos to edit
- * 1. Using the URI from the previous step, invoke a callback up to the [ViewModel], which will
+ * 1. Using the URI from the previous step, invoke a callback up to the ViewModel, which will
  * copy the content of the original image, `.../art_entry_images/ENTRY_UUID` to that document URI
  * 1. Send a completion notification to the Compose UI, which starts a
  * `com.android.camera.action.CROP`, targeting Photos's package name directly, passing it the
@@ -43,8 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
  */
 object CropUtils {
 
-    val CROP_IMAGE_FILE_NAME =
-        "ArtistAlleyDatabaseImageCrop${"Debug".takeIf { BuildConfig.DEBUG }.orEmpty()}.png"
+    val CROP_IMAGE_FILE_NAME = "ArtistAlleyDatabaseImageCrop.png"
     const val PHOTOS_PACKAGE_NAME = "com.google.android.apps.photos"
 
     fun cropIntent(): Intent {
@@ -62,30 +65,25 @@ object CropUtils {
             .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
     }
 
+    fun getCropTempPath(appFileSystem: AppFileSystem, imageFolderName: String, imageId: String) =
+        appFileSystem.cachePath("crop$SystemPathSeparator$imageFolderName")
+            .also { SystemFileSystem.createDirectories(it) }
+            .resolve(imageId)
+
     @Composable
     fun InstructionsDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text(stringResource(R.string.entry_image_crop_title)) },
-            text = { Text(stringResource(R.string.entry_image_crop_text, CROP_IMAGE_FILE_NAME)) },
+            title = { Text(stringResource(Res.string.image_crop_title)) },
+            text = { Text(stringResource(Res.string.image_crop_text, CROP_IMAGE_FILE_NAME)) },
             confirmButton = {
                 TextButton(onClick = {
                     onConfirm()
                     onDismiss()
                 }) {
-                    Text(ComposeResourceUtils.stringResource(UtilsStrings.confirm))
+                    Text(stringResource(UtilsStrings.confirm))
                 }
             },
         )
     }
-
-    data class CropState(
-        val imageCropNeedsDocument: () -> Boolean,
-        val onImageCropDocumentChosen: (index: Int, Uri?) -> Unit = { _, _ -> },
-        val onImageRequestCrop: (index: Int) -> Unit,
-        val onCropFinished: (index: Int?) -> Unit,
-        val cropReadyIndex: () -> Int,
-        val onCropConfirmed: (index: Int) -> Unit,
-        val cropDocumentRequestedIndex: () -> Int,
-    )
 }

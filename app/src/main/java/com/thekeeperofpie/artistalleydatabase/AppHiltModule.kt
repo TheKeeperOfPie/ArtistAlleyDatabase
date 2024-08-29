@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
@@ -139,4 +140,8 @@ object AppHiltModule {
         settings: MonetizationSettings,
         overrideProvider: MonetizationOverrideProvider,
     ) = MonetizationController(settings, overrideProvider)
+
+    @Singleton
+    @Provides
+    fun provideImageHandler(application: Application) = ImageHandler(application)
 }

@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -28,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsCompo
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 
 class ArtEntryNavigator : BrowseSelectionNavigator {
 
@@ -163,8 +163,8 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 viewModel = viewModel,
                 onClickBack = { navHostController.navigateUp() },
                 imageCornerDp = imageCornerDp,
-                onImageClickOpen = {
-                    viewModel.entryImageController.onImageClickOpen(navHostController, it)
+                onClickOpenImage = {
+                    viewModel.entryImageController.onClickOpenImage(navHostController, it)
                 },
                 onClickSave = { viewModel.onClickSave(navHostController) },
                 onLongClickSave = { viewModel.onLongClickSave(navHostController) },

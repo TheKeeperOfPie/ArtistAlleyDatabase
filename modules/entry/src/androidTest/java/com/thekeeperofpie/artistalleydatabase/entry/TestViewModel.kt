@@ -1,8 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.benasher44.uuid.Uuid
+import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import java.io.File
 
@@ -12,17 +15,24 @@ internal class TestViewModel(
     val entries: MutableMap<String, TestEntry> = mutableMapOf(),
     private val testDirectory: File,
     appJson: AppJson,
+    cropController: CropController,
+    imageHandler: ImageHandler,
 ) : EntryDetailsViewModel<TestEntry, TestModel>(
     TestEntry::class,
-    mockStrict {
+    AppFileSystem(mockStrict {
+        whenever(cacheDir) {
+            testDirectory.resolve(Uuid.randomUUID().toString()).apply { mkdirs() }
+        }
         whenever(filesDir) {
             testDirectory.resolve(Uuid.randomUUID().toString()).apply { mkdirs() }
         }
-    },
+    }),
     "test",
     -1,
-    TestSettings(cropUri),
     appJson = appJson,
+    settings = TestSettings(cropUri),
+    cropController = cropController,
+    imageHandler = imageHandler,
 ) {
 
     override val sections = emptyList<EntrySection>()
@@ -34,7 +44,7 @@ internal class TestViewModel(
 
     override suspend fun saveSingleEntry(
         saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
-        skipIgnoreableErrors: Boolean
+        skipIgnoreableErrors: Boolean,
     ) = if (hasError && !skipIgnoreableErrors) false else {
         if (entryIds.isEmpty()) {
             val id = Uuid.randomUUID().toString()
@@ -58,7 +68,7 @@ internal class TestViewModel(
 
     override suspend fun saveMultiEditEntry(
         saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
-        skipIgnoreableErrors: Boolean
+        skipIgnoreableErrors: Boolean,
     ) = throw AssertionError("Should not be called")
 
     override suspend fun deleteEntry(entryId: EntryId) {

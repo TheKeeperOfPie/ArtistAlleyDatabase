@@ -22,7 +22,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
@@ -46,15 +48,18 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     private val characterRepository: CharacterRepository,
     private val aniListAutocompleter: AniListAutocompleter,
     private val artSettings: ArtSettings,
-    entrySettings: EntrySettings,
+    settings: CropSettings,
+    cropController: CropController,
+    imageHandler: ImageHandler,
 ) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
     entryClass = ArtEntry::class,
-    application = application,
     appFileSystem = appFileSystem,
     scopedIdType = ArtEntryUtils.SCOPED_ID_TYPE,
     imageContentDescriptionRes = R.string.art_entry_image_content_description,
-    entrySettings = entrySettings,
     appJson = appJson,
+    settings = settings,
+    cropController = cropController,
+    imageHandler = imageHandler,
 ) {
     protected val entrySections = ArtEntrySections()
 

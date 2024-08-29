@@ -232,6 +232,7 @@ dependencies {
     implementation(project(":modules:browse"))
     implementation(project(":modules:cds"))
     implementation(project(":modules:compose-utils"))
+    implementation(project(":modules:image"))
     implementation(project(":modules:data"))
     implementation(project(":modules:entry"))
     implementation(project(":modules:monetization"))

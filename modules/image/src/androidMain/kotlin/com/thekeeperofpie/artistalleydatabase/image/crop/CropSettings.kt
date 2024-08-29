@@ -1,8 +1,7 @@
-package com.thekeeperofpie.artistalleydatabase.entry
+package com.thekeeperofpie.artistalleydatabase.image.crop
 
 import kotlinx.coroutines.flow.MutableStateFlow
 
-interface EntrySettings {
-
+interface CropSettings {
     val cropImageUri: MutableStateFlow<String?>
 }

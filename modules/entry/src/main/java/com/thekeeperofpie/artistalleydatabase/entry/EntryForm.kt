@@ -10,8 +10,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
-import android.provider.DocumentsContract
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
@@ -83,7 +81,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,16 +112,15 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
-import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -858,13 +854,12 @@ private fun CustomSection(section: EntrySection.Custom<*>) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MultiImageSelectBox(
     pagerState: PagerState,
     imageState: () -> EntryImageState,
-    cropState: () -> CropUtils.CropState,
     onClickOpenImage: (index: Int) -> Unit,
+    onClickCropImage: (index: Int) -> Unit,
     imageContent: @Composable (image: EntryImage, zoomPanState: ZoomPanState) -> Unit,
 ) {
     val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
@@ -874,60 +869,6 @@ fun MultiImageSelectBox(
     val imageSelectSingleLauncher = rememberLauncherForActivityResult(
         imageState().imageContentWithIndexChooser,
     ) { (index, uri) -> imageState().onSelected(index, uri) }
-
-    val imageCropDocumentLauncher = if (cropState().imageCropNeedsDocument()) {
-        rememberLauncherForActivityResult(
-            object : ActivityResultContract<Int, Pair<Int, Uri?>>() {
-                private var chosenIndex = 0
-
-                @CallSuper
-                override fun createIntent(context: Context, input: Int): Intent {
-                    chosenIndex = input
-                    return Intent(Intent.ACTION_CREATE_DOCUMENT)
-                        .setType("image/png")
-                        .putExtra(Intent.EXTRA_TITLE, CropUtils.CROP_IMAGE_FILE_NAME)
-                        .putExtra(
-                            DocumentsContract.EXTRA_INITIAL_URI,
-                            Environment.getExternalStoragePublicDirectory(
-                                Environment.DIRECTORY_DOWNLOADS
-                            ).toUri()
-                        )
-                }
-
-                override fun parseResult(resultCode: Int, intent: Intent?): Pair<Int, Uri?> {
-                    return chosenIndex to intent.takeIf { resultCode == Activity.RESULT_OK }?.data
-                }
-            }
-        ) { (index, uri) -> cropState().onImageCropDocumentChosen(index, uri) }
-    } else null
-
-    val imageCropLauncher = rememberLauncherForActivityResult(
-        object : ActivityResultContract<Int, Int?>() {
-            private var chosenIndex = 0
-
-            override fun createIntent(context: Context, input: Int): Intent {
-                chosenIndex = input
-                return CropUtils.cropIntent()
-            }
-
-            override fun parseResult(resultCode: Int, intent: Intent?) =
-                chosenIndex.takeIf { resultCode == Activity.RESULT_OK }
-        }
-    ) { cropState().onCropFinished(it) }
-
-    val cropDocumentRequestedIndex = cropState().cropDocumentRequestedIndex()
-    LaunchedEffect(cropDocumentRequestedIndex) {
-        if (cropDocumentRequestedIndex != -1) {
-            imageCropDocumentLauncher?.launch(cropDocumentRequestedIndex)
-        }
-    }
-
-    val cropReadyIndex = cropState().cropReadyIndex()
-    LaunchedEffect(cropReadyIndex) {
-        if (cropReadyIndex != -1) {
-            imageCropLauncher.launch(cropReadyIndex)
-        }
-    }
 
     var showMenu by remember { mutableStateOf(false) }
     val zoomPanStates = remember { mutableMapOf<Int, ZoomPanState>() }
@@ -967,14 +908,7 @@ fun MultiImageSelectBox(
                         .pointerInput(zoomPanState) {
                             detectTapGestures(
                                 onTap = { showMenu = true },
-                                onLongPress = {
-                                    val cropState = cropState()
-                                    if (cropState.cropReadyIndex() == index) {
-                                        imageCropLauncher.launch(index)
-                                    } else {
-                                        cropState.onImageRequestCrop(index)
-                                    }
-                                },
+                                onLongPress = { onClickCropImage(index) },
                                 onDoubleTap = {
                                     coroutineScope.launch {
                                         zoomPanState.toggleZoom(it, size)
@@ -1032,13 +966,7 @@ fun MultiImageSelectBox(
                     text = { Text(stringResource(R.string.entry_image_menu_option_crop)) },
                     onClick = {
                         showMenu = false
-                        val currentPage = pagerState.currentPage
-                        val cropState = cropState()
-                        if (cropState.cropReadyIndex() == currentPage) {
-                            imageCropLauncher.launch(currentPage)
-                        } else {
-                            cropState.onImageRequestCrop(currentPage)
-                        }
+                        onClickCropImage(pagerState.currentPage)
                     },
                 )
             }

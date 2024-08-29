@@ -21,15 +21,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,7 +51,7 @@ class SettingsProvider(
     private val appJson: AppJson,
     sharedPreferencesFileName: String = PREFERENCES_NAME,
     private val featureOverrideProvider: FeatureOverrideProvider,
-) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings, MonetizationSettings,
+) : ArtSettings, CropSettings, NetworkSettings, AnimeSettings, MonetizationSettings,
     AniListSettings, NewsSettings {
 
     companion object {
