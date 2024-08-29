@@ -22,7 +22,7 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
 
-    implementation("androidx.navigation:navigation-compose:2.8.0-beta04")
+    implementation(libs.navigation.compose)
 
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)

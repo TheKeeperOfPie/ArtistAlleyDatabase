@@ -42,7 +42,7 @@ import org.gradle.api.initialization.resolve.RepositoriesMode
 import org.gradle.kotlin.dsl.maven
 
 object Versions {
-    const val accompanist = "0.35.1-alpha"
+    const val accompanist = "0.35.2-beta"
 
     object android {
         const val gradle = "8.7.0-alpha07"
@@ -52,16 +52,16 @@ object Versions {
 
     object androidx {
         const val activity = "1.9.0"
-        const val annotation = "1.9.0-alpha01"
+        const val annotation = "1.9.0-alpha02"
         const val browser = "1.8.0"
-        const val core = "1.15.0-alpha01"
+        const val core = "1.15.0-alpha02"
         const val hilt = "1.2.0"
         const val lifecycle = "2.9.0-alpha01"
-        const val media3 = "1.4.0"
-        const val navigation = "2.8.0-beta07"
+        const val media3 = "1.4.1"
+        const val navigation = "2.8.0-rc01"
         const val paging = "3.3.2"
         const val palette = "1.0.0"
-        const val room = "2.7.0-alpha06"
+        const val room = "2.7.0-alpha07"
         const val securityCrypto = "1.1.0-alpha06"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
@@ -70,7 +70,7 @@ object Versions {
     }
 
     object apache {
-        const val commonsCompress = "1.27.0"
+        const val commonsCompress = "1.27.1"
         const val commonsCsv = "1.11.0"
     }
 
@@ -83,22 +83,21 @@ object Versions {
     const val coil = "3.0.0-alpha10"
 
     object compose {
-        const val core = "1.7.0-beta07"
+        const val core = "1.7.0-rc01"
         const val runtimeTracing = "1.0.0-beta01"
     }
 
     object composeMultiplatform {
         object androidx {
-            const val navigation = "2.7.0-alpha07"
+            const val navigation = "2.8.0-alpha09"
         }
-        const val plugin = "1.7.0-alpha02"
-        const val runtime = "1.7.0-alpha02"
+        const val plugin = "1.7.0-alpha03"
+        const val runtime = "1.7.0-alpha03"
     }
 
     const val cronetEmbedded = "119.6045.31"
 
-    // Version 1.33.0 fails with NoSuchMethodError com.google.common.graph.Graphs.reachableNodes
-    const val dependencyAnalysis = "1.32.0"
+    const val dependencyAnalysis = "2.0.0"
     const val dexmakerInline = "2.28.4"
     const val diffUtils = "0.7.0"
     const val flowExt = "1.0.0-RC"
@@ -134,12 +133,12 @@ object Versions {
     const val kermit = "2.0.4"
 
     object kotlin {
-        const val core = "2.0.20-RC2"
+        const val core = "2.0.20"
         const val coroutines = "1.9.0-RC.2"
-        const val datetime = "0.6.0"
-        const val io = "0.5.2"
-        const val ksp = "2.0.20-RC2-1.0.24"
-        const val serialization = "1.7.1"
+        const val datetime = "0.6.1"
+        const val io = "0.5.3"
+        const val ksp = "2.0.20-1.0.24"
+        const val serialization = "1.7.2"
     }
 
     const val kotlinPoet = "1.15.3"
@@ -149,12 +148,12 @@ object Versions {
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.30"
     const val markwon = "4.6.2"
-    const val material3 = "1.3.0-beta05"
-    const val mockito = "5.12.0"
+    const val material3 = "1.3.0-rc01"
+    const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
-    const val netflixDgs = "9.0.4"
-    const val netflixDgsCodegen = "6.2.2"
+    const val netflixDgs = "9.1.0"
+    const val netflixDgsCodegen = "6.3.0"
     const val okhttp = "5.0.0-alpha.14"
     const val skrapeIt = "1.3.0-alpha.1"
     const val unityAds = "4.12.2"
