@@ -6,8 +6,9 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.serialization.Serializable
 
+@Suppress("DataClassPrivateConstructor")
 @Serializable
-class SharedTransitionKey private constructor(val key: String) {
+data class SharedTransitionKey private constructor(val key: String) {
 
     companion object {
         @Composable
