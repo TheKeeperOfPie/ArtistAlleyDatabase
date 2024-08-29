@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateListOf
 import artistalleydatabase.modules.utils_compose.generated.resources.error_fail_to_load_image
 import com.benasher44.uuid.Uuid
 import com.eygraber.uri.Uri
-import com.eygraber.uri.toUri
 import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
@@ -39,7 +38,7 @@ class EntryImageController(
 
     val imageState = EntryImageState(
         images = { images },
-        onSelected = { index, uri -> onImageSelected(index, uri?.toUri()) },
+        onSelected = { index, uri -> onImageSelected(index, uri) },
         onSelectError = {
             onError(UtilsStrings.error_fail_to_load_image to it)
         },
@@ -48,10 +47,10 @@ class EntryImageController(
             scope.launch(Dispatchers.IO.limitedParallelism(8)) {
                 val newImages = it.map {
                     async {
-                        val (width, height) = appFileSystem.getImageWidthHeight(it.toUri())
+                        val (width, height) = appFileSystem.getImageWidthHeight(it)
                         EntryImage(
                             entryId = entryIds.singleOrNull(),
-                            uri = it.toUri(),
+                            uri = it,
                             width = width ?: 1,
                             height = height ?: 1,
                             contentDescriptionRes = imageContentDescriptionRes,

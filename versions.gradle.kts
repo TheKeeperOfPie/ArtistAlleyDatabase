@@ -45,7 +45,7 @@ object Versions {
     const val accompanist = "0.35.2-beta"
 
     object android {
-        const val gradle = "8.7.0-alpha07"
+        const val gradle = "8.7.0-alpha08"
     }
 
     const val androidJunit5 = "1.11.0.0"

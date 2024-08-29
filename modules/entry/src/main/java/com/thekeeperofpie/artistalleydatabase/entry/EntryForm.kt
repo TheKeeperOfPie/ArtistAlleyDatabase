@@ -6,15 +6,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.CallSuper
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -81,6 +73,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,6 +108,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.image.rememberImageSelectController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
@@ -862,14 +857,6 @@ fun MultiImageSelectBox(
     onClickCropImage: (index: Int) -> Unit,
     imageContent: @Composable (image: EntryImage, zoomPanState: ZoomPanState) -> Unit,
 ) {
-    val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
-        GetMultipleContentsChooser,
-        imageState().onAdded,
-    )
-    val imageSelectSingleLauncher = rememberLauncherForActivityResult(
-        imageState().imageContentWithIndexChooser,
-    ) { (index, uri) -> imageState().onSelected(index, uri) }
-
     var showMenu by remember { mutableStateOf(false) }
     val zoomPanStates = remember { mutableMapOf<Int, ZoomPanState>() }
     val userScrollEnabled by remember {
@@ -877,6 +864,22 @@ fun MultiImageSelectBox(
             zoomPanStates[pagerState.currentPage]?.canPanExternal() != false
         }
     }
+
+    val imageSelectController = rememberImageSelectController()
+    val imageSelectState = imageSelectController.state
+    LaunchedEffect(imageSelectState) {
+        imageSelectState.additions
+            .collect {
+                imageState().onAdded(it)
+            }
+    }
+    LaunchedEffect(imageSelectState) {
+        imageSelectState.selections
+            .collect {
+                imageState().onSelected(it.first, it.second)
+            }
+    }
+
     val images = imageState().images()
     HorizontalPager(
         state = pagerState,
@@ -884,9 +887,7 @@ fun MultiImageSelectBox(
         modifier = Modifier.heightIn(max = 10000.dp)
     ) { index ->
         if (index == images.size) {
-            AddImagePagerPage(
-                onAddClick = { imageSelectMultipleLauncher.launch("image/*") },
-            )
+            AddImagePagerPage(onAddClick = imageSelectController::requestNewImages)
         } else {
             val image = images[index]
             val uri = image.croppedUri ?: image.uri
@@ -953,7 +954,7 @@ fun MultiImageSelectBox(
                     onClick = {
                         showMenu = false
                         try {
-                            imageSelectSingleLauncher.launch(pagerState.currentPage)
+                            imageSelectController.requestNewImage(pagerState.currentPage)
                         } catch (e: Exception) {
                             imageState().onSelectError(e)
                         }
@@ -996,6 +997,7 @@ private fun AddImagePagerPage(onAddClick: () -> Unit, modifier: Modifier = Modif
     }
 }
 
+// TODO: Remove
 data class EntryImageState(
     val images: () -> List<EntryImage> = { emptyList() },
     val onSelected: (index: Int, Uri?) -> Unit = { _, _ -> },
@@ -1003,30 +1005,4 @@ data class EntryImageState(
     val addAllowed: () -> Boolean = { false },
     val onAdded: (List<Uri>) -> Unit,
     val onSizeResult: (width: Int, height: Int) -> Unit = { _, _ -> },
-) {
-    val imageContentWithIndexChooser: ActivityResultContract<Int, Pair<Int, Uri?>> =
-        GetImageContentWithIndexChooser()
-}
-
-private object GetMultipleContentsChooser : ActivityResultContracts.GetMultipleContents() {
-    @CallSuper
-    override fun createIntent(context: Context, input: String): Intent {
-        return Intent.createChooser(super.createIntent(context, input), null)
-    }
-}
-
-private class GetImageContentWithIndexChooser : ActivityResultContract<Int, Pair<Int, Uri?>>() {
-    private var chosenIndex = 0
-
-    @CallSuper
-    override fun createIntent(context: Context, input: Int): Intent {
-        chosenIndex = input
-        return Intent.createChooser(
-            Intent(Intent.ACTION_GET_CONTENT).addCategory(Intent.CATEGORY_OPENABLE)
-                .setType("image/*"), null
-        )
-    }
-
-    override fun parseResult(resultCode: Int, intent: Intent?) =
-        chosenIndex to intent.takeIf { resultCode == Activity.RESULT_OK }?.data
-}
+)
