@@ -73,7 +73,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -865,20 +864,10 @@ fun MultiImageSelectBox(
         }
     }
 
-    val imageSelectController = rememberImageSelectController()
-    val imageSelectState = imageSelectController.state
-    LaunchedEffect(imageSelectState) {
-        imageSelectState.additions
-            .collect {
-                imageState().onAdded(it)
-            }
-    }
-    LaunchedEffect(imageSelectState) {
-        imageSelectState.selections
-            .collect {
-                imageState().onSelected(it.first, it.second)
-            }
-    }
+    val imageSelectController = rememberImageSelectController(
+        onSelection = imageState().onSelected,
+        onAddition = imageState().onAdded,
+    )
 
     val images = imageState().images()
     HorizontalPager(

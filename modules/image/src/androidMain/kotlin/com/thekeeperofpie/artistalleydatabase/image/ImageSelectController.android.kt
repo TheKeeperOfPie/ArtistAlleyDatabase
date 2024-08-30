@@ -13,22 +13,21 @@ import androidx.compose.runtime.remember
 import com.eygraber.uri.Uri
 import com.eygraber.uri.toUri
 import com.eygraber.uri.toUriOrNull
-import kotlinx.coroutines.flow.MutableSharedFlow
 
 @Composable
-actual fun rememberImageSelectController(): ImageSelectController {
-    val imageSelectState = remember { ImageSelectState() }
+actual fun rememberImageSelectController(
+    onAddition: (List<Uri>) -> Unit,
+    onSelection: (index: Int, Uri?) -> Unit,
+): ImageSelectController {
+    val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
+        GetMultipleContentsChooser,
+    ) { onAddition(it.map { it.toUri() }) }
     val contract = remember { GetImageContentWithIndexChooser() }
     val imageSelectSingleLauncher = rememberLauncherForActivityResult(
         contract,
-        imageSelectState.selections::tryEmit,
-    )
-    val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
-        GetMultipleContentsChooser,
-    ) { imageSelectState.additions.tryEmit(it.map { it.toUri() }) }
-    return remember(imageSelectState, imageSelectSingleLauncher, imageSelectMultipleLauncher) {
+    ) { onSelection(it.first, it.second) }
+    return remember(imageSelectSingleLauncher, imageSelectMultipleLauncher) {
         ImageSelectController(
-            imageSelectState,
             imageSelectSingleLauncher,
             imageSelectMultipleLauncher,
         )
@@ -36,7 +35,6 @@ actual fun rememberImageSelectController(): ImageSelectController {
 }
 
 actual class ImageSelectController(
-    val state: ImageSelectState,
     private val imageSelectSingleLauncher: ManagedActivityResultLauncher<Int, Pair<Int, Uri?>>,
     private val imageSelectMultipleLauncher: ManagedActivityResultLauncher<String, List<android.net.Uri>>,
 ) {
@@ -47,12 +45,6 @@ actual class ImageSelectController(
     actual fun requestNewImage(index: Int) {
         imageSelectSingleLauncher.launch(index)
     }
-}
-
-class ImageSelectState {
-
-    val additions = MutableSharedFlow<List<Uri>>()
-    val selections = MutableSharedFlow<Pair<Int, Uri?>>()
 }
 
 private object GetMultipleContentsChooser : ActivityResultContracts.GetMultipleContents() {
