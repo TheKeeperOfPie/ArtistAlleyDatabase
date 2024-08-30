@@ -5,10 +5,10 @@ plugins {
 }
 
 kotlin {
-    // TODO: This target is required to resolve kotlin-test properly, but why?
-    iosX64()
-
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.activity.compose)
+        }
         commonMain.dependencies {
             api(compose.components.resources)
             implementation(libs.jetBrainsCompose.navigation.compose)

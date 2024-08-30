@@ -6,7 +6,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -109,6 +108,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.image.rememberImageSelectController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder

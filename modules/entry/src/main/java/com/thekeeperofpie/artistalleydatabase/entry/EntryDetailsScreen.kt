@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -75,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropRequestDialog
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
@@ -85,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.topBorder
@@ -109,9 +110,10 @@ object EntryDetailsScreen {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
         val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
             ?.onBackPressedDispatcher
+        val localNavHostController = LocalNavHostController.current
         val pullRefreshState = rememberPullRefreshState(
             refreshing = false,
-            onRefresh = { backPressedDispatcher?.onBackPressed() },
+            onRefresh = { localNavHostController.navigateUp() },
             resetAfterPull = false,
         )
 

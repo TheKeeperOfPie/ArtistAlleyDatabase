@@ -120,6 +120,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Optional
@@ -227,6 +228,7 @@ class MainActivity : ComponentActivity() {
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
                 val imageColorsState = rememberImageColorsState()
                 CompositionLocalProvider(
+                    LocalNavHostController provides navHostController,
                     LocalMonetizationProvider provides monetizationProvider,
                     LocalSubscriptionProvider provides subscriptionProvider,
                     LocalMediaTagDialogController provides mediaTagDialogController,
