@@ -33,12 +33,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
+import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 
 @Suppress("NAME_SHADOWING")
@@ -113,8 +115,8 @@ object ChooserScreen {
                         query(),
                         placeholder = {
                             Text(
-                                text = stringResource(
-                                    EntryStringR.entry_search_hint_with_entry_count,
+                                text = ComposeResourceUtils.stringResource(
+                                    EntryStrings.entry_search_hint_with_entry_count,
                                     entries().itemCount,
                                 ),
                             )

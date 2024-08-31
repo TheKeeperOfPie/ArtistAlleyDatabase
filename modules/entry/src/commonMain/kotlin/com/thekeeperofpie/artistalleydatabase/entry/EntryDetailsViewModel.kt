@@ -65,6 +65,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
 
     var showExitPrompt by mutableStateOf(false)
 
+    // TODO: Move to StringResource
     var errorResource by mutableStateOf<Pair<Either<StringResource, Int>, Throwable?>?>(null)
 
     var sectionsLoading by mutableStateOf(true)

@@ -31,10 +31,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.entry.generated.resources.Res
+import artistalleydatabase.modules.entry.generated.resources.different
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun EntryPrefilledAutocompleteDropdown(
@@ -94,7 +97,7 @@ fun EntryPrefilledAutocompleteDropdown(
                                     secondaryImageLink = { entry.secondaryImageLink }
                                 }
                                 EntrySection.MultiText.Entry.Different -> {
-                                    titleText = { stringResource(R.string.different) }
+                                    titleText = { stringResource(Res.string.different) }
                                 }
                             }.run { /*exhaust*/ }
 
@@ -143,7 +146,7 @@ fun EntryPrefilledAutocompleteDropdown(
                                     Icon(
                                         imageVector = imageVector,
                                         contentDescription = entry.trailingIconContentDescription
-                                            ?.let { stringResource(it) },
+                                            ?.let { ComposeResourceUtils.stringResourceCompat(it) },
                                     )
                                 }
 

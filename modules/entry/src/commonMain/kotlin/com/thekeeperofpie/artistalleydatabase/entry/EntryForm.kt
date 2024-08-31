@@ -97,18 +97,34 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.entry.generated.resources.Res
+import artistalleydatabase.modules.entry.generated.resources.delete
+import artistalleydatabase.modules.entry.generated.resources.different
+import artistalleydatabase.modules.entry.generated.resources.entry_add_image_content_description
+import artistalleydatabase.modules.entry.generated.resources.entry_image_content_description
+import artistalleydatabase.modules.entry.generated.resources.entry_image_menu_option_crop
+import artistalleydatabase.modules.entry.generated.resources.entry_image_menu_option_edit
+import artistalleydatabase.modules.entry.generated.resources.entry_image_menu_option_open
+import artistalleydatabase.modules.entry.generated.resources.entry_open_more_content_description
+import artistalleydatabase.modules.entry.generated.resources.label_open_entry_link
+import artistalleydatabase.modules.entry.generated.resources.lock_state_different_content_description
+import artistalleydatabase.modules.entry.generated.resources.lock_state_locked_content_description
+import artistalleydatabase.modules.entry.generated.resources.lock_state_unlocked_content_description
+import artistalleydatabase.modules.entry.generated.resources.more_actions_content_description
+import artistalleydatabase.modules.entry.generated.resources.move_down
+import artistalleydatabase.modules.entry.generated.resources.move_up
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.image.rememberImageSelectController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
@@ -116,6 +132,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun EntryForm(
@@ -137,9 +154,11 @@ fun EntryForm(
                 // TODO: Remove this in favor of bottom sheet?
                 // This forces it to be bigger than the screen so that it
                 // covers all of the previous screen content.
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2000.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2000.dp)
+                ) {
                     CircularProgressIndicator(
                         Modifier
                             .padding(16.dp)
@@ -161,7 +180,7 @@ fun EntryForm(
                                         is EntrySection.Dropdown,
                                         is EntrySection.LongText,
                                         is EntrySection.MultiText,
-                                        -> nextSection.lockState?.editable != false
+                                            -> nextSection.lockState?.editable != false
                                     }
                                 }
                                 ?.let { sectionFocusRequesters[it] }
@@ -184,7 +203,7 @@ fun EntryForm(
                                         is EntrySection.Dropdown,
                                         is EntrySection.LongText,
                                         is EntrySection.MultiText,
-                                        -> previousSection.lockState?.editable != false
+                                            -> previousSection.lockState?.editable != false
                                     }
                                 }
                                 ?.let { sectionFocusRequesters[it] }
@@ -247,9 +266,9 @@ private fun SectionHeader(
                     EntrySection.LockState.DIFFERENT -> Icons.Default.LockReset
                 },
                 contentDescription = when (lockState) {
-                    EntrySection.LockState.LOCKED -> R.string.lock_state_locked_content_description
-                    EntrySection.LockState.UNLOCKED -> R.string.lock_state_unlocked_content_description
-                    EntrySection.LockState.DIFFERENT -> R.string.lock_state_different_content_description
+                    EntrySection.LockState.LOCKED -> Res.string.lock_state_locked_content_description
+                    EntrySection.LockState.UNLOCKED -> Res.string.lock_state_unlocked_content_description
+                    EntrySection.LockState.DIFFERENT -> Res.string.lock_state_different_content_description
                 }.let { stringResource(it) },
                 modifier = Modifier.padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
             )
@@ -271,7 +290,7 @@ private fun MultiTextSection(
         1 -> section.headerOne
         else -> section.headerMany
     }
-        .let { stringResource(it) }
+        .let { ComposeResourceUtils.stringResourceCompat(it) }
         .let {
             SectionHeader(
                 text = { it },
@@ -321,7 +340,7 @@ private fun MultiTextSection(
                     onDismissRequest = { showOverflow = false },
                 ) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.delete)) },
+                        text = { Text(stringResource(Res.string.delete)) },
                         onClick = {
                             section.removeContentAt(index)
                             showOverflow = false
@@ -329,7 +348,7 @@ private fun MultiTextSection(
                     )
                     if (index > 0) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.move_up)) },
+                            text = { Text(stringResource(Res.string.move_up)) },
                             onClick = {
                                 section.swapContent(index, index - 1)
                                 showOverflow = false
@@ -338,7 +357,7 @@ private fun MultiTextSection(
                     }
                     if (index < section.contentSize() - 1) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.move_down)) },
+                            text = { Text(stringResource(Res.string.move_down)) },
                             onClick = {
                                 section.swapContent(index, index + 1)
                                 showOverflow = false
@@ -382,7 +401,7 @@ private fun MultiTextSection(
 @Composable
 private fun LongTextSection(section: EntrySection.LongText, focusRequester: FocusRequester) {
     SectionHeader(
-        text = { stringResource(section.headerRes) },
+        text = { ComposeResourceUtils.stringResourceCompat(section.headerRes) },
         lockState = { section.lockState },
         onClick = { section.rotateLockState() }
     )
@@ -431,7 +450,7 @@ private fun PrefilledSectionField(
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                                     contentDescription = stringResource(
-                                        R.string.entry_open_more_content_description
+                                        Res.string.entry_open_more_content_description
                                     ),
                                 )
                             }
@@ -446,7 +465,7 @@ private fun PrefilledSectionField(
                                 Icon(
                                     imageVector = Icons.Default.MoreVert,
                                     contentDescription = stringResource(
-                                        R.string.more_actions_content_description
+                                        Res.string.more_actions_content_description
                                     ),
                                 )
                             }
@@ -516,7 +535,7 @@ private fun PrefilledSectionField(
                     Icon(
                         imageVector = imageVector,
                         contentDescription = entry.trailingIconContentDescription
-                            ?.let { stringResource(it) },
+                            ?.let { ComposeResourceUtils.stringResourceCompat(it) },
                     )
                 }
 
@@ -552,7 +571,7 @@ private fun PrefilledSectionField(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = stringResource(
-                                R.string.more_actions_content_description
+                                Res.string.more_actions_content_description
                             ),
                         )
                     }
@@ -570,7 +589,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = stringResource(
-                                    R.string.more_actions_content_description
+                                    Res.string.more_actions_content_description
                                 ),
                             )
                         }
@@ -590,7 +609,7 @@ private fun PrefilledSectionField(
         }
         EntrySection.MultiText.Entry.Different -> {
             TextField(
-                value = stringResource(R.string.different),
+                value = stringResource(Res.string.different),
                 onValueChange = {},
                 readOnly = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -603,7 +622,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = imageVector,
                                 contentDescription = entry.trailingIconContentDescription
-                                    ?.let { stringResource(it) },
+                                    ?.let { ComposeResourceUtils.stringResourceCompat(it) },
                                 modifier = if (lockState?.editable != false) Modifier else
                                     Modifier.padding(start = 16.dp),
                             )
@@ -613,7 +632,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = stringResource(
-                                    R.string.more_actions_content_description
+                                    Res.string.more_actions_content_description
                                 ),
                             )
                         }
@@ -644,7 +663,7 @@ fun EntryImage(
         modifier
             .optionalClickable(
                 onClick = link()?.let { { uriHandler.openUri(it) } },
-                onClickLabel = stringResource(R.string.label_open_entry_link),
+                onClickLabel = stringResource(Res.string.label_open_entry_link),
                 role = Role.Image,
             )
             .animateContentSize()
@@ -668,7 +687,7 @@ fun EntryImage(
                     .data(image)
                     .crossfade(true)
                     .build(),
-                contentDescription = stringResource(R.string.entry_image_content_description),
+                contentDescription = stringResource(Res.string.entry_image_content_description),
                 onLoading = { showPlaceholder = true },
                 onSuccess = { showPlaceholder = false },
                 contentScale = contentScale,
@@ -765,7 +784,7 @@ private fun OpenSectionField(
 @Composable
 private fun DropdownSection(section: EntrySection.Dropdown, focusRequester: FocusRequester) {
     SectionHeader(
-        text = { stringResource(section.headerRes) },
+        text = { ComposeResourceUtils.stringResourceCompat(section.headerRes) },
         lockState = { section.lockState },
         onClick = { section.rotateLockState() }
     )
@@ -797,7 +816,7 @@ private fun DropdownSection(section: EntrySection.Dropdown, focusRequester: Focu
                     ) {
                         TrailingDropdownIcon(
                             expanded = section.expanded,
-                            contentDescription = stringResource(section.arrowContentDescription),
+                            contentDescription = ComposeResourceUtils.stringResourceCompat(section.arrowContentDescription),
                         )
                     }
                 },
@@ -834,7 +853,7 @@ private fun DropdownSection(section: EntrySection.Dropdown, focusRequester: Focu
 @Composable
 private fun CustomSection(section: EntrySection.Custom<*>) {
     SectionHeader(
-        text = { stringResource(section.headerRes()) },
+        text = { ComposeResourceUtils.stringResourceCompat(section.headerRes()) },
         lockState = { section.lockState },
         onClick = { section.rotateLockState() }
     )
@@ -929,7 +948,7 @@ fun MultiImageSelectBox(
                     .padding(24.dp)
             ) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.entry_image_menu_option_open)) },
+                    text = { Text(stringResource(Res.string.entry_image_menu_option_open)) },
                     onClick = {
                         showMenu = false
                         onClickOpenImage(pagerState.currentPage)
@@ -939,7 +958,7 @@ fun MultiImageSelectBox(
                 HorizontalDivider()
 
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.entry_image_menu_option_edit)) },
+                    text = { Text(stringResource(Res.string.entry_image_menu_option_edit)) },
                     onClick = {
                         showMenu = false
                         try {
@@ -953,7 +972,7 @@ fun MultiImageSelectBox(
                 HorizontalDivider()
 
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.entry_image_menu_option_crop)) },
+                    text = { Text(stringResource(Res.string.entry_image_menu_option_crop)) },
                     onClick = {
                         showMenu = false
                         onClickCropImage(pagerState.currentPage)
@@ -977,7 +996,7 @@ private fun AddImagePagerPage(onAddClick: () -> Unit, modifier: Modifier = Modif
         Icon(
             imageVector = Icons.Default.AddPhotoAlternate,
             contentDescription = stringResource(
-                R.string.entry_add_image_content_description
+                Res.string.entry_add_image_content_description
             ),
             Modifier
                 .size(48.dp)

@@ -9,4 +9,10 @@ object ComposeResourceUtils {
     @Composable
     fun stringResource(resource: StringResource) =
         org.jetbrains.compose.resources.stringResource(resource)
+    @Composable
+    fun stringResource(resource: StringResource, vararg formatArgs: Any) =
+        org.jetbrains.compose.resources.stringResource(resource, formatArgs)
+
+    @Composable
+    fun stringResourceCompat(resource: StringResourceCompat) = resource.text()
 }

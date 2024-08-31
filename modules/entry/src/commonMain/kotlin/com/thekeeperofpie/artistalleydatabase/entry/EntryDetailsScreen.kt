@@ -61,9 +61,17 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.entry.generated.resources.Res
+import artistalleydatabase.modules.entry.generated.resources.delete
+import artistalleydatabase.modules.entry.generated.resources.entry_confirm_exit_description
+import artistalleydatabase.modules.entry.generated.resources.entry_confirm_exit_title
+import artistalleydatabase.modules.entry.generated.resources.entry_image_content_description
+import artistalleydatabase.modules.entry.generated.resources.entry_no_image_content_description
+import artistalleydatabase.modules.entry.generated.resources.save
+import artistalleydatabase.modules.entry.generated.resources.save_skip_errors
+import artistalleydatabase.modules.entry.generated.resources.save_template
 import artistalleydatabase.modules.utils_compose.generated.resources.cancel
 import artistalleydatabase.modules.utils_compose.generated.resources.exit
 import coil3.compose.AsyncImage
@@ -90,6 +98,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefr
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.topBorder
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object EntryDetailsScreen {
@@ -164,9 +173,10 @@ object EntryDetailsScreen {
                 val errorRes = viewModel.errorResource
                 SnackbarErrorText(
                     error = {
+                        // TODO: Move to StringResource
                         errorRes?.first?.leftOrNull()
                             ?.let { ComposeResourceUtils.stringResource(it) }
-                            ?: errorRes?.first?.rightOrNull()?.let { stringResource(it) }
+//                            ?: errorRes?.first?.rightOrNull()?.let { stringResource(it) }
                     },
                     exception = errorRes?.second,
                     onErrorDismiss = { viewModel.errorResource = null },
@@ -291,7 +301,7 @@ object EntryDetailsScreen {
                 if (onClickSaveTemplate != null) {
                     TextButton(onClick = onClickSaveTemplate) {
                         Text(
-                            text = stringResource(R.string.save_template),
+                            text = stringResource(Res.string.save_template),
                             modifier = Modifier.padding(
                                 start = 16.dp,
                                 end = 16.dp,
@@ -304,7 +314,7 @@ object EntryDetailsScreen {
 
                 TextButton(onClick = { onShowDeleteDialogChange(true) }) {
                     Text(
-                        text = stringResource(R.string.delete),
+                        text = stringResource(Res.string.delete),
                         modifier = Modifier.padding(
                             start = 16.dp,
                             end = 16.dp,
@@ -319,7 +329,7 @@ object EntryDetailsScreen {
                     modifier = Modifier.combinedClickable(
                         onClick = onClickSave,
                         onLongClick = onLongClickSave,
-                        onLongClickLabel = stringResource(R.string.save_skip_errors)
+                        onLongClickLabel = stringResource(Res.string.save_skip_errors)
                     )
                 ) {
                     Crossfade(
@@ -330,7 +340,7 @@ object EntryDetailsScreen {
                             CircularProgressIndicator()
                         } else {
                             Text(
-                                text = stringResource(R.string.save),
+                                text = stringResource(Res.string.save),
                                 modifier = Modifier.padding(
                                     start = 16.dp,
                                     end = 16.dp,
@@ -353,10 +363,10 @@ object EntryDetailsScreen {
     ) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text(stringResource(R.string.entry_confirm_exit_title)) },
+            title = { Text(stringResource(Res.string.entry_confirm_exit_title)) },
             text = {
                 Column {
-                    Text(stringResource(R.string.entry_confirm_exit_description))
+                    Text(stringResource(Res.string.entry_confirm_exit_description))
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -386,12 +396,12 @@ object EntryDetailsScreen {
                     onDismiss()
                     onConfirmExit()
                 }) {
-                    Text(ComposeResourceUtils.stringResource(UtilsStrings.exit))
+                    Text(stringResource(UtilsStrings.exit))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text(ComposeResourceUtils.stringResource(UtilsStrings.cancel))
+                    Text(stringResource(UtilsStrings.cancel))
                 }
             },
         )
@@ -455,7 +465,7 @@ object EntryDetailsScreen {
                                     }
                                     .build(),
                                 contentDescription = stringResource(
-                                    R.string.entry_image_content_description
+                                    Res.string.entry_image_content_description
                                 ),
                                 contentScale = ContentScale.FillWidth,
                                 modifier = Modifier
@@ -480,7 +490,7 @@ object EntryDetailsScreen {
                     Icon(
                         imageVector = Icons.Default.ImageNotSupported,
                         contentDescription = stringResource(
-                            R.string.entry_no_image_content_description
+                            Res.string.entry_no_image_content_description
                         ),
                         Modifier
                             .size(48.dp)

@@ -43,21 +43,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import artistalleydatabase.modules.entry.generated.resources.Res
+import artistalleydatabase.modules.entry.generated.resources.entry_search_add_entry
+import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
+import artistalleydatabase.modules.entry.generated.resources.entry_search_edit_mode_clear
+import artistalleydatabase.modules.entry.generated.resources.entry_search_edit_mode_delete
+import artistalleydatabase.modules.entry.generated.resources.entry_search_edit_mode_edit
+import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_edit_mode_selected
+import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import artistalleydatabase.modules.utils_compose.generated.resources.clear
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridDeleteDialog
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object EntryHomeScreen {
@@ -186,7 +193,7 @@ object EntryHomeScreen {
                                             Icon(
                                                 imageVector = Icons.Default.Clear,
                                                 contentDescription = stringResource(
-                                                    R.string.entry_search_edit_mode_clear
+                                                    Res.string.entry_search_edit_mode_clear
                                                 ),
                                             )
                                         }
@@ -198,9 +205,9 @@ object EntryHomeScreen {
                                     Text(
                                         text = stringResource(
                                             if (isEditMode) {
-                                                R.string.entry_search_hint_edit_mode_selected
+                                                Res.string.entry_search_hint_edit_mode_selected
                                             } else {
-                                                R.string.entry_search_hint_with_entry_count
+                                                Res.string.entry_search_hint_with_entry_count
                                             },
                                             if (isEditMode) {
                                                 selectedItems().size
@@ -221,7 +228,7 @@ object EntryHomeScreen {
                                                 Icon(
                                                     imageVector = Icons.Filled.Delete,
                                                     contentDescription = stringResource(
-                                                        R.string.entry_search_edit_mode_delete
+                                                        Res.string.entry_search_edit_mode_delete
                                                     )
                                                 )
                                             }
@@ -237,7 +244,7 @@ object EntryHomeScreen {
                                                 Icon(
                                                     imageVector = Icons.Filled.Edit,
                                                     contentDescription = stringResource(
-                                                        R.string.entry_search_edit_mode_edit
+                                                        Res.string.entry_search_edit_mode_edit
                                                     )
                                                 )
                                             }
@@ -248,7 +255,7 @@ object EntryHomeScreen {
                                                 Icon(
                                                     imageVector = Icons.Filled.Clear,
                                                     contentDescription = stringResource(
-                                                        R.string.entry_search_clear
+                                                        Res.string.entry_search_clear
                                                     ),
                                                 )
                                             }
@@ -271,7 +278,7 @@ object EntryHomeScreen {
                         ) {
                             Icon(
                                 Icons.Filled.Add,
-                                contentDescription = stringResource(R.string.entry_search_add_entry)
+                                contentDescription = stringResource(Res.string.entry_search_add_entry)
                             )
                         }
                     }
@@ -297,7 +304,7 @@ object EntryHomeScreen {
         HorizontalDivider()
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
             TextButton(onClick = { sections.forEach { it.clear() } }) {
-                Text(text = ComposeResourceUtils.stringResource(UtilsStrings.clear))
+                Text(text = stringResource(UtilsStrings.clear))
             }
         }
     }

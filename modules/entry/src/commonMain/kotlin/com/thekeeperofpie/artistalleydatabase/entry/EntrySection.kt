@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material3.Text
@@ -13,9 +12,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import artistalleydatabase.modules.entry.generated.resources.Res
+import artistalleydatabase.modules.entry.generated.resources.different_indicator_content_description
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.observableStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -92,13 +96,29 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
     protected abstract fun clearSection()
 
     class MultiText(
-        @StringRes val headerZero: Int,
-        @StringRes val headerOne: Int,
-        @StringRes val headerMany: Int,
+        val headerZero: StringResourceCompat,
+        val headerOne: StringResourceCompat,
+        val headerMany: StringResourceCompat,
         initialPendingValue: String = "",
         lockState: LockState? = null,
         val navRoute: ((Entry) -> String)? = null,
     ) : EntrySection(lockState) {
+        constructor(
+            headerZero: Int,
+            headerOne: Int,
+            headerMany: Int,
+            initialPendingValue: String = "",
+            lockState: LockState? = null,
+            navRoute: ((Entry) -> String)? = null,
+        ) : this(
+            headerZero = StringResourceId(headerZero),
+            headerOne = StringResourceId(headerOne),
+            headerMany = StringResourceId(headerMany),
+            initialPendingValue = initialPendingValue,
+            lockState = lockState,
+            navRoute = navRoute,
+        )
+
         val contents = mutableStateListOf<Entry>()
         private var contentUpdates = MutableStateFlow(emptyList<Entry>())
 
@@ -252,14 +272,15 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
         }
 
         private fun indexOf(entry: Entry) =
-            contents.indexOfFirst { it.javaClass == entry.javaClass && it.id == entry.id }
+            // TODO: Does this class comparison matter?
+            contents.indexOfFirst { /*it.javaClass == entry.javaClass && */it.id == entry.id }
 
         @Immutable
         sealed class Entry(
             val id: String,
             val text: String,
             val trailingIcon: ImageVector? = null,
-            @StringRes val trailingIconContentDescription: Int? = null,
+            val trailingIconContentDescription: StringResourceCompat? = null,
             val serializedValue: String = text,
             val searchableValue: String = text,
         ) {
@@ -271,7 +292,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
                 text = "",
                 trailingIcon = Icons.Default.ViewKanban,
                 trailingIconContentDescription =
-                R.string.different_indicator_content_description
+                StringResourceCompose(Res.string.different_indicator_content_description)
             )
 
             class Prefilled<T>(
@@ -285,7 +306,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
                 val titleText: String = text,
                 val subtitleText: String? = null,
                 trailingIcon: ImageVector? = null,
-                trailingIconContentDescription: Int? = null,
+                trailingIconContentDescription: StringResourceCompat? = null,
                 serializedValue: String,
                 searchableValue: String,
             ) : Entry(
@@ -304,10 +325,20 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
     }
 
     class LongText(
-        @StringRes val headerRes: Int,
+        val headerRes: StringResourceCompat,
         initialPendingValue: String = "",
         lockState: LockState? = null,
     ) : EntrySection(lockState) {
+        constructor(
+            headerRes: Int,
+            initialPendingValue: String = "",
+            lockState: LockState? = null,
+        ) : this(
+            headerRes = StringResourceId(headerRes),
+            initialPendingValue = initialPendingValue,
+            lockState = lockState,
+        )
+
         var value by mutableStateOf(initialPendingValue)
 
         fun setContents(value: String?, lockState: LockState?) {
@@ -321,11 +352,23 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
     }
 
     open class Dropdown(
-        @StringRes val headerRes: Int,
-        @StringRes val arrowContentDescription: Int,
+        val headerRes: StringResourceCompat,
+        val arrowContentDescription: StringResourceCompat,
         var options: SnapshotStateList<Item> = mutableStateListOf(),
         lockState: LockState? = null,
     ) : EntrySection(lockState) {
+        constructor(
+            headerRes: Int,
+            arrowContentDescription: Int,
+            options: SnapshotStateList<Item> = mutableStateListOf(),
+            lockState: LockState? = null,
+        ) : this(
+            headerRes = StringResourceId(headerRes),
+            arrowContentDescription = StringResourceId(arrowContentDescription),
+            options = options,
+            lockState = lockState,
+        )
+
         var expanded by mutableStateOf(false)
         var selectedIndex by mutableIntStateOf(0)
 
@@ -345,12 +388,14 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
             fun Content(lockState: LockState?) {
             }
 
-            class Basic<T>(val value: T, @StringRes val textRes: Int) : Item {
+            class Basic<T>(val value: T, val textRes: StringResourceCompat) : Item {
+
+                constructor(value: T, textRes: Int) : this(value, StringResourceId(textRes))
 
                 override val hasCustomView = false
 
                 @Composable
-                override fun fieldText() = stringResource(textRes)
+                override fun fieldText() = ComposeResourceUtils.stringResourceCompat(textRes)
 
                 @Composable
                 override fun DropdownItemText() = Text(fieldText())
@@ -364,8 +409,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
 
     abstract class Custom<OutputType>(lockState: LockState? = null) : EntrySection(lockState) {
 
-        @StringRes
-        abstract fun headerRes(): Int
+        abstract fun headerRes(): StringResourceCompat
 
         @Composable
         abstract fun Content(lockState: LockState?)

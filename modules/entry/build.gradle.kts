@@ -1,41 +1,36 @@
 plugins {
-    id("compose-library")
-    id("dagger.hilt.android.plugin")
-    id("com.google.devtools.ksp")
+    id("library-compose")
+    id("library-android")
     id("org.jetbrains.kotlin.plugin.serialization")
     alias(libs.plugins.de.mannodermaus.android.junit5)
+}
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":modules:image"))
+            implementation(project(":modules:utils"))
+            implementation(project(":modules:utils-compose"))
+            implementation(project(":modules:utils-room"))
+
+            implementation(libs.flowExt)
+
+            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.paging.compose)
+            implementation(libs.coil3.coil.compose)
+
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.uuid)
+            implementation(libs.uri.kmp)
+            implementation(libs.kotlin.multiplatform.diff)
+        }
+    }
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.entry"
 }
 
-dependencies {
-    api(project(":modules:image"))
-    implementation(project(":modules:utils"))
-    implementation(project(":modules:utils-compose"))
-    implementation(project(":modules:utils-room"))
-
-    api(libs.flowExt)
-    api(libs.compose.animation)
-    api(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.compose.material.icons.core)
-    implementation(libs.compose.material.icons.extended)
-    implementation(libs.material3)
-
-    implementation(libs.navigation.compose)
-    implementation(libs.paging.compose)
-    implementation(libs.coil3.coil.compose)
-    implementation(libs.coil3.coil.network.okhttp)
-
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.uuid)
-    implementation(libs.uri.kmp)
-
-    implementation(libs.kotlin.multiplatform.diff)
-
-    androidTestImplementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
+compose.resources {
+    publicResClass = true
 }

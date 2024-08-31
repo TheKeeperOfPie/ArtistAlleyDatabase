@@ -1,7 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import gradle.kotlin.dsl.accessors._b2937d1b40dda98f7678619569c6e850.kotlin
-import gradle.kotlin.dsl.accessors._b2937d1b40dda98f7678619569c6e850.sourceSets
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 val Project.libs: VersionCatalog
@@ -24,18 +22,16 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    sourceSets {
-        commonMain.dependencies {
-            libs.find(
-                "libs.flowExt",
-            ).forEach(::api)
+    sourceSets.getByName("commonMain").dependencies {
+        libs.find(
+            "libs.flowExt",
+        ).forEach(::api)
 
-            libs.find(
-                "libs.androidx.annotation",
-                "libs.kotlinx.coroutines.core",
-                "libs.kotlinx.datetime",
-                "libs.kotlinx.serialization.json",
-            ).forEach(::implementation)
-        }
+        libs.find(
+            "libs.androidx.annotation",
+            "libs.kotlinx.coroutines.core",
+            "libs.kotlinx.datetime",
+            "libs.kotlinx.serialization.json",
+        ).forEach(::implementation)
     }
 }

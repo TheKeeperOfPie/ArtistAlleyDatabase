@@ -13,9 +13,11 @@ dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:entry"))
     api(project(":modules:utils-network"))
+    api(project(":modules:utils-compose"))
 
     api(libs.okhttp)
 
+    implementation(libs.compose.ui)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)

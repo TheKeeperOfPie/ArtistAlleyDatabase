@@ -37,7 +37,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -45,16 +44,23 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import artistalleydatabase.modules.entry.generated.resources.Res
+import artistalleydatabase.modules.entry.generated.resources.entry_image_content_description
+import artistalleydatabase.modules.entry.generated.resources.entry_results_multiple
+import artistalleydatabase.modules.entry.generated.resources.entry_results_one
+import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
+import artistalleydatabase.modules.entry.generated.resources.long_press_multi_select_label
+import artistalleydatabase.modules.entry.generated.resources.selected_content_description
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Dimension
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
-import com.thekeeperofpie.artistalleydatabase.entry.R
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Suppress("NAME_SHADOWING")
 object EntryGrid {
@@ -93,9 +99,9 @@ object EntryGrid {
             val scope = rememberCoroutineScope()
             entriesSize()?.let { size ->
                 val stringRes = when (size) {
-                    0 -> R.string.entry_results_zero
-                    1 -> R.string.entry_results_one
-                    else -> R.string.entry_results_multiple
+                    0 -> Res.string.entry_results_zero
+                    1 -> Res.string.entry_results_one
+                    else -> Res.string.entry_results_multiple
                 }
 
                 Text(
@@ -193,7 +199,7 @@ object EntryGrid {
                     .combinedClickable(
                         onClick = { onClickEntry(index, entry) },
                         onLongClick = { onLongClickEntry(index, entry) },
-                        onLongClickLabel = stringResource(R.string.long_press_multi_select_label)
+                        onLongClickLabel = stringResource(Res.string.long_press_multi_select_label)
                     )
             ) {
                 val imageUri = entry.imageUri
@@ -232,7 +238,7 @@ object EntryGrid {
                             )
                             .build(),
                         contentDescription = stringResource(
-                            R.string.entry_image_content_description
+                            Res.string.entry_image_content_description
                         ),
                         contentScale = ContentScale.FillWidth,
                         modifier = entryModifier
@@ -261,7 +267,7 @@ object EntryGrid {
                 ) {
                     Icon(
                         Icons.Default.CheckCircle,
-                        contentDescription = stringResource(R.string.selected_content_description),
+                        contentDescription = stringResource(Res.string.selected_content_description),
                     )
                 }
 

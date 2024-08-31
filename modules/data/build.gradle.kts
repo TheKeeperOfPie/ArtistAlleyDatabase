@@ -13,6 +13,7 @@ dependencies {
     api(project(":modules:anilist"))
     api(project(":modules:entry"))
 
+    implementation(libs.compose.ui)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)

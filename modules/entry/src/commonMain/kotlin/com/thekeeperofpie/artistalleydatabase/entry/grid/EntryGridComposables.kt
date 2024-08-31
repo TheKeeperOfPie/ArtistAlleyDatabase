@@ -20,14 +20,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
+import artistalleydatabase.modules.entry.generated.resources.Res
+import artistalleydatabase.modules.entry.generated.resources.delete_dialog_title
+import artistalleydatabase.modules.entry.generated.resources.entry_search_edit_mode_clear
+import artistalleydatabase.modules.entry.generated.resources.entry_search_edit_mode_delete
+import artistalleydatabase.modules.entry.generated.resources.entry_search_edit_mode_edit
+import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_edit_mode_selected
 import artistalleydatabase.modules.utils_compose.generated.resources.cancel
 import artistalleydatabase.modules.utils_compose.generated.resources.confirm
-import com.thekeeperofpie.artistalleydatabase.entry.R
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun EntryGridAppBar(
@@ -44,7 +48,7 @@ fun EntryGridAppBar(
             Text(
                 text = if (isEditMode) {
                     stringResource(
-                        R.string.entry_search_hint_edit_mode_selected,
+                        Res.string.entry_search_hint_edit_mode_selected,
                         selectedItems().size,
                     )
                 } else {
@@ -59,7 +63,7 @@ fun EntryGridAppBar(
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = stringResource(
-                            R.string.entry_search_edit_mode_clear
+                            Res.string.entry_search_edit_mode_clear
                         ),
                     )
                 }
@@ -74,7 +78,7 @@ fun EntryGridAppBar(
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = stringResource(
-                            R.string.entry_search_edit_mode_delete
+                            Res.string.entry_search_edit_mode_delete
                         )
                     )
                 }
@@ -90,7 +94,7 @@ fun EntryGridAppBar(
                     Icon(
                         imageVector = Icons.Filled.Edit,
                         contentDescription = stringResource(
-                            R.string.entry_search_edit_mode_edit
+                            Res.string.entry_search_edit_mode_edit
                         )
                     )
                 }
@@ -106,18 +110,18 @@ internal fun EntryGridDeleteDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.delete_dialog_title)) },
+        title = { Text(stringResource(Res.string.delete_dialog_title)) },
         confirmButton = {
             TextButton(onClick = {
                 onDismiss()
                 onConfirmDelete()
             }) {
-                Text(ComposeResourceUtils.stringResource(UtilsStrings.confirm))
+                Text(stringResource(UtilsStrings.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(ComposeResourceUtils.stringResource(UtilsStrings.cancel))
+                Text(stringResource(UtilsStrings.cancel))
             }
         },
     )

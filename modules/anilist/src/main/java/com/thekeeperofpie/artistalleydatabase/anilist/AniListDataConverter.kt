@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import javax.inject.Inject
 
 class AniListDataConverter @Inject constructor(
@@ -35,7 +36,7 @@ class AniListDataConverter @Inject constructor(
                 MediaType.ANIME -> AniListStringR.aniList_entry_anime_indicator_content_description
                 MediaType.MANGA -> AniListStringR.aniList_entry_manga_indicator_content_description
                 else -> null
-            },
+            }?.let(::StringResourceId),
             image = media.coverImage?.medium,
             imageLink = media.type?.let { AniListUtils.mediaUrl(it, media.id.toString()) },
             serializedValue = serializedValue,
@@ -69,7 +70,7 @@ class AniListDataConverter @Inject constructor(
                 MediaEntry.Type.MANGA ->
                     AniListStringR.aniList_entry_manga_indicator_content_description
                 else -> null
-            },
+            }?.let(::StringResourceId),
             image = entry.image?.medium,
             imageLink = AniListUtils.mediaUrl(entry.type, entry.id),
             serializedValue = serializedValue,

@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import artistalleydatabase.modules.entry.generated.resources.log_out
+import artistalleydatabase.modules.entry.generated.resources.more_actions_content_description
 import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserMediaStatistics
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -45,15 +47,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
-import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
+import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -108,8 +111,8 @@ object AniListUserScreen {
                                     IconButton(onClick = { menuExpanded = true }) {
                                         Icon(
                                             imageVector = Icons.Default.MoreVert,
-                                            contentDescription = stringResource(
-                                                EntryStringR.more_actions_content_description
+                                            contentDescription = ComposeResourceUtils.stringResource(
+                                                EntryStrings.more_actions_content_description
                                             ),
                                         )
                                     }
@@ -119,7 +122,7 @@ object AniListUserScreen {
                                         onDismissRequest = { menuExpanded = false },
                                     ) {
                                         DropdownMenuItem(
-                                            text = { Text(stringResource(EntryStringR.log_out)) },
+                                            text = { Text(ComposeResourceUtils.stringResource(EntryStrings.log_out)) },
                                             onClick = {
                                                 viewModel.logOut()
                                                 menuExpanded = false
