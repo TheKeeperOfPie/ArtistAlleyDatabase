@@ -1,17 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
+import com.thekeeperofpie.artistalleydatabase.utils_network.WebScraper
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
-import okhttp3.OkHttpClient
+import io.ktor.client.HttpClient
 
 class VgmdbApi(
     private val albumEntryDao: AlbumEntryDao,
     private val vgmdbArtistDao: VgmdbArtistDao,
     vgmdbJson: VgmdbJson,
-    okHttpClient: OkHttpClient,
+    httpClient: HttpClient,
+    webScraper: WebScraper,
 ) {
-
-    private val parser = VgmdbParser(vgmdbJson.json, okHttpClient)
+    private val parser = VgmdbParser(vgmdbJson.json, httpClient, webScraper)
 
     suspend fun searchAlbums(query: String) =
         parser.search(query)?.albums?.take(5) ?: emptyList()

@@ -94,7 +94,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.semantics.Role
@@ -119,6 +118,7 @@ import artistalleydatabase.modules.entry.generated.resources.more_actions_conten
 import artistalleydatabase.modules.entry.generated.resources.move_down
 import artistalleydatabase.modules.entry.generated.resources.move_up
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
@@ -683,7 +683,7 @@ fun EntryImage(
 
         if (image != null) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
+                model = ImageRequest.Builder(LocalPlatformContext.current)
                     .data(image)
                     .crossfade(true)
                     .build(),

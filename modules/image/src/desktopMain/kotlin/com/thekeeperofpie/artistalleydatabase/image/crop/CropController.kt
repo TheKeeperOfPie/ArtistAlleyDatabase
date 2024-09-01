@@ -1,8 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.image.crop
 
 import com.eygraber.uri.Uri
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 actual class CropController {
+
+    actual val cropResults = MutableSharedFlow<CropState.CropResult>()
 
     actual fun onImageCropDocumentChosen(
         request: CropState.CropRequest?,

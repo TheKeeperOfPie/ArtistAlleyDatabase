@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,14 +31,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_albums
+import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_artists
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStringR
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
 object SettingsScreen {
@@ -238,11 +242,11 @@ object SettingsScreen {
         }
     }
 
-    enum class DatabaseType(@StringRes val labelRes: Int) {
-        ANILIST_CHARACTERS(R.string.settings_aniList_characters),
-        ANILIST_MEDIA(R.string.settings_aniList_media),
-        VGMDB_ALBUMS(VgmdbStringR.vgmdb_albums),
-        VGMDB_ARTISTS(VgmdbStringR.vgmdb_artists),
-        MUSICAL_ARTISTS(MusicalArtistsStringR.musical_artists),
+    enum class DatabaseType(val labelRes: StringResourceCompat) {
+        ANILIST_CHARACTERS(StringResourceId(R.string.settings_aniList_characters)),
+        ANILIST_MEDIA(StringResourceId(R.string.settings_aniList_media)),
+        VGMDB_ALBUMS(StringResourceCompose(VgmdbStrings.vgmdb_albums)),
+        VGMDB_ARTISTS(StringResourceCompose(VgmdbStrings.vgmdb_artists)),
+        MUSICAL_ARTISTS(StringResourceId(MusicalArtistsStringR.musical_artists)),
     }
 }

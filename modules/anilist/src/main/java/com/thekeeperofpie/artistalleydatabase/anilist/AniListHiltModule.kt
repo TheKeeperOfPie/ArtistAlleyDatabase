@@ -17,8 +17,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApiWrapper
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import dagger.Module
@@ -148,10 +149,10 @@ class AniListHiltModule {
     @Singleton
     @Provides
     fun provideMediaRepository(
-        application: ScopedApplication,
+        scope: ApplicationScope,
         mediaEntryDao: MediaEntryDao,
         aniListApi: AniListApi,
-    ) = MediaRepository(application, mediaEntryDao, aniListApi)
+    ) = MediaRepository(scope, mediaEntryDao, aniListApi)
 
     @Singleton
     @Provides
@@ -160,11 +161,11 @@ class AniListHiltModule {
     @Singleton
     @Provides
     fun provideCharacterRepository(
-        application: ScopedApplication,
+        scope: ApplicationScope,
         appJson: AppJson,
         characterEntryDao: CharacterEntryDao,
         aniListApi: AniListApi,
-    ) = CharacterRepository(application, appJson, characterEntryDao, aniListApi)
+    ) = CharacterRepository(scope, appJson, characterEntryDao, aniListApi)
 
     @Singleton
     @Provides

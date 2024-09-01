@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.EnterExitState
@@ -58,8 +57,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -75,6 +72,7 @@ import artistalleydatabase.modules.entry.generated.resources.save_template
 import artistalleydatabase.modules.utils_compose.generated.resources.cancel
 import artistalleydatabase.modules.utils_compose.generated.resources.exit
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.imageFolderName
@@ -84,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
@@ -117,8 +116,6 @@ object EntryDetailsScreen {
         onNavigate: (String) -> Unit,
     ) {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
-        val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
-            ?.onBackPressedDispatcher
         val localNavHostController = LocalNavHostController.current
         val pullRefreshState = rememberPullRefreshState(
             refreshing = false,
@@ -173,10 +170,7 @@ object EntryDetailsScreen {
                 val errorRes = viewModel.errorResource
                 SnackbarErrorText(
                     error = {
-                        // TODO: Move to StringResource
-                        errorRes?.first?.leftOrNull()
-                            ?.let { ComposeResourceUtils.stringResource(it) }
-//                            ?: errorRes?.first?.rightOrNull()?.let { stringResource(it) }
+                        errorRes?.first?.let { ComposeResourceUtils.stringResourceCompat(it) }
                     },
                     exception = errorRes?.second,
                     onErrorDismiss = { viewModel.errorResource = null },
@@ -439,7 +433,7 @@ object EntryDetailsScreen {
                                 }
                             }
                     }?.value
-                    val configuration = LocalConfiguration.current
+                    val configuration = LocalAppConfiguration.current
                     val screenWidth = configuration.screenWidthDp.dp
                     val minimumHeight = screenWidth * entryImage.widthToHeightRatio
                     val sharedTransitionKey = entryImage.entryId?.scopedId
@@ -447,7 +441,7 @@ object EntryDetailsScreen {
                     Column {
                         ZoomPanBox(state = zoomPanState) {
                             AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
+                                model = ImageRequest.Builder(LocalPlatformContext.current)
                                     .data(uri)
                                     .crossfade(false)
                                     .placeholderMemoryCacheKey(

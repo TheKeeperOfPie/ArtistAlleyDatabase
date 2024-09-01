@@ -1,10 +1,10 @@
 plugins {
     id("library-android")
+    id("library-desktop")
     id("com.google.devtools.ksp")
 }
 
 kotlin {
-    iosX64()
     sourceSets {
         androidMain.dependencies {
             api(libs.room.ktx)

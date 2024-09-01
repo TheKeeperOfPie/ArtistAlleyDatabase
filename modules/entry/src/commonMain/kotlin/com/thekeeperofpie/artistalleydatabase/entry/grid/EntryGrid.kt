@@ -34,16 +34,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.entry_image_content_description
 import artistalleydatabase.modules.entry.generated.resources.entry_results_multiple
@@ -52,13 +47,18 @@ import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
 import artistalleydatabase.modules.entry.generated.resources.long_press_multi_select_label
 import artistalleydatabase.modules.entry.generated.resources.selected_content_description
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -139,7 +139,7 @@ object EntryGrid {
     ) {
         val expectedWidth = LocalDensity.current.run {
             // TODO: Find a better way to calculate the optimal image size
-            val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+            val screenWidth = LocalAppConfiguration.current.screenWidthDp.dp
             val columns = (screenWidth / 160.dp).toInt()
             screenWidth.roundToPx() / columns
         }.let(::Dimension)
@@ -225,7 +225,7 @@ object EntryGrid {
                 } else {
                     val sharedTransitionKey = SharedTransitionKey.makeKeyForId(entry.id.scopedId)
                     AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
+                        model = ImageRequest.Builder(LocalPlatformContext.current)
                             .data(imageUri)
                             .size(expectedWidth, Dimension.Undefined)
                             .crossfade(true)

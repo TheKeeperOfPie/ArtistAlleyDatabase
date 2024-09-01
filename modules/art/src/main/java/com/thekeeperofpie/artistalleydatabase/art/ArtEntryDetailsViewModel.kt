@@ -24,16 +24,15 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
-import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import org.jetbrains.compose.resources.StringResource
 import javax.inject.Inject
 
 @HiltViewModel
@@ -203,7 +202,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             .let { mediaRepository.ensureSaved(it) }
             ?.let {
                 if (!skipIgnoreableErrors) {
-                    errorResource = Either.Right<StringResource, Int>(it.first) to it.second
+                    errorResource = it.first to it.second
                     return false
                 }
             }
@@ -213,7 +212,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             .let { characterRepository.ensureSaved(it) }
             ?.let {
                 if (!skipIgnoreableErrors) {
-                    errorResource = Either.Right<StringResource, Int>(it.first) to it.second
+                    errorResource = it.first to it.second
                     return false
                 }
             }
@@ -454,6 +453,6 @@ open class ArtEntryDetailsViewModel @Inject constructor(
 
     fun onClickSaveTemplate() {
         artSettings.artEntryTemplate.value = makeBaseEntry()
-        errorResource = Either.Right<StringResource, Int>(R.string.art_template_saved) to null
+        errorResource = StringResourceId(R.string.art_template_saved) to null
     }
 }

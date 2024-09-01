@@ -1,30 +1,33 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.io.SourceReader
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.ported.openSourceReader
 import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils_network.WebScraper
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
-import it.skrape.core.htmlDocument
-import it.skrape.fetcher.BrowserFetcher
-import it.skrape.fetcher.response
-import it.skrape.fetcher.skrape
-import it.skrape.selects.CssSelectable
-import it.skrape.selects.DocElement
-import it.skrape.selects.ElementNotFoundException
-import it.skrape.selects.html5.h1
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.request
+import io.ktor.http.Url
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.Locale
 
-class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient) {
+class VgmdbParser(
+    private val json: Json,
+    private val httpClient: HttpClient,
+    private val webScraper: WebScraper,
+) {
 
     companion object {
         private const val BASE_URL = "https://vgmdb.net"
@@ -38,18 +41,29 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
 
     suspend fun search(query: String) = withContext(Dispatchers.IO) {
         val encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString())
-        val request = Request.Builder()
-            .url("$BASE_URL/search?q=$encodedQuery")
-            .build()
+        val url = "$BASE_URL/search?q=$encodedQuery"
+        // TODO: Ktor returns no response for a redirected single album this, but BrowserFetcher
+        //  formats text incorrectly
+        val response = httpClient.get(url)
+        val responseBody = response.bodyAsText()
+        val encodedPath: String
+        val finalResponse: String
+        if (responseBody.isBlank()) {
+            val (finalUrl, scrapeResponse) = webScraper.get(url)
+            encodedPath = Url(finalUrl).encodedPath
+            finalResponse = scrapeResponse
+        } else {
+            encodedPath = response.headers["Location"]?.let { Url(it).encodedPath }
+                ?: response.request.url.encodedPath
+            finalResponse = responseBody
+        }
+        search(encodedPath, finalResponse)
+    }
 
-        val (finalPath, text) = okHttpClient.newCall(request).execute()
-            .use { it.request.url.encodedPath to it.body.string() }
-
-        if (finalPath.startsWith("/search")) {
-            parseSearchHtml(text)
-        } else if (finalPath.startsWith("/album")) {
+    fun search(finalPath: String, response: String) =
+        if (finalPath.startsWith("/album") || response.contains("albumtools")) {
             val id = finalPath.substringAfter("/album/").substringBefore("/")
-            parseAlbumHtml(id, text)?.let {
+            parseAlbumHtml(id, response.openSourceReader())?.let {
                 SearchResults(
                     albums = listOf(
                         SearchResults.AlbumResult(
@@ -60,27 +74,31 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
                     )
                 )
             }
+        } else if (finalPath.startsWith("/search")) {
+            parseSearchHtml(response.openSourceReader())
         } else null
-    }
 
-    private fun parseSearchHtml(text: String) = htmlDocument(text) {
-        val innerMain = this["#innermain"] ?: return@htmlDocument null
+    private fun parseSearchHtml(input: SourceReader): SearchResults? {
+        val document = Ksoup.parse(input, BASE_URL)
+        val innerMain = document.getElementById("innermain") ?: return null
         val albums = mutableListOf<SearchResults.AlbumResult>()
         val artists = mutableListOf<SearchResults.ArtistResult>()
-        innerMain.all("div")
+        innerMain.getElementsByTag("div")
             .forEach {
-                when (it.attribute("id")) {
+                when (it.attribute("id")?.value) {
                     "albumresults" -> {
-                        albums += it.all("tr")
+                        albums += it.getElementsByTag("tr")
                             .drop(1) // Skip the header
                             .mapNotNull {
-                                val cells = it.all("td")
-                                val catalogId = cells.getOrNull(0)?.get(".catalog")?.text
-                                val info = cells.getOrNull(2)?.get("a")
-                                val id = info?.attribute("href")
+                                val cells = it.getElementsByTag("td")
+                                val catalogId = cells.getOrNull(0)
+                                    ?.getElementsByClass("catalog")?.text()
+                                val info = cells.getOrNull(2)
+                                    ?.getElementsByTag("a")?.singleOrNull()
+                                val id = info?.attr("href")
                                     ?.substringAfter("album/")
                                     ?: return@mapNotNull null
-                                val names = parseAlbumTitles(info)
+                                val names = parseAlbumTitles(info).orEmpty()
                                 SearchResults.AlbumResult(
                                     id = id,
                                     catalogId = catalogId,
@@ -89,17 +107,18 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
                             }
                     }
                     "artistresults" -> {
-                        artists += it.all("tr")
+                        artists += it.getElementsByTag("tr")
                             .drop(1) // Skip the header
                             .mapNotNull {
-                                val cells = it.all("td")
-                                val info = cells.getOrNull(0)?.get("a")
-                                val id = info?.attribute("href")
+                                val cells = it.getElementsByTag("td")
+                                val info = cells.getOrNull(0)
+                                    ?.getElementsByTag("a")?.singleOrNull()
+                                val id = info?.attr("href")
                                     ?.substringAfter("artist/")
                                     ?: return@mapNotNull null
                                 SearchResults.ArtistResult(
                                     id = id,
-                                    name = info.text,
+                                    name = info.text(),
                                 )
                             }
                     }
@@ -107,48 +126,45 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
                 }
             }
 
-        SearchResults(
+        return SearchResults(
             albums = albums,
             artists = artists,
         )
     }
 
     suspend fun parseAlbum(id: String) = withContext(Dispatchers.IO) {
-        skrape(BrowserFetcher) {
-            request {
-                url = "$BASE_URL/album/$id"
-            }
-
-            response {
-                parseAlbumHtml(id, responseBody)
-            }
-        }
+        val response = httpClient.get("$BASE_URL/album/$id").bodyAsText()
+        parseAlbumHtml(id, response.openSourceReader())
     }
 
-    private fun parseAlbumHtml(id: String, text: String) = htmlDocument(text) {
-        val innerMain = this["#innermain"] ?: return@htmlDocument null
-        val names = innerMain.h1 { parseAlbumTitles(this) }
+    private fun parseAlbumHtml(
+        id: String,
+        input: SourceReader,
+    ): AlbumEntry? {
+        val document = Ksoup.parse(input, BASE_URL)
+        val innerMain = document.getElementById("innermain") ?: return null
+        val names = parseAlbumTitles(innerMain.getElementsByTag("h1").single())
 
-        val coverArt = innerMain.findFirst("#coverart") {
-            attribute("style")
-                .removePrefix("background-image: url('")
-                .removeSuffix("')")
-                .takeIf(String::isNotEmpty)
-        }
+        val coverArt = innerMain.expectFirst("#coverart")
+            .attr("style")
+            .removePrefix("background-image: url('")
+            .removeSuffix("')")
+            .takeIf(String::isNotEmpty)
 
         var catalogId: String? = null
 
-        val infoTable = innerMain["#rightfloat", "div", "div", "table"]
-        infoTable?.all("tr")
+        val infoTable = innerMain.select("#rightfloat", "div", "div", "table")
+        infoTable?.getElementsByTag("tr")
             ?.map {
-                when (it["b"]?.ownText) {
+                val text = it.selectFirst("b")?.ownText()
+                when (text) {
                     "Catalog Number" -> {
-                        val catalogData = it.byIndex(1, "td")
-                        val innerA = catalogData?.get("a")
-                        catalogId = if (innerA?.attribute("href") == "#") {
-                            innerA.ownText
+                        val catalogData = it.getElementsByTag("td").getOrNull(1)
+                        val innerA = catalogData?.getElementsByTag("a")?.singleOrNull()
+                        catalogId = if (innerA?.attr("href") == "#") {
+                            innerA.ownText()
                         } else {
-                            catalogData?.ownText?.substringBefore("(")
+                            catalogData?.ownText()?.substringBefore("(")
                         }
                             ?.trim()
                             ?.takeIf { it.isNotBlank() }
@@ -159,34 +175,39 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
         val performers = mutableListOf<Either<String, ArtistColumnEntry>>()
         val composers = mutableListOf<Either<String, ArtistColumnEntry>>()
 
-        innerMain["#collapse_credits"]?.all("tr")?.map {
-            val name = it["td", "b", "span"]?.ownText
-            when (name?.lowercase(Locale.ENGLISH)) {
-                "vocals", "vocalist" -> {
-                    performers += parseArtistCredits(it)
-                }
-                "performer", "performed by" -> {
-                    performers += parseArtistCredits(it)
-                }
-                "composer", "composed by" -> {
-                    composers += parseArtistCredits(it)
+        innerMain.getElementById("collapse_credits")
+            ?.getElementsByTag("tr")
+            ?.map {
+                val name = it.select("td", "b", "span")?.ownText()
+                when (name?.lowercase()) {
+                    "vocals", "vocalist" -> {
+                        performers += parseArtistCredits(it)
+                    }
+                    "performer", "performed by" -> {
+                        performers += parseArtistCredits(it)
+                    }
+                    "composer", "composed by" -> {
+                        composers += parseArtistCredits(it)
+                    }
                 }
             }
-        }
 
         val discs = mutableListOf<DiscEntry>()
-        val trackDivs = innerMain["#tracklist"]?.parent()?.parent()?.all("div")
+        val trackDivs =
+            innerMain.getElementById("tracklist")?.parent()?.parent()?.getElementsByTag("div")
         if (trackDivs != null) {
-            val languages = trackDivs.firstOrNull()?.get("ul")?.all("li")?.map { it["a"]?.text }
-            val languageSections = trackDivs.getOrNull(1)?.all(".tl").orEmpty()
+            val languages = trackDivs.firstOrNull()?.getElementsByTag("ul")?.firstOrNull()
+                ?.getElementsByTag("li")
+                ?.map { it.getElementsByTag("a").firstOrNull()?.text() }
+            val languageSections = trackDivs.getOrNull(2)?.getElementsByClass("tl").orEmpty()
             val firstLanguageDiscs = languageSections.firstOrNull()?.let { section ->
                 val language = languages?.firstOrNull().orEmpty()
                     .substringBefore("/")
                     .let { LANGUAGE_MAPPING.getOrDefault(it, it) }
                 var index = 0
-                val children = section.children
+                val children = section.children()
                     .filter {
-                        when (it.tagName) {
+                        when (it.tagName()) {
                             "span", "table" -> true
                             else -> false
                         }
@@ -197,18 +218,19 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
                 while (index < children.size) {
                     val discSpanOne = children[index]
                     val tableSpanOne =
-                        children.getOrNull(index + 1).takeIf { it?.tagName == "table" }
+                        children.getOrNull(index + 1).takeIf { it?.tagName() == "table" }
                     val tableSpanTwo =
-                        children.getOrNull(index + 2).takeIf { it?.tagName == "table" }
+                        children.getOrNull(index + 2).takeIf { it?.tagName() == "table" }
                     val tableSpan = tableSpanOne ?: tableSpanTwo
                     if (tableSpan == null) {
                         index = children.size
                         continue
                     }
 
-                    val discSpanTwo = children.getOrNull(index + 1).takeIf { it?.tagName == "span" }
-                    val discNamePartOne = discSpanOne.text.substringBefore("[").trim()
-                    val discNamePartTwo = discSpanTwo?.text?.trim().orEmpty()
+                    val discSpanTwo =
+                        children.getOrNull(index + 1).takeIf { it?.tagName() == "span" }
+                    val discNamePartOne = discSpanOne.text().substringBefore("[").trim()
+                    val discNamePartTwo = discSpanTwo?.text()?.trim().orEmpty()
                     val discName = listOfNotNull(
                         discNamePartOne.takeIf { it.isNotBlank() },
                         discNamePartTwo.takeIf { it.isNotBlank() },
@@ -220,16 +242,17 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
                         index = children.size
                         continue
                     }
-                    val discDuration = durationSpan.byIndex(1, "span")?.text.orEmpty()
+                    val discDuration = durationSpan.getElementsByTag("span")
+                        .getOrNull(2)?.text().orEmpty()
 
-                    val tracks = tableSpan.all("tr").map {
-                        val tableData = it.all("td")
+                    val tracks = tableSpan.getElementsByTag("tr").map {
+                        val tableData = it.getElementsByTag("td")
                         TrackEntry(
-                            number = tableData.getOrNull(0)?.text?.trim().orEmpty(),
+                            number = tableData.getOrNull(0)?.text()?.trim().orEmpty(),
                             titles = mapOf(
-                                language to tableData.getOrNull(1)?.text?.trim().orEmpty()
+                                language to tableData.getOrNull(1)?.text()?.trim().orEmpty()
                             ),
-                            duration = tableData.getOrNull(2)?.text?.trim().orEmpty(),
+                            duration = tableData.getOrNull(2)?.text()?.trim().orEmpty(),
                         )
                     }
 
@@ -247,10 +270,10 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
 
             val languageDiscsTitles: List<List<List<String>>> = languageSections.drop(1)
                 .map {
-                    it.all("table").map {
-                        it.all("tr").map {
-                            val tableData = it.all("td")
-                            tableData.getOrNull(1)?.text?.trim().orEmpty()
+                    it.getElementsByTag("table").map {
+                        it.getElementsByTag("tr").map {
+                            val tableData = it.getElementsByTag("td")
+                            tableData.getOrNull(1)?.text()?.trim().orEmpty()
                         }
                     }
                 }
@@ -278,10 +301,16 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
                 .map { DiscEntry(it.name, it.duration, it.tracks.map(json::encodeToString)) }
         }
 
-        AlbumEntry(
-            id = id,
+        return AlbumEntry(
+            id = id.ifBlank {
+                document.selectFirst("head")
+                    ?.selectFirst("link")
+                    ?.attr("href")
+                    ?.substringAfter("album/")
+                    ?.substringBefore("/")
+            }.orEmpty(),
             catalogId = catalogId,
-            names = names,
+            names = names.orEmpty(),
             coverArt = coverArt,
             performers = performers.map {
                 if (it is Either.Left) {
@@ -309,28 +338,31 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
         }
 
     private fun parseArtistCredits(
-        element: DocElement
+        element: Element,
     ): MutableList<Either<String, ArtistColumnEntry>> {
-        val allNames = element.byIndex(1, "td")?.text
+        val allNames = element.getElementsByTag("td").getOrNull(1)?.text()
         val parenthesesRegex = Regex("""(\([^()]*\)(?=,|\z))""")
         val strippedAllNames = allNames?.removeMatchingResults(parenthesesRegex)
 
         val allNamesWithHoles = strippedAllNames?.split(",")
             ?.map { it.trim() }.orEmpty()
 
-        val artistsWithIds = element.byIndex(1, "td")?.all("a")?.mapNotNull {
-            val artistId = it.attribute("href").substringAfter("artist/")
-            if (artistId.isNotBlank()) {
-                val artistNames = it.all("span")
-                    .associate { it.attribute("lang") to it.ownText }
-                    .filter { it.key.isNotBlank() && it.value.isNotBlank() }
-                    .ifEmpty { mapOf("en" to it.text) }
-                ArtistColumnEntry(
-                    id = artistId,
-                    names = artistNames,
-                )
-            } else null
-        }.orEmpty()
+        val artistsWithIds = element.getElementsByTag("td")
+            .getOrNull(1)
+            ?.getElementsByTag("a")
+            ?.mapNotNull {
+                val artistId = it.attr("href").substringAfter("artist/")
+                if (artistId.isNotBlank()) {
+                    val artistNames = it.getElementsByTag("span")
+                        .associate { it.attr("lang") to it.ownText() }
+                        .filter { it.key.isNotBlank() && it.value.isNotBlank() }
+                        .ifEmpty { mapOf("en" to it.text()) }
+                    ArtistColumnEntry(
+                        id = artistId,
+                        names = artistNames,
+                    )
+                } else null
+            }.orEmpty()
 
         val artists = mutableListOf<Either<String, ArtistColumnEntry>>()
         allNamesWithHoles.map { name ->
@@ -347,88 +379,52 @@ class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient
         return artists
     }
 
-    private fun parseAlbumTitles(selectable: CssSelectable) =
-        selectable.all(".albumtitle")
-            .associate {
-                it.attribute("lang").lowercase(Locale.getDefault()) to it.ownText
+    private fun parseAlbumTitles(selectable: Element?) =
+        selectable?.getElementsByClass("albumtitle")
+            ?.associate {
+                it.attr("lang").lowercase() to it.ownText()
             }
+            ?.filter { it.value.isNotBlank() }
 
     suspend fun parseArtist(id: String) = withContext(Dispatchers.IO) {
-        skrape(BrowserFetcher) {
-            request {
-                url = "$BASE_URL/artist/$id"
-            }
-
-            response {
-                parseArtistHtml(id, responseBody)
-            }
-        }
+        val response = httpClient.get("$BASE_URL/artist/$id").bodyAsText()
+        parseArtistHtml(id, response.openSourceReader())
     }
 
-    private fun parseArtistHtml(id: String, text: String) = htmlDocument(text) {
-        val innerMain = findNullable("#innermain") ?: return@htmlDocument null
-        val spans = innerMain.all("span")
-        val name = spans.firstOrNull { it.className.isEmpty() && it.id.isEmpty() }?.text
-            ?: return@htmlDocument null
+    private fun parseArtistHtml(
+        id: String,
+        input: SourceReader,
+    ): VgmdbArtist? {
+        val document = Ksoup.parse(input, BASE_URL)
+        val innerMain = document.getElementById("innermain") ?: return null
+        val spans = innerMain.getElementsByTag("span")
+        val name = spans.firstOrNull { it.className().isEmpty() && it.id().isEmpty() }?.text()
+            ?: return null
 
-        val leftAndRight = innerMain["div"]?.all("div")
-        val leftColumn = leftAndRight?.getOrNull(0) ?: return@htmlDocument null
-
-        val japaneseName = leftColumn["span"]?.text
-
-        val picture = leftColumn["div", "a"]?.attribute("href")
+        val leftColumn = innerMain.getElementById("leftfloat")
+        val japaneseName = leftColumn?.selectFirst("span")?.text()
+        val picture = leftColumn?.select("div", "a")?.attr("href")
 
         val names = mapOf(
             "en" to name.trim(),
             "ja" to japaneseName?.trim().orEmpty(),
         ).filterNot { it.value.isBlank() }
 
-        VgmdbArtist(
+        return VgmdbArtist(
             id = id,
             names = names,
-            picture = picture
+            picture = picture,
         )
     }
 
-    private operator fun CssSelectable.get(vararg selector: String): DocElement? {
-        return try {
-            var current = this.findNullable(selector[0]) ?: return null
-            selector.drop(1).forEach {
-                current = current.findNullable(it) ?: return@get null
-            }
-            current
-        } catch (e: ElementNotFoundException) {
-            null
+    private fun Element.select(vararg selectors: String) =
+        selectors.fold(this as Element?) { element, selector ->
+            element?.selectFirst(cssQuery = selector)
         }
-    }
-
-    private fun CssSelectable.findNullable(selector: String) = try {
-        this.findFirst(selector)
-    } catch (ignored: ElementNotFoundException) {
-        null
-    }
-
-    private fun CssSelectable.all(selector: String) = try {
-        this.findAll(selector)
-    } catch (ignored: ElementNotFoundException) {
-        emptyList()
-    }
-
-    private fun CssSelectable.byIndex(index: Int, selector: String) = try {
-        this.findByIndex(index, selector)
-    } catch (ignored: ElementNotFoundException) {
-        null
-    }
-
-    private fun DocElement.parent() = try {
-        this.parent
-    } catch (ignore: ElementNotFoundException) {
-        null
-    }
 
     private data class TempDiskEntry(
         val name: String,
         val duration: String,
-        val tracks: List<TrackEntry>
+        val tracks: List<TrackEntry>,
     )
 }

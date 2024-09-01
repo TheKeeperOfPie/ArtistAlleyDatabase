@@ -13,7 +13,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
@@ -29,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.image.rememberImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import kotlin.math.roundToInt
 
 class CdEntryNavigator : BrowseSelectionNavigator {
@@ -161,7 +161,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                 onClickSave = { viewModel.onClickSave(navHostController) },
                 onLongClickSave = { viewModel.onLongClickSave(navHostController) },
                 onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
+                onExitConfirm = { viewModel.onExitConfirm(navHostController) },
                 onNavigate = navHostController::navigate,
             )
         }

@@ -61,7 +61,7 @@ kotlin {
     }
 
     sourceSets {
-        androidInstrumentedTest.dependencies {
+        getByName("androidInstrumentedTest").dependencies {
             implementation(project(":modules:test-utils"))
             implementation(project(":modules:utils-network"))
 
@@ -80,5 +80,8 @@ kotlin {
                 "libs.junit5.android.test.runner",
             ).forEach(::runtimeOnly)
         }
+//        androidInstrumentedTest.dependencies {
+//        androidTest.dependencies {
+//        }
     }
 }

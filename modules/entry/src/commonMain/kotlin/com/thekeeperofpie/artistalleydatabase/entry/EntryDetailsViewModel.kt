@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.activity.OnBackPressedDispatcher
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,11 +9,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
-import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import io.github.petertrr.diffutils.text.DiffRow
 import io.github.petertrr.diffutils.text.DiffRowGenerator
 import io.github.petertrr.diffutils.text.DiffTagGenerator
@@ -26,7 +26,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
-import org.jetbrains.compose.resources.StringResource
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -66,7 +65,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     var showExitPrompt by mutableStateOf(false)
 
     // TODO: Move to StringResource
-    var errorResource by mutableStateOf<Pair<Either<StringResource, Int>, Throwable?>?>(null)
+    var errorResource by mutableStateOf<Pair<StringResourceCompat, Throwable?>?>(null)
 
     var sectionsLoading by mutableStateOf(true)
         private set
@@ -80,7 +79,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         scope = viewModelScope,
         appFileSystem = appFileSystem,
         scopedIdType = scopedIdType,
-        onError = { errorResource = Either.Left<StringResource, Int>(it.first) to it.second },
+        onError = { errorResource = StringResourceCompose(it.first) to it.second },
         imageContentDescriptionRes = imageContentDescriptionRes,
         onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) },
     )
@@ -182,11 +181,11 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         return false
     }
 
-    fun onExitConfirm(onBackPressedDispatcher: OnBackPressedDispatcher) {
+    fun onExitConfirm(navHostController: NavHostController) {
         showExitPrompt = false
         initialEntryHashCode = null
         initialImagesHashCode = null
-        onBackPressedDispatcher.onBackPressed()
+        navHostController.navigateUp()
     }
 
     fun onExitDismiss() {

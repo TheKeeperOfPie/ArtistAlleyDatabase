@@ -1,18 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.character
 
 import com.anilist.fragment.AniListCharacter
-import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.R
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 
 class CharacterRepository(
-    application: ScopedApplication,
+    scope: ApplicationScope,
     private val appJson: AppJson,
     private val characterEntryDao: CharacterEntryDao,
     private val aniListApi: AniListApi,
-) : ApiRepository<CharacterEntry>(application) {
+) : ApiRepository<CharacterEntry>(scope) {
 
     override suspend fun fetch(id: String) = aniListApi.getCharacter(id)?.let(::makeEntry)
 
@@ -29,7 +30,7 @@ class CharacterRepository(
             .forEach { insertCachedEntry(it) }
         null
     } catch (e: Exception) {
-        R.string.aniList_error_fetching_character to e
+        StringResourceId(R.string.aniList_error_fetching_character) to e
     }
 
     private fun makeEntry(character: AniListCharacter) = CharacterEntry(

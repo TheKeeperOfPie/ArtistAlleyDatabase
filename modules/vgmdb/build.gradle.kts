@@ -1,8 +1,37 @@
 plugins {
-    id("module-library")
-    id("dagger.hilt.android.plugin")
+    id("library-android")
+    id("library-compose")
+    id("library-desktop")
+    id("library-inject")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
+}
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":modules:entry"))
+            api(project(":modules:utils"))
+            api(project(":modules:utils-compose"))
+            api(project(":modules:utils-network"))
+
+            implementation(libs.kermit)
+            implementation(libs.ksoup)
+            implementation(libs.ktor.client.core)
+            implementation(libs.okhttp)
+
+            runtimeOnly(libs.room.runtime)
+            implementation(libs.room.ktx)
+            implementation(libs.room.paging)
+            implementation(libs.kotlin.inject.runtime.kmp)
+        }
+        commonTest.dependencies {
+            implementation(libs.junit)
+            implementation(libs.ktor.client.mock)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.skrapeit)
+        }
+    }
 }
 
 android {
@@ -10,32 +39,9 @@ android {
 }
 
 dependencies {
-    api(project(":modules:android-utils"))
-    api(project(":modules:entry"))
-    api(project(":modules:utils-network"))
-    api(project(":modules:utils-compose"))
+    add("kspCommonMainMetadata", kspProcessors.room.compiler)
+}
 
-    api(libs.okhttp)
-
-    implementation(libs.compose.ui)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-
-    runtimeOnly(libs.room.runtime)
-    ksp(kspProcessors.room.compiler)
-    implementation(libs.room.ktx)
-    testImplementation(libs.room.testing)
-    implementation(libs.room.paging)
-
-    implementation(libs.skrapeit)
-
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
-    testImplementation(libs.truth)
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.kotlin)
-
-    androidTestRuntimeOnly(libs.junit5.android.test.runner)
+compose.resources {
+    publicResClass = true
 }

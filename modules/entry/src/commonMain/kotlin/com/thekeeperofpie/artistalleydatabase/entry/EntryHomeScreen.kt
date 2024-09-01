@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
@@ -44,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.entry_search_add_entry
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
@@ -63,6 +61,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -180,7 +180,7 @@ object EntryHomeScreen {
                                 .padding(bottom = 8.dp)
                         ) {
                             val isNotEmpty by remember { derivedStateOf { query().isNotEmpty() } }
-                            BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                            BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
                                 onQueryChange("")
                             }
 

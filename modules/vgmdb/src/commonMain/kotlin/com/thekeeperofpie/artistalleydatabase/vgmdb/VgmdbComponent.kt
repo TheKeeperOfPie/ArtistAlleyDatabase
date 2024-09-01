@@ -1,43 +1,40 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.utils_network.WebScraper
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
-import javax.inject.Singleton
+import io.ktor.client.HttpClient
+import me.tatarka.inject.annotations.Provides
 
-@Module
-@InstallIn(SingletonComponent::class)
-class VgmdbHiltModule {
+interface VgmdbComponent {
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideAlbumEntryDao(database: VgmdbDatabase) = database.albumEntryDao()
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideArtistEntryDao(database: VgmdbDatabase) = database.artistEntryDao()
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideVgmdbApi(
         albumEntryDao: AlbumEntryDao,
         vgmdbArtistDao: VgmdbArtistDao,
         vgmdbJson: VgmdbJson,
-        okHttpClient: OkHttpClient,
-    ) = VgmdbApi(albumEntryDao, vgmdbArtistDao, vgmdbJson, okHttpClient)
+        httpClient: HttpClient,
+        webScraper: WebScraper,
+    ) = VgmdbApi(albumEntryDao, vgmdbArtistDao, vgmdbJson, httpClient, webScraper)
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideVgmdbDataConverter(vgmdbJson: VgmdbJson) = VgmdbDataConverter(vgmdbJson)
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideVgmdbAutocompleter(
         vgmdbApi: VgmdbApi,
@@ -46,19 +43,19 @@ class VgmdbHiltModule {
         artistRepository: ArtistRepository,
     ) = VgmdbAutocompleter(vgmdbApi, vgmdbJson, vgmdbDataConverter, artistRepository)
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideAlbumRepository(
-        application: ScopedApplication,
+        scope: ApplicationScope,
         albumEntryDao: AlbumEntryDao,
         vgmdbApi: VgmdbApi
-    ) = AlbumRepository(application, albumEntryDao, vgmdbApi)
+    ) = AlbumRepository(scope, albumEntryDao, vgmdbApi)
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideArtistRepository(
-        application: ScopedApplication,
+        scope: ApplicationScope,
         vgmdbArtistDao: VgmdbArtistDao,
         vgmdbApi: VgmdbApi
-    ) = ArtistRepository(application, vgmdbArtistDao, vgmdbApi)
+    ) = ArtistRepository(scope, vgmdbArtistDao, vgmdbApi)
 }

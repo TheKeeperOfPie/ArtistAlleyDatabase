@@ -1,12 +1,10 @@
 plugins {
     id("library-android")
     id("library-desktop")
+    id("library-inject")
 }
 
 kotlin {
-    // TODO: This target is required to resolve kotlin-test properly, but why?
-    iosX64()
-
     sourceSets {
         commonMain.dependencies {
             api(libs.bignum)

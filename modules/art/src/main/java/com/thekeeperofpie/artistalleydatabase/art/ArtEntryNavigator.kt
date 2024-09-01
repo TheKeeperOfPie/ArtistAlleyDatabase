@@ -12,7 +12,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
@@ -29,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.image.rememberImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 
 class ArtEntryNavigator : BrowseSelectionNavigator {
 
@@ -172,7 +172,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 onLongClickSave = { viewModel.onLongClickSave(navHostController) },
                 onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
                 onClickSaveTemplate = { viewModel.onClickSaveTemplate() },
-                onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
+                onExitConfirm = { viewModel.onExitConfirm(navHostController) },
                 onNavigate = navHostController::navigate,
             )
         }

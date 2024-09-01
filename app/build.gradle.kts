@@ -256,6 +256,9 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.paging.compose)
 
+    implementation(libs.kotlin.inject.runtime.kmp)
+    ksp(kspProcessors.kotlin.inject.compiler.ksp)
+
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
     ksp(kspProcessors.androidx.hilt.compiler)

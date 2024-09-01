@@ -5,9 +5,6 @@ plugins {
 }
 
 kotlin {
-    // TODO: This target is required to resolve kotlin-test properly, but why?
-    iosX64()
-
     sourceSets {
         androidMain.dependencies {
             api(libs.ktor.client.okhttp)

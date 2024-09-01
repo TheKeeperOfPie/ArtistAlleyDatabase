@@ -7,9 +7,8 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
 import kotlinx.serialization.encodeToString
-import javax.inject.Inject
 
-class VgmdbDataConverter @Inject constructor(
+class VgmdbDataConverter(
     private val vgmdbJson: VgmdbJson,
 ) {
 

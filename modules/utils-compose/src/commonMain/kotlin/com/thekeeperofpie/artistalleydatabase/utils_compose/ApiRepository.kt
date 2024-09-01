@@ -1,9 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils
+package com.thekeeperofpie.artistalleydatabase.utils_compose
 
-import android.util.Log
+import co.touchlab.kermit.Logger
 import com.hoc081098.flowext.concatWith
 import com.hoc081098.flowext.flowFromSuspend
 import com.hoc081098.flowext.mapEager
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.distinctWithBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -16,12 +17,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 
-abstract class ApiRepository<DataType>(protected val application: ScopedApplication) {
+abstract class ApiRepository<DataType>(protected val scope: ApplicationScope) {
 
     private val fetchFlow = MutableStateFlow("")
 
     init {
-        application.scope.launch(Dispatchers.IO) {
+        scope.launch(Dispatchers.IO) {
             @Suppress("OPT_IN_USAGE")
             fetchFlow
                 .drop(1) // Ignore initial value
@@ -30,7 +31,7 @@ abstract class ApiRepository<DataType>(protected val application: ScopedApplicat
                     try {
                         fetch(it)
                     } catch (e: Exception) {
-                        Log.d(javaClass.name, "Error fetching $it")
+                        Logger.d("ApiRepository") { "Error fetching $it" }
                         null
                     }
                 }
@@ -60,5 +61,5 @@ abstract class ApiRepository<DataType>(protected val application: ScopedApplicat
             }
         }
 
-    abstract suspend fun ensureSaved(ids: List<String>): Pair<Int, Exception?>?
+    abstract suspend fun ensureSaved(ids: List<String>): Pair<StringResourceCompat, Exception?>?
 }

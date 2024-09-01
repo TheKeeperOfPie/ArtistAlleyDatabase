@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb.album
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.vgmdb.R
+import artistalleydatabase.modules.vgmdb.generated.resources.Res
+import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_error_fetching_album
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -10,10 +12,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 
 class AlbumRepository(
-    application: ScopedApplication,
+    scope: ApplicationScope,
     private val albumEntryDao: AlbumEntryDao,
     private val vgmdbApi: VgmdbApi,
-) : ApiRepository<AlbumEntry>(application) {
+) : ApiRepository<AlbumEntry>(scope) {
 
     override suspend fun fetch(id: String) = vgmdbApi.getAlbum(id)
 
@@ -29,6 +31,6 @@ class AlbumRepository(
         }
         null
     } catch (e: Exception) {
-        R.string.vgmdb_error_fetching_album to e
+        StringResourceCompose(Res.string.vgmdb_error_fetching_album) to e
     }
 }

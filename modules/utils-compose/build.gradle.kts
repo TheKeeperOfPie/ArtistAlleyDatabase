@@ -11,6 +11,8 @@ kotlin {
         }
         commonMain.dependencies {
             api(compose.components.resources)
+            api(libs.paging.common)
+            implementation(project(":modules:utils"))
             implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kermit)
         }

@@ -133,18 +133,20 @@ object Versions {
     const val kermit = "2.0.4"
 
     object kotlin {
-        const val core = "2.0.20"
+        const val core = "2.0.0"
         const val coroutines = "1.9.0-RC.2"
         const val datetime = "0.6.1"
         const val io = "0.5.3"
-        const val ksp = "2.0.20-1.0.24"
-        const val serialization = "1.7.2"
+        const val ksp = "2.0.0-1.0.24"
+        const val serialization = "1.7.1"
     }
 
+    const val kotlinInject = "0.7.1"
     const val kotlinPoet = "1.15.3"
 
     // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
     const val ktor = "3.0.0-beta-2"
+    const val ksoup = "0.1.6-alpha1"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.30"
     const val markwon = "4.6.2"
@@ -183,6 +185,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.google.dagger:hilt-compiler")
                     library("com.google.dagger:hilt-android-compiler")
                 }
+                library("me.tatarka.inject:kotlin-inject-compiler-ksp:${Versions.kotlinInject}")
             }
 
             create("libs") {
@@ -236,6 +239,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("androidx.navigation:navigation-compose:$navigation")
 
                     withVersion(paging) {
+                        library("androidx.paging:paging-common")
                         library("androidx.paging:paging-compose")
                         library("androidx.paging:paging-runtime-ktx")
                     }
@@ -329,6 +333,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 withVersion(Versions.ktor) {
                     library("io.ktor:ktor-client-core")
                     library("io.ktor:ktor-client-okhttp")
+                    library("io.ktor:ktor-client-mock")
                     library("io.ktor:ktor-server-core-jvm")
                     library("io.ktor:ktor-server-test-host")
                 }
@@ -431,6 +436,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.benasher44:uuid:${Versions.benasher44Uuid}")
                 library("com.eygraber:uri-kmp:${Versions.uriKmp}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
+                library("com.fleeksoft.ksoup:ksoup:${Versions.ksoup}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
@@ -446,6 +452,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.github.ilyapavlovskii:youtubeplayer-compose:${Versions.youtubePlayerCompose}")
                 library("io.github.petertrr:kotlin-multiplatform-diff:${Versions.diffUtils}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
+                library("me.tatarka.inject:kotlin-inject-runtime-kmp:${Versions.kotlinInject}")
                 library("org.awaitility:awaitility:${Versions.awaitility}")
                 library("org.chromium.net:cronet-embedded:${Versions.cronetEmbedded}")
                 library("org.mockito.kotlin:mockito-kotlin:${Versions.mockitoKotlin}")

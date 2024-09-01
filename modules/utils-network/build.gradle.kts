@@ -1,5 +1,6 @@
 plugins {
     id("library-android")
+    id("library-desktop")
 }
 
 kotlin {
@@ -13,6 +14,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kermit)
             implementation(libs.okhttp3.logging.interceptor)
+            implementation(libs.skrapeit)
         }
     }
 }

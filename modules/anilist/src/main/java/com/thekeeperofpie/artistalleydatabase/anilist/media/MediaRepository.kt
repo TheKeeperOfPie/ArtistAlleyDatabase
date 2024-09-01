@@ -1,16 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.media
 
 import com.anilist.fragment.AniListMedia
-import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.R
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 
 class MediaRepository(
-    application: ScopedApplication,
+    scope: ApplicationScope,
     private val mediaEntryDao: MediaEntryDao,
     private val aniListApi: AniListApi,
-) : ApiRepository<MediaEntry>(application) {
+) : ApiRepository<MediaEntry>(scope) {
 
     override suspend fun fetch(id: String) = aniListApi.getMedia(id)?.let(::makeEntry)
 
@@ -26,7 +27,7 @@ class MediaRepository(
             .forEach { insertCachedEntry(it) }
         null
     } catch (e: Exception) {
-        R.string.aniList_error_fetching_series to e
+        StringResourceId(R.string.aniList_error_fetching_series) to e
     }
 
     private fun makeEntry(media: AniListMedia) = MediaEntry(

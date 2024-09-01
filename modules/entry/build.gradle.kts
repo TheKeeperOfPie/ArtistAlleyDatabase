@@ -1,6 +1,7 @@
 plugins {
-    id("library-compose")
     id("library-android")
+    id("library-compose")
+    id("library-desktop")
     id("org.jetbrains.kotlin.plugin.serialization")
     alias(libs.plugins.de.mannodermaus.android.junit5)
 }
@@ -16,7 +17,6 @@ kotlin {
             implementation(libs.flowExt)
 
             implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.paging.compose)
             implementation(libs.coil3.coil.compose)
 
             implementation(libs.kotlinx.serialization.json)

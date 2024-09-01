@@ -29,7 +29,7 @@ actual class CropController(
 
     val cropState = CropStateImpl()
 
-    val cropResults = MutableSharedFlow<CropState.CropResult>()
+    actual val cropResults = MutableSharedFlow<CropState.CropResult>()
 
     /** Shared utility to easily signal URI invalidation by appending a query param of this value */
     private var invalidateIteration = 0

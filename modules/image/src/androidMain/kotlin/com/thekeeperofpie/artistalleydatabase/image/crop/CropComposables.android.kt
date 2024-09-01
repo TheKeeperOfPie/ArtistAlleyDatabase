@@ -15,7 +15,7 @@ import androidx.core.net.toUri
 import com.eygraber.uri.toUriOrNull
 
 @Composable
-fun CropRequestDialog(cropController: CropController) {
+actual fun CropRequestDialog(cropController: CropController) {
     val cropState = cropController.cropState
     val imageCropDocumentLauncher = if (cropState.imageCropUri == null) {
         rememberLauncherForActivityResult(

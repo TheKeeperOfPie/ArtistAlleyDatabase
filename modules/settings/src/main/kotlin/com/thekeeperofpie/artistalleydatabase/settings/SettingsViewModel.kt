@@ -48,6 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
@@ -329,7 +330,7 @@ class SettingsViewModel @Inject constructor(
                 private val dropdown = Dropdown(
                     labelTextRes = R.string.settings_database_type,
                     options = SettingsScreen.DatabaseType.values().toList(),
-                    optionToText = { stringResource(it.labelRes) },
+                    optionToText = { ComposeResourceUtils.stringResourceCompat(it.labelRes) },
                     onItemSelected = { selectedDatabase = it },
                 )
 
@@ -366,7 +367,7 @@ class SettingsViewModel @Inject constructor(
                 id = "rebuildDatabase",
                 labelTextRes = R.string.settings_database_type,
                 options = SettingsScreen.DatabaseType.values().toList(),
-                optionToText = { stringResource(it.labelRes) },
+                optionToText = { ComposeResourceUtils.stringResourceCompat(it.labelRes) },
                 buttonTextRes = R.string.settings_rebuild,
                 onClickButton = ::onClickRebuildDatabase,
             ),

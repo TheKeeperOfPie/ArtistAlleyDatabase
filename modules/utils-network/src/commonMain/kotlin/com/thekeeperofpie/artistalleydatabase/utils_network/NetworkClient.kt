@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.utils_network
 
+import it.skrape.fetcher.BrowserFetcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import okhttp3.Cache
@@ -54,4 +55,16 @@ class NetworkClient(
             }
         }
         .build()
+
+    val webScraper = object : WebScraper {
+        override fun get(url: String): WebScraper.Result {
+            val result = BrowserFetcher.fetch(
+                BrowserFetcher.requestBuilder.apply { this.url = url }
+            )
+            return WebScraper.Result(
+                result.headers["Location"] ?: result.baseUri,
+                result.responseBody
+            )
+        }
+    }
 }

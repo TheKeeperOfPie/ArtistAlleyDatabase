@@ -1,13 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
-import android.util.Log
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import kotlinx.serialization.json.Json
+import me.tatarka.inject.annotations.Inject
 
+@Inject
 class VgmdbJson(override val json: Json) : AppJson() {
 
     companion object {
@@ -22,7 +24,7 @@ class VgmdbJson(override val json: Json) : AppJson() {
         return try {
             json.decodeFromString(value)
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing disc column: $value")
+            Logger.e(TAG) { "Error parsing disc column: $value" }
             null
         }
     }
@@ -32,7 +34,7 @@ class VgmdbJson(override val json: Json) : AppJson() {
             try {
                 return Either.Right(json.decodeFromString(value))
             } catch (e: Exception) {
-                Log.e(TAG, "Error parsing album column: $value")
+                Logger.e(TAG) { "Error parsing album column: $value" }
             }
         }
 
@@ -44,7 +46,7 @@ class VgmdbJson(override val json: Json) : AppJson() {
             try {
                 return Either.Right(json.decodeFromString(value))
             } catch (e: Exception) {
-                Log.e(TAG, "Error parsing artist column: $value")
+                Logger.e(TAG) {"Error parsing artist column: $value" }
             }
         }
 

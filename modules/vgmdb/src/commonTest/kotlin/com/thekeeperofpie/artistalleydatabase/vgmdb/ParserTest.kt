@@ -2,16 +2,19 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import com.thekeeperofpie.artistalleydatabase.utils_network.WebScraper
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import it.skrape.fetcher.BrowserFetcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import okhttp3.OkHttpClient
-import org.junit.jupiter.api.Test
+import org.junit.Test
 
 class ParserTest {
 
@@ -21,7 +24,21 @@ class ParserTest {
     }
 
     private val parser by lazy {
-        VgmdbParser(json, OkHttpClient.Builder().build())
+        VgmdbParser(
+            json,
+            HttpClient(OkHttp),
+            object : WebScraper {
+                override fun get(url: String): WebScraper.Result {
+                    val result = BrowserFetcher.fetch(
+                        BrowserFetcher.requestBuilder.apply { this.url = url }
+                    )
+                    return WebScraper.Result(
+                        result.headers["Location"] ?: result.baseUri,
+                        result.responseBody
+                    )
+                }
+            }
+        )
     }
 
     @Test
@@ -466,7 +483,12 @@ class ParserTest {
                     "Lucy",
                     "Suri",
                     "Kjun",
-                    "Flash Finger",
+                    ArtistColumnEntry(
+                        id = "57557",
+                        names = mapOf(
+                            "en" to "Flash Finger",
+                        )
+                    ),
                     "E.Q.P",
                     "Bangkoon",
                 ).encodeListToString(),
@@ -503,7 +525,12 @@ class ParserTest {
                             "en" to "Cranky",
                         )
                     ),
-                    "Mr.Funky",
+                    ArtistColumnEntry(
+                        id = "57558",
+                        names = mapOf(
+                            "en" to "Mr.Funky",
+                        )
+                    ),
                     ArtistColumnEntry(
                         id = "3946",
                         names = mapOf(
@@ -516,7 +543,13 @@ class ParserTest {
                             "en" to "Sampling Masters MEGA",
                         )
                     ),
-                    "Paul Bazooka",
+                    ArtistColumnEntry(
+                        id = "56718",
+                        names = mapOf(
+                            "en" to "Paul Bazooka",
+                            "ja" to "폴바주카",
+                        )
+                    ),
                     ArtistColumnEntry(
                         id = "3941",
                         names = mapOf(
@@ -549,7 +582,13 @@ class ParserTest {
                         )
                     ),
                     "3rd Coast",
-                    "Flash Finger", "J.Williams",
+                    ArtistColumnEntry(
+                        id = "57557",
+                        names = mapOf(
+                            "en" to "Flash Finger",
+                        )
+                    ),
+                    "J.Williams",
                     "Spike",
                     "Tsukasa",
                     "Plastik",
@@ -1298,7 +1337,10 @@ class ParserTest {
     private fun List<Any>.encodeListToString() = map {
         when (it) {
             is String -> it
-            else -> json.encodeToString(json.serializersModule.serializer(it::class.javaObjectType), it)
+            else -> json.encodeToString(
+                json.serializersModule.serializer(it::class.javaObjectType),
+                it
+            )
         }
     }
 }

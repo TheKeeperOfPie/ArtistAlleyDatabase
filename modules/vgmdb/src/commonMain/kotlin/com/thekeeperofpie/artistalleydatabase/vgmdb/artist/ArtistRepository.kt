@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb.artist
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.vgmdb.R
+import artistalleydatabase.modules.vgmdb.generated.resources.Res
+import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_error_fetching_artist
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -10,10 +12,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 
 class ArtistRepository(
-    application: ScopedApplication,
+    scope: ApplicationScope,
     private val vgmdbArtistDao: VgmdbArtistDao,
     private val vgmdbApi: VgmdbApi,
-) : ApiRepository<VgmdbArtist>(application) {
+) : ApiRepository<VgmdbArtist>(scope) {
 
     override suspend fun fetch(id: String) = vgmdbApi.getArtist(id)
 
@@ -29,6 +31,6 @@ class ArtistRepository(
         }
         null
     } catch (e: Exception) {
-        R.string.vgmdb_error_fetching_artist to e
+        StringResourceCompose(Res.string.vgmdb_error_fetching_artist) to e
     }
 }

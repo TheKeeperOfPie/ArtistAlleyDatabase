@@ -22,16 +22,23 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    sourceSets.getByName("commonMain").dependencies {
-        libs.find(
-            "libs.flowExt",
-        ).forEach(::api)
+    sourceSets {
+        commonMain.dependencies {
+            libs.find(
+                "libs.flowExt",
+            ).forEach(::api)
 
-        libs.find(
-            "libs.androidx.annotation",
-            "libs.kotlinx.coroutines.core",
-            "libs.kotlinx.datetime",
-            "libs.kotlinx.serialization.json",
-        ).forEach(::implementation)
+            libs.find(
+                "libs.androidx.annotation",
+                "libs.kotlinx.coroutines.core",
+                "libs.kotlinx.datetime",
+                "libs.kotlinx.serialization.json",
+            ).forEach(::implementation)
+        }
+        commonTest.dependencies {
+            libs.find(
+                "libs.truth",
+            ).forEach(::implementation)
+        }
     }
 }
