@@ -15,7 +15,6 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -41,13 +40,7 @@ object AnimeNewsScreen {
     operator fun invoke(
         viewModel: AnimeNewsViewModel = hiltViewModel<AnimeNewsViewModel>(),
     ) {
-        val scaffoldState = rememberBottomSheetScaffoldState(
-            rememberStandardBottomSheetState(
-                confirmValueChange = { it != SheetValue.Hidden },
-                skipHiddenState = true,
-            )
-        )
-
+        val scaffoldState = rememberBottomSheetScaffoldState()
         val scope = rememberCoroutineScope()
         BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
             scope.launch {

@@ -46,7 +46,6 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -90,12 +89,7 @@ object SearchScreen {
     operator fun <SearchQuery, EntryModel : SearchEntryModel> invoke(
         viewModel: EntrySearchViewModel<SearchQuery, EntryModel>,
         entries: LazyPagingItems<EntryModel>,
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(
-            rememberStandardBottomSheetState(
-                confirmValueChange = { it != SheetValue.Hidden },
-                skipHiddenState = true,
-            )
-        ),
+        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         bottomSheet: @Composable ColumnScope.() -> Unit,
         showGridByDefault: () -> Boolean,
         showRandomCatalogImage: () -> Boolean,

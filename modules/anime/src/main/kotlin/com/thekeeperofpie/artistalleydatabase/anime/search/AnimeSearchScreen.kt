@@ -104,12 +104,7 @@ object AnimeSearchScreen {
             }
             sortFilterController.PromptDialog()
 
-            val sheetState: SheetState =
-                rememberStandardBottomSheetState(
-                    confirmValueChange = { it != SheetValue.Hidden },
-                    skipHiddenState = true,
-                )
-            val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState)
+            val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
             SortFilterBottomScaffold(
                 sortFilterController = sortFilterController,
                 topBar = {
@@ -118,10 +113,10 @@ object AnimeSearchScreen {
                         upIconOption,
                         scrollBehavior,
                         editSheetState,
-                        sheetState,
+                        bottomSheetScaffoldState.bottomSheetState,
                     )
                 },
-                sheetState = sheetState,
+                sheetState = bottomSheetScaffoldState.bottomSheetState,
                 scaffoldState = bottomSheetScaffoldState,
                 bottomNavigationState = bottomNavigationState,
                 modifier = Modifier

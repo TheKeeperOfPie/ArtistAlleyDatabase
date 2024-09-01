@@ -46,6 +46,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -53,6 +54,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -97,13 +100,8 @@ fun SortFilterBottomScaffold(
     sortFilterController: AnimeSettingsSortFilterController<*>?,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
-    sheetState: androidx.compose.material3.SheetState = androidx.compose.material3.rememberStandardBottomSheetState(
-        confirmValueChange = { it != SheetValue.Hidden },
-        skipHiddenState = true,
-    ),
-    scaffoldState: BottomSheetScaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(
-        sheetState
-    ),
+    sheetState: SheetState = rememberStandardBottomSheetState(),
+    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
     bottomNavigationState: BottomNavigationState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {

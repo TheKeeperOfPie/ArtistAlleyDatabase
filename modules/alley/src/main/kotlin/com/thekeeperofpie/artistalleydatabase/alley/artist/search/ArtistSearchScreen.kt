@@ -9,9 +9,7 @@ import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -37,12 +35,7 @@ object ArtistSearchScreen {
     operator fun invoke(
         onClickBack: (() -> Unit)?,
         onEntryClick: (ArtistEntryGridModel, Int) -> Unit,
-        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(
-            rememberStandardBottomSheetState(
-                confirmValueChange = { it != SheetValue.Hidden },
-                skipHiddenState = true,
-            )
-        ),
+        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
         onClickMap: (() -> Unit)? = null,
     ) {

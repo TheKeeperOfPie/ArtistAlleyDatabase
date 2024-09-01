@@ -62,10 +62,7 @@ object ForumSearchScreen {
         val sortFilterController = viewModel.sortFilterController
         sortFilterController.PromptDialog()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-        val sheetState: SheetState = rememberStandardBottomSheetState(
-            confirmValueChange = { it != SheetValue.Hidden },
-            skipHiddenState = true,
-        )
+        val sheetState: SheetState = rememberStandardBottomSheetState()
         val content = viewModel.content.collectAsLazyPagingItems()
         val refreshState = content.loadState.refresh
         val refreshing = refreshState is LoadState.Loading

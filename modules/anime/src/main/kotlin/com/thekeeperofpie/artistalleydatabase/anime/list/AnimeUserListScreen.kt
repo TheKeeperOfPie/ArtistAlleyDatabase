@@ -123,10 +123,7 @@ object AnimeUserListScreen {
             )
             val sortFilterController = viewModel.sortFilterController
             sortFilterController.PromptDialog()
-            val sortSheetState = rememberStandardBottomSheetState(
-                confirmValueChange = { it != SheetValue.Hidden },
-                skipHiddenState = true,
-            )
+            val sortSheetState = rememberStandardBottomSheetState()
             SortFilterBottomScaffold(
                 sortFilterController = sortFilterController,
                 topBar = {
@@ -139,6 +136,7 @@ object AnimeUserListScreen {
                         pagerState,
                     )
                 },
+                sheetState = sortSheetState,
                 bottomNavigationState = bottomNavigationState,
                 modifier = Modifier
                     .conditionally(bottomNavigationState != null) {

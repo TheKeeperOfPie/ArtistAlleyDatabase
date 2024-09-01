@@ -147,10 +147,7 @@ object EntryHomeScreen {
         onConfirmDelete: () -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
-        val bottomSheetState = rememberStandardBottomSheetState(
-            confirmValueChange = { it != SheetValue.Hidden },
-            skipHiddenState = true,
-        )
+        val bottomSheetState = rememberStandardBottomSheetState()
         val scope = rememberCoroutineScope()
         BackHandler(bottomSheetState.targetValue == SheetValue.Expanded) {
             scope.launch {

@@ -8,12 +8,10 @@ import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,12 +53,7 @@ object ArtistAlleyScreen {
         val updateOpenUpdate = stringResource(R.string.alley_open_update)
         val uriHandler = LocalUriHandler.current
         val updateAppUrl = hiltViewModel<UpdateViewModel>().updateAppUrl
-        val artistsScaffoldState = rememberBottomSheetScaffoldState(
-            rememberStandardBottomSheetState(
-                confirmValueChange = { it != SheetValue.Hidden },
-                skipHiddenState = true,
-            )
-        )
+        val artistsScaffoldState = rememberBottomSheetScaffoldState()
 
         LaunchedEffect(updateAppUrl) {
             if (updateAppUrl != null) {
