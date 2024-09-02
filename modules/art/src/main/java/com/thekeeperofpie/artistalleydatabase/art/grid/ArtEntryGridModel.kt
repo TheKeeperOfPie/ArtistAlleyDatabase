@@ -27,8 +27,8 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.io.files.SystemFileSystem
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalLayoutApi::class)
 class ArtEntryGridModel(
@@ -45,7 +45,7 @@ class ArtEntryGridModel(
     companion object {
         fun buildFromEntry(
             appFileSystem: AppFileSystem,
-            appJson: AppJson,
+            json: Json,
             entry: ArtEntry,
         ): ArtEntryGridModel {
             val imageUri = EntryUtils.getImagePath(appFileSystem, entry.entryId)
@@ -58,7 +58,7 @@ class ArtEntryGridModel(
 
             // Placeholder text is generally only useful without an image
             val placeholderText = if (imageUri == null) {
-                ArtEntryUtils.buildPlaceholderText(appJson, entry)
+                ArtEntryUtils.buildPlaceholderText(json, entry)
             } else ""
 
 

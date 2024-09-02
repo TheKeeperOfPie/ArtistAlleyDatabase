@@ -5,7 +5,8 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.json.Json
 import java.io.File
 
 internal class TestViewModel(
@@ -13,8 +14,8 @@ internal class TestViewModel(
     private val cropUri: String? = null,
     val entries: MutableMap<String, TestEntry> = mutableMapOf(),
     private val testDirectory: File,
-    appJson: AppJson,
-    cropController: CropController,
+    json: Json,
+    cropController: (CoroutineScope) -> CropController,
 ) : EntryDetailsViewModel<TestEntry, TestModel>(
     TestEntry::class,
     AppFileSystem(mockStrict {
@@ -26,10 +27,9 @@ internal class TestViewModel(
         }
     }),
     "test",
-    -1,
-    appJson = appJson,
+    json = json,
     settings = TestSettings(cropUri),
-    cropController = cropController,
+    cropControllerFunction = cropController,
 ) {
 
     override val sections = emptyList<EntrySection>()

@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import me.tatarka.inject.annotations.Inject
 
 @SingletonScope
@@ -32,8 +30,6 @@ class AniListOAuthStore(
             initialValue = null,
         )
 
-    private val authTokenMutex = Mutex()
-
     override val host: String = AniListUtils.GRAPHQL_API_HOST
 
     override val authHeader get() = authToken.value?.let { "Bearer $it" }
@@ -42,17 +38,9 @@ class AniListOAuthStore(
 
     suspend fun storeAuthTokenResult(token: String) {
         platformOAuthStore.storeAuthTokenResult(token)
-
-        authTokenMutex.withLock {
-            authTokenState.emit(token)
-        }
     }
 
     suspend fun clearAuthToken() {
         platformOAuthStore.clearAuthToken()
-
-        authTokenMutex.withLock {
-            authTokenState.emit(null)
-        }
     }
 }

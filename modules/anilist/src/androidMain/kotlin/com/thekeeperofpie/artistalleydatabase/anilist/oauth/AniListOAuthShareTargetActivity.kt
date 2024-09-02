@@ -8,19 +8,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +34,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import artistalleydatabase.modules.anilist.generated.resources.Res
+import artistalleydatabase.modules.anilist.generated.resources.aniList_oAuth_close_button
+import artistalleydatabase.modules.anilist.generated.resources.aniList_oAuth_loading
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListComponent
+import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import org.jetbrains.compose.resources.stringResource
 
@@ -60,42 +71,42 @@ class AniListOAuthShareTargetActivity : ComponentActivity() {
                                 .padding(it)
                                 .padding(16.dp),
                         ) {
-//                            val viewModel = viewModel {
-//                                (applicationContext as ComponentProvider)
-//                                    .singletonComponent<AniListComponent>()
-//                                    .aniListOAuthViewModel(text)
-//                            }
-//                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-//                                val state = viewModel.state
-//                                when (state) {
-//                                    // TODO: Can this just be hidden into a translucent Activity
-//                                    //  without showing the user anything?
-//                                    AniListOAuthViewModel.State.Done,
-//                                    AniListOAuthViewModel.State.Loading,
-//                                        -> {
-//                                        CircularProgressIndicator()
-//                                        Text(
-//                                            stringResource(Res.string.aniList_oAuth_loading),
-//                                            Modifier.padding(10.dp)
-//                                        )
-//                                    }
-//                                    is AniListOAuthViewModel.State.Error -> Error(state)
-//                                }
-//
-//                                LaunchedEffect(state) {
-//                                    if (state == AniListOAuthViewModel.State.Done) {
-//                                        closeAndFinish()
-//                                    }
-//                                }
-//
-//                                HorizontalDivider()
-//                                TextButton(
-//                                    onClick = { closeAndFinish() },
-//                                    modifier = Modifier.align(Alignment.End)
-//                                ) {
-//                                    Text(text = stringResource(Res.string.aniList_oAuth_close_button))
-//                                }
-//                            }
+                            val viewModel = viewModel {
+                                (applicationContext as ComponentProvider)
+                                    .singletonComponent<AniListComponent>()
+                                    .aniListOAuthViewModel(text)
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                val state = viewModel.state
+                                when (state) {
+                                    // TODO: Can this just be hidden into a translucent Activity
+                                    //  without showing the user anything?
+                                    AniListOAuthViewModel.State.Done,
+                                    AniListOAuthViewModel.State.Loading,
+                                        -> {
+                                        CircularProgressIndicator()
+                                        Text(
+                                            stringResource(Res.string.aniList_oAuth_loading),
+                                            Modifier.padding(10.dp)
+                                        )
+                                    }
+                                    is AniListOAuthViewModel.State.Error -> Error(state)
+                                }
+
+                                LaunchedEffect(state) {
+                                    if (state == AniListOAuthViewModel.State.Done) {
+                                        closeAndFinish()
+                                    }
+                                }
+
+                                HorizontalDivider()
+                                TextButton(
+                                    onClick = { closeAndFinish() },
+                                    modifier = Modifier.align(Alignment.End)
+                                ) {
+                                    Text(text = stringResource(Res.string.aniList_oAuth_close_button))
+                                }
+                            }
                         }
                     }
                 }

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.mutableStateListOf
 import artistalleydatabase.modules.utils_compose.generated.resources.error_fail_to_load_image
@@ -27,7 +26,6 @@ class EntryImageController(
     private val appFileSystem: AppFileSystem,
     private val scopedIdType: String,
     private val onError: (Pair<StringResource, Throwable?>) -> Unit,
-    @StringRes private val imageContentDescriptionRes: Int,
     onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
 ) {
     private var initialized = false
@@ -53,7 +51,6 @@ class EntryImageController(
                             uri = it,
                             width = width ?: 1,
                             height = height ?: 1,
-                            contentDescriptionRes = imageContentDescriptionRes,
                         )
                     }
                 }.awaitAll()
@@ -72,7 +69,7 @@ class EntryImageController(
 
         entryIds.firstOrNull()?.let {
             val entryImages =
-                EntryUtils.getImages(appFileSystem, it, imageContentDescriptionRes)
+                EntryUtils.getImages(appFileSystem, it)
                     .toMutableList()
 
             val firstImage = entryImages.firstOrNull()
@@ -88,7 +85,7 @@ class EntryImageController(
 
             images += entryImages
             images += entryIds.drop(1).flatMap {
-                EntryUtils.getImages(appFileSystem, it, imageContentDescriptionRes)
+                EntryUtils.getImages(appFileSystem, it)
             }
         }
     }
@@ -132,7 +129,6 @@ class EntryImageController(
             uri = uri,
             width = width ?: 1,
             height = height ?: 1,
-            contentDescriptionRes = imageContentDescriptionRes,
         )
 
         withContext(Dispatchers.Main) {

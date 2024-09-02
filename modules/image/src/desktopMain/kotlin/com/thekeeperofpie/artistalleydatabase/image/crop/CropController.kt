@@ -2,7 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.image.crop
 
 import com.eygraber.uri.Uri
 import kotlinx.coroutines.flow.MutableSharedFlow
+import me.tatarka.inject.annotations.Inject
 
+@Inject
 actual class CropController {
 
     actual val cropResults = MutableSharedFlow<CropState.CropResult>()

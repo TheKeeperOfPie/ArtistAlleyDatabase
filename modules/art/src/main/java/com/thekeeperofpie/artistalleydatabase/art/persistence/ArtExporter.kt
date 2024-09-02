@@ -5,13 +5,13 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryExporter
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.writeString
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.encodeToSink
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -19,7 +19,7 @@ class ArtExporter(
     appFileSystem: AppFileSystem,
     private val artEntryDao: ArtEntryDao,
     private val dataConverter: DataConverter,
-    private val appJson: AppJson,
+    private val json: Json,
 ) : EntryExporter(appFileSystem) {
 
     override val zipEntryName = "art_entries"
@@ -50,7 +50,7 @@ class ArtExporter(
 
             updateProgress(index, entriesSize)
 
-            appJson.json.encodeToSink(entry, sink)
+            json.encodeToSink(entry, sink)
         }
         if (stopped) {
             return false
@@ -64,11 +64,11 @@ class ArtExporter(
         entry: ArtEntry,
         writeEntry: suspend (String, () -> Source) -> Unit,
     ) {
-        val series = dataConverter.seriesEntries(entry.series(appJson))
+        val series = dataConverter.seriesEntries(entry.series(json))
             .map { it.text }
             .sorted()
 
-        val characters = dataConverter.characterEntries(entry.characters(appJson))
+        val characters = dataConverter.characterEntries(entry.characters(json))
             .map { it.text }
             .sorted()
 

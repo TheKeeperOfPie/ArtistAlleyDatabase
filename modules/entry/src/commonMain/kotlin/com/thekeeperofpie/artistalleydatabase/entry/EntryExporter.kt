@@ -14,7 +14,7 @@ abstract class EntryExporter(private val appFileSystem: AppFileSystem) : Exporte
         writeEntry: suspend (String, () -> Source) -> Unit,
         vararg values: List<String>
     ) {
-        EntryUtils.getImages(appFileSystem, entryId, 0)
+        EntryUtils.getImages(appFileSystem, entryId)
             .forEachIndexed { index, image ->
                 if (image.uri != null) {
                     writeImage(

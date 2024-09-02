@@ -7,8 +7,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
+import com.thekeeperofpie.artistalleydatabase.art.CropControllerProducer
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
@@ -42,11 +44,13 @@ class MiscHiltModule {
 
     @Provides
     fun provideCropController(
-        scope: CoroutineScope,
         application: Application,
         appFileSystem: AppFileSystem,
         settings: CropSettings,
-    ) = CropController(scope, application, appFileSystem, settings)
+    ): CropControllerProducer = object : CropControllerProducer {
+        override fun produce(scope: CoroutineScope) =
+            CropController(application, appFileSystem, settings, scope)
+    }
 
     @Provides
     @Singleton
@@ -66,6 +70,9 @@ class MiscHiltModule {
         featureOverrideProvider: FeatureOverrideProvider,
         aniListOAuthStore: AniListOAuthStore,
         platformOAuthStore: PlatformOAuthStore,
+        appFileSystem: AppFileSystem,
+        cdEntryDatabase: CdEntryDatabase,
+        cropSettings: CropSettings,
     ) = ApplicationComponent::class.create(
         application = application,
         networkClient = networkClient,
@@ -82,6 +89,9 @@ class MiscHiltModule {
         featureOverrideProvider = featureOverrideProvider,
         aniListOAuthStore = aniListOAuthStore,
         platformOAuthStore = platformOAuthStore,
+        appFileSystem = appFileSystem,
+        cdEntryDatabase = cdEntryDatabase,
+        cropSettings = cropSettings,
     )
 
     @Provides
@@ -167,4 +177,12 @@ class MiscHiltModule {
     @Provides
     fun provideAniListAutocompleter(applicationComponent: ApplicationComponent) =
         applicationComponent.aniListAutocompleter
+
+    @Provides
+    fun provideCdEntryNavigator(applicationComponent: ApplicationComponent) =
+        applicationComponent.cdEntryNavigator
+
+    @Provides
+    fun provideCdEntryDao(applicationComponent: ApplicationComponent) =
+        applicationComponent.cdEntryDao
 }

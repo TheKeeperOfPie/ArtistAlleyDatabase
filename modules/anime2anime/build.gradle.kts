@@ -29,6 +29,7 @@ dependencies {
     api(libs.paging.compose)
 
     implementation(libs.molecule.runtime)
+    implementation(libs.kermit)
 
     debugRuntimeOnly(libs.compose.ui.test.manifest)
     kspAndroidTest(kspProcessors.hilt.android.compiler)

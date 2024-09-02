@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -41,6 +42,7 @@ data class LoadingResult<T>(
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 fun <T> flowForRefreshableContent(
     refresh: StateFlow<*>,
     errorTextRes: StringResourceCompat,

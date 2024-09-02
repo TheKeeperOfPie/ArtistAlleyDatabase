@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,12 +34,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 class ArtBrowseTabSeries(
     appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
-    appJson: AppJson,
+    json: Json,
     mediaRepository: MediaRepository,
 ) : BrowseTabViewModel() {
 
@@ -66,12 +66,12 @@ class ArtBrowseTabSeries(
                         .distinct()
                         .map { databaseText ->
                             val entry = databaseText.takeIf { it.contains("{") }
-                                ?.let<String, MediaColumnEntry>(appJson.json::decodeFromString)
+                                ?.let<String, MediaColumnEntry>(json::decodeFromString)
                             if (entry == null) {
                                 artEntryDao.getSeriesFlow(databaseText, limit = 10)
                                     .flatMapLatest { it.asFlow() }
                                     .filter {
-                                        it.series(appJson)
+                                        it.series(json)
                                             .filterIsInstance<Series.Custom>()
                                             .any { it.text.contains(databaseText) }
                                     }

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,12 +11,12 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import io.github.petertrr.diffutils.text.DiffRow
 import io.github.petertrr.diffutils.text.DiffRowGenerator
 import io.github.petertrr.diffutils.text.DiffTagGenerator
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,6 +24,7 @@ import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 
@@ -33,11 +33,12 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     private val entryClass: KClass<Entry>,
     private val appFileSystem: AppFileSystem,
     protected val scopedIdType: String,
-    @StringRes private val imageContentDescriptionRes: Int,
-    private val appJson: AppJson,
+    private val json: Json,
     settings: CropSettings,
-    val cropController: CropController,
+    cropControllerFunction: (CoroutineScope) -> CropController,
 ) : ViewModel() {
+
+    val cropController = cropControllerFunction(viewModelScope)
 
     companion object {
 
@@ -80,7 +81,6 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         appFileSystem = appFileSystem,
         scopedIdType = scopedIdType,
         onError = { errorResource = StringResourceCompose(it.first) to it.second },
-        imageContentDescriptionRes = imageContentDescriptionRes,
         onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) },
     )
 
@@ -270,12 +270,12 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     abstract suspend fun deleteEntry(entryId: EntryId)
 
     private fun serializedEntryString(entry: Entry?): String {
-        val serializer = appJson.json.serializersModule.serializer(entryClass, emptyList(), true)
-        return appJson.json.encodeToString(serializer, entry)
+        val serializer = json.serializersModule.serializer(entryClass, emptyList(), true)
+        return json.encodeToString(serializer, entry)
     }
 
     private fun serializedImagesString(entryImages: List<EntryImage>) =
-        appJson.json.encodeToString(entryImages.map(::EntryImageTriple))
+        json.encodeToString(entryImages.map(::EntryImageTriple))
 
     @Serializable
     data class EntryImageTriple(

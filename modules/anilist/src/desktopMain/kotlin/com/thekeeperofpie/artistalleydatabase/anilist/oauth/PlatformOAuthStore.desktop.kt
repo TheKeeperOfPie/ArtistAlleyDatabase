@@ -10,9 +10,9 @@ actual class PlatformOAuthStore {
     internal actual val authTokenState: MutableStateFlow<String?>
         get() = TODO("Not yet implemented")
 
-    internal actual fun storeAuthTokenResult(token: String) {
+    internal actual suspend fun storeAuthTokenResult(token: String) {
     }
 
-    internal actual fun clearAuthToken() {
+    internal actual suspend fun clearAuthToken() {
     }
 }

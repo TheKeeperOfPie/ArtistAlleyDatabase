@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
@@ -46,7 +45,6 @@ object EntryUtils {
     fun getImages(
         appFileSystem: AppFileSystem,
         entryId: EntryId,
-        @StringRes contentDescriptionRes: Int,
     ) = getEntryImageFolder(appFileSystem, entryId)
         .let {
             if (!SystemFileSystem.exists(it)) {
@@ -59,7 +57,6 @@ object EntryUtils {
                         uri = it.toUri(),
                         width = 1,
                         height = 1,
-                        contentDescriptionRes
                     )
                 )
             } else if (SystemFileSystem.metadataOrNull(it)?.isDirectory == true) {
@@ -90,7 +87,6 @@ object EntryUtils {
                                     uri = cropped.path.toUri(),
                                     width = cropped.width,
                                     height = cropped.height,
-                                    contentDescriptionRes = contentDescriptionRes,
                                     label = cropped.label,
                                 )
                             }
@@ -100,7 +96,6 @@ object EntryUtils {
                                 uri = original.path.toUri(),
                                 width = original.width,
                                 height = original.height,
-                                contentDescriptionRes = contentDescriptionRes,
                                 label = original.label,
                                 croppedUri = cropped?.path?.toUri(),
                                 croppedWidth = cropped?.width,

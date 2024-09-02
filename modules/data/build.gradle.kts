@@ -3,7 +3,6 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
-    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {

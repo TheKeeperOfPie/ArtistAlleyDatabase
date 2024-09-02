@@ -8,11 +8,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
+import co.touchlab.kermit.Logger
 import com.anilist.Anime2AnimeConnectionsQuery
 import com.anilist.Anime2AnimeCountQuery
 import com.anilist.fragment.AniListMedia
 import com.anilist.fragment.Anime2AnimeConnectionsStaffMedia
-import com.thekeeperofpie.artistalleydatabase.android_utils.LogUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -381,11 +381,10 @@ abstract class GameVariant<Options>(
                     it?.id to (it.allCharacterMediaIds() + it.allStaffMediaIds())
                 }
             val staff = nextMediaConnections?.staff?.edges?.mapNotNull { it?.node?.id }
-            LogUtils.d(
-                TAG,
+            Logger.d(TAG) {
                 "Checking ${aniListMedia.id} for connection with $targetMediaId, " +
                         "considering voice actors $voiceActors and staff $staff"
-            )
+            }
         }
         // TODO: Ignore the narrator character
         val voiceActorConnections = nextMediaConnections?.characters?.edges

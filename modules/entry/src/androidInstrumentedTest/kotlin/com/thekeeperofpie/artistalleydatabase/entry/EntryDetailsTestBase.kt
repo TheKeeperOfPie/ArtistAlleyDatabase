@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
+import android.app.Application
 import androidx.navigation.NavHostController
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.test_utils.HiltInjectExtension
 import com.thekeeperofpie.artistalleydatabase.test_utils.TestBase
 import com.thekeeperofpie.artistalleydatabase.test_utils.atLeast
@@ -11,10 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.untilCalled
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import com.thekeeperofpie.artistalleydatabase.test_utils.withDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.serialization.json.Json
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
@@ -27,10 +30,16 @@ import kotlin.time.Duration.Companion.seconds
 abstract class EntryDetailsTestBase : TestBase() {
 
     @Inject
-    lateinit var appJson: AppJson
+    lateinit var json: Json
 
     @Inject
-    lateinit var cropController: CropController
+    lateinit var application: Application
+
+    @Inject
+    lateinit var appFileSystem: AppFileSystem
+
+    @Inject
+    lateinit var cropSettings: CropSettings
 
     @TempDir
     lateinit var testDir: File
@@ -41,7 +50,7 @@ abstract class EntryDetailsTestBase : TestBase() {
         }
     }
 
-    internal fun testViewModel(
+    internal fun TestScope.testViewModel(
         hasError: Boolean = false,
         cropUri: String? = null,
         vararg existingEntries: TestEntry,
@@ -50,8 +59,8 @@ abstract class EntryDetailsTestBase : TestBase() {
         cropUri = cropUri,
         entries = existingEntries.associateBy { it.id }.toMutableMap(),
         testDirectory = testDir,
-        appJson = appJson,
-        cropController = cropController,
+        json = json,
+        cropController = { CropController(application, appFileSystem, cropSettings, this) },
     )
 
     protected suspend fun EntryDetailsViewModel<*, *>.runSaveAndWait(

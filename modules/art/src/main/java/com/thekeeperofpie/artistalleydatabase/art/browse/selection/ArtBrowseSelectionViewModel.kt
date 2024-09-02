@@ -18,20 +18,20 @@ import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 @HiltViewModel
 class ArtBrowseSelectionViewModel @Inject constructor(
     appFileSystem: AppFileSystem,
     private val artEntryBrowseDao: ArtEntryBrowseDao,
-    private val appJson: AppJson,
+    private val json: Json,
 ) : ArtEntryGridViewModel(appFileSystem, artEntryBrowseDao) {
 
     lateinit var column: ArtEntryColumn
@@ -61,27 +61,27 @@ class ArtBrowseSelectionViewModel @Inject constructor(
                             ArtEntryColumn.ARTISTS -> it.artists.contains(queryValue)
                             ArtEntryColumn.SOURCE -> TODO()
                             ArtEntryColumn.SERIES -> when (queryIdOrString) {
-                                is Either.Left -> it.series(appJson)
+                                is Either.Left -> it.series(json)
                                     .filterIsInstance<Series.AniList>()
                                     .any { it.id == queryIdOrString.value }
                                 is Either.Right -> {
-                                    it.series(appJson)
+                                    it.series(json)
                                         .any { it.text.contains(queryIdOrString.value) }
                                 }
                             }
                             ArtEntryColumn.CHARACTERS -> when (queryIdOrString) {
-                                is Either.Left -> it.characters(appJson)
+                                is Either.Left -> it.characters(json)
                                     .filterIsInstance<Character.AniList>()
                                     .any { it.id == queryIdOrString.value }
                                 is Either.Right -> {
-                                    it.characters(appJson)
+                                    it.characters(json)
                                         .any { it.text.contains(queryIdOrString.value) }
                                 }
                             }
                             ArtEntryColumn.TAGS -> it.tags.contains(queryValue)
                         }
                     }
-                        .map { ArtEntryGridModel.buildFromEntry(appFileSystem, appJson, it) }
+                        .map { ArtEntryGridModel.buildFromEntry(appFileSystem, json, it) }
                 }
                 .onEach {
                     if (loading) {

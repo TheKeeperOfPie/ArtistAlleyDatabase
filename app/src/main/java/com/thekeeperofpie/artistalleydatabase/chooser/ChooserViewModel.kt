@@ -7,18 +7,15 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
-import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.io.buffered
 import kotlinx.io.files.SystemFileSystem
+import kotlinx.serialization.json.Json
 import java.io.File
 import javax.inject.Inject
 
@@ -27,20 +24,14 @@ class ChooserViewModel @Inject constructor(
     application: Application,
     appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryDetailsDao,
-    dataConverter: DataConverter,
-    mediaRepository: MediaRepository,
-    characterRepository: CharacterRepository,
     aniListAutocompleter: AniListAutocompleter,
-    appJson: AppJson,
+    json: Json,
 ) : ArtSearchViewModel(
     application = application,
     appFileSystem = appFileSystem,
     artEntryDao = artEntryDao,
-    dataConverter = dataConverter,
-    mediaRepository = mediaRepository,
-    characterRepository = characterRepository,
     aniListAutocompleter = aniListAutocompleter,
-    appJson = appJson,
+    json = json,
 ) {
 
     fun getResults(): Intent? {

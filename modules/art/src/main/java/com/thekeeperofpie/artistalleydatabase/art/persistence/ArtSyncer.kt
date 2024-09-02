@@ -9,10 +9,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntrySyncDao
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import kotlinx.serialization.json.Json
 
 class ArtSyncer(
-    private val appJson: AppJson,
+    private val json: Json,
     private val artEntryDao: ArtEntrySyncDao,
     private val characterRepository: CharacterRepository,
     private val characterEntryDao: CharacterEntryDao,
@@ -36,12 +36,12 @@ class ArtSyncer(
         repeatToLimit(artEntryDao::getCharactersAndSeries) {
             characterIds += it.map { it.charactersSerialized }
                 .flatMap(JsonUtils::readStringList)
-                .map { Character.parseSingle(appJson, it).id }
+                .map { Character.parseSingle(json, it).id }
                 .distinct()
                 .toList()
             mediaIds += it.map { it.seriesSerialized }
                 .flatMap(JsonUtils::readStringList)
-                .map { Series.parseSingle(appJson, it).id }
+                .map { Series.parseSingle(json, it).id }
                 .distinct()
                 .toList()
         }

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.annotation.StringRes
 import com.benasher44.uuid.Uuid
 import com.eygraber.uri.Uri
 
@@ -11,7 +10,6 @@ data class EntryImage(
     val uri: Uri?,
     internal val width: Int,
     internal val height: Int,
-    @StringRes val contentDescriptionRes: Int,
     val label: String = "",
     val croppedUri: Uri? = null,
     internal val croppedWidth: Int? = null,

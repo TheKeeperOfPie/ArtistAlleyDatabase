@@ -4,7 +4,6 @@ plugins {
     id("library-desktop")
     id("library-inject")
     id("com.google.devtools.ksp")
-    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 kotlin {

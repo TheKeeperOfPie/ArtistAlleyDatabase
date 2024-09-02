@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
 import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import dagger.Module
@@ -28,6 +27,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -57,12 +57,12 @@ object ArtEntryHiltModule {
         appFileSystem: AppFileSystem,
         artEntryDao: ArtEntryDao,
         dataConverter: DataConverter,
-        appJson: AppJson
+        json: Json
     ): Exporter = ArtExporter(
         appFileSystem = appFileSystem,
         artEntryDao = artEntryDao,
         dataConverter = dataConverter,
-        appJson = appJson
+        json = json,
     )
 
     @IntoSet
@@ -71,11 +71,11 @@ object ArtEntryHiltModule {
     fun provideArtImporter(
         appFileSystem: AppFileSystem,
         artEntryDao: ArtEntryDao,
-        appJson: AppJson,
+        json: Json,
     ): Importer = ArtImporter(
         appFileSystem = appFileSystem,
         artEntryDao = artEntryDao,
-        appJson = appJson,
+        json = json,
     )
 
     @IntoSet
@@ -94,13 +94,13 @@ object ArtEntryHiltModule {
         appFileSystem: AppFileSystem,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
-        appJson: AppJson,
+        json: Json,
         characterRepository: CharacterRepository,
     ): BrowseTabViewModel = ArtBrowseTabCharacters(
         appFileSystem,
         artEntryBrowseDao,
         artEntryNavigator,
-        appJson,
+        json,
         characterRepository
     )
 
@@ -111,13 +111,13 @@ object ArtEntryHiltModule {
         appFileSystem: AppFileSystem,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
-        appJson: AppJson,
+        json: Json,
         mediaRepository: MediaRepository,
     ): BrowseTabViewModel = ArtBrowseTabSeries(
         appFileSystem,
         artEntryBrowseDao,
         artEntryNavigator,
-        appJson,
+        json,
         mediaRepository
     )
 
@@ -138,14 +138,14 @@ object ArtEntryHiltModule {
     @Singleton
     @Provides
     fun provideArtSyncer(
-        appJson: AppJson,
+        json: Json,
         artEntrySyncDao: ArtEntrySyncDao,
         characterRepository: CharacterRepository,
         characterEntryDao: CharacterEntryDao,
         mediaRepository: MediaRepository,
         mediaEntryDao: MediaEntryDao,
     ): DatabaseSyncer = ArtSyncer(
-        appJson,
+        json,
         artEntrySyncDao,
         characterRepository,
         characterEntryDao,

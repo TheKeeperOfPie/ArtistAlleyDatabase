@@ -11,6 +11,8 @@ import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.anilist.secrets.AniListSecrets
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import me.tatarka.inject.annotations.Inject
 
 @SingletonScope
@@ -60,18 +62,27 @@ actual class PlatformOAuthStore(
     }
 
     internal actual val authTokenState = MutableStateFlow(sharedPreferences.getString(KEY_AUTH_TOKEN, null))
+    private val authTokenMutex = Mutex()
 
-    internal actual fun storeAuthTokenResult(token: String) {
+    internal actual suspend fun storeAuthTokenResult(token: String) {
         @Suppress("ApplySharedPref")
         sharedPreferences.edit()
             .putString(KEY_AUTH_TOKEN, token)
             .commit()
+
+        authTokenMutex.withLock {
+            authTokenState.emit(token)
+        }
     }
 
-    internal actual fun clearAuthToken() {
+    internal actual suspend fun clearAuthToken() {
         @Suppress("ApplySharedPref")
         sharedPreferences.edit()
             .remove(KEY_AUTH_TOKEN)
             .commit()
+
+        authTokenMutex.withLock {
+            authTokenState.emit(null)
+        }
     }
 }

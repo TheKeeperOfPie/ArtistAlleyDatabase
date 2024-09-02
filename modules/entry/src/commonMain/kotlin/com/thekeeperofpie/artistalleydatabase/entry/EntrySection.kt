@@ -119,6 +119,21 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
             lockState = lockState,
             navRoute = navRoute,
         )
+        constructor(
+            headerZero: StringResource,
+            headerOne: StringResource,
+            headerMany: StringResource,
+            initialPendingValue: String = "",
+            lockState: LockState? = null,
+            navRoute: ((Entry) -> String)? = null,
+        ) : this(
+            headerZero = StringResourceCompose(headerZero),
+            headerOne = StringResourceCompose(headerOne),
+            headerMany = StringResourceCompose(headerMany),
+            initialPendingValue = initialPendingValue,
+            lockState = lockState,
+            navRoute = navRoute,
+        )
 
         val contents = mutableStateListOf<Entry>()
         private var contentUpdates = MutableStateFlow(emptyList<Entry>())
@@ -337,6 +352,15 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
             lockState: LockState? = null,
         ) : this(
             headerRes = StringResourceId(headerRes),
+            initialPendingValue = initialPendingValue,
+            lockState = lockState,
+        )
+        constructor(
+            headerRes: StringResource,
+            initialPendingValue: String = "",
+            lockState: LockState? = null,
+        ) : this(
+            headerRes = StringResourceCompose(headerRes),
             initialPendingValue = initialPendingValue,
             lockState = lockState,
         )

@@ -11,20 +11,16 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.sections.ArtEntrySections
 import com.thekeeperofpie.artistalleydatabase.art.sections.PrintSize
-import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +30,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.io.files.SystemFileSystem
+import kotlinx.serialization.json.Json
 import java.util.WeakHashMap
 import javax.inject.Inject
 
@@ -42,11 +39,8 @@ open class ArtSearchViewModel @Inject constructor(
     protected val application: Application,
     protected val appFileSystem: AppFileSystem,
     protected val artEntryDao: ArtEntryDetailsDao,
-    private val dataConverter: DataConverter,
-    private val mediaRepository: MediaRepository,
-    private val characterRepository: CharacterRepository,
-    private val aniListAutocompleter: AniListAutocompleter,
-    protected val appJson: AppJson,
+    aniListAutocompleter: AniListAutocompleter,
+    protected val json: Json,
 ) : EntrySearchViewModel<ArtSearchQuery, ArtEntryGridModel>() {
 
     private val weakMap = WeakHashMap<PagingSource<*, *>, Unit>()
@@ -69,11 +63,8 @@ open class ArtSearchViewModel @Inject constructor(
         entrySections.subscribeSectionPredictions(
             viewModelScope,
             artEntryDao,
-            dataConverter,
-            mediaRepository,
-            characterRepository,
             aniListAutocompleter,
-            appJson,
+            json,
         )
     }
 
@@ -130,7 +121,7 @@ open class ArtSearchViewModel @Inject constructor(
             }
             .map {
                 it.map {
-                    ArtEntryGridModel.buildFromEntry(appFileSystem, appJson, it)
+                    ArtEntryGridModel.buildFromEntry(appFileSystem, json, it)
                 }
             }
 }

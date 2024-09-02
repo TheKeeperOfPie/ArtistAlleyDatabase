@@ -21,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -36,12 +35,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 class ArtBrowseTabCharacters(
     appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
-    appJson: AppJson,
+    json: Json,
     characterRepository: CharacterRepository,
 ) : BrowseTabViewModel() {
 
@@ -66,14 +66,14 @@ class ArtBrowseTabCharacters(
                     it.flatMap(JsonUtils::readStringList)
                         .map { databaseText ->
                             val entry = databaseText.takeIf { it.contains("{") }
-                                ?.let<String, CharacterColumnEntry>(appJson.json::decodeFromString)
+                                ?.let<String, CharacterColumnEntry>(json::decodeFromString)
                             if (entry == null) {
                                 // TODO: Search through the entire database rather than just the
                                 //  first 10, also need to fix other data types
                                 artEntryDao.getCharacterFlow(databaseText, limit = 10)
                                     .flatMapLatest { it.asFlow() }
                                     .filter {
-                                        it.characters(appJson)
+                                        it.characters(json)
                                             .filterIsInstance<Character.Custom>()
                                             .any { it.text.contains(databaseText) }
                                     }

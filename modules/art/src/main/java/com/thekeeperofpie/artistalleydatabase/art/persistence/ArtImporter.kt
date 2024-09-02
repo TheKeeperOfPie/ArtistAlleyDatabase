@@ -5,17 +5,17 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImporter
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.io.Source
 import kotlinx.io.bytestring.encodeToByteString
 import kotlinx.io.indexOf
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalSerializationApi::class)
 class ArtImporter(
     appFileSystem: AppFileSystem,
     private val artEntryDao: ArtEntryDao,
-    private val appJson: AppJson,
+    private val json: Json,
 ) : EntryImporter(appFileSystem) {
 
     override val zipEntryName = "art_entries"
@@ -44,7 +44,7 @@ class ArtImporter(
         var count = 0
         val arrayStartIndex = source.indexOf("[".encodeToByteString())
         source.skip(arrayStartIndex)
-        appJson.json.decodeSequenceIgnoreEndOfFile<ArtEntry>(source)
+        json.decodeSequenceIgnoreEndOfFile<ArtEntry>(source)
             .chunked(10)
             .forEach {
                 count += it.size

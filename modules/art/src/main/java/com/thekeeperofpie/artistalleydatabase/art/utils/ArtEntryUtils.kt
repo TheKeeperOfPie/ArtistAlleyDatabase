@@ -2,14 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.art.utils
 
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import kotlinx.serialization.json.Json
 
 object ArtEntryUtils {
 
     const val SCOPED_ID_TYPE = "art_entry"
 
-    fun buildPlaceholderText(appJson: AppJson, entry: ArtEntry) = entry.run {
-        val source = when (val source = SourceType.fromEntry(appJson.json, this)) {
+    fun buildPlaceholderText(json: Json, entry: ArtEntry) = entry.run {
+        val source = when (val source = SourceType.fromEntry(json, this)) {
             is SourceType.Convention -> (source.name + (source.year?.let { " $it" }
                 ?: "") + "\n" + source.hall + " " + source.booth).trim()
             is SourceType.Custom -> source.value
@@ -18,8 +18,8 @@ object ArtEntryUtils {
             SourceType.Different -> ""
         }
 
-        val series = series(appJson)
-        val characters = characters(appJson)
+        val series = series(json)
+        val characters = characters(json)
         val info = if (artists.isNotEmpty()) {
             artists.joinToString("\n")
         } else if (series.isNotEmpty()) {

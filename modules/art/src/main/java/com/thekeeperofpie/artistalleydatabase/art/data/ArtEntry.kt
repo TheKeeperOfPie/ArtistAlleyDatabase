@@ -14,9 +14,9 @@ import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 @Serializable
 @Entity(tableName = "art_entries")
@@ -63,17 +63,17 @@ data class ArtEntry(
     @kotlinx.serialization.Transient
     private lateinit var _characters: List<Character>
 
-    fun series(appJson: AppJson): List<Series> {
+    fun series(json: Json): List<Series> {
         if (!::_series.isInitialized) {
-            _series = Series.parse(appJson, seriesSerialized)
+            _series = Series.parse(json, seriesSerialized)
         }
 
         return _series
     }
 
-    fun characters(appJson: AppJson): List<Character> {
+    fun characters(json: Json): List<Character> {
         if (!::_characters.isInitialized) {
-            _characters = Character.parse(appJson, charactersSerialized)
+            _characters = Character.parse(json, charactersSerialized)
         }
 
         return _characters

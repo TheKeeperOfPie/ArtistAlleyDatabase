@@ -2,7 +2,6 @@ plugins {
     id("library-android")
     id("library-compose")
     id("library-desktop")
-    id("org.jetbrains.kotlin.plugin.serialization")
     alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 

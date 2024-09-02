@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
-import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
@@ -25,21 +24,26 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
+
+// TODO: Remove once this module is multiplatform
+interface CropControllerProducer {
+    fun produce(scope: CoroutineScope): CropController
+}
 
 @HiltViewModel
 open class ArtEntryDetailsViewModel @Inject constructor(
-    application: Application,
     appFileSystem: AppFileSystem,
-    protected val appJson: AppJson,
+    protected val json: Json,
     protected val artEntryDao: ArtEntryDetailsDao,
     private val dataConverter: DataConverter,
     private val mediaRepository: MediaRepository,
@@ -47,15 +51,14 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     private val aniListAutocompleter: AniListAutocompleter,
     private val artSettings: ArtSettings,
     settings: CropSettings,
-    cropController: CropController,
+    cropController: CropControllerProducer,
 ) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
     entryClass = ArtEntry::class,
     appFileSystem = appFileSystem,
     scopedIdType = ArtEntryUtils.SCOPED_ID_TYPE,
-    imageContentDescriptionRes = R.string.art_entry_image_content_description,
-    appJson = appJson,
+    json = json,
     settings = settings,
-    cropController = cropController,
+    cropControllerFunction = cropController::produce,
 ) {
     protected val entrySections = ArtEntrySections()
 
@@ -66,11 +69,8 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         entrySections.subscribeSectionPredictions(
             viewModelScope,
             artEntryDao,
-            dataConverter,
-            mediaRepository,
-            characterRepository,
             aniListAutocompleter,
-            appJson,
+            json,
         )
     }
 
@@ -86,13 +86,13 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         val entryValueIds = entryIds.map { it.valueId }
         val series = artEntryDao.distinctCountSeries(entryValueIds)
             .takeIf { it == 1 }
-            ?.let { firstEntry.series(appJson) }
+            ?.let { firstEntry.series(json) }
             ?.let(dataConverter::seriesEntries)
             ?: differentValue
 
         val characters = artEntryDao.distinctCountCharacters(entryValueIds)
             .takeIf { it == 1 }
-            ?.let { firstEntry.characters(appJson) }
+            ?.let { firstEntry.characters(json) }
             ?.let(dataConverter::characterEntries)
             ?: differentValue
 
@@ -100,7 +100,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         val sourceValueSame = artEntryDao.distinctCountSourceValue(entryValueIds) == 1
 
         val source = if (sourceTypeSame && sourceValueSame) {
-            SourceType.fromEntry(appJson.json, firstEntry)
+            SourceType.fromEntry(json, firstEntry)
         } else {
             SourceType.Different
         }
@@ -196,7 +196,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         skipIgnoreableErrors: Boolean,
     ): Boolean {
         val baseEntry = makeBaseEntry()
-        baseEntry.series(appJson)
+        baseEntry.series(json)
             .filterIsInstance<Series.AniList>()
             .map { it.id }
             .let { mediaRepository.ensureSaved(it) }
@@ -206,7 +206,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
                     return false
                 }
             }
-        baseEntry.characters(appJson)
+        baseEntry.characters(json)
             .filterIsInstance<Character.AniList>()
             .map { it.id }
             .let { characterRepository.ensureSaved(it) }
@@ -279,7 +279,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             artEntryDao.updateSource(
                 entryValueIds,
                 sourceItem.serializedType,
-                sourceItem.serializedValue(appJson.json)
+                sourceItem.serializedValue(json)
             )
         }
 
@@ -366,8 +366,8 @@ open class ArtEntryDetailsViewModel @Inject constructor(
 
     protected fun buildModel(entry: ArtEntry): ArtEntryModel {
         val artists = entry.artists.map(Entry::Custom)
-        val series = dataConverter.seriesEntries(entry.series(appJson))
-        val characters = dataConverter.characterEntries(entry.characters(appJson))
+        val series = dataConverter.seriesEntries(entry.series(json))
+        val characters = dataConverter.characterEntries(entry.characters(json))
         val tags = entry.tags.map(Entry::Custom)
 
         return ArtEntryModel(
@@ -376,7 +376,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             series = series,
             characters = characters,
             tags = tags,
-            source = SourceType.fromEntry(appJson.json, entry)
+            source = SourceType.fromEntry(json, entry)
         )
     }
 
@@ -421,7 +421,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             id = "",
             artists = entrySections.artistSection.finalContents().map { it.serializedValue },
             sourceType = sourceItem.serializedType,
-            sourceValue = sourceItem.serializedValue(appJson.json),
+            sourceValue = sourceItem.serializedValue(json),
             seriesSerialized = entrySections.seriesSection.finalContents()
                 .map { it.serializedValue },
             seriesSearchable = entrySections.seriesSection.finalContents()

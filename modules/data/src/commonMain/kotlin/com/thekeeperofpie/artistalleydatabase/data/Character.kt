@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.data
 
 import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import kotlinx.serialization.json.Json
 
 sealed class Character {
     abstract val id: String
@@ -20,11 +20,10 @@ sealed class Character {
 
         private val TAG = Character::class.java.name
 
-        fun parseSingle(appJson: AppJson, characterSerialized: String): Character {
+        fun parseSingle(json: Json, characterSerialized: String): Character {
             if (characterSerialized.startsWith("{")) {
                 try {
-                    val entry =
-                        appJson.json.decodeFromString<CharacterColumnEntry>(characterSerialized)
+                    val entry = json.decodeFromString<CharacterColumnEntry>(characterSerialized)
                     return AniList(entry.id, characterSerialized, entry)
                 } catch (e: Exception) {
                     Logger.e(TAG, e) { "Fail to parse CharacterColumnEntry: $characterSerialized" }
@@ -34,7 +33,7 @@ sealed class Character {
             return Custom(characterSerialized)
         }
 
-        fun parse(appJson: AppJson, charactersSerialized: List<String>) =
-            charactersSerialized.map { parseSingle(appJson, it) }
+        fun parse(json: Json, charactersSerialized: List<String>) =
+            charactersSerialized.map { parseSingle(json, it) }
     }
 }

@@ -16,12 +16,16 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.io.asOutputStream
 import kotlinx.io.files.SystemFileSystem
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
+// TODO: Use viewModelScope
+@Inject
 actual class CropController(
-    private val scope: CoroutineScope,
     private val application: Application,
     private val appFileSystem: AppFileSystem,
     private val settings: CropSettings,
+    @Assisted private val scope: CoroutineScope,
 ) {
     companion object {
         private const val TAG = "CropController"

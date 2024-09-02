@@ -2,16 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.art.sections
 
 import com.hoc081098.flowext.withLatestFrom
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
-import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
-import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
@@ -22,6 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ArtEntrySections(defaultLockState: EntrySection.LockState = EntrySection.LockState.UNLOCKED) {
@@ -100,11 +97,8 @@ class ArtEntrySections(defaultLockState: EntrySection.LockState = EntrySection.L
     fun subscribeSectionPredictions(
         scope: CoroutineScope,
         artEntryDao: ArtEntryDetailsDao,
-        dataConverter: DataConverter,
-        mediaRepository: MediaRepository,
-        characterRepository: CharacterRepository,
         aniListAutocompleter: AniListAutocompleter,
-        appJson: AppJson,
+        json: Json,
     ) {
         scope.launch(CustomDispatchers.IO) {
             artistSection.subscribePredictions(
@@ -182,9 +176,7 @@ class ArtEntrySections(defaultLockState: EntrySection.LockState = EntrySection.L
                                         convention.year!!
                                     )
                                     .takeUnless { it.isNullOrBlank() }
-                                    ?.let<String, SourceType.Convention>(
-                                        appJson.json::decodeFromString
-                                    )
+                                    ?.let<String, SourceType.Convention>(json::decodeFromString)
                                     ?.takeIf {
                                         it.name == convention.name && it.year == convention.year
                                     }

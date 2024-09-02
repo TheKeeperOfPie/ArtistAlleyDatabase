@@ -192,6 +192,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var browseViewModel: Provider<BrowseViewModel>
 
+    @Inject
+    lateinit var applicationComponent: ApplicationComponent
+
     private val fullScreenImageHandler = FullscreenImageHandler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -473,7 +476,8 @@ class MainActivity : ComponentActivity() {
                             cdEntryNavigator.initialize(
                                 onClickNav = onClickNav,
                                 navHostController = navHostController,
-                                navGraphBuilder = this
+                                navGraphBuilder = this,
+                                cdEntryComponent = applicationComponent,
                             )
 
                             sharedElementComposable(AppNavDestinations.BROWSE.id) {

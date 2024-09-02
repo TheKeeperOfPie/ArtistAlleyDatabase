@@ -15,12 +15,18 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
+import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
+import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistComponent
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
@@ -56,7 +62,10 @@ abstract class ApplicationComponent(
     @get:Provides val featureOverrideProvider: FeatureOverrideProvider,
     @get:Provides val aniListOAuthStore: AniListOAuthStore,
     @get:Provides val platformOAuthStore: PlatformOAuthStore,
-) : AniListComponent, MusicalArtistComponent, VgmdbComponent {
+    @get:Provides val appFileSystem: AppFileSystem,
+    @get:Provides val cdEntryDatabase: CdEntryDatabase,
+    @get:Provides val cropSettings: CropSettings,
+) : AniListComponent, CdEntryComponent, MusicalArtistComponent, VgmdbComponent {
 
     abstract val artistRepository: ArtistRepository
     abstract val albumRepository: AlbumRepository
@@ -74,6 +83,8 @@ abstract class ApplicationComponent(
     abstract val aniListDataConverter: AniListDataConverter
     abstract val authedAniListApi: AuthedAniListApi
     abstract val aniListAutocompleter: AniListAutocompleter
+    abstract val cdEntryNavigator: CdEntryNavigator
+    abstract val cdEntryDao: CdEntryDao
 
     @Provides
     @SingletonScope
