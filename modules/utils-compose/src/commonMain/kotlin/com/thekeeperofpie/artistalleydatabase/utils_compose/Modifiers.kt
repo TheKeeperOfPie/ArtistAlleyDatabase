@@ -28,6 +28,8 @@ import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
+import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import kotlinx.coroutines.delay
 import kotlin.math.min
 
@@ -40,8 +42,7 @@ private val FORCE_ENABLE = false
  */
 @Stable
 fun Modifier.recomposeHighlighter(trackTimeout: Boolean = false) =
-    // TODO: Add debug checking
-    if (/*!BuildConfig.DEBUG && */!FORCE_ENABLE) this else this.then(
+    if (!BuildVariant.isDebug() && !FORCE_ENABLE) this else this.then(
         Modifier.composed(
             inspectorInfo = debugInspectorInfo { name = "recomposeHighlighter" },
         ) {

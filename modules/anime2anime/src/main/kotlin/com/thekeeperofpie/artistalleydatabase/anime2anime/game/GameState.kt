@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import com.anilist.fragment.AniListMedia
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResult
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class GameState {

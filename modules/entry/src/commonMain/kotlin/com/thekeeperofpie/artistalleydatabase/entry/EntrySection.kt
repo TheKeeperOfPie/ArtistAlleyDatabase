@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Duration.Companion.seconds
 
 sealed class EntrySection(private val initialLockState: LockState? = null) {
@@ -306,14 +307,15 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
                 val titleText: String = text,
                 val subtitleText: String? = null,
                 trailingIcon: ImageVector? = null,
-                trailingIconContentDescription: StringResourceCompat? = null,
+                trailingIconContentDescription: StringResource? = null,
                 serializedValue: String,
                 searchableValue: String,
             ) : Entry(
                 id = id,
                 text = text,
                 trailingIcon = trailingIcon,
-                trailingIconContentDescription = trailingIconContentDescription,
+                trailingIconContentDescription = trailingIconContentDescription
+                    ?.let(::StringResourceCompose),
                 serializedValue = serializedValue,
                 searchableValue = searchableValue,
             )

@@ -78,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -145,7 +146,7 @@ object AnimeUserListScreen {
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 val error = entry.error
-                val errorText = error?.first?.let { stringResource(it) }
+                val errorText = error?.first?.let { ComposeResourceUtils.stringResourceCompat(it) }
                 LaunchedEffect(error) {
                     if (errorText != null) {
                         scope.launch {
@@ -182,7 +183,7 @@ object AnimeUserListScreen {
                         val hasItems = mediaEntries == null || mediaEntries.isNotEmpty()
                         when {
                             !entry.loading && !entry.success && !hasItems ->
-                                AnimeMediaListScreen.Error(
+                                AnimeMediaListScreen.Error2(
                                     errorTextRes = error?.first,
                                     exception = error?.second,
                                     modifier = Modifier.fillMaxWidth()

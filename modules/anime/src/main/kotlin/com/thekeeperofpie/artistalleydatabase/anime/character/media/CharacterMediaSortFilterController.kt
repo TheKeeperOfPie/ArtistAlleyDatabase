@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character.media
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -11,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 
@@ -44,7 +44,7 @@ class CharacterMediaSortFilterController(
     private val titleLanguageSection = SortFilterSection.Dropdown(
         labelTextRes = R.string.anime_character_media_filter_setting_title_language,
         values = AniListLanguageOption.entries,
-        valueToText = { stringResource(it.textRes) },
+        valueToText = { ComposeResourceUtils.stringResource(it.textRes) },
         property = settings.languageOptionMedia,
     )
 

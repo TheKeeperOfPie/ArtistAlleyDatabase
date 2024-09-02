@@ -20,6 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
@@ -58,6 +61,17 @@ object AnimeMediaListScreen {
         modifier: Modifier = Modifier,
         @StringRes errorTextRes: Int? = null,
         exception: Throwable? = null,
+    ) = Error2(
+        modifier = modifier,
+        errorTextRes = errorTextRes?.let(::StringResourceId),
+        exception = exception,
+    )
+
+    @Composable
+    fun Error2(
+        modifier: Modifier = Modifier,
+        errorTextRes: StringResourceCompat? = null,
+        exception: Throwable? = null,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -65,17 +79,26 @@ object AnimeMediaListScreen {
                 .wrapContentSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            ErrorContent(errorTextRes, exception)
+            ErrorContent2(errorTextRes, exception)
         }
     }
 
     @Composable
     fun ErrorContent(
-        @StringRes errorTextRes: Int? = null,
+        errorTextRes: Int? = null,
+        exception: Throwable? = null,
+    ) = ErrorContent2(
+        errorTextRes = errorTextRes?.let(::StringResourceId),
+        exception = exception,
+    )
+
+    @Composable
+    fun ErrorContent2(
+        errorTextRes: StringResourceCompat? = null,
         exception: Throwable? = null,
     ) {
         Text(
-            text = stringResource(errorTextRes ?: R.string.anime_media_list_error_loading),
+            text = ComposeResourceUtils.stringResourceCompat(errorTextRes ?: StringResourceId(R.string.anime_media_list_error_loading)),
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
         )

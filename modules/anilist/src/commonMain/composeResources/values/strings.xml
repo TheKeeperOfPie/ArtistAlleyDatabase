@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aniList">AniList</string>
+    <string name="aniList_characters">AniList Characters</string>
+    <string name="aniList_media">AniList Media</string>
+    <string name="aniList_entry_anime_indicator_content_description">Anime type indicator</string>
+    <string name="aniList_entry_manga_indicator_content_description">Manga type indicator</string>
+    <string name="aniList_error_fetching_character">Error fetching character</string>
+    <string name="aniList_error_fetching_series">Error fetching series</string>
+    <string name="aniList_oAuth_loading">Storing OAuth token</string>
+    <string name="aniList_oAuth_error">Error reading OAuth token</string>
+    <string name="aniList_oAuth_error_bad_url">Error reading OAuth token, check browser is logged in</string>
+    <string name="aniList_oAuth_login_menu_action">Login</string>
+
+    <string name="aniList_language_option_default">Default</string>
+    <string name="aniList_language_option_english">English</string>
+    <string name="aniList_language_option_native">Native</string>
+    <string name="aniList_language_option_romaji">Romaji</string>
+    <string name="aniList_oAuth_close_button">Close</string>
+
+    <string name="aniList_voice_actor_language_japanese">Japanese</string>
+    <string name="aniList_voice_actor_language_english">English</string>
+    <string name="aniList_voice_actor_language_korean">Korean</string>
+    <string name="aniList_voice_actor_language_italian">Italian</string>
+    <string name="aniList_voice_actor_language_spanish">Spanish</string>
+    <string name="aniList_voice_actor_language_portuguese">Portuguese</string>
+    <string name="aniList_voice_actor_language_french">French</string>
+    <string name="aniList_voice_actor_language_german">German</string>
+    <string name="aniList_voice_actor_language_hebrew">Hebrew</string>
+    <string name="aniList_voice_actor_language_hungarian">Hungarian</string>
+    <string name="aniList_voice_actor_language_chinese">Chinese</string>
+    <string name="aniList_voice_actor_language_arabic">Arabic</string>
+    <string name="aniList_voice_actor_language_filipino">Filipino</string>
+    <string name="aniList_voice_actor_language_catalan">Catalan</string>
+    <string name="aniList_voice_actor_language_finnish">Finnish</string>
+    <string name="aniList_voice_actor_language_turkish">Turkish</string>
+    <string name="aniList_voice_actor_language_dutch">Dutch</string>
+    <string name="aniList_voice_actor_language_swedish">Swedish</string>
+    <string name="aniList_voice_actor_language_thai">Thai</string>
+    <string name="aniList_voice_actor_language_tagalog">Tagalog</string>
+    <string name="aniList_voice_actor_language_malaysian">Malaysian</string>
+    <string name="aniList_voice_actor_language_indonesian">Indonesian</string>
+    <string name="aniList_voice_actor_language_vietnamese">Vietnamese</string>
+    <string name="aniList_voice_actor_language_nepali">Nepali</string>
+    <string name="aniList_voice_actor_language_hindi">Hindi</string>
+    <string name="aniList_voice_actor_language_urdu">Urdu</string>
+</resources>

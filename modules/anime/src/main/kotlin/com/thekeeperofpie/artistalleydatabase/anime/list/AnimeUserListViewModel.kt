@@ -12,7 +12,6 @@ import com.anilist.fragment.AniListDate
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -28,10 +27,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresCont
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -191,7 +192,7 @@ class AnimeUserListViewModel @Inject constructor(
             } else {
                 flowForRefreshableContent(
                     refreshUptimeMillis,
-                    R.string.anime_media_list_error_loading
+                    StringResourceId(R.string.anime_media_list_error_loading)
                 ) {
                     includeDescriptionFlow.mapLatest {
                         val result = aniListApi.userMediaList(

@@ -136,9 +136,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHig
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
-import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys

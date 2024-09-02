@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview

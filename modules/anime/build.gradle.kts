@@ -19,6 +19,7 @@ dependencies {
     api(project(":modules:media"))
     api(project(":modules:monetization"))
     api(project(":modules:news"))
+    api(project(":modules:utils-compose"))
 
     implementation(libs.kotlinx.serialization.json)
 

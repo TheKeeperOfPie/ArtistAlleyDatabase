@@ -130,10 +130,10 @@ import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOn
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
-import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -458,7 +458,7 @@ object AnimeMediaDetailsScreen {
                     val finalError = entry.result == null && !entry.loading
                     Crossfade(targetState = finalError, label = "Media details crossfade") {
                         if (it) {
-                            AnimeMediaListScreen.Error(
+                            AnimeMediaListScreen.Error2(
                                 errorTextRes = entry.error?.first,
                                 exception = entry.error?.second,
                             )

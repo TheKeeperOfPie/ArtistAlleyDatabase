@@ -17,4 +17,6 @@
     <string name="error_fail_to_load_image">Failed to load image</string>
     <string name="error_fail_to_crop_image">Failed to crop image</string>
     <string name="log_exception">Log</string>
+    <string name="error_loading_from_cache">Error loading from cache</string>
+    <string name="error_loading_from_network">Error loading from network</string>
 </resources>

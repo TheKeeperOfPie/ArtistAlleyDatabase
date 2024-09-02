@@ -99,17 +99,18 @@ import com.thekeeperofpie.artistalleydatabase.compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
+import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import com.thekeeperofpie.artistalleydatabase.entry.EntryPrefilledAutocompleteDropdown
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
@@ -842,7 +843,7 @@ object Anime2AnimeScreen {
         if (!continuationResult.loading && error != null) {
             item(key = "$key-error") {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = stringResource(error.first))
+                    Text(text = ComposeResourceUtils.stringResourceCompat(error.first))
                     error.second?.let {
                         Text(text = it.stackTraceToString())
                     }

@@ -25,9 +25,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
-import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.foldPreviousResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.ilyapavlovskii.multiplatform.youtubeplayer.YouTubePlayerHostState
@@ -63,10 +63,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
-
-    companion object {
-        private const val TAG = "AnimeMediaDetailsViewModel"
-    }
 
     val viewer = aniListApi.authedUser
     val mediaId = savedStateHandle.toDestination<AnimeDestination.MediaDetails>(navigationTypeMap).mediaId

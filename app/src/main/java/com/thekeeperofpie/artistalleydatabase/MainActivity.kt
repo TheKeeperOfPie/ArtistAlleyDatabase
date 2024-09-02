@@ -74,7 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharact
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
@@ -151,7 +151,7 @@ class MainActivity : ComponentActivity() {
     lateinit var settings: SettingsProvider
 
     @Inject
-    lateinit var aniListOAuthStore: AniListOAuthStore
+    lateinit var platformOAuthStore: PlatformOAuthStore
 
     @Inject
     lateinit var monetizationController: MonetizationController
@@ -455,9 +455,7 @@ class MainActivity : ComponentActivity() {
                                 upIconOption = navDrawerUpIconOption,
                                 navigationTypeMap = navigationTypeMap,
                                 onClickAuth = {
-                                    aniListOAuthStore.launchAuthRequest(
-                                        this@MainActivity
-                                    )
+                                    platformOAuthStore.launchAuthRequest(this@MainActivity)
                                 },
                                 onClickSettings = {
                                     navHostController.navigate(AppNavDestinations.SETTINGS.id)

@@ -176,17 +176,13 @@ fun ThreadSmallCard(
                 val userName = thread.replyUser?.name ?: thread.user?.name
                 val timestamp = (thread.repliedAt ?: thread.createdAt)
                     .let(AniListUtils::relativeTimestamp)
-                if (userName != null || timestamp != null) {
+                if (userName != null) {
                     Text(
-                        text = if (userName != null && timestamp != null) {
-                            stringResource(
-                                R.string.anime_forum_thread_author_and_timestamp,
-                                userName,
-                                timestamp,
-                            )
-                        } else {
-                            userName ?: timestamp.toString()
-                        },
+                        text = stringResource(
+                            R.string.anime_forum_thread_author_and_timestamp,
+                            userName,
+                            timestamp,
+                        ),
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.padding(horizontal = 12.dp)
                     )

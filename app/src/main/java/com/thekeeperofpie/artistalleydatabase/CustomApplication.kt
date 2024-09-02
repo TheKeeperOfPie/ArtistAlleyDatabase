@@ -24,20 +24,17 @@ import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import dagger.Lazy
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
-import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 @HiltAndroidApp
 class CustomApplication : Application(), Configuration.Provider, ScopedApplication,
-    SingletonImageLoader.Factory {
-
-    @Inject
-    lateinit var okHttpClient: OkHttpClient
+    SingletonImageLoader.Factory, ComponentProvider {
 
     companion object {
         const val TAG = "ArtistAlleyDatabase"
@@ -52,6 +49,10 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
 
     @Inject
     lateinit var settings: Lazy<SettingsProvider>
+
+    // TODO: There must be a better way to do this
+    @Inject
+    lateinit var applicationComponent: Lazy<ApplicationComponent>
 
     private lateinit var audioManager: AudioManager
 
@@ -93,7 +94,7 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
         // Ignore external file:// URIs policy
         StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
 
-        AniListOAuthStore.setShareTargetEnabled(this, false)
+        PlatformOAuthStore.setShareTargetEnabled(this, false)
 
         NotificationManagerCompat.from(this)
             .createNotificationChannelsCompat(
@@ -174,4 +175,7 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
         }
         return service
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> singletonComponent() = applicationComponent.get() as T
 }

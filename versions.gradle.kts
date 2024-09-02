@@ -119,6 +119,7 @@ object Versions {
 
     const val graphQlJava = "22.1"
     const val htmlText = "1.6.0"
+    const val humanReadable = "1.9.0"
     const val jackson = "2.17.2"
     const val jaredsBurrowsLicense = "0.9.8"
     const val javaPoet = "1.13.0"
@@ -157,6 +158,7 @@ object Versions {
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "6.3.0"
     const val okhttp = "5.0.0-alpha.14"
+    const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
     const val unityAds = "4.12.2"
     const val uriKmp = "0.0.18"
@@ -278,6 +280,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.apollographql.apollo3:apollo-runtime")
                     library("com.apollographql.apollo3:apollo-normalized-cache")
                     library("com.apollographql.apollo3:apollo-normalized-cache-sqlite")
+                    library("com.apollographql.apollo3:apollo-engine-ktor")
                 }
 
                 withVersion(Versions.accompanist) {
@@ -453,6 +456,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.github.petertrr:kotlin-multiplatform-diff:${Versions.diffUtils}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
                 library("me.tatarka.inject:kotlin-inject-runtime-kmp:${Versions.kotlinInject}")
+                library("nl.jacobras:Human-Readable:${Versions.humanReadable}")
                 library("org.awaitility:awaitility:${Versions.awaitility}")
                 library("org.chromium.net:cronet-embedded:${Versions.cronetEmbedded}")
                 library("org.mockito.kotlin:mockito-kotlin:${Versions.mockitoKotlin}")

@@ -23,12 +23,12 @@ object NetworkHiltModule {
     fun provideNetworkClient(
         scopedApplication: ScopedApplication,
         networkSettings: NetworkSettings,
-        authProviders: @JvmSuppressWildcards Map<String, NetworkAuthProvider>,
+        networkAuthProvider: NetworkAuthProvider,
     ) = buildNetworkClient(
         scope = scopedApplication.scope,
         application = scopedApplication.app,
         networkSettings = networkSettings,
-        authProviders = authProviders,
+        authProviders = mapOf(networkAuthProvider.host to networkAuthProvider),
     )
 
     @Singleton

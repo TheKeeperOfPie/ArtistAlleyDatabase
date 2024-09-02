@@ -1,51 +1,53 @@
 plugins {
-    id("compose-library")
-    id("dagger.hilt.android.plugin")
-    id("com.google.devtools.ksp")
+    id("library-android")
+    id("library-compose")
+    id("library-desktop")
+    id("library-inject")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
-secrets {
-    propertiesFileName = "secrets.properties"
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            api(libs.androidx.security.crypto)
+            implementation(project(":modules:anilist:secrets"))
+            implementation(libs.androidx.browser)
+            implementation(libs.activity.compose)
+        }
+        commonMain.dependencies {
+            api(project(":modules:anilist-data"))
+            api(project(":modules:entry"))
+            implementation(project(":modules:utils"))
+            implementation(project(":modules:utils-compose"))
+            implementation(project(":modules:utils-network"))
+
+            api(libs.room.ktx)
+            api(libs.room.paging)
+            runtimeOnly(libs.room.runtime)
+
+            implementation(libs.apollo.engine.ktor)
+            implementation(libs.apollo.runtime)
+            implementation(libs.apollo.normalized.cache)
+            implementation(libs.apollo.normalized.cache.sqlite)
+
+            implementation(libs.kermit)
+            implementation(libs.ktor.client.core)
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.uri.kmp)
+            implementation(libs.human.readable)
+        }
+    }
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.anilist"
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 }
 
 dependencies {
-    api(project(":modules:android-utils"))
-    api(project(":modules:anilist-data"))
-    implementation(project(":modules:compose-utils"))
-    api(project(":modules:entry"))
-    api(project(":modules:utils-network"))
+    add("kspAndroid", kspProcessors.room.compiler)
+}
 
-    implementation(libs.apollo.runtime)
-    implementation(libs.apollo.normalized.cache)
-    implementation(libs.apollo.normalized.cache.sqlite)
-
-    implementation(libs.kotlinx.serialization.json)
-    api(libs.hilt.android)
-    implementation(libs.hilt.navigation.compose)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-    implementation(libs.compose.material.icons.core)
-    implementation(libs.compose.material.icons.extended)
-
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.material3)
-    implementation(libs.activity.compose)
-    implementation(libs.androidx.browser)
-    api(libs.androidx.security.crypto)
-
-    runtimeOnly(libs.room.runtime)
-    ksp(kspProcessors.room.compiler)
-    implementation(libs.room.ktx)
-    testImplementation(libs.room.testing)
-    implementation(libs.room.paging)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit.test)
+compose.resources {
+    publicResClass = true
 }

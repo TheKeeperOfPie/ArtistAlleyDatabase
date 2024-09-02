@@ -148,7 +148,7 @@ object CharacterDetailsScreen {
                 val finalError = entry.result == null && !entry.loading
                 Crossfade(targetState = finalError, label = "Character details crossfade") {
                     if (it) {
-                        AnimeMediaListScreen.Error(
+                        AnimeMediaListScreen.Error2(
                             errorTextRes = entry.error?.first,
                             exception = entry.error?.second,
                         )

@@ -136,7 +136,7 @@ class SettingsViewModel @Inject constructor(
             SettingsSection.Dropdown(
                 labelTextRes = R.string.settings_subsection_behavior_language_option_media_label,
                 options = AniListLanguageOption.values().toList(),
-                optionToText = { stringResource(it.textRes) },
+                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.languageOptionMedia,
             ),
             SettingsSection.Dropdown(
@@ -146,7 +146,7 @@ class SettingsViewModel @Inject constructor(
                     AniListLanguageOption.NATIVE,
                     AniListLanguageOption.ROMAJI,
                 ),
-                optionToText = { stringResource(it.textRes) },
+                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.languageOptionCharacters,
             ),
             SettingsSection.Dropdown(
@@ -156,13 +156,13 @@ class SettingsViewModel @Inject constructor(
                     AniListLanguageOption.NATIVE,
                     AniListLanguageOption.ROMAJI,
                 ),
-                optionToText = { stringResource(it.textRes) },
+                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.languageOptionStaff,
             ),
             SettingsSection.Dropdown(
                 labelTextRes = R.string.settings_subsection_behavior_language_option_voice_actor_label,
                 options = VoiceActorLanguageOption.values().toList(),
-                optionToText = { stringResource(it.textRes) },
+                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.languageOptionVoiceActor,
             ),
             SettingsSection.Switch(

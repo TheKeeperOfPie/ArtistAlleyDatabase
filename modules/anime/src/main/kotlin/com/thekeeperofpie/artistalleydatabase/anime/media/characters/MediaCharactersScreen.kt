@@ -20,7 +20,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaAndCharactersQuery
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
@@ -30,6 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 object MediaCharactersScreen {
@@ -125,7 +126,7 @@ object MediaCharactersScreen {
                             ) {
                                 VoiceActorLanguageOption.entries.forEach {
                                     DropdownMenuItem(
-                                        text = { Text(stringResource(it.textRes)) },
+                                        text = { Text(ComposeResourceUtils.stringResource(it.textRes)) },
                                         onClick = {
                                             voiceActorLanguage = it
                                             showMenu = false

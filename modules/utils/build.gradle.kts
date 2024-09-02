@@ -17,4 +17,8 @@ kotlin {
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.utils"
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
