@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.cds
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyListScope
@@ -16,8 +13,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import kotlin.math.roundToInt
 
 fun LazyListScope.cdsSection(
@@ -28,7 +25,7 @@ fun LazyListScope.cdsSection(
 
     item("cdsHeader") {
         DetailsSectionHeader(
-            stringResource(R.string.cd_section_title),
+            text = stringResource(R.string.cd_section_title),
             modifier = Modifier.animateItem()
         )
     }

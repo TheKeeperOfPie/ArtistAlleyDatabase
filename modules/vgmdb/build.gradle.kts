@@ -23,7 +23,6 @@ kotlin {
             runtimeOnly(libs.room.runtime)
             implementation(libs.room.ktx)
             implementation(libs.room.paging)
-            implementation(libs.kotlin.inject.runtime.kmp)
         }
         commonTest.dependencies {
             implementation(libs.junit)

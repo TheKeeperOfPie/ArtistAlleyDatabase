@@ -1,25 +1,21 @@
 plugins {
-    id("compose-library")
-    id("dagger.hilt.android.plugin")
-    id("com.google.devtools.ksp")
+    id("library-android")
+    id("library-compose")
+    id("library-desktop")
+    id("library-inject")
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.browse"
 }
 
-dependencies {
-    api(project(":modules:compose-utils"))
-    implementation(project(":modules:entry"))
-
-    api(libs.navigation.compose)
-
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.material3)
-    implementation(libs.paging.compose)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(project(":modules:entry"))
+            implementation(project(":modules:utils"))
+            implementation(project(":modules:utils-compose"))
+            implementation(libs.jetBrainsCompose.navigation.compose)
+        }
+    }
 }

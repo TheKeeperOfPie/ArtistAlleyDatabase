@@ -1,10 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.WebScraper
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import io.ktor.client.HttpClient
+import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
+@Inject
 class VgmdbApi(
     private val albumEntryDao: AlbumEntryDao,
     private val vgmdbArtistDao: VgmdbArtistDao,

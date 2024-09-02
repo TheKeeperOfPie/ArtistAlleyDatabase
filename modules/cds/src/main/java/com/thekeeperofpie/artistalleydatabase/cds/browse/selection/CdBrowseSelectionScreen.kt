@@ -9,11 +9,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridAppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
@@ -48,7 +49,7 @@ object CdBrowseSelectionScreen {
             },
             snackbarHost = {
                 SnackbarErrorText(
-                    errorRes()?.first,
+                    { errorRes()?.first?.let { stringResource(it) } },
                     errorRes()?.second,
                     onErrorDismiss = onErrorDismiss
                 )

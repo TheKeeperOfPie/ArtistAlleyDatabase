@@ -55,6 +55,7 @@ include(
     ":modules:test-utils",
     ":modules:utils",
     ":modules:utils-compose",
+    ":modules:utils-inject",
     ":modules:utils-network",
     ":modules:utils-room",
     ":modules:vgmdb",

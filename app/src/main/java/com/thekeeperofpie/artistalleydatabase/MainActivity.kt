@@ -53,6 +53,7 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -97,7 +98,6 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.compose.image.LocalImageColorsState
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberImageColorsState
-import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
@@ -121,10 +121,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Optional
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.enums.EnumEntries
 import kotlin.jvm.optionals.getOrNull
 
@@ -186,6 +188,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var ignoreController: IgnoreController
+
+    @Inject
+    lateinit var browseViewModel: Provider<BrowseViewModel>
 
     private val fullScreenImageHandler = FullscreenImageHandler()
 
@@ -474,7 +479,8 @@ class MainActivity : ComponentActivity() {
                             )
 
                             sharedElementComposable(AppNavDestinations.BROWSE.id) {
-                                val viewModel = hiltViewModel<BrowseViewModel>()
+                                // TODO: Move this out of Dagger
+                                val viewModel = viewModel { browseViewModel.get() }
                                 BrowseScreen(
                                     upIconOption = navDrawerUpIconOption,
                                     tabs = viewModel.tabs,

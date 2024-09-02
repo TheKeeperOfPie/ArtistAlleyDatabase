@@ -237,6 +237,7 @@ dependencies {
     implementation(project(":modules:entry"))
     implementation(project(":modules:monetization"))
 //    debugImplementation(project(":modules:monetization:debug"))
+    implementation(project(":modules:utils-inject"))
 
     debugImplementation(project(":modules:animethemes"))
     debugImplementation(project(":modules:debug"))

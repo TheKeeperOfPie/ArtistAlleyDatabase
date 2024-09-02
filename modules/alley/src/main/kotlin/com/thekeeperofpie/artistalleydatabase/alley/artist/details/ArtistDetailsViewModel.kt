@@ -13,11 +13,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,6 +27,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ArtistDetailsViewModel @Inject constructor(
     private val application: Application,
+    private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
     private val appJson: AppJson,
     savedStateHandle: SavedStateHandle,
@@ -42,7 +44,7 @@ class ArtistDetailsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             val (artist, stampRallies) = artistEntryDao.getEntryWithStampRallies(id)
                 ?: return@launch
-            val catalogImages = ArtistAlleyUtils.getImages(application, "catalogs", artist.booth)
+            val catalogImages = ArtistAlleyUtils.getImages(application, appFileSystem, "catalogs", artist.booth)
             val seriesConfirmed = artist.seriesConfirmed(appJson)
             val seriesInferred = artist.seriesInferred(appJson)
                 .toMutableList()

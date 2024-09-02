@@ -14,11 +14,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -37,6 +38,7 @@ import kotlin.random.Random
 @HiltViewModel
 class ArtistSearchViewModel @Inject constructor(
     private val application: Application,
+    private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
     private val settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
@@ -88,7 +90,7 @@ class ArtistSearchViewModel @Inject constructor(
     }.flow
         .flowOn(CustomDispatchers.IO)
         .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
-        .map { it.map { ArtistEntryGridModel.buildFromEntry(application, it) } }
+        .map { it.map { ArtistEntryGridModel.buildFromEntry(application, appFileSystem, it) } }
         .cachedIn(viewModelScope)
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {

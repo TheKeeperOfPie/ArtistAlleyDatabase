@@ -9,8 +9,8 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 
 inline fun <reified T : Any> NavGraphBuilder.sharedElementComposable(
     navigationTypeMap: NavigationTypeMap,

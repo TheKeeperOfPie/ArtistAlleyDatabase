@@ -1,8 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
+import com.thekeeperofpie.artistalleydatabase.data.DataConverter
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistComponent
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
@@ -27,7 +32,9 @@ abstract class ApplicationComponent(
     @get:Provides val httpClient: HttpClient,
     @get:Provides val vgmdbDatabase: VgmdbDatabase,
     @get:Provides val json: Json,
-) : VgmdbComponent {
+    @get:Provides val musicalArtistDatabase: MusicalArtistDatabase,
+    @get:Provides val aniListDataConverter: AniListDataConverter,
+) : MusicalArtistComponent, VgmdbComponent {
 
     abstract val artistRepository: ArtistRepository
     abstract val albumRepository: AlbumRepository
@@ -36,6 +43,8 @@ abstract class ApplicationComponent(
     abstract val vgmdbArtistDao: VgmdbArtistDao
     abstract val vgmdbApi: VgmdbApi
     abstract val vgmdbAutocompleter: VgmdbAutocompleter
+    abstract val musicalArtistDao: MusicalArtistDao
+    abstract val dataConverter: DataConverter
 
     @Provides
     @SingletonScope

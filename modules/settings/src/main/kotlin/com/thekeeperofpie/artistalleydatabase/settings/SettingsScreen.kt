@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.musical_artists.generated.resources.musical_artists
 import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_albums
 import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_artists
 import coil3.compose.AsyncImage
@@ -38,7 +38,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
-import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStrings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
@@ -247,6 +248,6 @@ object SettingsScreen {
         ANILIST_MEDIA(StringResourceId(R.string.settings_aniList_media)),
         VGMDB_ALBUMS(StringResourceCompose(VgmdbStrings.vgmdb_albums)),
         VGMDB_ARTISTS(StringResourceCompose(VgmdbStrings.vgmdb_artists)),
-        MUSICAL_ARTISTS(StringResourceId(MusicalArtistsStringR.musical_artists)),
+        MUSICAL_ARTISTS(StringResourceCompose(MusicalArtistsStrings.musical_artists)),
     }
 }

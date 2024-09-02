@@ -12,6 +12,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":modules:utils-inject"))
             libs.find(
                 "libs.kotlin.inject.runtime.kmp",
             ).forEach(::implementation)

@@ -42,10 +42,10 @@ import artistalleydatabase.modules.entry.generated.resources.more_actions_conten
 import artistalleydatabase.modules.entry.generated.resources.move_down
 import artistalleydatabase.modules.entry.generated.resources.move_up
 import com.thekeeperofpie.artistalleydatabase.cds.R
-import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry

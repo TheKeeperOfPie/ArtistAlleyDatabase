@@ -1,6 +1,8 @@
 plugins {
-    id("module-library")
-    id("dagger.hilt.android.plugin")
+    id("library-android")
+    id("library-compose")
+    id("library-desktop")
+    id("library-inject")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
@@ -9,17 +11,16 @@ android {
     namespace = "com.thekeeperofpie.artistalleydatabase.musical_artists"
 }
 
-dependencies {
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            runtimeOnly(libs.room.runtime)
+            implementation(libs.room.ktx)
+            implementation(libs.room.paging)
+        }
+    }
+}
 
-    runtimeOnly(libs.room.runtime)
-    ksp(kspProcessors.room.compiler)
-    implementation(libs.room.ktx)
-    testImplementation(libs.room.testing)
-    implementation(libs.room.paging)
-
-    androidTestRuntimeOnly(libs.androidx.test.runner)
+compose.resources {
+    publicResClass = true
 }

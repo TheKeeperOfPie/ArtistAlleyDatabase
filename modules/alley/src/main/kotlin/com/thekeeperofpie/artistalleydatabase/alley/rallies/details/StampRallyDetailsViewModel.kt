@@ -13,9 +13,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
-import com.thekeeperofpie.artistalleydatabase.compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class StampRallyDetailsViewModel @Inject constructor(
     private val application: Application,
+    appFileSystem: AppFileSystem,
     private val stampRallyEntryDao: StampRallyEntryDao,
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
@@ -41,6 +43,7 @@ class StampRallyDetailsViewModel @Inject constructor(
                 ?: return@launch
             val catalogImages = ArtistAlleyUtils.getImages(
                 application,
+                appFileSystem,
                 "rallies",
                 stampRallyEntry.id.replace("-", " - "),
             )

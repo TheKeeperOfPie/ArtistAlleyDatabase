@@ -1,8 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
+import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
+import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
@@ -25,6 +29,10 @@ import javax.inject.Singleton
 class MiscHiltModule {
 
     @Provides
+    fun providesBrowseViewModel(tabViewModels: Set<@JvmSuppressWildcards BrowseTabViewModel>) =
+        BrowseViewModel(tabViewModels)
+
+    @Provides
     fun provideCropController(
         scope: CoroutineScope,
         application: Application,
@@ -41,6 +49,8 @@ class MiscHiltModule {
         httpClient: HttpClient,
         vgmdbDatabase: VgmdbDatabase,
         json: Json,
+        musicalArtistDatabase: MusicalArtistDatabase,
+        aniListDataConverter: AniListDataConverter,
     ) = ApplicationComponent::class.create(
         application = application,
         networkClient = networkClient,
@@ -48,6 +58,8 @@ class MiscHiltModule {
         httpClient = httpClient,
         vgmdbDatabase = vgmdbDatabase,
         json = json,
+        musicalArtistDatabase = musicalArtistDatabase,
+        aniListDataConverter = aniListDataConverter,
     )
 
     @Provides
@@ -79,4 +91,12 @@ class MiscHiltModule {
     @Provides
     fun provideVgmdbAutocompleter(applicationComponent: ApplicationComponent) =
         applicationComponent.vgmdbAutocompleter
+
+    @Provides
+    fun provideMusicalArtistDao(applicationComponent: ApplicationComponent) =
+        applicationComponent.musicalArtistDao
+
+    @Provides
+    fun provideDataConverter(applicationComponent: ApplicationComponent) =
+        applicationComponent.dataConverter
 }

@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
@@ -27,9 +28,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-class ArtBrowseTabArtists @Inject constructor(
+class ArtBrowseTabArtists(
     appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
@@ -40,7 +40,7 @@ class ArtBrowseTabArtists @Inject constructor(
 
     override val tab = BrowseScreen.TabContent(
         "art_entry_browse_artists",
-        { R.string.art_browse_tab_artists },
+        { StringResourceId(R.string.art_browse_tab_artists) },
         { Either.Left(artists) },
         artEntryNavigator::navigate,
     )

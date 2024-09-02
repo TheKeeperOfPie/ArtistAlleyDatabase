@@ -13,7 +13,6 @@ dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:anilist"))
     api(project(":modules:browse"))
-    api(project(":modules:compose-utils"))
     api(project(":modules:data"))
     api(project(":modules:entry"))
     api(project(":modules:musical-artists"))
@@ -33,6 +32,7 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.paging.compose)
     implementation(libs.compose.material.icons.extended)
+    implementation(libs.coil3.coil.compose)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)

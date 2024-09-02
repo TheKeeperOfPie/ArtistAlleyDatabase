@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 import androidx.annotation.WorkerThread
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
@@ -12,7 +13,10 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
+@Inject
 class VgmdbAutocompleter(
     private val vgmdbApi: VgmdbApi,
     private val vgmdbJson: VgmdbJson,

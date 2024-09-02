@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
@@ -35,9 +36,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-class ArtBrowseTabCharacters @Inject constructor(
+class ArtBrowseTabCharacters(
     appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
@@ -50,7 +50,7 @@ class ArtBrowseTabCharacters @Inject constructor(
 
     override val tab = BrowseScreen.TabContent(
         "art_entry_browse_characters",
-        { R.string.art_browse_tab_characters },
+        { StringResourceId(R.string.art_browse_tab_characters) },
         { Either.Left(characters) },
         artEntryNavigator::navigate,
     )

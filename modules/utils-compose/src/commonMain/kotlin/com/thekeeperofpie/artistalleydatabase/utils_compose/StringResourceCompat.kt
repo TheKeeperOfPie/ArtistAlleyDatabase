@@ -15,4 +15,4 @@ data class StringResourceCompose(private val stringResource: StringResource) : S
     override fun text() = ComposeResourceUtils.stringResource(stringResource)
 }
 
-expect class StringResourceId : StringResourceCompat
+expect class StringResourceId(id :Int) : StringResourceCompat

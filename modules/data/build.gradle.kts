@@ -1,7 +1,8 @@
 plugins {
-    id("module-library")
-    id("dagger.hilt.android.plugin")
-    id("com.google.devtools.ksp")
+    id("library-android")
+    id("library-compose")
+    id("library-desktop")
+    id("library-inject")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
@@ -9,16 +10,13 @@ android {
     namespace = "com.thekeeperofpie.artistalleydatabase.data"
 }
 
-dependencies {
-    api(project(":modules:anilist"))
-    api(project(":modules:entry"))
-
-    implementation(libs.compose.ui)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit.test)
+kotlin{
+    sourceSets{
+        commonMain.dependencies {
+            api(project(":modules:anilist"))
+            api(project(":modules:entry"))
+            api(project(":modules:utils"))
+            implementation(libs.kermit)
+        }
+    }
 }

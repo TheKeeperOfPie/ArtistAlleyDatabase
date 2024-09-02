@@ -14,6 +14,7 @@ android {
 dependencies {
     api(project(":modules:anilist"))
     api(project(":modules:cds"))
+    api(project(":modules:compose-utils"))
     api(project(":modules:markdown"))
     api(project(":modules:media"))
     api(project(":modules:monetization"))
