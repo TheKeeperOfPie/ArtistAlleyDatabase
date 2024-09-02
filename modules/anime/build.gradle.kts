@@ -22,6 +22,7 @@ dependencies {
     api(project(":modules:utils-compose"))
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.json.io)
 
     implementation(libs.hilt.android)
     ksp(kspProcessors.hilt.compiler)
@@ -56,4 +57,7 @@ dependencies {
 
     // Resolves a missing method exception during testing
     debugImplementation(libs.androidx.tracing)
+
+    implementation(libs.kermit)
+    implementation(libs.human.readable)
 }

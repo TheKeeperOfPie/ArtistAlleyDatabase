@@ -48,7 +48,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
@@ -56,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
@@ -115,6 +115,7 @@ object AiringScheduleScreen {
 
                         ScrollableTabRow(selectedTabIndex = pagerState.currentPage) {
                             val context = LocalContext.current
+                            val dateTimeFormatter = LocalDateTimeFormatter.current
                             val dayData = remember(context) {
                                 val today = LocalDate.now()
                                 val tomorrow = today.plusDays(1)
@@ -131,10 +132,10 @@ object AiringScheduleScreen {
                                             R.string.anime_airing_schedule_tomorrow
                                         )
                                         in startOfWeek..endOfWeek -> day to Either.Right(
-                                            MediaUtils.formatShortWeekday(context, day)
+                                            dateTimeFormatter.formatShortWeekday(day)
                                         )
                                         else -> day to Either.Right(
-                                            MediaUtils.formatShortDay(context, day)
+                                            dateTimeFormatter.formatShortDay(day)
                                         )
                                     }
                                 }

@@ -17,14 +17,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryFts
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
@@ -87,7 +87,7 @@ abstract class AnimeTestHiltModule {
 
     @Singleton
     @Binds
-    abstract fun provideEntrySettings(testSettings: TestSettingsProvider): EntrySettings
+    abstract fun provideCropSettings(testSettings: TestSettingsProvider): CropSettings
 
     @Singleton
     @Binds

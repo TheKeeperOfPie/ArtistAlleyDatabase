@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,11 +23,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.utils.RequestBatcher
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +38,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import java.lang.ref.WeakReference
 import java.util.Optional
 import javax.inject.Inject
@@ -130,7 +130,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
         }
     }
 
-    fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    fun onRefresh() = refreshUptimeMillis.update { Clock.System.now().toEpochMilliseconds() }
 
     fun placeholder(index: Int, mediaType: MediaType): MediaPreviewWithDescriptionEntry? {
         return null

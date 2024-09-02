@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -46,6 +45,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import java.io.IOException
 import javax.inject.Inject
 
@@ -247,11 +247,11 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     }
 
     fun refresh() {
-        refresh.value = SystemClock.uptimeMillis()
+        refresh.value = Clock.System.now().toEpochMilliseconds()
     }
 
     fun refreshSecondary() {
-        refreshSecondary.value = SystemClock.uptimeMillis()
+        refreshSecondary.value = Clock.System.now().toEpochMilliseconds()
     }
 
     fun requestLoadMedia2() = barrierMedia2.tryEmit(true)

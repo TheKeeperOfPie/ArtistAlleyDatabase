@@ -1,11 +1,6 @@
-@file:OptIn(ExperimentalFoundationApi::class)
+package com.thekeeperofpie.artistalleydatabase.utils_compose.paging
 
-package com.thekeeperofpie.artistalleydatabase.anime.utils
-
-import android.os.Parcel
-import android.os.Parcelable
 import androidx.annotation.CheckResult
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
@@ -16,12 +11,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.paging.LoadState
 import androidx.paging.PagingData
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import androidx.paging.filter
 import androidx.paging.map
-import com.apollographql.apollo3.api.Optional
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -51,31 +42,13 @@ inline fun <T : Any> Flow<PagingData<T>>.enforceUniqueIntIds(
 
 fun <Input : Any, Output : Any> PagingData<Input>.mapNotNull(
     transform: suspend (Input) -> Output?,
-): PagingData<Output> = mapOnIO { Optional.presentIfNotNull(transform(it)) }
-    .filterOnIO { it is Optional.Present }
-    .mapOnIO { it.getOrThrow() }
+): PagingData<Output> = mapOnIO { Optional(transform(it)) }
+    .filterOnIO { it.present }
+    .mapOnIO { it.value!! }
 
-data class PagingPlaceholderKey(private val index: Int) : Parcelable {
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(index)
-    }
+data class Optional<T>(val value: T?, val present: Boolean = value != null)
 
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object {
-        @Suppress("unused")
-        @JvmField
-        val CREATOR: Parcelable.Creator<PagingPlaceholderKey> =
-            object : Parcelable.Creator<PagingPlaceholderKey> {
-                override fun createFromParcel(parcel: Parcel) =
-                    PagingPlaceholderKey(parcel.readInt())
-
-                override fun newArray(size: Int) = arrayOfNulls<PagingPlaceholderKey?>(size)
-            }
-    }
-}
+internal data class PagingPlaceholderKey(private val index: Int)
 
 @CheckResult
 @JvmSynthetic
@@ -90,7 +63,7 @@ fun <T : Any, R : Any> PagingData<T>.mapOnIO(transform: suspend (T) -> R) = map 
     }
 }
 
-object PagingPlaceholderContentType
+internal object PagingPlaceholderContentType
 
 fun <T : Any> LazyListScope.items(
     data: LazyPagingItems<T>,

@@ -10,7 +10,7 @@ import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow

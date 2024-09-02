@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.pager.HorizontalPager
@@ -33,7 +32,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object AnimeActivityScreen {
 
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     operator fun invoke(
         viewModel: AnimeActivityViewModel = hiltViewModel<AnimeActivityViewModel>(),

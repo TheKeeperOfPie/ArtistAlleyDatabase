@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activity.details
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,14 +24,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelpe
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +44,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -96,6 +96,7 @@ class ActivityDetailsViewModel @Inject constructor(
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
                     ) { activityUpdates, mediaListUpdate, ignoredIds, showLessImportantTags, showSpoilerTags ->
+                        // TODO: Unused ignoredIds?
                         activity.transformResult {
                             val liked = activityUpdates?.liked ?: when (it) {
                                 is ActivityDetailsQuery.Data.ListActivityActivity -> it.isLiked
@@ -171,7 +172,7 @@ class ActivityDetailsViewModel @Inject constructor(
     }
 
     fun refresh() {
-        refresh.value = SystemClock.uptimeMillis()
+        refresh.value = Clock.System.now().toEpochMilliseconds()
     }
 
     fun delete(deletePromptData: Either<Unit, Entry.ReplyEntry>) {
@@ -185,7 +186,7 @@ class ActivityDetailsViewModel @Inject constructor(
                     aniListApi.deleteActivity(activityId)
                 }
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(SystemClock.uptimeMillis())
+                    refresh.emit(Clock.System.now().toEpochMilliseconds())
                     deleting = false
                 }
             } catch (t: Throwable) {
@@ -204,7 +205,7 @@ class ActivityDetailsViewModel @Inject constructor(
             try {
                 aniListApi.saveActivityReply(activityId = activityId, replyId = null, text = reply)
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(SystemClock.uptimeMillis())
+                    refresh.emit(Clock.System.now().toEpochMilliseconds())
                     replying = false
                 }
             } catch (t: Throwable) {

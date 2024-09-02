@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import android.os.SystemClock
 import com.anilist.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -12,6 +11,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.datetime.Clock
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi) {
@@ -29,7 +29,7 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi)
         .shareIn(scope, SharingStarted.Lazily, replay = 1)
 
     fun refresh() {
-        refresh.value = SystemClock.uptimeMillis()
+        refresh.value = Clock.System.now().toEpochMilliseconds()
     }
 
     /**

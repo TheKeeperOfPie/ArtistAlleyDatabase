@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import android.os.SystemClock
 import com.anilist.LicensorsQuery
 import com.anilist.type.ExternalLinkMediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -13,6 +12,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.datetime.Clock
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MediaLicensorsController(
@@ -35,7 +35,7 @@ class MediaLicensorsController(
         .shareIn(scope, SharingStarted.Lazily, 1)
 
     fun refresh() {
-        refreshUptimeMillis.value = SystemClock.uptimeMillis()
+        refreshUptimeMillis.value = Clock.System.now().toEpochMilliseconds()
     }
 
     data class LanguageAndSites(

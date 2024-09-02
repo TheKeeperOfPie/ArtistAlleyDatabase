@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoilApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
 import android.os.Parcelable
@@ -28,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil3.annotation.ExperimentalCoilApi
 import com.anilist.fragment.CharacterHeaderData
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R

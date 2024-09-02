@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
-import android.text.format.DateUtils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -38,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import nl.jacobras.humanreadable.HumanReadable
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -148,10 +148,10 @@ fun AnimeNewsSmallCard(entry: AnimeNewsEntry<*>?) {
                         )
                     }
 
-                    val time = entry?.date?.toEpochMilliseconds()
+                    val time = entry?.date
                     if (entry == null || time != null) {
                         Text(
-                            text = time?.let(DateUtils::getRelativeTimeSpanString)
+                            text = time?.let { HumanReadable.timeAgo(time) }
                                 ?.toString()
                                 ?: "00 minutes ago",
                             style = MaterialTheme.typography.labelSmall,

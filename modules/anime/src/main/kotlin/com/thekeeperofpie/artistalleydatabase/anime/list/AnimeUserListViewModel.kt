@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -46,6 +45,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -318,7 +318,7 @@ class AnimeUserListViewModel @Inject constructor(
         if (userId == null) {
             userMediaListController.refresh(mediaType)
         } else {
-            refreshUptimeMillis.value = SystemClock.uptimeMillis()
+            refreshUptimeMillis.value = Clock.System.now().toEpochMilliseconds()
         }
     }
 

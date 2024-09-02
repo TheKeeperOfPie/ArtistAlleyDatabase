@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.notifications
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
@@ -16,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,11 +45,11 @@ class NotificationsController(scope: ApplicationScope, aniListApi: AuthedAniList
     }
 
     fun refresh() {
-        refresh.value = SystemClock.uptimeMillis()
+        refresh.value = Clock.System.now().toEpochMilliseconds()
     }
 
     fun forceRefresh() {
-        forceRefresh.value = SystemClock.uptimeMillis()
+        forceRefresh.value = Clock.System.now().toEpochMilliseconds()
     }
 
     suspend fun clear() {

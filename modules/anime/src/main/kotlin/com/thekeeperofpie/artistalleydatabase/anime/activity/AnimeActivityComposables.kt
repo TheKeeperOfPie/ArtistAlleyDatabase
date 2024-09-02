@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
-import android.text.format.DateUtils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -90,8 +89,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
-import java.time.Instant
-import java.time.ZoneOffset
+import kotlinx.datetime.Instant
+import nl.jacobras.humanreadable.HumanReadable
 
 object AnimeActivityComposables {
     const val ACTIVITIES_ABOVE_FOLD = 3
@@ -277,6 +276,7 @@ fun TextActivitySmallCard(
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
 ) {
+    // TODO: Unused?
     val sharedTransitionKey = activity?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     val content: @Composable ColumnScope.() -> Unit = {
         TextActivityCardContent(
@@ -354,12 +354,7 @@ fun ColumnScope.TextActivityCardContent(
 
             val timestamp = remember(activity) {
                 activity?.let {
-                    DateUtils.getRelativeTimeSpanString(
-                        it.createdAt * 1000L,
-                        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                        0,
-                        DateUtils.FORMAT_ABBREV_ALL,
-                    )
+                    HumanReadable.timeAgo(kotlinx.datetime.Instant.fromEpochSeconds(it.createdAt.toLong()))
                 }
             }
 
@@ -516,12 +511,7 @@ fun ColumnScope.MessageActivityCardContent(
 
             val timestamp = remember(activity) {
                 activity?.let {
-                    DateUtils.getRelativeTimeSpanString(
-                        it.createdAt * 1000L,
-                        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                        0,
-                        DateUtils.FORMAT_ABBREV_ALL,
-                    )
+                    HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
                 }
             }
 
@@ -812,12 +802,7 @@ fun ColumnScope.ListActivityCardContent(
             val status = listOfNotNull(activity?.status, progress).joinToString(separator = " ")
             val timestamp = remember(activity) {
                 activity?.let {
-                    DateUtils.getRelativeTimeSpanString(
-                        it.createdAt * 1000L,
-                        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                        0,
-                        DateUtils.FORMAT_ABBREV_ALL,
-                    )
+                    HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
                 }
             }
             val summaryText = if (status.isNotBlank()) {

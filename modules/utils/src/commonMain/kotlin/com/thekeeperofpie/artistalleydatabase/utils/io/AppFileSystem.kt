@@ -19,4 +19,7 @@ expect class AppFileSystem {
         outputPath: Path,
         imageUri: Uri?,
     ): Result<*>?
+
+    fun openEncryptedSource(path: Path): Source
+    fun openEncryptedSink(path: Path): Sink
 }

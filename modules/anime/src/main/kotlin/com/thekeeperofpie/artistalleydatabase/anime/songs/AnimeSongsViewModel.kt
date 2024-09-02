@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.songs
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +8,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.touchlab.kermit.Logger
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
@@ -64,7 +64,7 @@ class AnimeSongsViewModel @Inject constructor(
                                     }
                                 }
                             } catch (e: Exception) {
-                                Log.e(TAG, "Error loading from AnimeThemes", e)
+                                Logger.e(TAG, e) { "Error loading from AnimeThemes" }
                             }
                         }
                     }

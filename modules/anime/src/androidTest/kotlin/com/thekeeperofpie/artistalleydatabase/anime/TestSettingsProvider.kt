@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import android.net.Uri
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
@@ -66,5 +65,5 @@ class TestSettingsProvider : NetworkSettings, AniListSettings, AnimeSettings, Mo
     override val subscribed = MutableStateFlow(false)
     override val unlockAllFeatures = MutableStateFlow(false)
 
-    override val cropImageUri = MutableStateFlow<Uri?>(null)
+    override val cropImageUri = MutableStateFlow<String?>(null)
 }

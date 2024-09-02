@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import android.app.Application
 import androidx.navigation.NavType
-import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
@@ -27,14 +26,15 @@ import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
 import io.ktor.client.HttpClient
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import javax.inject.Singleton
 import kotlin.reflect.KType
@@ -94,23 +94,21 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideUserMediaListController(
-        application: Application,
+        appFileSystem: AppFileSystem,
         scope: ApplicationScope,
         aniListApi: AuthedAniListApi,
         ignoreController: IgnoreController,
         statusController: MediaListStatusController,
         settings: AnimeSettings,
-        appJson: AppJson,
-        masterKey: MasterKey,
+        json: Json,
     ) = UserMediaListController(
-        application = application,
+        appFileSystem = appFileSystem,
         scope = scope,
         aniListApi = aniListApi,
         ignoreController = ignoreController,
         statusController = statusController,
         settings = settings,
-        appJson = appJson,
-        masterKey = masterKey,
+        json = json,
     )
 
     @Singleton

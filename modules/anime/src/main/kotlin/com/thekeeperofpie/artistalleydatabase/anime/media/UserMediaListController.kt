@@ -1,11 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
-import android.app.Application
-import android.os.SystemClock
-import android.util.Log
 import androidx.compose.runtime.Immutable
-import androidx.security.crypto.EncryptedFile
-import androidx.security.crypto.MasterKey
+import co.touchlab.kermit.Logger
 import com.anilist.UserMediaListQuery
 import com.anilist.ViewerMediaListQuery
 import com.anilist.fragment.AniListDate
@@ -27,9 +23,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
@@ -51,10 +48,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.io.decodeFromSource
+import kotlinx.serialization.json.io.encodeToSink
 
 /**
  * User's MediaListCollection API is very broken, it makes sense to query a known working complete
@@ -65,14 +65,13 @@ import kotlinx.serialization.json.encodeToStream
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalSerializationApi::class)
 class UserMediaListController(
-    private val application: Application,
+    private val appFileSystem: AppFileSystem,
     private val scope: ApplicationScope,
     private val aniListApi: AuthedAniListApi,
     private val ignoreController: IgnoreController,
     private val statusController: MediaListStatusController,
     private val settings: AnimeSettings,
-    private val appJson: AppJson,
-    private val masterKey: MasterKey,
+    private val json: Json,
 ) {
     companion object {
         private const val TAG = "UserMediaListController"
@@ -83,7 +82,7 @@ class UserMediaListController(
 
     private val includeDescription = MutableStateFlow(false)
 
-    private val cacheDir = application.cacheDir.resolve("user_media")
+    private val cacheDir = appFileSystem.cachePath("user_media")
     private val cacheMutex = Mutex()
 
     private var anime: Flow<LoadingResult<List<ListEntry>>>
@@ -128,7 +127,7 @@ class UserMediaListController(
     private fun loadMediaFromCache(mediaType: MediaType) = flowFromSuspend {
         withContext(CustomDispatchers.IO) {
             cacheMutex.withLock {
-                val cacheFile = cacheDir.resolve(
+                val cachePath = cacheDir.resolve(
                     if (mediaType == MediaType.ANIME) {
                         "anime.json"
                     } else {
@@ -136,24 +135,18 @@ class UserMediaListController(
                     }
                 )
 
-                if (!cacheFile.exists()) {
+                if (!SystemFileSystem.exists(cachePath)) {
                     LoadingResult.empty()
                 } else {
-                    EncryptedFile.Builder(
-                        application,
-                        cacheFile,
-                        masterKey,
-                        EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-                    ).build()
-                        .openFileInput()
-                        .use { appJson.json.decodeFromStream<List<ListEntry>>(it) }
+                    appFileSystem.openEncryptedSource(cachePath)
+                        .use { json.decodeFromSource<List<ListEntry>>(it) }
                         .let { LoadingResult.success(it) }
                 }
             }
         }
     }.startWith(item = LoadingResult.loading())
         .catch {
-            Log.e(TAG, "Error loading from user media list cache", it)
+            Logger.e(TAG, it) { "Error loading from user media list cache" }
             emit(LoadingResult.error(R.string.anime_user_media_list_error_loading_cache, it))
         }
 
@@ -213,9 +206,7 @@ class UserMediaListController(
         scope.launch(CustomDispatchers.IO) {
             try {
                 cacheMutex.withLock {
-                    if (!cacheDir.exists()) {
-                        cacheDir.mkdir()
-                    }
+                    SystemFileSystem.createDirectories(cacheDir)
                     val cacheFile = cacheDir.resolve(
                         if (mediaType == MediaType.ANIME) {
                             "anime.json"
@@ -225,20 +216,10 @@ class UserMediaListController(
                     )
 
                     // TODO: Atomicity
-                    if (cacheFile.exists()) {
-                        cacheFile.delete()
-                    }
+                    SystemFileSystem.delete(cacheFile, mustExist = false)
 
-                    EncryptedFile.Builder(
-                        application,
-                        cacheFile,
-                        masterKey,
-                        EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-                    ).build()
-                        .openFileOutput()
-                        .use {
-                            appJson.json.encodeToStream(lists, it)
-                        }
+                    appFileSystem.openEncryptedSink(cacheFile)
+                        .use { json.encodeToSink(lists, it) }
                 }
             } catch (t: Throwable) {
                 if (BuildConfig.DEBUG) {
@@ -301,10 +282,10 @@ class UserMediaListController(
 
     fun refresh(mediaType: MediaType) {
         if (mediaType == MediaType.ANIME) {
-            refreshAnime.value = SystemClock.uptimeMillis()
+            refreshAnime
         } else {
-            refreshManga.value = SystemClock.uptimeMillis()
-        }
+            refreshManga
+        }.value = Clock.System.now().toEpochMilliseconds()
     }
 
     @Serializable

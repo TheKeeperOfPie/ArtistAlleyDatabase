@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -41,6 +40,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -208,7 +208,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
     }
 
     fun refresh() {
-        refresh.value = SystemClock.uptimeMillis()
+        refresh.value = Clock.System.now().toEpochMilliseconds()
     }
 
     fun onClickReplyComment(commentId: String?, commentMarkdown: MarkdownText?) {
@@ -229,7 +229,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
                     text = text,
                 )
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(SystemClock.uptimeMillis())
+                    refresh.emit(Clock.System.now().toEpochMilliseconds())
                     this@ForumThreadCommentTreeViewModel.replyData = null
                     committing = false
                 }
@@ -249,7 +249,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
             try {
                 aniListApi.deleteForumThreadComment(commentId)
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(SystemClock.uptimeMillis())
+                    refresh.emit(Clock.System.now().toEpochMilliseconds())
                     deleting = false
                 }
             } catch (t: Throwable) {

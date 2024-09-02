@@ -56,7 +56,8 @@ object AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideAppFileSystem(application: Application) = AppFileSystem(application)
+    fun provideAppFileSystem(application: Application, masterKey: MasterKey) =
+        AppFileSystem(application, masterKey)
 
     @Singleton
     @Provides

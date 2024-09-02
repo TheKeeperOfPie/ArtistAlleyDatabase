@@ -1,9 +1,5 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.review
 
-import android.text.format.DateUtils
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -59,8 +55,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import java.time.Instant
-import java.time.ZoneOffset
+import kotlinx.datetime.Instant
+import nl.jacobras.humanreadable.HumanReadable
 
 object ReviewComposables {
     const val REVIEWS_ABOVE_FOLD = 3
@@ -144,12 +140,7 @@ private fun ColumnScope.ReviewSmallCardContent(review: MediaAndReviewsReview?) {
 
             val timestamp = remember(review) {
                 review?.let {
-                    DateUtils.getRelativeTimeSpanString(
-                        it.createdAt * 1000L,
-                        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                        0,
-                        DateUtils.FORMAT_ABBREV_ALL,
-                    )
+                    HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
                 }
             }
 

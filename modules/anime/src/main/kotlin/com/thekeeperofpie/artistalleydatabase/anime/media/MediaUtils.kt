@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
-import android.content.Context
-import android.text.format.DateUtils
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -19,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.anilist.MediaDetails2Query
 import com.anilist.MediaListEntryQuery
@@ -46,26 +43,18 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformWhile
-import java.time.Instant
 import java.time.LocalDate
-import java.time.Month
-import java.time.ZoneOffset
 import java.util.Locale
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 @Suppress("DEPRECATION")
 object MediaUtils {
-
-    // No better alternative to FORMAT_UTC
-    // TODO: Find an alternative
-    @Suppress("DEPRECATION")
-    const val BASE_DATE_FORMAT_FLAGS = DateUtils.FORMAT_ABBREV_ALL
 
     val scoreDistributionColors = listOf(
         Color(210, 72, 45),
@@ -357,80 +346,6 @@ object MediaUtils {
             seasonYear != null -> seasonYear.toString()
             else -> null
         }
-
-    fun formatDateTime(
-        context: Context,
-        year: Int?,
-        month: Int?,
-        dayOfMonth: Int?,
-    ): String? = when {
-        year != null && month != null && dayOfMonth != null -> DateUtils.formatDateTime(
-            context,
-            LocalDate.of(year, month, dayOfMonth)
-                .atTime(0, 0)
-                .toInstant(ZoneOffset.UTC)
-                .toEpochMilli(),
-            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
-        )
-        year != null && month != null && dayOfMonth == null -> DateUtils.formatDateTime(
-            context,
-            LocalDate.of(year, month, 1)
-                .atTime(0, 0)
-                .toInstant(ZoneOffset.UTC)
-                .toEpochMilli(),
-            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE
-        )
-        year != null -> DateUtils.formatDateTime(
-            context,
-            LocalDate.of(year, Month.JANUARY, 1)
-                .atTime(0, 0)
-                .toInstant(ZoneOffset.UTC)
-                .toEpochMilli(),
-            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_YEAR
-        )
-        else -> null
-    }
-
-    fun formatEntryDateTime(context: Context, timeInMillis: Long): String =
-        DateUtils.formatDateTime(
-            context,
-            timeInMillis,
-            DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_YEAR or
-                    DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or
-                    DateUtils.FORMAT_SHOW_TIME
-        )
-
-    fun formatAiringAt(context: Context, timeInMillis: Long, showDate: Boolean = true): String =
-        DateUtils.formatDateTime(
-            context,
-            timeInMillis,
-            (BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_TIME).transformIf(showDate) {
-                this or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
-            }
-        )
-
-    fun formatRemainingTime(timeInMillis: Long): CharSequence = DateUtils.getRelativeTimeSpanString(
-        timeInMillis,
-        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-        0,
-        BASE_DATE_FORMAT_FLAGS,
-    )
-
-    fun formatShortDay(context: Context, localDate: LocalDate) =
-        DateUtils.formatDateTime(
-            context,
-            localDate.atStartOfDay(ZoneOffset.UTC)
-                .toEpochSecond() * 1000,
-            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_UTC
-        )!!
-
-    fun formatShortWeekday(context: Context, localDate: LocalDate) =
-        DateUtils.formatDateTime(
-            context,
-            localDate.atStartOfDay(ZoneOffset.UTC)
-                .toEpochSecond() * 1000,
-            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_UTC
-        )!!
 
     fun twitterHashtagsLink(hashtags: List<String>) =
         "https://twitter.com/search?q=${hashtags.joinToString(separator = "+OR ")}&src=typd"
@@ -876,15 +791,15 @@ object MediaUtils {
         format: MediaFormat?,
         showDate: Boolean = true,
     ): String {
-        val context = LocalContext.current
+        val dateTimeFormatter = LocalDateTimeFormatter.current
         val airingAt = remember {
-            formatAiringAt(context, airingAtAniListTimestamp * 1000L, showDate = showDate)
+            dateTimeFormatter.formatAiringAt(airingAtAniListTimestamp * 1000L, showDate = showDate)
         }
 
         // TODO: De-dupe airingAt and remainingTime if both show a specific date
         //  (airing > 7 days away)
         val remainingTime = remember {
-            formatRemainingTime(airingAtAniListTimestamp * 1000L)
+            dateTimeFormatter.formatRemainingTime(airingAtAniListTimestamp * 1000L)
         }
 
         return if (episodes == 1 || (episodes == null && format == MediaFormat.MOVIE)) {

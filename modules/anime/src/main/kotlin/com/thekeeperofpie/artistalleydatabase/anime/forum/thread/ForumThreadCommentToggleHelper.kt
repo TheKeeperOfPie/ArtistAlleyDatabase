@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread
 
-import android.util.Log
+import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +38,7 @@ class ForumThreadCommentToggleHelper(
                     )
                 )
             } catch (e: Throwable) {
-                Log.e(TAG, "Error toggling comment like", e)
+                Logger.e(TAG, e) { "Error toggling comment like" }
                 statusController.onUpdate(
                     statusUpdate.copy(liked = !liked, pending = false, error = e)
                 )

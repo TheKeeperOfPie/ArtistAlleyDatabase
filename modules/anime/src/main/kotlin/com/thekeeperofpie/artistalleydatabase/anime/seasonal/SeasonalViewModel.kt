@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.seasonal
 
-import android.os.SystemClock
 import androidx.collection.LruCache
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,12 +35,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsC
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -55,6 +54,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -110,7 +110,7 @@ class SeasonalViewModel @Inject constructor(
         )
     }
 
-    fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    fun onRefresh() = refreshUptimeMillis.update { Clock.System.now().toEpochMilliseconds() }
 
     @Composable
     fun items(page: Int): LazyPagingItems<MediaPreviewWithDescriptionEntry> {

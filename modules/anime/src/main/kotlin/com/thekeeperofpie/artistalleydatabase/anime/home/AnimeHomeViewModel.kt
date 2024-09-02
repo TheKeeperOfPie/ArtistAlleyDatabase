@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
-import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -28,12 +27,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.recommendation.Recommendatio
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +42,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @HiltViewModel
@@ -258,7 +258,7 @@ class AnimeHomeViewModel @Inject constructor(
 
     fun refresh() {
         newsController.refresh()
-        refresh.value = SystemClock.uptimeMillis()
+        refresh.value = Clock.System.now().toEpochMilliseconds()
         notificationsController.forceRefresh()
     }
 }

@@ -134,6 +134,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -770,11 +771,12 @@ object AnimeMediaDetailsScreen {
 
                 val context = LocalContext.current
 
+                val dateTimeFormatter = LocalDateTimeFormatter.current
                 val startDateFormatted = media.startDate?.let {
-                    remember { MediaUtils.formatDateTime(context, it.year, it.month, it.day) }
+                    remember(it) { dateTimeFormatter.formatDateTime(it.year, it.month, it.day) }
                 }
                 val endDateFormatted = media.endDate?.let {
-                    remember { MediaUtils.formatDateTime(context, it.year, it.month, it.day) }
+                    remember(it) { dateTimeFormatter.formatDateTime(it.year, it.month, it.day) }
                 }
 
                 twoColumnInfoText(

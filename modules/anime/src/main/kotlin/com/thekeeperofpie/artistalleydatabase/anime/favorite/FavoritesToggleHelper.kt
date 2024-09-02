@@ -1,9 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.favorite
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
@@ -54,7 +54,7 @@ class FavoritesToggleHelper(
                 }
                 favoritesController.onUpdate(update.copy(favorite = result, pending = false))
             } catch (e: Throwable) {
-                Log.e(TAG, "Error toggling favorite", e)
+                Logger.e(TAG, e) { "Error toggling favorite" }
                 favoritesController.onUpdate(
                     update.copy(favorite = !favorite, pending = false, error = e)
                 )

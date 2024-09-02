@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.review.details
 
-import android.text.format.DateUtils
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.border
@@ -70,8 +69,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import java.time.Instant
-import java.time.ZoneOffset
+import kotlinx.datetime.Instant
+import nl.jacobras.humanreadable.HumanReadable
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ReviewDetailsScreen {
@@ -216,12 +215,7 @@ object ReviewDetailsScreen {
                     }
 
                     val timestamp = remember(review) {
-                        DateUtils.getRelativeTimeSpanString(
-                            review.createdAt * 1000L,
-                            Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                            0,
-                            DateUtils.FORMAT_ABBREV_ALL,
-                        )
+                        HumanReadable.timeAgo(Instant.fromEpochSeconds(review.createdAt.toLong()))
                     }
 
                     Text(

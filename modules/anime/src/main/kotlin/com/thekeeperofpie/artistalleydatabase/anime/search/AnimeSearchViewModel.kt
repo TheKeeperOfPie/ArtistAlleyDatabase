@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
-import android.os.SystemClock
 import androidx.annotation.StringRes
 import androidx.collection.LruCache
 import androidx.compose.runtime.Composable
@@ -60,9 +59,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserUtils
-import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
@@ -71,6 +67,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -87,6 +86,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -767,7 +767,7 @@ class AnimeSearchViewModel @Inject constructor(
         }
     }
 
-    fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    fun onRefresh() = refreshUptimeMillis.update { Clock.System.now().toEpochMilliseconds() }
 
     enum class SearchType(@StringRes val textRes: Int) {
         ANIME(R.string.anime_search_type_anime),

@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
-import android.util.Log
+import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
@@ -42,7 +42,7 @@ class ActivityToggleHelper(
                             )
                         )
                     } catch (e: Throwable) {
-                        Log.e(TAG, "Error toggling activity like", e)
+                        Logger.e(TAG, e) { "Error toggling activity like" }
                         statusController.onUpdate(
                             statusUpdate.copy(liked = !update.liked, pending = false, error = e)
                         )
@@ -60,7 +60,7 @@ class ActivityToggleHelper(
                             )
                         )
                     } catch (e: Throwable) {
-                        Log.e(TAG, "Error toggling activity subscribe", e)
+                        Logger.e(TAG, e) { "Error toggling activity subscribe" }
                         statusController.onUpdate(
                             statusUpdate.copy(
                                 subscribed = !update.subscribed,

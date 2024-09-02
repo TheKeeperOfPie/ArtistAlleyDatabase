@@ -40,4 +40,12 @@ actual class AppFileSystem {
     ): Result<*>? {
         TODO("Not yet implemented")
     }
+
+    actual fun openEncryptedSource(path: Path): Source {
+        TODO("Not yet implemented")
+    }
+
+    actual fun openEncryptedSink(path: Path): Sink {
+        TODO("Not yet implemented")
+    }
 }

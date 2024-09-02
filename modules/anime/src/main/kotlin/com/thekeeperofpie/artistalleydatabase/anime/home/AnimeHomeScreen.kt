@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
-import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
@@ -121,10 +120,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.anime.utils.getOrNull
-import com.thekeeperofpie.artistalleydatabase.anime.utils.items
-import com.thekeeperofpie.artistalleydatabase.anime.utils.itemsIndexed
-import com.thekeeperofpie.artistalleydatabase.anime.utils.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -150,6 +145,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.getOrNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsIndexed
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
@@ -175,7 +174,6 @@ object AnimeHomeScreen {
             availableSpace.coerceAtMost(450.dp.roundToPx())
     }
 
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     operator fun invoke(
         viewModel: AnimeHomeViewModel = hiltViewModel<AnimeHomeViewModel>(),

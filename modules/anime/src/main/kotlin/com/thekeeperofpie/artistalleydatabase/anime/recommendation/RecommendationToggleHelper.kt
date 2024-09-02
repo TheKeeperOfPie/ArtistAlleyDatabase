@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
-import android.util.Log
+import co.touchlab.kermit.Logger
 import com.anilist.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -48,7 +48,7 @@ class RecommendationToggleHelper(
                     )
                 )
             } catch (e: Throwable) {
-                Log.e(TAG, "Error toggling recommendation rating", e)
+                Logger.e(TAG, e) { "Error toggling recommendation rating" }
                 statusController.onUpdate(
                     statusUpdate.copy(rating = data.userRating, pending = false, error = e)
                 )

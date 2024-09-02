@@ -21,12 +21,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCo
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
-import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

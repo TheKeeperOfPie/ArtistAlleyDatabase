@@ -64,6 +64,3 @@ public fun <T : Any> LazyPagingItems<T>.itemContentType(
         }
     }
 }
-
-private data class PagingPlaceholderKey(private val index: Int)
-internal object PagingPlaceholderContentType

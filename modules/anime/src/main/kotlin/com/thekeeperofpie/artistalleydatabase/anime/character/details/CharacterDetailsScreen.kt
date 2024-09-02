@@ -38,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -58,7 +57,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.sub
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
@@ -74,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageSta
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
@@ -245,12 +244,13 @@ object CharacterDetailsScreen {
                     .animateContentSize()
                     .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
             ) {
+                val dateTimeFormatter = LocalDateTimeFormatter.current
                 var contentShown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_character_details_age_label),
                     bodyOne = entry.character.age,
                     labelTwo = stringResource(R.string.anime_character_details_date_of_birth_label),
                     bodyTwo = entry.character.dateOfBirth?.let {
-                        MediaUtils.formatDateTime(LocalContext.current, it.year, it.month, it.day)
+                        dateTimeFormatter.formatDateTime(it.year, it.month, it.day)
                     },
                     showDividerAbove = false,
                 )

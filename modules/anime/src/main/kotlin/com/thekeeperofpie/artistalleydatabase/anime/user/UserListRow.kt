@@ -49,7 +49,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditI
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.anime.utils.items
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
@@ -61,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSha
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,8 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
@@ -33,6 +30,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +43,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -216,7 +216,7 @@ class ForumThreadViewModel @Inject constructor(
                     text = text,
                 )
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(SystemClock.uptimeMillis())
+                    refresh.emit(Clock.System.now().toEpochMilliseconds())
                     this@ForumThreadViewModel.replyData = null
                     committing = false
                 }
@@ -236,7 +236,7 @@ class ForumThreadViewModel @Inject constructor(
             try {
                 aniListApi.deleteForumThreadComment(commentId)
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(SystemClock.uptimeMillis())
+                    refresh.emit(Clock.System.now().toEpochMilliseconds())
                     deleting = false
                 }
             } catch (t: Throwable) {

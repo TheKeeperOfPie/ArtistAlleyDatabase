@@ -58,7 +58,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -80,7 +79,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
@@ -93,6 +91,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
@@ -527,16 +526,14 @@ object AnimeMediaEditBottomSheet {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
+                val dateTimeFormatter = LocalDateTimeFormatter.current
                 val createdAt = editData.createdAt
                 val createdAtShown = createdAt != null && createdAt > 0
                 if (createdAtShown) {
                     Text(
                         text = stringResource(
                             R.string.anime_media_edit_created_at,
-                            MediaUtils.formatEntryDateTime(
-                                LocalContext.current,
-                                createdAt!! * 1000,
-                            ),
+                            dateTimeFormatter.formatEntryDateTime(createdAt!! * 1000),
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -548,10 +545,7 @@ object AnimeMediaEditBottomSheet {
                     Text(
                         text = stringResource(
                             R.string.anime_media_edit_updated_at,
-                            MediaUtils.formatEntryDateTime(
-                                LocalContext.current,
-                                updatedAt * 1000,
-                            ),
+                            dateTimeFormatter.formatEntryDateTime(updatedAt * 1000),
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(

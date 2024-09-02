@@ -8,15 +8,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
@@ -24,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 
 object StaffOverviewScreen {
 
@@ -94,14 +94,15 @@ object StaffOverviewScreen {
                     showDividerAbove = false,
                 )
 
+                val dateTimeFormatter = LocalDateTimeFormatter.current
                 contentShown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_staff_details_date_of_birth_label),
                     bodyOne = entry.staff.dateOfBirth?.let {
-                        MediaUtils.formatDateTime(LocalContext.current, it.year, it.month, it.day)
+                        remember(it) { dateTimeFormatter.formatDateTime(it.year, it.month, it.day) }
                     },
                     labelTwo = stringResource(R.string.anime_staff_details_date_of_death_label),
                     bodyTwo = entry.staff.dateOfDeath?.let {
-                        MediaUtils.formatDateTime(LocalContext.current, it.year, it.month, it.day)
+                        remember(it) { dateTimeFormatter.formatDateTime(it.year, it.month, it.day) }
                     },
                     showDividerAbove = contentShown,
                 ) || contentShown

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,10 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChange
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigation.toDestination
@@ -54,6 +49,10 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -72,6 +71,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -453,7 +453,7 @@ class AniListUserViewModel @Inject constructor(
     fun toggleFollow() {
         userId ?: return
         initialFollowState = entry?.user?.isFollowing?.not() ?: true
-        toggleFollowRequestMillis.value = SystemClock.uptimeMillis()
+        toggleFollowRequestMillis.value = Clock.System.now().toEpochMilliseconds()
     }
 
     sealed class States(

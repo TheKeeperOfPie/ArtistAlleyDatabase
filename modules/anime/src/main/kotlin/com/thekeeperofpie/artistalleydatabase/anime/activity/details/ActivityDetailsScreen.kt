@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activity.details
 
-import android.text.format.DateUtils
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
@@ -94,8 +93,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefr
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneOffset
+import kotlinx.datetime.Instant
+import nl.jacobras.humanreadable.HumanReadable
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ActivityDetailsScreen {
@@ -410,12 +409,7 @@ private fun ReplyRow(
 
                 val timestamp = remember(replyEntry) {
                     replyEntry?.reply?.let {
-                        DateUtils.getRelativeTimeSpanString(
-                            it.createdAt * 1000L,
-                            Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                            0,
-                            DateUtils.FORMAT_ABBREV_ALL,
-                        )
+                        HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
                     }
                 }
 

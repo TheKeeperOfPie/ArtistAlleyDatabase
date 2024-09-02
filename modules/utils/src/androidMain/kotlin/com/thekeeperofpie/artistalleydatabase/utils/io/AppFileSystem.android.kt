@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.utils.io
 import android.app.Application
 import android.content.ContentResolver
 import android.graphics.BitmapFactory
+import androidx.security.crypto.EncryptedFile
+import androidx.security.crypto.MasterKey
 import co.touchlab.kermit.Logger
 import com.eygraber.uri.Uri
 import com.eygraber.uri.toAndroidUri
@@ -14,9 +16,10 @@ import kotlinx.io.asSource
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
+import java.io.File
 import java.net.URL
 
-actual class AppFileSystem(val application: Application) {
+actual class AppFileSystem(private val application: Application, private val masterKey: MasterKey) {
 
     companion object {
         private const val TAG = "AppFileSystem.android"
@@ -33,6 +36,7 @@ actual class AppFileSystem(val application: Application) {
     actual fun filePath(path: String) = Path(application.filesDir.resolve(path).path)
     actual fun openUriSource(uri: Uri): Source? =
         application.contentResolver.openInputStream(uri.toAndroidUri())?.asSource()?.buffered()
+
     actual fun openUriSink(uri: Uri, mode: String): Sink? =
         application.contentResolver.openOutputStream(uri.toAndroidUri(), mode)?.asSink()?.buffered()
 
@@ -52,8 +56,10 @@ actual class AppFileSystem(val application: Application) {
                 BitmapFactory.decodeStream(it, null, options)
             }
         } catch (e: Exception) {
-            Logger.d(TAG, e) { "Error loading image size for scheme = ${uri.scheme}, " +
-                    "authority = ${uri.authority}, path = ${uri.path}, uri = $uri" }
+            Logger.d(TAG, e) {
+                "Error loading image size for scheme = ${uri.scheme}, " +
+                        "authority = ${uri.authority}, path = ${uri.path}, uri = $uri"
+            }
             return null to null
         }
 
@@ -78,7 +84,7 @@ actual class AppFileSystem(val application: Application) {
 
     actual fun writeEntryImage(
         outputPath: Path,
-        imageUri: Uri?
+        imageUri: Uri?,
     ): Result<*>? {
         imageUri ?: return null
         val imageSource = try {
@@ -106,4 +112,26 @@ actual class AppFileSystem(val application: Application) {
         }
         return null
     }
+
+    actual fun openEncryptedSource(path: Path) =
+        EncryptedFile.Builder(
+            application,
+            File(path.toString()),
+            masterKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
+            .openFileInput()
+            .asSource()
+            .buffered()
+
+    actual fun openEncryptedSink(path: Path) =
+        EncryptedFile.Builder(
+            application,
+            File(path.toString()),
+            masterKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
+            .openFileOutput()
+            .asSink()
+            .buffered()
 }

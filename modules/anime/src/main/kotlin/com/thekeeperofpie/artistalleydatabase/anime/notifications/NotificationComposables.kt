@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.notifications
 
-import android.text.format.DateUtils
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,8 +59,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import java.time.Instant
-import java.time.ZoneOffset
+import kotlinx.datetime.Instant
+import nl.jacobras.humanreadable.HumanReadable
 
 @Composable
 fun NotificationPlaceholderCard() {
@@ -958,7 +957,7 @@ private fun ActivityCard(
                 clickable = true,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
-            -> TextActivityCardContent(
+                -> TextActivityCardContent(
                 viewer = viewer,
                 activity = null,
                 user = null,
@@ -974,12 +973,7 @@ private fun Timestamp(createdAt: Int?, modifier: Modifier = Modifier) {
     if (createdAt == null) return
     val timestamp = remember(createdAt) {
         createdAt.let {
-            DateUtils.getRelativeTimeSpanString(
-                it * 1000L,
-                Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                0,
-                DateUtils.FORMAT_ABBREV_ALL,
-            )
+            HumanReadable.timeAgo(Instant.fromEpochSeconds(it.toLong()))
         }
     }
 

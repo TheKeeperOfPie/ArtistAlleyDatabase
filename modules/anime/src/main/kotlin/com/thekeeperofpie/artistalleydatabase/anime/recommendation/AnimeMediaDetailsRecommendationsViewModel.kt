@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -81,7 +80,6 @@ class AnimeMediaDetailsRecommendationsViewModel @Inject constructor(
                     val recommendationMediaIds =
                         recommendations.map { it.entry.media.id.toString() }.toSet()
 
-                    Log.d("RecommendationsDebug", "recommendations = $recommendations")
                     combine(
                         mediaListStatusController.allChanges(recommendationMediaIds),
                         recommendationStatusController.allChanges(
