@@ -6,7 +6,7 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class BrowseViewModel(
-    tabViewModels: Set<@JvmSuppressWildcards BrowseTabViewModel>,
+    tabViewModels: Set<BrowseTabViewModel>,
 ) : ViewModel() {
 
     private val sortedModels = tabViewModels.toList()

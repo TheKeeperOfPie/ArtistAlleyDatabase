@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
-import androidx.security.crypto.MasterKey
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListComponent
@@ -15,6 +14,12 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
+import com.thekeeperofpie.artistalleydatabase.browse.BrowseComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
@@ -30,6 +35,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
+import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
+import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbComponent
@@ -54,7 +62,6 @@ abstract class ApplicationComponent(
     @get:Provides val vgmdbDatabase: VgmdbDatabase,
     @get:Provides val json: Json,
     @get:Provides val musicalArtistDatabase: MusicalArtistDatabase,
-    @get:Provides val masterKey: MasterKey,
     @get:Provides val aniListSettings: AniListSettings,
     @get:Provides val aniListDatabase: AniListDatabase,
     @get:Provides val networkSettings: NetworkSettings,
@@ -65,7 +72,9 @@ abstract class ApplicationComponent(
     @get:Provides val appFileSystem: AppFileSystem,
     @get:Provides val cdEntryDatabase: CdEntryDatabase,
     @get:Provides val cropSettings: CropSettings,
-) : AniListComponent, CdEntryComponent, MusicalArtistComponent, VgmdbComponent {
+    @get:Provides val artEntryDatabase: ArtEntryDatabase,
+    @get:Provides val artSettings: ArtSettings,
+) : AniListComponent, ArtEntryComponent, BrowseComponent, CdEntryComponent, MusicalArtistComponent, VgmdbComponent {
 
     abstract val artistRepository: ArtistRepository
     abstract val albumRepository: AlbumRepository
@@ -85,6 +94,11 @@ abstract class ApplicationComponent(
     abstract val aniListAutocompleter: AniListAutocompleter
     abstract val cdEntryNavigator: CdEntryNavigator
     abstract val cdEntryDao: CdEntryDao
+    abstract val importers: Set<Importer>
+    abstract val exporters: Set<Exporter>
+    abstract val databaseSyncers: Set<DatabaseSyncer>
+    abstract val artEntryNavigator: ArtEntryNavigator
+    abstract val artEntryDetailsDao: ArtEntryDetailsDao
 
     @Provides
     @SingletonScope

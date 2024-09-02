@@ -93,7 +93,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHa
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
-import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.compose.image.LocalImageColorsState
@@ -126,7 +125,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Optional
 import javax.inject.Inject
-import javax.inject.Provider
 import kotlin.enums.EnumEntries
 import kotlin.jvm.optionals.getOrNull
 
@@ -188,9 +186,6 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var ignoreController: IgnoreController
-
-    @Inject
-    lateinit var browseViewModel: Provider<BrowseViewModel>
 
     @Inject
     lateinit var applicationComponent: ApplicationComponent
@@ -471,7 +466,8 @@ class MainActivity : ComponentActivity() {
                             artEntryNavigator.initialize(
                                 onClickNav = onClickNav,
                                 navHostController = navHostController,
-                                navGraphBuilder = this
+                                navGraphBuilder = this,
+                                artEntryComponent = applicationComponent,
                             )
                             cdEntryNavigator.initialize(
                                 onClickNav = onClickNav,
@@ -481,8 +477,7 @@ class MainActivity : ComponentActivity() {
                             )
 
                             sharedElementComposable(AppNavDestinations.BROWSE.id) {
-                                // TODO: Move this out of Dagger
-                                val viewModel = viewModel { browseViewModel.get() }
+                                val viewModel = viewModel { applicationComponent.browseViewModel() }
                                 BrowseScreen(
                                     upIconOption = navDrawerUpIconOption,
                                     tabs = viewModel.tabs,

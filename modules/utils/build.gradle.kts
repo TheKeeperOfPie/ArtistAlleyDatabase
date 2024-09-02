@@ -11,6 +11,7 @@ kotlin {
             api(libs.kotlinx.io.core)
             api(libs.uri.kmp)
             implementation(libs.kermit)
+            implementation(libs.kotlinx.serialization.json.io)
         }
     }
 }

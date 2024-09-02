@@ -394,6 +394,17 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
             options = options,
             lockState = lockState,
         )
+        constructor(
+            headerRes: StringResource,
+            arrowContentDescription: StringResource,
+            options: SnapshotStateList<Item> = mutableStateListOf(),
+            lockState: LockState? = null,
+        ) : this(
+            headerRes = StringResourceCompose(headerRes),
+            arrowContentDescription = StringResourceCompose(arrowContentDescription),
+            options = options,
+            lockState = lockState,
+        )
 
         var expanded by mutableStateOf(false)
         var selectedIndex by mutableIntStateOf(0)
@@ -417,6 +428,8 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
             class Basic<T>(val value: T, val textRes: StringResourceCompat) : Item {
 
                 constructor(value: T, textRes: Int) : this(value, StringResourceId(textRes))
+
+                constructor(value: T, textRes: StringResource) : this(value, StringResourceCompose(textRes))
 
                 override val hasCustomView = false
 

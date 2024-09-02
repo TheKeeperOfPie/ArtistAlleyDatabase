@@ -19,4 +19,6 @@
     <string name="log_exception">Log</string>
     <string name="error_loading_from_cache">Error loading from cache</string>
     <string name="error_loading_from_network">Error loading from network</string>
+    <string name="unknown">Unknown</string>
+    <string name="custom">Custom</string>
 </resources>

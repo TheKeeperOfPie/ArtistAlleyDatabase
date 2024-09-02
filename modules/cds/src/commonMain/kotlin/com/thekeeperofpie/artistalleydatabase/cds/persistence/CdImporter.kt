@@ -5,17 +5,19 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImporter
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.decodeSequenceIgnoreEndOfFile
 import kotlinx.io.Source
 import kotlinx.io.bytestring.encodeToByteString
 import kotlinx.io.indexOf
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import me.tatarka.inject.annotations.Inject
 
-@OptIn(ExperimentalSerializationApi::class)
+@Inject
 class CdImporter(
     appFileSystem: AppFileSystem,
     private val cdEntryDao: CdEntryDao,
-    private val appJson: AppJson,
+    private val json: Json,
 ) : EntryImporter(appFileSystem) {
 
     override val zipEntryName = "cd_entries"
@@ -41,6 +43,7 @@ class CdImporter(
     /**
      * @return number of valid entries found
      */
+    @OptIn(ExperimentalSerializationApi::class)
     private suspend fun readCdEntriesJson(
         source: Source,
         insertEntries: suspend (Array<CdEntry>) -> Unit,
@@ -48,7 +51,7 @@ class CdImporter(
         var count = 0
         val arrayStartIndex = source.indexOf("[".encodeToByteString())
         source.skip(arrayStartIndex)
-        appJson.json.decodeSequenceIgnoreEndOfFile<CdEntry>(source)
+        json.decodeSequenceIgnoreEndOfFile<CdEntry>(source)
             .chunked(10)
             .map {
                 it.map {

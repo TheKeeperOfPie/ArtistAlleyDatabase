@@ -21,13 +21,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChooserViewModel @Inject constructor(
-    application: Application,
+    private val application: Application,
     appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryDetailsDao,
     aniListAutocompleter: AniListAutocompleter,
     json: Json,
 ) : ArtSearchViewModel(
-    application = application,
     appFileSystem = appFileSystem,
     artEntryDao = artEntryDao,
     aniListAutocompleter = aniListAutocompleter,

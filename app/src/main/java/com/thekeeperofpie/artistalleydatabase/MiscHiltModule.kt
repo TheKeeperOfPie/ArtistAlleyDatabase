@@ -7,11 +7,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
-import com.thekeeperofpie.artistalleydatabase.art.CropControllerProducer
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -21,13 +21,16 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
+import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
+import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ElementsIntoSet
 import io.ktor.client.HttpClient
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
@@ -43,16 +46,6 @@ class MiscHiltModule {
         BrowseViewModel(tabViewModels)
 
     @Provides
-    fun provideCropController(
-        application: Application,
-        appFileSystem: AppFileSystem,
-        settings: CropSettings,
-    ): CropControllerProducer = object : CropControllerProducer {
-        override fun produce(scope: CoroutineScope) =
-            CropController(application, appFileSystem, settings, scope)
-    }
-
-    @Provides
     @Singleton
     fun provideApplicationComponent(
         application: Application,
@@ -62,7 +55,6 @@ class MiscHiltModule {
         vgmdbDatabase: VgmdbDatabase,
         json: Json,
         musicalArtistDatabase: MusicalArtistDatabase,
-        masterKey: MasterKey,
         aniListSettings: AniListSettings,
         aniListDatabase: AniListDatabase,
         networkSettings: NetworkSettings,
@@ -73,6 +65,8 @@ class MiscHiltModule {
         appFileSystem: AppFileSystem,
         cdEntryDatabase: CdEntryDatabase,
         cropSettings: CropSettings,
+        artEntryDatabase: ArtEntryDatabase,
+        artSettings: ArtSettings,
     ) = ApplicationComponent::class.create(
         application = application,
         networkClient = networkClient,
@@ -81,7 +75,6 @@ class MiscHiltModule {
         vgmdbDatabase = vgmdbDatabase,
         json = json,
         musicalArtistDatabase = musicalArtistDatabase,
-        masterKey = masterKey,
         aniListSettings = aniListSettings,
         aniListDatabase = aniListDatabase,
         networkSettings = networkSettings,
@@ -92,6 +85,8 @@ class MiscHiltModule {
         appFileSystem = appFileSystem,
         cdEntryDatabase = cdEntryDatabase,
         cropSettings = cropSettings,
+        artEntryDatabase = artEntryDatabase,
+        artSettings = artSettings,
     )
 
     @Provides
@@ -185,4 +180,27 @@ class MiscHiltModule {
     @Provides
     fun provideCdEntryDao(applicationComponent: ApplicationComponent) =
         applicationComponent.cdEntryDao
+
+    @Provides
+    @ElementsIntoSet
+    fun provideImporters(applicationComponent: ApplicationComponent): Set<Importer> =
+        applicationComponent.importers
+
+    @Provides
+    @ElementsIntoSet
+    fun provideExporters(applicationComponent: ApplicationComponent): Set<Exporter> =
+        applicationComponent.exporters
+
+    @Provides
+    @ElementsIntoSet
+    fun provideDatabaseSyncer(applicationComponent: ApplicationComponent): Set<DatabaseSyncer> =
+        applicationComponent.databaseSyncers
+
+    @Provides
+    fun provideArtEntryNavigator(applicationComponent: ApplicationComponent) =
+        applicationComponent.artEntryNavigator
+
+    @Provides
+    fun provideArtEntryDetailsDao(applicationComponent: ApplicationComponent) =
+        applicationComponent.artEntryDetailsDao
 }

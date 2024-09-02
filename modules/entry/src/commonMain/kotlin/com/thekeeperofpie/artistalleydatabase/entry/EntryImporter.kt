@@ -8,9 +8,6 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemPathSeparator
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.DecodeSequenceMode
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.io.decodeSourceToSequence
 import java.io.File
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -52,29 +49,6 @@ abstract class EntryImporter(
                     source.transferTo(it)
                 }
             }
-        }
-    }
-
-    protected inline fun <reified T> Json.decodeSequenceIgnoreEndOfFile(source: Source): Sequence<T> {
-        val decoded = decodeSourceToSequence<T>(source, DecodeSequenceMode.ARRAY_WRAPPED)
-        return sequence<T> {
-            val iterator = decoded.iterator()
-            while (iterator.hasNextIgnoreEndOfFile()) {
-                val next = iterator.next()
-                yield(next)
-            }
-        }
-    }
-
-    fun Iterator<*>.hasNextIgnoreEndOfFile() = try {
-        hasNext()
-    } catch (throwable: Throwable) {
-        // This is a bad hack to get around the fact the array is wrapped in another object
-        // and the decoding mechanism can't handle that.
-        if (throwable.message?.contains("Expected EOF") == true) {
-            false
-        } else {
-            throw throwable
         }
     }
 }
