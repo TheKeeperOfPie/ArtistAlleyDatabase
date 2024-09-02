@@ -3,10 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.utils_network
 import android.app.Application
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import com.google.net.cronet.okhttptransport.CronetInterceptor
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.Cache
-import org.chromium.net.CronetEngine
 import java.io.File
 
 fun buildNetworkClient(
@@ -20,14 +18,14 @@ fun buildNetworkClient(
         if (BuildConfig.BUILD_TYPE == "debug" || BuildConfig.BUILD_TYPE == "internal") {
             LoggingInterceptor(scope, networkSettings, "Network")
         } else null
-    val cronetEngine = CronetEngine.Builder(application)
-        .setStoragePath(File(application.cacheDir, "cronet").apply { mkdir() }.absolutePath)
-        .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 500 * 1024 * 1024)
-        .enableBrotli(true)
-        .build()
-    val cronetInterceptor = CronetInterceptor.newBuilder(cronetEngine).build()
+//    val cronetEngine = CronetEngine.Builder(application)
+//        .setStoragePath(File(application.cacheDir, "cronet").apply { mkdir() }.absolutePath)
+//        .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 500 * 1024 * 1024)
+//        .enableBrotli(true)
+//        .build()
+//    val cronetInterceptor = CronetInterceptor.newBuilder(cronetEngine).build()
     val connectivityManager = application.getSystemService(ConnectivityManager::class.java)
-    val interceptors = listOfNotNull(loggingInterceptor, cronetInterceptor)
+    val interceptors = listOfNotNull(loggingInterceptor)//, cronetInterceptor)
     return NetworkClient(
         cache = Cache(
             directory = File(application.cacheDir, "okhttp"),

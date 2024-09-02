@@ -7,7 +7,6 @@ import okhttp3.Cache
 import okhttp3.Dns
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
@@ -35,7 +34,7 @@ class NetworkClient(
             // Manually timeout DNS because OkHttp doesn't support that by default
             runBlocking {
                 if (!isConnected()) {
-                    throw IOException("No active connection")
+                    throw IllegalStateException("No active connection")
                 }
                 withTimeout(5.seconds) {
                     Dns.SYSTEM.lookup(hostname)
