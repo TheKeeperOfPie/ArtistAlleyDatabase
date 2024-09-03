@@ -105,9 +105,8 @@ This must be done each time a dependency is added/changed. Disabling dependency 
 done by deleting [`./gradle/verification-metadata.xml`](gradle/verification-metadata.xml).
 
 [//]: # (TODO: Full clean build is starting to get annoying, need better way to regenerate metadata)
-[//]: # (TODO: Disabled for now due to a dependency resolution conflict)
 
-`./gradlew --write-verification-metadata sha256 generateVerificationMetadata --stacktrace`
+`./gradlew --write-verification-metadata sha256 generateVerificationMetadata`
 
 ### :modules:dependencies
 

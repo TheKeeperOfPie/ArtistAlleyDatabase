@@ -397,7 +397,6 @@
 -dontwarn io.ktor.utils.io.CoroutinesKt
 -dontwarn io.ktor.utils.io.core.Input
 -dontwarn okhttp3.internal.Util
--dontwarn coil3.PlatformContext
 
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
 -dontwarn com.google.errorprone.annotations.CheckReturnValue

@@ -29,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.ilyapavlovskii.multiplatform.youtubeplayer.YouTubePlayerHostState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -80,7 +79,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.empty())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
 
-    val youTubePlayerHostState by lazy { YouTubePlayerHostState() }
+    var trailerPlaybackPosition = 0f
 
     init {
         favoritesToggleHelper.initializeTracking(
