@@ -45,7 +45,7 @@ object Versions {
     const val accompanist = "0.35.2-beta"
 
     object android {
-        const val gradle = "8.7.0-alpha08"
+        const val gradle = "8.7.0-alpha09"
     }
 
     const val androidJunit5 = "1.11.0.0"
@@ -99,7 +99,7 @@ object Versions {
 
     const val cronetEmbedded = "119.6045.31"
 
-    const val dependencyAnalysis = "2.0.0"
+    const val dependencyAnalysis = "2.0.1"
     const val dexmakerInline = "2.28.4"
     const val diffUtils = "0.7.0"
     const val flowExt = "1.0.0-RC"
@@ -136,11 +136,11 @@ object Versions {
     const val kermit = "2.0.4"
 
     object kotlin {
-        const val core = "2.0.0"
+        const val core = "2.0.20"
         const val coroutines = "1.9.0-RC.2"
         const val datetime = "0.6.1"
         const val io = "0.5.3"
-        const val ksp = "2.0.0-1.0.24"
+        const val ksp = "2.0.20-1.0.24"
         const val serialization = "1.7.1"
     }
 
