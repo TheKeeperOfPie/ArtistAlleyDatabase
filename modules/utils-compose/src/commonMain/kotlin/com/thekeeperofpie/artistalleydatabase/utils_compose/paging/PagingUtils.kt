@@ -48,7 +48,9 @@ fun <Input : Any, Output : Any> PagingData<Input>.mapNotNull(
 
 data class Optional<T>(val value: T?, val present: Boolean = value != null)
 
-internal data class PagingPlaceholderKey(private val index: Int)
+// TODO: Solve the Parcelable platform problem
+@Suppress("FunctionName")
+fun PagingPlaceholderKey(index: Int) = "PagingPlaceholderKey-$index"
 
 @CheckResult
 @JvmSynthetic
@@ -63,7 +65,7 @@ fun <T : Any, R : Any> PagingData<T>.mapOnIO(transform: suspend (T) -> R) = map 
     }
 }
 
-internal object PagingPlaceholderContentType
+object PagingPlaceholderContentType
 
 fun <T : Any> LazyListScope.items(
     data: LazyPagingItems<T>,

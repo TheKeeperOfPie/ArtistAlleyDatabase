@@ -42,8 +42,6 @@ dependencies {
     implementation(libs.fluid.country)
     implementation(libs.fluid.i18n)
 
-    implementation(libs.androidyoutubeplayer)
-
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)
     implementation(libs.room.ktx)

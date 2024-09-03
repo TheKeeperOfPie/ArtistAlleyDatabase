@@ -13,6 +13,7 @@ kotlin {
             implementation(libs.media3.exoplayer.hls)
             implementation(libs.media3.exoplayer.rtsp)
             implementation(libs.media3.ui)
+            implementation(libs.androidyoutubeplayer)
         }
         commonMain.dependencies {
             api(libs.bignum)

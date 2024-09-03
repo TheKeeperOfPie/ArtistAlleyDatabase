@@ -79,8 +79,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.empty())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
 
-    var trailerPlaybackPosition = 0f
-
     init {
         favoritesToggleHelper.initializeTracking(
             scope = viewModelScope,
