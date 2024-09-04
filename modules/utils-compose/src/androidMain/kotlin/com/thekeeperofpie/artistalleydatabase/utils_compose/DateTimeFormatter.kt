@@ -6,10 +6,11 @@ import androidx.compose.runtime.CompositionLocal
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.ui.platform.LocalContext
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
-import java.time.Instant
-import java.time.LocalDate
-import java.time.Month
-import java.time.ZoneOffset
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 
 actual val LocalDateTimeFormatter: CompositionLocal<DateTimeFormatter> =
     compositionLocalWithComputedDefaultOf {
@@ -30,26 +31,23 @@ actual class DateTimeFormatter(private val context: Context) {
     ) = when {
         year != null && month != null && dayOfMonth != null -> DateUtils.formatDateTime(
             context,
-            LocalDate.of(year, month, dayOfMonth)
-                .atTime(0, 0)
-                .toInstant(ZoneOffset.UTC)
-                .toEpochMilli(),
+            LocalDate(year, month, dayOfMonth)
+                .atStartOfDayIn(TimeZone.currentSystemDefault())
+                .toEpochMilliseconds(),
             baseDateFormatFlags or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
         )
         year != null && month != null && dayOfMonth == null -> DateUtils.formatDateTime(
             context,
-            LocalDate.of(year, month, 1)
-                .atTime(0, 0)
-                .toInstant(ZoneOffset.UTC)
-                .toEpochMilli(),
+            LocalDate(year, month, 1)
+                .atStartOfDayIn(TimeZone.currentSystemDefault())
+                .toEpochMilliseconds(),
             baseDateFormatFlags or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE
         )
         year != null -> DateUtils.formatDateTime(
             context,
-            LocalDate.of(year, Month.JANUARY, 1)
-                .atTime(0, 0)
-                .toInstant(ZoneOffset.UTC)
-                .toEpochMilli(),
+            LocalDate(year, Month.JANUARY, 1)
+                .atStartOfDayIn(TimeZone.currentSystemDefault())
+                .toEpochMilliseconds(),
             baseDateFormatFlags or DateUtils.FORMAT_SHOW_YEAR
         )
         else -> null
@@ -73,22 +71,20 @@ actual class DateTimeFormatter(private val context: Context) {
 
     actual fun formatRemainingTime(timeInMillis: Long): CharSequence = DateUtils.getRelativeTimeSpanString(
         timeInMillis,
-        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+        Clock.System.now().toEpochMilliseconds(),
         0,
         baseDateFormatFlags,
     )
 
     actual fun formatShortDay(localDate: LocalDate): String = DateUtils.formatDateTime(
         context,
-        localDate.atStartOfDay(ZoneOffset.UTC)
-            .toEpochSecond() * 1000,
+        localDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
         baseDateFormatFlags or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_UTC
     )
 
     actual fun formatShortWeekday(localDate: LocalDate): String = DateUtils.formatDateTime(
         context,
-        localDate.atStartOfDay(ZoneOffset.UTC)
-            .toEpochSecond() * 1000,
+        localDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
         baseDateFormatFlags or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_UTC
     )
 }

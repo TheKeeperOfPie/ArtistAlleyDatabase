@@ -177,7 +177,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 open class AuthedAniListApi(
@@ -396,14 +396,14 @@ open class AuthedAniListApi(
             startedAt = Optional.present(startedAt?.let {
                 FuzzyDateInput(
                     year = Optional.present(it.year),
-                    month = Optional.present(it.monthValue),
+                    month = Optional.present(it.month.value),
                     day = Optional.present(it.dayOfMonth),
                 )
             }),
             completedAt = Optional.present(completedAt?.let {
                 FuzzyDateInput(
                     year = Optional.present(it.year),
-                    month = Optional.present(it.monthValue),
+                    month = Optional.present(it.month.value),
                     day = Optional.present(it.dayOfMonth),
                 )
             }),

@@ -406,7 +406,6 @@ object AnimeMediaDetailsScreen {
 
                                         Text(
                                             status.toStatusText(
-                                                locale = LocalConfiguration.currentLocale,
                                                 mediaType = media.type,
                                                 progress = progress,
                                                 progressMax = progressMax,

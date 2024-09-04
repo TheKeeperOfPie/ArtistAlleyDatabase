@@ -24,10 +24,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChange
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResult
 import com.thekeeperofpie.artistalleydatabase.anime2anime.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anime2anime.R
-import com.thekeeperofpie.artistalleydatabase.utils_compose.debounce
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.debounce
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -42,9 +42,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoField
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -221,8 +221,7 @@ abstract class GameVariant<Options>(
         val countResponse = animeCountResponse()
         // There was ~19000 anime when this was written, so use that if it can't be read
         val animeCount = countResponse?.count ?: 19000
-        val seed =
-            countResponse?.date ?: ZonedDateTime.now(ZoneId.of("UTC")).get(ChronoField.DAY_OF_YEAR)
+        val seed = countResponse?.date ?: Clock.System.now().toLocalDateTime(TimeZone.UTC).dayOfYear
         return animeCount to seed
     }
 

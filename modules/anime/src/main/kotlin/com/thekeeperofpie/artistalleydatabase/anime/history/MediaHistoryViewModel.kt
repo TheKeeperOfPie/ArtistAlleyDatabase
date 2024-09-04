@@ -3,7 +3,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.history
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -36,8 +35,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
-import java.util.Optional
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,11 +57,11 @@ class MediaHistoryViewModel @Inject constructor(
     var query by mutableStateOf("")
     val content = MutableStateFlow(PagingData.empty<MediaPreviewWithDescriptionEntry>())
 
-    private val localContentAnime =
-        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
-
-    private val localContentManga =
-        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
+//    private val localContentAnime =
+//        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
+//
+//    private val localContentManga =
+//        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
 
     // TODO: Re-enable network fetch by migrating to custom paginator
     private val mediaRequestBatcher = RequestBatcher(

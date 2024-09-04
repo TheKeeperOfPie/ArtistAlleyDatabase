@@ -58,4 +58,5 @@ dependencies {
     implementation(libs.kermit)
     implementation(libs.human.readable)
     implementation(libs.compose.placeholder.material3)
+    implementation(libs.stately.concurrent.collections)
 }

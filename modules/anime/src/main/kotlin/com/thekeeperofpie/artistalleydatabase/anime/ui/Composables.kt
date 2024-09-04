@@ -72,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
@@ -80,10 +81,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
-import java.time.LocalDate
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.format
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun StartEndDateRow(
@@ -92,17 +95,13 @@ fun StartEndDateRow(
     onRequestDatePicker: (forStart: Boolean) -> Unit,
     onDateChange: (start: Boolean, Long?) -> Unit,
 ) {
-    val localDateUtcNow = LocalDate.now()
+    val localDateUtcNow = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
-        val startDateString =
-            startDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-                .orEmpty()
-        val endDateString =
-            endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-                .orEmpty()
+        val startDateString = startDate?.format(DateTimeUtils.shortDateFormat).orEmpty()
+        val endDateString = endDate?.format(DateTimeUtils.shortDateFormat).orEmpty()
 
         val startInteractionSource = remember { MutableInteractionSource() }
         LaunchedEffect(startInteractionSource) {
@@ -114,8 +113,8 @@ fun StartEndDateRow(
         }
 
         val hasStartDate = startDate != null
-        val isTodayBeforeEnd = endDate == null || localDateUtcNow.isBefore(endDate)
-                || localDateUtcNow.isEqual(endDate)
+        val isTodayBeforeEnd = endDate == null || localDateUtcNow < endDate
+                || localDateUtcNow == endDate
         TextField(
             value = startDateString,
             onValueChange = {},
@@ -136,14 +135,13 @@ fun StartEndDateRow(
                             if (hasStartDate) {
                                 null
                             } else {
-                                LocalDate.of(
+                                LocalDate(
                                     localDateUtcNow.year,
                                     localDateUtcNow.month,
                                     localDateUtcNow.dayOfMonth
                                 )
-                                    .atStartOfDay(ZoneOffset.UTC)
-                                    .toInstant()
-                                    .toEpochMilli()
+                                    .atStartOfDayIn(TimeZone.UTC)
+                                    .toEpochMilliseconds()
                             }
                         )
                     }) {
@@ -176,8 +174,7 @@ fun StartEndDateRow(
 
         val hasEndDate = endDate != null
         val isTodayAfterStart =
-            startDate == null || localDateUtcNow.isAfter(startDate)
-                    || localDateUtcNow.isEqual(startDate)
+            startDate == null || localDateUtcNow > startDate || localDateUtcNow == startDate
         TextField(
             value = endDateString,
             onValueChange = {},
@@ -198,14 +195,13 @@ fun StartEndDateRow(
                             if (hasEndDate) {
                                 null
                             } else {
-                                LocalDate.of(
+                                LocalDate(
                                     localDateUtcNow.year,
                                     localDateUtcNow.month,
                                     localDateUtcNow.dayOfMonth
                                 )
-                                    .atStartOfDay(ZoneOffset.UTC)
-                                    .toInstant()
-                                    .toEpochMilli()
+                                    .atStartOfDayIn(TimeZone.UTC)
+                                    .toEpochMilliseconds()
                             }
                         )
                     }) {
@@ -489,7 +485,8 @@ fun ListRowSmallImage(
             .build(),
         contentScale = ContentScale.Crop,
         contentDescription = stringResource(contentDescriptionTextRes),
-        modifier = Modifier.size(width = width, height = height)
+        modifier = Modifier
+            .size(width = width, height = height)
             .then(modifier)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))

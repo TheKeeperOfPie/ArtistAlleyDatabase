@@ -32,10 +32,10 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneOffset
-import java.util.Locale
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterial3Api::class)
@@ -108,7 +108,7 @@ class MediaEditViewModel @Inject constructor(
                 .collectLatest { (format, score) ->
                     // TODO: Move locale to view layer
                     editData.score = score?.let {
-                        MediaUtils.scoreFormatToText(Locale.getDefault(), it, format)
+                        MediaUtils.scoreFormatToText(it, format)
                     }.orEmpty()
                 }
         }
@@ -250,7 +250,7 @@ class MediaEditViewModel @Inject constructor(
 //        return false
     }
 
-    fun  attemptDismiss(): Boolean {
+    fun attemptDismiss(): Boolean {
         if (!editData.showing) return true
         if (editData.isEqualTo(initialParams.value, scoreFormat.value)) return true
         editData.showConfirmClose = true
@@ -260,9 +260,9 @@ class MediaEditViewModel @Inject constructor(
     fun onDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
-            Instant.ofEpochMilli(it)
-                .atZone(ZoneOffset.UTC)
-                .toLocalDate()
+            Instant.fromEpochMilliseconds(it)
+                .toLocalDateTime(TimeZone.UTC)
+                .date
         }
 
         if (start) {
@@ -280,16 +280,18 @@ class MediaEditViewModel @Inject constructor(
             MediaListStatus.PAUSED,
             MediaListStatus.REPEATING,
             MediaListStatus.UNKNOWN__, null,
-            -> Unit
+                -> Unit
             MediaListStatus.COMPLETED -> {
                 initialParams.value?.maxProgress
                     ?.let { editData.progress = it.toString() }
                 initialParams.value?.maxProgressVolumes
                     ?.let { editData.progressVolumes = it.toString() }
-                editData.endDate = LocalDate.now()
+                editData.endDate =
+                    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             }
             MediaListStatus.DROPPED -> {
-                editData.endDate = LocalDate.now()
+                editData.endDate =
+                    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             }
         }
     }

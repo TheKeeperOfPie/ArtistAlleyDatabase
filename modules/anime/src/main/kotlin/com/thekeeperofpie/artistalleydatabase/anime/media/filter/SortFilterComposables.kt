@@ -92,7 +92,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterCon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import kotlinx.coroutines.launch
-import java.util.Calendar
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.math.roundToInt
 
 @Composable
@@ -179,9 +181,11 @@ private fun SheetDragHandle(
 
             val showExpandAll by remember { derivedStateOf { expandedState.none { it.value } } }
 
-            Row(modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 8.dp)) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 8.dp)
+            ) {
                 val activatedCount by remember {
                     derivedStateOf { sortFilterController.sections.count { it.nonDefault() } }
                 }
@@ -446,7 +450,9 @@ private fun AiringDateBasicSection(
                         IconButton(onClick = {
                             if (isYearBlank) {
                                 onSeasonYearChange(
-                                    Calendar.getInstance()[Calendar.YEAR].toString()
+                                    Clock.System.now()
+                                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                                        .year.toString()
                                 )
                             } else {
                                 onSeasonYearChange("")

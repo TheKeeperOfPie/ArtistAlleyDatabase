@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
 import co.touchlab.kermit.Logger
+import co.touchlab.stately.collections.ConcurrentMutableMap
 import com.anilist.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -8,7 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
-import java.util.Collections
 
 class RecommendationToggleHelper(
     private val aniListApi: AuthedAniListApi,
@@ -19,7 +19,7 @@ class RecommendationToggleHelper(
         private const val TAG = "RecommendationToggleHelper"
     }
 
-    private val jobs = Collections.synchronizedMap(mutableMapOf<Pair<String, String>, Job>())
+    private val jobs = ConcurrentMutableMap<Pair<String, String>, Job>()
 
     fun toggle(
         data: RecommendationData,

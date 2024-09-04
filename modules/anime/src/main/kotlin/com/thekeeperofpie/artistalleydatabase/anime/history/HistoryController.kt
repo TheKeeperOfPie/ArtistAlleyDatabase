@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
-import java.time.Instant
+import kotlinx.datetime.Clock
 
 class HistoryController(
     private val scope: ApplicationScope,
@@ -37,7 +37,7 @@ class HistoryController(
                             english = titleEnglish,
                             native = titleNative,
                         ),
-                        viewedAt = Instant.now().toEpochMilli(),
+                        viewedAt = Clock.System.now().toEpochMilliseconds(),
                     ),
                     maxEntries = settings.mediaHistoryMaxEntries.value,
                 )

@@ -28,6 +28,7 @@ import com.android.billingclient.api.queryProductDetails
 import com.android.billingclient.api.queryPurchasesAsync
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
+import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionDetails
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -37,8 +38,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.DateTimePeriod
 import org.jetbrains.compose.resources.StringResource
-import java.time.Period
 import kotlin.time.Duration.Companion.seconds
 
 class PlaySubscriptionProvider(
@@ -47,7 +48,7 @@ class PlaySubscriptionProvider(
 ) : SubscriptionProvider, DefaultLifecycleObserver {
 
     override val subscriptionDetails =
-        MutableStateFlow(LoadingResult.loading<SubscriptionProvider.SubscriptionDetails<*>>())
+        MutableStateFlow(LoadingResult.loading<SubscriptionDetails<*>>())
 
     override val error = MutableStateFlow<Pair<StringResource, Throwable?>?>(null)
 
@@ -135,20 +136,20 @@ class PlaySubscriptionProvider(
                     ?.firstOrNull()
 
                 val offerToken = productDetails?.subscriptionOfferDetails?.firstOrNull()?.offerToken
-                val result: LoadingResult<SubscriptionProvider.SubscriptionDetails<*>> =
+                val result: LoadingResult<SubscriptionDetails<*>> =
                     if (offerToken != null) {
                         val pricingList = productDetails.subscriptionOfferDetails?.firstOrNull()
                             ?.pricingPhases?.pricingPhaseList?.firstOrNull()
                         LoadingResult.success(
-                            SubscriptionProvider.SubscriptionDetails(
+                            SubscriptionDetails(
                                 id = productDetails.productId,
                                 value = productDetails,
                                 cost = pricingList?.formattedPrice,
                                 period = pricingList?.billingPeriod?.let {
                                     try {
-                                        Period.parse(it)
+                                        DateTimePeriod.parse(it)
                                     } catch (throwable: Throwable) {
-                                        Period.ofMonths(1)
+                                        DateTimePeriod(months = 1)
                                     }
                                 },
                             )
@@ -220,7 +221,7 @@ class PlaySubscriptionProvider(
         }
     }
 
-    override fun requestSubscribe(subscription: SubscriptionProvider.SubscriptionDetails<*>) {
+    override fun requestSubscribe(subscription: SubscriptionDetails<*>) {
         if (loading) return
         loading = true
         scopedApplication.scope.launch(CustomDispatchers.IO) {
@@ -249,7 +250,7 @@ class PlaySubscriptionProvider(
     }
 
     override fun getManageSubscriptionUrl(
-        subscription: SubscriptionProvider.SubscriptionDetails<*>?,
+        subscription: SubscriptionDetails<*>?,
     ) = if (subscription == null) {
         "https://play.google.com/store/account/subscriptions"
     } else {

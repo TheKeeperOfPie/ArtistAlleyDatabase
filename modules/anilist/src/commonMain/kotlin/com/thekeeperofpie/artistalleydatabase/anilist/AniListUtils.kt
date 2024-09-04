@@ -16,12 +16,13 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import nl.jacobras.humanreadable.HumanReadable
-import java.time.LocalDate
-import java.time.Month
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import kotlin.math.absoluteValue
 
 object AniListUtils {
@@ -76,7 +77,7 @@ object AniListUtils {
     }
 
     fun getCurrentSeasonYear(): Pair<MediaSeason, Int> {
-        val timeInJapan = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"))
+        val timeInJapan = Clock.System.now().toLocalDateTime(TimeZone.of("Asia/Tokyo"))
         val year = timeInJapan.year
         val month = timeInJapan.month
         val season = when (month) {
@@ -84,7 +85,6 @@ object AniListUtils {
             Month.MARCH, Month.APRIL, Month.MAY -> MediaSeason.SPRING
             Month.JUNE, Month.JULY, Month.AUGUST -> MediaSeason.SUMMER
             Month.SEPTEMBER, Month.OCTOBER, Month.NOVEMBER -> MediaSeason.FALL
-            null -> MediaSeason.WINTER
         }
 
         // If it's December, the current season is Winter of the next year
@@ -180,7 +180,7 @@ fun ApolloClient.Builder.addLoggingInterceptors(
 }
 
 fun LocalDate.toAniListFuzzyDateInt(): Int? {
-    val monthString = monthValue.toString().padStart(2, '0')
+    val monthString = monthNumber.toString().padStart(2, '0')
     val dayOfMonthString = dayOfMonth.toString().padStart(2, '0')
     return "$year$monthString$dayOfMonthString".toIntOrNull()
 }

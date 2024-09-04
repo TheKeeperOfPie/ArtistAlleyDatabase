@@ -99,7 +99,6 @@ object Versions {
     }
 
     const val cronetEmbedded = "119.6045.31"
-
     const val dependencyAnalysis = "2.0.1"
     const val dexmakerInline = "2.28.4"
     const val diffUtils = "0.7.0"
@@ -165,6 +164,7 @@ object Versions {
     const val placeholder = "1.0.8"
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
+    const val statelyConcurrentCollections = "2.0.0"
     const val unityAds = "4.12.2"
     const val uriKmp = "0.0.18"
     const val xmlUtil = "0.90.2-beta1"
@@ -439,6 +439,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 library("app.cash.molecule:molecule-runtime:${Versions.molecule}")
                 library("co.touchlab:kermit:${Versions.kermit}")
+                library("co.touchlab:stately-concurrent-collections:${Versions.statelyConcurrentCollections}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
                 library("com.benasher44:uuid:${Versions.benasher44Uuid}")
                 library("com.eygraber:uri-kmp:${Versions.uriKmp}")

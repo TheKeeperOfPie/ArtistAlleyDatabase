@@ -31,9 +31,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneId
-import java.time.temporal.ChronoUnit
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.plus
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -73,7 +74,8 @@ class AnimeActivityViewModel @Inject constructor(
         MutableStateFlow(PagingData.empty<ActivityEntry>())
     private var ownActivityJob: Job? = null
 
-    private val offset = ZoneId.systemDefault().rules.getOffset(Instant.now())
+    // TODO: Should this be accessed from inside a composable?
+    private val timeZone = TimeZone.currentSystemDefault()
 
     fun ownActivity(): StateFlow<PagingData<ActivityEntry>> {
         if (ownActivityJob == null) {
@@ -131,13 +133,13 @@ class AnimeActivityViewModel @Inject constructor(
                             .ifEmpty { null },
                         hasReplies = if (filterParams.hasReplies) true else null,
                         createdAtGreater = filterParams.date.startDate
-                            ?.atStartOfDay()
-                            ?.toEpochSecond(offset)
+                            ?.atStartOfDayIn(timeZone)
+                            ?.epochSeconds
                             ?.toInt(),
                         createdAtLesser = filterParams.date.endDate
-                            ?.plus(1, ChronoUnit.DAYS)
-                            ?.atStartOfDay()
-                            ?.toEpochSecond(offset)
+                            ?.plus(1, DateTimeUnit.DAY)
+                            ?.atStartOfDayIn(timeZone)
+                            ?.epochSeconds
                             ?.toInt(),
                         mediaId = filterParams.mediaId,
                     )

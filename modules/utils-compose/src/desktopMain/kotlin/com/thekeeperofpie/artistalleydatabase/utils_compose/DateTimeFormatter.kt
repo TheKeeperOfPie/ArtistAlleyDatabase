@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.runtime.CompositionLocal
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 actual val LocalDateTimeFormatter: CompositionLocal<DateTimeFormatter> = compositionLocalWithComputedDefaultOf { DateTimeFormatter() }
 

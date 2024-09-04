@@ -13,7 +13,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
-import java.time.temporal.ChronoUnit
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 
 class AnimeSearchMediaPagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -75,11 +77,11 @@ class AnimeSearchMediaPagingSource(
         seasonYear = seasonYear,
         startDateGreater = (filterParams.airingDate as? AiringDate.Advanced)
             ?.startDate
-            ?.minus(1, ChronoUnit.DAYS)
+            ?.minus(1, DateTimeUnit.DAY)
             ?.toAniListFuzzyDateInt(),
         startDateLesser = (filterParams.airingDate as? AiringDate.Advanced)
             ?.endDate
-            ?.plus(1, ChronoUnit.DAYS)
+            ?.plus(1, DateTimeUnit.DAY)
             ?.toAniListFuzzyDateInt(),
         averageScoreGreater = filterParams.averageScoreRange.apiStart,
         averageScoreLesser = filterParams.averageScoreRange.apiEnd,

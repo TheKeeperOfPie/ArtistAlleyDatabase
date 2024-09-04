@@ -34,6 +34,8 @@ import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.anilist.type.UserTitleLanguage
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -48,8 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformWhile
-import java.time.LocalDate
-import java.util.Locale
+import kotlinx.datetime.LocalDate
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -129,20 +130,24 @@ object MediaUtils {
         null -> R.string.anime_media_list_status_none
     }
 
-    fun scoreFormatToText(locale: Locale, score: Double, format: ScoreFormat) =
-        if (score == 0.0) "" else when (format) {
-            ScoreFormat.POINT_10_DECIMAL -> String.format(locale, "%.1f", score / 10f)
+    fun scoreFormatToText(score: Double, format: ScoreFormat): String {
+        return if (score == 0.0) "" else when (format) {
+            // TODO: Locale aware decimal format
+            ScoreFormat.POINT_10_DECIMAL -> BigDecimal.fromDouble(score)
+                .div(10)
+                .roundToDigitPositionAfterDecimalPoint(1, RoundingMode.FLOOR)
+                .toStringExpanded()
             ScoreFormat.POINT_10 -> (score.roundToInt() / 10).toString()
             ScoreFormat.POINT_100,
             ScoreFormat.POINT_5,
             ScoreFormat.POINT_3,
             ScoreFormat.UNKNOWN__,
-            -> score.roundToInt().toString()
+                -> score.roundToInt().toString()
         }
+    }
 
     @Composable
     fun MediaListStatus?.toStatusText(
-        locale: Locale,
         mediaType: MediaType?,
         progress: Int,
         progressMax: Int?,
@@ -183,7 +188,7 @@ object MediaUtils {
         )
         MediaListStatus.COMPLETED -> {
             val scoreText = if (score != null && scoreFormat != null) {
-                scoreFormatToText(locale, score, scoreFormat)
+                scoreFormatToText(score, scoreFormat)
             } else null
 
             if (scoreText.isNullOrEmpty()) {
@@ -385,7 +390,7 @@ object MediaUtils {
 
     fun parseLocalDate(year: Int?, month: Int?, dayOfMonth: Int?): LocalDate? {
         return if (year != null && month != null && dayOfMonth != null) {
-            LocalDate.of(year, month, dayOfMonth)
+            LocalDate(year, month, dayOfMonth)
         } else null
     }
 
@@ -524,11 +529,11 @@ object MediaUtils {
                             return@filter true
                         }
 
-                        if (mediaMonth < startDate.monthValue) {
+                        if (mediaMonth < startDate.monthNumber) {
                             return@filter false
                         }
 
-                        if (mediaMonth > startDate.monthValue) {
+                        if (mediaMonth > startDate.monthNumber) {
                             return@filter true
                         }
 
@@ -557,11 +562,11 @@ object MediaUtils {
                             return@filter true
                         }
 
-                        if (mediaMonth < endDate.monthValue) {
+                        if (mediaMonth < endDate.monthNumber) {
                             return@filter true
                         }
 
-                        if (mediaMonth > endDate.monthValue) {
+                        if (mediaMonth > endDate.monthNumber) {
                             return@filter false
                         }
 

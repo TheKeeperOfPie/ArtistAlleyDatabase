@@ -6,9 +6,9 @@ import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
+import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format
 
 sealed interface AiringDate {
 
@@ -46,10 +46,8 @@ sealed interface AiringDate {
     ) : AiringDate {
 
         fun summaryText(): String? {
-            val startDateString =
-                startDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-            val endDateString =
-                endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+            val startDateString = startDate?.format(DateTimeUtils.shortDateFormat)
+            val endDateString = endDate?.format(DateTimeUtils.shortDateFormat)
 
             return when {
                 startDateString != null && endDateString != null -> {

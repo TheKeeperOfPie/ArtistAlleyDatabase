@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import co.touchlab.kermit.Logger
+import co.touchlab.stately.collections.ConcurrentMutableMap
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import java.util.Collections
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FavoritesToggleHelper(
@@ -35,7 +35,7 @@ class FavoritesToggleHelper(
 
     private var initializedTracking = false
 
-    private val jobs = Collections.synchronizedMap(mutableMapOf<Pair<FavoriteType, String>, Job>())
+    private val jobs = ConcurrentMutableMap<Pair<FavoriteType, String>, Job>()
 
     fun set(type: FavoriteType, id: String, favorite: Boolean) {
         val update = FavoritesController.Update(type, id, favorite, pending = true)

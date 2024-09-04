@@ -39,8 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.anilist.AiringScheduleQuery
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -56,11 +54,18 @@ import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object AiringScheduleScreen {
@@ -70,7 +75,7 @@ object AiringScheduleScreen {
         viewModel: AiringScheduleViewModel = hiltViewModel(),
         onClickBack: () -> Unit,
     ) {
-        val initialDayIndex = remember { 6 + LocalDate.now().dayOfWeek.value }
+        val initialDayIndex = remember { 6 + Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek.value }
         val pagerState = rememberPagerState(
             initialPage = initialDayIndex,
             pageCount = { 21 },
@@ -117,14 +122,14 @@ object AiringScheduleScreen {
                             val context = LocalContext.current
                             val dateTimeFormatter = LocalDateTimeFormatter.current
                             val dayData = remember(context) {
-                                val today = LocalDate.now()
-                                val tomorrow = today.plusDays(1)
+                                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                                val tomorrow = today.plus(1, DateTimeUnit.DAY)
                                 val startOfWeek =
-                                    today.minusDays(today.dayOfWeek.value.toLong() - 1)
-                                val endOfWeek = startOfWeek.plusWeeks(1)
-                                val startDay = startOfWeek.minusWeeks(1)
+                                    today.minus(today.dayOfWeek.value.toLong() - 1, DateTimeUnit.DAY)
+                                val endOfWeek = startOfWeek.plus(1, DateTimeUnit.WEEK)
+                                val startDay = startOfWeek.minus(1, DateTimeUnit.WEEK)
                                 (0 until pagerState.pageCount).map {
-                                    when (val day = startDay.plusDays(it.toLong())) {
+                                    when (val day = startDay.plus(it.toLong(), DateTimeUnit.DAY)) {
                                         today -> day to Either.Left<Int, String>(
                                             R.string.anime_airing_schedule_today
                                         )

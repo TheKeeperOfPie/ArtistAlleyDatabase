@@ -1,13 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread
 
 import co.touchlab.kermit.Logger
+import co.touchlab.stately.collections.ConcurrentMutableMap
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
-import java.util.Collections
 
 class ForumThreadToggleHelper(
     private val aniListApi: AuthedAniListApi,
@@ -18,7 +18,7 @@ class ForumThreadToggleHelper(
         private const val TAG = "ForumThreadToggleHelper"
     }
 
-    private val jobs = Collections.synchronizedMap(mutableMapOf<String, Job>())
+    private val jobs = ConcurrentMutableMap<String, Job>()
 
     fun toggle(update: ForumThreadToggleUpdate) {
         val threadId = update.id

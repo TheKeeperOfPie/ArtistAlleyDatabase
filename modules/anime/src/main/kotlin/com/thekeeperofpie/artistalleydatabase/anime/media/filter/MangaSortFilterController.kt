@@ -31,8 +31,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneOffset
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -218,9 +219,9 @@ open class MangaSortFilterController<SortType : SortOption>(
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
-            Instant.ofEpochMilli(it)
-                .atZone(ZoneOffset.UTC)
-                .toLocalDate()
+            Instant.fromEpochMilliseconds(it)
+                .toLocalDateTime(TimeZone.UTC)
+                .date
         }
 
         releaseDate = if (start) {

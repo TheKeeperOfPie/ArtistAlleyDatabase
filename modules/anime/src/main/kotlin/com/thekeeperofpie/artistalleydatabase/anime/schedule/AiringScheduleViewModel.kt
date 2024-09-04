@@ -35,9 +35,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -56,9 +60,9 @@ class AiringScheduleViewModel @Inject constructor(
         AiringScheduleSortFilterController(viewModelScope, settings, featureOverrideProvider)
     var refresh = MutableStateFlow(-1)
 
-    private val startDay = LocalDate.now().let {
-        it.minusDays(it.dayOfWeek.value.toLong() - 1)
-            .minusWeeks(1)
+    private val startDay = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let {
+        it.minus(it.dayOfWeek.value.toLong() - 1, DateTimeUnit.DAY)
+            .minus(1, DateTimeUnit.WEEK)
     }
 
     // Spans last week, current week, next week
@@ -105,16 +109,14 @@ class AiringScheduleViewModel @Inject constructor(
         filterParams: AiringScheduleSortFilterController.FilterParams,
     ): Flow<PagingData<AiringScheduleQuery.Data.Page.AiringSchedule>> {
         val sort = filterParams.sort.selectedOption(AiringScheduleSortOption.POPULARITY)
-        val date = startDay.plusDays(index.toLong())
-        val offset = ZoneId.systemDefault().rules.getOffset(Instant.now())
-        val startTime = date.atStartOfDay().toEpochSecond(offset) - 1
-        val endTime = date.plusDays(1).atStartOfDay().toEpochSecond(offset)
+        val date = startDay.plus(index.toLong(), DateTimeUnit.DAY)
+        val timeZone = TimeZone.currentSystemDefault()
+        val startTime = date.atStartOfDayIn(timeZone).epochSeconds - 1
+        val endTime = date.plus(1, DateTimeUnit.DAY).atStartOfDayIn(timeZone).epochSeconds
 
         return if (sort == AiringScheduleSortOption.POPULARITY) {
             flow {
-                emit(
-                    PagingData.empty()
-                )
+                emit(PagingData.empty())
 
                 var currentPage = 1
                 var hasNextPage = true

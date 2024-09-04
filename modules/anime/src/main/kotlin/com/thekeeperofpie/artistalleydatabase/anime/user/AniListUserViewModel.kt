@@ -41,12 +41,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChange
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
@@ -72,9 +72,10 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
-import java.time.Instant
-import java.time.ZoneId
-import java.time.temporal.ChronoUnit
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.plus
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -122,7 +123,7 @@ class AniListUserViewModel @Inject constructor(
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
-    private val offset = ZoneId.systemDefault().rules.getOffset(Instant.now())
+    private val timeZone = TimeZone.currentSystemDefault()
     private var toggleFollowRequestMillis = MutableStateFlow(-1L)
     private var initialFollowState by mutableStateOf<Boolean?>(null)
     private var toggleFollowingResult by mutableStateOf<ToggleFollowMutation.Data.ToggleFollow?>(
@@ -349,13 +350,13 @@ class AniListUserViewModel @Inject constructor(
                                     .ifEmpty { null },
                                 hasReplies = if (filterParams.hasReplies) true else null,
                                 createdAtGreater = filterParams.date.startDate
-                                    ?.atStartOfDay()
-                                    ?.toEpochSecond(offset)
+                                    ?.atStartOfDayIn(timeZone)
+                                    ?.epochSeconds
                                     ?.toInt(),
                                 createdAtLesser = filterParams.date.endDate
-                                    ?.plus(1, ChronoUnit.DAYS)
-                                    ?.atStartOfDay()
-                                    ?.toEpochSecond(offset)
+                                    ?.plus(1, DateTimeUnit.DAY)
+                                    ?.atStartOfDayIn(timeZone)
+                                    ?.epochSeconds
                                     ?.toInt(),
                                 mediaId = filterParams.mediaId,
                             )

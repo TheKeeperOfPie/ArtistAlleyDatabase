@@ -6,8 +6,8 @@ import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
 
 @Serializable
 data class FilterData(
@@ -54,13 +54,21 @@ data class FilterData(
         && airingDateStartMonth != null
         && airingDateStartDayOfMonth != null
     ) {
-        LocalDate.of(airingDateStartYear, airingDateStartMonth, airingDateStartDayOfMonth)
+        LocalDate(
+            year = airingDateStartYear,
+            monthNumber = airingDateStartMonth,
+            dayOfMonth = airingDateStartDayOfMonth,
+        )
     } else null
 
     fun airingDateEnd() = if (airingDateEndYear != null
         && airingDateEndMonth != null
         && airingDateEndDayOfMonth != null
     ) {
-        LocalDate.of(airingDateEndYear, airingDateEndMonth, airingDateEndDayOfMonth)
+        LocalDate(
+            year = airingDateEndYear,
+            monthNumber = airingDateEndMonth,
+            dayOfMonth = airingDateEndDayOfMonth,
+        )
     } else null
 }

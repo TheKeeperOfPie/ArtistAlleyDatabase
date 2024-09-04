@@ -74,7 +74,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -421,7 +420,6 @@ object AnimeUserListScreen {
         } else {
             authorData?.let {
                 authorData.status.toStatusText(
-                    locale = LocalConfiguration.currentLocale,
                     mediaType = viewModel.mediaType,
                     progress = authorData.progress ?: 0,
                     progressMax = MediaUtils.maxProgress(entry.entry.media),

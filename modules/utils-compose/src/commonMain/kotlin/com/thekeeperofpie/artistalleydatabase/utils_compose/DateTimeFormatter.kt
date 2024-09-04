@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.runtime.CompositionLocal
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 expect val LocalDateTimeFormatter: CompositionLocal<DateTimeFormatter>
 

@@ -374,7 +374,8 @@ object UnlockScreen {
                             val cost = subscription.cost
                             val period = subscription.period
                             if (cost != null && period != null) {
-                                val months = period.toTotalMonths()
+                                // TODO: This doesn't handle > 12 months
+                                val months = period.months
                                 val periodText = if (months <= 1) {
                                     "month"
                                 } else {

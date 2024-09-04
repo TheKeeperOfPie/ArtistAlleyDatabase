@@ -9,7 +9,7 @@ import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.utils.SimpleResult
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 class MediaEditData {
     var status by mutableStateOf<MediaListStatus?>(null)

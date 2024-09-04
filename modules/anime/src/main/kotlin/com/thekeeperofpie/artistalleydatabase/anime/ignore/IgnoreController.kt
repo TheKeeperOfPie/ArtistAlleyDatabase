@@ -10,7 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import java.time.Instant
+import kotlinx.datetime.Clock
 
 class IgnoreController(
     private val scope: ApplicationScope,
@@ -49,7 +49,7 @@ class IgnoreController(
                                 english = titleEnglish,
                                 native = titleNative,
                             ),
-                            viewedAt = Instant.now().toEpochMilli(),
+                            viewedAt = Clock.System.now().toEpochMilliseconds(),
                         ),
                     )
                 }

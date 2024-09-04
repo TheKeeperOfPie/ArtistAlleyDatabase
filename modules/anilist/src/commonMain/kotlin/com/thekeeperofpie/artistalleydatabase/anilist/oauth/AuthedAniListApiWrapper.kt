@@ -30,8 +30,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.LocalDate
 import java.io.IOException
-import java.time.LocalDate
 
 /**
  * Strips isAdult media from API calls on release builds.

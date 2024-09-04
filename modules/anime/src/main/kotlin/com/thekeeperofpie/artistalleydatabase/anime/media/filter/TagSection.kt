@@ -4,7 +4,6 @@ import com.anilist.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
-import java.util.SortedMap
 
 sealed interface TagSection {
     val name: String
@@ -23,7 +22,11 @@ sealed interface TagSection {
             children.values
                 .mapNotNull { it.filter(predicate) }
                 .associateBy { it.name }
-                .toSortedMap(String.CASE_INSENSITIVE_ORDER)
+                .toList()
+                .sortedWith { first, second ->
+                    first.first.compareTo(second.first, ignoreCase = true)
+                }
+                .toMap()
                 .takeIf { it.isNotEmpty() }
                 ?.let { copy(children = it) }
         }
@@ -32,15 +35,21 @@ sealed interface TagSection {
 
     fun replace(block: (Tag) -> Tag): TagSection = when (this) {
         is Category -> {
-            copy(children = children.mapValues { (_, value) -> value.replace(block) }
-                .toSortedMap(String.CASE_INSENSITIVE_ORDER))
+            copy(
+                children = children.mapValues { (_, value) -> value.replace(block) }
+                    .toList()
+                    .sortedWith { first, second ->
+                        first.first.compareTo(second.first, ignoreCase = true)
+                    }
+                    .toMap()
+            )
         }
         is Tag -> block(this)
     }
 
     data class Category(
         override val name: String,
-        val children: SortedMap<String, TagSection>,
+        val children: Map<String, TagSection>,
         val expanded: Boolean = false,
         val hasAnySelected: Boolean = false,
     ) : TagSection {
@@ -87,7 +96,11 @@ sealed interface TagSection {
                         is Tag -> value
                         else -> throw IllegalStateException("Unexpected value $value")
                     }
-                }.toSortedMap(String.CASE_INSENSITIVE_ORDER)
+                }.toList()
+                    .sortedWith { first, second ->
+                        first.first.compareTo(second.first, ignoreCase = true)
+                    }
+                    .toMap()
             )
         }
     }

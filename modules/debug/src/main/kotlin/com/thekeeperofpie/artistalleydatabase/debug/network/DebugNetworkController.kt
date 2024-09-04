@@ -17,13 +17,14 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import okio.Buffer
 import java.nio.charset.Charset
-import java.time.Instant
 
 class DebugNetworkController(scopedApplication: ScopedApplication) {
 
@@ -36,7 +37,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
             request: HttpRequest,
             chain: HttpInterceptorChain,
         ): HttpResponse {
-            val requestTimestamp = Instant.now()
+            val requestTimestamp = Clock.System.now()
             val id = Uuid.randomUUID().toString()
             graphQlRequests.trySend(
                 GraphQlRequest(
@@ -55,7 +56,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
                         id = id,
                         headers = response.headers.associate { it.name to it.value },
                         bodyString = responseBodyString,
-                        timestamp = Instant.now(),
+                        timestamp = Clock.System.now(),
                         final = false,
                     )
                 )
@@ -72,7 +73,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
                     id = id,
                     headers = response.headers.associate { it.name to it.value },
                     bodyString = responseBodyString,
-                    timestamp = Instant.now(),
+                    timestamp = Clock.System.now(),
                     final = true,
                 )
             )

@@ -26,8 +26,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import java.time.Instant
-import java.time.ZoneOffset
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(FlowPreview::class)
 class ActivitySortFilterController(
@@ -120,9 +121,9 @@ class ActivitySortFilterController(
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
-            Instant.ofEpochMilli(it)
-                .atZone(ZoneOffset.UTC)
-                .toLocalDate()
+            Instant.fromEpochMilliseconds(it)
+                .toLocalDateTime(TimeZone.UTC)
+                .date
         }
 
         date = if (start) {

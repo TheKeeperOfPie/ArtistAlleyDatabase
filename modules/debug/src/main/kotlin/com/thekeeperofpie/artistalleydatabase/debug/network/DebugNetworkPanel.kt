@@ -45,9 +45,10 @@ import com.sebastianneubauer.jsontree.JsonTree
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.debug.R
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 object DebugNetworkPanel {
@@ -198,7 +199,7 @@ object DebugNetworkPanel {
     @Composable
     private fun TimestampText(timestamp: Instant) {
         val datetime = remember {
-            timestamp.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
+            LocalDateTime.Formats.ISO.format(timestamp.toLocalDateTime(TimeZone.currentSystemDefault()))
         }
         Text(
             text = datetime,

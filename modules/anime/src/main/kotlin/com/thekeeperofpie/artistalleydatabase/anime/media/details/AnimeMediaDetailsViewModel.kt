@@ -45,7 +45,6 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import java.io.IOException
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -97,7 +96,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     ) {
                         LoadingResult.error(
                             R.string.anime_media_details_error_loading,
-                            IOException("Cannot load media")
+                            IllegalStateException("Cannot load media")
                         )
                     } else {
                         it

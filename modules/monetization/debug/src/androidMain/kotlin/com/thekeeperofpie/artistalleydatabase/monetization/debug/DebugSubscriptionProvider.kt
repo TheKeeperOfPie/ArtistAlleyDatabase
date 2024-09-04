@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.monetization.debug
 
 import androidx.activity.ComponentActivity
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
+import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionDetails
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -18,7 +19,7 @@ class DebugSubscriptionProvider(
 ) : SubscriptionProvider {
 
     override val subscriptionDetails =
-        MutableStateFlow(LoadingResult.loading<SubscriptionProvider.SubscriptionDetails<*>>())
+        MutableStateFlow(LoadingResult.loading<SubscriptionDetails<*>>())
 
     override val error = MutableStateFlow<Pair<StringResource, Throwable?>?>(null)
     override var loading = false
@@ -31,7 +32,7 @@ class DebugSubscriptionProvider(
             delay(3.seconds)
             subscriptionDetails.emit(
                 LoadingResult.success(
-                    SubscriptionProvider.SubscriptionDetails(
+                    SubscriptionDetails(
                         id = "debug",
                         value = Unit,
                         cost = null,
@@ -42,7 +43,7 @@ class DebugSubscriptionProvider(
         }
     }
 
-    override fun requestSubscribe(subscription: SubscriptionProvider.SubscriptionDetails<*>) {
+    override fun requestSubscribe(subscription: SubscriptionDetails<*>) {
         scope.launch(CustomDispatchers.Main) {
             loading = true
             delay(3.seconds)
@@ -52,6 +53,6 @@ class DebugSubscriptionProvider(
     }
 
     override fun getManageSubscriptionUrl(
-        subscription: SubscriptionProvider.SubscriptionDetails<*>?,
+        subscription: SubscriptionDetails<*>?,
     ) = "https://play.google.com/store/account/subscriptions"
 }

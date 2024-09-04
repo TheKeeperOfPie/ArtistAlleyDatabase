@@ -1,13 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.monetization
 
-import androidx.activity.ComponentActivity
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.datetime.DateTimePeriod
 import org.jetbrains.compose.resources.StringResource
-import java.time.Period
 
-interface SubscriptionProvider {
+expect interface SubscriptionProvider {
 
     val subscriptionDetails: StateFlow<LoadingResult<SubscriptionDetails<*>>>
 
@@ -15,20 +14,18 @@ interface SubscriptionProvider {
 
     val loading: Boolean
 
-    fun initialize(activity: ComponentActivity)
-
     fun loadSubscriptionDetails()
 
     fun requestSubscribe(subscription: SubscriptionDetails<*>)
 
     fun getManageSubscriptionUrl(subscription: SubscriptionDetails<*>?): String
-
-    data class SubscriptionDetails<T>(
-        val id: String,
-        val value: T,
-        val cost: String?,
-        val period: Period?,
-    )
 }
+
+data class SubscriptionDetails<T>(
+    val id: String,
+    val value: T,
+    val cost: String?,
+    val period: DateTimePeriod?,
+)
 
 val LocalSubscriptionProvider = staticCompositionLocalOf<SubscriptionProvider?> { null }
