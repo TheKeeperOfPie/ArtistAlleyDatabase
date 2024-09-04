@@ -13,15 +13,14 @@ kotlin {
             implementation(project(":modules:utils-compose"))
             implementation(project(":modules:utils-room"))
 
-            implementation(libs.flowExt)
-
-            implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.coil3.coil.compose)
-
-            implementation(libs.kotlinx.serialization.json)
-            implementation(libs.uuid)
-            implementation(libs.uri.kmp)
+            implementation(libs.flowExt)
+            implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kotlin.multiplatform.diff)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.paging.runtime.ktx)
+            implementation(libs.uri.kmp)
+            implementation(libs.uuid)
         }
     }
 }

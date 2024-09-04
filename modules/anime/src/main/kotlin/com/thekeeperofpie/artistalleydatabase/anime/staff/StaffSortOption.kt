@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.staff
 import androidx.annotation.StringRes
 import com.anilist.type.StaffSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 
 enum class StaffSortOption(
     @StringRes override val textRes: Int,

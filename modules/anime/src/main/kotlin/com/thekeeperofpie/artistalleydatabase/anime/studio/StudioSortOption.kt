@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.studio
 import androidx.annotation.StringRes
 import com.anilist.type.StudioSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 
 enum class StudioSortOption(
     @StringRes override val textRes: Int,

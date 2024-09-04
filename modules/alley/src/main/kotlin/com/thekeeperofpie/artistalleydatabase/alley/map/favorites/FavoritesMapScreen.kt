@@ -19,7 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.TableCell
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterOptionsPanel
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 
 @OptIn(ExperimentalMaterial3Api::class)
 object FavoritesMapScreen {

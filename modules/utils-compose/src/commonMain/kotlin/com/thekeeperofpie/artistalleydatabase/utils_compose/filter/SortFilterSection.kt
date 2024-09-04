@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.compose.filter
+package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import androidx.annotation.MainThread
 import androidx.annotation.StringRes
@@ -34,15 +34,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortSection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.reflect.KClass
 
@@ -206,7 +204,7 @@ sealed class SortFilterSection(val id: String) {
             selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
         ) : this(
             id = titleRes.toString(),
-            title = { stringResource(titleRes) },
+            title = { ComposeResourceUtils.stringResource(titleRes) },
             titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
             includeExcludeIconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
             values = values,
@@ -432,7 +430,7 @@ sealed class SortFilterSection(val id: String) {
                     }
             ) {
                 Text(
-                    text = stringResource(titleRes),
+                    text = ComposeResourceUtils.stringResource(titleRes),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -501,7 +499,7 @@ sealed class SortFilterSection(val id: String) {
 
                 TrailingDropdownIconButton(
                     expanded = expanded,
-                    contentDescription = stringResource(titleDropdownContentDescriptionRes),
+                    contentDescription = ComposeResourceUtils.stringResource(titleDropdownContentDescriptionRes),
                     onClick = { state.expandedState[id] = !expanded },
                 )
             }
@@ -543,7 +541,7 @@ sealed class SortFilterSection(val id: String) {
                     .clickable { expanded = true }
             ) {
                 Text(
-                    text = stringResource(labelTextRes),
+                    text = ComposeResourceUtils.stringResource(labelTextRes),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .weight(1f)
@@ -609,7 +607,7 @@ sealed class SortFilterSection(val id: String) {
                 suggestions = { suggestions },
                 onSuggestionClick = onSuggestionClick,
                 suggestionToText = { it.text() },
-                title = { stringResource(titleRes) },
+                title = { ComposeResourceUtils.stringResource(titleRes) },
                 titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
                 showDivider = showDivider,
             )
@@ -649,7 +647,7 @@ sealed class SortFilterSection(val id: String) {
                 .clickable { onEnabledChanged(!enabled()) }
         ) {
             Text(
-                text = stringResource(titleRes),
+                text = ComposeResourceUtils.stringResource(titleRes),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 10.dp)

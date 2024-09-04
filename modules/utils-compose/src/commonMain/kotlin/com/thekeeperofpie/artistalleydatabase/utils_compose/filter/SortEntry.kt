@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.compose.filter
+package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState

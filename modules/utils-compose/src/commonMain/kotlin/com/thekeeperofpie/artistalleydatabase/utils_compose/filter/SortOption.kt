@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.compose.filter
+package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import androidx.annotation.StringRes
 

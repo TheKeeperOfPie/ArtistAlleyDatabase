@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 
-package com.thekeeperofpie.artistalleydatabase.compose.filter
+package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -43,18 +43,26 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.utils_compose.generated.resources.Res
+import artistalleydatabase.modules.utils_compose.generated.resources.clear
+import artistalleydatabase.modules.utils_compose.generated.resources.sort_ascending
+import artistalleydatabase.modules.utils_compose.generated.resources.sort_descending
+import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_ascending_content_description
+import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_descending_content_description
+import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_label
+import artistalleydatabase.modules.utils_compose.generated.resources.sort_expand_content_description
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.compose_proxy.R
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -67,7 +75,18 @@ object SortAndFilterComposables {
         modifier: Modifier = Modifier,
     ) = SortFilterHeaderText(
         expanded = expanded,
-        title = { stringResource(titleRes) },
+        titleRes = StringResourceId(titleRes),
+        modifier = modifier,
+    )
+
+    @Composable
+    fun RowScope.SortFilterHeaderText(
+        expanded: Boolean,
+        titleRes: StringResourceCompat,
+        modifier: Modifier = Modifier,
+    ) = SortFilterHeaderText(
+        expanded = expanded,
+        title = { ComposeResourceUtils.stringResourceCompat(titleRes) },
         modifier = modifier,
     )
 
@@ -136,7 +155,7 @@ object SortAndFilterComposables {
                             selected = it.state != FilterIncludeExcludeState.DEFAULT,
                             enabled = clickable,
                             onClick = { onSortClick(it.value) },
-                            label = { Text(stringResource(it.value.textRes)) },
+                            label = { Text(ComposeResourceUtils.stringResourceCompat(StringResourceId(it.value.textRes))) },
                             modifier = Modifier.animateContentSize()
                         )
                     }
@@ -159,9 +178,9 @@ object SortAndFilterComposables {
                                     },
                                     contentDescription = stringResource(
                                         if (sortAscending) {
-                                            R.string.sort_direction_ascending_content_description
+                                            Res.string.sort_direction_ascending_content_description
                                         } else {
-                                            R.string.sort_direction_descending_content_description
+                                            Res.string.sort_direction_descending_content_description
                                         }
                                     ),
                                 )
@@ -174,7 +193,7 @@ object SortAndFilterComposables {
                 if (clickable) {
                     TrailingDropdownIconButton(
                         expanded = expanded,
-                        contentDescription = stringResource(R.string.sort_expand_content_description),
+                        contentDescription = stringResource(Res.string.sort_expand_content_description),
                         onClick = { onExpandedChange(!expanded) },
                         modifier = Modifier.align(Alignment.Top),
                     )
@@ -191,7 +210,7 @@ object SortAndFilterComposables {
                 Column {
                     val sortAscending = sortAscending()
                     Text(
-                        text = stringResource(R.string.sort_direction_label),
+                        text = stringResource(Res.string.sort_direction_label),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -214,7 +233,7 @@ object SortAndFilterComposables {
                                 Icon(
                                     imageVector = Icons.Filled.ArrowUpward,
                                     contentDescription = stringResource(
-                                        R.string.sort_direction_ascending_content_description,
+                                        Res.string.sort_direction_ascending_content_description,
                                     ),
                                 )
                             },
@@ -230,7 +249,7 @@ object SortAndFilterComposables {
                                 Icon(
                                     imageVector = Icons.Filled.ArrowDownward,
                                     contentDescription = stringResource(
-                                        R.string.sort_direction_descending_content_description,
+                                        Res.string.sort_direction_descending_content_description,
                                     ),
                                 )
                             },
@@ -249,9 +268,9 @@ object SortAndFilterComposables {
     @Composable
     private fun ascendingText(ascending: Boolean) = stringResource(
         if (ascending) {
-            R.string.sort_ascending
+            Res.string.sort_ascending
         } else {
-            R.string.sort_descending
+            Res.string.sort_descending
         }
     )
 }
@@ -295,7 +314,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
                     {
                         AsyncImage(
                             model = customIcon,
-                            contentDescription = stringResource(iconContentDescriptionRes),
+                            contentDescription = ComposeResourceUtils.stringResource(iconContentDescriptionRes),
                             modifier = Modifier
                                 .size(24.dp)
                                 .padding(2.dp),
@@ -324,7 +343,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
         if (!locked) {
             TrailingDropdownIconButton(
                 expanded = expanded,
-                contentDescription = stringResource(titleDropdownContentDescriptionRes),
+                contentDescription = ComposeResourceUtils.stringResource(titleDropdownContentDescriptionRes),
                 onClick = { onExpandedChange(!expanded) },
                 modifier = Modifier.align(Alignment.Top),
             )
@@ -375,7 +394,7 @@ fun <T> SuggestionsSection(
 
         TrailingDropdownIconButton(
             expanded = expanded,
-            contentDescription = stringResource(titleDropdownContentDescriptionRes),
+            contentDescription = ComposeResourceUtils.stringResource(titleDropdownContentDescriptionRes),
             onClick = { onExpandedChange(!expanded) },
             modifier = Modifier.align(Alignment.Top),
         )
@@ -396,7 +415,7 @@ fun IncludeExcludeIcon(
         if (entry.leadingIconVector != null) {
             Icon(
                 imageVector = entry.leadingIconVector!!,
-                contentDescription = stringResource(entry.leadingIconContentDescription!!),
+                contentDescription = ComposeResourceUtils.stringResource(entry.leadingIconContentDescription!!),
                 modifier = Modifier
                     .padding(vertical = 6.dp)
                     .size(20.dp)
@@ -410,7 +429,7 @@ fun IncludeExcludeIcon(
         }?.let {
             Icon(
                 imageVector = it,
-                contentDescription = stringResource(contentDescriptionRes)
+                contentDescription = ComposeResourceUtils.stringResource(contentDescriptionRes)
             )
         }
     }
@@ -460,7 +479,7 @@ fun CustomFilterSection(
 
         TrailingDropdownIconButton(
             expanded = expanded,
-            contentDescription = stringResource(titleDropdownContentDescriptionRes),
+            contentDescription = ComposeResourceUtils.stringResource(titleDropdownContentDescriptionRes),
             onClick = { onExpandedChange(!expanded) },
         )
     }
@@ -631,7 +650,7 @@ fun SortFilterOptionsPanel(
         if (showClear) {
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = { sections().forEach(SortFilterSection::clear) }) {
-                    Text(text = stringResource(R.string.clear))
+                    Text(text = stringResource(Res.string.clear))
                 }
             }
         }

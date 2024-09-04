@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.annotation.StringRes
 import com.thekeeperofpie.artistalleydatabase.alley.R
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 
 enum class StampRallySearchSortOption(@StringRes override val textRes: Int) : SortOption {
 

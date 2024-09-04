@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import androidx.annotation.StringRes
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 
 enum class AnimeNewsSortOption(@StringRes override val textRes: Int) : SortOption {
     DATETIME(R.string.anime_news_sort_datetime),

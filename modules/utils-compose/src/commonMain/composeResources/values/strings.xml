@@ -24,4 +24,10 @@
     <string name="scrollbar_handle_content_description">Scrollbar handle</string>
     <string name="error_loading">Error loading</string>
     <string name="retry">retry</string>
+    <string name="sort_direction_ascending_content_description">Sort direction ascending</string>
+    <string name="sort_direction_descending_content_description">Sort direction descending</string>
+    <string name="sort_expand_content_description">Sort filter expand</string>
+    <string name="sort_direction_label">Direction</string>
+    <string name="sort_ascending">Ascending</string>
+    <string name="sort_descending">Descending</string>
 </resources>

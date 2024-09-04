@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
@@ -116,3 +117,24 @@ fun TrailingDropdownIcon(
     )
 }
 
+/**
+ * Copy of [ExposedDropdownMenuDefaults.TrailingIcon] to allow custom content descriptions.
+ */
+@Composable
+fun TrailingDropdownIconButton(
+    expanded: Boolean,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    icon: ImageVector = Icons.Filled.ArrowDropDown,
+    iconTint: Color = LocalContentColor.current,
+    onClick: () -> Unit = {},
+) {
+    IconButton(onClick = onClick, modifier = modifier) {
+        Icon(
+            imageVector = icon,
+            tint = iconTint,
+            contentDescription = contentDescription,
+            modifier = Modifier.rotate(if (expanded) 180f else 0f)
+        )
+    }
+}

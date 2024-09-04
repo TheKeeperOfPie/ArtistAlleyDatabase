@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.review
 import androidx.annotation.StringRes
 import com.anilist.type.ReviewSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 
 enum class ReviewSortOption(@StringRes override val textRes: Int) : SortOption {
 

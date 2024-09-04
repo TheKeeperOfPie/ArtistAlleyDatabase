@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.forum
 
 import com.anilist.type.ThreadSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 
 enum class ForumThreadSortOption(
     override val textRes: Int,
