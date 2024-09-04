@@ -65,19 +65,21 @@ import artistalleydatabase.modules.utils_compose.generated.resources.show_less
 import artistalleydatabase.modules.utils_compose.generated.resources.show_more
 import artistalleydatabase.modules.utils_compose.generated.resources.view_all
 import coil3.request.crossfade
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
-import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -289,7 +291,7 @@ fun <T> LazyListScope.listSection(
         DetailsSectionHeader(
             text = stringResource(titleRes),
             onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
-            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes?.let(::StringResourceId),
         )
     }
     if (loading) {
@@ -587,7 +589,7 @@ fun NavigationHeader(
                 navigationCallback.navigate(viewAllRoute)
             }
         },
-        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes?.let(::StringResourceId),
         modifier = Modifier
             .clickable(enabled = viewAllRoute != null) {
                 navigationCallback.navigate(viewAllRoute!!)

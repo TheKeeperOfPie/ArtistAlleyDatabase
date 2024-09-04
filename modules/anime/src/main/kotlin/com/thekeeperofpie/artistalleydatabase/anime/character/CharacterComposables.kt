@@ -48,12 +48,12 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
@@ -70,13 +70,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UpperHalfBiasAlignment
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
-import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
-import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
-import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
@@ -85,6 +82,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.colorsOrDefaul
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingErrorItem
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 
 @Composable
 fun CharacterSmallCard(
@@ -237,7 +239,7 @@ fun LazyListScope.charactersSection(
         DetailsSectionHeader(
             text = stringResource(titleRes),
             onClickViewAll = remember { onClickViewAll?.let { { it(navigationCallback) } } },
-            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes?.let(::StringResourceId),
             modifier = Modifier.recomposeHighlighter()
         )
     }
@@ -270,7 +272,7 @@ fun LazyListScope.charactersSection(
                     )
                 )
             },
-            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes?.let(::StringResourceId),
             modifier = Modifier.recomposeHighlighter()
         )
     }

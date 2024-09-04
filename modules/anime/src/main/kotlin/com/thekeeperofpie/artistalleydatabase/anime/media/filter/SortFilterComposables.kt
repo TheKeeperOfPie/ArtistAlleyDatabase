@@ -77,8 +77,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
-import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.FilterChip
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
@@ -89,6 +87,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.IncludeExcludeIcon
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.coroutines.launch

@@ -48,15 +48,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -69,14 +69,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIco
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
-import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
-import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
-import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 
 fun <T> LazyListScope.mediaListSection(
     onClickListEdit: (MediaNavigationData) -> Unit,
@@ -88,7 +90,7 @@ fun <T> LazyListScope.mediaListSection(
     hasMoreValues: Boolean,
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
-    label: @Composable() ((T) -> Unit)? = null,
+    label: @Composable ((T) -> Unit)? = null,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) = listSection(
@@ -130,7 +132,7 @@ fun LazyListScope.mediaHorizontalRow(
         DetailsSectionHeader(
             text = stringResource(titleRes),
             onClickViewAll = onClickViewAll,
-            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+            viewAllContentDescriptionTextRes = StringResourceId(viewAllContentDescriptionTextRes),
         )
     }
 

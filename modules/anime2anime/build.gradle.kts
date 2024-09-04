@@ -26,7 +26,7 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
 
     implementation(libs.hilt.navigation.compose)
-    api(libs.paging.compose)
+    implementation(libs.paging.runtime.ktx)
 
     implementation(libs.molecule.runtime)
     implementation(libs.kermit)

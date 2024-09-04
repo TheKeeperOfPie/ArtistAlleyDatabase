@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.user
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.paging.compose.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityList
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel

@@ -4,7 +4,7 @@ import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 
 data class MediaPreviewEntry(
     override val media: MediaPreview,

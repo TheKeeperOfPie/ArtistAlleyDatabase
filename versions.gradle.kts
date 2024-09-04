@@ -83,6 +83,7 @@ object Versions {
     const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
     const val coil = "3.0.0-alpha10"
+    const val colormath = "3.6.0"
 
     object compose {
         const val core = "1.7.0-rc01"
@@ -161,6 +162,7 @@ object Versions {
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "6.3.0"
     const val okhttp = "5.0.0-alpha.14"
+    const val placeholder = "1.0.8"
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
     const val unityAds = "4.12.2"
@@ -440,8 +442,10 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
                 library("com.benasher44:uuid:${Versions.benasher44Uuid}")
                 library("com.eygraber:uri-kmp:${Versions.uriKmp}")
+                library("com.eygraber:compose-placeholder-material3:${Versions.placeholder}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
                 library("com.fleeksoft.ksoup:ksoup:${Versions.ksoup}")
+                library("com.github.ajalt.colormath:colormath-ext-jetpack-compose:${Versions.colormath}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.kmpalette:kmpalette-core:${Versions.kmpalette}")

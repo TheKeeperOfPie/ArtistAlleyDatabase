@@ -20,8 +20,6 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="open">Open</string>
-    <string name="error_loading">Error loading</string>
     <string name="error_loading_from_cache">Error loading from cache</string>
     <string name="error_loading_from_network">Error loading from network</string>
-    <string name="retry">retry</string>
 </resources>

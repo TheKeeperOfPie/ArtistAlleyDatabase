@@ -26,8 +26,8 @@ import com.anilist.fragment.HomeMedia
 import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
-import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 
 data class AnimeMediaTagEntry(
     val id: String,

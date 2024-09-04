@@ -21,4 +21,7 @@
     <string name="error_loading_from_network">Error loading from network</string>
     <string name="unknown">Unknown</string>
     <string name="custom">Custom</string>
+    <string name="scrollbar_handle_content_description">Scrollbar handle</string>
+    <string name="error_loading">Error loading</string>
+    <string name="retry">retry</string>
 </resources>

@@ -36,7 +36,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
@@ -72,7 +71,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -80,7 +78,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -88,7 +85,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -106,17 +102,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.takeOrElse
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -357,263 +349,6 @@ fun <T> ItemDropdown(
     }
 }
 
-// TODO: Replace other autosize methods
-@Composable
-fun AutoResizeHeightText(
-    text: String,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
-    style: TextStyle = LocalTextStyle.current,
-    minTextSizeSp: Float = 2f,
-    textAlignment: Alignment = Alignment.CenterStart,
-) {
-    val initialFontSize = style.fontSize
-    var realFontSize by remember { mutableStateOf(initialFontSize) }
-    val initialLineHeight = style.lineHeight
-    var realLineHeight by remember { mutableStateOf(initialLineHeight) }
-
-    val textMeasurer = rememberTextMeasurer()
-
-    Box(
-        contentAlignment = textAlignment,
-        modifier = modifier
-            .onSizeChanged {
-                var fontSize = initialFontSize
-                var lineHeight = initialLineHeight
-                val constraints = Constraints(
-                    minWidth = it.width,
-                    maxWidth = it.width,
-                    minHeight = it.height,
-                    maxHeight = it.height,
-                )
-                var result = textMeasurer.measure(
-                    text = text,
-                    style = style,
-                    overflow = overflow,
-                    maxLines = maxLines,
-                    constraints = constraints,
-                )
-                var attempts = 0
-                while (attempts++ < 25
-                    && (result.didOverflowWidth || result.didOverflowHeight)
-                    && fontSize > minTextSizeSp.sp
-                ) {
-                    fontSize *= 0.95f
-                    lineHeight *= 0.95f
-                    result = textMeasurer.measure(
-                        text = text,
-                        style = style.copy(
-                            fontSize = fontSize,
-                            lineHeight = lineHeight,
-                            textMotion = TextMotion.Animated,
-                        ),
-                        overflow = overflow,
-                        maxLines = maxLines,
-                        constraints = constraints,
-                    )
-                }
-                realFontSize = fontSize
-                realLineHeight = lineHeight
-            }
-    ) {
-        Text(
-            text = text,
-            color = color,
-            fontSize = realFontSize,
-            lineHeight = realLineHeight,
-            overflow = overflow,
-            softWrap = softWrap,
-            maxLines = maxLines,
-            minLines = minLines,
-            style = style.copy(textMotion = TextMotion.Animated),
-            modifier = Modifier
-                .wrapContentHeight()
-                .fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-fun AutoHeightText(
-    text: String,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontStyle: FontStyle? = null,
-    fontWeight: FontWeight? = null,
-    fontFamily: FontFamily? = null,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
-    style: TextStyle = LocalTextStyle.current,
-    minTextSizeSp: Float = 2f,
-) {
-    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
-    var readyToDraw by remember { mutableStateOf(false) }
-    var realOverflow by remember { mutableStateOf(overflow) }
-
-    Text(
-        text = text,
-        color = color,
-        fontSize = realFontSize.sp,
-        fontStyle = fontStyle,
-        fontWeight = fontWeight,
-        fontFamily = fontFamily,
-        letterSpacing = letterSpacing,
-        textDecoration = textDecoration,
-        textAlign = textAlign,
-        lineHeight = lineHeight,
-        overflow = realOverflow,
-        softWrap = softWrap,
-        maxLines = maxLines,
-        minLines = minLines,
-        onTextLayout = onTextLayout@{
-            if (!readyToDraw) {
-                if (it.didOverflowHeight) {
-                    val nextSize = realFontSize - 1f
-                    if (nextSize > minTextSizeSp) {
-                        realFontSize = nextSize
-                        realOverflow = TextOverflow.Ellipsis
-                    } else {
-                        readyToDraw = true
-                    }
-                } else {
-                    readyToDraw = true
-                }
-            }
-        },
-        style = style,
-        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
-    )
-}
-
-@Composable
-fun AutoWidthText(
-    text: String,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontStyle: FontStyle? = null,
-    fontWeight: FontWeight? = null,
-    fontFamily: FontFamily? = null,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
-    style: TextStyle = LocalTextStyle.current,
-    minTextSizeSp: Float = 2f,
-) {
-    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
-    var readyToDraw by remember { mutableStateOf(false) }
-    var realOverflow by remember { mutableStateOf(overflow) }
-
-    Text(
-        text = text,
-        color = color,
-        fontSize = realFontSize.sp,
-        fontStyle = fontStyle,
-        fontWeight = fontWeight,
-        fontFamily = fontFamily,
-        letterSpacing = letterSpacing,
-        textDecoration = textDecoration,
-        textAlign = textAlign,
-        lineHeight = lineHeight,
-        overflow = realOverflow,
-        softWrap = softWrap,
-        maxLines = maxLines,
-        minLines = minLines,
-        onTextLayout = onTextLayout@{
-            if (!readyToDraw) {
-                if (it.didOverflowWidth) {
-                    val nextSize = realFontSize - 1f
-                    if (nextSize > minTextSizeSp) {
-                        realFontSize = nextSize
-                        realOverflow = TextOverflow.Ellipsis
-                    } else {
-                        readyToDraw = true
-                    }
-                } else {
-                    readyToDraw = true
-                }
-            }
-        },
-        style = style,
-        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
-    )
-}
-
-@Composable
-fun AutoSizeText(
-    text: String,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontStyle: FontStyle? = null,
-    fontWeight: FontWeight? = null,
-    fontFamily: FontFamily? = null,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
-    style: TextStyle = LocalTextStyle.current,
-    minTextSizeSp: Float = 2f,
-) {
-    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
-    var readyToDraw by remember { mutableStateOf(false) }
-    var realOverflow by remember { mutableStateOf(overflow) }
-
-    Text(
-        text = text,
-        color = color,
-        fontSize = realFontSize.sp,
-        fontStyle = fontStyle,
-        fontWeight = fontWeight,
-        fontFamily = fontFamily,
-        letterSpacing = letterSpacing,
-        textDecoration = textDecoration,
-        textAlign = textAlign,
-        lineHeight = lineHeight,
-        overflow = realOverflow,
-        softWrap = softWrap,
-        maxLines = maxLines,
-        minLines = minLines,
-        onTextLayout = onTextLayout@{
-            if (!readyToDraw) {
-                if (it.didOverflowHeight || it.didOverflowWidth) {
-                    val nextSize = realFontSize - 1f
-                    if (nextSize > minTextSizeSp) {
-                        realFontSize = nextSize
-                        realOverflow = TextOverflow.Ellipsis
-                    } else {
-                        readyToDraw = true
-                    }
-                } else {
-                    readyToDraw = true
-                }
-            }
-        },
-        style = style,
-        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
-    )
-}
-
 @Composable
 fun VerticalDivider(modifier: Modifier = Modifier) {
     Box(
@@ -801,64 +536,6 @@ private fun HtmlText(
             onTextLayout(it)
         },
         style = style
-    )
-}
-
-@Composable
-fun DetailsSectionHeader(
-    text: String,
-    modifier: Modifier = Modifier,
-    onClickViewAll: (() -> Unit)? = null,
-    @StringRes viewAllContentDescriptionTextRes: Int? = null,
-) {
-    if (onClickViewAll != null) {
-        Row(
-            modifier = modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .clickable(onClick = onClickViewAll)
-                .recomposeHighlighter()
-        ) {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-            )
-            IconButton(
-                onClick = onClickViewAll,
-                modifier = Modifier.padding(top = 4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                    contentDescription = viewAllContentDescriptionTextRes?.let {
-                        stringResource(it)
-                    },
-                )
-            }
-        }
-    } else {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp)
-                .recomposeHighlighter()
-        )
-    }
-}
-
-@Composable
-fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.surfaceTint,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
     )
 }
 

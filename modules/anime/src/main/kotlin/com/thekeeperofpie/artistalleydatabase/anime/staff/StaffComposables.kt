@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalCoilApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
 import androidx.annotation.StringRes
@@ -31,9 +29,6 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import coil3.annotation.ExperimentalCoilApi
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -42,15 +37,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
-import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingErrorItem
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 
 fun LazyListScope.staffSection(
     @StringRes titleRes: Int?,
@@ -66,7 +65,7 @@ fun LazyListScope.staffSection(
             DetailsSectionHeader(
                 stringResource(titleRes),
                 onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
-                viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes?.let(::StringResourceId),
             )
         }
     }

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.compose
+package com.thekeeperofpie.artistalleydatabase.utils_compose.scroll
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState

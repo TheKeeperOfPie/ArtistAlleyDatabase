@@ -37,7 +37,6 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
 
     implementation(libs.hilt.navigation.compose)
-    api(libs.paging.compose)
 
     implementation(libs.fluid.country)
     implementation(libs.fluid.i18n)
@@ -58,4 +57,5 @@ dependencies {
 
     implementation(libs.kermit)
     implementation(libs.human.readable)
+    implementation(libs.compose.placeholder.material3)
 }

@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.utils_compose.generated.resources.view_all
 import com.anilist.UserByIdQuery
 import com.anilist.type.MediaType
@@ -46,11 +45,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
-import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 
 @OptIn(
     ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
@@ -264,7 +265,7 @@ object UserOverviewScreen {
             DetailsSectionHeader(
                 stringResource(R.string.anime_user_favorite_studios_label),
                 onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
-                viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes?.let(::StringResourceId),
             )
         }
 

@@ -1,13 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,17 +25,35 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextMotion
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.takeOrElse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,12 +139,24 @@ fun CustomOutlinedTextField(
     }
 }
 
+/**
+ * [Text] doesn't support images, so instead use a [TextView].
+ */
+@Composable
+expect fun ImageHtmlText(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    maxLines: Int? = null,
+    onClickFallback: () -> Unit = {},
+)
+
 @Composable
 fun DetailsSectionHeader(
     text: String,
     modifier: Modifier = Modifier,
     onClickViewAll: (() -> Unit)? = null,
-    @StringRes viewAllContentDescriptionTextRes: StringResourceCompat? = null,
+    viewAllContentDescriptionTextRes: StringResourceCompat? = null,
 ) {
     if (onClickViewAll != null) {
         Row(
@@ -178,14 +209,259 @@ fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier) {
     )
 }
 
-/**
- * [Text] doesn't support images, so instead use a [TextView].
- */
+// TODO: Replace other autosize methods
 @Composable
-expect fun ImageHtmlText(
+fun AutoResizeHeightText(
     text: String,
-    color: Color,
     modifier: Modifier = Modifier,
-    maxLines: Int? = null,
-    onClickFallback: () -> Unit = {},
-)
+    color: Color = Color.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    style: TextStyle = LocalTextStyle.current,
+    minTextSizeSp: Float = 2f,
+    textAlignment: Alignment = Alignment.CenterStart,
+) {
+    val initialFontSize = style.fontSize
+    var realFontSize by remember { mutableStateOf(initialFontSize) }
+    val initialLineHeight = style.lineHeight
+    var realLineHeight by remember { mutableStateOf(initialLineHeight) }
+
+    val textMeasurer = rememberTextMeasurer()
+
+    Box(
+        contentAlignment = textAlignment,
+        modifier = modifier
+            .onSizeChanged {
+                var fontSize = initialFontSize
+                var lineHeight = initialLineHeight
+                val constraints = Constraints(
+                    minWidth = it.width,
+                    maxWidth = it.width,
+                    minHeight = it.height,
+                    maxHeight = it.height,
+                )
+                var result = textMeasurer.measure(
+                    text = text,
+                    style = style,
+                    overflow = overflow,
+                    maxLines = maxLines,
+                    constraints = constraints,
+                )
+                var attempts = 0
+                while (attempts++ < 25
+                    && (result.didOverflowWidth || result.didOverflowHeight)
+                    && fontSize > minTextSizeSp.sp
+                ) {
+                    fontSize *= 0.95f
+                    lineHeight *= 0.95f
+                    result = textMeasurer.measure(
+                        text = text,
+                        style = style.copy(
+                            fontSize = fontSize,
+                            lineHeight = lineHeight,
+                            textMotion = TextMotion.Animated,
+                        ),
+                        overflow = overflow,
+                        maxLines = maxLines,
+                        constraints = constraints,
+                    )
+                }
+                realFontSize = fontSize
+                realLineHeight = lineHeight
+            }
+    ) {
+        Text(
+            text = text,
+            color = color,
+            fontSize = realFontSize,
+            lineHeight = realLineHeight,
+            overflow = overflow,
+            softWrap = softWrap,
+            maxLines = maxLines,
+            minLines = minLines,
+            style = style.copy(textMotion = TextMotion.Animated),
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+fun AutoHeightText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    style: TextStyle = LocalTextStyle.current,
+    minTextSizeSp: Float = 2f,
+) {
+    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
+    var readyToDraw by remember { mutableStateOf(false) }
+    var realOverflow by remember { mutableStateOf(overflow) }
+
+    Text(
+        text = text,
+        color = color,
+        fontSize = realFontSize.sp,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = realOverflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        minLines = minLines,
+        onTextLayout = onTextLayout@{
+            if (!readyToDraw) {
+                if (it.didOverflowHeight) {
+                    val nextSize = realFontSize - 1f
+                    if (nextSize > minTextSizeSp) {
+                        realFontSize = nextSize
+                        realOverflow = TextOverflow.Ellipsis
+                    } else {
+                        readyToDraw = true
+                    }
+                } else {
+                    readyToDraw = true
+                }
+            }
+        },
+        style = style,
+        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
+    )
+}
+
+@Composable
+fun AutoWidthText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    style: TextStyle = LocalTextStyle.current,
+    minTextSizeSp: Float = 2f,
+) {
+    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
+    var readyToDraw by remember { mutableStateOf(false) }
+    var realOverflow by remember { mutableStateOf(overflow) }
+
+    Text(
+        text = text,
+        color = color,
+        fontSize = realFontSize.sp,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = realOverflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        minLines = minLines,
+        onTextLayout = onTextLayout@{
+            if (!readyToDraw) {
+                if (it.didOverflowWidth) {
+                    val nextSize = realFontSize - 1f
+                    if (nextSize > minTextSizeSp) {
+                        realFontSize = nextSize
+                        realOverflow = TextOverflow.Ellipsis
+                    } else {
+                        readyToDraw = true
+                    }
+                } else {
+                    readyToDraw = true
+                }
+            }
+        },
+        style = style,
+        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
+    )
+}
+
+@Composable
+fun AutoSizeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    style: TextStyle = LocalTextStyle.current,
+    minTextSizeSp: Float = 2f,
+) {
+    var realFontSize by remember { mutableFloatStateOf(fontSize.takeOrElse { style.fontSize }.value) }
+    var readyToDraw by remember { mutableStateOf(false) }
+    var realOverflow by remember { mutableStateOf(overflow) }
+
+    Text(
+        text = text,
+        color = color,
+        fontSize = realFontSize.sp,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = realOverflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        minLines = minLines,
+        onTextLayout = onTextLayout@{
+            if (!readyToDraw) {
+                if (it.didOverflowHeight || it.didOverflowWidth) {
+                    val nextSize = realFontSize - 1f
+                    if (nextSize > minTextSizeSp) {
+                        realFontSize = nextSize
+                        realOverflow = TextOverflow.Ellipsis
+                    } else {
+                        readyToDraw = true
+                    }
+                } else {
+                    readyToDraw = true
+                }
+            }
+        },
+        style = style,
+        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
+    )
+}

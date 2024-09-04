@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.compose
+package com.thekeeperofpie.artistalleydatabase.utils_compose.scroll
 
 import androidx.compose.animation.core.AnimationConstants.DefaultDurationMillis
 import androidx.compose.animation.core.animateFloatAsState
@@ -35,11 +35,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.compose_proxy.R
+import artistalleydatabase.modules.utils_compose.generated.resources.Res
+import artistalleydatabase.modules.utils_compose.generated.resources.scrollbar_handle_content_description
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
 @Composable
@@ -161,7 +162,7 @@ fun <State: ScrollableState> VerticalScrollbar(
         ) {
             Icon(
                 imageVector = Icons.Filled.UnfoldMore,
-                contentDescription = stringResource(R.string.scrollbar_handle_content_description),
+                contentDescription = stringResource(Res.string.scrollbar_handle_content_description),
                 tint = MaterialTheme.colorScheme.onPrimary,
             )
         }

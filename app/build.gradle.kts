@@ -255,7 +255,7 @@ dependencies {
     runtimeOnly(libs.kotlinx.coroutines.android)
 
     implementation(libs.navigation.compose)
-    implementation(libs.paging.compose)
+    implementation(libs.paging.runtime.ktx)
 
     implementation(libs.kotlin.inject.runtime.kmp)
     ksp(kspProcessors.kotlin.inject.compiler.ksp)
@@ -280,7 +280,6 @@ dependencies {
     implementation(libs.androidx.security.crypto)
 
     runtimeOnly(libs.paging.runtime.ktx)
-    runtimeOnly(libs.paging.compose)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)
