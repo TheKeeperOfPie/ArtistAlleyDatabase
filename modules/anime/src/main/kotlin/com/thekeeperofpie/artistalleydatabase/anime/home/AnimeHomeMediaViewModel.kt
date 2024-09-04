@@ -60,7 +60,7 @@ abstract class AnimeHomeMediaViewModel(
 ) : ViewModel() {
 
     var entry by mutableStateOf<LoadingResult<AnimeHomeDataEntry>>(LoadingResult.loading())
-    var currentMedia by mutableStateOf<LoadingResult<List<UserMediaListController.MediaEntry>>>(
+    var currentMedia by mutableStateOf(
         LoadingResult.loading<List<UserMediaListController.MediaEntry>>()
             .copy(result = if (currentMediaPreviousSize.value == 0) emptyList() else null)
     )

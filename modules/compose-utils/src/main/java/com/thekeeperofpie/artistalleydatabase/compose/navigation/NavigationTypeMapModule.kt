@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.compose.navigation
 
 import androidx.navigation.NavType
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.Module
 import dagger.Provides

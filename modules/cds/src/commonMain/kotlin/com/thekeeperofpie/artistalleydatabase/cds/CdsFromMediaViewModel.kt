@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @Inject
@@ -20,7 +21,7 @@ class CdsFromMediaViewModel(
     appFileSystem: AppFileSystem,
     cdEntryDao: CdEntryDao,
     json: Json,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
     var cdEntries by mutableStateOf(emptyList<CdEntryGridModel>())

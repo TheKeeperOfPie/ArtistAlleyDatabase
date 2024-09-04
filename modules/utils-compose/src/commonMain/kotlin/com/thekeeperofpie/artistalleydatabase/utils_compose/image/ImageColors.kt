@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.compose.image
+package com.thekeeperofpie.artistalleydatabase.utils_compose.image
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -8,19 +8,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.core.graphics.ColorUtils
-import androidx.palette.graphics.Palette
-import androidx.palette.graphics.Target
-import androidx.palette.graphics.get
-import coil3.BitmapImage
 import coil3.Image
-import coil3.annotation.ExperimentalCoilApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.collections.set
 
 data class ImageColors(
     val containerColor: Color,
@@ -87,7 +82,6 @@ class ImageColorsState @OptIn(DelicateCoroutinesApi::class) constructor(
     /**
      * Requires non-hardware bitmaps.
      */
-    @OptIn(ExperimentalCoilApi::class)
     fun calculatePalette(
         id: String,
         image: Image?,
@@ -96,44 +90,27 @@ class ImageColorsState @OptIn(DelicateCoroutinesApi::class) constructor(
         selectMaxPopulation: Boolean = false,
     ) {
         if (shouldCalculate(id)) {
-            (image as? BitmapImage)?.bitmap?.let {
-                scope.launch(CustomDispatchers.IO) {
-                    try {
-                        val palette = Palette.from(it)
-                            .setRegion(
-                                0,
-                                (it.height * heightStartThreshold).toInt(),
-                                (it.width * widthEndThreshold).toInt(),
-                                it.height
-                            )
-                            .run {
-                                if (selectMaxPopulation) clearFilters() else this
-                            }
-                            .generate()
-                        val swatch = if (selectMaxPopulation) {
-                            palette.swatches.maxByOrNull { it.population }
-                        } else {
-                            val target = if (isDarkMode) {
-                                Target.DARK_VIBRANT
-                            } else {
-                                Target.LIGHT_VIBRANT
-                            }
-                            palette[target]
-                        } ?: palette.swatches.firstOrNull()
-                        if (swatch != null) {
-                            setColor(
-                                id = id,
-                                containerColor = Color(swatch.rgb),
-                                textColor = Color(
-                                    ColorUtils.setAlphaComponent(
-                                        swatch.bodyTextColor,
-                                        0xFF
-                                    )
-                                )
-                            )
-                        }
-                    } catch (ignored: Exception) {
+            if (image == null || !PlatformPalette.canProcess(image)) return
+            scope.launch(CustomDispatchers.IO) {
+                try {
+                    val palette = PlatformPalette.fromCollResult(
+                        image = image,
+                        heightStartThreshold = heightStartThreshold,
+                        widthEndThreshold = widthEndThreshold,
+                        selectMaxPopulation = selectMaxPopulation,
+                    )
+                    val swatch = palette?.select(
+                        selectMaxPopulation = selectMaxPopulation,
+                        isDarkMode = isDarkMode,
+                    )
+                    if (swatch != null) {
+                        setColor(
+                            id = id,
+                            containerColor = swatch.color,
+                            textColor = swatch.bodyTextColor.copy(alpha = 1f)
+                        )
                     }
+                } catch (ignored: Exception) {
                 }
             }
         }

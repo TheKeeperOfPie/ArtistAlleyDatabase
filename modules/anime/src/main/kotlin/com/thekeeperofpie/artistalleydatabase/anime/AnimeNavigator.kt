@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.navDeepLink
@@ -99,12 +101,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteSt
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
-import com.thekeeperofpie.artistalleydatabase.cds.CdsFromMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import com.thekeeperofpie.artistalleydatabase.utils.Either
@@ -112,6 +113,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 
 object AnimeNavigator {
@@ -124,6 +126,7 @@ object AnimeNavigator {
         onClickAuth: () -> Unit,
         onClickSettings: () -> Unit,
         onClickShowLastCrash: () -> Unit,
+        cdEntryComponent: CdEntryComponent,
     ) {
         navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.HOME.id,
@@ -219,7 +222,8 @@ object AnimeNavigator {
                 onDispose { songsViewModel.animeSongsCollapseAll() }
             }
 
-            val cdsViewModel = hiltViewModel<CdsFromMediaViewModel>()
+            val cdsViewModel =
+                viewModel { cdEntryComponent.cdsFromMediaViewModel(createSavedStateHandle()) }
 
             val viewer by mediaDetailsViewModel.viewer.collectAsState()
 

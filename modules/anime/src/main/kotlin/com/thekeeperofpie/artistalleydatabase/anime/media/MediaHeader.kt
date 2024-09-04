@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
-import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,15 +51,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
-import com.thekeeperofpie.artistalleydatabase.compose.image.maybeOverride
-import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedBounds
-import kotlinx.parcelize.Parcelize
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.maybeOverride
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import kotlinx.serialization.Serializable
 
 @Composable
@@ -228,7 +226,6 @@ fun MediaHeader(
     }
 }
 
-@Parcelize
 @Serializable
 data class MediaHeaderParams(
     val title: String? = null,
@@ -243,7 +240,7 @@ data class MediaHeaderParams(
     val colorArgb: Int? = null,
     val type: MediaType? = null,
     val favorite: Boolean? = null,
-) : Parcelable {
+) {
     constructor(
         title: String?,
         media: MediaHeaderData?,

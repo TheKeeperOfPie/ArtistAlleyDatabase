@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.takeOrElse
@@ -176,3 +177,15 @@ fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier) {
             .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
     )
 }
+
+/**
+ * [Text] doesn't support images, so instead use a [TextView].
+ */
+@Composable
+expect fun ImageHtmlText(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    maxLines: Int? = null,
+    onClickFallback: () -> Unit = {},
+)

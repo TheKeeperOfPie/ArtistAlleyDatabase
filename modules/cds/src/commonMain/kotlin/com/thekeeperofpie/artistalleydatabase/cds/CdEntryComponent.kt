@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
+import androidx.lifecycle.SavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.browse.CdBrowseTabMusicalArtists
@@ -19,6 +20,7 @@ interface CdEntryComponent {
     val cdSearchViewModel: () -> CdSearchViewModel
     val cdBrowseSelectionViewModel: () -> CdBrowseSelectionViewModel
     val cdEntryDetailsViewModel: () -> CdEntryDetailsViewModel
+    val cdsFromMediaViewModel: (SavedStateHandle) -> CdsFromMediaViewModel
 
     @SingletonScope
     @Provides

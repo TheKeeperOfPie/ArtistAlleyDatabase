@@ -95,8 +95,6 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
-import com.thekeeperofpie.artistalleydatabase.compose.image.LocalImageColorsState
-import com.thekeeperofpie.artistalleydatabase.compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
@@ -119,6 +117,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColorsState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.hilt.android.AndroidEntryPoint
@@ -460,7 +460,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onClickShowLastCrash = {
                                     navHostController.navigate(AppNavDestinations.CRASH.id)
-                                }
+                                },
+                                cdEntryComponent = applicationComponent,
                             )
 
                             artEntryNavigator.initialize(

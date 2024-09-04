@@ -205,7 +205,7 @@ class HomeScreenTest {
         }
         val (viewModel, mediaViewModel) = mockViewModels(isAnime = isAnime)
         whenever(mediaViewModel.currentMedia) {
-            LoadingResult.success(emptyList())
+            LoadingResult.success(emptyList<UserMediaListController.MediaEntry>())
         }
         composeExtension.use {
             setContent { HomeScreenContent(viewModel, mediaViewModel) }
@@ -297,7 +297,7 @@ class HomeScreenTest {
 
         whenever(mediaViewModel.entry) {
             if (mediaEntryLoading) {
-                LoadingResult.loading()
+                LoadingResult.loading<AnimeHomeDataEntry>()
             } else {
                 LoadingResult.empty()
             }
@@ -305,7 +305,7 @@ class HomeScreenTest {
 
         whenever(mediaViewModel.currentMedia) {
             if (mediaCurrentLoading) {
-                LoadingResult.loading()
+                LoadingResult.loading<AnimeHomeDataEntry>()
             } else {
                 LoadingResult.empty()
             }

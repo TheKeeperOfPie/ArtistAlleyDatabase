@@ -12,26 +12,26 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
-import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
-import com.thekeeperofpie.artistalleydatabase.compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import kotlinx.serialization.Serializable
 import kotlin.reflect.typeOf
 
 sealed interface AnimeDestination {
     companion object {
         val typeMap = mapOf(
-            typeOf<CharacterHeaderParams?>() to CustomNavTypes.SerializableParcelableType<CharacterHeaderParams>(),
-            typeOf<ForumThreadSortOption?>() to CustomNavTypes.NullableEnumType<ForumThreadSortOption>(),
-            typeOf<MediaHeaderParams?>() to CustomNavTypes.SerializableParcelableType<MediaHeaderParams>(),
-            typeOf<MediaListStatus?>() to CustomNavTypes.NullableEnumType<MediaListStatus>(),
-            typeOf<MediaSeason?>() to CustomNavTypes.NullableEnumType<MediaSeason>(),
-            typeOf<MediaSortOption?>() to CustomNavTypes.NullableEnumType<MediaSortOption>(),
-            typeOf<MediaType>() to CustomNavTypes.NullableEnumType<MediaType>(),
-            typeOf<MediaType?>() to CustomNavTypes.NullableEnumType<MediaType>(),
-            typeOf<Seasonal.Type>() to CustomNavTypes.NullableEnumType<Seasonal.Type>(),
-            typeOf<StaffHeaderParams?>() to CustomNavTypes.SerializableParcelableType<StaffHeaderParams>(),
-            typeOf<UserHeaderParams?>() to CustomNavTypes.SerializableParcelableType<UserHeaderParams>(),
+            typeOf<CharacterHeaderParams?>() to CustomNavTypes.SerializableType<CharacterHeaderParams>(),
+            typeOf<ForumThreadSortOption?>() to CustomNavTypes.NullableEnumType(ForumThreadSortOption::valueOf),
+            typeOf<MediaHeaderParams?>() to CustomNavTypes.SerializableType<MediaHeaderParams>(),
+            typeOf<MediaListStatus?>() to CustomNavTypes.NullableEnumType(MediaListStatus::valueOf),
+            typeOf<MediaSeason?>() to CustomNavTypes.NullableEnumType(MediaSeason::valueOf),
+            typeOf<MediaSortOption?>() to CustomNavTypes.NullableEnumType(MediaSortOption::valueOf),
+            typeOf<MediaType>() to CustomNavTypes.NullableEnumType(MediaType::valueOf),
+            typeOf<MediaType?>() to CustomNavTypes.NullableEnumType(MediaType::valueOf),
+            typeOf<Seasonal.Type>() to CustomNavTypes.NullableEnumType(Seasonal.Type::valueOf),
+            typeOf<StaffHeaderParams?>() to CustomNavTypes.SerializableType<StaffHeaderParams>(),
+            typeOf<UserHeaderParams?>() to CustomNavTypes.SerializableType<UserHeaderParams>(),
         )
     }
 

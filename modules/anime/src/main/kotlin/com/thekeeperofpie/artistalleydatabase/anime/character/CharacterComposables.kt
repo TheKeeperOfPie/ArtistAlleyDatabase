@@ -74,16 +74,16 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.PagingErrorItem
-import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.image.colorsOrDefault
-import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.colorsOrDefault
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 
 @Composable

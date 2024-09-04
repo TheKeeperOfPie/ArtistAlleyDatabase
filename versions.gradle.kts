@@ -134,6 +134,7 @@ object Versions {
     }
 
     const val kermit = "2.0.4"
+    const val kmpalette = "3.1.0"
 
     object kotlin {
         const val core = "2.0.20"
@@ -443,6 +444,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.fleeksoft.ksoup:ksoup:${Versions.ksoup}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
+                library("com.kmpalette:kmpalette-core:${Versions.kmpalette}")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")
                 library(

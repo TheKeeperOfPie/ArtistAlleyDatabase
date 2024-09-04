@@ -7,8 +7,8 @@ import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
-import com.thekeeperofpie.artistalleydatabase.utils.SimpleResult
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.utils.SimpleResult
 import java.time.LocalDate
 
 class MediaEditData {

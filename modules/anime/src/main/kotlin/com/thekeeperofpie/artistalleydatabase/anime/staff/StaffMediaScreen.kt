@@ -30,9 +30,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.pri
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.character.rememberImageStateBelowInnerImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffMediaScreen {

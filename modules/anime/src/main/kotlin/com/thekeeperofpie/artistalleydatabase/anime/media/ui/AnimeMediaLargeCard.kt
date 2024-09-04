@@ -61,11 +61,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
-import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImage
-import com.thekeeperofpie.artistalleydatabase.compose.image.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
-import com.thekeeperofpie.artistalleydatabase.compose.image.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.compose.image.request
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.PlaceholderHighlight
 import com.thekeeperofpie.artistalleydatabase.compose.placeholder.placeholder
 import com.thekeeperofpie.artistalleydatabase.compose.recomposeHighlighter
@@ -74,6 +69,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class
@@ -125,9 +125,11 @@ object AnimeMediaLargeCard {
                                 AnimeDestination.MediaDetails(
                                     mediaId = entry.mediaId,
                                     title = title,
-                                    coverImage = if (!isBanner) imageState.toImageState() else ImageState(
-                                        entry.image
-                                    ),
+                                    coverImage = if (!isBanner) {
+                                        imageState.toImageState()
+                                    } else {
+                                        ImageState(entry.image)
+                                    },
                                     sharedTransitionKey = sharedTransitionKey,
                                     headerParams = MediaHeaderParams(
                                         bannerImage = imageState.takeIf { isBanner }

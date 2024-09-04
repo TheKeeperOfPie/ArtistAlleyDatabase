@@ -8,13 +8,18 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.activity.compose)
+            implementation(libs.palette.ktx)
         }
         commonMain.dependencies {
             api(compose.components.resources)
             api(libs.paging.common)
             implementation(project(":modules:utils"))
+            implementation(libs.coil3.coil.compose)
             implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kermit)
+        }
+        desktopMain.dependencies {
+            implementation(libs.kmpalette.core)
         }
     }
 }

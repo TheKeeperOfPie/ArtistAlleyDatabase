@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalSerializationApi::class)
+package com.thekeeperofpie.artistalleydatabase.utils_compose.image
 
-package com.thekeeperofpie.artistalleydatabase.compose.image
-
-import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
@@ -21,33 +18,27 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import coil3.SingletonImageLoader
-import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImagePainter
 import coil3.compose.DefaultModelEqualityDelegate
 import coil3.compose.EqualityDelegate
 import coil3.compose.LocalPlatformContext
 import coil3.memory.MemoryCache
 import coil3.request.ImageRequest
-import coil3.request.allowHardware
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 fun MemoryCache.Key.toImageCacheKey() = ImageCacheKey(this.key, this.extras)
 fun ImageCacheKey.toMemoryCacheKey() = MemoryCache.Key(this.key, this.extras)
 
-@Parcelize
 @Serializable
-data class ImageCacheKey(val key: String, val extras: Map<String, String>) : Parcelable
+data class ImageCacheKey(val key: String, val extras: Map<String, String>)
 
-@Parcelize
 @Serializable
 data class ImageState(
     val uri: String?,
     val cacheKey: ImageCacheKey? = null,
     val containerColorArgb: Int? = null,
     val textColorArgb: Int? = null,
-) : Parcelable
+)
 
 fun ImageState?.maybeOverride(uri: String?) = if (uri == null) {
     this
@@ -102,7 +93,6 @@ fun rememberCoilImageState(imageState: ImageState?): CoilImageState {
     )
 }
 
-@OptIn(ExperimentalCoilApi::class)
 class CoilImageState internal constructor(
     val uri: String?,
     var imageCacheKey: ImageCacheKey? = null,
@@ -160,6 +150,8 @@ class CoilImageState internal constructor(
         )
     }
 }
+
+expect fun ImageRequest.Builder.allowHardware(allowHardware: Boolean): ImageRequest.Builder
 
 @Composable
 fun CoilImageState?.request() = ImageRequest.Builder(LocalPlatformContext.current)

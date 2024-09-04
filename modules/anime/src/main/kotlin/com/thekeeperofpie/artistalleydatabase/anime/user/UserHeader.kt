@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import android.os.Parcelable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -11,10 +10,9 @@ import com.anilist.UserByIdQuery
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.image.ImageState
-import com.thekeeperofpie.artistalleydatabase.compose.image.maybeOverride
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import kotlinx.parcelize.Parcelize
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.maybeOverride
 import kotlinx.serialization.Serializable
 
 @Composable
@@ -50,13 +48,12 @@ fun UserHeader(
     }
 }
 
-@Parcelize
 @Serializable
 data class UserHeaderParams(
     val name: String?,
     val bannerImage: ImageState?,
     val coverImage: ImageState?,
-) : Parcelable
+)
 
 class UserHeaderValues(
     private val params: UserHeaderParams?,
