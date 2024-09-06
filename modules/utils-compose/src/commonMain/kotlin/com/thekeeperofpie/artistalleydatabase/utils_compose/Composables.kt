@@ -51,7 +51,9 @@ import artistalleydatabase.modules.utils_compose.generated.resources.log_excepti
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+
 
 @Composable
 fun SnackbarErrorText(
@@ -62,6 +64,20 @@ fun SnackbarErrorText(
     errorRes ?: return
     SnackbarErrorText(
         error = { ComposeResourceUtils.stringResource(errorRes) },
+        exception = exception,
+        onErrorDismiss = onErrorDismiss,
+    )
+}
+
+@Composable
+fun SnackbarErrorText(
+    errorRes: StringResource?,
+    exception: Throwable?,
+    onErrorDismiss: (() -> Unit)? = null,
+) {
+    errorRes ?: return
+    SnackbarErrorText(
+        error = { stringResource(errorRes) },
         exception = exception,
         onErrorDismiss = onErrorDismiss,
     )
@@ -189,9 +205,9 @@ fun VerticalDivider(modifier: Modifier = Modifier) {
 @Composable
 fun <T> ItemDropdown(
     value: T,
-    @StringRes iconContentDescription: Int,
+    iconContentDescription: StringResource,
     modifier: Modifier = Modifier,
-    @StringRes label: Int? = null,
+    label: StringResource? = null,
     values: @Composable () -> Iterable<T> = { emptyList() },
     textForValue: @Composable (T) -> String = { "" },
     iconForValue: @Composable ((T) -> Unit)? = null,

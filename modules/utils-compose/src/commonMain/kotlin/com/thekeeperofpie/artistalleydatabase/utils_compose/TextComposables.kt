@@ -81,6 +81,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -323,7 +325,7 @@ fun DetailsSectionHeader(
     text: String,
     modifier: Modifier = Modifier,
     onClickViewAll: (() -> Unit)? = null,
-    viewAllContentDescriptionTextRes: StringResourceCompat? = null,
+    viewAllContentDescriptionTextRes: StringResource? = null,
 ) {
     if (onClickViewAll != null) {
         Row(
@@ -346,7 +348,7 @@ fun DetailsSectionHeader(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                     contentDescription = viewAllContentDescriptionTextRes?.let {
-                        ComposeResourceUtils.stringResourceCompat(it)
+                        stringResource(it)
                     },
                 )
             }
@@ -707,8 +709,8 @@ fun ColumnScope.InfoText(
  */
 @Composable
 fun <T> expandableListInfoText(
-    @StringRes labelTextRes: Int,
-    @StringRes contentDescriptionTextRes: Int?,
+    labelTextRes: StringResource,
+    contentDescriptionTextRes: StringResource?,
     values: List<T>,
     valueToText: @Composable (T) -> String,
     onClick: ((T) -> Unit)? = null,

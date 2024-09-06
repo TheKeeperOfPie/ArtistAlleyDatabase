@@ -1,10 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
-import androidx.annotation.StringRes
+import org.jetbrains.compose.resources.StringResource
 
 interface SortOption {
-    @get:StringRes
-    val textRes: Int
+    val textRes: StringResource
 
     val supportsAscending: Boolean
         get() = true

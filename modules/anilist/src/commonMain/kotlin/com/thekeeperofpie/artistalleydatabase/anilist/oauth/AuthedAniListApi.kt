@@ -150,7 +150,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
@@ -1309,9 +1308,9 @@ open class AuthedAniListApi(
                     success = !networkHasErrors,
                     result = result,
                     error = if (networkHasErrors) {
-                        StringResourceCompose(UtilsStrings.error_loading_from_network) to network.exception
+                        UtilsStrings.error_loading_from_network to network.exception
                     } else if (result == null && cacheHasErrors) {
-                        StringResourceCompose(UtilsStrings.error_loading_from_cache) to cache?.exception
+                        UtilsStrings.error_loading_from_cache to cache?.exception
                     } else {
                         null
                     },

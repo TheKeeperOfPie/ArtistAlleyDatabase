@@ -51,3 +51,7 @@ dependencies {
     add("kspAndroid", kspProcessors.hilt.compiler)
     add("kspAndroid", kspProcessors.androidx.hilt.compiler)
 }
+
+compose.resources {
+    publicResClass = true
+}

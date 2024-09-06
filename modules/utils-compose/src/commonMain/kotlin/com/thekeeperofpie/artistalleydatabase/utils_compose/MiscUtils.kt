@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -14,10 +11,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.utils.LoadingResult
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration
 
 @Composable

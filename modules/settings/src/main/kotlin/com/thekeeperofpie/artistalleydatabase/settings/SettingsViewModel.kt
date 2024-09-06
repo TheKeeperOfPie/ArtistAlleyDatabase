@@ -122,7 +122,7 @@ class SettingsViewModel @Inject constructor(
             SettingsSection.Dropdown(
                 labelTextRes = R.string.settings_subsection_behavior_media_view_option_label,
                 options = MediaViewOption.values().toList(),
-                optionToText = { stringResource(it.textRes) },
+                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.mediaViewOption,
             ),
             SettingsSection.Dropdown(
@@ -130,7 +130,7 @@ class SettingsViewModel @Inject constructor(
                 options = AnimeRootNavDestination.values()
                     .filterNot { it == AnimeRootNavDestination.UNLOCK }
                     .toList(),
-                optionToText = { stringResource(it.textRes) },
+                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.rootNavDestination,
             ),
             SettingsSection.Dropdown(

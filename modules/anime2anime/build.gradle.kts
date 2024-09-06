@@ -1,8 +1,27 @@
 plugins {
-    id("compose-library")
+    id("library-android")
+    id("library-compose")
+    id("library-inject")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     alias(libs.plugins.de.mannodermaus.android.junit5)
+}
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":modules:anilist"))
+            api(project(":modules:anime"))
+            implementation(libs.hilt.android)
+            implementation(libs.hilt.navigation.compose)
+
+            implementation(libs.accompanist.flowlayout)
+            implementation(libs.coil3.coil.compose)
+            implementation(libs.kermit)
+            implementation(libs.molecule.runtime)
+            implementation(libs.paging.common)
+        }
+    }
 }
 
 android {
@@ -10,28 +29,6 @@ android {
 }
 
 dependencies {
-    api(project(":modules:anilist"))
-    api(project(":modules:anime"))
-    api(project(":modules:compose-utils"))
-
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-
-    api(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    runtimeOnly(libs.compose.ui.tooling)
-    implementation(libs.accompanist.flowlayout)
-
-    implementation(libs.compose.material.icons.extended)
-
-    implementation(libs.hilt.navigation.compose)
-    implementation(libs.paging.runtime.ktx)
-
-    implementation(libs.molecule.runtime)
-    implementation(libs.kermit)
-
-    debugRuntimeOnly(libs.compose.ui.test.manifest)
-    kspAndroidTest(kspProcessors.hilt.android.compiler)
-    androidTestImplementation(libs.hilt.android.testing)
+    add("kspAndroid", kspProcessors.hilt.compiler)
+    add("kspAndroid", kspProcessors.androidx.hilt.compiler)
 }

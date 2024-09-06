@@ -1,13 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.jetbrains.compose.resources.StringResource
 
 interface FilterEntry<T> {
     val value: T
     val state: FilterIncludeExcludeState
     val clickable: Boolean
     val leadingIconVector: ImageVector? get() = null
-    val leadingIconContentDescription: Int? get() = null
+    val leadingIconContentDescription: StringResource? get() = null
 
     companion object {
         fun <T : Any?> values(

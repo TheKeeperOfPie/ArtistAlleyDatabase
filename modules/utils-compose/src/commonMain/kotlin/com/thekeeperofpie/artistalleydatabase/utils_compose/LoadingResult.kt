@@ -16,15 +16,13 @@ data class LoadingResult<T>(
     val loading: Boolean = false,
     val success: Boolean = false,
     val result: T? = null,
-    val error: Pair<StringResourceCompat, Throwable?>? = null,
+    val error: Pair<StringResource, Throwable?>? = null,
 ) {
     companion object {
         fun <T> loading() = LoadingResult<T>(loading = true)
         fun <T> empty() = LoadingResult<T>()
         fun <T> error(error: StringResource, throwable: Throwable? = null) =
-            LoadingResult<T>(error = StringResourceCompose(error) to throwable)
-        fun <T> error(error: Int, throwable: Throwable? = null) =
-            LoadingResult<T>(error = StringResourceId(error) to throwable)
+            LoadingResult<T>(error = error to throwable)
 
         fun <T> success(value: T) = LoadingResult(loading = false, success = true, result = value)
     }
@@ -45,7 +43,7 @@ data class LoadingResult<T>(
 @OptIn(ExperimentalCoroutinesApi::class)
 fun <T> flowForRefreshableContent(
     refresh: StateFlow<*>,
-    errorTextRes: StringResourceCompat,
+    errorTextRes: StringResource,
     producer: suspend () -> Flow<T>,
 ) = refresh
     .flatMapLatest {

@@ -42,6 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortSection
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +62,7 @@ sealed class SortFilterSection(val id: String) {
 
     class SortBySetting<SortType : SortOption>(
         enumClass: KClass<SortType>,
-        @StringRes headerTextRes: Int,
+        @StringRes headerTextRes: StringResource,
         sortProperty: MutableStateFlow<String>,
         sortAscendingProperty: MutableStateFlow<Boolean>,
         deserialize: (String) -> SortType,
@@ -77,12 +79,12 @@ sealed class SortFilterSection(val id: String) {
     open class Sort<SortType : SortOption>(
         private val enumClass: KClass<SortType>,
         private var defaultEnabled: SortType?,
-        @StringRes val headerTextRes: Int,
+        val headerTextRes: StringResource,
         val defaultSortAscending: Boolean = false,
         private val onSortSelected: (SortType?) -> Unit = {},
         private val onSortAscendingChange: (Boolean) -> Unit = {},
         private var options: List<SortType> = enumClass.java.enumConstants?.toList().orEmpty(),
-    ) : SortFilterSection(headerTextRes) {
+    ) : SortFilterSection(headerTextRes.key) {
         var sortOptions
                 by mutableStateOf(options.map(::SortEntry).withSelectedOption(defaultEnabled))
             private set
@@ -176,8 +178,8 @@ sealed class SortFilterSection(val id: String) {
     open class Filter<FilterType : Any?>(
         id: String,
         private val title: @Composable () -> String,
-        @StringRes private val titleDropdownContentDescriptionRes: Int,
-        @StringRes private val includeExcludeIconContentDescriptionRes: Int,
+        private val titleDropdownContentDescriptionRes: StringResource,
+        private val includeExcludeIconContentDescriptionRes: StringResource,
         private var values: List<FilterType>,
         private val includedSetting: MutableStateFlow<FilterType>? = null,
         private val includedSettings: MutableStateFlow<List<FilterType>>? = null,
@@ -193,9 +195,9 @@ sealed class SortFilterSection(val id: String) {
         }
 
         constructor(
-            @StringRes titleRes: Int,
-            @StringRes titleDropdownContentDescriptionRes: Int,
-            @StringRes includeExcludeIconContentDescriptionRes: Int,
+            titleRes: StringResource,
+            titleDropdownContentDescriptionRes: StringResource,
+            includeExcludeIconContentDescriptionRes: StringResource,
             values: List<FilterType>,
             includedSetting: MutableStateFlow<FilterType>? = null,
             includedSettings: MutableStateFlow<List<FilterType>>? = null,
@@ -323,11 +325,11 @@ sealed class SortFilterSection(val id: String) {
     }
 
     class Range(
-        @StringRes private val titleRes: Int,
-        @StringRes private val titleDropdownContentDescriptionRes: Int,
+        private val titleRes: StringResource,
+        private val titleDropdownContentDescriptionRes: StringResource,
         val initialData: RangeData,
         private val unboundedMax: Boolean = false,
-    ) : SortFilterSection(titleRes) {
+    ) : SortFilterSection(titleRes.key) {
 
         var data by mutableStateOf(initialData)
 
@@ -358,9 +360,9 @@ sealed class SortFilterSection(val id: String) {
     }
 
     class Switch(
-        @StringRes private val titleRes: Int,
+        private val titleRes: StringResource,
         private val defaultEnabled: Boolean,
-    ) : SortFilterSection(titleRes) {
+    ) : SortFilterSection(titleRes.key) {
         var enabled by mutableStateOf(defaultEnabled)
 
         override fun showingPreview() = false
@@ -381,9 +383,9 @@ sealed class SortFilterSection(val id: String) {
     }
 
     class SwitchBySetting(
-        @StringRes private val titleRes: Int,
+        private val titleRes: StringResource,
         val property: MutableStateFlow<Boolean>,
-    ) : SortFilterSection(titleRes) {
+    ) : SortFilterSection(titleRes.key) {
 
         override fun showingPreview() = false
 
@@ -404,9 +406,9 @@ sealed class SortFilterSection(val id: String) {
     }
 
     class TriStateBoolean(
-        @StringRes private val titleRes: Int,
+        private val titleRes: StringResource,
         private val defaultEnabled: Boolean?,
-    ) : SortFilterSection(titleRes) {
+    ) : SortFilterSection(titleRes.key) {
         var enabled by mutableStateOf(defaultEnabled)
 
         override fun showingPreview() = false
@@ -461,11 +463,11 @@ sealed class SortFilterSection(val id: String) {
     }
 
     class Group<Child : SortFilterSection>(
-        @StringRes private val titleRes: Int,
-        @StringRes private val titleDropdownContentDescriptionRes: Int,
+        private val titleRes: StringResource,
+        private val titleDropdownContentDescriptionRes: StringResource,
         children: List<Child> = emptyList(),
         private val onlyShowChildIfSingle: Boolean = false,
-    ) : SortFilterSection(titleRes) {
+    ) : SortFilterSection(titleRes.key) {
 
         var children by mutableStateOf(children)
 
@@ -519,11 +521,11 @@ sealed class SortFilterSection(val id: String) {
     }
 
     class Dropdown<T>(
-        @StringRes private val labelTextRes: Int,
+        private val labelTextRes: StringResource,
         private val values: List<T>,
         private val valueToText: @Composable (T) -> String,
         private val property: MutableStateFlow<T>,
-    ) : SortFilterSection(labelTextRes) {
+    ) : SortFilterSection(labelTextRes.key) {
         override fun showingPreview() = false
         override fun clear() = Unit
 
@@ -588,11 +590,11 @@ sealed class SortFilterSection(val id: String) {
     }
 
     class Suggestions<Suggestion : Suggestions.Suggestion>(
-        private val titleRes: Int,
-        @StringRes private val titleDropdownContentDescriptionRes: Int,
+        private val titleRes: StringResource,
+        private val titleDropdownContentDescriptionRes: StringResource,
         private val suggestions: List<Suggestion>,
         private val onSuggestionClick: (Suggestion) -> Unit,
-    ) : SortFilterSection(titleRes) {
+    ) : SortFilterSection(titleRes.key) {
         override fun showingPreview() = false
 
         override fun clear() {
@@ -607,7 +609,7 @@ sealed class SortFilterSection(val id: String) {
                 suggestions = { suggestions },
                 onSuggestionClick = onSuggestionClick,
                 suggestionToText = { it.text() },
-                title = { ComposeResourceUtils.stringResource(titleRes) },
+                title = { stringResource(titleRes) },
                 titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
                 showDivider = showDivider,
             )
@@ -635,7 +637,7 @@ sealed class SortFilterSection(val id: String) {
 
     @Composable
     protected fun SwitchRow(
-        @StringRes titleRes: Int,
+        titleRes: StringResource,
         enabled: () -> Boolean,
         onEnabledChanged: (Boolean) -> Unit,
         showDivider: Boolean,
@@ -647,7 +649,7 @@ sealed class SortFilterSection(val id: String) {
                 .clickable { onEnabledChanged(!enabled()) }
         ) {
             Text(
-                text = ComposeResourceUtils.stringResource(titleRes),
+                text = stringResource(titleRes),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 10.dp)

@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
@@ -57,11 +56,10 @@ import artistalleydatabase.modules.utils_compose.generated.resources.sort_expand
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
@@ -71,22 +69,11 @@ object SortAndFilterComposables {
     @Composable
     fun RowScope.SortFilterHeaderText(
         expanded: Boolean,
-        @StringRes titleRes: Int,
+        titleRes: StringResource,
         modifier: Modifier = Modifier,
     ) = SortFilterHeaderText(
         expanded = expanded,
-        titleRes = StringResourceId(titleRes),
-        modifier = modifier,
-    )
-
-    @Composable
-    fun RowScope.SortFilterHeaderText(
-        expanded: Boolean,
-        titleRes: StringResourceCompat,
-        modifier: Modifier = Modifier,
-    ) = SortFilterHeaderText(
-        expanded = expanded,
-        title = { ComposeResourceUtils.stringResourceCompat(titleRes) },
+        title = { stringResource(titleRes) },
         modifier = modifier,
     )
 
@@ -118,7 +105,7 @@ object SortAndFilterComposables {
 
     @Composable
     fun <SortType : SortOption> SortSection(
-        @StringRes headerTextRes: Int,
+        headerTextRes: StringResource,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         sortOptions: @Composable () -> List<SortEntry<SortType>>,
@@ -155,7 +142,7 @@ object SortAndFilterComposables {
                             selected = it.state != FilterIncludeExcludeState.DEFAULT,
                             enabled = clickable,
                             onClick = { onSortClick(it.value) },
-                            label = { Text(ComposeResourceUtils.stringResourceCompat(StringResourceId(it.value.textRes))) },
+                            label = { Text(stringResource(it.value.textRes)) },
                             modifier = Modifier.animateContentSize()
                         )
                     }
@@ -282,10 +269,10 @@ fun <Entry : FilterEntry<*>> FilterSection(
     entries: @Composable () -> List<Entry>,
     onEntryClick: (Entry) -> Unit,
     title: @Composable () -> String,
-    @StringRes titleDropdownContentDescriptionRes: Int,
+    titleDropdownContentDescriptionRes: StringResource,
     valueToText: @Composable (Entry) -> String,
     valueToImage: (@Composable (Entry) -> String?)? = null,
-    @StringRes iconContentDescriptionRes: Int,
+    iconContentDescriptionRes: StringResource,
     locked: Boolean = true,
     showDivider: Boolean = true,
     showIcons: Boolean = true,
@@ -363,7 +350,7 @@ fun <T> SuggestionsSection(
     suggestionToText: @Composable (T) -> String,
     onSuggestionClick: (T) -> Unit,
     title: @Composable () -> String,
-    @StringRes titleDropdownContentDescriptionRes: Int,
+    titleDropdownContentDescriptionRes: StringResource,
     showDivider: Boolean = true,
 ) {
     @Suppress("NAME_SHADOWING")
@@ -409,7 +396,7 @@ fun <T> SuggestionsSection(
 @Composable
 fun IncludeExcludeIcon(
     entry: FilterEntry<*>,
-    @StringRes contentDescriptionRes: Int,
+    contentDescriptionRes: StringResource,
 ) {
     if (entry.state == FilterIncludeExcludeState.DEFAULT) {
         if (entry.leadingIconVector != null) {
@@ -440,8 +427,8 @@ fun IncludeExcludeIcon(
 fun CustomFilterSection(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    @StringRes titleRes: Int,
-    @StringRes titleDropdownContentDescriptionRes: Int,
+    titleRes: StringResource,
+    titleDropdownContentDescriptionRes: StringResource,
     summaryText: (@Composable () -> String?)? = null,
     onSummaryClick: () -> Unit = {},
     showDivider: Boolean = true,
@@ -540,8 +527,8 @@ fun RangeDataFilterSection(
     onExpandedChange: (Boolean) -> Unit,
     range: @Composable () -> RangeData,
     onRangeChange: (String, String) -> Unit,
-    @StringRes titleRes: Int,
-    @StringRes titleDropdownContentDescriptionRes: Int,
+    titleRes: StringResource,
+    titleDropdownContentDescriptionRes: StringResource,
     showDivider: Boolean = true,
 ) {
     @Suppress("NAME_SHADOWING")
