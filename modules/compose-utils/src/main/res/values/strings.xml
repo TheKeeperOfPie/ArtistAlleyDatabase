@@ -2,9 +2,5 @@
 <resources>
     <string name="select_export_destination_content_description">Select export destination</string>
     <string name="progress_complete_content_description">Progress complete</string>
-    <string name="theme_auto">Auto</string>
-    <string name="theme_dark">Dark</string>
-    <string name="theme_light">Light</string>
-    <string name="theme_black">Black</string>
     <string name="clear">Clear</string>
 </resources>

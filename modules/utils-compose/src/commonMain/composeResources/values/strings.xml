@@ -30,4 +30,8 @@
     <string name="sort_direction_label">Direction</string>
     <string name="sort_ascending">Ascending</string>
     <string name="sort_descending">Descending</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_black">Black</string>
 </resources>

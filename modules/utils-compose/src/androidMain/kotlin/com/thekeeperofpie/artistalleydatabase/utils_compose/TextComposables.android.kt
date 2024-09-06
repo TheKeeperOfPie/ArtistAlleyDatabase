@@ -19,6 +19,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
+import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,6 +35,17 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.os.BuildCompat
@@ -42,6 +54,74 @@ import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.asDrawable
 import coil3.request.ImageRequest
+import de.charlex.compose.material3.toAnnotatedString
+
+@Composable
+actual fun CustomHtmlText(
+    text: String,
+    modifier: Modifier,
+    urlSpanStyle: SpanStyle,
+    colorMapping: Map<Color, Color>,
+    color: Color,
+    fontSize: TextUnit,
+    fontStyle: FontStyle?,
+    fontWeight: FontWeight?,
+    fontFamily: FontFamily?,
+    letterSpacing: TextUnit,
+    textDecoration: TextDecoration?,
+    textAlign: TextAlign?,
+    lineHeight: TextUnit,
+    overflow: TextOverflow,
+    softWrap: Boolean,
+    minLines: Int,
+    maxLines: Int,
+    inlineContent: Map<String, InlineTextContent>,
+    onTextLayout: (TextLayoutResult) -> Unit,
+    style: TextStyle,
+    onFallbackClick: () -> Unit,
+    onLongClick: (() -> Unit)?,
+    detectTaps: Boolean,
+) {
+    val annotatedString = remember(text) {
+        Html.fromHtml(text.trim(), Html.FROM_HTML_MODE_LEGACY)
+            .trim()
+            .toAnnotatedString(urlSpanStyle, colorMapping)
+            .let {
+                if (minLines > 1 && maxLines < Int.MAX_VALUE) {
+                    buildAnnotatedString {
+                        append(it)
+                        repeat(minLines - 1) {
+                            append("\n")
+                        }
+                    }
+                } else it
+            }
+    }
+
+    HtmlText(
+        modifier = modifier,
+        annotatedString = annotatedString,
+        color = color,
+        fontSize = fontSize,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = overflow,
+        softWrap = softWrap,
+        minLines = minLines,
+        maxLines = maxLines,
+        inlineContent = inlineContent,
+        onTextLayout = onTextLayout,
+        style = style,
+        onFallbackClick = onFallbackClick,
+        onLongClick = onLongClick,
+        detectTaps = detectTaps,
+    )
+}
 
 @Composable
 actual fun ImageHtmlText(

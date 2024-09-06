@@ -18,12 +18,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
-import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 
 object StaffOverviewScreen {
 

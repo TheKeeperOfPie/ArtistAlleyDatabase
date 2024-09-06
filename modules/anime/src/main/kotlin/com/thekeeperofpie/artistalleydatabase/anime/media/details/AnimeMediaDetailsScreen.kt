@@ -67,7 +67,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
@@ -110,30 +109,28 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
-import com.thekeeperofpie.artistalleydatabase.compose.BarChart
-import com.thekeeperofpie.artistalleydatabase.compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.compose.PieChart
-import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
-import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
-import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.media.YouTubePlayer
 import com.thekeeperofpie.artistalleydatabase.media.rememberYouTubePlayerState
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.BarChart
+import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.PieChart
+import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.colorsOrDefault
 import com.thekeeperofpie.artistalleydatabase.utils_compose.multiplyCoerceSaturation
@@ -143,9 +140,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefr
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.showFloatingActionButtonOnVerticalScroll
+import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import io.fluidsonic.country.Country
 import io.fluidsonic.i18n.name
-import io.fluidsonic.locale.Locale
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -835,8 +832,9 @@ object AnimeMediaDetailsScreen {
                     labelOne = stringResource(R.string.anime_media_details_licensed_label),
                     bodyOne = entry.licensedTextRes?.let { ComposeResourceUtils.stringResource(it) },
                     labelTwo = stringResource(R.string.anime_media_details_country_label),
-                    bodyTwo = Locale.forLanguageTagOrNull(LocalConfiguration.currentLocale.toLanguageTag())
-                        ?.let { entry.country?.name(it) },
+                    bodyTwo = io.fluidsonic.locale.Locale.forLanguageTagOrNull(
+                        androidx.compose.ui.text.intl.Locale.current.toLanguageTag()
+                    )?.let { entry.country?.name(it) },
                     showDividerAbove = false,
                 )
 

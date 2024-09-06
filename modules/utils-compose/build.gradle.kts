@@ -8,6 +8,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.activity.compose)
+            implementation(libs.html.text)
             implementation(libs.palette.ktx)
         }
         commonMain.dependencies {

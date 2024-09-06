@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.compose.update
 
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
 import dagger.BindsOptionalOf
 import dagger.Module
 import dagger.hilt.InstallIn

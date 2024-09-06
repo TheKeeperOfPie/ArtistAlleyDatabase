@@ -60,10 +60,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ImageHtmlText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement

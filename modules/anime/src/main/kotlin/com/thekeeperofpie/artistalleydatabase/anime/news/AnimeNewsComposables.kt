@@ -28,16 +28,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
-import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
+import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import nl.jacobras.humanreadable.HumanReadable
 
 @OptIn(ExperimentalFoundationApi::class)

@@ -1,25 +1,45 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -29,7 +49,23 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.log_exception
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun SnackbarErrorText(
+    @StringRes errorRes: Int?,
+    exception: Throwable?,
+    onErrorDismiss: (() -> Unit)? = null,
+) {
+    errorRes ?: return
+    SnackbarErrorText(
+        error = { ComposeResourceUtils.stringResource(errorRes) },
+        exception = exception,
+        onErrorDismiss = onErrorDismiss,
+    )
+}
 
 @Composable
 fun SnackbarErrorText(
@@ -136,5 +172,98 @@ fun TrailingDropdownIconButton(
             contentDescription = contentDescription,
             modifier = Modifier.rotate(if (expanded) 180f else 0f)
         )
+    }
+}
+
+@Composable
+fun VerticalDivider(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .width(DividerDefaults.Thickness)
+            .background(color = DividerDefaults.color)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> ItemDropdown(
+    value: T,
+    @StringRes iconContentDescription: Int,
+    modifier: Modifier = Modifier,
+    @StringRes label: Int? = null,
+    values: @Composable () -> Iterable<T> = { emptyList() },
+    textForValue: @Composable (T) -> String = { "" },
+    iconForValue: @Composable ((T) -> Unit)? = null,
+    onSelectItem: (T) -> Unit = {},
+    wrapWidth: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    fun Modifier.wrapWidthIfRequested() = if (wrapWidth) wrapContentWidth() else fillMaxWidth()
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier.wrapWidthIfRequested(),
+    ) {
+        TextField(
+            value = textForValue(value),
+            onValueChange = {},
+            readOnly = true,
+            maxLines = maxLines,
+            label = label?.let { { Text(ComposeResourceUtils.stringResource(it)) } },
+            leadingIcon = iconForValue?.let { { iconForValue(value) } },
+            trailingIcon = {
+                TrailingDropdownIcon(
+                    expanded = expanded,
+                    contentDescription = ComposeResourceUtils.stringResource(iconContentDescription),
+                )
+            },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            modifier = Modifier
+                .wrapWidthIfRequested()
+                .menuAnchor(MenuAnchorType.PrimaryEditable)
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.wrapWidthIfRequested()
+        ) {
+            values().forEach { value ->
+                DropdownMenuItem(
+                    onClick = {
+                        expanded = false
+                        onSelectItem(value)
+                    },
+                    leadingIcon = iconForValue?.let { { iconForValue(value) } },
+                    text = { Text(textForValue(value)) },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    modifier = Modifier.wrapWidthIfRequested(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ClickableBottomSheetDragHandle(scope: CoroutineScope, sheetState: SheetState) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier
+        .fillMaxWidth()
+        .clickable {
+            if (sheetState.currentValue == SheetValue.Expanded) {
+                scope.launch {
+                    try {
+                        sheetState.hide()
+                    } catch (ignored: Throwable) {
+                        sheetState.partialExpand()
+                    }
+                }
+            } else {
+                scope.launch { sheetState.expand() }
+            }
+        }
+    ) {
+        BottomSheetDefaults.DragHandle()
     }
 }

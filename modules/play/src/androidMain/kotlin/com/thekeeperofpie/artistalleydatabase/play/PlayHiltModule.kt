@@ -2,9 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.play
 
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

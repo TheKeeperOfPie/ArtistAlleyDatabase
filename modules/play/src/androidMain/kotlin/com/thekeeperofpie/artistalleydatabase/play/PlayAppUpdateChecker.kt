@@ -28,8 +28,8 @@ import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.google.android.play.core.ktx.requestCompleteUpdate
 import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.ktx.updatePriority
-import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
@@ -50,6 +50,7 @@ class PlayAppUpdateChecker(application: Application) : AppUpdateChecker, Default
     // Available is tracked separately so that it can be cleared by the user to dismiss the message
     private var updateAvailable by mutableStateOf<AppUpdateResult.Available?>(null)
 
+    // TODO: Move to assisted inject
     override fun initialize(activity: ComponentActivity) {
         if (::activity.isInitialized) return
         this.activity = activity

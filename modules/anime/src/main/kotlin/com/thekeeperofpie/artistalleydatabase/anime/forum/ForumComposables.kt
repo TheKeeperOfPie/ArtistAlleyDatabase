@@ -93,9 +93,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
-import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement

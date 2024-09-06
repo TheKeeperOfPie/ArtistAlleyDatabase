@@ -33,13 +33,13 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysNavigationBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigationBarEnterAlwaysScrollBehavior
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 
 object AnimeRootScreen {
 

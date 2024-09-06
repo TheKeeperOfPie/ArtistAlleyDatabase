@@ -31,7 +31,6 @@ dependencies {
     api(libs.coil3.coil.compose)
     api(libs.coil3.coil.network.okhttp)
     implementation(libs.palette.ktx)
-    implementation(libs.html.text)
 
     api(libs.paging.compose)
 

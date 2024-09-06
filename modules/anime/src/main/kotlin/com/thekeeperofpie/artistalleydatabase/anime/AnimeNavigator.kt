@@ -104,8 +104,6 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.sharedtransition.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
@@ -114,7 +112,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 
 object AnimeNavigator {
 

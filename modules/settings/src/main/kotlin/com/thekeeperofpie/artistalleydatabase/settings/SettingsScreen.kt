@@ -36,9 +36,9 @@ import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_artists
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStrings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose

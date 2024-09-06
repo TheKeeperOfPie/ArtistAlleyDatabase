@@ -61,14 +61,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
-import com.thekeeperofpie.artistalleydatabase.compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
@@ -79,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazy
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Duration.Companion.seconds

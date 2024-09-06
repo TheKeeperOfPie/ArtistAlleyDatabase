@@ -29,10 +29,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
-import com.thekeeperofpie.artistalleydatabase.compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
+import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 
 object StampRallyDetailsScreen {
 

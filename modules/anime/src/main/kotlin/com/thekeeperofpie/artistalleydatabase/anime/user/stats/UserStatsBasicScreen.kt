@@ -21,25 +21,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.UserByIdQuery
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
-import com.thekeeperofpie.artistalleydatabase.compose.BarChart
-import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.PieChart
-import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
-import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.VerticalDivider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.BarChart
+import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.PieChart
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
@@ -271,8 +271,10 @@ object UserStatsBasicScreen {
                 statistics.count.toString() to R.string.anime_user_statistics_count,
                 statistics.chaptersRead.toString() to
                         R.string.anime_user_statistics_manga_chapters_read,
-                String.format(LocalConfiguration.currentLocale, "%.1f", statistics.meanScore) to
-                        R.string.anime_user_statistics_mean_score,
+                statistics.meanScore
+                    .let(BigDecimal::fromDouble)
+                    .roundToDigitPositionAfterDecimalPoint(1, RoundingMode.FLOOR)
+                    .toStringExpanded() to R.string.anime_user_statistics_mean_score,
                 onClick = {
                     navigationCallback.navigate(
                         AnimeDestination.UserList(

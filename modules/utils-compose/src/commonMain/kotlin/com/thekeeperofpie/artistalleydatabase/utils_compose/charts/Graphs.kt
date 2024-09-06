@@ -1,8 +1,7 @@
 @file:OptIn(ExperimentalFoundationApi::class)
 
-package com.thekeeperofpie.artistalleydatabase.compose
+package com.thekeeperofpie.artistalleydatabase.utils_compose.charts
 
-import android.icu.text.DecimalFormat
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -59,6 +58,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.times
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoWidthText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
@@ -153,7 +154,6 @@ fun <Key, Value> PieChart(
                     } else this
                 }
         ) {
-            val format = remember { DecimalFormat("#%") }
             slices.forEach { slice ->
                 val key = sliceToKey(slice)
                 val visible = sliceVisibility[key] ?: true
@@ -198,7 +198,7 @@ fun <Key, Value> PieChart(
                             ) {
                                 val amount = sliceToAmount(slice).takeIf { visible } ?: 0
                                 Text(
-                                    text = format.format(amount / total),
+                                    text = formatWholePercentage(amount / total) + "%",
                                     color = ComposeColorUtils.bestTextColor(sliceColor)
                                         ?: Color.Unspecified,
                                     style = MaterialTheme.typography.labelMedium,
@@ -300,7 +300,6 @@ private fun <Value> FixedBarChart(
 ) {
     var split by rememberSaveable { mutableIntStateOf(0) }
     var nonZeroSplit by rememberSaveable { mutableIntStateOf(0) }
-    val format = remember { DecimalFormat("#%") }
     Row(
         verticalAlignment = Alignment.Bottom,
         modifier = Modifier
@@ -328,7 +327,7 @@ private fun <Value> FixedBarChart(
                 .padding(bottom = 1.5.dp) // Offset the other portion's border width
         ) {
             AutoWidthText(
-                text = format.format(firstPortion / total),
+                text = formatWholePercentage(firstPortion / total),
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 modifier = Modifier
@@ -360,7 +359,7 @@ private fun <Value> FixedBarChart(
                 .bottomBorder(MaterialTheme.colorScheme.surfaceTint, width = 2.dp)
         ) {
             AutoWidthText(
-                text = format.format(secondPortion / total),
+                text = formatWholePercentage(secondPortion / total),
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 modifier = Modifier
@@ -483,3 +482,8 @@ private fun <Value> BarChartBar(
         }
     }
 }
+
+private fun formatWholePercentage(value: Float) = BigDecimal.fromFloat(value)
+    .multiply(BigDecimal.fromInt(100))
+    .roundToDigitPositionAfterDecimalPoint(0, RoundingMode.FLOOR)
+    .toStringExpanded()

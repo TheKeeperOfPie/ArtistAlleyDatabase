@@ -14,7 +14,6 @@ android {
 dependencies {
     api(project(":modules:anilist"))
     api(project(":modules:cds"))
-    api(project(":modules:compose-utils"))
     api(project(":modules:markdown"))
     api(project(":modules:media"))
     api(project(":modules:monetization"))
@@ -34,6 +33,7 @@ dependencies {
 
     implementation(libs.coil3.coil.compose)
     implementation(libs.coil3.coil.network.okhttp)
+    implementation(libs.material3)
     implementation(libs.compose.material.icons.extended)
 
     implementation(libs.hilt.navigation.compose)

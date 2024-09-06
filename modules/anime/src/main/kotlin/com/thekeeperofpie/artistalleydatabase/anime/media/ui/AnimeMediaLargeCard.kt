@@ -61,9 +61,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
-import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomHtmlText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState

@@ -27,10 +27,10 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.CustomApplication
-import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 
 @Composable
 fun ArtistAlleyDatabaseTheme(

@@ -42,12 +42,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
-import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
@@ -95,7 +95,7 @@ class SettingsViewModel @Inject constructor(
             SettingsSection.Dropdown(
                 labelTextRes = R.string.settings_subsection_theme_label,
                 options = AppThemeSetting.values().toList(),
-                optionToText = { stringResource(it.textRes) },
+                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.appTheme,
             ),
         )

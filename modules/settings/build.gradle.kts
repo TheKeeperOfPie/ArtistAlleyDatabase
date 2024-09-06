@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material3)
     implementation(libs.compose.material.icons.extended)
+    implementation(libs.coil3.coil.compose)
 
     api(libs.work.runtime)
     api(libs.work.runtime.ktx)

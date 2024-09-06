@@ -96,8 +96,6 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
-import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
-import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.markdown.LocalMarkdown
@@ -114,6 +112,8 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable

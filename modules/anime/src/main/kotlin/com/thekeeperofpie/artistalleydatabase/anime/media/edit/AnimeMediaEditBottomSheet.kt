@@ -57,7 +57,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -75,6 +74,8 @@ import coil3.size.Dimension
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -85,10 +86,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
-import com.thekeeperofpie.artistalleydatabase.compose.currentLocale
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -820,7 +820,6 @@ object AnimeMediaEditBottomSheet {
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.padding(horizontal = 16.dp),
                 ) {
-                    val locale = LocalConfiguration.currentLocale
                     val value: Float
                     val maxRange: Float
                     val steps: Int
@@ -836,7 +835,16 @@ object AnimeMediaEditBottomSheet {
                             value = score().toFloatOrNull() ?: 0f
                             maxRange = 10f
                             steps = 100
-                            onValueChange = { onScoreChange(String.format(locale, "%.1f", it)) }
+                            onValueChange = {
+                                onScoreChange(
+                                    BigDecimal.fromFloat(it)
+                                        .roundToDigitPositionAfterDecimalPoint(
+                                            1,
+                                            RoundingMode.ROUND_HALF_AWAY_FROM_ZERO
+                                        )
+                                        .toStringExpanded()
+                                )
+                            }
                         }
                         ScoreFormat.POINT_10 -> {
                             value = score().toFloatOrNull() ?: 0f

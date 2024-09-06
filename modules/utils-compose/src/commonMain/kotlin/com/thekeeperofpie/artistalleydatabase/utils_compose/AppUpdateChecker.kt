@@ -1,16 +1,12 @@
-package com.thekeeperofpie.artistalleydatabase.compose.update
+package com.thekeeperofpie.artistalleydatabase.utils_compose
 
-import android.annotation.SuppressLint
-import androidx.activity.ComponentActivity
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 
-interface AppUpdateChecker {
+expect interface AppUpdateChecker {
 
-    fun initialize(activity: ComponentActivity)
-
-    @SuppressLint("ComposableNaming")
+    @Suppress("ComposableNaming")
     @Composable
     fun applySnackbarState(snackbarHostState: SnackbarHostState)
 }

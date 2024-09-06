@@ -42,11 +42,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 
 object ArtistDetailsScreen {
 

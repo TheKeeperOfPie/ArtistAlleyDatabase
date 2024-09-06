@@ -53,9 +53,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayerView
 import com.thekeeperofpie.artistalleydatabase.media.rememberMediaPlayerViewState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement

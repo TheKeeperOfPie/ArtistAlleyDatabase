@@ -26,7 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
