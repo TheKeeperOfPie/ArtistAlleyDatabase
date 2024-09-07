@@ -7,8 +7,10 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            api(libs.bignum)
             api(libs.kotlinx.io.core)
             api(libs.kotlinx.serialization.json.io)
+            api(libs.room.ktx)
         }
     }
 }

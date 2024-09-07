@@ -5,7 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
@@ -24,8 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
+import com.thekeeperofpie.artistalleydatabase.utils_room.Converters
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
@@ -35,6 +34,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 // TODO: Separate these into specific modules
@@ -45,11 +45,11 @@ abstract class AnimeTestHiltModule {
     companion object {
         @Singleton
         @Provides
-        fun provideAniListJson(appJson: AppJson) = AniListJson(appJson.json)
+        fun provideAniListJson(json: Json) = AniListJson(json)
 
         @Singleton
         @Provides
-        fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
+        fun provideVgmdbJson(json: Json) = VgmdbJson(json)
 
         @Singleton
         @Provides

@@ -22,9 +22,8 @@ import coil3.util.DebugLogger
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
+import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import dagger.Lazy
 import dagger.hilt.android.HiltAndroidApp
@@ -32,16 +31,15 @@ import kotlinx.coroutines.MainScope
 import javax.inject.Inject
 
 @HiltAndroidApp
-class CustomApplication : Application(), Configuration.Provider, ScopedApplication,
-    SingletonImageLoader.Factory, ComponentProvider {
+class CustomApplication : Application(), Configuration.Provider, SingletonImageLoader.Factory,
+    ComponentProvider {
 
     companion object {
         const val TAG = "ArtistAlleyDatabase"
         private const val DEBUG_COIL = false
     }
 
-    override val scope = MainScope()
-    override val app = this
+    val scope = MainScope()
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory

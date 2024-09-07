@@ -142,7 +142,7 @@ class AniListDataConverter(
         entry: CharacterEntry,
     ): Entry.Prefilled<CharacterEntry> {
         val voiceActor =
-            CharacterUtils.findVoiceActor(aniListJson, entry, entry.mediaIds?.firstOrNull())
+            CharacterUtils.findVoiceActor(aniListJson.json, entry, entry.mediaIds?.firstOrNull())
         return characterEntry(
             value = entry,
             id = entry.id,

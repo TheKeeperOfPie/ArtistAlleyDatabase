@@ -4,11 +4,10 @@ import android.app.Application
 import android.net.Uri
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
-import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.encodeToString
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.test_utils.withDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.to
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
@@ -25,7 +24,6 @@ class SettingsDataSerializationTest {
     companion object {
         private val application =
             InstrumentationRegistry.getInstrumentation().context.applicationContext as Application
-        private val appJson = AppJson()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -57,7 +55,7 @@ class SettingsDataSerializationTest {
 
         val provider = SettingsProvider(
             application,
-            CryptoUtils.masterKey(application),
+            com.thekeeperofpie.artistalleydatabase.utils.CryptoUtils.masterKey(application),
             appJson,
             sharedPreferencesFileName = "${SettingsProvider.PREFERENCES_NAME}-test",
             object : FeatureOverrideProvider {

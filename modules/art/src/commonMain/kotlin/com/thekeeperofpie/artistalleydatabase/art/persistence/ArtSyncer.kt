@@ -33,7 +33,7 @@ class ArtSyncer(
     override suspend fun sync(
         initialProgress: Int,
         maxProgress: Int,
-        setProgress: (progress: Int, max: Int) -> Unit
+        setProgress: suspend (progress: Int, max: Int) -> Unit
     ) {
         val characterIds = mutableListOf<String>()
         val mediaIds = mutableListOf<String>()
@@ -91,8 +91,8 @@ class ArtSyncer(
             }
     }
 
-    private fun setProgress(
-        setProgress: (progress: Int, max: Int) -> Unit,
+    private suspend fun setProgress(
+        setProgress: suspend (progress: Int, max: Int) -> Unit,
         initialProgress: Int,
         maxProgress: Int,
         maxEntryProgress: Int,

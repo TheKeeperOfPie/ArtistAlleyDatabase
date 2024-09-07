@@ -25,7 +25,6 @@ include(
     ":app",
 //    ":modules:alley",
 //    ":modules:alley-app",
-    ":modules:android-utils",
     ":modules:anilist",
     ":modules:anilist-data",
     ":modules:anime",

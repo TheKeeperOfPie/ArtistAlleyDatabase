@@ -219,7 +219,6 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
 
 dependencies {
-    implementation(project(":modules:android-utils"))
     implementation(project(":modules:anime"))
     implementation(project(":modules:anime2anime"))
     implementation(project(":modules:anilist"))
@@ -232,6 +231,7 @@ dependencies {
     implementation(project(":modules:monetization"))
     debugImplementation(project(":modules:monetization:debug"))
     implementation(project(":modules:utils-inject"))
+    implementation(project(":modules:utils-room"))
 
     debugImplementation(project(":modules:animethemes"))
     debugImplementation(project(":modules:debug"))

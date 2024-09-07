@@ -9,7 +9,6 @@ android {
 }
 
 dependencies {
-    api(project(":modules:android-utils"))
     implementation(project(":modules:server"))
     implementation(project(":modules:utils-network"))
 

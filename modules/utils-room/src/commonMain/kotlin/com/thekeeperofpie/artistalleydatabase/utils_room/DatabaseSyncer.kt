@@ -11,7 +11,7 @@ interface DatabaseSyncer {
     suspend fun sync(
         initialProgress: Int,
         maxProgress: Int,
-        setProgress: (progress: Int, max: Int) -> Unit
+        setProgress: suspend (progress: Int, max: Int) -> Unit
     )
 
     suspend fun <T> repeatToLimit(

@@ -5,18 +5,16 @@ import androidx.room.Room
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
+import com.thekeeperofpie.artistalleydatabase.utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
@@ -24,6 +22,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -41,13 +40,8 @@ object AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideScopedApplication(application: Application) =
-        application as ScopedApplication
-
-    @Singleton
-    @Provides
-    fun provideApplicationScope(scopedApplication: ScopedApplication): ApplicationScope =
-        scopedApplication.scope
+    fun provideApplicationScope(application: Application): ApplicationScope =
+        (application as CustomApplication).scope
 
     @Singleton
     @Provides
@@ -88,11 +82,11 @@ object AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideAniListJson(appJson: AppJson) = AniListJson(appJson.json)
+    fun provideAniListJson(json: Json) = AniListJson(json)
 
     @Singleton
     @Provides
-    fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
+    fun provideVgmdbJson(json: Json) = VgmdbJson(json)
 
     @Singleton
     @Provides

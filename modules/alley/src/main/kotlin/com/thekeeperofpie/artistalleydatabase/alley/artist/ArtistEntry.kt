@@ -7,7 +7,6 @@ import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -52,17 +51,17 @@ data class ArtistEntry(
     @kotlinx.serialization.Transient
     private lateinit var _seriesConfirmed: List<Series>
 
-    fun seriesInferred(appJson: AppJson): List<Series> {
+    fun seriesInferred(json: Json): List<Series> {
         if (!::_seriesInferred.isInitialized) {
-            _seriesInferred = Series.parse(appJson, seriesInferredSerialized)
+            _seriesInferred = Series.parse(json, seriesInferredSerialized)
         }
 
         return _seriesInferred
     }
 
-    fun seriesConfirmed(appJson: AppJson): List<Series> {
+    fun seriesConfirmed(json: Json): List<Series> {
         if (!::_seriesConfirmed.isInitialized) {
-            _seriesConfirmed = Series.parse(appJson, seriesConfirmedSerialized)
+            _seriesConfirmed = Series.parse(json, seriesConfirmedSerialized)
         }
 
         return _seriesConfirmed

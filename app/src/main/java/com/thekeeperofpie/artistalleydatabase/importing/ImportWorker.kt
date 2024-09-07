@@ -9,15 +9,14 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.MainActivity
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.export.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
+import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
+import com.thekeeperofpie.artistalleydatabase.notification.NotificationIds
+import com.thekeeperofpie.artistalleydatabase.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsData
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -28,6 +27,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.asSource
 import kotlinx.io.buffered
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import okio.use
 import org.apache.commons.compress.archivers.zip.ZipFile
@@ -37,7 +37,7 @@ import java.nio.channels.FileChannel
 class ImportWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
-    private val appJson: AppJson,
+    private val json: Json,
     private val settingsProvider: SettingsProvider,
     private val importers: Set<@JvmSuppressWildcards Importer>,
 ) : NotificationProgressWorker(
@@ -106,7 +106,7 @@ class ImportWorker @AssistedInject constructor(
                             try {
                                 @OptIn(ExperimentalSerializationApi::class)
                                 val settingsData = zipFile.getInputStream(settingsEntry).use {
-                                    appJson.json.decodeFromStream<SettingsData>(it)
+                                    json.decodeFromStream<SettingsData>(it)
                                 }
                                 if (!dryRun) {
                                     settingsProvider.overwrite(settingsData)

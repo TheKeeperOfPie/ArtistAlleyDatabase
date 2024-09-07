@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
 import androidx.security.crypto.MasterKey
+import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
@@ -13,9 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatab
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
 import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
@@ -72,8 +71,17 @@ class MiscHiltModule {
         appMetadataProvider = appMetadataProvider,
     )
 
+    @Singleton
     @Provides
-    fun provideJson(appJson: AppJson) = appJson.json
+    fun provideWorkManager(application: Application) = WorkManager.getInstance(application)
+
+    @Singleton
+    @Provides
+    fun provideJson() = Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
 
     @Provides
     fun provideArtistRepository(applicationComponent: ApplicationComponent) =

@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.character
 
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import kotlinx.serialization.json.Json
 
 object CharacterUtils {
 
@@ -80,11 +80,11 @@ object CharacterUtils {
     }?.associate { it }.orEmpty()
 
     fun findVoiceActor(
-        appJson: AppJson,
+        json: Json,
         character: CharacterEntry,
         mediaId: String?
     ): CharacterEntry.VoiceActor? {
-        val voiceActors = character.voiceActors(appJson)
+        val voiceActors = character.voiceActors(json)
 
         // Find by exact media ID and exact language
         var voiceActor = mediaId?.let {

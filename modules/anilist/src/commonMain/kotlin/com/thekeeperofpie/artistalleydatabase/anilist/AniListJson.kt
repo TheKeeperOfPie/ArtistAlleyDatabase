@@ -5,14 +5,13 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnE
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 
 @SingletonScope
 @Inject
-class AniListJson(override val json: Json) : AppJson() {
+class AniListJson(val json: Json) {
 
     companion object {
         private const val TAG = "ArtJson"

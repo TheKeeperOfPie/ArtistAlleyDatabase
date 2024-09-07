@@ -9,7 +9,6 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import co.touchlab.kermit.Logger
 import com.anilist.fragment.AniListCharacter
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -62,13 +61,13 @@ data class CharacterEntry(
     @kotlinx.serialization.Transient
     private lateinit var _voiceActors: Map<String, List<VoiceActor>>
 
-    fun voiceActors(appJson: AppJson): Map<String, List<VoiceActor>> {
+    fun voiceActors(json: Json): Map<String, List<VoiceActor>> {
         if (!::_voiceActors.isInitialized) {
             _voiceActors = voiceActors?.mapNotNull { (mediaId, value) ->
                 if (value.startsWith("[")) {
                     try {
                         return@mapNotNull mediaId to
-                                appJson.json.decodeFromString<List<VoiceActor>>(value)
+                                json.decodeFromString<List<VoiceActor>>(value)
                     } catch (e: Exception) {
                         Logger.e(TAG, e) { "Fail to parse VoiceActor: $value" }
                     }

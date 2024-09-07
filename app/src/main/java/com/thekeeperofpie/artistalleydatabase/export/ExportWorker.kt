@@ -9,13 +9,12 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.MainActivity
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
+import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
+import com.thekeeperofpie.artistalleydatabase.notification.NotificationIds
+import com.thekeeperofpie.artistalleydatabase.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -27,6 +26,7 @@ import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
 import okhttp3.internal.closeQuietly
 import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator
@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit
 class ExportWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
-    private val appJson: AppJson,
+    private val json: Json,
     private val settingsProvider: SettingsProvider,
     private val exporters: Set<@JvmSuppressWildcards Exporter>,
 ) : NotificationProgressWorker(
@@ -118,7 +118,7 @@ class ExportWorker @AssistedInject constructor(
                 }) {
                     ByteArrayOutputStream().let {
                         it.use {
-                            appJson.json.encodeToStream(settingsProvider.settingsData, it)
+                            json.encodeToStream(settingsProvider.settingsData, it)
                         }
                         it.toByteArray()
                     }.let(::ByteArrayInputStream)

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils.notification
+package com.thekeeperofpie.artistalleydatabase.notification
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -33,7 +33,7 @@ abstract class NotificationProgressWorker(
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
-        private val TAG = NotificationProgressWorker::class.java.name
+        private const val TAG = "NotificationProgressWorker"
     }
 
     private var lastPercentage = 0f
@@ -111,9 +111,9 @@ abstract class NotificationProgressWorker(
         }
     }
 
-    protected fun setProgress(progress: Int, max: Int) {
+    protected suspend fun setProgress(progress: Int, max: Int) {
         val percentage = progress / max.coerceAtLeast(1).toFloat()
-        setProgressAsync(
+        setProgress(
             Data.Builder()
                 .putFloat(progressKey, lastPercentage)
                 .build()

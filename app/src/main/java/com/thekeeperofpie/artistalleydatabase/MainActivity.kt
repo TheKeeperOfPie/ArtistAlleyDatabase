@@ -69,12 +69,10 @@ import com.anilist.type.MediaType
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
@@ -88,24 +86,17 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaTagPreview
 import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.markdown.LocalMarkdown
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalSubscriptionProvider
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
-import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
-import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
+import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
@@ -115,15 +106,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDrawerState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.util.Optional
 import javax.inject.Inject
 import kotlin.enums.EnumEntries
-import kotlin.jvm.optionals.getOrNull
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
@@ -134,13 +122,11 @@ class MainActivity : ComponentActivity() {
     }
 
     @Inject
-    lateinit var scopedApplication: ScopedApplication
-
-    @Inject
     lateinit var workManager: WorkManager
 
-    @Inject
-    lateinit var applicationComponent: ApplicationComponent
+    private val applicationComponent by lazy {
+        (applicationContext as ComponentProvider).singletonComponent<ApplicationComponent>()
+    }
 
     private val appMetadataProvider by lazy { applicationComponent.appMetadataProvider }
     private val appUpdateChecker by lazy { applicationComponent.appUpdateChecker(this) }
@@ -544,10 +530,9 @@ class MainActivity : ComponentActivity() {
                                 route = AppNavDestinations.CRASH.id,
                                 deepLinks = listOf(
                                     navDeepLink {
-                                        action =
-                                            scopedApplication.mainActivityInternalAction
+                                        action = "${application.packageName}.INTERNAL"
                                         uriPattern =
-                                            "${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}"
+                                            "$packageName:///${AppNavDestinations.CRASH.id}"
                                     }
                                 )
                             ) {

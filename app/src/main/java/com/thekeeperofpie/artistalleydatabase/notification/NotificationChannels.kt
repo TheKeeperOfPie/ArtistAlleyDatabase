@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils.notification
+package com.thekeeperofpie.artistalleydatabase.notification
 
 object NotificationChannels {
 

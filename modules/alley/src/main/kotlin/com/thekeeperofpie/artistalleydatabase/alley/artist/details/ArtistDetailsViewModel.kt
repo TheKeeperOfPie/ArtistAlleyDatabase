@@ -29,7 +29,7 @@ class ArtistDetailsViewModel @Inject constructor(
     private val application: Application,
     private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
-    private val appJson: AppJson,
+    private val json: Json,
     savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
@@ -45,8 +45,8 @@ class ArtistDetailsViewModel @Inject constructor(
             val (artist, stampRallies) = artistEntryDao.getEntryWithStampRallies(id)
                 ?: return@launch
             val catalogImages = ArtistAlleyUtils.getImages(application, appFileSystem, "catalogs", artist.booth)
-            val seriesConfirmed = artist.seriesConfirmed(appJson)
-            val seriesInferred = artist.seriesInferred(appJson)
+            val seriesConfirmed = artist.seriesConfirmed(json)
+            val seriesInferred = artist.seriesInferred(json)
                 .toMutableList()
                 .apply { removeAll(seriesConfirmed) }
             withContext(CustomDispatchers.Main) {

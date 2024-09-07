@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils
+package com.thekeeperofpie.artistalleydatabase.utils
 
 import android.app.Application
 import android.security.keystore.KeyGenParameterSpec

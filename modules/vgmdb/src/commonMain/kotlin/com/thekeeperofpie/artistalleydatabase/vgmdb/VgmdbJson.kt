@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.utils.Either
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
@@ -10,7 +9,7 @@ import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 
 @Inject
-class VgmdbJson(override val json: Json) : AppJson() {
+class VgmdbJson(val json: Json) {
 
     companion object {
         private const val TAG = "VgmdbJson"
