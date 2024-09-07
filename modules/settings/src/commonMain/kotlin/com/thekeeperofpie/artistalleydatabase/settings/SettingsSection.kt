@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,11 +28,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 sealed class SettingsSection(open val id: String) {
@@ -42,7 +42,7 @@ sealed class SettingsSection(open val id: String) {
     abstract fun Content(modifier: Modifier)
 
     class Switch(
-        @StringRes private val labelTextRes: Int,
+        private val labelTextRes: StringResource,
         private val property: MutableStateFlow<Boolean>,
     ) : SettingsSection("switch-$labelTextRes") {
 
@@ -64,8 +64,8 @@ sealed class SettingsSection(open val id: String) {
     }
 
     class Button(
-        @StringRes private val labelTextRes: Int,
-        @StringRes private val buttonTextRes: Int,
+        private val labelTextRes: StringResource,
+        private val buttonTextRes: StringResource,
         private val onClick: () -> Unit,
     ) : SettingsSection("button-$labelTextRes") {
 
@@ -76,17 +76,17 @@ sealed class SettingsSection(open val id: String) {
     }
 
     class Dropdown<T>(
-        @StringRes private val labelTextRes: Int,
+        private val labelTextRes: StringResource,
         id: String = "dropdown-$labelTextRes",
         private val options: List<T>,
         private val optionToText: @Composable (T) -> String,
         private val initialSelectedOption: T? = null,
         private val onItemSelected: (T) -> Unit = {},
-        @StringRes private val buttonTextRes: Int? = null,
+        private val buttonTextRes: StringResource? = null,
         private val onClickButton: (T) -> Unit = {},
     ) : SettingsSection(id) {
         constructor(
-            @StringRes labelTextRes: Int,
+            labelTextRes: StringResource,
             options: List<T>,
             optionToText: @Composable (T) -> String,
             property: MutableStateFlow<T>,
@@ -166,7 +166,7 @@ sealed class SettingsSection(open val id: String) {
 
     class Subsection(
         val icon: ImageVector,
-        @StringRes val labelTextRes: Int,
+        val labelTextRes: StringResource,
         val children: List<SettingsSection>,
     ) : SettingsSection("subsection-$labelTextRes") {
         @Composable
@@ -194,8 +194,8 @@ sealed class SettingsSection(open val id: String) {
     }
 
     class Text(
-        @StringRes val titleTextRes: Int,
-        @StringRes val descriptionTextRes: Int,
+        val titleTextRes: StringResource,
+        val descriptionTextRes: StringResource,
     ) : SettingsSection("text-$titleTextRes-$descriptionTextRes") {
         @Composable
         override fun Content(modifier: Modifier) {
@@ -243,7 +243,7 @@ sealed class SettingsSection(open val id: String) {
     }
 
     class TextField(
-        @StringRes private val labelTextRes: Int,
+        private val labelTextRes: StringResource,
         initialValue: String,
         private val onValueChange: (String) -> Unit,
     ) : SettingsSection("textField-$labelTextRes") {

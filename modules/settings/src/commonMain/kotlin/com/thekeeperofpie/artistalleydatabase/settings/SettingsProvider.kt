@@ -1,14 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
-import android.app.Application
-import android.content.SharedPreferences
-import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
@@ -21,14 +16,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import kotlinx.coroutines.CoroutineScope
@@ -41,32 +37,24 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
+import me.tatarka.inject.annotations.Inject
 import kotlin.reflect.KProperty0
-import kotlin.reflect.full.createType
 
+@SingletonScope
+@Inject
 class SettingsProvider(
-    application: Application,
-    masterKey: MasterKey,
-    private val appJson: AppJson,
-    sharedPreferencesFileName: String = PREFERENCES_NAME,
+    scope: ApplicationScope,
+    private val json: Json,
     private val featureOverrideProvider: FeatureOverrideProvider,
+    private val settingsStore: SettingsStore,
 ) : ArtSettings, CropSettings, NetworkSettings, AnimeSettings, MonetizationSettings,
     AniListSettings, NewsSettings {
 
     companion object {
         const val EXPORT_FILE_NAME = "settings.json"
-        const val PREFERENCES_NAME = "settings"
     }
-
-    @VisibleForTesting
-    val sharedPreferences = EncryptedSharedPreferences.create(
-        application,
-        sharedPreferencesFileName,
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
 
     override val artEntryTemplate = MutableStateFlow<ArtEntry?>(deserialize("artEntryTemplate"))
     override val cropImageUri = MutableStateFlow<String?>(deserialize("cropImageUri"))
@@ -157,9 +145,9 @@ class SettingsProvider(
     override var unlockAllFeatures = ignoreOnRelease("unlockAllFeatures", false)
 
     private fun deserializeAnimeFilters(): Map<String, FilterData> {
-        val stringValue = sharedPreferences.getString("savedAnimeFilters", "")
+        val stringValue = settingsStore.readString("savedAnimeFilters")
         if (stringValue.isNullOrBlank()) return emptyMap()
-        return appJson.json.decodeFromString(stringValue)
+        return json.decodeFromString(stringValue)
     }
 
     val settingsData: SettingsData
@@ -198,8 +186,7 @@ class SettingsProvider(
             mediaIgnoreHide = mediaIgnoreHide.value,
         )
 
-    // Initialization separated into its own method so that tests can cancel the StateFlow job
-    fun initialize(scope: CoroutineScope) {
+    init {
         subscribeProperty(scope, ::artEntryTemplate)
         subscribeProperty(scope, ::cropImageUri)
         subscribeProperty(scope, ::networkLoggingLevel)
@@ -238,42 +225,32 @@ class SettingsProvider(
 
         scope.launch(CustomDispatchers.IO) {
             savedAnimeFilters.drop(1).collectLatest {
-                val stringValue = appJson.json.run { encodeToString(it) }
-                sharedPreferences.edit()
-                    .putString("savedAnimeFilters", stringValue)
-                    .apply()
+                val stringValue = json.run { encodeToString(it) }
+                settingsStore.writeString("savedAnimeFilters", stringValue)
             }
         }
         scope.launch(CustomDispatchers.IO) {
             animeNewsNetworkCategoriesIncluded.drop(1).collectLatest {
-                val stringValue = appJson.json.run { encodeToString(it) }
-                sharedPreferences.edit()
-                    .putString("animeNewsNetworkCategoriesIncluded", stringValue)
-                    .apply()
+                val stringValue = json.run { encodeToString(it) }
+                settingsStore.writeString("animeNewsNetworkCategoriesIncluded", stringValue)
             }
         }
         scope.launch(CustomDispatchers.IO) {
             animeNewsNetworkCategoriesExcluded.drop(1).collectLatest {
-                val stringValue = appJson.json.run { encodeToString(it) }
-                sharedPreferences.edit()
-                    .putString("animeNewsNetworkCategoriesExcluded", stringValue)
-                    .apply()
+                val stringValue = json.run { encodeToString(it) }
+                settingsStore.writeString("animeNewsNetworkCategoriesExcluded", stringValue)
             }
         }
         scope.launch(CustomDispatchers.IO) {
             crunchyrollNewsCategoriesIncluded.drop(1).collectLatest {
-                val stringValue = appJson.json.run { encodeToString(it) }
-                sharedPreferences.edit()
-                    .putString("crunchyrollNewsCategoriesIncluded", stringValue)
-                    .apply()
+                val stringValue = json.run { encodeToString(it) }
+                settingsStore.writeString("crunchyrollNewsCategoriesIncluded", stringValue)
             }
         }
         scope.launch(CustomDispatchers.IO) {
             crunchyrollNewsCategoriesExcluded.drop(1).collectLatest {
-                val stringValue = appJson.json.run { encodeToString(it) }
-                sharedPreferences.edit()
-                    .putString("crunchyrollNewsCategoriesExcluded", stringValue)
-                    .apply()
+                val stringValue = json.run { encodeToString(it) }
+                settingsStore.writeString("crunchyrollNewsCategoriesExcluded", stringValue)
             }
         }
     }
@@ -282,8 +259,8 @@ class SettingsProvider(
         val stackString = throwable.stackTraceToString()
         lastCrash.value = stackString
         lastCrashShown.value = false
-        serializeWithoutApply("lastCrash", stackString).commit()
-        serializeWithoutApply("lastCrashShown", false).commit()
+        serialize("lastCrash", stackString, commitImmediately = true)
+        serialize("lastCrashShown", false, commitImmediately = true)
     }
 
     private inline fun <reified T> subscribeProperty(
@@ -341,32 +318,26 @@ class SettingsProvider(
     }
 
     private inline fun <reified T> deserialize(name: String): T? {
-        val stringValue = sharedPreferences.getString(name, "")
+        val stringValue = settingsStore.readString(name)
         return if (stringValue.isNullOrBlank()) {
             null
         } else try {
-            appJson.json.decodeFromString<T>(stringValue)
+            json.decodeFromString<T>(stringValue)
         } catch (ignored: Throwable) {
             null
         }
     }
 
-    private inline fun <reified T> serialize(name: String, value: T) =
-        serializeWithoutApply(name, value).apply()
+    private inline fun <reified T : Any?> serialize(name: String, value: T?) =
+        serialize(name, value, commitImmediately = false)
 
-    private inline fun <reified T> serializeWithoutApply(
+    private inline fun <reified T : Any?> serialize(
         name: String,
         value: T,
-    ): SharedPreferences.Editor {
-        val stringValue = appJson.json.run {
-            encodeToString(
-                // Create type as nullable to encapsulate both null and non-null
-                serializersModule.serializer(T::class.createType(nullable = true)),
-                value
-            )
-        }
-        return sharedPreferences.edit()
-            .putString(name, stringValue)
+        commitImmediately: Boolean,
+    ) {
+        val stringValue = json.encodeToString(json.serializersModule.serializer<T>(), value)
+        settingsStore.writeString(name, stringValue, commitImmediately = commitImmediately)
     }
 
     private inline fun <reified T> ignoreOnRelease(propertyName: String, defaultValue: T) =

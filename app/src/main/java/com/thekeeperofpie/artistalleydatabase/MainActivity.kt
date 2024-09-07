@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,7 +53,6 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -64,11 +64,11 @@ import androidx.navigation.navDeepLink
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
 import com.anilist.type.MediaType
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
@@ -103,11 +103,12 @@ import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
-import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
@@ -117,6 +118,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageC
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Optional
 import javax.inject.Inject
@@ -160,6 +162,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var appMetadataProvider: AppMetadataProvider
+
+    @Inject
+    lateinit var workManager: WorkManager
 
     @Inject
     lateinit var navigationTypeMap: NavigationTypeMap
@@ -378,7 +383,7 @@ class MainActivity : ComponentActivity() {
                         if (item == NavDrawerItems.ANIME && preferredMediaType == MediaType.MANGA) {
                             Text(stringResource(R.string.nav_drawer_manga))
                         } else {
-                            Text(stringResource(item.titleRes))
+                            Text(ComposeResourceUtils.stringResource(item.titleRes))
                         }
                     },
                     selected = index == selectedIndex(),
@@ -496,25 +501,23 @@ class MainActivity : ComponentActivity() {
                                     },
                                 )
                             ) {
-                                val viewModel =
-                                    hiltViewModel<SettingsViewModel>().apply {
-                                        initialize(
-                                            onClickDatabaseFetch = {
-                                                val request =
-                                                    OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
-                                                        .setExpedited(
-                                                            OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
-                                                        )
-                                                        .build()
-
-                                                it.enqueueUniqueWork(
-                                                    DatabaseSyncWorker.UNIQUE_WORK_NAME,
-                                                    ExistingWorkPolicy.REPLACE,
-                                                    request
+                                val viewModel = viewModel { applicationComponent.settingsViewModel() }
+                                LaunchedEffect(viewModel) {
+                                    viewModel.onClickDatabaseFetch.collectLatest {
+                                        val request =
+                                            OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
+                                                .setExpedited(
+                                                    OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
                                                 )
-                                            }
+                                                .build()
+
+                                        workManager.enqueueUniqueWork(
+                                            DatabaseSyncWorker.UNIQUE_WORK_NAME,
+                                            ExistingWorkPolicy.REPLACE,
+                                            request
                                         )
                                     }
+                                }
                                 val root = it.arguments?.getString("root")
                                     ?.toBooleanStrictOrNull() == true
                                 val navigationCallback = LocalNavigationCallback.current

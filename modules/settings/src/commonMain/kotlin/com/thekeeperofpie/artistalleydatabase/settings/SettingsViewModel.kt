@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -23,13 +22,60 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
+import artistalleydatabase.modules.settings.generated.resources.Res
+import artistalleydatabase.modules.settings.generated.resources.settings_clear
+import artistalleydatabase.modules.settings.generated.resources.settings_clear_aniList_cache
+import artistalleydatabase.modules.settings.generated.resources.settings_clear_aniList_oAuth
+import artistalleydatabase.modules.settings.generated.resources.settings_clear_vgmdb_cache
+import artistalleydatabase.modules.settings.generated.resources.settings_crop_clear
+import artistalleydatabase.modules.settings.generated.resources.settings_database_fetch
+import artistalleydatabase.modules.settings.generated.resources.settings_database_type
+import artistalleydatabase.modules.settings.generated.resources.settings_delete
+import artistalleydatabase.modules.settings.generated.resources.settings_enable_network_caching
+import artistalleydatabase.modules.settings.generated.resources.settings_fetch
+import artistalleydatabase.modules.settings.generated.resources.settings_force_crash
+import artistalleydatabase.modules.settings.generated.resources.settings_force_crash_button
+import artistalleydatabase.modules.settings.generated.resources.settings_hide_status_bar
+import artistalleydatabase.modules.settings.generated.resources.settings_ignore_viewer
+import artistalleydatabase.modules.settings.generated.resources.settings_label_id
+import artistalleydatabase.modules.settings.generated.resources.settings_media_hide_ignored
+import artistalleydatabase.modules.settings.generated.resources.settings_media_history_clear
+import artistalleydatabase.modules.settings.generated.resources.settings_media_history_size
+import artistalleydatabase.modules.settings.generated.resources.settings_media_history_toggle
+import artistalleydatabase.modules.settings.generated.resources.settings_media_ignore_clear
+import artistalleydatabase.modules.settings.generated.resources.settings_media_ignore_toggle
+import artistalleydatabase.modules.settings.generated.resources.settings_network_logging_level_label
+import artistalleydatabase.modules.settings.generated.resources.settings_open
+import artistalleydatabase.modules.settings.generated.resources.settings_rebuild
+import artistalleydatabase.modules.settings.generated.resources.settings_screenshot_mode
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_about_author_description
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_about_author_title
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_about_build_description
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_about_build_title
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_about_discord_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_about_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_about_privacy_policy_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_language_option_characters_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_language_option_media_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_language_option_staff_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_language_option_voice_actor_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_language_option_voice_actor_show_fallback_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_media_type_anime
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_media_type_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_media_type_manga
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_media_view_option_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_behavior_starting_screen_option_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_debug_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_history_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_ignore_label
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_theme_label
+import artistalleydatabase.modules.settings.generated.resources.settings_unlock_all_features
+import co.touchlab.kermit.Logger
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
@@ -48,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
@@ -55,13 +102,14 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
+import org.jetbrains.compose.resources.stringResource
 
-@HiltViewModel
-class SettingsViewModel @Inject constructor(
+@Inject
+class SettingsViewModel(
     private val mediaEntryDao: MediaEntryDao,
     private val characterEntryDao: CharacterEntryDao,
     private val albumEntryDao: AlbumEntryDao,
@@ -69,7 +117,6 @@ class SettingsViewModel @Inject constructor(
     private val musicalArtistDao: MusicalArtistDao,
     private val vgmdbArtistDao: VgmdbArtistDao,
     private val vgmdbJson: VgmdbJson,
-    private val workManager: WorkManager,
     private val settings: SettingsProvider,
     private val vgmdbApi: VgmdbApi,
     private val aniListOAuthStore: AniListOAuthStore,
@@ -87,14 +134,14 @@ class SettingsViewModel @Inject constructor(
 
     val adsEnabled = monetizationController.adsEnabled
     val hasAuth = aniListOAuthStore.hasAuth
-    private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
+    val onClickDatabaseFetch = MutableSharedFlow<Unit>()
 
     private val themeSection = SettingsSection.Subsection(
         icon = Icons.Filled.ColorLens,
-        labelTextRes = R.string.settings_subsection_theme_label,
+        labelTextRes = Res.string.settings_subsection_theme_label,
         children = listOf(
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_subsection_theme_label,
+                labelTextRes = Res.string.settings_subsection_theme_label,
                 options = AppThemeSetting.values().toList(),
                 optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.appTheme,
@@ -104,30 +151,30 @@ class SettingsViewModel @Inject constructor(
 
     private val behaviorSection = SettingsSection.Subsection(
         icon = Icons.Filled.AppSettingsAlt,
-        labelTextRes = R.string.settings_subsection_behavior_label,
+        labelTextRes = Res.string.settings_subsection_behavior_label,
         children = listOf(
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_subsection_behavior_media_type_label,
+                labelTextRes = Res.string.settings_subsection_behavior_media_type_label,
                 options = listOf(MediaType.ANIME, MediaType.MANGA),
                 optionToText = {
                     stringResource(
                         if (it == MediaType.ANIME) {
-                            R.string.settings_subsection_behavior_media_type_anime
+                            Res.string.settings_subsection_behavior_media_type_anime
                         } else {
-                            R.string.settings_subsection_behavior_media_type_manga
+                            Res.string.settings_subsection_behavior_media_type_manga
                         }
                     )
                 },
                 property = settings.preferredMediaType,
             ),
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_subsection_behavior_media_view_option_label,
+                labelTextRes = Res.string.settings_subsection_behavior_media_view_option_label,
                 options = MediaViewOption.values().toList(),
                 optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.mediaViewOption,
             ),
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_subsection_behavior_starting_screen_option_label,
+                labelTextRes = Res.string.settings_subsection_behavior_starting_screen_option_label,
                 options = AnimeRootNavDestination.values()
                     .filterNot { it == AnimeRootNavDestination.UNLOCK }
                     .toList(),
@@ -135,13 +182,13 @@ class SettingsViewModel @Inject constructor(
                 property = settings.rootNavDestination,
             ),
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_subsection_behavior_language_option_media_label,
+                labelTextRes = Res.string.settings_subsection_behavior_language_option_media_label,
                 options = AniListLanguageOption.values().toList(),
                 optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.languageOptionMedia,
             ),
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_subsection_behavior_language_option_characters_label,
+                labelTextRes = Res.string.settings_subsection_behavior_language_option_characters_label,
                 options = listOf(
                     AniListLanguageOption.DEFAULT,
                     AniListLanguageOption.NATIVE,
@@ -151,7 +198,7 @@ class SettingsViewModel @Inject constructor(
                 property = settings.languageOptionCharacters,
             ),
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_subsection_behavior_language_option_staff_label,
+                labelTextRes = Res.string.settings_subsection_behavior_language_option_staff_label,
                 options = listOf(
                     AniListLanguageOption.DEFAULT,
                     AniListLanguageOption.NATIVE,
@@ -161,13 +208,13 @@ class SettingsViewModel @Inject constructor(
                 property = settings.languageOptionStaff,
             ),
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_subsection_behavior_language_option_voice_actor_label,
+                labelTextRes = Res.string.settings_subsection_behavior_language_option_voice_actor_label,
                 options = VoiceActorLanguageOption.values().toList(),
                 optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
                 property = settings.languageOptionVoiceActor,
             ),
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_subsection_behavior_language_option_voice_actor_show_fallback_label,
+                labelTextRes = Res.string.settings_subsection_behavior_language_option_voice_actor_show_fallback_label,
                 property = settings.showFallbackVoiceActor,
             ),
         )
@@ -175,14 +222,14 @@ class SettingsViewModel @Inject constructor(
 
     private val historySection = SettingsSection.Subsection(
         icon = Icons.Filled.History,
-        labelTextRes = R.string.settings_subsection_history_label,
+        labelTextRes = Res.string.settings_subsection_history_label,
         children = listOf(
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_media_history_toggle,
+                labelTextRes = Res.string.settings_media_history_toggle,
                 property = settings.mediaHistoryEnabled,
             ),
             SettingsSection.TextField(
-                labelTextRes = R.string.settings_media_history_size,
+                labelTextRes = Res.string.settings_media_history_size,
                 initialValue = settings.mediaHistoryMaxEntries.value.toString(),
                 onValueChange = {
                     it.toIntOrNull()?.let {
@@ -191,8 +238,8 @@ class SettingsViewModel @Inject constructor(
                 }
             ),
             SettingsSection.Button(
-                labelTextRes = R.string.settings_media_history_clear,
-                buttonTextRes = R.string.settings_clear,
+                labelTextRes = Res.string.settings_media_history_clear,
+                buttonTextRes = Res.string.settings_clear,
                 onClick = historyController::clear,
             ),
             SettingsSection.Placeholder("viewMediaHistory"),
@@ -201,19 +248,19 @@ class SettingsViewModel @Inject constructor(
 
     private val ignoreSection = SettingsSection.Subsection(
         icon = Icons.Filled.Block,
-        labelTextRes = R.string.settings_subsection_ignore_label,
+        labelTextRes = Res.string.settings_subsection_ignore_label,
         children = listOf(
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_media_ignore_toggle,
+                labelTextRes = Res.string.settings_media_ignore_toggle,
                 property = settings.mediaIgnoreEnabled,
             ),
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_media_hide_ignored,
+                labelTextRes = Res.string.settings_media_hide_ignored,
                 property = settings.mediaIgnoreHide,
             ),
             SettingsSection.Button(
-                labelTextRes = R.string.settings_media_ignore_clear,
-                buttonTextRes = R.string.settings_clear,
+                labelTextRes = Res.string.settings_media_ignore_clear,
+                buttonTextRes = Res.string.settings_clear,
                 onClick = ignoreController::clear,
             ),
             SettingsSection.Placeholder("viewMediaIgnore"),
@@ -222,30 +269,30 @@ class SettingsViewModel @Inject constructor(
 
     private val aboutSection = SettingsSection.Subsection(
         icon = Icons.Filled.Info,
-        labelTextRes = R.string.settings_subsection_about_label,
+        labelTextRes = Res.string.settings_subsection_about_label,
         children = listOf(
             SettingsSection.TextByString(
-                id = R.string.settings_subsection_about_build_title.toString(),
-                title = { stringResource(R.string.settings_subsection_about_build_title) },
+                id = Res.string.settings_subsection_about_build_title.toString(),
+                title = { stringResource(Res.string.settings_subsection_about_build_title) },
                 description = {
                     stringResource(
-                        R.string.settings_subsection_about_build_description,
+                        Res.string.settings_subsection_about_build_description,
                         appMetadataProvider.versionName,
                         appMetadataProvider.versionCode,
                     )
                 },
             ),
             SettingsSection.Text(
-                titleTextRes = R.string.settings_subsection_about_author_title,
-                descriptionTextRes = R.string.settings_subsection_about_author_description,
+                titleTextRes = Res.string.settings_subsection_about_author_title,
+                descriptionTextRes = Res.string.settings_subsection_about_author_description,
             ),
             object : SettingsSection.Custom("openDiscord") {
                 @Composable
                 override fun Content(modifier: Modifier) {
                     val uriHandler = LocalUriHandler.current
                     ButtonRow(
-                        labelTextRes = R.string.settings_subsection_about_discord_label,
-                        buttonTextRes = R.string.settings_open,
+                        labelTextRes = Res.string.settings_subsection_about_discord_label,
+                        buttonTextRes = Res.string.settings_open,
                         onClick = { uriHandler.openUri(Secrets.discordServerInviteLink) }
                     )
                 }
@@ -255,8 +302,8 @@ class SettingsViewModel @Inject constructor(
                 override fun Content(modifier: Modifier) {
                     val uriHandler = LocalUriHandler.current
                     ButtonRow(
-                        labelTextRes = R.string.settings_subsection_about_privacy_policy_label,
-                        buttonTextRes = R.string.settings_open,
+                        labelTextRes = Res.string.settings_subsection_about_privacy_policy_label,
+                        buttonTextRes = Res.string.settings_open,
                         onClick = { uriHandler.openUri(Secrets.privacyPolicyLink) }
                     )
                 }
@@ -268,60 +315,60 @@ class SettingsViewModel @Inject constructor(
 
     private val debugSection = SettingsSection.Subsection(
         icon = Icons.Filled.Build,
-        labelTextRes = R.string.settings_subsection_debug_label,
+        labelTextRes = Res.string.settings_subsection_debug_label,
         children = listOf(
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_ignore_viewer,
+                labelTextRes = Res.string.settings_ignore_viewer,
                 property = settings.ignoreViewer,
             ),
             SettingsSection.Button(
-                labelTextRes = R.string.settings_clear_aniList_cache,
-                buttonTextRes = R.string.settings_clear,
+                labelTextRes = Res.string.settings_clear_aniList_cache,
+                buttonTextRes = Res.string.settings_clear,
                 onClick = ::clearAniListCache,
             ),
             SettingsSection.Button(
-                labelTextRes = R.string.settings_clear_vgmdb_cache,
-                buttonTextRes = R.string.settings_clear,
+                labelTextRes = Res.string.settings_clear_vgmdb_cache,
+                buttonTextRes = Res.string.settings_clear,
                 onClick = ::clearVgmdbCache,
             ),
             SettingsSection.Button(
-                labelTextRes = R.string.settings_crop_clear,
-                buttonTextRes = R.string.settings_clear,
+                labelTextRes = Res.string.settings_crop_clear,
+                buttonTextRes = Res.string.settings_clear,
                 onClick = { settings.cropImageUri.value = null },
             ),
             SettingsSection.Button(
-                labelTextRes = R.string.settings_clear_aniList_oAuth,
-                buttonTextRes = R.string.settings_clear,
+                labelTextRes = Res.string.settings_clear_aniList_oAuth,
+                buttonTextRes = Res.string.settings_clear,
                 onClick = ::onClickClearAniListOAuth,
             ),
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_enable_network_caching,
+                labelTextRes = Res.string.settings_enable_network_caching,
                 property = settings.enableNetworkCaching,
             ),
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_unlock_all_features,
+                labelTextRes = Res.string.settings_unlock_all_features,
                 property = settings.unlockAllFeatures,
             ),
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_hide_status_bar,
+                labelTextRes = Res.string.settings_hide_status_bar,
                 property = settings.hideStatusBar,
             ),
             SettingsSection.Switch(
-                labelTextRes = R.string.settings_screenshot_mode,
+                labelTextRes = Res.string.settings_screenshot_mode,
                 property = settings.screenshotMode,
             ),
             SettingsSection.Button(
-                labelTextRes = R.string.settings_force_crash,
-                buttonTextRes = R.string.settings_force_crash_button,
+                labelTextRes = Res.string.settings_force_crash,
+                buttonTextRes = Res.string.settings_force_crash_button,
                 onClick = { throw Exception() },
             ),
             SettingsSection.Button(
-                labelTextRes = R.string.settings_database_fetch,
-                buttonTextRes = R.string.settings_fetch,
-                onClick = { onClickDatabaseFetch(workManager) },
+                labelTextRes = Res.string.settings_database_fetch,
+                buttonTextRes = Res.string.settings_fetch,
+                onClick = { onClickDatabaseFetch.tryEmit(Unit) },
             ),
             SettingsSection.Dropdown(
-                labelTextRes = R.string.settings_network_logging_level_label,
+                labelTextRes = Res.string.settings_network_logging_level_label,
                 options = NetworkSettings.NetworkLoggingLevel.values().toList(),
                 optionToText = { it.name },
                 property = settings.networkLoggingLevel,
@@ -329,9 +376,9 @@ class SettingsViewModel @Inject constructor(
             object : SettingsSection.Custom(id = "clearDatabaseById") {
                 private var selectedDatabase by mutableStateOf(SettingsScreen.DatabaseType.values()[0])
                 private val dropdown = Dropdown(
-                    labelTextRes = R.string.settings_database_type,
+                    labelTextRes = Res.string.settings_database_type,
                     options = SettingsScreen.DatabaseType.values().toList(),
-                    optionToText = { ComposeResourceUtils.stringResourceCompat(it.labelRes) },
+                    optionToText = { stringResource(it.labelRes) },
                     onItemSelected = { selectedDatabase = it },
                 )
 
@@ -350,7 +397,7 @@ class SettingsViewModel @Inject constructor(
                         TextField(
                             value = clearDatabaseId,
                             onValueChange = { clearDatabaseId = it },
-                            label = { Text(stringResource(id = R.string.settings_label_id)) },
+                            label = { Text(stringResource(Res.string.settings_label_id)) },
                             modifier = Modifier
                                 .width(120.dp)
                                 .padding(vertical = 10.dp),
@@ -359,17 +406,17 @@ class SettingsViewModel @Inject constructor(
                         FilledTonalButton(onClick = {
                             onClickClearDatabaseById(selectedDatabase, clearDatabaseId)
                         }) {
-                            Text(text = stringResource(R.string.settings_delete))
+                            Text(text = stringResource(Res.string.settings_delete))
                         }
                     }
                 }
             },
             SettingsSection.Dropdown(
                 id = "rebuildDatabase",
-                labelTextRes = R.string.settings_database_type,
+                labelTextRes = Res.string.settings_database_type,
                 options = SettingsScreen.DatabaseType.values().toList(),
-                optionToText = { ComposeResourceUtils.stringResourceCompat(it.labelRes) },
-                buttonTextRes = R.string.settings_rebuild,
+                optionToText = { stringResource(it.labelRes) },
+                buttonTextRes = Res.string.settings_rebuild,
                 onClickButton = ::onClickRebuildDatabase,
             ),
         )
@@ -385,10 +432,6 @@ class SettingsViewModel @Inject constructor(
         aboutSection,
         debugSection.takeIf { !featureOverrideProvider.isReleaseBuild },
     )
-
-    fun initialize(onClickDatabaseFetch: (WorkManager) -> Unit) {
-        this.onClickDatabaseFetch = onClickDatabaseFetch
-    }
 
     private fun clearAniListCache() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -433,7 +476,7 @@ class SettingsViewModel @Inject constructor(
                 SettingsScreen.DatabaseType.ANILIST_MEDIA,
                 SettingsScreen.DatabaseType.VGMDB_ALBUMS,
                 SettingsScreen.DatabaseType.VGMDB_ARTISTS,
-                -> {
+                    -> {
                     // TODO: Rebuild?
                 }
                 SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> {
@@ -504,31 +547,29 @@ class SettingsViewModel @Inject constructor(
                         is Either.Right -> result.value.catalogId to result.value.id
                     }
                     if (catalogId == null) {
-                        Log.d(TAG, "Empty catalogId, entryId = ${it.id}")
+                        Logger.d(TAG) { "Empty catalogId, entryId = ${it.id}" }
                         return@forEach
                     }
 
                     val album = vgmdbApi.getAlbum(albumId) ?: run {
-                        Log.d(TAG, "Failed to load album for $catalogId")
+                        Logger.d(TAG) { "Failed to load album for $catalogId" }
                         return@forEach
                     }
 
                     if (it.performers.size != album.performers.size) {
-                        Log.d(
-                            TAG,
+                        Logger.d(TAG) {
                             "Mismatched performer for $catalogId," +
                                     " expected = ${album.performers.size}," +
                                     " actual = ${it.performers.size}"
-                        )
+                        }
                     }
 
                     if (it.composers.size != album.composers.size) {
-                        Log.d(
-                            TAG,
+                        Logger.d(TAG) {
                             "Mismatched composers for $catalogId," +
                                     " expected = ${album.composers.size}," +
                                     " actual = ${it.composers.size}"
-                        )
+                        }
                     }
                 }
 

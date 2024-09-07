@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.navigation
 
-import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Build
@@ -11,15 +10,20 @@ import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
+import artistalleydatabase.modules.settings.generated.resources.settings_nav_drawer
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.AppNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.cds.CdNavDestinations
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsStrings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 
 enum class NavDrawerItems(
     val id: String,
-    @StringRes val titleRes: Int,
+    val titleRes: StringResourceCompat,
     val icon: ImageVector,
     val route: String = id,
 ) {
@@ -32,7 +36,7 @@ enum class NavDrawerItems(
     EXPORT(AppNavDestinations.EXPORT.id, R.string.nav_drawer_export, Icons.Default.Build),
     SETTINGS(
         AppNavDestinations.SETTINGS.id,
-        com.thekeeperofpie.artistalleydatabase.settings.R.string.settings_nav_drawer,
+        StringResourceCompose(SettingsStrings.settings_nav_drawer),
         Icons.Default.Settings,
         route = "settings?root=true"
     ),
@@ -42,4 +46,15 @@ enum class NavDrawerItems(
         Icons.Default.Games,
     ),
     ;
+    constructor(
+        id: String,
+        titleResId: Int,
+        icon: ImageVector,
+        route: String = id,
+    ): this(
+        id,
+        titleRes = StringResourceId(titleResId),
+        icon,
+        route
+    )
 }

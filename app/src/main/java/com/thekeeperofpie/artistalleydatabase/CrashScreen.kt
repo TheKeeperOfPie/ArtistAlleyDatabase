@@ -29,9 +29,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.anichive.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -5,7 +5,6 @@ import androidx.room.Room
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
@@ -13,20 +12,18 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
-import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -91,22 +88,6 @@ object AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideSettingsProvider(
-        scopedApplication: ScopedApplication,
-        masterKey: MasterKey,
-        appJson: AppJson,
-        featureOverrideProvider: FeatureOverrideProvider,
-    ) = SettingsProvider(
-        application = scopedApplication.app,
-        masterKey = masterKey,
-        appJson = appJson,
-        featureOverrideProvider = featureOverrideProvider,
-    ).apply {
-        initialize(scopedApplication.scope)
-    }
-
-    @Singleton
-    @Provides
     fun provideAniListJson(appJson: AppJson) = AniListJson(appJson.json)
 
     @Singleton
@@ -122,20 +103,6 @@ object AppHiltModule {
     fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider {
         override val versionCode = BuildConfig.VERSION_CODE
         override val versionName = BuildConfig.VERSION_NAME
-        override val appIconDrawableRes = R.mipmap.ic_launcher
+        override val appDrawableModel = R.mipmap.ic_launcher
     }
-
-    @Singleton
-    @Provides
-    fun provideMediaPlayer(
-        scope: ApplicationScope,
-        application: Application,
-        okHttpClient: OkHttpClient,
-        featureOverrideProvider: FeatureOverrideProvider,
-    ) = MediaPlayer(
-        scope = scope,
-        application = application,
-        okHttpClient = okHttpClient,
-        enableCache = featureOverrideProvider.enableAppMediaPlayerCache,
-    )
 }

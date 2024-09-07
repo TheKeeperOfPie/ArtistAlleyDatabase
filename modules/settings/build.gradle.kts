@@ -1,48 +1,44 @@
 plugins {
-    id("compose-library")
-    id("dagger.hilt.android.plugin")
-    id("com.google.devtools.ksp")
-    id("org.jetbrains.kotlin.plugin.serialization")
+    id("library-android")
+    id("library-compose")
+    id("library-desktop")
+    id("library-inject")
+}
+
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            api(libs.androidx.security.crypto)
+            api(libs.work.runtime)
+            api(libs.work.runtime.ktx)
+        }
+        androidInstrumentedTest.dependencies {
+            implementation(project(":modules:test-utils"))
+            implementation(libs.androidx.junit.test)
+            implementation(libs.androidx.test.runner)
+            implementation(libs.junit.jupiter.api)
+            implementation(libs.junit5.android.test.core)
+            runtimeOnly(libs.junit5.android.test.runner)
+        }
+        commonMain.dependencies {
+            api(project(":modules:anime"))
+            api(project(":modules:art"))
+            api(project(":modules:cds"))
+            api(project(":modules:monetization"))
+            api(project(":modules:secrets"))
+
+            implementation(libs.coil3.coil.compose)
+            implementation(libs.kermit)
+            implementation(libs.lifecycle.viewmodel.compose)
+        }
+    }
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.settings"
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 }
 
-dependencies {
-    api(project(":modules:android-utils"))
-    api(project(":modules:anime"))
-    api(project(":modules:art"))
-    api(project(":modules:cds"))
-    api(project(":modules:monetization"))
-    api(project(":modules:secrets"))
-
-    implementation(libs.kotlinx.serialization.json)
-    runtimeOnly(libs.kotlinx.coroutines.android)
-    implementation(kotlin("reflect"))
-
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-
-    api(libs.androidx.security.crypto)
-
-    api(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.material3)
-    implementation(libs.compose.material.icons.extended)
-    implementation(libs.coil3.coil.compose)
-
-    api(libs.work.runtime)
-    api(libs.work.runtime.ktx)
-
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
-
-    androidTestImplementation(project(":modules:test-utils"))
-    androidTestImplementation(libs.androidx.junit.test)
-    androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.junit.jupiter.api)
-    androidTestImplementation(libs.junit5.android.test.core)
-    androidTestRuntimeOnly(libs.junit5.android.test.runner)
+compose.resources {
+    publicResClass = true
 }

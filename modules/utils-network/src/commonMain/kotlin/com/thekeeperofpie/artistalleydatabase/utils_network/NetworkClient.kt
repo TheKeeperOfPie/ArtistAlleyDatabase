@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils_network
 
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import it.skrape.fetcher.BrowserFetcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -54,6 +56,12 @@ class NetworkClient(
             }
         }
         .build()
+
+    val httpClient = HttpClient(OkHttp) {
+        engine {
+            preconfigured = okHttpClient
+        }
+    }
 
     val webScraper = object : WebScraper {
         override fun get(url: String): WebScraper.Result {

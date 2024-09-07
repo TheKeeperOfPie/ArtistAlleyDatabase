@@ -25,7 +25,6 @@ import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
-import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import dagger.Lazy
 import dagger.hilt.android.HiltAndroidApp
@@ -47,9 +46,6 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
-    @Inject
-    lateinit var settings: Lazy<SettingsProvider>
-
     // TODO: There must be a better way to do this
     @Inject
     lateinit var applicationComponent: Lazy<ApplicationComponent>
@@ -68,7 +64,7 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
         val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             try {
-                settings.get().writeLastCrash(throwable)
+                applicationComponent.get().settingsProvider.writeLastCrash(throwable)
             } catch (t: Throwable) {
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, "Error writing last crash", t)

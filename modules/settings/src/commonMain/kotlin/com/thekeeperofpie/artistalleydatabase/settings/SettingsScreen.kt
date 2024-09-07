@@ -28,23 +28,35 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.musical_artists.generated.resources.musical_artists
+import artistalleydatabase.modules.settings.generated.resources.Res
+import artistalleydatabase.modules.settings.generated.resources.settings_ads_disable_button
+import artistalleydatabase.modules.settings.generated.resources.settings_aniList_characters
+import artistalleydatabase.modules.settings.generated.resources.settings_aniList_media
+import artistalleydatabase.modules.settings.generated.resources.settings_header
+import artistalleydatabase.modules.settings.generated.resources.settings_header_app_icon_content_description
+import artistalleydatabase.modules.settings.generated.resources.settings_log_out_button
+import artistalleydatabase.modules.settings.generated.resources.settings_media_history_view
+import artistalleydatabase.modules.settings.generated.resources.settings_media_view_ignored
+import artistalleydatabase.modules.settings.generated.resources.settings_nav_drawer
+import artistalleydatabase.modules.settings.generated.resources.settings_show_last_crash
+import artistalleydatabase.modules.settings.generated.resources.settings_show_licenses
+import artistalleydatabase.modules.settings.generated.resources.settings_subsection_feature_tiers
+import artistalleydatabase.modules.utils_compose.generated.resources.open
 import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_albums
 import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_artists
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStrings
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 object SettingsScreen {
@@ -69,7 +81,7 @@ object SettingsScreen {
         Scaffold(
             topBar = {
                 AppBar(
-                    text = stringResource(R.string.settings_nav_drawer),
+                    text = stringResource(Res.string.settings_nav_drawer),
                     upIconOption = if (currentSubsection == null) {
                         upIconOption
                     } else {
@@ -95,23 +107,23 @@ object SettingsScreen {
                         when (section.id) {
                             "header" -> Header(viewModel, appMetadataProvider)
                             "openLastCrash" -> ButtonRow(
-                                labelTextRes = R.string.settings_show_last_crash,
-                                buttonTextRes = UtilsStringR.open,
+                                labelTextRes = Res.string.settings_show_last_crash,
+                                buttonTextRes = UtilsStrings.open,
                                 onClick = onClickShowLastCrash,
                             )
                             "showLicenses" -> ButtonRow(
-                                labelTextRes = R.string.settings_show_licenses,
-                                buttonTextRes = UtilsStringR.open,
+                                labelTextRes = Res.string.settings_show_licenses,
+                                buttonTextRes = UtilsStrings.open,
                                 onClick = onClickShowLicenses,
                             )
                             "viewMediaHistory" -> ButtonRow(
-                                labelTextRes = R.string.settings_media_history_view,
-                                buttonTextRes = UtilsStringR.open,
+                                labelTextRes = Res.string.settings_media_history_view,
+                                buttonTextRes = UtilsStrings.open,
                                 onClick = onClickViewMediaHistory,
                             )
                             "viewMediaIgnore" -> ButtonRow(
-                                labelTextRes = R.string.settings_media_view_ignored,
-                                buttonTextRes = UtilsStringR.open,
+                                labelTextRes = Res.string.settings_media_view_ignored,
+                                buttonTextRes = UtilsStrings.open,
                                 onClick = onClickViewMediaIgnore,
                             )
                             "featureTiers" -> {
@@ -126,12 +138,12 @@ object SettingsScreen {
                                     Icon(
                                         imageVector = Icons.Filled.MonetizationOn,
                                         contentDescription = stringResource(
-                                            R.string.settings_subsection_feature_tiers
+                                            Res.string.settings_subsection_feature_tiers
                                         ),
                                     )
                                     Text(
                                         text = stringResource(
-                                            R.string.settings_subsection_feature_tiers
+                                            Res.string.settings_subsection_feature_tiers
                                         ),
                                         style = MaterialTheme.typography.titleMedium,
                                         modifier = Modifier.fillMaxWidth()
@@ -203,11 +215,11 @@ object SettingsScreen {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 AsyncImage(
-                    model = appMetadataProvider.appIconDrawableRes,
-                    contentDescription = stringResource(R.string.settings_header_app_icon_content_description),
+                    model = appMetadataProvider.appDrawableModel,
+                    contentDescription = stringResource(Res.string.settings_header_app_icon_content_description),
                     modifier = Modifier.size(72.dp)
                 )
-                Text(text = stringResource(R.string.settings_header))
+                Text(text = stringResource(Res.string.settings_header))
             }
 
             val monetizationProvider = LocalMonetizationProvider.current
@@ -228,7 +240,7 @@ object SettingsScreen {
                         },
                         modifier = Modifier.padding(bottom = 10.dp)
                     ) {
-                        Text(text = stringResource(R.string.settings_ads_disable_button))
+                        Text(text = stringResource(Res.string.settings_ads_disable_button))
                     }
                 }
                 if (hasAuth) {
@@ -236,18 +248,18 @@ object SettingsScreen {
                         onClick = viewModel::logOut,
                         modifier = Modifier.padding(bottom = 10.dp)
                     ) {
-                        Text(text = stringResource(R.string.settings_log_out_button))
+                        Text(text = stringResource(Res.string.settings_log_out_button))
                     }
                 }
             }
         }
     }
 
-    enum class DatabaseType(val labelRes: StringResourceCompat) {
-        ANILIST_CHARACTERS(StringResourceId(R.string.settings_aniList_characters)),
-        ANILIST_MEDIA(StringResourceId(R.string.settings_aniList_media)),
-        VGMDB_ALBUMS(StringResourceCompose(VgmdbStrings.vgmdb_albums)),
-        VGMDB_ARTISTS(StringResourceCompose(VgmdbStrings.vgmdb_artists)),
-        MUSICAL_ARTISTS(StringResourceCompose(MusicalArtistsStrings.musical_artists)),
+    enum class DatabaseType(val labelRes: StringResource) {
+        ANILIST_CHARACTERS(Res.string.settings_aniList_characters),
+        ANILIST_MEDIA(Res.string.settings_aniList_media),
+        VGMDB_ALBUMS(VgmdbStrings.vgmdb_albums),
+        VGMDB_ARTISTS(VgmdbStrings.vgmdb_artists),
+        MUSICAL_ARTISTS(MusicalArtistsStrings.musical_artists),
     }
 }

@@ -5,30 +5,21 @@ import androidx.navigation.NavType
 import androidx.security.crypto.MasterKey
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
-import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
-import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
-import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
-import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
 import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
 import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
@@ -39,7 +30,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.ElementsIntoSet
 import dagger.multibindings.IntoSet
-import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 import kotlin.reflect.KType
@@ -59,56 +49,36 @@ class MiscHiltModule {
     @Singleton
     fun provideApplicationComponent(
         application: Application,
-        networkClient: NetworkClient,
+        masterKey: MasterKey,
         applicationScope: ApplicationScope,
-        httpClient: HttpClient,
         vgmdbDatabase: VgmdbDatabase,
         json: Json,
         musicalArtistDatabase: MusicalArtistDatabase,
-        aniListSettings: AniListSettings,
         aniListDatabase: AniListDatabase,
-        networkSettings: NetworkSettings,
         httpInterceptors: @JvmSuppressWildcards Set<HttpInterceptor>,
         featureOverrideProvider: FeatureOverrideProvider,
-        aniListOAuthStore: AniListOAuthStore,
-        platformOAuthStore: PlatformOAuthStore,
         appFileSystem: AppFileSystem,
         cdEntryDatabase: CdEntryDatabase,
-        cropSettings: CropSettings,
         artEntryDatabase: ArtEntryDatabase,
-        artSettings: ArtSettings,
         animeDatabase: AnimeDatabase,
-        animeSettings: AnimeSettings,
         navigationTypeMap: NavigationTypeMap,
-        newsSettings: NewsSettings,
-        monetizationSettings: MonetizationSettings,
-        mediaPlayer: MediaPlayer,
+        appMetadataProvider: AppMetadataProvider,
     ) = ApplicationComponent::class.create(
         application = application,
-        networkClient = networkClient,
+        masterKey = masterKey,
         applicationScope = applicationScope,
-        httpClient = httpClient,
         vgmdbDatabase = vgmdbDatabase,
         json = json,
         musicalArtistDatabase = musicalArtistDatabase,
-        aniListSettings = aniListSettings,
         aniListDatabase = aniListDatabase,
-        networkSettings = networkSettings,
         httpInterceptors = httpInterceptors,
         featureOverrideProvider = featureOverrideProvider,
-        aniListOAuthStore = aniListOAuthStore,
-        platformOAuthStore = platformOAuthStore,
         appFileSystem = appFileSystem,
         cdEntryDatabase = cdEntryDatabase,
-        cropSettings = cropSettings,
         artEntryDatabase = artEntryDatabase,
-        artSettings = artSettings,
         animeDatabase = animeDatabase,
-        animeSettings = animeSettings,
         navigationTypeMap = navigationTypeMap,
-        newsSettings = newsSettings,
-        monetizationSettings = monetizationSettings,
-        mediaPlayer = mediaPlayer,
+        appMetadataProvider = appMetadataProvider,
     )
 
     @Provides
@@ -173,20 +143,6 @@ class MiscHiltModule {
     fun provideAuthedAniListApi(applicationComponent: ApplicationComponent) =
         applicationComponent.authedAniListApi
 
-    // TODO: Move this out of Dagger
-    @Singleton
-    @Provides
-    fun providePlatformOAuthStore(application: Application, masterKey: MasterKey) =
-        PlatformOAuthStore(application, masterKey)
-
-    @Singleton
-    @Provides
-    fun provideAniListOAuthStore(
-        scope: ApplicationScope,
-        platformOAuthStore: PlatformOAuthStore,
-        aniListSettings: AniListSettings,
-    ) = AniListOAuthStore(scope, platformOAuthStore, aniListSettings)
-
     @Provides
     fun provideNetworkAuthProvider(aniListOAuthStore: AniListOAuthStore): NetworkAuthProvider =
         aniListOAuthStore
@@ -242,4 +198,20 @@ class MiscHiltModule {
     @Provides
     fun provideMonetizationController(applicationComponent: ApplicationComponent) =
         applicationComponent.monetizationController
+
+    @Provides
+    fun provideNetworkSettings(applicationComponent: ApplicationComponent) =
+        applicationComponent.networkSettings
+
+    @Provides
+    fun provideAniListSettings(applicationComponent: ApplicationComponent) =
+        applicationComponent.aniListSettings
+
+    @Provides
+    fun provideSettingsProvider(applicationComponent: ApplicationComponent) =
+        applicationComponent.settingsProvider
+
+    @Provides
+    fun providePlatformOAuthStore(applicationComponent: ApplicationComponent) =
+        applicationComponent.platformOAuthStore
 }
