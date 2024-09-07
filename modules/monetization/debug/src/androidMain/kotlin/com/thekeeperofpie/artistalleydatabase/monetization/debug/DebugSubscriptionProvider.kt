@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.monetization.debug
 
-import androidx.activity.ComponentActivity
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionDetails
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
@@ -10,9 +10,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Duration.Companion.seconds
 
+@SingletonScope
+@Inject
 class DebugSubscriptionProvider(
     private val scope: ApplicationScope,
     private val settings: MonetizationSettings,
@@ -23,9 +26,6 @@ class DebugSubscriptionProvider(
 
     override val error = MutableStateFlow<Pair<StringResource, Throwable?>?>(null)
     override var loading = false
-
-    override fun initialize(activity: ComponentActivity) {
-    }
 
     override fun loadSubscriptionDetails() {
         scope.launch {

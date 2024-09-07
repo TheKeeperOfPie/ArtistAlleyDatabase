@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
@@ -40,8 +39,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sebastianneubauer.jsontree.JsonTree
+import com.thekeeperofpie.artistalleydatabase.debug.DebugComponent
 import com.thekeeperofpie.artistalleydatabase.debug.R
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
@@ -50,12 +50,11 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 object DebugNetworkPanel {
 
     @Composable
-    operator fun invoke() {
-        val viewModel = hiltViewModel<DebugNetworkViewModel>()
+    operator fun invoke(debugComponent: DebugComponent) {
+        val viewModel = viewModel { debugComponent.debugNetworkViewModel() }
 
         val expandedIds = remember { mutableStateListOf<String>() }
         Column {

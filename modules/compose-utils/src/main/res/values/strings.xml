@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="select_export_destination_content_description">Select export destination</string>
-    <string name="progress_complete_content_description">Progress complete</string>
-    <string name="clear">Clear</string>
-</resources>

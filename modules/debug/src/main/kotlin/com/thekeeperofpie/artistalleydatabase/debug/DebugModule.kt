@@ -1,24 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.debug
 
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.debug.network.DebugNetworkController
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.IntoSet
-import javax.inject.Singleton
+import com.thekeeperofpie.artistalleydatabase.debug.network.DebugNetworkViewModel
+import me.tatarka.inject.annotations.IntoSet
+import me.tatarka.inject.annotations.Provides
 
-@Module
-@InstallIn(SingletonComponent::class)
-class DebugModule {
+interface DebugComponent {
 
-    @Singleton
-    @Provides
-    fun provideDebugNetworkController(scopedApplication: ScopedApplication) =
-        DebugNetworkController(scopedApplication)
+    val debugNetworkViewModel: () -> DebugNetworkViewModel
 
-    @Singleton
     @Provides
     @IntoSet
     fun provideApolloHttpInterceptor(debugNetworkController: DebugNetworkController) =

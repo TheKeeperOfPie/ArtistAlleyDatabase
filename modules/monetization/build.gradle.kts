@@ -13,6 +13,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.hilt.android)
+            api(libs.activity.compose)
         }
         commonMain.dependencies {
             api(project(":modules:utils"))

@@ -7,9 +7,9 @@ import com.thekeeperofpie.artistalleydatabase.debug.network.DebugNetworkPanel
 object DebugDrawer {
 
     @Composable
-    operator fun invoke() {
+    operator fun invoke(debugComponent: DebugComponent) {
         ModalDrawerSheet {
-            DebugNetworkPanel()
+            DebugNetworkPanel(debugComponent)
         }
     }
 }

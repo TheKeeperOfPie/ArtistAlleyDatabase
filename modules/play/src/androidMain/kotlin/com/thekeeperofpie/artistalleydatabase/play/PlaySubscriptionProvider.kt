@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.play
 
 import android.app.Activity
+import android.app.Application
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,10 +27,11 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.queryProductDetails
 import com.android.billingclient.api.queryPurchasesAsync
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionDetails
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.delay
@@ -39,12 +41,17 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.DateTimePeriod
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Duration.Companion.seconds
 
+@Inject
 class PlaySubscriptionProvider(
-    private val scopedApplication: ScopedApplication,
+    private val scope: ApplicationScope,
+    private val application: Application,
     private val settings: MonetizationSettings,
+    @Assisted activity: ComponentActivity,
 ) : SubscriptionProvider, DefaultLifecycleObserver {
 
     override val subscriptionDetails =
@@ -103,10 +110,8 @@ class PlaySubscriptionProvider(
         }
     }
 
-    override fun initialize(activity: ComponentActivity) {
-        if (::activity.isInitialized) return
-        this.activity = activity
-        billingClient = BillingClient.newBuilder(scopedApplication.app)
+    init {
+        billingClient = BillingClient.newBuilder(application)
             .setListener(purchasesUpdatedListener)
             .enablePendingPurchases()
             .build()
@@ -184,7 +189,7 @@ class PlaySubscriptionProvider(
 
         // If state unknown, pretend the subscription went through and check again in a bit
         if (hasUnknownState) {
-            scopedApplication.scope.launch {
+            scope.launch {
                 delay(10.seconds)
                 checkSubscriptionStatus()
             }
@@ -224,7 +229,7 @@ class PlaySubscriptionProvider(
     override fun requestSubscribe(subscription: SubscriptionDetails<*>) {
         if (loading) return
         loading = true
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.IO) {
             val productDetails = subscription.value as ProductDetails
             val productDetailsParamsList = listOf(
                 BillingFlowParams.ProductDetailsParams.newBuilder()

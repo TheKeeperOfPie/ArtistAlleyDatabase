@@ -91,8 +91,6 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
-import com.thekeeperofpie.artistalleydatabase.compose.DoubleDrawerValue
-import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.markdown.LocalMarkdown
@@ -109,6 +107,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
@@ -117,6 +116,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColo
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDrawerState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -137,47 +137,27 @@ class MainActivity : ComponentActivity() {
     lateinit var scopedApplication: ScopedApplication
 
     @Inject
-    lateinit var artEntryNavigator: ArtEntryNavigator
-
-    @Inject
-    lateinit var cdEntryNavigator: CdEntryNavigator
-
-    @Inject
-    lateinit var settings: SettingsProvider
-
-    @Inject
-    lateinit var platformOAuthStore: PlatformOAuthStore
-
-    @Inject
-    lateinit var monetizationProviderOptional: Optional<MonetizationProvider>
-
-    @Inject
-    lateinit var subscriptionProviderOptional: Optional<SubscriptionProvider>
-
-    @Inject
-    lateinit var appUpdateCheckerOptional: Optional<AppUpdateChecker>
-
-    @Inject
-    lateinit var featureOverrideProvider: FeatureOverrideProvider
-
-    @Inject
-    lateinit var appMetadataProvider: AppMetadataProvider
-
-    @Inject
     lateinit var workManager: WorkManager
-
-    @Inject
-    lateinit var navigationTypeMap: NavigationTypeMap
 
     @Inject
     lateinit var applicationComponent: ApplicationComponent
 
+    private val appMetadataProvider by lazy { applicationComponent.appMetadataProvider }
+    private val appUpdateChecker by lazy { applicationComponent.appUpdateChecker(this) }
+    private val artEntryNavigator by lazy { applicationComponent.artEntryNavigator }
+    private val cdEntryNavigator by lazy { applicationComponent.cdEntryNavigator }
+    private val featureOverrideProvider by lazy { applicationComponent.featureOverrideProvider }
     private val ignoreController by lazy { applicationComponent.ignoreController }
     private val markdown by lazy { applicationComponent.markdown }
     private val mediaGenreDialogController by lazy { applicationComponent.mediaGenreDialogController }
     private val mediaTagDialogController by lazy { applicationComponent.mediaTagDialogController }
     private val monetizationController by lazy { applicationComponent.monetizationController }
+    private val monetizationProvider by lazy { applicationComponent.monetizationProvider(this) }
+    private val navigationTypeMap by lazy { applicationComponent.navigationTypeMap }
     private val notificationsController by lazy { applicationComponent.notificationsController }
+    private val platformOAuthStore by lazy { applicationComponent.platformOAuthStore }
+    private val settings by lazy { applicationComponent.settingsProvider }
+    private val subscriptionProvider by lazy { applicationComponent.subscriptionProvider(this) }
 
     private val fullScreenImageHandler = FullscreenImageHandler()
 
@@ -194,12 +174,6 @@ class MainActivity : ComponentActivity() {
             ?: startDestinationFromSettings)
             ?.let { startId -> NavDrawerItems.values().find { it.id == startId }?.id }
             ?: NavDrawerItems.ANIME.id
-        val monetizationProvider = monetizationProviderOptional.getOrNull()
-        monetizationProvider?.initialize(this)
-        val subscriptionProvider = subscriptionProviderOptional.getOrNull()
-        subscriptionProvider?.initialize(this)
-        val appUpdateChecker = appUpdateCheckerOptional.getOrNull()
-        appUpdateChecker?.initialize(this)
 
         setContent {
             val navHostController = rememberNavController()
@@ -268,6 +242,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             DebugDoubleDrawer(
+                                applicationComponent = applicationComponent,
                                 drawerState = drawerState,
                                 gesturesEnabled = gesturesEnabled,
                                 drawerContent = {
@@ -501,7 +476,8 @@ class MainActivity : ComponentActivity() {
                                     },
                                 )
                             ) {
-                                val viewModel = viewModel { applicationComponent.settingsViewModel() }
+                                val viewModel =
+                                    viewModel { applicationComponent.settingsViewModel() }
                                 LaunchedEffect(viewModel) {
                                     viewModel.onClickDatabaseFetch.collectLatest {
                                         val request =

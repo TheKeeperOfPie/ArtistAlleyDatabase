@@ -37,23 +37,24 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 
-class PlayAppUpdateChecker(application: Application) : AppUpdateChecker, DefaultLifecycleObserver {
+@Inject
+class PlayAppUpdateChecker(
+    application: Application,
+    @Assisted private val activity: ComponentActivity,
+) : AppUpdateChecker, DefaultLifecycleObserver {
 
     private val appUpdateManager = AppUpdateManagerFactory.create(application)
-
-    private lateinit var activity: ComponentActivity
 
     private var state by mutableStateOf<AppUpdateResult>(AppUpdateResult.NotAvailable)
 
     // Available is tracked separately so that it can be cleared by the user to dismiss the message
     private var updateAvailable by mutableStateOf<AppUpdateResult.Available?>(null)
 
-    // TODO: Move to assisted inject
-    override fun initialize(activity: ComponentActivity) {
-        if (::activity.isInitialized) return
-        this.activity = activity
+    init {
         activity.lifecycleScope.launch(CustomDispatchers.Main) {
             activity.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 appUpdateManager.requestUpdateFlow()
@@ -109,7 +110,8 @@ class PlayAppUpdateChecker(application: Application) : AppUpdateChecker, Default
                         )
                         if (result == SnackbarResult.ActionPerformed) {
                             if (updateAvailable.updateInfo.updatePriority == 5
-                                && isImmediateUpdateAllowed) {
+                                && isImmediateUpdateAllowed
+                            ) {
                                 updateAvailable.startImmediateUpdate(activity, 0)
                             } else if (isFlexibleUpdateAllowed) {
                                 updateAvailable.startFlexibleUpdate(activity, 0)

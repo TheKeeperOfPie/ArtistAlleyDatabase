@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalFoundationApi::class)
 
-package com.thekeeperofpie.artistalleydatabase.compose
+package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.TweenSpec
@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.onClick
@@ -64,7 +63,7 @@ fun DoubleModalNavigationDrawer(
     val navigationDrawerWidth = with(density) { 360.dp.toPx() }
 
     val width = with(LocalDensity.current) {
-        LocalConfiguration.current.screenWidthDp.dp.roundToPx()
+        LocalAppConfiguration.current.screenWidthDp.dp.roundToPx()
     }
     SideEffect {
         drawerState.density = density

@@ -7,7 +7,8 @@ import com.apollographql.apollo3.api.http.HttpResponse
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.benasher44.uuid.Uuid
-import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
 import graphql.language.AstPrinter
@@ -23,10 +24,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import me.tatarka.inject.annotations.Inject
 import okio.Buffer
 import java.nio.charset.Charset
 
-class DebugNetworkController(scopedApplication: ScopedApplication) {
+@SingletonScope
+@Inject
+class DebugNetworkController(scope: ApplicationScope) {
 
     companion object {
         private const val TAG = "DebugNetworkController"
@@ -110,7 +114,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
     }
 
     init {
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.IO) {
             for (graphQlRequest in graphQlRequests) {
                 val requestBodyBuffer = Buffer()
                 graphQlRequest.request.body?.writeTo(requestBodyBuffer)
@@ -137,7 +141,7 @@ class DebugNetworkController(scopedApplication: ScopedApplication) {
             }
         }
 
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.IO) {
             for (graphQlResponse in graphQlResponses) {
                 val responseBody = graphQlResponse.bodyString.takeIf(String::isNotBlank)?.let {
                     runCatching {

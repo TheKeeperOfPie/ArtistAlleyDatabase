@@ -1,8 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
+import androidx.activity.ComponentActivity
+import androidx.navigation.NavType
 import androidx.security.crypto.MasterKey
-import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListComponent
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
@@ -37,6 +38,8 @@ import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
+import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistComponent
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
@@ -46,6 +49,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
@@ -65,8 +70,10 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Component
+import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 import okhttp3.OkHttpClient
+import kotlin.reflect.KType
 
 @SingletonScope
 @Component
@@ -78,16 +85,14 @@ abstract class ApplicationComponent(
     @get:Provides val json: Json,
     @get:Provides val musicalArtistDatabase: MusicalArtistDatabase,
     @get:Provides val aniListDatabase: AniListDatabase,
-    @get:Provides val httpInterceptors: Set<HttpInterceptor>,
     @get:Provides val featureOverrideProvider: FeatureOverrideProvider,
     @get:Provides val appFileSystem: AppFileSystem,
     @get:Provides val cdEntryDatabase: CdEntryDatabase,
     @get:Provides val artEntryDatabase: ArtEntryDatabase,
     @get:Provides val animeDatabase: AnimeDatabase,
-    @get:Provides val navigationTypeMap: NavigationTypeMap,
     @get:Provides val appMetadataProvider: AppMetadataProvider,
 ) : AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent, BrowseComponent,
-    CdEntryComponent, MusicalArtistComponent, SettingsComponent, VgmdbComponent {
+    CdEntryComponent, MusicalArtistComponent, SettingsComponent, VariantComponent, VgmdbComponent {
 
     abstract val artistRepository: ArtistRepository
     abstract val albumRepository: AlbumRepository
@@ -115,15 +120,22 @@ abstract class ApplicationComponent(
     abstract val historyController: HistoryController
     abstract val networkSettings: NetworkSettings
     abstract val aniListSettings: AniListSettings
-    abstract val platformOAuthStore: PlatformOAuthStore
 
-    abstract val monetizationController: MonetizationController
-    abstract val mediaTagDialogController: MediaTagDialogController
-    abstract val mediaGenreDialogController: MediaGenreDialogController
-    abstract val markdown: Markdown
-    abstract val notificationsController: NotificationsController
+    open val appUpdateChecker: (ComponentActivity) -> AppUpdateChecker?
+        get() = { null }
     abstract val ignoreController: IgnoreController
+    abstract val markdown: Markdown
+    abstract val mediaGenreDialogController: MediaGenreDialogController
+    abstract val mediaTagDialogController: MediaTagDialogController
+    abstract val monetizationController: MonetizationController
+    open val monetizationProvider: (ComponentActivity) -> MonetizationProvider?
+        get() = { null }
+    abstract val navigationTypeMap: NavigationTypeMap
+    abstract val notificationsController: NotificationsController
+    abstract val platformOAuthStore: PlatformOAuthStore
     abstract val settingsProvider: SettingsProvider
+    open val subscriptionProvider: (ComponentActivity) -> SubscriptionProvider?
+        get() = { null }
 
     protected val AppMonetizationOverrideProvider.bind: MonetizationOverrideProvider
         @Provides get() = this
@@ -167,4 +179,14 @@ abstract class ApplicationComponent(
         okHttpClient = okHttpClient,
         enableCache = featureOverrideProvider.enableAppMediaPlayerCache,
     )
+
+    @SingletonScope
+    @Provides
+    @IntoSet
+    fun provideBaseTypeMap() : Map<KType, NavType<*>> = CustomNavTypes.baseTypeMap
+
+    @SingletonScope
+    @Provides
+    fun bindsTypeMap(typeMaps: @JvmSuppressWildcards Set<Map<KType, NavType<*>>>): NavigationTypeMap =
+        NavigationTypeMap(typeMaps.fold(mapOf<KType, NavType<*>>()) { acc, map -> acc + map })
 }

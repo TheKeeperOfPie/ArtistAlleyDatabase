@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.monetization.unity
 
 import android.app.Activity
 import android.app.Application
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -22,12 +23,16 @@ import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.UnityAds
 import com.unity3d.services.banners.BannerView
 import com.unity3d.services.banners.UnityBannerSize
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 
+@Inject
 class UnityMonetizationProvider(
     private val application: Application,
     private val settings: MonetizationSettings,
     featureOverrideProvider: FeatureOverrideProvider,
+    @Assisted private val activity: ComponentActivity,
 ) : MonetizationProvider {
 
     companion object {
@@ -39,11 +44,8 @@ class UnityMonetizationProvider(
     private val testMode = FORCE_TEST_MODE || !featureOverrideProvider.isReleaseBuild
     private var adsInitialized = false
     private var adsReady by mutableStateOf(false)
-    private lateinit var activity: Activity
 
-    override fun initialize(activity: Activity) {
-        if (::activity.isInitialized) return
-        this.activity = activity
+    init {
         if (settings.adsEnabled.value) {
             initializeAds()
         }

@@ -1,11 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.debug.network
 
 import androidx.lifecycle.ViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
 
-@HiltViewModel
-class DebugNetworkViewModel @Inject constructor(
+@Inject
+class DebugNetworkViewModel(
     private val debugNetworkController: DebugNetworkController,
 ): ViewModel() {
 

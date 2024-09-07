@@ -226,12 +226,11 @@ dependencies {
     implementation(project(":modules:art"))
     implementation(project(":modules:browse"))
     implementation(project(":modules:cds"))
-    implementation(project(":modules:compose-utils"))
     implementation(project(":modules:image"))
     implementation(project(":modules:data"))
     implementation(project(":modules:entry"))
     implementation(project(":modules:monetization"))
-//    debugImplementation(project(":modules:monetization:debug"))
+    debugImplementation(project(":modules:monetization:debug"))
     implementation(project(":modules:utils-inject"))
 
     debugImplementation(project(":modules:animethemes"))
@@ -291,6 +290,7 @@ dependencies {
     implementation(libs.work.runtime.ktx)
 
     implementation(libs.commons.compress)
+    implementation(libs.coil3.coil.compose)
     implementation(libs.coil3.coil.network.okhttp)
 
     implementation(libs.play.services.oss.licenses)

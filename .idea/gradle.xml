@@ -34,7 +34,6 @@
             <option value="$PROJECT_DIR$/modules/art" />
             <option value="$PROJECT_DIR$/modules/browse" />
             <option value="$PROJECT_DIR$/modules/cds" />
-            <option value="$PROJECT_DIR$/modules/compose-utils" />
             <option value="$PROJECT_DIR$/modules/data" />
             <option value="$PROJECT_DIR$/modules/debug" />
             <option value="$PROJECT_DIR$/modules/dependencies" />

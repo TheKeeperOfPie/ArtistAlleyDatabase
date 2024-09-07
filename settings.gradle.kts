@@ -34,7 +34,6 @@ include(
     ":modules:apollo",
     ":modules:art",
     ":modules:browse",
-    ":modules:compose-utils",
     ":modules:cds",
     ":modules:data",
     ":modules:debug",

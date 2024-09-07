@@ -15,7 +15,6 @@ secrets {
 
 dependencies {
     implementation(project(":modules:anilist"))
-    api(project(":modules:compose-utils"))
     api(project(":modules:data"))
     api(project(":modules:entry"))
 

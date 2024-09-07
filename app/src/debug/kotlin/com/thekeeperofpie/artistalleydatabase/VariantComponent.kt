@@ -1,0 +1,6 @@
+package com.thekeeperofpie.artistalleydatabase
+
+import com.thekeeperofpie.artistalleydatabase.debug.DebugComponent
+import com.thekeeperofpie.artistalleydatabase.monetization.debug.DebugMonetizationComponent
+
+interface VariantComponent : DebugComponent, DebugMonetizationComponent

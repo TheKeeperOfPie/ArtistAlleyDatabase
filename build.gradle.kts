@@ -116,7 +116,6 @@ dependencyAnalysis {
                     ":modules:apollo",
                     ":modules:art",
                     ":modules:browse",
-                    ":modules:compose-utils",
                     ":modules:cds",
                     ":modules:data",
                     ":modules:debug",
@@ -178,14 +177,6 @@ dependencyAnalysis {
             onUnusedDependencies {
                 exclude(
                     "androidx.navigation:navigation-compose",
-                )
-            }
-        }
-
-        project(":modules:compose-utils") {
-            onUnusedDependencies {
-                exclude(
-                    "io.coil-kt:coil-compose",
                 )
             }
         }

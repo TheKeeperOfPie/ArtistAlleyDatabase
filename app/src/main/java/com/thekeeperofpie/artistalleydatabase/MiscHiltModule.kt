@@ -1,13 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
-import androidx.navigation.NavType
 import androidx.security.crypto.MasterKey
-import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
@@ -29,10 +26,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.ElementsIntoSet
-import dagger.multibindings.IntoSet
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
-import kotlin.reflect.KType
 
 /**
  * Dumping ground for dependencies which need to eventually be migrated to multiplatform.
@@ -55,13 +50,11 @@ class MiscHiltModule {
         json: Json,
         musicalArtistDatabase: MusicalArtistDatabase,
         aniListDatabase: AniListDatabase,
-        httpInterceptors: @JvmSuppressWildcards Set<HttpInterceptor>,
         featureOverrideProvider: FeatureOverrideProvider,
         appFileSystem: AppFileSystem,
         cdEntryDatabase: CdEntryDatabase,
         artEntryDatabase: ArtEntryDatabase,
         animeDatabase: AnimeDatabase,
-        navigationTypeMap: NavigationTypeMap,
         appMetadataProvider: AppMetadataProvider,
     ) = ApplicationComponent::class.create(
         application = application,
@@ -71,13 +64,11 @@ class MiscHiltModule {
         json = json,
         musicalArtistDatabase = musicalArtistDatabase,
         aniListDatabase = aniListDatabase,
-        httpInterceptors = httpInterceptors,
         featureOverrideProvider = featureOverrideProvider,
         appFileSystem = appFileSystem,
         cdEntryDatabase = cdEntryDatabase,
         artEntryDatabase = artEntryDatabase,
         animeDatabase = animeDatabase,
-        navigationTypeMap = navigationTypeMap,
         appMetadataProvider = appMetadataProvider,
     )
 
@@ -181,11 +172,6 @@ class MiscHiltModule {
     @Provides
     fun provideArtEntryDetailsDao(applicationComponent: ApplicationComponent) =
         applicationComponent.artEntryDetailsDao
-
-    @Provides
-    @IntoSet
-    fun provideNavigationTypeMap(): @JvmSuppressWildcards Map<KType, NavType<*>> =
-        AnimeDestination.typeMap
 
     @Provides
     fun provideHistoryController(applicationComponent: ApplicationComponent) =
