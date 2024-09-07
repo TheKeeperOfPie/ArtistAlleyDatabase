@@ -3,11 +3,6 @@ plugins {
     id("library-compose")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-secrets {
-    propertiesFileName = "secrets.properties"
 }
 
 android {
@@ -22,7 +17,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             api(project(":modules:monetization"))
-            implementation(project(":modules:monetization:unity:secrets"))
+            implementation(project(":modules:secrets"))
             implementation(libs.hilt.android)
             implementation(libs.unity.ads)
         }

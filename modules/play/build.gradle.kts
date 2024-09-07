@@ -3,11 +3,6 @@ plugins {
     id("library-compose")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-secrets {
-    propertiesFileName = "secrets.properties"
 }
 
 android {

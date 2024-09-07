@@ -28,9 +28,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
+import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 
@@ -89,7 +89,7 @@ object CrashScreen {
 
                 val uriHandler = LocalUriHandler.current
                 FilledTonalButton(
-                    onClick = { uriHandler.openUri(BuildConfig.discordServerInviteLink) },
+                    onClick = { uriHandler.openUri(Secrets.discordServerInviteLink) },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(text = stringResource(R.string.crash_open_discord))

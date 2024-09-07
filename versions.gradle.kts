@@ -26,7 +26,6 @@ import Versions_gradle.Versions.google.ossLicensesPlugin
 import Versions_gradle.Versions.google.playServicesAds
 import Versions_gradle.Versions.google.playServicesCronet
 import Versions_gradle.Versions.google.playServicesOssLicenses
-import Versions_gradle.Versions.google.secretsPlugin
 import Versions_gradle.Versions.google.truth
 import Versions_gradle.Versions.google.userMessagingPlatform
 import Versions_gradle.Versions.junit.four
@@ -82,6 +81,7 @@ object Versions {
     const val benasher44Uuid = "0.8.4"
     const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
+    const val buildKonfig = "0.15.2"
     const val coil = "3.0.0-alpha10"
     const val colormath = "3.6.0"
 
@@ -115,7 +115,6 @@ object Versions {
         const val playServicesCronet = "18.1.0"
         const val playServicesOssLicenses = "17.1.0"
         const val truth = "1.4.4"
-        const val secretsPlugin = "2.0.1"
         const val userMessagingPlatform = "3.0.0"
     }
 
@@ -207,6 +206,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.barfuin.gradle.taskinfo").version(Versions.barfuinTaskInfo)
                 plugin("org.jetbrains.compose").version(Versions.composeMultiplatform.plugin)
+                plugin("com.codingfeline.buildkonfig").version(Versions.buildKonfig)
 
                 with(Versions.kotlin) {
                     plugin("org.jetbrains.kotlin.multiplatform").version(core)
@@ -310,7 +310,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         alias = "cronet.play",
                     )
                     library("com.google.android.gms:play-services-oss-licenses:$playServicesOssLicenses")
-                    library("com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:$secretsPlugin")
                     library("com.google.truth:truth:$truth")
                     library("com.google.android.ump:user-messaging-platform:$userMessagingPlatform")
                 }

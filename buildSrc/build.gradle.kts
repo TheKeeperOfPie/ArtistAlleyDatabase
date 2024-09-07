@@ -20,7 +20,6 @@ dependencies {
     implementation(libs.org.jetbrains.kotlin.plugin.parcelize.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)
     implementation(libs.oss.licenses.plugin)
-    implementation(libs.secrets.gradle.plugin)
 }
 
 kotlin {

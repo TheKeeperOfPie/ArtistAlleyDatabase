@@ -24,12 +24,9 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/modules" />
-            <option value="$PROJECT_DIR$/modules/alley" />
-            <option value="$PROJECT_DIR$/modules/alley-app" />
             <option value="$PROJECT_DIR$/modules/android-utils" />
             <option value="$PROJECT_DIR$/modules/anilist" />
             <option value="$PROJECT_DIR$/modules/anilist-data" />
-            <option value="$PROJECT_DIR$/modules/anilist/secrets" />
             <option value="$PROJECT_DIR$/modules/anime" />
             <option value="$PROJECT_DIR$/modules/anime2anime" />
             <option value="$PROJECT_DIR$/modules/animethemes" />
@@ -48,10 +45,10 @@
             <option value="$PROJECT_DIR$/modules/monetization" />
             <option value="$PROJECT_DIR$/modules/monetization/debug" />
             <option value="$PROJECT_DIR$/modules/monetization/unity" />
-            <option value="$PROJECT_DIR$/modules/monetization/unity/secrets" />
             <option value="$PROJECT_DIR$/modules/musical-artists" />
             <option value="$PROJECT_DIR$/modules/news" />
             <option value="$PROJECT_DIR$/modules/play" />
+            <option value="$PROJECT_DIR$/modules/secrets" />
             <option value="$PROJECT_DIR$/modules/server" />
             <option value="$PROJECT_DIR$/modules/settings" />
             <option value="$PROJECT_DIR$/modules/test-utils" />

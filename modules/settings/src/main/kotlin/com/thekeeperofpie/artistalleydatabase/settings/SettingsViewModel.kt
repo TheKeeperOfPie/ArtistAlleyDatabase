@@ -45,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
+import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
@@ -245,7 +246,7 @@ class SettingsViewModel @Inject constructor(
                     ButtonRow(
                         labelTextRes = R.string.settings_subsection_about_discord_label,
                         buttonTextRes = R.string.settings_open,
-                        onClick = { uriHandler.openUri(BuildConfig.discordServerInviteLink) }
+                        onClick = { uriHandler.openUri(Secrets.discordServerInviteLink) }
                     )
                 }
             },
@@ -256,7 +257,7 @@ class SettingsViewModel @Inject constructor(
                     ButtonRow(
                         labelTextRes = R.string.settings_subsection_about_privacy_policy_label,
                         buttonTextRes = R.string.settings_open,
-                        onClick = { uriHandler.openUri(BuildConfig.privacyPolicyLink) }
+                        onClick = { uriHandler.openUri(Secrets.privacyPolicyLink) }
                     )
                 }
             },

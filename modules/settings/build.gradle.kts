@@ -3,11 +3,6 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-secrets {
-    propertiesFileName = "secrets.properties"
 }
 
 android {
@@ -20,6 +15,7 @@ dependencies {
     api(project(":modules:art"))
     api(project(":modules:cds"))
     api(project(":modules:monetization"))
+    api(project(":modules:secrets"))
 
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)

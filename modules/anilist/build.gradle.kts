@@ -9,7 +9,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.androidx.security.crypto)
-            implementation(project(":modules:anilist:secrets"))
+            implementation(project(":modules:secrets"))
             implementation(libs.androidx.browser)
             implementation(libs.activity.compose)
         }

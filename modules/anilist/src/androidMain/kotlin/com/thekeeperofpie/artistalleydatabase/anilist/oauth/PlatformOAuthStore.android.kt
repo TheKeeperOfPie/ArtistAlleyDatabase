@@ -8,8 +8,8 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityOptionsCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.thekeeperofpie.artistalleydatabase.anilist.secrets.AniListSecrets
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -42,7 +42,7 @@ actual class PlatformOAuthStore(
         }
 
         val ANILIST_OAUTH_URL = "https://anilist.co/api/v2/oauth/authorize" +
-                "?client_id=${AniListSecrets.aniListClientId}" +
+                "?client_id=${Secrets.aniListClientId}" +
                 "&response_type=token"
     }
 
