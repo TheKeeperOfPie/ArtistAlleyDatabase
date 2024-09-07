@@ -7,31 +7,25 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaDetails2Query
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AnimeMediaDetailsReviewsViewModel @Inject constructor(
-    private val aniListApi: AuthedAniListApi,
+@Inject
+class AnimeMediaDetailsReviewsViewModel(
+    @Assisted mediaDetailsViewModel: AnimeMediaDetailsViewModel,
 ) : ViewModel() {
 
     var reviews by mutableStateOf<ReviewsEntry?>(null)
         private set
 
-    private var initialized = false
-
-    fun initialize(mediaDetailsViewModel: AnimeMediaDetailsViewModel) {
-        if (initialized) return
-        initialized = true
-
+    init {
         viewModelScope.launch(CustomDispatchers.Main) {
             snapshotFlow { mediaDetailsViewModel.entry2.result?.media }
                 .mapLatest {

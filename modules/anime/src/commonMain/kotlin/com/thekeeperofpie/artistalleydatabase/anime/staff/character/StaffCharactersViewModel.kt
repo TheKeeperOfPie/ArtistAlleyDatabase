@@ -26,22 +26,22 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOptio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class StaffCharactersViewModel @Inject constructor(
+@Inject
+class StaffCharactersViewModel(
     aniListApi: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
     featureOverrideProvider: FeatureOverrideProvider,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
 ) : HeaderAndListViewModel<StaffCharactersScreen.Entry, CharacterWithRoleAndFavorites, CharacterListRow.Entry, CharacterSortOption, StaffCharactersSortFilterController.FilterParams>(
     aniListApi = aniListApi,

@@ -27,7 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_history
 import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_ignored
@@ -57,7 +57,6 @@ object AnimeRootScreen {
         onClickSettings: () -> Unit,
         onClickShowLastCrash: () -> Unit,
     ) {
-
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
         val bottomNavigationState = BottomNavigationState(scrollBehavior)
         val needsAuth = viewModel.authToken.collectAsState().value == null
@@ -259,12 +258,15 @@ object AnimeRootScreen {
                             onClickSettings = onClickSettings,
                             bottomNavigationState = bottomNavigationState,
                         )
-                        AnimeRootNavDestination.UNLOCK -> UnlockScreen(
-                            upIconOption = upIconOption,
-                            viewModel = hiltViewModel(),
-                            bottomNavigationState = bottomNavigationState,
-                            onClickSettings = onClickSettings,
-                        )
+                        AnimeRootNavDestination.UNLOCK -> {
+                            val animeComponent = LocalAnimeComponent.current
+                            UnlockScreen(
+                                upIconOption = upIconOption,
+                                viewModel = viewModel { animeComponent.unlockScreenViewModel() },
+                                bottomNavigationState = bottomNavigationState,
+                                onClickSettings = onClickSettings,
+                            )
+                        }
                     }
                 }
             }

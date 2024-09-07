@@ -25,7 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_user_social_followers
@@ -39,6 +39,7 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
@@ -66,10 +67,9 @@ object UserSocialScreen {
         user: UserNavigationData?,
         bottomNavigationState: BottomNavigationState?,
     ) {
-        val followingViewModel = hiltViewModel<UserSocialViewModel.Following>()
-            .apply { initialize(userId) }
-        val followersViewModel = hiltViewModel<UserSocialViewModel.Followers>()
-            .apply { initialize(userId) }
+        val animeComponent = LocalAnimeComponent.current
+        val followingViewModel = viewModel { animeComponent.userSocialViewModelFollowing(userId) }
+        val followersViewModel = viewModel { animeComponent.userSocialViewModelFollowers(userId) }
 
         // TODO: Handle LoadStates
         val following = followingViewModel.data().collectAsLazyPagingItems()

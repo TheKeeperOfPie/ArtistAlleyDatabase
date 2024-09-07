@@ -17,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -30,14 +29,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AnimeForumThreadsViewModel @Inject constructor(
+@Inject
+class AnimeForumThreadsViewModel(
     private val aniListApi: AuthedAniListApi,
     private val threadStatusController: ForumThreadStatusController,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaDetailsViewModel: AnimeMediaDetailsViewModel,
 ) : ViewModel() {
     var forumThreads by mutableStateOf<LoadingResult<List<ForumThreadEntry>>>(LoadingResult.loading())
         private set
@@ -46,14 +47,9 @@ class AnimeForumThreadsViewModel @Inject constructor(
         ForumThreadToggleHelper(aniListApi, threadStatusController, viewModelScope)
 
     private val mediaId = savedStateHandle.get<String>("mediaId")!!
-    private var initialized = false
-
     private var barrier = MutableStateFlow(false)
 
-    fun initialize(mediaDetailsViewModel: AnimeMediaDetailsViewModel) {
-        if (initialized) return
-        initialized = true
-
+    init {
         viewModelScope.launch(CustomDispatchers.Main) {
             snapshotFlow { mediaDetailsViewModel.entry.result }
                 .filterNotNull()

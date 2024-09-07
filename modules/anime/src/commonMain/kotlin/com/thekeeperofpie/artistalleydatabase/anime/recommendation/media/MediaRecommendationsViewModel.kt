@@ -27,15 +27,15 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOptio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class MediaRecommendationsViewModel @Inject constructor(
+@Inject
+class MediaRecommendationsViewModel(
     aniListApi: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,
     private val recommendationStatusController: RecommendationStatusController,
@@ -43,7 +43,7 @@ class MediaRecommendationsViewModel @Inject constructor(
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
     featureOverrideProvider: FeatureOverrideProvider,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
 ) : HeaderAndListViewModel<MediaRecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
         MediaRecommendationEntry, RecommendationSortOption, MediaRecommendationSortFilterController.FilterParams>(

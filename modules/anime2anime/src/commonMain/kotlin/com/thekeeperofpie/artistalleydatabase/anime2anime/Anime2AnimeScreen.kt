@@ -65,7 +65,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachReversed
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.anime_character_image_long_press_preview
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
 import artistalleydatabase.modules.anime2anime.generated.resources.Res
@@ -100,6 +100,7 @@ import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeStrings
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
@@ -107,7 +108,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.sub
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
@@ -146,8 +146,8 @@ object Anime2AnimeScreen {
 
     @Composable
     operator fun invoke(
+        viewModel: Anime2AnimeViewModel,
         upIconOption: UpIconOption?,
-        viewModel: Anime2AnimeViewModel = hiltViewModel(),
     ) = this(
         upIconOption = upIconOption,
         viewer = { viewModel.viewer.collectAsState().value },
@@ -217,7 +217,8 @@ object Anime2AnimeScreen {
         onChooseMedia: (AniListMedia) -> Unit,
         onRestart: () -> Unit,
     ) {
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val animeComponent = LocalAnimeComponent.current
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         MediaEditBottomSheetScaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

@@ -12,11 +12,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,14 +49,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activity.activitiesSection
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
-import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasScreen
-import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.forum.AnimeForumThreadsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumComposables
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchScreen
@@ -68,56 +62,39 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumTh
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.AnimeMediaDetailsRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationComposables
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.recommendationsSection
-import com.thekeeperofpie.artistalleydatabase.anime.review.AnimeMediaDetailsReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewComposables
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.reviewsSection
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
-import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.staff.AnimeStaffViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersScreen
-import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasScreen
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStaffScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
@@ -132,6 +109,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import org.jetbrains.compose.resources.stringResource
 
 object AnimeNavigator {
 
@@ -143,13 +121,14 @@ object AnimeNavigator {
         onClickAuth: () -> Unit,
         onClickSettings: () -> Unit,
         onClickShowLastCrash: () -> Unit,
+        animeComponent: AnimeComponent,
         cdEntryComponent: CdEntryComponent,
     ) {
         navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.HOME.id,
             deepLinks = listOf(navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/" }),
         ) {
-            val viewModel = hiltViewModel<AnimeRootViewModel>()
+            val viewModel = viewModel { animeComponent.animeRootViewModel() }
             AnimeRootScreen(
                 upIconOption = upIconOption,
                 viewModel = viewModel,
@@ -207,24 +186,33 @@ object AnimeNavigator {
             }
         ) {
             val destination = it.toRoute<AnimeDestination.MediaDetails>()
-            val mediaDetailsViewModel = hiltViewModel<AnimeMediaDetailsViewModel>()
+            val mediaDetailsViewModel =
+                viewModel { animeComponent.animeMediaDetailsViewModel(createSavedStateHandle()) }
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
                 media = { mediaDetailsViewModel.entry.result?.media },
                 favoriteUpdate = { mediaDetailsViewModel.favoritesToggleHelper.favorite },
             )
 
-            val charactersViewModel = hiltViewModel<AnimeCharactersViewModel>()
-                .apply { initialize(mediaDetailsViewModel) }
+            val charactersViewModel = viewModel {
+                animeComponent.animeCharactersViewModel(
+                    createSavedStateHandle(),
+                    mediaDetailsViewModel,
+                )
+            }
             val charactersDeferred =
                 charactersViewModel.charactersDeferred.collectAsLazyPagingItems()
 
-            val staffViewModel = hiltViewModel<AnimeStaffViewModel>()
-                .apply { initialize(mediaDetailsViewModel) }
+            val staffViewModel = viewModel {
+                animeComponent.animeStaffViewModel(
+                    createSavedStateHandle(),
+                    mediaDetailsViewModel,
+                )
+            }
             val staff = staffViewModel.staff.collectAsLazyPagingItems()
 
-            val songsViewModel = hiltViewModel<AnimeSongsViewModel>()
-                .apply { initialize(mediaDetailsViewModel) }
+            val songsViewModel =
+                viewModel { animeComponent.animeSongsViewModel(mediaDetailsViewModel) }
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
                 lifecycleOwner.lifecycle.addObserver(songsViewModel)
@@ -240,12 +228,16 @@ object AnimeNavigator {
 
             val viewer by mediaDetailsViewModel.viewer.collectAsState()
 
-            val recommendationsViewModel =
-                hiltViewModel<AnimeMediaDetailsRecommendationsViewModel>()
-                    .apply { initialize(mediaDetailsViewModel) }
+            val recommendationsViewModel = viewModel {
+                animeComponent.animeMediaDetailsRecommendationsViewModel(
+                    createSavedStateHandle(),
+                    mediaDetailsViewModel,
+                )
+            }
 
-            val activitiesViewModel = hiltViewModel<AnimeMediaDetailsActivityViewModel>()
-                .apply { initialize(mediaDetailsViewModel) }
+            val activitiesViewModel = viewModel {
+                animeComponent.animeMediaDetailsActivityViewModel(mediaDetailsViewModel)
+            }
             val activities = activitiesViewModel.activities
             val (activityTab, onActivityTabChange) = rememberSaveable(viewer, activities) {
                 mutableStateOf(
@@ -257,11 +249,16 @@ object AnimeNavigator {
                 )
             }
 
-            val forumThreadsViewModel = hiltViewModel<AnimeForumThreadsViewModel>()
-                .apply { initialize(mediaDetailsViewModel) }
+            val forumThreadsViewModel = viewModel {
+                animeComponent.animeForumThreadsViewModel(
+                    createSavedStateHandle(),
+                    mediaDetailsViewModel,
+                )
+            }
 
-            val reviewsViewModel = hiltViewModel<AnimeMediaDetailsReviewsViewModel>()
-                .apply { initialize(mediaDetailsViewModel) }
+            val reviewsViewModel = viewModel {
+                animeComponent.animeMediaDetailsReviewsViewModel(mediaDetailsViewModel)
+            }
 
             val navigationCallback = LocalNavigationCallback.current
 
@@ -460,7 +457,8 @@ object AnimeNavigator {
                 },
             ),
         ) {
-            val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>()
+            val viewModel =
+                viewModel { animeComponent.animeCharacterDetailsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.CharacterDetails>()
             val headerValues = CharacterHeaderValues(
                 params = destination.headerParams,
@@ -480,7 +478,8 @@ object AnimeNavigator {
             navigationTypeMap = navigationTypeMap
         ) {
             val destination = it.toRoute<AnimeDestination.CharacterMedias>()
-            val viewModel = hiltViewModel<CharacterMediasViewModel>()
+            val viewModel =
+                viewModel { animeComponent.characterMediasViewModel(createSavedStateHandle()) }
             val headerValues = CharacterHeaderValues(
                 params = destination.headerParams,
                 character = { viewModel.entry.result?.character },
@@ -502,7 +501,8 @@ object AnimeNavigator {
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}/.*" },
             ),
         ) {
-            val viewModel = hiltViewModel<StaffDetailsViewModel>()
+            val viewModel =
+                viewModel { animeComponent.staffDetailsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.StaffDetails>()
             val headerValues = StaffHeaderValues(
                 params = destination.headerParams,
@@ -521,7 +521,8 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.StaffCharacters>(
             navigationTypeMap = navigationTypeMap,
         ) {
-            val viewModel = hiltViewModel<StaffCharactersViewModel>()
+            val viewModel =
+                viewModel { animeComponent.staffCharactersViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.StaffCharacters>()
             val headerValues = StaffHeaderValues(
                 params = destination.headerParams,
@@ -544,7 +545,8 @@ object AnimeNavigator {
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
             ),
         ) {
-            val viewModel = hiltViewModel<AniListUserViewModel>()
+            val viewModel =
+                viewModel { animeComponent.aniListUserViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.User>()
             val headerValues = UserHeaderValues(
                 params = destination.headerParams,
@@ -558,7 +560,7 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Ignored>(navigationTypeMap) {
-            AnimeIgnoreScreen(UpIconOption.Back(navHostController))
+            AnimeIgnoreScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.AiringSchedule>(navigationTypeMap) {
@@ -576,7 +578,7 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Activity>(navigationTypeMap) {
-            AnimeActivityScreen()
+            AnimeActivityScreen(animeComponent = animeComponent)
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Notifications>(navigationTypeMap) {
@@ -586,7 +588,8 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaCharacters>(
             navigationTypeMap = navigationTypeMap,
         ) {
-            val viewModel = hiltViewModel<MediaCharactersViewModel>()
+            val viewModel =
+                viewModel { animeComponent.mediaCharactersViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.MediaCharacters>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -604,7 +607,8 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaReviews>(
             navigationTypeMap = navigationTypeMap,
         ) {
-            val viewModel = hiltViewModel<MediaReviewsViewModel>()
+            val viewModel =
+                viewModel { animeComponent.mediaReviewsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.MediaReviews>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -634,7 +638,8 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaRecommendations>(
             navigationTypeMap = navigationTypeMap,
         ) {
-            val viewModel = hiltViewModel<MediaRecommendationsViewModel>()
+            val viewModel =
+                viewModel { animeComponent.mediaRecommendationsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.MediaRecommendations>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -652,7 +657,8 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaActivities>(
             navigationTypeMap = navigationTypeMap,
         ) {
-            val viewModel = hiltViewModel<MediaActivitiesViewModel>()
+            val viewModel =
+                viewModel { animeComponent.mediaActivitiesViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.MediaActivities>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -676,7 +682,8 @@ object AnimeNavigator {
                 },
             ),
         ) {
-            val viewModel = hiltViewModel<ReviewDetailsViewModel>()
+            val viewModel =
+                viewModel { animeComponent.reviewDetailsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.ReviewDetails>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -703,7 +710,8 @@ object AnimeNavigator {
             ),
         ) {
             val destination = it.toRoute<AnimeDestination.StudioMedias>()
-            val viewModel = hiltViewModel<StudioMediasViewModel>()
+            val viewModel =
+                viewModel { animeComponent.studioMediasViewModel(createSavedStateHandle()) }
 
             StudioMediasScreen(
                 upIconOption = UpIconOption.Back(navHostController),
@@ -731,20 +739,24 @@ object AnimeNavigator {
             val destination = it.toRoute<AnimeDestination.ActivityDetails>()
             // TODO: Shared element doesn't actually work
             SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
-                ActivityDetailsScreen(upIconOption = UpIconOption.Back(navHostController))
+                ActivityDetailsScreen(
+                    animeComponent = animeComponent,
+                    upIconOption = UpIconOption.Back(navHostController),
+                )
             }
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.FeatureTiers>(navigationTypeMap) {
             UnlockScreen(
                 upIconOption = UpIconOption.Back(navHostController),
-                viewModel = hiltViewModel(),
+                viewModel = viewModel { animeComponent.unlockScreenViewModel() },
                 onClickSettings = null,
             )
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Forum>(navigationTypeMap) {
             ForumRootScreen(
+                viewModel = viewModel { animeComponent.forumRootScreenViewModel() },
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
@@ -764,6 +776,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.ForumSearch>()
             ForumSearchScreen(
+                viewModel = viewModel { animeComponent.forumSearchViewModel(createSavedStateHandle()) },
                 upIconOption = UpIconOption.Back(navHostController),
                 title = destination.title,
             )
@@ -814,7 +827,8 @@ object AnimeNavigator {
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.UserFollowing>(navigationTypeMap) {
             val destination = it.toRoute<AnimeDestination.UserFollowing>()
-            val viewModel = hiltViewModel<UserListViewModel.Following>()
+            val viewModel =
+                viewModel { animeComponent.userListViewModelFollowing(createSavedStateHandle()) }
             UserListScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
@@ -833,7 +847,8 @@ object AnimeNavigator {
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.UserFollowers>(navigationTypeMap) {
             val destination = it.toRoute<AnimeDestination.UserFollowers>()
-            val viewModel = hiltViewModel<UserListViewModel.Followers>()
+            val viewModel =
+                viewModel { animeComponent.userListViewModelFollowers(createSavedStateHandle()) }
             UserListScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
@@ -854,7 +869,8 @@ object AnimeNavigator {
             navigationTypeMap
         ) {
             val destination = it.toRoute<AnimeDestination.UserFavoriteMedia>()
-            val viewModel: UserFavoriteMediaViewModel = hiltViewModel()
+            val viewModel =
+                viewModel { animeComponent.userFavoriteMediaViewModel(createSavedStateHandle()) }
             UserFavoriteMediaScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
@@ -950,8 +966,16 @@ object AnimeNavigator {
         mediaListStatus: MediaListStatus? = null,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
-        val viewModel = hiltViewModel<AnimeUserListViewModel>(key = mediaType.rawValue)
-            .apply { initialize(userId, userName, mediaType, mediaListStatus) }
+        val animeComponent = LocalAnimeComponent.current
+        val viewModel = viewModel(key = mediaType.rawValue) {
+            animeComponent.animeUserListViewModel(
+                createSavedStateHandle(),
+                userId,
+                userName,
+                mediaType,
+                mediaListStatus
+            )
+        }
         AnimeUserListScreen(
             upIconOption = upIconOption,
             viewModel = viewModel,

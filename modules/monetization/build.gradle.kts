@@ -2,6 +2,7 @@ plugins {
     id("library-android")
     id("library-compose")
     id("library-desktop")
+    id("library-inject")
 }
 
 android {
@@ -16,6 +17,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":modules:utils"))
             api(project(":modules:utils-compose"))
+            implementation(libs.lifecycle.viewmodel.compose)
         }
     }
 }

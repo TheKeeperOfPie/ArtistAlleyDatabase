@@ -2,8 +2,6 @@ plugins {
     id("library-android")
     id("library-compose")
     id("library-inject")
-    id("dagger.hilt.android.plugin")
-    id("com.google.devtools.ksp")
     alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
@@ -26,8 +24,6 @@ kotlin {
             api(libs.room.ktx)
             api(libs.room.paging)
             runtimeOnly(libs.room.runtime)
-            implementation(libs.hilt.android)
-            implementation(libs.hilt.navigation.compose)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
@@ -48,8 +44,6 @@ android {
 
 dependencies {
     add("kspAndroid", kspProcessors.room.compiler)
-    add("kspAndroid", kspProcessors.hilt.compiler)
-    add("kspAndroid", kspProcessors.androidx.hilt.compiler)
 }
 
 compose.resources {

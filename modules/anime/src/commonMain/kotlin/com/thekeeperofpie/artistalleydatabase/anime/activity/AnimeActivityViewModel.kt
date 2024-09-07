@@ -21,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOptio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,11 +34,11 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AnimeActivityViewModel @Inject constructor(
+@Inject
+class AnimeActivityViewModel(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     private val activityStatusController: ActivityStatusController,

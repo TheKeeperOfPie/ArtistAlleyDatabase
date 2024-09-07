@@ -32,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,12 +45,13 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AnimeUserListViewModel @Inject constructor(
+@Inject
+class AnimeUserListViewModel(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     val ignoreController: IgnoreController,
@@ -61,7 +61,11 @@ class AnimeUserListViewModel @Inject constructor(
     private val userMediaListController: UserMediaListController,
     private val featureOverrideProvider: FeatureOverrideProvider,
     private val mediaListStatusController: MediaListStatusController,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted val userId: String?,
+    @Assisted userName: String?,
+    @Assisted val mediaType: MediaType,
+    @Assisted val mediaListStatus: MediaListStatus?,
 ) : ViewModel() {
 
     companion object {
@@ -78,32 +82,14 @@ class AnimeUserListViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var entry by mutableStateOf<LoadingResult<Entry>>(LoadingResult.loading())
-    var userName by mutableStateOf<String?>(null)
-        private set
-
-    private var userId: String? = null
-    private var initialized = false
-    var mediaListStatus: MediaListStatus? = null
-        private set
-    lateinit var mediaType: MediaType
+    var userName by mutableStateOf(userName)
         private set
 
     lateinit var sortFilterController: MediaSortFilterController<MediaListSortOption, *>
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun initialize(
-        userId: String?,
-        userName: String?,
-        mediaType: MediaType,
-        status: MediaListStatus? = null,
-    ) {
-        if (initialized) return
-        initialized = true
-        this.userId = userId
-        this.mediaType = mediaType
-        this.userName = userName
-        this.mediaListStatus = status
+    init {
         val defaultSort = if (userId == null) {
             MediaListSortOption.MY_UPDATED_TIME
         } else {
@@ -124,8 +110,8 @@ class AnimeUserListViewModel @Inject constructor(
                     initialParams = AnimeSortFilterController.InitialParams(
                         defaultSort = defaultSort,
                         lockSort = false,
-                        mediaListStatus = status,
-                        lockMediaListStatus = status != null,
+                        mediaListStatus = mediaListStatus,
+                        lockMediaListStatus = mediaListStatus != null,
                     )
                 )
             }
@@ -144,8 +130,8 @@ class AnimeUserListViewModel @Inject constructor(
                     initialParams = MangaSortFilterController.InitialParams(
                         defaultSort = defaultSort,
                         lockSort = false,
-                        mediaListStatus = status,
-                        lockMediaListStatus = status != null,
+                        mediaListStatus = mediaListStatus,
+                        lockMediaListStatus = mediaListStatus != null,
                     )
                 )
             }

@@ -4,23 +4,22 @@ import com.thekeeperofpie.artistalleydatabase.animethemes.models.Anime
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistWithAniList
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.utils.io.readBuffer
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.decodeFromStream
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import okio.IOException
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.io.decodeFromSource
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalSerializationApi::class)
+@SingletonScope
+@Inject
 class AnimeThemesApi(
-    val appJson: AppJson,
-    private val okHttpClient: OkHttpClient,
+    private val json: Json,
+    private val httpClient: HttpClient,
 ) {
     companion object {
         private const val API_BASE_URL = "https://api.animethemes.moe"
@@ -39,7 +38,7 @@ class AnimeThemesApi(
                     "&filter[external_id]=$aniListMediaId"
         )
 
-        return appJson.json.decodeFromStream<AnimeResponse>(response.body.byteStream())
+        return json.decodeFromSource<AnimeResponse>(response)
             .anime.firstOrNull()
     }
 
@@ -51,28 +50,8 @@ class AnimeThemesApi(
                     "&include=resources"
         )
 
-        return appJson.json.decodeFromStream<ArtistResponse>(response.body.byteStream()).artist
+        return json.decodeFromSource<ArtistResponse>(response).artist
     }
 
-    private suspend fun executeGet(url: String) = suspendCancellableCoroutine {
-        val call = okHttpClient.newCall(
-            Request.Builder()
-                .get()
-                .url(url)
-                .build()
-        )
-        call.enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                it.resumeWithException(e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                it.resume(response)
-            }
-        })
-
-        it.invokeOnCancellation {
-            call.cancel()
-        }
-    }
+    private suspend fun executeGet(url: String) = httpClient.get(url).bodyAsChannel().readBuffer()
 }

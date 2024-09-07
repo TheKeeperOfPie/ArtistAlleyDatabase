@@ -21,10 +21,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
 import artistalleydatabase.modules.anime.generated.resources.anime_news_title
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
@@ -40,7 +42,8 @@ object AnimeNewsScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: AnimeNewsViewModel = hiltViewModel<AnimeNewsViewModel>(),
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        viewModel: AnimeNewsViewModel = viewModel { animeComponent.animeNewsViewModel() },
     ) {
         val scaffoldState = rememberBottomSheetScaffoldState()
         val scope = rememberCoroutineScope()

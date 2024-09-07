@@ -25,7 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_header
@@ -35,9 +36,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_tab_manga
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -53,11 +55,14 @@ object AnimeIgnoreScreen {
 
     @Composable
     operator fun invoke(
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
         upIconOption: UpIconOption?,
-        viewModel: AnimeMediaIgnoreViewModel = hiltViewModel(),
+        viewModel: AnimeMediaIgnoreViewModel = viewModel {
+            animeComponent.animeMediaIgnoreViewModel(createSavedStateHandle())
+        },
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
@@ -88,7 +93,7 @@ object AnimeIgnoreScreen {
                                     MediaViewOption.SMALL_CARD,
                                     MediaViewOption.LARGE_CARD,
                                     MediaViewOption.COMPACT,
-                                    -> GridCells.Adaptive(300.dp)
+                                        -> GridCells.Adaptive(300.dp)
                                     MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
                                 }
                                 val mediaType = viewModel.selectedType

@@ -54,7 +54,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_delete_confirmation
@@ -72,13 +73,14 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
@@ -110,7 +112,10 @@ object ActivityDetailsScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ActivityDetailsViewModel = hiltViewModel(),
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        viewModel: ActivityDetailsViewModel = viewModel {
+            animeComponent.activityDetailsViewModel(createSavedStateHandle())
+        },
         upIconOption: UpIconOption.Back,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -132,7 +137,7 @@ object ActivityDetailsScreen {
             }
         }
 
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
         ) {
@@ -233,7 +238,7 @@ object ActivityDetailsScreen {
                                     }
                                     is ActivityDetailsQuery.Data.OtherActivity,
                                     null,
-                                    -> {
+                                        -> {
                                         TextActivitySmallCard(
                                             viewer = viewer,
                                             activity = null,

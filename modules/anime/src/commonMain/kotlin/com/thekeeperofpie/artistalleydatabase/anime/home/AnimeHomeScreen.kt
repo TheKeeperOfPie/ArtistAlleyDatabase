@@ -81,7 +81,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -109,7 +109,9 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySmallCard
@@ -191,15 +193,16 @@ object AnimeHomeScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: AnimeHomeViewModel = hiltViewModel<AnimeHomeViewModel>(),
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        viewModel: AnimeHomeViewModel = viewModel { animeComponent.animeHomeViewModel() },
         upIconOption: UpIconOption?,
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState?,
         mediaViewModel: @Composable (Boolean) -> AnimeHomeMediaViewModel = {
             if (it) {
-                hiltViewModel<AnimeHomeMediaViewModel.Anime>()
+                viewModel { animeComponent.animeHomeMediaViewModelAnime() }
             } else {
-                hiltViewModel<AnimeHomeMediaViewModel.Manga>()
+                viewModel { animeComponent.animeHomeMediaViewModelManga() }
             }
         },
     ) {
@@ -230,7 +233,7 @@ object AnimeHomeScreen {
         )
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
             modifier = Modifier
                 .conditionallyNonNull(bottomNavigationState) {

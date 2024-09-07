@@ -20,19 +20,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
-@HiltViewModel
-class StudioMediasViewModel @Inject constructor(
+@Inject
+class StudioMediasViewModel(
     aniListApi: AuthedAniListApi,
     private val statusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
     featureOverrideProvider: FeatureOverrideProvider,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
 ) : HeaderAndListViewModel<StudioMediasScreen.Entry, MediaPreview, MediaPreviewEntry, MediaSortOption, StudioMediaSortFilterController.FilterParams>(
     aniListApi = aniListApi,
     loadingErrorTextRes = Res.string.anime_studio_medias_error_loading,

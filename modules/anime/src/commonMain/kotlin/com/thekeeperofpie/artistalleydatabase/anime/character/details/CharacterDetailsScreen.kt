@@ -40,7 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.PagingData
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_character_details_age_label
@@ -59,6 +59,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import com.anilist.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
@@ -103,7 +104,7 @@ object CharacterDetailsScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: AnimeCharacterDetailsViewModel = hiltViewModel(),
+        viewModel: AnimeCharacterDetailsViewModel,
         upIconOption: UpIconOption?,
         headerValues: CharacterHeaderValues,
         sharedTransitionKey: SharedTransitionKey?,
@@ -131,7 +132,8 @@ object CharacterDetailsScreen {
                 .fillMaxSize()
                 .pullRefresh(state = pullRefreshState)
         ) {
-            val editViewModel = hiltViewModel<MediaEditViewModel>()
+            val animeComponent = LocalAnimeComponent.current
+            val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
             MediaEditBottomSheetScaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 viewModel = editViewModel,

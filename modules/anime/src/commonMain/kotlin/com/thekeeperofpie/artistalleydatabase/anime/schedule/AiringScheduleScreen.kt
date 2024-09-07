@@ -36,7 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedule_label
@@ -48,11 +48,12 @@ import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_icon
 import com.anilist.AiringScheduleQuery
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.utils.Either
@@ -79,7 +80,8 @@ object AiringScheduleScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: AiringScheduleViewModel = hiltViewModel(),
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        viewModel: AiringScheduleViewModel = viewModel { animeComponent.airingScheduleViewModel() },
         onClickBack: () -> Unit,
     ) {
         val initialDayIndex = remember { 6 + Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek.value }
@@ -89,7 +91,7 @@ object AiringScheduleScreen {
         )
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         // TODO: Use a better leaf
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,

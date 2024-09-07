@@ -22,7 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_header
@@ -32,7 +32,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_reviews_tab_m
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -55,11 +57,11 @@ object ReviewsScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ReviewsViewModel = hiltViewModel(),
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        viewModel: ReviewsViewModel = viewModel { animeComponent.reviewsViewModel() },
         upIconOption: UpIconOption,
     ) {
-
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
         ) {

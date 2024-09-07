@@ -6,7 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
+@Inject
 class MediaTagDialogController(
     private val mediaTagsController: MediaTagsController,
 ){

@@ -13,36 +13,29 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Optional
-import javax.inject.Inject
-import kotlin.jvm.optionals.getOrNull
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
-@HiltViewModel
-class AnimeSongsViewModel @Inject constructor(
-    private val animeSongsProviderOptional: Optional<AnimeSongsProvider>,
+@Inject
+class AnimeSongsViewModel(
+    private val animeSongsProvider: AnimeSongsProvider? = null,
     val mediaPlayer: MediaPlayer,
+    @Assisted mediaDetailsViewModel: AnimeMediaDetailsViewModel,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
         private const val TAG = "AnimeSongsViewModel"
     }
 
-    val enabled = animeSongsProviderOptional.isPresent
+    val enabled = animeSongsProvider != null
     var animeSongs by mutableStateOf<AnimeSongs?>(null)
     private var animeSongStates by mutableStateOf(emptyMap<String, AnimeSongState>())
 
-    private var initialized = false
-
-    // TODO: Find a better way to do this
-    fun initialize(mediaDetailsViewModel: AnimeMediaDetailsViewModel) {
-        if (initialized) return
-        initialized = true
-        val animeSongsProvider = animeSongsProviderOptional.getOrNull()
+    init {
         if (animeSongsProvider != null) {
             viewModelScope.launch(CustomDispatchers.IO) {
                 snapshotFlow { mediaDetailsViewModel.entry }

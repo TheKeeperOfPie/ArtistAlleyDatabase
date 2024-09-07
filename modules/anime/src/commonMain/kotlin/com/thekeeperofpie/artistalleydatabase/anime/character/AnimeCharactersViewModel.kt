@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -25,26 +24,25 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AnimeCharactersViewModel @Inject constructor(
+@Inject
+class AnimeCharactersViewModel(
     private val aniListApi: AuthedAniListApi,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaDetailsViewModel: AnimeMediaDetailsViewModel,
 ) : ViewModel() {
 
     val charactersDeferred = MutableStateFlow(PagingData.empty<DetailsCharacter>())
 
     private val mediaId = savedStateHandle.get<String>("mediaId")!!
-    private var initialized = false
 
     var charactersInitial by mutableStateOf<List<DetailsCharacter>>(emptyList())
         private set
 
-    fun initialize(mediaDetailsViewModel: AnimeMediaDetailsViewModel) {
-        if (initialized) return
-        initialized = true
+    init {
         viewModelScope.launch(CustomDispatchers.Main) {
             snapshotFlow { mediaDetailsViewModel.entry.result?.media?.characters }
                 .collectLatest {

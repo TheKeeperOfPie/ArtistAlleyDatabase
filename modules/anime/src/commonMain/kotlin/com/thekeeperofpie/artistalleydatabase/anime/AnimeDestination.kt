@@ -15,7 +15,6 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination.ForumSearch.Title
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams

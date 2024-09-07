@@ -21,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantRandom
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantUserList
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -30,12 +29,12 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class Anime2AnimeViewModel @Inject constructor(
+@Inject
+class Anime2AnimeViewModel(
     private val api: AuthedAniListApi,
     private val aniListAutocompleter: AniListAutocompleter,
     private val mediaListStatusController: MediaListStatusController,

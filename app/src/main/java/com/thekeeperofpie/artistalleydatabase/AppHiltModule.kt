@@ -10,13 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
+import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -29,6 +26,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -121,13 +119,6 @@ object AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideMonetizationFeatureOverrideProvider(
-        scopedApplication: ScopedApplication,
-        aniListApi: AuthedAniListApi,
-    ): MonetizationOverrideProvider = AppMonetizationOverrideProvider(scopedApplication, aniListApi)
-
-    @Singleton
-    @Provides
     fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider {
         override val versionCode = BuildConfig.VERSION_CODE
         override val versionName = BuildConfig.VERSION_NAME
@@ -136,8 +127,15 @@ object AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideMonetizationController(
-        settings: MonetizationSettings,
-        overrideProvider: MonetizationOverrideProvider,
-    ) = MonetizationController(settings, overrideProvider)
+    fun provideMediaPlayer(
+        scope: ApplicationScope,
+        application: Application,
+        okHttpClient: OkHttpClient,
+        featureOverrideProvider: FeatureOverrideProvider,
+    ) = MediaPlayer(
+        scope = scope,
+        application = application,
+        okHttpClient = okHttpClient,
+        enableCache = featureOverrideProvider.enableAppMediaPlayerCache,
+    )
 }

@@ -9,10 +9,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.anilist.StudioMediasQuery
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
@@ -25,14 +27,17 @@ object StudioMediasScreen {
 
     @Composable
     operator fun invoke(
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
         upIconOption: UpIconOption?,
-        viewModel: StudioMediasViewModel = hiltViewModel(),
+        viewModel: StudioMediasViewModel = viewModel {
+            animeComponent.studioMediasViewModel(createSavedStateHandle())
+        },
         name: () -> String,
         favorite: () -> Boolean?,
     ) {
         val viewer by viewModel.viewer.collectAsState()
 
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         HeaderAndMediaListScreen(
             viewModel = viewModel,
             editViewModel = editViewModel,

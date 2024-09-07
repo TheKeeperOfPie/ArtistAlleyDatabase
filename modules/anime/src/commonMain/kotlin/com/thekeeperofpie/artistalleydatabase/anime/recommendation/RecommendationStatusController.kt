@@ -2,10 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
 import com.anilist.type.RecommendationRating
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.runningFold
+import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
+@Inject
 class RecommendationStatusController {
 
     private val updates = MutableSharedFlow<Update>(replay = 0, extraBufferCapacity = 5)

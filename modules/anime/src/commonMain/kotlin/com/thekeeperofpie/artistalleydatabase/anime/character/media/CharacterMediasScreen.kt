@@ -6,14 +6,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_character_medias_header
 import com.anilist.CharacterAndMediasQuery
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -29,7 +29,8 @@ object CharacterMediasScreen {
         sharedTransitionKey: SharedTransitionKey?,
     ) {
         val viewer by viewModel.viewer.collectAsState()
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val animeComponent = LocalAnimeComponent.current
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         HeaderAndMediaListScreen(
             viewModel = viewModel,
             editViewModel = editViewModel,

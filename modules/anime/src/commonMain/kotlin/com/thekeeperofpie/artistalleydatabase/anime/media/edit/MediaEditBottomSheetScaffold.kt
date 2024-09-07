@@ -21,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ClickableBottomSheetDragHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
@@ -33,8 +32,8 @@ object MediaEditBottomSheetScaffold {
 
     @Composable
     operator fun invoke(
+        viewModel: MediaEditViewModel,
         modifier: Modifier = Modifier,
-        viewModel: MediaEditViewModel = hiltViewModel(),
         topBar: @Composable() (() -> Unit)? = null,
         bottomNavigationState: BottomNavigationState? = null,
         sheetState: SheetState = rememberStandardBottomSheetState(

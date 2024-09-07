@@ -23,7 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOptio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -32,7 +31,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class UserListViewModel(
@@ -123,14 +123,14 @@ abstract class UserListViewModel(
         }
     }
 
-    @HiltViewModel
-    class Following @Inject constructor(
+    @Inject
+    class Following(
         aniListApi: AuthedAniListApi,
         mediaListStatusController: MediaListStatusController,
         ignoreController: IgnoreController,
         settings: AnimeSettings,
         featureOverrideProvider: FeatureOverrideProvider,
-        savedStateHandle: SavedStateHandle,
+        @Assisted savedStateHandle: SavedStateHandle,
     ) : UserListViewModel(
         aniListApi = aniListApi,
         mediaListStatusController = mediaListStatusController,
@@ -150,14 +150,14 @@ abstract class UserListViewModel(
         }
     )
 
-    @HiltViewModel
-    class Followers @Inject constructor(
+    @Inject
+    class Followers(
         aniListApi: AuthedAniListApi,
         mediaListStatusController: MediaListStatusController,
         ignoreController: IgnoreController,
         settings: AnimeSettings,
         featureOverrideProvider: FeatureOverrideProvider,
-        savedStateHandle: SavedStateHandle,
+        @Assisted savedStateHandle: SavedStateHandle,
     ) : UserListViewModel(
         aniListApi = aniListApi,
         mediaListStatusController = mediaListStatusController,

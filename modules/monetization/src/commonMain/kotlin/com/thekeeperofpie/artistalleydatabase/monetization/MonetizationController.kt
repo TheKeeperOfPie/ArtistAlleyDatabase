@@ -1,7 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.monetization
 
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
+@Inject
 class MonetizationController(
     settings: MonetizationSettings,
     overrideProvider: MonetizationOverrideProvider,

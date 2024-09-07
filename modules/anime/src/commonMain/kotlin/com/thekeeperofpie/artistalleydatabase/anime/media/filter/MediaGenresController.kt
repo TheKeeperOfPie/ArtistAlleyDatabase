@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,8 +13,11 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.datetime.Clock
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@SingletonScope
+@Inject
 class MediaGenresController(scope: ApplicationScope, aniListApi: AuthedAniListApi) {
 
     val refresh = MutableStateFlow(-1L)

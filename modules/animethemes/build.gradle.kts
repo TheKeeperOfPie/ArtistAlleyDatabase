@@ -1,22 +1,21 @@
 plugins {
-    id("module-library")
-    id("com.google.devtools.ksp")
-    id("dagger.hilt.android.plugin")
-    id("org.jetbrains.kotlin.plugin.serialization")
+    id("library-android")
+    id("library-desktop")
+    id("library-inject")
+}
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":modules:anime"))
+            api(project(":modules:utils-network"))
+            implementation(libs.ktor.client.core)
+            implementation(libs.kotlinx.serialization.json.io)
+        }
+    }
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.animethemes"
-}
-
-dependencies {
-    api(project(":modules:anime"))
-    api(project(":modules:utils-network"))
-    implementation(libs.kotlinx.serialization.json)
-
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-
-    api(libs.okhttp)
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 }

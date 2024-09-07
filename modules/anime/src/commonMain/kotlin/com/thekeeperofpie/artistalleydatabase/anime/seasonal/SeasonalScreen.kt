@@ -39,7 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
@@ -49,6 +50,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_seas
 import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_title
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -74,7 +77,10 @@ object SeasonalScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: SeasonalViewModel = hiltViewModel<SeasonalViewModel>(),
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        viewModel: SeasonalViewModel = viewModel {
+            animeComponent.seasonalViewModel(createSavedStateHandle())
+        },
         upIconOption: UpIconOption? = null,
     ) {
         val pagerState = rememberPagerState(
@@ -83,7 +89,7 @@ object SeasonalScreen {
         )
 
         val currentSeasonYear = remember { AniListUtils.getCurrentSeasonYear() }
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
         ) {
@@ -242,7 +248,7 @@ object SeasonalScreen {
                 MediaViewOption.SMALL_CARD,
                 MediaViewOption.LARGE_CARD,
                 MediaViewOption.COMPACT,
-                -> GridCells.Adaptive(300.dp)
+                    -> GridCells.Adaptive(300.dp)
                 MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
             }
             val gridState = rememberLazyGridState()

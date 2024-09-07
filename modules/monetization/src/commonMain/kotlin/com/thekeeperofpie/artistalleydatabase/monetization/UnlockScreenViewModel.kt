@@ -2,11 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.monetization
 
 import androidx.lifecycle.ViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
 
-@HiltViewModel
-class UnlockScreenViewModel @Inject constructor(
+@Inject
+class UnlockScreenViewModel(
     monetizationController: MonetizationController,
     private val featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {

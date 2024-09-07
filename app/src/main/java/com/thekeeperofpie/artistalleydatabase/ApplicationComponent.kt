@@ -14,6 +14,15 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
+import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
@@ -27,12 +36,19 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
+import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistComponent
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
+import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
@@ -74,7 +90,14 @@ abstract class ApplicationComponent(
     @get:Provides val cropSettings: CropSettings,
     @get:Provides val artEntryDatabase: ArtEntryDatabase,
     @get:Provides val artSettings: ArtSettings,
-) : AniListComponent, ArtEntryComponent, BrowseComponent, CdEntryComponent, MusicalArtistComponent, VgmdbComponent {
+    @get:Provides val animeDatabase: AnimeDatabase,
+    @get:Provides val animeSettings: AnimeSettings,
+    @get:Provides val navigationTypeMap: NavigationTypeMap,
+    @get:Provides val newsSettings: NewsSettings,
+    @get:Provides val monetizationSettings: MonetizationSettings,
+    @get:Provides val mediaPlayer: MediaPlayer,
+) : AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent, BrowseComponent,
+    CdEntryComponent, MusicalArtistComponent, VgmdbComponent {
 
     abstract val artistRepository: ArtistRepository
     abstract val albumRepository: AlbumRepository
@@ -99,6 +122,17 @@ abstract class ApplicationComponent(
     abstract val databaseSyncers: Set<DatabaseSyncer>
     abstract val artEntryNavigator: ArtEntryNavigator
     abstract val artEntryDetailsDao: ArtEntryDetailsDao
+    abstract val historyController: HistoryController
+
+    abstract val monetizationController: MonetizationController
+    abstract val mediaTagDialogController: MediaTagDialogController
+    abstract val mediaGenreDialogController: MediaGenreDialogController
+    abstract val markdown: Markdown
+    abstract val notificationsController: NotificationsController
+    abstract val ignoreController: IgnoreController
+
+    protected val AppMonetizationOverrideProvider.bind: MonetizationOverrideProvider
+        @Provides get() = this
 
     @Provides
     @SingletonScope

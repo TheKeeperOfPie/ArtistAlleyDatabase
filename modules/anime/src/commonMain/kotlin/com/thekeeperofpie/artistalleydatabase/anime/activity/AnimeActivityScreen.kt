@@ -15,17 +15,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_tab_following
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_tab_global
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_tab_own
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_title
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_title_with_media
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -39,14 +40,15 @@ object AnimeActivityScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: AnimeActivityViewModel = hiltViewModel<AnimeActivityViewModel>(),
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        viewModel: AnimeActivityViewModel = viewModel { animeComponent.animeActivityViewModel() },
     ) {
         val viewer by viewModel.viewer.collectAsState()
         val pagerState = rememberPagerState(
             initialPage = if (viewer == null) 0 else 1,
             pageCount = { if (viewer == null) 1 else 3 },
         )
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
         ) {

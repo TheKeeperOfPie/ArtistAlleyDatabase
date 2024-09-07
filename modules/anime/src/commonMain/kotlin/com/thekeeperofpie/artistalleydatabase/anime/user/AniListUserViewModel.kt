@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import artistalleydatabase.modules.anime.generated.resources.Res
+import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
 import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.ToggleFollowMutation
 import com.anilist.UserSocialActivityQuery
@@ -24,8 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortOption
@@ -54,7 +54,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUnique
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -77,12 +76,13 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
-import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AniListUserViewModel @Inject constructor(
+@Inject
+class AniListUserViewModel(
     private val aniListApi: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,
     private val activityStatusController: ActivityStatusController,
@@ -90,7 +90,7 @@ class AniListUserViewModel @Inject constructor(
     private val settings: AnimeSettings,
     private val markdown: Markdown,
     featureOverrideProvider: FeatureOverrideProvider,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 

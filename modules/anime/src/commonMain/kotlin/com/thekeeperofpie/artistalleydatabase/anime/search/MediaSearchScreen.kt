@@ -34,7 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_genre_info_content_description
@@ -43,13 +44,14 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_info_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_show_when_spoiler
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
@@ -67,15 +69,18 @@ object MediaSearchScreen {
 
     @Composable
     operator fun invoke(
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
         upIconOption: UpIconOption?,
         title: AnimeDestination.SearchMedia.Title?,
-        viewModel: AnimeSearchViewModel = hiltViewModel(),
+        viewModel: AnimeSearchViewModel = viewModel {
+            animeComponent.animeSearchViewModel(createSavedStateHandle())
+        },
         tagId: String?,
         genre: String?,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
         ) {
@@ -127,7 +132,7 @@ object MediaSearchScreen {
                         MediaViewOption.SMALL_CARD,
                         MediaViewOption.LARGE_CARD,
                         MediaViewOption.COMPACT,
-                        -> GridCells.Adaptive(300.dp)
+                            -> GridCells.Adaptive(300.dp)
                         MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
                     }
 
@@ -210,7 +215,7 @@ object MediaSearchScreen {
     ) {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             Column {
-                val text  = title?.text().orEmpty()
+                val text = title?.text().orEmpty()
 
                 TopAppBar(
                     title = { Text(text = text, maxLines = 1) },

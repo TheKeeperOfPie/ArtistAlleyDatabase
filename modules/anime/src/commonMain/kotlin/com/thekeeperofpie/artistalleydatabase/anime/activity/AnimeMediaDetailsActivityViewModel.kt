@@ -10,7 +10,6 @@ import com.anilist.fragment.ListActivityMediaListActivityItem
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -20,13 +19,15 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AnimeMediaDetailsActivityViewModel @Inject constructor(
+@Inject
+class AnimeMediaDetailsActivityViewModel(
     private val aniListApi: AuthedAniListApi,
     private val activityStatusController: ActivityStatusController,
+    @Assisted mediaDetailsViewModel: AnimeMediaDetailsViewModel,
 ) : ViewModel() {
 
     var activities by mutableStateOf<ActivitiesEntry?>(null)
@@ -34,10 +35,7 @@ class AnimeMediaDetailsActivityViewModel @Inject constructor(
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
-    private var initialized = false
-    fun initialize(mediaDetailsViewModel: AnimeMediaDetailsViewModel) {
-        if (initialized) return
-        initialized = true
+    init {
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(
                 aniListApi.authedUser,

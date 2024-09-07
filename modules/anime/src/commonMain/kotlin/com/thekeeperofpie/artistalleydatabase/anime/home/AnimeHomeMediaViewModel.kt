@@ -40,7 +40,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,8 +52,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
-import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class AnimeHomeMediaViewModel(
@@ -290,8 +289,8 @@ abstract class AnimeHomeMediaViewModel(
         }
     }
 
-    @HiltViewModel
-    class Anime @Inject constructor(
+    @Inject
+    class Anime(
         aniListApi: AuthedAniListApi,
         settings: AnimeSettings,
         ignoreController: IgnoreController,
@@ -379,8 +378,8 @@ abstract class AnimeHomeMediaViewModel(
         }
     }
 
-    @HiltViewModel
-    class Manga @Inject constructor(
+    @Inject
+    class Manga(
         aniListApi: AuthedAniListApi,
         settings: AnimeSettings,
         ignoreController: IgnoreController,

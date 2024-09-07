@@ -29,7 +29,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_history_anime
@@ -39,9 +40,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_history
 import artistalleydatabase.modules.anime.generated.resources.anime_media_history_not_enabled_prompt
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -57,11 +59,14 @@ object MediaHistoryScreen {
 
     @Composable
     operator fun invoke(
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
         upIconOption: UpIconOption? = null,
-        viewModel: MediaHistoryViewModel = hiltViewModel(),
+        viewModel: MediaHistoryViewModel = viewModel {
+            animeComponent.mediaHistoryViewModel(createSavedStateHandle())
+        },
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         val snackbarHostState = remember { SnackbarHostState() }
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
@@ -143,7 +148,7 @@ object MediaHistoryScreen {
                             MediaViewOption.SMALL_CARD,
                             MediaViewOption.LARGE_CARD,
                             MediaViewOption.COMPACT,
-                            -> GridCells.Adaptive(300.dp)
+                                -> GridCells.Adaptive(300.dp)
                             MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
                         }
 

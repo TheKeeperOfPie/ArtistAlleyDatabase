@@ -5,13 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
 
-
-@HiltViewModel
-class AnimeRootViewModel @Inject constructor(
+@Inject
+class AnimeRootViewModel(
     private val oAuthStore: AniListOAuthStore,
     private val monetizationController: MonetizationController,
     settings: AnimeSettings,

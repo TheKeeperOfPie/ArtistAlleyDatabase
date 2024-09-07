@@ -41,7 +41,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import androidx.hilt.navigation.compose.hiltViewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_header
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_root_active_header
@@ -74,7 +73,7 @@ object ForumRootScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ForumRootScreenViewModel = hiltViewModel(),
+        viewModel: ForumRootScreenViewModel,
         upIconOption: UpIconOption?,
     ) {
         val pullRefreshState = rememberPullRefreshState(

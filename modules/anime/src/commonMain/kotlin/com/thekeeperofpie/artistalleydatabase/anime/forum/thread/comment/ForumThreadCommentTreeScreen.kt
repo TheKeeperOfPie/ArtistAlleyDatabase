@@ -46,21 +46,23 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_comment_tree_view_parent_button
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_default_title
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_no_comments
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_viewing_comment_tree
 import artistalleydatabase.modules.anime.generated.resources.anime_writing_reply_fab_content_description
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadComment
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadDeleteCommentPrompt
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
@@ -80,7 +82,10 @@ object ForumThreadCommentTreeScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ForumThreadCommentTreeViewModel = hiltViewModel(),
+        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        viewModel: ForumThreadCommentTreeViewModel = viewModel {
+            animeComponent.forumThreadCommentTreeViewModel(createSavedStateHandle())
+        },
         upIconOption: UpIconOption?,
         title: String?,
     ) {
@@ -141,7 +146,7 @@ object ForumThreadCommentTreeScreen {
         ) {
             val scope = rememberCoroutineScope()
             val lazyListState = rememberLazyListState()
-            val editViewModel = hiltViewModel<MediaEditViewModel>()
+            val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
             val viewer by viewModel.viewer.collectAsState()
             MediaEditBottomSheetScaffold(
                 modifier = Modifier.padding(PaddingValues(top = it.calculateTopPadding())),
@@ -180,7 +185,11 @@ object ForumThreadCommentTreeScreen {
                         refreshing = refreshing,
                         onRefresh = viewModel::refresh,
                     )
-                    var deletePromptData by remember { mutableStateOf<Pair<String, MarkdownText?>?>(null) }
+                    var deletePromptData by remember {
+                        mutableStateOf<Pair<String, MarkdownText?>?>(
+                            null
+                        )
+                    }
 
                     Box(
                         modifier = Modifier

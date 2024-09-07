@@ -5,7 +5,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
+import me.tatarka.inject.annotations.Inject
 
+@Inject
 class AnimeThemesSongsProvider(private val animeThemesApi: AnimeThemesApi) : AnimeSongsProvider {
 
     override suspend fun getSongs(media: MediaDetailsQuery.Data.Media): List<AnimeSongEntry> {

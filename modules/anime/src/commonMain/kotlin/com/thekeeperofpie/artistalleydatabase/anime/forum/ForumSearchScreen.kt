@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_search
@@ -59,7 +58,7 @@ object ForumSearchScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ForumSearchViewModel = hiltViewModel(),
+        viewModel: ForumSearchViewModel,
         upIconOption: UpIconOption?,
         title: AnimeDestination.ForumSearch.Title?,
     ) {

@@ -2,11 +2,15 @@ package com.thekeeperofpie.artistalleydatabase.anime.history
 
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
+@Inject
 class HistoryController(
     private val scope: ApplicationScope,
     private val historyDao: AnimeHistoryDao,

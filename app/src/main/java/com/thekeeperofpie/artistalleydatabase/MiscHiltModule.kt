@@ -1,23 +1,31 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
+import androidx.navigation.NavType
 import androidx.security.crypto.MasterKey
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
+import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
+import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
@@ -30,9 +38,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.ElementsIntoSet
+import dagger.multibindings.IntoSet
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
+import kotlin.reflect.KType
 
 /**
  * Dumping ground for dependencies which need to eventually be migrated to multiplatform.
@@ -67,6 +77,12 @@ class MiscHiltModule {
         cropSettings: CropSettings,
         artEntryDatabase: ArtEntryDatabase,
         artSettings: ArtSettings,
+        animeDatabase: AnimeDatabase,
+        animeSettings: AnimeSettings,
+        navigationTypeMap: NavigationTypeMap,
+        newsSettings: NewsSettings,
+        monetizationSettings: MonetizationSettings,
+        mediaPlayer: MediaPlayer,
     ) = ApplicationComponent::class.create(
         application = application,
         networkClient = networkClient,
@@ -87,6 +103,12 @@ class MiscHiltModule {
         cropSettings = cropSettings,
         artEntryDatabase = artEntryDatabase,
         artSettings = artSettings,
+        animeDatabase = animeDatabase,
+        animeSettings = animeSettings,
+        navigationTypeMap = navigationTypeMap,
+        newsSettings = newsSettings,
+        monetizationSettings = monetizationSettings,
+        mediaPlayer = mediaPlayer,
     )
 
     @Provides
@@ -203,4 +225,21 @@ class MiscHiltModule {
     @Provides
     fun provideArtEntryDetailsDao(applicationComponent: ApplicationComponent) =
         applicationComponent.artEntryDetailsDao
+
+    @Provides
+    @IntoSet
+    fun provideNavigationTypeMap(): @JvmSuppressWildcards Map<KType, NavType<*>> =
+        AnimeDestination.typeMap
+
+    @Provides
+    fun provideHistoryController(applicationComponent: ApplicationComponent) =
+        applicationComponent.historyController
+
+    @Provides
+    fun provideIgnoreController(applicationComponent: ApplicationComponent) =
+        applicationComponent.ignoreController
+
+    @Provides
+    fun provideMonetizationController(applicationComponent: ApplicationComponent) =
+        applicationComponent.monetizationController
 }

@@ -77,17 +77,14 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceAc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGenrePreview
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaTagPreview
-import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
@@ -99,10 +96,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.rememberDrawerState
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.markdown.LocalMarkdown
-import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalSubscriptionProvider
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
@@ -152,9 +147,6 @@ class MainActivity : ComponentActivity() {
     lateinit var platformOAuthStore: PlatformOAuthStore
 
     @Inject
-    lateinit var monetizationController: MonetizationController
-
-    @Inject
     lateinit var monetizationProviderOptional: Optional<MonetizationProvider>
 
     @Inject
@@ -167,28 +159,20 @@ class MainActivity : ComponentActivity() {
     lateinit var featureOverrideProvider: FeatureOverrideProvider
 
     @Inject
-    lateinit var mediaTagDialogController: MediaTagDialogController
-
-    @Inject
-    lateinit var mediaGenreDialogController: MediaGenreDialogController
-
-    @Inject
     lateinit var appMetadataProvider: AppMetadataProvider
-
-    @Inject
-    lateinit var markdown: Markdown
 
     @Inject
     lateinit var navigationTypeMap: NavigationTypeMap
 
     @Inject
-    lateinit var notificationsController: NotificationsController
-
-    @Inject
-    lateinit var ignoreController: IgnoreController
-
-    @Inject
     lateinit var applicationComponent: ApplicationComponent
+
+    private val ignoreController by lazy { applicationComponent.ignoreController }
+    private val markdown by lazy { applicationComponent.markdown }
+    private val mediaGenreDialogController by lazy { applicationComponent.mediaGenreDialogController }
+    private val mediaTagDialogController by lazy { applicationComponent.mediaTagDialogController }
+    private val monetizationController by lazy { applicationComponent.monetizationController }
+    private val notificationsController by lazy { applicationComponent.notificationsController }
 
     private val fullScreenImageHandler = FullscreenImageHandler()
 
@@ -248,6 +232,7 @@ class MainActivity : ComponentActivity() {
                     LocalAnimeComposeSettings provides settings.composeSettingsData(),
                     LocalImageColorsState provides imageColorsState,
                     LocalIgnoreController provides ignoreController,
+                    LocalAnimeComponent provides applicationComponent,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {
@@ -461,6 +446,7 @@ class MainActivity : ComponentActivity() {
                                 onClickShowLastCrash = {
                                     navHostController.navigate(AppNavDestinations.CRASH.id)
                                 },
+                                animeComponent = applicationComponent,
                                 cdEntryComponent = applicationComponent,
                             )
 
@@ -569,7 +555,10 @@ class MainActivity : ComponentActivity() {
                             }
 
                             sharedElementComposable(AppNavDestinations.ANIME_2_ANIME.id) {
-                                Anime2AnimeScreen(upIconOption = navDrawerUpIconOption)
+                                Anime2AnimeScreen(
+                                    viewModel = viewModel { applicationComponent.anime2AnimeViewModel() },
+                                    upIconOption = navDrawerUpIconOption,
+                                )
                             }
 
                             sharedElementComposable(

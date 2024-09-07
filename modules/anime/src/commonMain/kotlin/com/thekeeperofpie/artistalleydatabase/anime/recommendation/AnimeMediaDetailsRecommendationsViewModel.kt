@@ -18,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -27,17 +26,19 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AnimeMediaDetailsRecommendationsViewModel @Inject constructor(
+@Inject
+class AnimeMediaDetailsRecommendationsViewModel(
     private val aniListApi: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,
     private val recommendationStatusController: RecommendationStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
-    savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaDetailsViewModel: AnimeMediaDetailsViewModel,
 ) : ViewModel() {
 
     var recommendations by mutableStateOf<RecommendationsEntry?>(null)
@@ -47,12 +48,8 @@ class AnimeMediaDetailsRecommendationsViewModel @Inject constructor(
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 
     private val mediaId = savedStateHandle.get<String>("mediaId")!!
-    private var initialized = false
 
-    fun initialize(mediaDetailsViewModel: AnimeMediaDetailsViewModel) {
-        if (initialized) return
-        initialized = true
-
+    init {
         viewModelScope.launch(CustomDispatchers.Main) {
             snapshotFlow { mediaDetailsViewModel.entry2.result }
                 .filterNotNull()

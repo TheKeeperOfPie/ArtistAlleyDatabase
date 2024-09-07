@@ -30,25 +30,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import artistalleydatabase.modules.utils_compose.generated.resources.confirm
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_auth_button_log_in
 import artistalleydatabase.modules.anime.generated.resources.anime_auth_prompt_label
 import artistalleydatabase.modules.anime.generated.resources.anime_auth_prompt_paste
 import artistalleydatabase.modules.anime.generated.resources.anime_auth_prompt_text
 import artistalleydatabase.modules.anime.generated.resources.anime_settings_content_description
+import artistalleydatabase.modules.utils_compose.generated.resources.confirm
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import org.jetbrains.compose.resources.stringResource
 
 object AniListViewerProfileScreen {
 
@@ -69,7 +70,9 @@ object AniListViewerProfileScreen {
                 bottomNavigationState = bottomNavigationState,
             )
         } else {
-            val viewModel = hiltViewModel<AniListUserViewModel>()
+            val animeComponent = LocalAnimeComponent.current
+            val viewModel =
+                viewModel { animeComponent.aniListUserViewModel(createSavedStateHandle()) }
             val headerValues = UserHeaderValues(null) { viewModel.entry?.user }
             AniListUserScreen(
                 viewModel = viewModel,
@@ -118,7 +121,8 @@ object AniListViewerProfileScreen {
                     Text(
                         stringResource(Res.string.anime_auth_prompt_text),
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
                             .widthIn(min = 300.dp)
                             .width(IntrinsicSize.Min)
                     )

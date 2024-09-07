@@ -23,6 +23,7 @@ import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
@@ -57,6 +58,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
+import me.tatarka.inject.annotations.Inject
 
 /**
  * User's MediaListCollection API is very broken, it makes sense to query a known working complete
@@ -66,6 +68,8 @@ import kotlinx.serialization.json.io.encodeToSink
  * implemented.
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalSerializationApi::class)
+@SingletonScope
+@Inject
 class UserMediaListController(
     private val appFileSystem: AppFileSystem,
     private val scope: ApplicationScope,

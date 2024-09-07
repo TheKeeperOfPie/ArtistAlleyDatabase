@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOptio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -42,12 +41,12 @@ import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel
-class AiringScheduleViewModel @Inject constructor(
+@Inject
+class AiringScheduleViewModel(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     private val statusController: MediaListStatusController,

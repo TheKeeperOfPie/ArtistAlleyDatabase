@@ -6,12 +6,16 @@ import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
+@Inject
 class IgnoreController(
     private val scope: ApplicationScope,
     private val ignoreDao: AnimeIgnoreDao,
