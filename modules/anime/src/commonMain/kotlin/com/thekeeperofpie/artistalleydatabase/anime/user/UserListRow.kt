@@ -27,24 +27,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.anime.generated.resources.Res
+import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
+import artistalleydatabase.modules.anime.generated.resources.anime_user_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_image_long_press_preview
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
@@ -52,9 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
-import com.eygraber.compose.placeholder.PlaceholderHighlight
-import com.eygraber.compose.placeholder.material3.placeholder
-import com.eygraber.compose.placeholder.material3.shimmer
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -64,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
@@ -201,7 +200,6 @@ object UserListRow {
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() } ?: return
-        val context = LocalContext.current
         val density = LocalDensity.current
         LazyRow(
             contentPadding = PaddingValues(start = 16.dp, end = 32.dp),
@@ -210,7 +208,7 @@ object UserListRow {
                 .padding(top = 8.dp)
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
+                .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
                 .fadingEdgeEnd()
         ) {
             items(

@@ -33,12 +33,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.anime.generated.resources.Res
+import artistalleydatabase.modules.anime.generated.resources.anime_character_image_content_description
+import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
+import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
 import coil3.request.crossfade
 import coil3.size.Dimension
@@ -47,13 +48,12 @@ import com.anilist.UserFavoritesStaffQuery
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_character_image_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
@@ -67,9 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.eygraber.compose.placeholder.PlaceholderHighlight
-import com.eygraber.compose.placeholder.material3.placeholder
-import com.eygraber.compose.placeholder.material3.shimmer
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -77,6 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
     ExperimentalCoilApi::class
@@ -245,7 +244,6 @@ object StaffListRow {
         val media = entry?.media.orEmpty()
         val characters = entry?.characters.orEmpty()
         if (media.isEmpty() && characters.isEmpty()) return
-        val context = LocalContext.current
         val density = LocalDensity.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -253,7 +251,7 @@ object StaffListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
+                .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
         ) {
             items(characters, key = { it.id }) {
                 val navigationCallback = LocalNavigationCallback.current

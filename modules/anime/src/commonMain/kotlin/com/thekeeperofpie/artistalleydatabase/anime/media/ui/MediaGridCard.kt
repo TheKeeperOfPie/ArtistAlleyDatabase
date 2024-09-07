@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
-import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -25,13 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.isUnspecified
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
@@ -76,27 +75,21 @@ object MediaGridCard {
         showTypeIcon: Boolean = false,
         label: @Composable() (ColumnScope.(textColor: Color) -> Unit) = {},
     ) {
-        val sharedTransitionKey = entry?.media?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
+        val sharedTransitionKey =
+            entry?.media?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
         val coverImageState = rememberCoilImageState(entry?.media?.coverImage?.extraLarge)
         val colors = coverImageState.colors
-        val animationProgress by animateIntAsState(
-            if (colors.containerColor.isUnspecified) 0 else 255,
+        val animationProgress by animateFloatAsState(
+            if (colors.containerColor.isUnspecified) 0f else 1f,
             label = "Media grid card color fade in",
         )
 
         val surfaceColor = entry?.color ?: MaterialTheme.colorScheme.surface
         val containerColor = when {
-            colors.containerColor.isUnspecified || animationProgress == 0 -> surfaceColor
-            animationProgress == 255 -> colors.containerColor
-            else -> Color(
-                ColorUtils.compositeColors(
-                    ColorUtils.setAlphaComponent(
-                        colors.containerColor.toArgb(),
-                        animationProgress
-                    ),
-                    surfaceColor.toArgb()
-                )
-            )
+            colors.containerColor.isUnspecified || animationProgress == 0f -> surfaceColor
+            animationProgress == 1f -> colors.containerColor
+            else -> colors.containerColor.copy(alpha = animationProgress)
+                .compositeOver(surfaceColor)
         }
 
         ElevatedCard(

@@ -4,7 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 actual class MediaPlayer {
-    // TODO: Actually add a desktop implementation
+    actual var progress: Float
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    actual var activeId: String?
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    actual var playing: Boolean
+        get() = TODO("Not yet implemented")
+        set(value) {}
     actual fun prepare(id: String, url: String) = Unit
     actual fun pause(id: String?) = Unit
     actual fun playPause(id: String, url: String) = Unit

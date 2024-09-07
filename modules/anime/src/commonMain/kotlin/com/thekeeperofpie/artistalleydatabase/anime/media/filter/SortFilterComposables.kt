@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -66,7 +64,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.coerceAtLeast
@@ -100,10 +97,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogCon
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilterChip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ItemDropdown
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
@@ -112,6 +111,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExclud
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -134,7 +134,7 @@ fun SortFilterBottomScaffold(
     val bottomSheetState = scaffoldState.bottomSheetState
     BackHandler(
         enabled = bottomSheetState.targetValue == SheetValue.Expanded
-                && !WindowInsets.isImeVisible
+                && !WindowInsets.isImeVisibleKmp
     ) {
         scope.launch { bottomSheetState.partialExpand() }
     }
@@ -426,7 +426,7 @@ private fun AiringDateBasicSection(
                     .padding(horizontal = 8.dp)
             )
 
-            val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+            val screenWidth = LocalAppConfiguration.current.screenWidthDp.dp
             val minWidth = screenWidth / 2 - 32.dp
             val leadingIcon = @Composable {
                 IconButton(onClick = {

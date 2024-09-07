@@ -34,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -117,11 +116,10 @@ object AnimeSongComposables {
     ) {
         val state = viewModel.getAnimeSongState(entry.id)
         val mediaPlayer = viewModel.mediaPlayer
-        val playingState by mediaPlayer.playingState.collectAsState()
         val active by remember {
-            derivedStateOf { playingState.first == entry.id }
+            derivedStateOf { mediaPlayer.activeId == entry.id }
         }
-        val playing = active && playingState.second
+        val playing = active && mediaPlayer.playing
 
         ElevatedCard(
             modifier = Modifier

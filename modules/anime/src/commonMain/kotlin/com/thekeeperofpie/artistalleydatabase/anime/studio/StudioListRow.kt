@@ -19,8 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -42,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -129,7 +128,6 @@ object StudioListRow {
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
-        val context = LocalContext.current
         val density = LocalDensity.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -137,7 +135,7 @@ object StudioListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = mediaHeight)
+                .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = mediaHeight)
                 .fadingEdgeEnd()
         ) {
             itemsIndexed(

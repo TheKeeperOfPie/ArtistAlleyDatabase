@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.writing
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -50,6 +48,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_writing_reply
 import artistalleydatabase.modules.anime.generated.resources.anime_writing_replying_to_op
 import artistalleydatabase.modules.anime.generated.resources.anime_writing_send_button
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -85,7 +85,7 @@ fun WritingReplyPanelScaffold(
     }
 
     BackHandler(
-        enabled = sheetState.targetValue != SheetValue.Hidden && !WindowInsets.isImeVisible
+        enabled = sheetState.targetValue != SheetValue.Hidden && !WindowInsets.isImeVisibleKmp
     ) {
         scope.launch { sheetState.hide() }
     }

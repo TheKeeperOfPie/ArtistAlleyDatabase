@@ -217,7 +217,7 @@ object CharacterDetailsScreen {
         coverImageState: CoilImageState,
         expandedState: ExpandedState,
     ) {
-        if (!entry.description?.value.isNullOrEmpty()) {
+        if (entry.description != null) {
             item("descriptionSection", "descriptionSection") {
                 DescriptionSection(
                     markdownText = entry.description,

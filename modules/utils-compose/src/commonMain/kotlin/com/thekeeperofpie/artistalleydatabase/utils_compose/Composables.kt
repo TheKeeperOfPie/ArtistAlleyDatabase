@@ -45,6 +45,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.log_exception
@@ -143,7 +145,7 @@ private fun RowScope.SnackbarErrorTextInner(
                 .align(Alignment.CenterVertically),
         ) {
             Text(
-                text = stringResource(Res.string.log_exception).uppercase(),
+                text = stringResource(Res.string.log_exception).toUpperCase(Locale.current),
                 color = MaterialTheme.colorScheme.onSecondary
             )
         }

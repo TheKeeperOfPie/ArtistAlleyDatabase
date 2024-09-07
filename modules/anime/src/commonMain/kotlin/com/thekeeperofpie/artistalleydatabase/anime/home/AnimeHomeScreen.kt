@@ -73,7 +73,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
@@ -141,6 +140,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
@@ -399,9 +399,10 @@ object AnimeHomeScreen {
                 .testTag("homeColumn")
                 .verticalScroll(scrollState)
         ) {
-            val configuration = LocalConfiguration.current
+            val configuration = LocalAppConfiguration.current
+            val screenWidthDp = configuration.screenWidthDp.dp
             val pageSize = remember {
-                PageSize.Fixed(420.coerceAtMost(configuration.screenWidthDp - 32).dp)
+                PageSize.Fixed(420.dp.coerceAtMost(screenWidthDp - 32.dp))
             }
             NewsRow(
                 data = viewModel.newsController.newsDateDescending(),
@@ -433,7 +434,6 @@ object AnimeHomeScreen {
             )
 
             val selectedItemTracker = remember { SelectedItemTracker() }
-            val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
             val contentPadding = PaddingValues(
                 start = 16.dp,
                 end = (screenWidthDp - MEDIA_ROW_IMAGE_WIDTH).let {

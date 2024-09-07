@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
-import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,21 +36,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_character_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_character_role_main
 import artistalleydatabase.modules.anime.generated.resources.anime_media_voice_actor_image
-import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.eygraber.compose.placeholder.PlaceholderHighlight
@@ -78,6 +76,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.allowHardware
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.colorsOrDefault
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
@@ -109,38 +108,24 @@ fun CharacterSmallCard(
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
     val colors = imageState.colorsOrDefault()
 
-    val animationProgress by animateIntAsState(
-        if (colors.containerColor.isUnspecified) 0 else 255,
+    val animationProgress by animateFloatAsState(
+        if (colors.containerColor.isUnspecified) 0f else 1f,
         label = "Character card color fade in",
     )
 
     val containerColor = when {
-        colors.containerColor.isUnspecified || animationProgress == 0 ->
+        colors.containerColor.isUnspecified || animationProgress == 0f ->
             MaterialTheme.colorScheme.surface
-        animationProgress == 255 -> colors.containerColor
-        else -> Color(
-            ColorUtils.compositeColors(
-                ColorUtils.setAlphaComponent(
-                    colors.containerColor.toArgb(),
-                    animationProgress
-                ),
-                MaterialTheme.colorScheme.surface.toArgb()
-            )
-        )
+        animationProgress == 1f -> colors.containerColor
+        else -> colors.containerColor.copy(alpha = animationProgress)
+            .compositeOver(MaterialTheme.colorScheme.surface)
     }
 
     val textColor = when {
-        colors.textColor.isUnspecified || animationProgress == 0 -> defaultTextColor
-        animationProgress == 255 -> colors.textColor
-        else -> Color(
-            ColorUtils.compositeColors(
-                ColorUtils.setAlphaComponent(
-                    colors.textColor.toArgb(),
-                    animationProgress
-                ),
-                defaultTextColor.toArgb()
-            )
-        )
+        colors.textColor.isUnspecified || animationProgress == 0f -> defaultTextColor
+        animationProgress == 1f -> colors.textColor
+        else -> colors.textColor.copy(alpha = animationProgress)
+            .compositeOver(defaultTextColor)
     }
 
     ElevatedCard(
@@ -210,7 +195,10 @@ fun CharacterSmallCard(
                         ),
                         modifier = Modifier
                             .size(width = 40.dp, height = 40.dp)
-                            .sharedElement(innerSharedTransitionKey, innerSharedTransitionIdentifier)
+                            .sharedElement(
+                                innerSharedTransitionKey,
+                                innerSharedTransitionIdentifier
+                            )
                             .align(Alignment.BottomEnd)
                             .clip(clipShape)
                             .optionalClickable(onClickInnerImage)
@@ -481,13 +469,7 @@ fun CharactersSectionItem(
         AutoResizeHeightText(
             text = text(),
             color = textColor,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                lineBreak = LineBreak(
-                    strategy = LineBreak.Strategy.Balanced,
-                    strictness = LineBreak.Strictness.Strict,
-                    wordBreak = LineBreak.WordBreak.Default,
-                )
-            ),
+            style = MaterialTheme.typography.bodyMedium.copy(lineBreak = LineBreak.Heading),
             minTextSizeSp = 8f,
             textAlignment = Alignment.TopStart,
             modifier = Modifier

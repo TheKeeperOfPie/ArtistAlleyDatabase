@@ -1,6 +1,7 @@
 plugins {
     id("library-android")
     id("library-compose")
+    id("library-desktop")
     id("library-inject")
     alias(libs.plugins.de.mannodermaus.android.junit5)
 }

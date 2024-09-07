@@ -34,7 +34,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
@@ -128,10 +127,9 @@ object AiringScheduleScreen {
                         )
 
                         ScrollableTabRow(selectedTabIndex = pagerState.currentPage) {
-                            val context = LocalContext.current
                             val dateTimeFormatter = LocalDateTimeFormatter.current
-                            val dayData = remember(context) {
-                                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                            val dayData = remember(today) {
                                 val tomorrow = today.plus(1, DateTimeUnit.DAY)
                                 val startOfWeek =
                                     today.minus(today.dayOfWeek.value.toLong() - 1, DateTimeUnit.DAY)

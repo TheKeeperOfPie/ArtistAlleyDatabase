@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -103,7 +102,7 @@ object UserOverviewScreen {
                 onFollowingClick = onFollowingClick,
             )
 
-            if (!entry.about?.value.isNullOrEmpty()) {
+            if (entry.about != null) {
                 item("aboutSection", "aboutSection") {
                     DescriptionSection(
                         markdownText = entry.about,

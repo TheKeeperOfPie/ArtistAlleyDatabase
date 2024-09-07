@@ -17,15 +17,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_media_load_retry
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_media_year_unknown
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
@@ -35,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffMediaScreen {
@@ -120,13 +120,8 @@ object StaffMediaScreen {
                                         AutoHeightText(
                                             text = stringResource(it.toTextRes()),
                                             color = textColor,
-                                            style = MaterialTheme.typography.bodySmall.copy(
-                                                lineBreak = LineBreak(
-                                                    strategy = LineBreak.Strategy.Simple,
-                                                    strictness = LineBreak.Strictness.Strict,
-                                                    wordBreak = LineBreak.WordBreak.Default,
-                                                )
-                                            ),
+                                            style = MaterialTheme.typography.bodySmall
+                                                .copy(lineBreak = LineBreak.Heading),
                                             maxLines = 1,
                                             minTextSizeSp = 8f,
                                             modifier = Modifier
@@ -139,13 +134,8 @@ object StaffMediaScreen {
                                         AutoHeightText(
                                             text = it,
                                             color = textColor,
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                lineBreak = LineBreak(
-                                                    strategy = LineBreak.Strategy.Balanced,
-                                                    strictness = LineBreak.Strictness.Strict,
-                                                    wordBreak = LineBreak.WordBreak.Default,
-                                                )
-                                            ),
+                                            style = MaterialTheme.typography.bodyMedium
+                                                .copy(lineBreak = LineBreak.Heading),
                                             minTextSizeSp = 8f,
                                             minLines = 2,
                                             maxLines = 2,

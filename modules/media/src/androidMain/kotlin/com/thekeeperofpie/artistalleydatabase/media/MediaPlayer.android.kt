@@ -3,7 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.media
 import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -21,7 +23,6 @@ import com.hoc081098.flowext.interval
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
@@ -39,8 +40,9 @@ actual class MediaPlayer(
     enableCache: Boolean,
 ) {
     // TODO: ID doesn't consider nested duplicate screens; unsure if this matters
-    var playingState = MutableStateFlow<Pair<String?, Boolean>>(null to false)
-    var progress by mutableFloatStateOf(0f)
+    actual var progress by mutableFloatStateOf(0f)
+    actual var activeId by mutableStateOf<String?>(null)
+    actual var playing by mutableStateOf(false)
 
     val player = ExoPlayer.Builder(application)
         .setMediaSourceFactory(
@@ -59,7 +61,7 @@ actual class MediaPlayer(
                         Player.STATE_READY,
                             -> Unit
                         Player.STATE_ENDED -> {
-                            playingState.value = playingState.value.copy(second = false)
+                            playing = false
                             seekTo(C.TIME_UNSET)
                             stop()
                         }
@@ -97,13 +99,14 @@ actual class MediaPlayer(
 
     init {
         scope.launch(Dispatchers.Main) {
-            playingState.flatMapLatest {
-                if (it.first != null && it.second) {
-                    interval(Duration.ZERO, 1.seconds)
-                } else {
-                    emptyFlow()
+            snapshotFlow { activeId to playing }
+                .flatMapLatest {
+                    if (it.first != null && it.second) {
+                        interval(Duration.ZERO, 1.seconds)
+                    } else {
+                        emptyFlow()
+                    }
                 }
-            }
                 .collect {
                     progress = player.currentPosition / player.duration.toFloat()
                 }
@@ -111,9 +114,10 @@ actual class MediaPlayer(
     }
 
     actual fun prepare(id: String, url: String) {
-        val currentId = playingState.value.first
-        playingState.value = id to false
-        if (currentId != id) {
+        val previousId = activeId
+        activeId = id
+        playing = false
+        if (previousId != id) {
             player.pause()
         }
 
@@ -122,28 +126,23 @@ actual class MediaPlayer(
     }
 
     actual fun pause(id: String?) {
-        val state = playingState.value
-        if (id == null) {
-            playingState.value = state.copy(second = false)
-            player.pause()
-        } else {
-            if (state.first != id) return
-            playingState.value = id to false
-            player.pause()
-        }
+        if (id != null && activeId != id) return
+        playing = false
+        player.pause()
     }
 
     actual fun playPause(id: String, url: String) {
-        val state = playingState.value
-        if (state.first == id) {
-            playingState.value = id to !state.second
-            if (state.second) {
+        if (activeId == id) {
+            val wasPlaying = playing
+            playing = !wasPlaying
+            if (wasPlaying) {
                 player.pause()
             } else {
                 player.play()
             }
         } else {
-            playingState.value = id to true
+            activeId = id
+            playing = true
             player.setMediaItem(MediaItem.fromUri(url))
             player.prepare()
             player.play()
@@ -151,15 +150,13 @@ actual class MediaPlayer(
     }
 
     actual fun stop(id: String) {
-        val state = playingState.value
-        if (state.first != id) return
-        playingState.value = state.copy(second = false)
+        if (activeId != id) return
+        playing = false
         player.stop()
     }
 
     actual fun updateProgress(id: String, progress: Float) {
-        val state = playingState.value
-        if (state.first != id) return
+        if (activeId != id) return
         this.progress = progress
         player.seekTo((player.duration * progress).toLong())
     }

@@ -79,13 +79,8 @@ object StaffStaffScreen {
                                         AutoHeightText(
                                             text = it,
                                             color = textColor,
-                                            style = MaterialTheme.typography.bodySmall.copy(
-                                                lineBreak = LineBreak(
-                                                    strategy = LineBreak.Strategy.Simple,
-                                                    strictness = LineBreak.Strictness.Strict,
-                                                    wordBreak = LineBreak.WordBreak.Default,
-                                                )
-                                            ),
+                                            style = MaterialTheme.typography.bodySmall
+                                                .copy(lineBreak = LineBreak.Heading),
                                             minLines = 2,
                                             maxLines = 2,
                                             minTextSizeSp = 8f,

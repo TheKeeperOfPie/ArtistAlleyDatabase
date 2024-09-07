@@ -1,13 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -39,10 +37,12 @@ import artistalleydatabase.modules.anime.generated.resources.anime_forum_search_
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
@@ -145,7 +145,7 @@ object ForumSearchScreen {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
             BackHandler(
-                isNotEmpty && !WindowInsets.isImeVisible
+                isNotEmpty && !WindowInsets.isImeVisibleKmp
                         // Need to manually check sheet state because top bar
                         // takes precedence over all other handlers
                         && sheetState.targetValue != SheetValue.Expanded

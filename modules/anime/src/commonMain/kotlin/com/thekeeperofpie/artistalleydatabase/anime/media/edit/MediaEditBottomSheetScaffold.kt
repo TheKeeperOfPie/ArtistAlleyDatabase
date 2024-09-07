@@ -1,10 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,9 +19,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ClickableBottomSheetDragHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -73,7 +73,7 @@ object MediaEditBottomSheetScaffold {
         }
 
         BackHandler(enabled = sheetState.targetValue == SheetValue.Expanded
-                && !WindowInsets.isImeVisible) {
+                && !WindowInsets.isImeVisibleKmp) {
             if (viewModel.attemptDismiss()) {
                 scope.launch { sheetState.hide() }
                     .invokeOnCompletion { viewModel.hide() }

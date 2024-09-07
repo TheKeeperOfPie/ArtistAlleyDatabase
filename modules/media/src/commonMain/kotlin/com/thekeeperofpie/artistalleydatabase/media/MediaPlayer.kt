@@ -8,6 +8,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
 expect class MediaPlayer {
+    var progress: Float
+        private set
+    var activeId: String?
+        private set
+    var playing: Boolean
+        private set
+
     fun prepare(id: String, url: String)
     fun pause(id: String?)
     fun playPause(id: String, url: String)

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -49,7 +47,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -80,6 +79,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
@@ -87,6 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
@@ -276,7 +277,7 @@ object AnimeUserListScreen {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
             BackHandler(
-                isNotEmpty && !WindowInsets.isImeVisible
+                isNotEmpty && !WindowInsets.isImeVisibleKmp
                         // Need to manually check sheet state because top bar
                         // takes precedence over all other handlers
                         && sheetStateOne.targetValue != SheetValue.Expanded
@@ -366,12 +367,13 @@ object AnimeUserListScreen {
                             onClick = { scope.launch { pagerState.scrollToPage(0) } },
                             text = { Text(stringResource(Res.string.anime_user_list_tab_all)) }
                         )
-                        val locale = LocalConfiguration.current.locales[0]
+
+                        val locale = Locale.current
                         lists.forEachIndexed { index, list ->
                             Tab(
                                 selected = selectedIndex == (index + 1),
                                 onClick = { scope.launch { pagerState.scrollToPage(index + 1) } },
-                                text = { Text(list.name.uppercase(locale)) }
+                                text = { Text(list.name.toUpperCase(locale)) }
                             )
                         }
                     }

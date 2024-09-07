@@ -37,7 +37,11 @@ actual class Markdown(application: Application) {
         .build()
 
     actual fun convertMarkdownText(markdown: String) =
-        MarkdownText(markwon.toMarkdown(markdown))
+        runCatching {
+            markwon.toMarkdown(markdown)
+                .takeIf { it.isNotBlank() }
+                ?.let(::MarkdownText)
+        }.getOrNull()
 
     fun setParsedMarkdown(textView: TextView, text: MarkdownText) =
         markwon.setParsedMarkdown(textView, text.value)

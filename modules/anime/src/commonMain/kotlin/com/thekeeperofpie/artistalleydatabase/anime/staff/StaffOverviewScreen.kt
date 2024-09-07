@@ -56,7 +56,7 @@ object StaffOverviewScreen {
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            if (!entry.description?.value.isNullOrEmpty()) {
+            if (entry.description != null) {
                 item("descriptionSection", "descriptionSection") {
                     DescriptionSection(
                         markdownText = entry.description,

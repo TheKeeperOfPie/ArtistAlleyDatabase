@@ -57,7 +57,6 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -74,6 +73,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHa
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AccelerateEasing
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
@@ -241,7 +241,7 @@ internal fun CoverAndBannerHeader(
                             .sharedElement(sharedTransitionKey, coverImageSharedTransitionIdentifier)
                     ) {
                         val imageHeight = rowHeight - 20.dp
-                        val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
+                        val maxWidth = LocalAppConfiguration.current.screenWidthDp.dp * 0.4f
                         CoilImage(
                             state = coverImageState,
                             model = coverImageState.request()

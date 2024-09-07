@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
-import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,14 +18,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.isUnspecified
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -126,13 +125,8 @@ fun StaffListRow(
                         AutoHeightText(
                             text = it,
                             color = textColor,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                lineBreak = LineBreak(
-                                    strategy = LineBreak.Strategy.Simple,
-                                    strictness = LineBreak.Strictness.Strict,
-                                    wordBreak = LineBreak.WordBreak.Default,
-                                )
-                            ),
+                            style = MaterialTheme.typography.bodySmall
+                                .copy(lineBreak = LineBreak.Heading),
                             minLines = roleLines,
                             maxLines = roleLines,
                             minTextSizeSp = 8f,
@@ -145,13 +139,8 @@ fun StaffListRow(
                     AutoHeightText(
                         text = staff?.name?.primaryName().orEmpty(),
                         color = textColor,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            lineBreak = LineBreak(
-                                strategy = LineBreak.Strategy.Balanced,
-                                strictness = LineBreak.Strictness.Strict,
-                                wordBreak = LineBreak.WordBreak.Default,
-                            )
-                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                            .copy(lineBreak = LineBreak.Heading),
                         minTextSizeSp = 8f,
                         minLines = 2,
                         maxLines = 2,
@@ -183,38 +172,24 @@ fun StaffSmallCard(
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
     val colors = imageState.colors
 
-    val animationProgress by animateIntAsState(
-        if (colors.containerColor.isUnspecified) 0 else 255,
+    val animationProgress by animateFloatAsState(
+        if (colors.containerColor.isUnspecified) 0f else 1f,
         label = "Staff card color fade in",
     )
 
     val containerColor = when {
-        colors.containerColor.isUnspecified || animationProgress == 0 ->
+        colors.containerColor.isUnspecified || animationProgress == 0f ->
             MaterialTheme.colorScheme.surface
-        animationProgress == 255 -> colors.containerColor
-        else -> Color(
-            ColorUtils.compositeColors(
-                ColorUtils.setAlphaComponent(
-                    colors.containerColor.toArgb(),
-                    animationProgress
-                ),
-                MaterialTheme.colorScheme.surface.toArgb()
-            )
-        )
+        animationProgress == 1f -> colors.containerColor
+        else -> colors.containerColor.copy(alpha = animationProgress)
+            .compositeOver(MaterialTheme.colorScheme.surface)
     }
 
     val textColor = when {
-        colors.textColor.isUnspecified || animationProgress == 0 -> defaultTextColor
-        animationProgress == 255 -> colors.textColor
-        else -> Color(
-            ColorUtils.compositeColors(
-                ColorUtils.setAlphaComponent(
-                    colors.textColor.toArgb(),
-                    animationProgress
-                ),
-                defaultTextColor.toArgb()
-            )
-        )
+        colors.textColor.isUnspecified || animationProgress == 0f -> defaultTextColor
+        animationProgress == 1f -> colors.textColor
+        else -> colors.textColor.copy(alpha = animationProgress)
+            .compositeOver(defaultTextColor)
     }
 
     ElevatedCard(

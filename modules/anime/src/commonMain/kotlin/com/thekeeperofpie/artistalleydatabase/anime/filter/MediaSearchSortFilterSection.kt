@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.filter
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
@@ -67,6 +66,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -178,11 +178,11 @@ class MediaSearchSortFilterSection(
 
                     val focused by interactionSource.collectIsFocusedAsState()
                     val focusManager = LocalFocusManager.current
-                    BackHandler(enabled = focused && !WindowInsets.isImeVisible) {
+                    val isImeVisible = WindowInsets.isImeVisibleKmp
+                    BackHandler(enabled = focused && !isImeVisible) {
                         focusManager.clearFocus()
                     }
 
-                    val isImeVisible = WindowInsets.isImeVisible
                     val media = predictions
                     DropdownMenu(
                         expanded = focused && media.isNotEmpty(),
