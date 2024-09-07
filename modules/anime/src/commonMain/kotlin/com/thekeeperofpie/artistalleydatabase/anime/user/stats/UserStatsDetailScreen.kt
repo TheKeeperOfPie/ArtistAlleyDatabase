@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,7 +54,6 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Suppress("NAME_SHADOWING")
 object UserStatsDetailScreen {
 
@@ -104,7 +102,7 @@ object UserStatsDetailScreen {
             val values = values(statistics)
             if (values.isNotEmpty()) {
                 items(values, key = valueToKey) {
-                    SharedTransitionKeyScope("user_stats_details") {
+                    SharedTransitionKeyScope("user_stats_details", valueToKey(it)) {
                         StatsDetailCard(
                             value = it,
                             valueToText = valueToText,
@@ -194,7 +192,7 @@ object UserStatsDetailScreen {
                             && initialItemSharedTransitionIdentifier != null
                         ) {
                             val initialItemImage = initialItemImage.invoke(value)
-                            item(key = initialItemId) {
+                            item(key = initialItemId(value)) {
                                 InnerCard(
                                     sharedTransitionKey = sharedTransitionKey,
                                     sharedTransitionIdentifier = initialItemSharedTransitionIdentifier(

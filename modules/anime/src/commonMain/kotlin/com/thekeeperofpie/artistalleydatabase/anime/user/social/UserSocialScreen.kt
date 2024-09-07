@@ -46,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
@@ -158,18 +159,20 @@ object UserSocialScreen {
                     )
                 }
             } else {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(
-                        count = data.itemCount,
-                        key = data.itemKey { it.id },
-                        contentType = data.itemContentType { "user" },
+                SharedTransitionKeyScope("user_social_row", key) {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        UserPreview(
-                            user = data[it],
-                        )
+                        items(
+                            count = data.itemCount,
+                            key = data.itemKey { it.id },
+                            contentType = data.itemContentType { "user" },
+                        ) {
+                            UserPreview(
+                                user = data[it],
+                            )
+                        }
                     }
                 }
             }

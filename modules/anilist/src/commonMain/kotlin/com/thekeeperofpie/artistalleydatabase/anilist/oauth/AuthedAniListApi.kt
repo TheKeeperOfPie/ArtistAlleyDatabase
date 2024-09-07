@@ -828,31 +828,32 @@ open class AuthedAniListApi(
     open suspend fun toggleAnimeFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
         mutate(ToggleAnimeFavoriteMutation(id = idAsInt))
-        return query(ToggleMediaResultQuery(id = idAsInt)).media.isFavourite
+        return query(ToggleMediaResultQuery(id = idAsInt), skipCache = true).media.isFavourite
     }
 
     open suspend fun toggleMangaFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
         mutate(ToggleMangaFavoriteMutation(id = idAsInt))
-        return query(ToggleMediaResultQuery(id = idAsInt)).media.isFavourite
+        return query(ToggleMediaResultQuery(id = idAsInt), skipCache = true).media.isFavourite
     }
 
     open suspend fun toggleCharacterFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
         mutate(ToggleCharacterFavoriteMutation(id = idAsInt))
-        return query(ToggleCharacterResultQuery(id = idAsInt)).character.isFavourite
+        return query(ToggleCharacterResultQuery(id = idAsInt), skipCache = true)
+            .character.isFavourite
     }
 
     open suspend fun toggleStaffFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
         mutate(ToggleStaffFavoriteMutation(id = idAsInt))
-        return query(ToggleStaffResultQuery(id = idAsInt)).staff.isFavourite
+        return query(ToggleStaffResultQuery(id = idAsInt), skipCache = true).staff.isFavourite
     }
 
     open suspend fun toggleStudioFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
         mutate(ToggleStudioFavoriteMutation(id = idAsInt))
-        return query(ToggleStudioResultQuery(id = idAsInt)).studio.isFavourite
+        return query(ToggleStudioResultQuery(id = idAsInt), skipCache = true).studio.isFavourite
     }
 
     open suspend fun mediaActivities(

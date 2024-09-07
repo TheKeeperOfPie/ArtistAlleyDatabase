@@ -63,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -285,20 +286,22 @@ object UserOverviewScreen {
             key = { index, item -> item.studio.id },
             contentType = { _, _ -> "studio" },
         ) { index, item ->
-            StudioListRow(
-                viewer = viewer,
-                entry = item,
-                onClickListEdit = editViewModel::initialize,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = if (index == studios.lastIndex && !hasMore) 0.dp else 16.dp,
-                    ),
-                mediaWidth = 64.dp,
-                mediaHeight = 96.dp
-            )
+            SharedTransitionKeyScope("user_favorite_studio_row", item.studio.id.toString()) {
+                StudioListRow(
+                    viewer = viewer,
+                    entry = item,
+                    onClickListEdit = editViewModel::initialize,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = if (index == studios.lastIndex && !hasMore) 0.dp else 16.dp,
+                        ),
+                    mediaWidth = 64.dp,
+                    mediaHeight = 96.dp
+                )
+            }
         }
 
         if (hasMore) {
