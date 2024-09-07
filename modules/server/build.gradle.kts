@@ -1,5 +1,5 @@
 plugins {
-    id("jvm-library")
+    id("library-kotlin")
     alias(libs.plugins.io.ktor.plugin)
     alias(libs.plugins.com.netflix.dgs.codegen)
 }

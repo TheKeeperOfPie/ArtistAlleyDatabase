@@ -1,5 +1,7 @@
 plugins {
-    id("module-library")
+    id("library-android")
+    id("library-kotlin")
+    id("library-desktop")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
 }

@@ -1,6 +1,5 @@
 plugins {
-    id("module-library")
-
+    id("library-android")
     // Gradle --scan
     id("com.gradle.build-scan") version "3.17.6" apply false
 }

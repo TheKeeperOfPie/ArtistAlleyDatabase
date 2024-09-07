@@ -8,7 +8,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     alias(libs.plugins.com.jaredsburrows.license)
     id("com.google.android.gms.oss-licenses-plugin")
-    id("android-test-library")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
