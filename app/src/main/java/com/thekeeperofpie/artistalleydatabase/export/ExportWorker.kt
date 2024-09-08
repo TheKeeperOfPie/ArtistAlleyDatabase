@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.MainActivity
@@ -16,8 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.notification.NotificationProgressW
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
@@ -28,6 +25,8 @@ import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 import okhttp3.internal.closeQuietly
 import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
@@ -38,8 +37,8 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.AbstractExecutorService
 import java.util.concurrent.TimeUnit
 
-@HiltWorker
-class ExportWorker @AssistedInject constructor(
+@Inject
+class ExportWorker(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val json: Json,

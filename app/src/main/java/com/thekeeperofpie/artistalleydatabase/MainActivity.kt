@@ -64,7 +64,6 @@ import androidx.navigation.navDeepLink
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
-import androidx.work.WorkManager
 import com.anilist.type.MediaType
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.thekeeperofpie.anichive.BuildConfig
@@ -107,22 +106,16 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColo
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDrawerState
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import kotlin.enums.EnumEntries
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     companion object {
         const val STARTING_NAV_DESTINATION = "starting_nav_destination"
     }
-
-    @Inject
-    lateinit var workManager: WorkManager
 
     private val applicationComponent by lazy {
         (applicationContext as ComponentProvider).singletonComponent<ApplicationComponent>()
@@ -144,6 +137,7 @@ class MainActivity : ComponentActivity() {
     private val platformOAuthStore by lazy { applicationComponent.platformOAuthStore }
     private val settings by lazy { applicationComponent.settingsProvider }
     private val subscriptionProvider by lazy { applicationComponent.subscriptionProvider(this) }
+    private val workManager by lazy { applicationComponent.workManager }
 
     private val fullScreenImageHandler = FullscreenImageHandler()
 
@@ -446,11 +440,17 @@ class MainActivity : ComponentActivity() {
                             }
 
                             sharedElementComposable(AppNavDestinations.IMPORT.id) {
-                                ImportScreen(upIconOption = navDrawerUpIconOption)
+                                ImportScreen(
+                                    viewModel = viewModel { applicationComponent.importViewModel() },
+                                    upIconOption = navDrawerUpIconOption,
+                                )
                             }
 
                             sharedElementComposable(AppNavDestinations.EXPORT.id) {
-                                ExportScreen(upIconOption = navDrawerUpIconOption)
+                                ExportScreen(
+                                    viewModel = viewModel { applicationComponent.exportViewModel() },
+                                    upIconOption = navDrawerUpIconOption,
+                                )
                             }
 
                             sharedElementComposable(

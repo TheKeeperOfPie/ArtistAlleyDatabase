@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.utils
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.MainActivity
@@ -12,13 +11,13 @@ import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 
-@HiltWorker
-class DatabaseSyncWorker @AssistedInject constructor(
+@Inject
+class DatabaseSyncWorker(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
     private val syncers: Set<@JvmSuppressWildcards DatabaseSyncer>,

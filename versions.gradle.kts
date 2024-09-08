@@ -3,7 +3,6 @@
 import Versions_gradle.Versions.androidx.activity
 import Versions_gradle.Versions.androidx.annotation
 import Versions_gradle.Versions.androidx.browser
-import Versions_gradle.Versions.androidx.hilt
 import Versions_gradle.Versions.androidx.lifecycle
 import Versions_gradle.Versions.androidx.media3
 import Versions_gradle.Versions.androidx.navigation
@@ -54,7 +53,6 @@ object Versions {
         const val annotation = "1.9.0-alpha02"
         const val browser = "1.8.0"
         const val core = "1.15.0-alpha02"
-        const val hilt = "1.2.0"
         const val lifecycle = "2.9.0-alpha01"
         const val media3 = "1.4.1"
         const val navigation = "2.8.0-rc01"
@@ -109,7 +107,6 @@ object Versions {
         const val appUpdate = "2.1.0"
         const val billing = "7.0.0"
         const val cronetOkHttp = "0.1.0"
-        const val dagger = "2.52"
         const val ossLicensesPlugin = "0.10.6"
         const val playServicesAds = "23.3.0"
         const val playServicesCronet = "18.1.0"
@@ -183,12 +180,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
         versionCatalogs {
             create("kspProcessors") {
                 with(Versions.androidx) {
-                    library("androidx.hilt:hilt-compiler:$hilt", prefix = "androidx")
                     library("androidx.room:room-compiler:$room")
-                }
-                withVersion(Versions.google.dagger) {
-                    library("com.google.dagger:hilt-compiler")
-                    library("com.google.dagger:hilt-android-compiler")
                 }
                 library("me.tatarka.inject:kotlin-inject-compiler-ksp:${Versions.kotlinInject}")
             }
@@ -199,7 +191,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
                 plugin("com.autonomousapps.dependency-analysis").version(Versions.dependencyAnalysis)
                 plugin("com.github.ben-manes.versions").version(Versions.benManesVersions)
-                plugin("com.google.dagger.hilt.android").version(Versions.google.dagger)
                 plugin("com.jaredsburrows.license").version(Versions.jaredsBurrowsLicense)
                 plugin("com.netflix.dgs.codegen").version(Versions.netflixDgsCodegen)
                 plugin("de.mannodermaus.android-junit5").version(Versions.androidJunit5)
@@ -221,11 +212,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("androidx.annotation:annotation:$annotation", prefix = "androidx")
                     library("androidx.browser:browser:$browser", prefix = "androidx")
                     library("androidx.core:core-ktx:$core", prefix = "androidx")
-
-                    withVersion(hilt) {
-                        library("androidx.hilt:hilt-navigation-compose")
-                        library("androidx.hilt:hilt-work")
-                    }
 
                     withVersion(lifecycle) {
                         library("androidx.lifecycle:lifecycle-livedata-ktx")
@@ -297,11 +283,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.google.android.play:app-update-ktx:$appUpdate")
                     library("com.android.billingclient:billing-ktx:$billing")
                     library("com.google.net.cronet:cronet-okhttp:$cronetOkHttp")
-
-                    withVersion(dagger) {
-                        library("com.google.dagger:hilt-android")
-                        library("com.google.dagger:hilt-android-testing")
-                    }
 
                     library("com.google.android.gms:oss-licenses-plugin:$ossLicensesPlugin")
                     library("com.google.android.gms:play-services-ads:$playServicesAds")

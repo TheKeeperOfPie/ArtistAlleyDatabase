@@ -14,19 +14,16 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
 
-@HiltViewModel
-class ImportViewModel @Inject constructor(
-    private val workManager: WorkManager,
-) : ViewModel() {
+@Inject
+class ImportViewModel(private val workManager: WorkManager) : ViewModel() {
 
     var importUriString by mutableStateOf<String?>(null)
     var dryRun by mutableStateOf(true)

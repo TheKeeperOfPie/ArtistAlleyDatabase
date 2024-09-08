@@ -1,7 +1,6 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    alias(libs.plugins.com.google.dagger.hilt.android) apply false
     alias(libs.plugins.com.autonomousapps.dependency.analysis)
     alias(libs.plugins.com.github.ben.manes.versions)
     alias(libs.plugins.org.barfuin.gradle.taskinfo)
@@ -91,7 +90,6 @@ dependencyAnalysis {
                     "androidx.test:runner",
                     "com.android.billingclient:billing-ktx",
                     "com.apollographql.apollo3:apollo-normalized-cache-sqlite",
-                    "com.google.dagger:hilt-android",
                     "com.google.truth:truth",
                     "com.squareup.leakcanary:leakcanary-android",
                     "de.mannodermaus.junit5:android-test-core",
@@ -131,15 +129,8 @@ dependencyAnalysis {
                     ":modules:vgmdb",
 
                     // Testing
-                    "com.google.dagger:hilt-android-testing",
                     "org.junit.jupiter:junit-jupiter-api",
                     "com.linkedin.dexmaker:dexmaker-mockito-inline-extended",
-                )
-            }
-            onUnusedAnnotationProcessors {
-                exclude(
-                    "androidx.hilt:hilt-compiler",
-                    "com.google.dagger:hilt-compiler",
                 )
             }
         }

@@ -69,7 +69,6 @@ kotlin {
                 "libs.androidx.junit.test",
                 "libs.androidx.test.runner",
                 "libs.dexmaker.mockito.inline.extended",
-                "libs.hilt.android",
                 "libs.junit.jupiter.api",
                 "libs.junit5.android.test.core",
                 "libs.kotlinx.coroutines.test",

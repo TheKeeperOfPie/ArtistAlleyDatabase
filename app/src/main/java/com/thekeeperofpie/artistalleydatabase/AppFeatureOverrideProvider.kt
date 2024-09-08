@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
+@Inject
 class AppFeatureOverrideProvider : FeatureOverrideProvider {
     // TODO: Use BuildVariant
     @Suppress("KotlinConstantConditions")

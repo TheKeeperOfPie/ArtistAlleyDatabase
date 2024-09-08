@@ -9,28 +9,27 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.withResumed
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.thekeeperofpie.artistalleydatabase.ApplicationComponent
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
-import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
+import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-@AndroidEntryPoint
 class ChooserActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var settings: SettingsProvider
+    private val applicationComponent by lazy {
+        (application as ComponentProvider).singletonComponent<ApplicationComponent>()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +44,10 @@ class ChooserActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            ArtistAlleyDatabaseTheme(settings = settings, navHostController = navController) {
+            ArtistAlleyDatabaseTheme(
+                settings = applicationComponent.settingsProvider,
+                navHostController = navController,
+            ) {
                 Surface {
                     SharedTransitionLayout {
                         CompositionLocalProvider(LocalSharedTransitionScope provides this) {
@@ -54,7 +56,8 @@ class ChooserActivity : ComponentActivity() {
                                 startDestination = NavDestinations.HOME
                             ) {
                                 sharedElementComposable(NavDestinations.HOME) {
-                                    val viewModel = hiltViewModel<ChooserViewModel>()
+                                    val viewModel =
+                                        viewModel { applicationComponent.chooserViewModel() }
                                     ChooserScreen(
                                         query = { viewModel.query.orEmpty() },
                                         onQueryChange = viewModel::onQuery,

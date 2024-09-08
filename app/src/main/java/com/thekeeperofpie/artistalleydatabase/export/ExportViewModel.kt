@@ -13,19 +13,16 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.thekeeperofpie.anichive.R
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import me.tatarka.inject.annotations.Inject
 
-@HiltViewModel
-class ExportViewModel @Inject constructor(
-    private val workManager: WorkManager,
-) : ViewModel() {
+@Inject
+class ExportViewModel(private val workManager: WorkManager) : ViewModel() {
 
     var exportUriString by mutableStateOf<String?>(null)
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)

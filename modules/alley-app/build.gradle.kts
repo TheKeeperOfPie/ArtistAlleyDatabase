@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -160,10 +159,6 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)
-
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.activity.compose)

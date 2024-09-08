@@ -3,7 +3,6 @@ plugins {
     id("library-kotlin")
     id("library-desktop")
     id("com.google.devtools.ksp")
-    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -28,12 +27,6 @@ dependencies {
     implementation(libs.junit5.android.test.runner)
 
     api(libs.truth)
-    api(libs.hilt.android.testing)
-    ksp(kspProcessors.hilt.android.compiler)
-
-    api(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
 
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.server.test.host)

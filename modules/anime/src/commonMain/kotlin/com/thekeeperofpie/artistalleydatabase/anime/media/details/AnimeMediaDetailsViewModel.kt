@@ -76,7 +76,7 @@ class AnimeMediaDetailsViewModel(
     private val barrierMedia2 = MutableStateFlow(false)
 
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
-    var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.empty())
+    var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.loading())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
 
     init {

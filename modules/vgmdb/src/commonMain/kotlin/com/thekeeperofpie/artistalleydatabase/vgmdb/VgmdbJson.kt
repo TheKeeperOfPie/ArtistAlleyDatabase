@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import co.touchlab.kermit.Logger
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
@@ -8,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
 @Inject
 class VgmdbJson(val json: Json) {
 

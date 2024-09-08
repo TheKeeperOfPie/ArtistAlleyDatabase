@@ -35,6 +35,7 @@
 
 # For AndroidX Compose, seems to be a library config error
 -keep class org.xml.sax.helpers.AttributesImpl
+-keep class org.apache.xml.dtm.ref.** { *; }
 
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.

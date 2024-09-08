@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.MainActivity
@@ -18,8 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsData
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,12 +26,14 @@ import kotlinx.io.buffered
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
 import okio.use
 import org.apache.commons.compress.archivers.zip.ZipFile
 import java.nio.channels.FileChannel
 
-@HiltWorker
-class ImportWorker @AssistedInject constructor(
+@Inject
+class ImportWorker(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val json: Json,

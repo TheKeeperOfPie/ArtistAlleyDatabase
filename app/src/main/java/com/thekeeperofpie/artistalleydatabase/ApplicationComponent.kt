@@ -3,21 +3,15 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import androidx.activity.ComponentActivity
 import androidx.navigation.NavType
-import androidx.security.crypto.MasterKey
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
+import androidx.room.Room
+import androidx.work.WorkManager
+import com.thekeeperofpie.anichive.BuildConfig
+import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListComponent
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
-import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
-import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
-import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
@@ -26,13 +20,13 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
-import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.data.DataConverter
+import com.thekeeperofpie.artistalleydatabase.chooser.ChooserViewModel
+import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
+import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
@@ -41,12 +35,11 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideP
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistComponent
-import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsComponent
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
@@ -56,18 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
-import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
-import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
-import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
-import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
-import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbComponent
-import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
-import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
-import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
+import com.thekeeperofpie.artistalleydatabase.work.WorkerComponent
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Component
 import me.tatarka.inject.annotations.IntoSet
@@ -79,66 +63,93 @@ import kotlin.reflect.KType
 @Component
 abstract class ApplicationComponent(
     @get:Provides val application: Application,
-    @get:Provides val masterKey: MasterKey,
-    @get:Provides val applicationScope: ApplicationScope,
-    @get:Provides val vgmdbDatabase: VgmdbDatabase,
-    @get:Provides val json: Json,
-    @get:Provides val musicalArtistDatabase: MusicalArtistDatabase,
-    @get:Provides val aniListDatabase: AniListDatabase,
-    @get:Provides val featureOverrideProvider: FeatureOverrideProvider,
-    @get:Provides val appFileSystem: AppFileSystem,
-    @get:Provides val cdEntryDatabase: CdEntryDatabase,
-    @get:Provides val artEntryDatabase: ArtEntryDatabase,
-    @get:Provides val animeDatabase: AnimeDatabase,
-    @get:Provides val appMetadataProvider: AppMetadataProvider,
 ) : AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent, BrowseComponent,
-    CdEntryComponent, MusicalArtistComponent, SettingsComponent, VariantComponent, VgmdbComponent {
+    CdEntryComponent, MusicalArtistComponent, SettingsComponent, VariantComponent, VgmdbComponent,
+    WorkerComponent {
 
-    abstract val artistRepository: ArtistRepository
-    abstract val albumRepository: AlbumRepository
-    abstract val albumEntryDao: AlbumEntryDao
-    abstract val vgmdbDataConverter: VgmdbDataConverter
-    abstract val vgmdbArtistDao: VgmdbArtistDao
-    abstract val vgmdbApi: VgmdbApi
-    abstract val vgmdbAutocompleter: VgmdbAutocompleter
-    abstract val musicalArtistDao: MusicalArtistDao
-    abstract val dataConverter: DataConverter
-    abstract val characterRepository: CharacterRepository
-    abstract val mediaRepository: MediaRepository
-    abstract val characterEntryDao: CharacterEntryDao
-    abstract val mediaEntryDao: MediaEntryDao
-    abstract val aniListDataConverter: AniListDataConverter
-    abstract val authedAniListApi: AuthedAniListApi
-    abstract val aniListAutocompleter: AniListAutocompleter
-    abstract val cdEntryNavigator: CdEntryNavigator
-    abstract val cdEntryDao: CdEntryDao
-    abstract val importers: Set<Importer>
-    abstract val exporters: Set<Exporter>
-    abstract val databaseSyncers: Set<DatabaseSyncer>
+    abstract val chooserViewModel: () -> ChooserViewModel
+    abstract val exportViewModel: () -> ExportViewModel
+    abstract val importViewModel: () -> ImportViewModel
+
+    abstract val appMetadataProvider: AppMetadataProvider
     abstract val artEntryNavigator: ArtEntryNavigator
-    abstract val artEntryDetailsDao: ArtEntryDetailsDao
-    abstract val historyController: HistoryController
-    abstract val networkSettings: NetworkSettings
-    abstract val aniListSettings: AniListSettings
-
-    open val appUpdateChecker: (ComponentActivity) -> AppUpdateChecker?
-        get() = { null }
+    abstract val cdEntryNavigator: CdEntryNavigator
+    abstract val featureOverrideProvider: FeatureOverrideProvider
     abstract val ignoreController: IgnoreController
     abstract val markdown: Markdown
     abstract val mediaGenreDialogController: MediaGenreDialogController
     abstract val mediaTagDialogController: MediaTagDialogController
     abstract val monetizationController: MonetizationController
-    open val monetizationProvider: (ComponentActivity) -> MonetizationProvider?
-        get() = { null }
     abstract val navigationTypeMap: NavigationTypeMap
     abstract val notificationsController: NotificationsController
     abstract val platformOAuthStore: PlatformOAuthStore
     abstract val settingsProvider: SettingsProvider
+    abstract val workManager: WorkManager
+
+    // TODO: Move to an Activity scoped component instead of assisted inject?
+    open val appUpdateChecker: (ComponentActivity) -> AppUpdateChecker?
+        get() = { null }
+    open val monetizationProvider: (ComponentActivity) -> MonetizationProvider?
+        get() = { null }
     open val subscriptionProvider: (ComponentActivity) -> SubscriptionProvider?
         get() = { null }
 
     protected val AppMonetizationOverrideProvider.bind: MonetizationOverrideProvider
         @Provides get() = this
+
+    protected val AppFeatureOverrideProvider.bind: FeatureOverrideProvider
+        @Provides get() = this
+
+    protected val AppDatabase.bindAniListDatabase: AniListDatabase
+        @Provides get() = this
+
+    protected val AppDatabase.bindAnimeDatabase: AnimeDatabase
+        @Provides get() = this
+
+    protected val AppDatabase.bindArtEntryDatabase: ArtEntryDatabase
+        @Provides get() = this
+
+    protected val AppDatabase.bindCdEntryDatabase: CdEntryDatabase
+        @Provides get() = this
+
+    protected val AppDatabase.bindMusicalArtistDatabase: MusicalArtistDatabase
+        @Provides get() = this
+
+    protected val AppDatabase.bindVgmdbDatabase: VgmdbDatabase
+        @Provides get() = this
+
+    @SingletonScope
+    @Provides
+    fun provideMasterKey(application: Application) = CryptoUtils.masterKey(application)
+
+    @SingletonScope
+    @Provides
+    fun provideApplicationScope(application: Application): ApplicationScope =
+        (application as CustomApplication).scope
+
+    @SingletonScope
+    @Provides
+    fun provideAppDatabase(application: Application) =
+        Room.databaseBuilder(application, AppDatabase::class.java, "appDatabase")
+            .fallbackToDestructiveMigrationOnDowngrade(true)
+            .addMigrations(Migration_6_7)
+            .build()
+
+    @SingletonScope
+    @Provides
+    fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider {
+        override val versionCode = BuildConfig.VERSION_CODE
+        override val versionName = BuildConfig.VERSION_NAME
+        override val appDrawableModel = R.mipmap.ic_launcher
+    }
+
+    @SingletonScope
+    @Provides
+    fun provideJson() = Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
 
     @SingletonScope
     @Provides

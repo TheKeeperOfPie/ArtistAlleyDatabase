@@ -12,7 +12,6 @@ android {
 kotlin {
     sourceSets {
         androidMain.dependencies {
-            implementation(libs.hilt.android)
             api(libs.activity.compose)
         }
         commonMain.dependencies {
@@ -21,9 +20,4 @@ kotlin {
             implementation(libs.lifecycle.viewmodel.compose)
         }
     }
-}
-
-dependencies {
-    add("kspAndroid", kspProcessors.hilt.compiler)
-    add("kspAndroid", kspProcessors.androidx.hilt.compiler)
 }

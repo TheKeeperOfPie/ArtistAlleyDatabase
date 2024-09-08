@@ -1,6 +1,5 @@
 plugins {
     id("compose-library")
-    id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
@@ -22,10 +21,6 @@ dependencies {
 
     implementation(libs.navigation.compose)
 
-    implementation(libs.hilt.android)
-    ksp(kspProcessors.hilt.compiler)
-    ksp(kspProcessors.androidx.hilt.compiler)
-
     implementation(libs.lifecycle.viewmodel.compose)
 
     api(libs.compose.ui)
@@ -36,7 +31,6 @@ dependencies {
     implementation(libs.coil3.coil.compose)
     implementation(libs.coil3.coil.network.okhttp)
     implementation(libs.compose.material.icons.extended)
-    implementation(libs.hilt.navigation.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material3)

@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.ui.ChooseUriRow
 import com.thekeeperofpie.artistalleydatabase.ui.LinearProgressWithIndicator
@@ -36,7 +35,7 @@ object ExportScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ExportViewModel = hiltViewModel(),
+        viewModel: ExportViewModel,
         upIconOption: UpIconOption?,
     ) {
 

@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.ui.ChooseUriRow
 import com.thekeeperofpie.artistalleydatabase.ui.LinearProgressWithIndicator
@@ -33,10 +32,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 
 object ImportScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        viewModel: ImportViewModel = hiltViewModel(),
+        viewModel: ImportViewModel,
         upIconOption: UpIconOption?,
     ) {
         Scaffolding(

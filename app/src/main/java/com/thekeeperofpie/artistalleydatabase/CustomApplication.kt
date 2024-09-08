@@ -7,7 +7,6 @@ import android.os.StrictMode
 import android.util.Log
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
@@ -25,12 +24,8 @@ import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
-import dagger.Lazy
-import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
-import javax.inject.Inject
 
-@HiltAndroidApp
 class CustomApplication : Application(), Configuration.Provider, SingletonImageLoader.Factory,
     ComponentProvider {
 
@@ -41,18 +36,15 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
 
     val scope = MainScope()
 
-    @Inject
-    lateinit var workerFactory: HiltWorkerFactory
-
-    // TODO: There must be a better way to do this
-    @Inject
-    lateinit var applicationComponent: Lazy<ApplicationComponent>
+    private val applicationComponent by lazy {
+        ApplicationComponent::class.create(this)
+    }
 
     private lateinit var audioManager: AudioManager
 
     override val workManagerConfiguration by lazy {
         Configuration.Builder()
-            .setWorkerFactory(workerFactory)
+            .setWorkerFactory(applicationComponent.injectedWorkerFactory)
             .build()
     }
 
@@ -62,7 +54,7 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
         val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             try {
-                applicationComponent.get().settingsProvider.writeLastCrash(throwable)
+                applicationComponent.settingsProvider.writeLastCrash(throwable)
             } catch (t: Throwable) {
                 if (BuildConfig.DEBUG) {
                     Log.e(TAG, "Error writing last crash", t)
@@ -171,5 +163,5 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> singletonComponent() = applicationComponent.get() as T
+    override fun <T> singletonComponent() = applicationComponent as T
 }

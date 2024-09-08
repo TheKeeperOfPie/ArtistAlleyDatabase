@@ -12,15 +12,14 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.io.buffered
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.json.Json
+import me.tatarka.inject.annotations.Inject
 import java.io.File
-import javax.inject.Inject
 
-@HiltViewModel
-class ChooserViewModel @Inject constructor(
+@Inject
+class ChooserViewModel(
     private val application: Application,
     appFileSystem: AppFileSystem,
     artEntryDao: ArtEntryDetailsDao,
