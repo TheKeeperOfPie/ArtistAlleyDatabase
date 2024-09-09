@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
+
 plugins {
     id("library-kotlin")
     id("com.google.devtools.ksp")
@@ -20,10 +22,9 @@ kotlin {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
-//    featureFlags = setOf(
-//        ComposeFeatureFlag.StrongSkipping,
-//        ComposeFeatureFlag.OptimizeNonSkippingGroups,
-//    )
+    featureFlags = setOf(
+        ComposeFeatureFlag.StrongSkipping,
+        ComposeFeatureFlag.OptimizeNonSkippingGroups,
+    )
     includeSourceInformation = true
 }

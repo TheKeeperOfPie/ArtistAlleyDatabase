@@ -22,7 +22,7 @@ kotlin {
 
 dependencies {
     kspProcessors.find(
-        "kspProcessors.kotlin-inject-compiler-ksp",
+        "kspProcessors.kotlin.inject.compiler.ksp",
     ).forEach {
         add("kspCommonMainMetadata", it)
     }

@@ -4,6 +4,27 @@ plugins {
     alias(libs.plugins.com.netflix.dgs.codegen)
 }
 
+kotlin {
+    jvm("desktop")
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.ktor.server.core.jvm)
+
+//            implementation(platform(libs.graphql.dgs.platform.dependencies))
+            implementation(libs.jackson.databind)
+
+            implementation(libs.manifold.graphql.rt)
+        }
+        commonTest.dependencies {
+            implementation(project(":modules:anilist-data"))
+            implementation(libs.junit.jupiter.api)
+            implementation(libs.ktor.server.test.host)
+            implementation(libs.truth)
+            runtimeOnly(libs.junit.jupiter.engine)
+        }
+    }
+}
+
 application {
     mainClass.set("com.thekeeperofpie.artistalleydatabase.server.AniListServerKt")
 }
@@ -21,19 +42,4 @@ tasks.withType<com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask> {
     generateKotlinNullableClasses = true
     generateKotlinClosureProjections = true
     generateDataTypes = true
-}
-
-dependencies {
-    implementation(libs.ktor.server.core.jvm)
-
-    implementation(platform(libs.graphql.dgs.platform.dependencies))
-    implementation(libs.jackson.databind)
-
-    implementation(libs.manifold.graphql.rt)
-
-    testImplementation(project(":modules:anilist-data"))
-    testImplementation(libs.junit.jupiter.api)
-    testImplementation(libs.ktor.server.test.host)
-    testImplementation(libs.truth)
-    testRuntimeOnly(libs.junit.jupiter.engine)
 }

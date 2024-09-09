@@ -190,7 +190,7 @@ interface CdEntryDao {
         return getEntries(
             RoomRawQuery(statement) {
                 (bindArguments + filterOptionsQueryPieces).forEachIndexed { index, arg ->
-                    it.bindText(index, arg)
+                    it.bindText(index + 1, arg)
                 }
             }
         )

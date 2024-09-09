@@ -50,7 +50,7 @@ interface CharacterEntryDao {
 
         return getEntries(RoomRawQuery(statement) {
             bindArguments.forEachIndexed { index, arg ->
-                it.bindText(index, arg)
+                it.bindText(index + 1, arg)
             }
         })
     }

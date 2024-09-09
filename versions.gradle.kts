@@ -58,7 +58,7 @@ object Versions {
         const val navigation = "2.8.0-rc01"
         const val paging = "3.3.2"
         const val palette = "1.0.0"
-        const val room = "2.7.0-alpha07"
+        const val room = "2.7.0-SNAPSHOT"
         const val securityCrypto = "1.1.0-alpha06"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
@@ -170,6 +170,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
     dependencyResolutionManagement.apply {
         repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
         repositories {
+            maven("https://androidx.dev/snapshots/builds/12338415/artifacts/repository")
             maven("https://oss.sonatype.org/content/repositories/snapshots")
             maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
             maven("https://androidx.dev/storage/compose-compiler/repository/")
