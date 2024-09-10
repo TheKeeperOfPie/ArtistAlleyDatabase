@@ -1,8 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.compose
+package com.thekeeperofpie.artistalleydatabase.utils_compose
 
+import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 data class StaggeredGridCellsAdaptiveWithMin(private val minSize: Dp, private val minCount: Int) :
     StaggeredGridCells {
@@ -26,4 +28,9 @@ private fun calculateCellsCrossAxisSizeImpl(gridSize: Int, slotCount: Int, spaci
             slotSize + if (it < remainingPixels) 1 else 0
         }
     }
+}
+
+object GridUtils {
+    val standardMediaWidthAdaptiveCells = GridCells.Adaptive(450.dp)
+    val smallMediaWidthAdaptiveCells = GridCells.Adaptive(135.dp)
 }

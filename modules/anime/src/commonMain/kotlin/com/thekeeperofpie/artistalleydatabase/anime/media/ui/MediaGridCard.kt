@@ -28,14 +28,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaType
@@ -223,13 +220,7 @@ object MediaGridCard {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
             MediaCoverImage(
                 imageState = imageState,
-                image = imageState.request()
-                    .crossfade(true)
-                    .size(
-                        width = Dimension.Pixels(LocalDensity.current.run { 120.dp.roundToPx() }),
-                        height = Dimension.Undefined
-                    )
-                    .build(),
+                image = imageState.request().build(),
                 modifier = Modifier
                     .sharedElement(sharedTransitionKey, "media_image")
                     // Clip to match card so that shared element animation keeps rounded corner

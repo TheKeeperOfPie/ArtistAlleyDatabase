@@ -34,8 +34,6 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_user_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.UserNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
@@ -52,7 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -148,13 +146,7 @@ object UserListRow {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         UserAvatarImage(
             imageState = imageState,
-            image = imageState.request()
-                .crossfade(true)
-                .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
-                    height = Dimension.Undefined
-                )
-                .build(),
+            image = imageState.request().build(),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxHeight()
@@ -208,7 +200,7 @@ object UserListRow {
                 .padding(top = 8.dp)
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
+                .size(width = LocalWindowConfiguration.current.screenWidthDp, height = MEDIA_HEIGHT)
                 .fadingEdgeEnd()
         ) {
             items(

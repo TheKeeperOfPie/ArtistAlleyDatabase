@@ -89,25 +89,30 @@ sealed interface AnimeDestination {
         val categoryId: String? = null,
         val mediaCategoryId: String? = null,
     ) : AnimeDestination {
+        @Serializable
         sealed interface Title {
             @Composable
             fun text(): String
 
+            @Serializable
             data object Active : Title {
                 @Composable
                 override fun text() = stringResource(Res.string.anime_forum_root_active_title)
             }
 
+            @Serializable
             data object New : Title {
                 @Composable
                 override fun text() = stringResource(Res.string.anime_forum_root_new_title)
             }
 
+            @Serializable
             data object Releases : Title {
                 @Composable
                 override fun text() = stringResource(Res.string.anime_forum_root_releases_title)
             }
 
+            @Serializable
             data class Custom(val title: String) : Title {
                 @Composable
                 override fun text() = title
@@ -223,37 +228,44 @@ sealed interface AnimeDestination {
         val lockSortOverride: Boolean? = null,
     ) : AnimeDestination {
         // TODO: Find a way to serialize StringResource
+        @Serializable
         sealed interface Title {
             @Composable
             fun text(): String
 
+            @Serializable
             data object HomeSuggestionPopularAllTime : Title {
                 @Composable
                 override fun text() =
                     stringResource(Res.string.anime_home_suggestion_popular_all_time)
             }
 
+            @Serializable
             data object HomeSuggestionTop : Title {
                 @Composable
                 override fun text() = stringResource(Res.string.anime_home_suggestion_top)
             }
 
+            @Serializable
             data object HomeTrending : Title {
                 @Composable
                 override fun text() = stringResource(Res.string.anime_home_trending_screen_title)
             }
 
+            @Serializable
             data object HomeLastAdded : Title {
                 @Composable
                 override fun text() = stringResource(Res.string.anime_home_last_added_screen_title)
             }
 
+            @Serializable
             data object HomeReleasedThisYear : Title {
                 @Composable
                 override fun text() =
                     stringResource(Res.string.anime_home_top_released_this_year_title)
             }
 
+            @Serializable
             data class Custom(val title: String) : Title {
                 @Composable
                 override fun text() = title

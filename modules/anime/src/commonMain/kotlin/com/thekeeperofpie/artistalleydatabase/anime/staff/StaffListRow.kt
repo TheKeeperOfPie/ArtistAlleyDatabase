@@ -41,8 +41,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_character_ima
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.StaffSearchQuery
 import com.anilist.UserFavoritesStaffQuery
 import com.anilist.fragment.CharacterNavigationData
@@ -67,7 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -169,13 +167,7 @@ object StaffListRow {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         StaffCoverImage(
             imageState = coverImageState,
-            image = coverImageState.request()
-                .crossfade(true)
-                .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
-                    height = Dimension.Undefined,
-                )
-                .build(),
+            image = coverImageState.request().build(),
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
@@ -251,7 +243,7 @@ object StaffListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
+                .size(width = LocalWindowConfiguration.current.screenWidthDp, height = MEDIA_HEIGHT)
         ) {
             items(characters, key = { it.id }) {
                 val navigationCallback = LocalNavigationCallback.current

@@ -30,14 +30,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
@@ -220,15 +217,7 @@ object AnimeMediaCompactListRow {
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
                 imageState = imageState,
-                image = imageState.request()
-                    .crossfade(true)
-                    .size(
-                        width = Dimension.Pixels(
-                            LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
-                        ),
-                        height = Dimension.Undefined
-                    )
-                    .build(),
+                image = imageState.request().build(),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     // Pad inside to offset the 1.dp border from the OutlinedCard

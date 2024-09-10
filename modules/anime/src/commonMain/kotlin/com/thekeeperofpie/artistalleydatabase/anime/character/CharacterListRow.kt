@@ -46,7 +46,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_character_ima
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_content_description
 import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.CharacterAdvancedSearchQuery.Data.Page.Character
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.CharacterWithRoleAndFavorites
@@ -73,7 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -186,10 +185,6 @@ object CharacterListRow {
             imageState = imageState,
             image = imageState.request()
                 .crossfade(true)
-                .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { IMAGE_WIDTH.roundToPx() }),
-                    height = Dimension.Undefined
-                )
                 .build(),
             modifier = Modifier
                 .fillMaxHeight()
@@ -302,7 +297,7 @@ object CharacterListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = MEDIA_HEIGHT)
+                .size(width = LocalWindowConfiguration.current.screenWidthDp, height = MEDIA_HEIGHT)
         ) {
             if (voiceActor?.image?.large != null) {
                 val staffId = voiceActor.id

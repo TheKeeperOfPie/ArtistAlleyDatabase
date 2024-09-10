@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -129,13 +129,7 @@ object UserFavoriteMediaScreen {
                         if (media.itemCount == 0) {
                             AnimeMediaListScreen.NoResults()
                         } else {
-                            val columns = when (viewModel.mediaViewOption) {
-                                MediaViewOption.SMALL_CARD,
-                                MediaViewOption.LARGE_CARD,
-                                MediaViewOption.COMPACT,
-                                    -> GridCells.Adaptive(300.dp)
-                                MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
-                            }
+                            val columns = viewModel.mediaViewOption.widthAdaptiveCells
                             LazyVerticalGrid(
                                 columns = columns,
                                 contentPadding = PaddingValues(16.dp),

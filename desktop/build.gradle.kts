@@ -13,8 +13,9 @@ kotlin {
             commonMain.dependencies {
                 implementation(project(":modules:anime"))
                 implementation(project(":modules:utils-room"))
-                implementation(libs.lifecycle.viewmodel.compose)
                 implementation(libs.jetBrainsCompose.navigation.compose)
+                implementation(libs.kermit)
+                implementation(libs.lifecycle.viewmodel.compose)
 
                 implementation(libs.room.ktx)
                 implementation(libs.room.paging)

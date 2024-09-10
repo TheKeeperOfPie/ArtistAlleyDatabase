@@ -56,7 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ErrorSnackbar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -192,7 +192,7 @@ object ForumRootScreen {
                 modifier = Modifier
                     // SubcomposeLayout doesn't support fill max width, so use a really large number.
                     // The parent will clamp the actual width so all content still fits on screen.
-                    .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = 40.dp)
+                    .size(width = LocalWindowConfiguration.current.screenWidthDp, height = 40.dp)
                     .animateItem()
             ) {
                 val categories = ForumCategoryOption.values()

@@ -11,6 +11,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_view_op
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_grid
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_large_card
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_small_card
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import org.jetbrains.compose.resources.StringResource
 
 enum class MediaViewOption(val textRes: StringResource, val icon: ImageVector) {
@@ -20,3 +21,12 @@ enum class MediaViewOption(val textRes: StringResource, val icon: ImageVector) {
     COMPACT(Res.string.anime_media_view_option_compact, Icons.AutoMirrored.Filled.ViewList),
     GRID(Res.string.anime_media_view_option_grid, Icons.Filled.GridView),
 }
+
+val MediaViewOption.widthAdaptiveCells
+    get() = when (this) {
+        MediaViewOption.SMALL_CARD,
+        MediaViewOption.LARGE_CARD,
+        MediaViewOption.COMPACT,
+            -> GridUtils.standardMediaWidthAdaptiveCells
+        MediaViewOption.GRID -> GridUtils.smallMediaWidthAdaptiveCells
+    }

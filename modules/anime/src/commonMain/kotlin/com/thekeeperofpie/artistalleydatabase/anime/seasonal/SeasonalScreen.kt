@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -61,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -244,13 +244,7 @@ object SeasonalScreen {
             onRefresh = viewModel::onRefresh,
             modifier = Modifier.padding(scaffoldPadding),
         ) {
-            val columns = when (viewModel.mediaViewOption) {
-                MediaViewOption.SMALL_CARD,
-                MediaViewOption.LARGE_CARD,
-                MediaViewOption.COMPACT,
-                    -> GridCells.Adaptive(300.dp)
-                MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
-            }
+            val columns = viewModel.mediaViewOption.widthAdaptiveCells
             val gridState = rememberLazyGridState()
             sortFilterController.ImmediateScrollResetEffect(gridState)
             LazyVerticalGrid(

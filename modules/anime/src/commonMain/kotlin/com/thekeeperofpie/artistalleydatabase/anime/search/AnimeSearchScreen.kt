@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -68,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
@@ -161,10 +165,15 @@ object AnimeSearchScreen {
                 val refreshing = refreshState is LoadState.Loading && selectedUnlocked
 
                 val viewer by viewModel.viewer.collectAsState()
+                val layoutDirection = LocalLayoutDirection.current
                 AnimeMediaListScreen(
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
-                    modifier = Modifier.padding(scaffoldPadding),
+                    modifier = Modifier.padding(
+                        start = scaffoldPadding.calculateStartPadding(layoutDirection),
+                        end = scaffoldPadding.calculateEndPadding(layoutDirection),
+                        top = scaffoldPadding.calculateTopPadding(),
+                    ),
                 ) {
                     if (!selectedUnlocked) {
                         Box(
@@ -195,13 +204,7 @@ object AnimeSearchScreen {
                     } else {
                         val columns =
                             if (selectedType == AnimeSearchViewModel.SearchType.ANIME || selectedType == AnimeSearchViewModel.SearchType.MANGA) {
-                                when (viewModel.mediaViewOption) {
-                                    MediaViewOption.SMALL_CARD,
-                                    MediaViewOption.LARGE_CARD,
-                                    MediaViewOption.COMPACT,
-                                        -> GridCells.Adaptive(300.dp)
-                                    MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
-                                }
+                                viewModel.mediaViewOption.widthAdaptiveCells
                             } else {
                                 GridCells.Adaptive(300.dp)
                             }

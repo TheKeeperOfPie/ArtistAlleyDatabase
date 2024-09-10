@@ -52,7 +52,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -139,7 +139,7 @@ object EntryGrid {
     ) {
         val expectedWidth = LocalDensity.current.run {
             // TODO: Find a better way to calculate the optimal image size
-            val screenWidth = LocalAppConfiguration.current.screenWidthDp.dp
+            val screenWidth = LocalWindowConfiguration.current.screenWidthDp
             val columns = (screenWidth / 160.dp).toInt()
             screenWidth.roundToPx() / columns
         }.let(::Dimension)

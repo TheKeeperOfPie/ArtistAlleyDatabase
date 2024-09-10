@@ -40,7 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -135,7 +135,7 @@ object StudioListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = mediaHeight)
+                .size(width = LocalWindowConfiguration.current.screenWidthDp, height = mediaHeight)
                 .fadingEdgeEnd()
         ) {
             itemsIndexed(

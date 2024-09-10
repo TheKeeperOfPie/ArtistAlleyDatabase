@@ -82,7 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
@@ -433,8 +433,8 @@ object EntryDetailsScreen {
                                 }
                             }
                     }?.value
-                    val configuration = LocalAppConfiguration.current
-                    val screenWidth = configuration.screenWidthDp.dp
+                    val configuration = LocalWindowConfiguration.current
+                    val screenWidth = configuration.screenWidthDp
                     val minimumHeight = screenWidth * entryImage.widthToHeightRatio
                     val sharedTransitionKey = entryImage.entryId?.scopedId
                         ?.let { SharedTransitionKey.makeKeyForId(it) }

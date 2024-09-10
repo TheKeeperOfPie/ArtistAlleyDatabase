@@ -5,8 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.platform.AndroidUiDispatcher
-import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
 import artistalleydatabase.modules.anime2anime.generated.resources.Res
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_error_loading_media
@@ -27,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResul
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUiDispatcher
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.debounce
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
@@ -71,9 +70,9 @@ abstract class GameVariant<Options>(
 
     protected val refreshStart = MutableStateFlow(-1L)
     protected val refreshTarget = MutableStateFlow(-1L)
-    private val moleculeScope = CoroutineScope(scope.coroutineContext + AndroidUiDispatcher.Main)
+    private val moleculeScope = CoroutineScope(scope.coroutineContext + ComposeUiDispatcher.Main)
     private val optionsFlow by lazy(LazyThreadSafetyMode.NONE) {
-        moleculeScope.launchMolecule(RecompositionMode.ContextClock) {
+        moleculeScope.launchMolecule(ComposeUiDispatcher.recompositionMode) {
             debounce(currentValue = options(), duration = 500.milliseconds)
         }
     }

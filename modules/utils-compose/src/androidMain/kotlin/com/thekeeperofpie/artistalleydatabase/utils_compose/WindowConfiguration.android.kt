@@ -7,13 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
 
-actual val LocalAppConfiguration: ProvidableCompositionLocal<AppConfiguration> =
+actual val LocalWindowConfiguration: ProvidableCompositionLocal<WindowConfiguration> =
     compositionLocalWithComputedDefaultOf {
         val configuration = LocalConfiguration.currentValue
-        AppConfiguration(
-            screenWidthDp = configuration.screenWidthDp,
-            screenHeightDp = configuration.screenHeightDp,
+        WindowConfiguration(
+            screenWidthDp = configuration.screenWidthDp.dp,
+            screenHeightDp = configuration.screenHeightDp.dp,
         )
     }
 

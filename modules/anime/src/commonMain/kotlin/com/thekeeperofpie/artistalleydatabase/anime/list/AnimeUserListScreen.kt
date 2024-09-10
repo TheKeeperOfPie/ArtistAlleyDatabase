@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -79,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -201,13 +201,7 @@ object AnimeUserListScreen {
                                 if (!entry.loading && !hasItems) {
                                     AnimeMediaListScreen.NoResults()
                                 } else {
-                                    val columns = when (viewModel.mediaViewOption) {
-                                        MediaViewOption.SMALL_CARD,
-                                        MediaViewOption.LARGE_CARD,
-                                        MediaViewOption.COMPACT,
-                                        -> GridCells.Adaptive(300.dp)
-                                        MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
-                                    }
+                                    val columns = viewModel.mediaViewOption.widthAdaptiveCells
                                     Box(modifier = Modifier.fillMaxSize()) {
                                         val gridState = scrollStateSaver.lazyGridState()
                                         sortFilterController.ImmediateScrollResetEffect(gridState)

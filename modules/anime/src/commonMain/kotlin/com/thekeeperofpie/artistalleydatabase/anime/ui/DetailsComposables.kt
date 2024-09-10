@@ -57,7 +57,6 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -66,14 +65,12 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_banner_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
 import artistalleydatabase.modules.anime.generated.resources.anime_unfold_less_text
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AccelerateEasing
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
@@ -135,13 +132,7 @@ internal fun CoverAndBannerHeader(
             val bannerImageState = rememberCoilImageState(headerValues.bannerImage)
             CoilImage(
                 state = bannerImageState,
-                model = bannerImageState.request()
-                    .crossfade(true)
-                    .size(
-                        width = Dimension.Undefined,
-                        height = Dimension.Pixels(LocalDensity.current.run { 180.dp.roundToPx() }),
-                    )
-                    .build(),
+                model = bannerImageState.request().build(),
                 contentScale = ContentScale.Crop,
                 contentDescription = stringResource(Res.string.anime_media_banner_image),
                 modifier = Modifier
@@ -241,18 +232,10 @@ internal fun CoverAndBannerHeader(
                             .sharedElement(sharedTransitionKey, coverImageSharedTransitionIdentifier)
                     ) {
                         val imageHeight = rowHeight - 20.dp
-                        val maxWidth = LocalAppConfiguration.current.screenWidthDp.dp * 0.4f
+                        val maxWidth = LocalWindowConfiguration.current.screenWidthDp * 0.4f
                         CoilImage(
                             state = coverImageState,
-                            model = coverImageState.request()
-                                .crossfade(true)
-                                .size(
-                                    width = Dimension.Undefined,
-                                    height = Dimension.Pixels(
-                                        LocalDensity.current.run { imageHeight.roundToPx() }
-                                    ),
-                                )
-                                .build(),
+                            model = coverImageState.request().build(),
                             contentScale = ContentScale.FillHeight,
                             error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                             fallback = null,

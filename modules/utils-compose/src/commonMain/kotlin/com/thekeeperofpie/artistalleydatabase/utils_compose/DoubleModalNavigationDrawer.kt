@@ -63,7 +63,7 @@ fun DoubleModalNavigationDrawer(
     val navigationDrawerWidth = with(density) { 360.dp.toPx() }
 
     val width = with(LocalDensity.current) {
-        LocalAppConfiguration.current.screenWidthDp.dp.roundToPx()
+        LocalWindowConfiguration.current.screenWidthDp.roundToPx()
     }
     SideEffect {
         drawerState.density = density

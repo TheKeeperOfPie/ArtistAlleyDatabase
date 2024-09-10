@@ -75,7 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -313,7 +313,7 @@ fun MediaTagRow(
             .fillMaxWidth()
             // SubcomposeLayout doesn't support fill max width, so use a really large number.
             // The parent will clamp the actual width so all content still fits on screen.
-            .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = height)
+            .size(width = LocalWindowConfiguration.current.screenWidthDp, height = height)
             .fadingEdgeEnd(
                 startOpaque = startPadding,
                 endOpaque = 32.dp,

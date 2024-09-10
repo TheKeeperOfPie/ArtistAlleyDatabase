@@ -116,7 +116,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
@@ -462,7 +462,7 @@ fun ThreadCategoryRow(thread: ForumThread, modifier: Modifier = Modifier) {
             .fillMaxWidth()
             // SubcomposeLayout doesn't support fill max width, so use a really large number.
             // The parent will clamp the actual width so all content still fits on screen.
-            .size(width = LocalAppConfiguration.current.screenWidthDp.dp, height = 24.dp)
+            .size(width = LocalWindowConfiguration.current.screenWidthDp, height = 24.dp)
             .fadingEdgeEnd(
                 startOpaque = 12.dp,
                 endOpaque = 32.dp,

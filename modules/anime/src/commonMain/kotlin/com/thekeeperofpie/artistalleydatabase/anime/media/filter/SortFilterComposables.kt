@@ -102,7 +102,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilterChip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ItemDropdown
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
@@ -426,7 +426,7 @@ private fun AiringDateBasicSection(
                     .padding(horizontal = 8.dp)
             )
 
-            val screenWidth = LocalAppConfiguration.current.screenWidthDp.dp
+            val screenWidth = LocalWindowConfiguration.current.screenWidthDp
             val minWidth = screenWidth / 2 - 32.dp
             val leadingIcon = @Composable {
                 IconButton(onClick = {

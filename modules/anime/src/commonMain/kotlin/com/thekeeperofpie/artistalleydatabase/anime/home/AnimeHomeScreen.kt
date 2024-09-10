@@ -99,7 +99,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_news_home_tit
 import artistalleydatabase.modules.anime.generated.resources.anime_notifications_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_home_title
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_home_title
-import coil3.size.Dimension
 import com.anilist.fragment.HomeMedia
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
@@ -141,7 +140,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
@@ -400,8 +399,8 @@ object AnimeHomeScreen {
                 .testTag("homeColumn")
                 .verticalScroll(scrollState)
         ) {
-            val configuration = LocalAppConfiguration.current
-            val screenWidthDp = configuration.screenWidthDp.dp
+            val configuration = LocalWindowConfiguration.current
+            val screenWidthDp = configuration.screenWidthDp
             val pageSize = remember {
                 PageSize.Fixed(420.dp.coerceAtMost(screenWidthDp - 32.dp))
             }
@@ -789,18 +788,10 @@ object AnimeHomeScreen {
         val media = entry?.media
         Box(modifier = Modifier.recomposeHighlighter()) {
             val density = LocalDensity.current
-            val coilWidth = Dimension.Pixels(
-                density.run { CURRENT_ROW_IMAGE_WIDTH.roundToPx() / 4 * 3 }
-            )
-            val coilHeight = Dimension.Pixels(
-                density.run { CURRENT_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
-            )
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
                 imageState = coverImageState,
-                image = coverImageState.request()
-                    .size(width = coilWidth, height = coilHeight)
-                    .build(),
+                image = coverImageState.request().build(),
                 modifier = Modifier
                     .sharedElement(sharedContentState)
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
@@ -963,19 +954,11 @@ object AnimeHomeScreen {
     ) {
         Box(modifier = Modifier.recomposeHighlighter()) {
             var showTitle by remember(media) { mutableStateOf(false) }
-            val density = LocalDensity.current
-            val coilWidth = Dimension.Pixels(
-                density.run { MEDIA_ROW_IMAGE_WIDTH.roundToPx() / 2 }
-            )
-            val coilHeight = Dimension.Pixels(
-                density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() / 2 }
-            )
 
+            // TODO: Size constaints removed because it doesn't work on desktop
             CoilImage(
                 state = coverImageState,
-                model = coverImageState.request()
-                    .size(width = coilWidth, height = coilHeight)
-                    .build(),
+                model = coverImageState.request().build(),
                 contentScale = ContentScale.Crop,
                 contentDescription = stringResource(Res.string.anime_media_cover_image_content_description),
                 onError = { showTitle = true },

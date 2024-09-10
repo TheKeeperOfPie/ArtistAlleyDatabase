@@ -14,7 +14,7 @@ import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.PagingDataEvent
 import androidx.paging.PagingDataPresenter
-import kotlinx.coroutines.Dispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUiDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -43,7 +43,7 @@ public class LazyPagingItems<T : Any> internal constructor(
      */
     private val flow: Flow<PagingData<T>>
 ) {
-    private val mainDispatcher = Dispatchers.Main
+    private val mainDispatcher = ComposeUiDispatcher.Main
 
     /**
      * If the [flow] is a SharedFlow, it is expected to be the flow returned by from

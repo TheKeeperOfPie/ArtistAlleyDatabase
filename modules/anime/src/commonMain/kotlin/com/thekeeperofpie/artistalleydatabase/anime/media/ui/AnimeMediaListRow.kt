@@ -39,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -49,8 +48,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_recomme
 import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_down_filled_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_up_empty_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_up_filled_content_description
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaType
@@ -236,13 +233,7 @@ object AnimeMediaListRow {
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
                 imageState = imageState,
-                image = imageState.request()
-                    .crossfade(true)
-                    .size(
-                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                        height = Dimension.Undefined
-                    )
-                    .build(),
+                image = imageState.request().build(),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxHeight()

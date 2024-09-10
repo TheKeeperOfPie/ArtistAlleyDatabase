@@ -56,7 +56,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -103,8 +102,6 @@ import artistalleydatabase.modules.utils_compose.generated.resources.no
 import artistalleydatabase.modules.utils_compose.generated.resources.save
 import artistalleydatabase.modules.utils_compose.generated.resources.yes
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
@@ -297,15 +294,7 @@ object AnimeMediaEditBottomSheet {
                 val sharedTransitionKey = SharedTransitionKey.makeKeyForId(mediaId)
                 MediaCoverImage(
                     imageState = coverImageState,
-                    image = coverImageState.request()
-                        .crossfade(true)
-                        .size(
-                            width = Dimension.Pixels(
-                                LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
-                            ),
-                            height = Dimension.Undefined
-                        )
-                        .build(),
+                    image = coverImageState.request().build(),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)

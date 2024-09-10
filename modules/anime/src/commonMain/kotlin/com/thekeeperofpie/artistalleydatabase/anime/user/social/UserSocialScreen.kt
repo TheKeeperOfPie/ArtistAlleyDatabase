@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -32,8 +31,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_social_f
 import artistalleydatabase.modules.anime.generated.resources.anime_user_social_following
 import artistalleydatabase.modules.anime.generated.resources.anime_user_social_not_following_anyone
 import coil3.annotation.ExperimentalCoilApi
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.fragment.UserNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
@@ -206,14 +203,9 @@ object UserSocialScreen {
                 }
         ) {
             Box {
-                val dimension =
-                    Dimension.Pixels(LocalDensity.current.run { USER_IMAGE_SIZE.roundToPx() })
                 UserAvatarImage(
                     imageState = imageState,
-                    image = imageState.request()
-                        .crossfade(true)
-                        .size(width = dimension, height = dimension)
-                        .build(),
+                    image = imageState.request().build(),
                     modifier = Modifier
                         .size(USER_IMAGE_SIZE)
                         .sharedElement(sharedTransitionKey, "user_image")

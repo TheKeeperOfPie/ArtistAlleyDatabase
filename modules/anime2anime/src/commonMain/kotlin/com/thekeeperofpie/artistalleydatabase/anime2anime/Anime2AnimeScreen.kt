@@ -60,7 +60,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -91,8 +90,6 @@ import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_s
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_submit_restart_button
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_swap_start_target_content_description
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_target_media_header
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.fragment.AniListMedia
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData
@@ -502,13 +499,7 @@ object Anime2AnimeScreen {
                 val sharedTransitionKey = SharedTransitionKey.makeKeyForId(voiceActor.id.toString())
                 StaffCoverImage(
                     imageState = coverImageState,
-                    image = coverImageState.request()
-                        .crossfade(true)
-                        .size(
-                            width = Dimension.Pixels(LocalDensity.current.run { 48.dp.roundToPx() }),
-                            height = Dimension.Undefined,
-                        )
-                        .build(),
+                    image = coverImageState.request().build(),
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .fillMaxHeight()
@@ -560,13 +551,7 @@ object Anime2AnimeScreen {
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(character.id.toString())
         CharacterCoverImage(
             imageState = coverImageState,
-            image = coverImageState.request()
-                .crossfade(true)
-                .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { 48.dp.roundToPx() }),
-                    height = Dimension.Undefined
-                )
-                .build(),
+            image = coverImageState.request().build(),
             modifier = Modifier
                 .fillMaxHeight()
                 .width(48.dp)
@@ -636,13 +621,7 @@ object Anime2AnimeScreen {
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 StaffCoverImage(
                     imageState = coverImageState,
-                    image = coverImageState.request()
-                        .crossfade(true)
-                        .size(
-                            width = Dimension.Pixels(LocalDensity.current.run { 48.dp.roundToPx() }),
-                            height = Dimension.Undefined,
-                        )
-                        .build(),
+                    image = coverImageState.request().build(),
                     modifier = Modifier
                         .fillMaxHeight()
                         .width(48.dp)

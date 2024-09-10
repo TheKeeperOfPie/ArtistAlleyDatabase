@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUiDispatcher
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
@@ -19,7 +18,7 @@ abstract class SortFilterController<FilterParams>(scope: CoroutineScope) {
 
     private val moleculeScope = CoroutineScope(scope.coroutineContext + ComposeUiDispatcher.Main)
     val filterParams by lazy(LazyThreadSafetyMode.NONE) {
-        moleculeScope.launchMolecule(RecompositionMode.ContextClock) {
+        moleculeScope.launchMolecule(ComposeUiDispatcher.recompositionMode) {
             debounce(currentValue = filterParams(), duration = 500.milliseconds)
         }
     }

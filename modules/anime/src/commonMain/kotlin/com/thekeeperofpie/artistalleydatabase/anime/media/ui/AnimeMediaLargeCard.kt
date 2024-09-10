@@ -36,7 +36,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -44,8 +43,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_banner_image_content_description
-import coil3.request.crossfade
-import coil3.size.Dimension
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
@@ -261,15 +258,7 @@ object AnimeMediaLargeCard {
         )
         CoilImage(
             state = imageState,
-            model = imageState.request()
-                .crossfade(true)
-                .size(
-                    width = Dimension.Undefined,
-                    height = Dimension.Pixels(
-                        LocalDensity.current.run { HEIGHT.roundToPx() / 2 }
-                    ),
-                )
-                .build(),
+            model = imageState.request().build(),
             contentScale = ContentScale.Crop,
             contentDescription = stringResource(
                 Res.string.anime_media_banner_image_content_description
