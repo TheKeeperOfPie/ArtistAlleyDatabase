@@ -36,7 +36,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
-import kotlinx.io.files.SystemFileSystem
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -57,7 +56,7 @@ class CdEntryGridModel(
             entry: CdEntry,
         ): CdEntryGridModel {
             val imageUri = EntryUtils.getImagePath(appFileSystem, entry.entryId)
-                ?.takeIf(SystemFileSystem::exists)
+                ?.takeIf(appFileSystem::exists)
                 ?.toUri()
                 ?.buildUpon()
                 ?.appendQueryParameter("width", entry.imageWidth.toString())

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface VgmdbArtistDao {
 
     @Query("""SELECT * FROM vgmdb_artists WHERE id = :id""")
-    fun getEntry(id: String): VgmdbArtist?
+    suspend fun getEntry(id: String): VgmdbArtist?
 
     @Query("""SELECT * FROM vgmdb_artists WHERE id = :id""")
     fun getEntryFlow(id: String): Flow<VgmdbArtist?>

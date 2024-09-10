@@ -7,8 +7,8 @@ import me.tatarka.inject.annotations.Inject
 @SingletonScope
 @Inject
 actual class PlatformOAuthStore {
-    internal actual val authTokenState: MutableStateFlow<String?>
-        get() = TODO("Not yet implemented")
+    // TODO
+    internal actual val authTokenState = MutableStateFlow<String?>(null)
 
     internal actual suspend fun storeAuthTokenResult(token: String) {
     }

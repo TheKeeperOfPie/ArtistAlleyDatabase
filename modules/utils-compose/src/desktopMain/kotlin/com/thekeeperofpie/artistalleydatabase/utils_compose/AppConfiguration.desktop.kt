@@ -2,10 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocal
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 
-actual val LocalAppConfiguration: CompositionLocal<AppConfiguration> =
+actual val LocalAppConfiguration: ProvidableCompositionLocal<AppConfiguration> =
     compositionLocalWithComputedDefaultOf {
         TODO()
     }

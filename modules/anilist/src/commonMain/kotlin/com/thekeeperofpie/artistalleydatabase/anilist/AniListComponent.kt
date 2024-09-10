@@ -39,15 +39,15 @@ interface AniListComponent : AniListSqlCacheComponent {
     fun provideAniListApolloClient(
         networkSettings: NetworkSettings,
         httpClient: HttpClient,
-        apolloHttpInterceptors: Set<HttpInterceptor>,
-        sqlCache: AniListSqlCache,
+        apolloHttpInterceptors: Set<HttpInterceptor> = emptySet(),
+        sqlCache: AniListSqlCache? = null,
     ): ApolloClient {
         val memoryThenDiskCache = MemoryCacheFactory(
             maxSizeBytes = MEMORY_CACHE_BYTE_SIZE,
             expireAfterMillis = 10.minutes.inWholeMilliseconds,
         ).apply {
             // TODO: Re-enable caching
-            val cache = sqlCache.cache
+            val cache = sqlCache?.cache
             if (cache != null && networkSettings.enableNetworkCaching.value) {
                 chain(cache)
             }
@@ -58,7 +58,7 @@ interface AniListComponent : AniListSqlCacheComponent {
             .httpEngine(KtorHttpEngine(httpClient))
             .addLoggingInterceptors("AniListApi", networkSettings)
             .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
-            .apply { apolloHttpInterceptors.forEach(::addHttpInterceptor) }
+            .apply { apolloHttpInterceptors?.forEach(::addHttpInterceptor) }
             .build()
     }
 

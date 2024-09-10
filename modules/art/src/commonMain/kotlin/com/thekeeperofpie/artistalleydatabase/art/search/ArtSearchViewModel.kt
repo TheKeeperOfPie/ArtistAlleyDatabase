@@ -19,7 +19,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 import java.util.WeakHashMap
@@ -46,7 +44,7 @@ open class ArtSearchViewModel(
     override val entryGridSelectionController =
         EntryGridSelectionController<ArtEntryGridModel>({ viewModelScope }) {
             it.forEach {
-                SystemFileSystem.deleteRecursively(EntryUtils.getEntryImageFolder(appFileSystem, it.id))
+                appFileSystem.deleteRecursively(EntryUtils.getEntryImageFolder(appFileSystem, it.id))
                 artEntryDao.delete(it.id.valueId)
             }
         }

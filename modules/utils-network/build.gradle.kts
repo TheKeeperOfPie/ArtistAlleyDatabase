@@ -1,6 +1,7 @@
 plugins {
     id("library-android")
     id("library-desktop")
+    id("library-inject")
 }
 
 kotlin {
@@ -10,7 +11,7 @@ kotlin {
         }
         commonMain.dependencies {
             api(libs.apollo.runtime)
-            implementation(libs.ktor.client.core)
+            api(libs.ktor.client.core)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kermit)
             implementation(libs.okhttp3.logging.interceptor)

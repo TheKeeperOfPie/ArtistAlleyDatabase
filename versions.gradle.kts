@@ -10,6 +10,7 @@ import Versions_gradle.Versions.androidx.paging
 import Versions_gradle.Versions.androidx.palette
 import Versions_gradle.Versions.androidx.room
 import Versions_gradle.Versions.androidx.securityCrypto
+import Versions_gradle.Versions.androidx.sqlite
 import Versions_gradle.Versions.androidx.testExt
 import Versions_gradle.Versions.androidx.testRunner
 import Versions_gradle.Versions.androidx.tracing
@@ -60,6 +61,7 @@ object Versions {
         const val palette = "1.0.0"
         const val room = "2.7.0-SNAPSHOT"
         const val securityCrypto = "1.1.0-alpha06"
+        const val sqlite = "2.5.0-alpha07"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
@@ -121,6 +123,7 @@ object Versions {
     const val jackson = "2.17.2"
     const val jaredsBurrowsLicense = "0.9.8"
     const val javaPoet = "1.13.0"
+    const val jimfs = "1.3.0"
     const val jsonTree = "2.2.0"
 
     object junit {
@@ -171,6 +174,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
         repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
         repositories {
             maven("https://androidx.dev/snapshots/builds/12338415/artifacts/repository")
+            maven("https://jitpack.io/")
             maven("https://oss.sonatype.org/content/repositories/snapshots")
             maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
             maven("https://androidx.dev/storage/compose-compiler/repository/")
@@ -250,6 +254,8 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         "androidx.security:security-crypto:$securityCrypto",
                         prefix = "androidx"
                     )
+
+                    library("androidx.sqlite:sqlite-bundled:$sqlite", prefix = "androidx")
                     library("androidx.tracing:tracing:$tracing", prefix = "androidx")
 
                     withVersion(work) {
@@ -315,6 +321,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("io.coil-kt.coil3:coil")
                         library("io.coil-kt.coil3:coil-compose")
                         library("io.coil-kt.coil3:coil-network-okhttp")
+                        library("io.coil-kt.coil3:coil-network-ktor3")
                     }
                 }
 
@@ -428,6 +435,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
                 library("com.fleeksoft.ksoup:ksoup:${Versions.ksoup}")
                 library("com.github.ajalt.colormath:colormath-ext-jetpack-compose:${Versions.colormath}")
+                library("com.google.jimfs:jimfs:${Versions.jimfs}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.kmpalette:kmpalette-core:${Versions.kmpalette}")

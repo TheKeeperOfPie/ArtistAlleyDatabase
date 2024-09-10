@@ -52,7 +52,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -141,7 +140,7 @@ class UserMediaListController(
                     }
                 )
 
-                if (!SystemFileSystem.exists(cachePath)) {
+                if (!appFileSystem.exists(cachePath)) {
                     LoadingResult.empty()
                 } else {
                     appFileSystem.openEncryptedSource(cachePath)
@@ -212,7 +211,7 @@ class UserMediaListController(
         scope.launch(CustomDispatchers.IO) {
             try {
                 cacheMutex.withLock {
-                    SystemFileSystem.createDirectories(cacheDir)
+                    appFileSystem.createDirectories(cacheDir)
                     val cacheFile = cacheDir.resolve(
                         if (mediaType == MediaType.ANIME) {
                             "anime.json"
@@ -222,7 +221,7 @@ class UserMediaListController(
                     )
 
                     // TODO: Atomicity
-                    SystemFileSystem.delete(cacheFile, mustExist = false)
+                    appFileSystem.delete(cacheFile)
 
                     appFileSystem.openEncryptedSink(cacheFile)
                         .use { json.encodeToSink(lists, it) }

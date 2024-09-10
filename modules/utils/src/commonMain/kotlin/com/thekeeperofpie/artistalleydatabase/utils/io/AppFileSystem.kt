@@ -1,8 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.utils.io
 
 import com.eygraber.uri.Uri
+import kotlinx.io.RawSink
+import kotlinx.io.RawSource
 import kotlinx.io.Sink
 import kotlinx.io.Source
+import kotlinx.io.files.FileMetadata
 import kotlinx.io.files.Path
 
 expect class AppFileSystem {
@@ -22,4 +25,13 @@ expect class AppFileSystem {
 
     fun openEncryptedSource(path: Path): Source
     fun openEncryptedSink(path: Path): Sink
+
+    fun exists(path: Path): Boolean
+    fun createDirectories(path: Path)
+    fun delete(path: Path)
+    fun metadataOrNull(path: Path): FileMetadata?
+    fun sink(path: Path): RawSink
+    fun list(path: Path): Collection<Path>
+    fun atomicMove(source: Path, destination: Path)
+    fun source(path: Path): RawSource
 }

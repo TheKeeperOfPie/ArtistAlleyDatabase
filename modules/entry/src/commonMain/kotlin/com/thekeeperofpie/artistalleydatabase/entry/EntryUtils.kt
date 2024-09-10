@@ -14,7 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemPathSeparator
 
 object EntryUtils {
@@ -47,9 +46,9 @@ object EntryUtils {
         entryId: EntryId,
     ) = getEntryImageFolder(appFileSystem, entryId)
         .let {
-            if (!SystemFileSystem.exists(it)) {
+            if (!appFileSystem.exists(it)) {
                 emptyList()
-            } else if (SystemFileSystem.metadataOrNull(it)?.isRegularFile == true) {
+            } else if (appFileSystem.metadataOrNull(it)?.isRegularFile == true) {
                 listOf(
                     EntryImage(
                         entryId = entryId,
@@ -59,8 +58,8 @@ object EntryUtils {
                         height = 1,
                     )
                 )
-            } else if (SystemFileSystem.metadataOrNull(it)?.isDirectory == true) {
-                SystemFileSystem.list(it)
+            } else if (appFileSystem.metadataOrNull(it)?.isDirectory == true) {
+                appFileSystem.list(it)
                     .map {
                         // File are named $index-$width-$height-$label{-$cropped}
                         val sections = it.name.split("-")
@@ -114,21 +113,21 @@ object EntryUtils {
     fun getImagePath(appFileSystem: AppFileSystem, entryId: EntryId) =
         getEntryImageFolder(appFileSystem, entryId)
             .let {
-                if (!SystemFileSystem.exists(it)) {
+                if (!appFileSystem.exists(it)) {
                     null
-                } else if (SystemFileSystem.metadataOrNull(it)?.isRegularFile == true) {
+                } else if (appFileSystem.metadataOrNull(it)?.isRegularFile == true) {
                     it
-                } else if (SystemFileSystem.metadataOrNull(it)?.isDirectory == true) {
-                    val files = SystemFileSystem.list(it)
+                } else if (appFileSystem.metadataOrNull(it)?.isDirectory == true) {
+                    val files = appFileSystem.list(it)
                     files.filter { it.name.split("-").getOrNull(0) == "0" }
                         .firstOrNull { it.name.endsWith("cropped") }
                         ?: files.firstOrNull()
                 } else null
             }
             ?: getEntryImageFolder(appFileSystem, entryId)
-                .takeIf { SystemFileSystem.metadataOrNull(it)?.isDirectory == true }
+                .takeIf { appFileSystem.metadataOrNull(it)?.isDirectory == true }
                 ?.let {
-                    val files = SystemFileSystem.list(it)
+                    val files = appFileSystem.list(it)
                     files.find { it.name == "0-1-1" } ?: files.firstOrNull()
                 }
 
@@ -180,7 +179,7 @@ object EntryUtils {
         val (width, height) = appFileSystem.getImageWidthHeight(path.toUri())
         val newPath =
             Path(path.parent!!.toString() + SystemPathSeparator + "0-${width ?: 1}-${height ?: 1}")
-        SystemFileSystem.atomicMove(path, newPath)
+        appFileSystem.atomicMove(path, newPath)
     }
 
     fun getImageCacheKey(it: EntryImage, width: Int, height: Int) =

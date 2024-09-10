@@ -18,7 +18,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
 import org.jetbrains.compose.resources.StringResource
 
 class EntryImageController(
@@ -211,16 +210,16 @@ class EntryImageController(
     ) {
         entryIds.forEach {
             val entryFolder = EntryUtils.getEntryImageFolder(appFileSystem, it)
-            if (SystemFileSystem.exists(entryFolder)
-                && SystemFileSystem.metadataOrNull(entryFolder)?.isDirectory == true
+            if (appFileSystem.exists(entryFolder)
+                && appFileSystem.metadataOrNull(entryFolder)?.isDirectory == true
             ) {
                 val writtenFiles = saveImagesResult[it]?.flatMap {
                     listOfNotNull(it.originalPath, it.croppedPath)
                 }.orEmpty()
-                SystemFileSystem.walk(entryFolder)
-                    .filter { SystemFileSystem.metadataOrNull(it)?.isRegularFile == true }
+                appFileSystem.walk(entryFolder)
+                    .filter { appFileSystem.metadataOrNull(it)?.isRegularFile == true }
                     .filterNot(writtenFiles::contains)
-                    .forEach(SystemFileSystem::delete)
+                    .forEach(appFileSystem::delete)
             }
         }
     }

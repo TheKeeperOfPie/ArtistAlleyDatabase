@@ -23,6 +23,7 @@ dependencyResolutionManagement {
 rootProject.name = "ArtistAlleyDatabase"
 include(
     ":app",
+    ":desktop",
 //    ":modules:alley",
 //    ":modules:alley-app",
     ":modules:anilist",

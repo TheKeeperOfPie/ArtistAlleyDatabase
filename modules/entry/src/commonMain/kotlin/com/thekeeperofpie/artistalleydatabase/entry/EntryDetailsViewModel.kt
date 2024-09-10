@@ -20,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -203,7 +202,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
 
         val entryId = entryIds.single()
         viewModelScope.launch(CustomDispatchers.IO) {
-            SystemFileSystem.deleteRecursively(
+            appFileSystem.deleteRecursively(
                 EntryUtils.getEntryImageFolder(appFileSystem, entryId)
             )
             deleteEntry(entryId)

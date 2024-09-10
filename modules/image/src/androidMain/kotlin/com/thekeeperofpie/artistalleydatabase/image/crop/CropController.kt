@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.io.asOutputStream
-import kotlinx.io.files.SystemFileSystem
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -128,7 +127,7 @@ actual class CropController(
             val outputPath =
                 CropUtils.getCropTempPath(appFileSystem, request.imageFolderName, request.id)
             appFileSystem.openUriSource(imageCropUri)?.use { input ->
-                SystemFileSystem.sink(outputPath).use { output ->
+                appFileSystem.sink(outputPath).use { output ->
                     input.transferTo(output)
                 }
             }

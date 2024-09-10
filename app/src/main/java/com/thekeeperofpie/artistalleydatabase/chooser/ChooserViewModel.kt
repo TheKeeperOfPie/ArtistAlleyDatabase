@@ -13,7 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import kotlinx.io.buffered
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 import java.io.File
@@ -71,7 +70,7 @@ class ChooserViewModel(
         entry: ArtEntryGridModel,
     ): Pair<Uri, String>? {
         val path = EntryUtils.getImagePath(appFileSystem, entry.value.entryId)
-        if (path == null || !SystemFileSystem.exists(path)) {
+        if (path == null || !appFileSystem.exists(path)) {
             return null
         }
 
@@ -87,8 +86,8 @@ class ChooserViewModel(
         // TODO: Find a better solution for the file extension problem
         // TODO: Offer an option to compress before export in case the caller has a size limitation
         val externalFile = appFileSystem.filePath("external/external.$extension")
-        SystemFileSystem.source(path).buffered().use { input ->
-            SystemFileSystem.sink(externalFile).buffered().use { output ->
+        appFileSystem.source(path).buffered().use { input ->
+            appFileSystem.sink(externalFile).buffered().use { output ->
                 input.transferTo(output)
             }
         }

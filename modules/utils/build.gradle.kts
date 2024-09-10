@@ -16,6 +16,9 @@ kotlin {
             implementation(libs.kermit)
             implementation(libs.kotlinx.serialization.json.io)
         }
+        desktopMain.dependencies {
+            implementation(libs.jimfs)
+        }
     }
 }
 

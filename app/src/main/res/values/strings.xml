@@ -53,11 +53,7 @@
     <string name="notification_sync_finished_title">Sync finished</string>
     <string name="notification_sync_failed_title">Sync failed</string>
 
-    <string name="crash_title">App crash</string>
     <string name="crash_share_chooser_title">Share app crash</string>
-    <string name="crash_share_icon_content_description">Share crash</string>
-    <string name="crash_intro">Anichive does not have advanced metric collection. Consider sharing this crash with the developer on Discord to help improve the app</string>
-    <string name="crash_open_discord">Open Anichive Discord</string>
 
     <string name="select_export_destination_content_description">Select export destination</string>
     <string name="progress_complete_content_description">Progress complete</string>

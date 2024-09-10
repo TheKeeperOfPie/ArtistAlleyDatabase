@@ -138,4 +138,22 @@ actual class AppFileSystem(private val application: Application, private val mas
             .openFileOutput()
             .asSink()
             .buffered()
+
+    actual fun exists(path: Path) = SystemFileSystem.exists(path)
+
+    actual fun createDirectories(path: Path) =
+        SystemFileSystem.createDirectories(path, mustCreate = false)
+
+    actual fun delete(path: Path) = SystemFileSystem.delete(path, mustExist = false)
+
+    actual fun metadataOrNull(path: Path) = SystemFileSystem.metadataOrNull(path)
+
+    actual fun sink(path: Path) = SystemFileSystem.sink(path)
+
+    actual fun list(path: Path) = SystemFileSystem.list(path)
+
+    actual fun atomicMove(source: Path, destination: Path) =
+        SystemFileSystem.atomicMove(source, destination)
+
+    actual fun source(path: Path) = SystemFileSystem.source(path)
 }

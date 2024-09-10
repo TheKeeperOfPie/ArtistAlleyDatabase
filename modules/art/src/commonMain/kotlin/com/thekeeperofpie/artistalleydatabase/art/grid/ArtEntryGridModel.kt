@@ -30,7 +30,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 
@@ -53,7 +52,7 @@ class ArtEntryGridModel(
             entry: ArtEntry,
         ): ArtEntryGridModel {
             val imageUri = EntryUtils.getImagePath(appFileSystem, entry.entryId)
-                ?.takeIf(SystemFileSystem::exists)
+                ?.takeIf(appFileSystem::exists)
                 ?.toUri()
                 ?.buildUpon()
                 ?.appendQueryParameter("width", entry.imageWidth.toString())

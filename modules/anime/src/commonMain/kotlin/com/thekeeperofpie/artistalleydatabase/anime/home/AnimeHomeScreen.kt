@@ -78,6 +78,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -438,7 +439,7 @@ object AnimeHomeScreen {
                 start = 16.dp,
                 end = (screenWidthDp - MEDIA_ROW_IMAGE_WIDTH).let {
                     it - 16.dp - MEDIA_ROW_IMAGE_WIDTH
-                },
+                }.coerceAtLeast(0.dp),
             )
             val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
                 .coerceAtLeast(1) + 1

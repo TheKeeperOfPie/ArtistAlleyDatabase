@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
@@ -21,7 +22,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.asInputStream
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit
 class ExportWorker(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
+    private val appFileSystem: AppFileSystem,
     private val json: Json,
     private val settingsProvider: SettingsProvider,
     private val exporters: Set<@JvmSuppressWildcards Exporter>,
@@ -130,7 +131,7 @@ class ExportWorker(
                     val tempJsonFile = privateExportDir.resolve(exporter.zipEntryName + ".json")
 
                     val startingProgressIndex = entriesSizes.take(index).sum()
-                    val success = SystemFileSystem.sink(Path(tempJsonFile.path)).buffered().use {
+                    val success = appFileSystem.sink(Path(tempJsonFile.path)).buffered().use {
                         exporter.writeEntries(
                             it,
                             writeEntry =

@@ -5,7 +5,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import kotlinx.io.Source
 import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemPathSeparator
 import kotlinx.serialization.ExperimentalSerializationApi
 import java.io.File
@@ -30,9 +29,9 @@ abstract class EntryImporter(
                     appFileSystem,
                     EntryId(scopedIdType, entryName),
                 )
-                SystemFileSystem.createDirectories(outputFolder)
+                appFileSystem.createDirectories(outputFolder)
                 val outputPath = Path(outputFolder.toString() + SystemPathSeparator + "0-1-1")
-                SystemFileSystem.sink(outputPath).use {
+                appFileSystem.sink(outputPath).use {
                     source.transferTo(it)
                 }
                 EntryUtils.fixImageName(appFileSystem, outputPath)
@@ -43,9 +42,9 @@ abstract class EntryImporter(
                         appFileSystem,
                         EntryId(scopedIdType, entryId)
                     )
-                SystemFileSystem.createDirectories(folder)
+                appFileSystem.createDirectories(folder)
                 val outputPath = Path(folder.toString() + SystemPathSeparator + entryName)
-                SystemFileSystem.sink(outputPath).use {
+                appFileSystem.sink(outputPath).use {
                     source.transferTo(it)
                 }
             }

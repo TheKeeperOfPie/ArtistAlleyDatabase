@@ -47,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNav
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkComponent
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbComponent
@@ -64,8 +65,8 @@ import kotlin.reflect.KType
 abstract class ApplicationComponent(
     @get:Provides val application: Application,
 ) : AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent, BrowseComponent,
-    CdEntryComponent, MusicalArtistComponent, SettingsComponent, VariantComponent, VgmdbComponent,
-    WorkerComponent {
+    CdEntryComponent, MusicalArtistComponent, NetworkComponent, SettingsComponent, VariantComponent,
+    VgmdbComponent, WorkerComponent {
 
     abstract val chooserViewModel: () -> ChooserViewModel
     abstract val exportViewModel: () -> ExportViewModel
@@ -143,6 +144,7 @@ abstract class ApplicationComponent(
         override val appDrawableModel = R.mipmap.ic_launcher
     }
 
+    // TODO: Move this somewhere shared?
     @SingletonScope
     @Provides
     fun provideJson() = Json {
@@ -167,15 +169,7 @@ abstract class ApplicationComponent(
 
     @SingletonScope
     @Provides
-    fun provideWebScraper(networkClient: NetworkClient) = networkClient.webScraper
-
-    @SingletonScope
-    @Provides
     fun provideOkHttpClient(networkClient: NetworkClient) = networkClient.okHttpClient
-
-    @SingletonScope
-    @Provides
-    fun provideHttpClient(networkClient: NetworkClient) = networkClient.httpClient
 
     @SingletonScope
     @Provides

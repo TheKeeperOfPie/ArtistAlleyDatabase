@@ -97,6 +97,7 @@ import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -287,23 +288,23 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
-                }
 
-                val tagShown = mediaTagDialogController.tagShown
-                if (tagShown != null) {
-                    MediaTagPreview(tag = tagShown) {
-                        mediaTagDialogController.tagShown = null
+                    val tagShown = mediaTagDialogController.tagShown
+                    if (tagShown != null) {
+                        MediaTagPreview(tag = tagShown) {
+                            mediaTagDialogController.tagShown = null
+                        }
                     }
-                }
 
-                val genreShown = mediaGenreDialogController.genreShown
-                if (genreShown != null) {
-                    MediaGenrePreview(genre = genreShown) {
-                        mediaGenreDialogController.genreShown = null
+                    val genreShown = mediaGenreDialogController.genreShown
+                    if (genreShown != null) {
+                        MediaGenrePreview(genre = genreShown) {
+                            mediaGenreDialogController.genreShown = null
+                        }
                     }
-                }
 
-                fullScreenImageHandler.ImageDialog()
+                    fullScreenImageHandler.ImageDialog()
+                }
             }
         }
 
@@ -538,9 +539,23 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 SideEffect { settings.lastCrashShown.value = true }
                                 CrashScreen(
-                                    settings = settings,
-                                    appMetadataProvider = appMetadataProvider,
+                                    crash = { settings.lastCrash.collectAsState().value },
                                     onClickBack = { navHostController.navigateUp() },
+                                    onClickShare = { crash ->
+                                        val shareTitle =
+                                            getString(R.string.crash_share_chooser_title)
+                                        val shareIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(
+                                                Intent.EXTRA_TEXT,
+                                                "Version ${appMetadataProvider.versionCode}:\n$crash"
+                                            )
+                                            type = "text/plain"
+                                        }.let {
+                                            Intent.createChooser(it, shareTitle)
+                                        }
+                                        startActivity(shareIntent)
+                                    }
                                 )
                             }
                         }

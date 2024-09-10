@@ -13,10 +13,10 @@ actual fun rememberImageSelectController(
 
 actual class ImageSelectController {
     actual fun requestNewImages() {
-        TODO()
+        // TODO
     }
 
     actual fun requestNewImage(index: Int) {
-        TODO()
+        // TODO
     }
 }

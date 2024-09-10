@@ -1,9 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils.io
 
 import com.eygraber.uri.Uri
-import kotlinx.io.files.FileSystem
 import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemPathSeparator
 
 fun Path.toUri() = Uri.Builder()
@@ -17,27 +15,28 @@ fun Path.resolve(vararg children: String) = Path(
             + children.joinToString(separator = "$SystemPathSeparator")
 )
 
-fun FileSystem.walk(path: Path) = sequence<Path> {
+fun AppFileSystem.walk(path: Path) = sequence<Path> {
     recursiveWalk(path)
 }
 
+context(AppFileSystem)
 private suspend fun SequenceScope<Path>.recursiveWalk(path: Path) {
-    val metadata = SystemFileSystem.metadataOrNull(path)
+    val metadata = metadataOrNull(path)
     if (metadata?.isDirectory == true) {
-        SystemFileSystem.list(path).forEach {
+        list(path).forEach {
             recursiveWalk(it)
         }
     }
     yield(path)
 }
 
-fun FileSystem.deleteRecursively(path: Path) {
+fun AppFileSystem.deleteRecursively(path: Path) {
     val metadata = metadataOrNull(path)
     if (metadata?.isDirectory == true) {
         list(path)
             .forEach { deleteRecursively(it) }
-        delete(path, mustExist = false)
+        delete(path)
     } else {
-        delete(path, mustExist = false)
+        delete(path)
     }
 }

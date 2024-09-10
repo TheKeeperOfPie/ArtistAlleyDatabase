@@ -13,6 +13,7 @@ kotlin {
         }
         commonMain.dependencies {
             api(compose.components.resources)
+            implementation(project(":modules:secrets"))
             implementation(project(":modules:utils"))
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)
@@ -22,6 +23,7 @@ kotlin {
             implementation(libs.paging.common)
         }
         desktopMain.dependencies {
+            implementation(libs.human.readable)
             implementation(libs.kmpalette.core)
         }
     }

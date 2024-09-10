@@ -21,6 +21,7 @@ kotlin {
             api(project(":modules:monetization"))
             api(project(":modules:news"))
             api(project(":modules:utils-compose"))
+            api(project(":modules:utils-network"))
 
             api(libs.room.ktx)
             api(libs.room.paging)

@@ -18,7 +18,6 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
 import coil3.util.DebugLogger
-import com.eygraber.uri.Uri
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
@@ -123,7 +122,7 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
 
     override fun newImageLoader(context: PlatformContext) = ImageLoader.Builder(context)
         .components {
-            add(Mapper<Uri, coil3.Uri> { data, _ -> data.toString().toUri() })
+            add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ -> data.toString().toUri() })
         }
         .memoryCache {
             MemoryCache.Builder()

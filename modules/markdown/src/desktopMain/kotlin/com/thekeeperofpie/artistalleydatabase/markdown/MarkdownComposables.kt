@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.markdown
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -12,5 +13,10 @@ actual fun MarkdownText(
     maxLines: Int?,
     onOverflowChange: (Boolean) -> Unit,
 ) {
-    TODO()
+    Text(
+        text = markdownText?.value.orEmpty(),
+        maxLines = maxLines ?: Int.MAX_VALUE,
+        color = textColor ?: Color.Unspecified,
+        modifier = modifier
+    )
 }

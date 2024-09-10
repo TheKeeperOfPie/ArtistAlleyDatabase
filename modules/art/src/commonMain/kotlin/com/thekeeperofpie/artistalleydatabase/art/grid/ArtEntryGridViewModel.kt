@@ -7,8 +7,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
-import kotlinx.io.files.SystemFileSystem
 
 abstract class ArtEntryGridViewModel(
     protected val appFileSystem: AppFileSystem,
@@ -18,7 +16,7 @@ abstract class ArtEntryGridViewModel(
     override val entryGridSelectionController =
         EntryGridSelectionController<ArtEntryGridModel>({ viewModelScope }) {
             it.forEach {
-                SystemFileSystem.deleteRecursively(EntryUtils.getEntryImageFolder(appFileSystem, it.id))
+                appFileSystem.deleteRecursively(EntryUtils.getEntryImageFolder(appFileSystem, it.id))
                 artEntryDao.delete(it.id.valueId)
             }
         }

@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.io.files.SystemFileSystem
 import me.tatarka.inject.annotations.Inject
 
 @Inject
@@ -69,7 +68,7 @@ class CdSearchViewModel(
     override val entryGridSelectionController =
         EntryGridSelectionController<CdEntryGridModel>({ viewModelScope }) {
             it.forEach {
-                SystemFileSystem.deleteRecursively(
+                appFileSystem.deleteRecursively(
                     EntryUtils.getEntryImageFolder(appFileSystem, it.id)
                 )
                 cdEntryDao.delete(it.id.valueId)

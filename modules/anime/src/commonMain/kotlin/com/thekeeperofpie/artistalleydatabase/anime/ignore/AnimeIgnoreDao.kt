@@ -24,13 +24,13 @@ interface AnimeIgnoreDao {
     suspend fun insertEntries(vararg entries: AnimeMediaIgnoreEntry)
 
     @Query("""SELECT COUNT(*) FROM anime_media_ignore""")
-    fun getEntryCount(): Int
+    suspend fun getEntryCount(): Int
 
     @Query("""SELECT COUNT(*) FROM anime_media_ignore""")
     fun entryCountFlow(): Flow<Int>
 
     @Query("""SELECT * FROM anime_media_ignore WHERE type = :type ORDER BY viewedAt DESC LIMIT 1 OFFSET :index""")
-    fun getEntryAtIndex(index: Int, type: MediaType): AnimeMediaIgnoreEntry?
+    suspend fun getEntryAtIndex(index: Int, type: MediaType): AnimeMediaIgnoreEntry?
 
     @Query("""SELECT EXISTS(SELECT id FROM anime_media_ignore WHERE id = :id)""")
     suspend fun exists(id : String) : Boolean
@@ -39,5 +39,5 @@ interface AnimeIgnoreDao {
     suspend fun delete(id: String)
 
     @Query("""DELETE FROM anime_media_ignore""")
-    fun deleteAll()
+    suspend fun deleteAll()
 }

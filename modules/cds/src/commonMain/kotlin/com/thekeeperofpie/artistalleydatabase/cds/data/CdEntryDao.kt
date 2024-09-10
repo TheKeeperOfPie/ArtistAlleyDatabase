@@ -47,7 +47,7 @@ interface CdEntryDao {
         OFFSET :offset
         """
     )
-    fun getEntries(limit: Int = 50, offset: Int = 0): List<CdEntry>
+    suspend fun getEntries(limit: Int = 50, offset: Int = 0): List<CdEntry>
 
     @Query(
         """
@@ -55,7 +55,7 @@ interface CdEntryDao {
         FROM cd_entries
         """
     )
-    fun getEntriesSize(): Int
+    suspend fun getEntriesSize(): Int
 
     @Query(
         """

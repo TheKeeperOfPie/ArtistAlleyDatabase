@@ -97,11 +97,11 @@ class SettingsProvider(
     override val adsEnabled = MutableStateFlow(deserialize("adsEnabled") ?: false)
     override val subscribed = MutableStateFlow(deserialize("subscribed") ?: false)
 
-    var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
-    var navDrawerStartDestination =
+    val searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
+    val navDrawerStartDestination =
         MutableStateFlow<String?>(deserialize("navDrawerStartDestination"))
-    var hideStatusBar = MutableStateFlow(deserialize("hideStatusBar") ?: false)
-    var appTheme = MutableStateFlow(deserialize("appTheme") ?: AppThemeSetting.AUTO)
+    val hideStatusBar = MutableStateFlow(deserialize("hideStatusBar") ?: false)
+    val appTheme = MutableStateFlow(deserialize("appTheme") ?: AppThemeSetting.AUTO)
 
     override val preferredMediaType =
         MutableStateFlow(deserialize("preferredMediaType") ?: MediaType.ANIME)

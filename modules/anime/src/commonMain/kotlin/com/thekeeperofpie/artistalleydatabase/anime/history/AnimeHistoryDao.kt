@@ -25,11 +25,11 @@ interface AnimeHistoryDao {
     suspend fun insertEntries(vararg entries: AnimeMediaHistoryEntry)
 
     @Query("""SELECT COUNT(*) FROM anime_media_history""")
-    fun getEntryCount(): Int
+    suspend fun getEntryCount(): Int
 
     @Query("""DELETE FROM anime_media_history WHERE id IN
         (SELECT id FROM anime_media_history ORDER BY viewedAt ASC LIMIT :limit)""")
-    fun deleteOldest(limit: Int)
+    suspend fun deleteOldest(limit: Int)
 
     @Transaction
     @Suppress("DEPRECATION")
@@ -42,8 +42,8 @@ interface AnimeHistoryDao {
     }
 
     @Query("""SELECT * FROM anime_media_history ORDER BY viewedAt DESC LIMIT 1 OFFSET :index""")
-    fun getEntryAtIndex(index: Int): AnimeMediaHistoryEntry?
+    suspend fun getEntryAtIndex(index: Int): AnimeMediaHistoryEntry?
 
     @Query("""DELETE FROM anime_media_history""")
-    fun deleteAll()
+    suspend fun deleteAll()
 }

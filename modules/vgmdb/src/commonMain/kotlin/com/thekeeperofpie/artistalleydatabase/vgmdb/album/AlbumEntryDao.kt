@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface AlbumEntryDao {
 
     @Query("""SELECT * FROM album_entries WHERE id = :id""")
-    fun getEntry(id: String): AlbumEntry?
+    suspend fun getEntry(id: String): AlbumEntry?
 
     @Query("""SELECT * FROM album_entries WHERE id = :id""")
     fun getEntryFlow(id: String): Flow<AlbumEntry?>

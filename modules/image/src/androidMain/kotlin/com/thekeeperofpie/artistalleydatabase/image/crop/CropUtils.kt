@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropUtils.CROP_IMAGE_FI
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemPathSeparator
 import org.jetbrains.compose.resources.stringResource
 
@@ -67,7 +66,7 @@ object CropUtils {
 
     fun getCropTempPath(appFileSystem: AppFileSystem, imageFolderName: String, imageId: String) =
         appFileSystem.cachePath("crop$SystemPathSeparator$imageFolderName")
-            .also { SystemFileSystem.createDirectories(it) }
+            .also { appFileSystem.createDirectories(it) }
             .resolve(imageId)
 
     @Composable

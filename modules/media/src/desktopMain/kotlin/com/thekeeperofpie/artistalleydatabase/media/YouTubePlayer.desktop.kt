@@ -1,11 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.media
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 
 @Composable
 actual fun YouTubePlayer(state: YouTubePlayerState) {
-    TODO()
+    // TODO
+    Text(text = "YouTube not supported")
 }
 
 @Composable
