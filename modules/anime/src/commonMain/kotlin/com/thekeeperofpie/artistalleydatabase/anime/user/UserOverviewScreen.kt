@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -62,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
@@ -90,7 +91,8 @@ object UserOverviewScreen {
         val characters = viewModel.characters.collectAsLazyPagingItems()
         val staff = viewModel.staff.collectAsLazyPagingItems()
         val navigationCallback = LocalNavigationCallback.current
-        LazyColumn(
+        LazyVerticalGrid(
+            columns = GridUtils.standardWidthAdaptiveCells,
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp)
             ),
@@ -104,7 +106,11 @@ object UserOverviewScreen {
             )
 
             if (entry.about != null) {
-                item("aboutSection", "aboutSection") {
+                item(
+                    key = "aboutSection",
+                    span = GridUtils.maxSpanFunction,
+                    contentType = "aboutSection",
+                ) {
                     DescriptionSection(
                         markdownText = entry.about,
                         expanded = { descriptionExpanded },
@@ -201,7 +207,7 @@ object UserOverviewScreen {
         }
     }
 
-    private fun LazyListScope.followingSection(
+    private fun LazyGridScope.followingSection(
         user: UserByIdQuery.Data.User,
         viewer: AniListViewer?,
         isFollowing: @Composable () -> Boolean,
@@ -263,7 +269,7 @@ object UserOverviewScreen {
         }
     }
 
-    private fun LazyListScope.favoriteStudiosSection(
+    private fun LazyGridScope.favoriteStudiosSection(
         viewer: AniListViewer?,
         editViewModel: MediaEditViewModel,
         studios: List<StudioListRow.Entry>,
@@ -283,7 +289,7 @@ object UserOverviewScreen {
 
         itemsIndexed(
             items = studios,
-            key = { index, item -> item.studio.id },
+            key = { _, item -> item.studio.id },
             contentType = { _, _ -> "studio" },
         ) { index, item ->
             SharedTransitionKeyScope("user_favorite_studio_row", item.studio.id.toString()) {
@@ -325,7 +331,7 @@ object UserOverviewScreen {
         }
     }
 
-    private fun LazyListScope.previousNamesSection(names: List<String>) {
+    private fun LazyGridScope.previousNamesSection(names: List<String>) {
         if (names.isEmpty()) return
         item {
             DetailsSectionHeader(stringResource(Res.string.anime_user_previous_names_label))

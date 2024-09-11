@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -324,7 +324,7 @@ fun ReviewRatingIconsSection(
     }
 }
 
-fun LazyListScope.reviewsSection(
+fun LazyGridScope.reviewsSection(
     entry: AnimeMediaDetailsReviewsViewModel.ReviewsEntry?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,

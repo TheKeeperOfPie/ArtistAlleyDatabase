@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.activity.activitiesSection
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -57,6 +56,7 @@ import org.junit.jupiter.api.parallel.ResourceLock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import javax.inject.Inject
+import kotlin.text.Typography.dagger
 
 @OptIn(ExperimentalTestApi::class, ExperimentalSharedTransitionApi::class)
 @ExtendWith(HiltInjectExtension::class)

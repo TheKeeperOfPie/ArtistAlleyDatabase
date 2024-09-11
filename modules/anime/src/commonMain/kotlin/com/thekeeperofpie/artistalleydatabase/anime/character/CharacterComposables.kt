@@ -18,8 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
@@ -72,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
@@ -217,14 +218,18 @@ fun CharacterSmallCard(
     }
 }
 
-fun LazyListScope.charactersSection(
+fun LazyGridScope.charactersSection(
     titleRes: StringResource,
     characters: LazyPagingItems<DetailsCharacter>,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     viewAllContentDescriptionTextRes: StringResource? = null,
 ) {
     if (characters.itemCount == 0) return
-    item("charactersHeader-$titleRes") {
+    item(
+        key = "charactersHeader-$titleRes",
+        span = GridUtils.maxSpanFunction,
+        contentType = "detailsSectionHeader",
+    ) {
         val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             text = stringResource(titleRes),
@@ -234,14 +239,18 @@ fun LazyListScope.charactersSection(
         )
     }
 
-    item("charactersSection-$titleRes") {
+    item(
+        key = "charactersSection-$titleRes",
+        span = GridUtils.maxSpanFunction,
+        contentType = "charactersSection",
+    ) {
         CharactersSection(
             characters = characters,
         )
     }
 }
 
-fun LazyListScope.charactersSection(
+fun LazyGridScope.charactersSection(
     titleRes: StringResource,
     mediaId: String,
     mediaHeaderParams: MediaHeaderParams,
@@ -250,7 +259,11 @@ fun LazyListScope.charactersSection(
     viewAllContentDescriptionTextRes: StringResource? = null,
 ) {
     if (charactersDeferred().itemCount.coerceAtLeast(charactersInitial.size) == 0) return
-    item("charactersHeader-$titleRes") {
+    item(
+        key = "charactersHeader-$titleRes",
+        span = GridUtils.maxSpanFunction,
+        contentType = "detailsSectionHeader",
+    ) {
         val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             text = stringResource(titleRes),
@@ -267,7 +280,11 @@ fun LazyListScope.charactersSection(
         )
     }
 
-    item("charactersSection-$titleRes") {
+    item(
+        key = "charactersSection-$titleRes",
+        span = GridUtils.maxSpanFunction,
+        contentType = "charactersSection",
+    ) {
         CharactersSection(
             charactersInitial = charactersInitial,
             charactersDeferred = { charactersDeferred() },

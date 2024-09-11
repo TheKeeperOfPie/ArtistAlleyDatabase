@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -86,6 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -189,7 +190,7 @@ fun ActivityList(
                                     )
                                     is UserSocialActivityQuery.Data.Page.OtherActivity,
                                     null,
-                                    -> TextActivitySmallCard(
+                                        -> TextActivitySmallCard(
                                         viewer = viewer,
                                         activity = null,
                                         entry = null,
@@ -1056,7 +1057,7 @@ private fun UserImage(
     )
 }
 
-fun LazyListScope.activitiesSection(
+fun LazyGridScope.activitiesSection(
     viewer: AniListViewer?,
     activityTab: AnimeMediaDetailsActivityViewModel.ActivityTab,
     activities: List<AnimeMediaDetailsActivityViewModel.ActivityEntry>?,
@@ -1067,7 +1068,11 @@ fun LazyListScope.activitiesSection(
     onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    item("activitiesHeader") {
+    item(
+        key = "activitiesHeader",
+        span = GridUtils.maxSpanFunction,
+        contentType = "activitiesHeader",
+    ) {
         val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             text = stringResource(Res.string.anime_media_details_activities_label),
@@ -1078,7 +1083,11 @@ fun LazyListScope.activitiesSection(
     }
 
     if (viewer != null) {
-        item("activitiesTabHeader") {
+        item(
+            key = "activitiesTabHeader",
+            span = GridUtils.maxSpanFunction,
+            contentType = "activitiesTabHeader",
+        ) {
             TabRow(
                 selectedTabIndex = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) 0 else 1,
                 modifier = Modifier

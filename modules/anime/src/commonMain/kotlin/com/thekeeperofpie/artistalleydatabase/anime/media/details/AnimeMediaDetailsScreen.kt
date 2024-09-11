@@ -23,10 +23,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
@@ -193,6 +194,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
@@ -259,36 +261,36 @@ object AnimeMediaDetailsScreen {
         sharedTransitionKey: SharedTransitionKey?,
         coverImageState: CoilImageState?,
         charactersCount: (Entry?) -> Int,
-        charactersSection: LazyListScope.(entry: Entry) -> Unit,
+        charactersSection: LazyGridScope.(entry: Entry) -> Unit,
         staffCount: () -> Int,
-        staffSection: LazyListScope.() -> Unit,
+        staffSection: LazyGridScope.() -> Unit,
         songsSectionMetadata: SectionIndexInfo.SectionMetadata?,
-        songsSection: LazyListScope.(
+        songsSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
         cdsSectionMetadata: SectionIndexInfo.SectionMetadata?,
-        cdsSection: LazyListScope.() -> Unit,
+        cdsSection: LazyGridScope.() -> Unit,
         requestLoadMedia2: () -> Unit,
         recommendationsSectionMetadata: SectionIndexInfo.SectionMetadata,
-        recommendationsSection: LazyListScope.(
+        recommendationsSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
         ) -> Unit,
         activitiesSectionMetadata: SectionIndexInfo.SectionMetadata,
-        activitiesSection: LazyListScope.(
+        activitiesSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
         ) -> Unit,
         forumThreadsSectionMetadata: SectionIndexInfo.SectionMetadata,
-        forumThreadsSection: LazyListScope.(
+        forumThreadsSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
         reviewsSectionMetadata: SectionIndexInfo.SectionMetadata,
-        reviewsSection: LazyListScope.(
+        reviewsSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
@@ -296,7 +298,7 @@ object AnimeMediaDetailsScreen {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
         )
-        val lazyListState = rememberLazyListState()
+        val lazyGridState = rememberLazyGridState()
         val scope = rememberCoroutineScope()
 
         val entry = viewModel.entry
@@ -414,7 +416,7 @@ object AnimeMediaDetailsScreen {
                                                 onClick = {
                                                     showMenu = false
                                                     scope.launch {
-                                                        lazyListState.animateScrollToItem(index, 0)
+                                                        lazyGridState.animateScrollToItem(index, 0)
                                                     }
                                                 }
                                             )
@@ -450,7 +452,7 @@ object AnimeMediaDetailsScreen {
 
                             val showFloatingActionButton =
                                 viewModel.hasAuth.collectAsState(initial = false).value &&
-                                        lazyListState.showFloatingActionButtonOnVerticalScroll()
+                                        lazyGridState.showFloatingActionButtonOnVerticalScroll()
                             AnimatedVisibility(
                                 visible = showFloatingActionButton,
                                 enter = fadeIn(),
@@ -537,7 +539,7 @@ object AnimeMediaDetailsScreen {
                                 derivedStateOf {
                                     val threshold = sectionIndexInfo.linksSectionIndex
                                         ?: return@derivedStateOf false
-                                    val lastVisibleIndex = lazyListState.layoutInfo
+                                    val lastVisibleIndex = lazyGridState.layoutInfo
                                         .visibleItemsInfo.lastOrNull()?.index
                                         ?: return@derivedStateOf false
                                     lastVisibleIndex >= threshold
@@ -549,8 +551,9 @@ object AnimeMediaDetailsScreen {
                                 }
                             }
 
-                            LazyColumn(
-                                state = lazyListState,
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(450.dp),
+                                state = lazyGridState,
                                 contentPadding = PaddingValues(bottom = 16.dp),
                                 modifier = Modifier
                                     .padding(scaffoldPadding)
@@ -587,7 +590,7 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.content(
+    private fun LazyGridScope.content(
         viewModel: AnimeMediaDetailsViewModel,
         viewer: AniListViewer?,
         entry: Entry,
@@ -595,40 +598,48 @@ object AnimeMediaDetailsScreen {
         coverImageState: CoilImageState?,
         onClickListEdit: (MediaNavigationData) -> Unit,
         expandedState: ExpandedState,
-        charactersSection: LazyListScope.(entry: Entry) -> Unit,
-        staffSection: LazyListScope.() -> Unit,
-        songsSection: LazyListScope.(
+        charactersSection: LazyGridScope.(entry: Entry) -> Unit,
+        staffSection: LazyGridScope.() -> Unit,
+        songsSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
-        cdsSection: LazyListScope.() -> Unit,
-        recommendationsSection: LazyListScope.(
-            expanded: () -> Boolean,
-            onExpandedChange: (Boolean) -> Unit,
-            onClickListEdit: (MediaNavigationData) -> Unit,
-        ) -> Unit,
-        activitiesSection: LazyListScope.(
+        cdsSection: LazyGridScope.() -> Unit,
+        recommendationsSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
         ) -> Unit,
-        forumThreadsSection: LazyListScope.(
+        activitiesSection: LazyGridScope.(
+            expanded: () -> Boolean,
+            onExpandedChange: (Boolean) -> Unit,
+            onClickListEdit: (MediaNavigationData) -> Unit,
+        ) -> Unit,
+        forumThreadsSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
-        reviewsSection: LazyListScope.(
+        reviewsSection: LazyGridScope.(
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
     ) {
         if (entry.genres.isNotEmpty()) {
-            item("genreSection", "genreSection") {
+            item(
+                key = "genreSection",
+                span = GridUtils.maxSpanFunction,
+                contentType = "genreSection",
+            ) {
                 GenreSection(genres = entry.genres, mediaType = entry.media.type)
             }
         }
 
         if (entry.description != null) {
-            item("descriptionSection", "descriptionSection") {
+            item(
+                key = "descriptionSection",
+                span = GridUtils.maxSpanFunction,
+                contentType = "descriptionSection",
+            ) {
                 DescriptionSection(
                     markdownText = entry.description,
                     expanded = { expandedState.description },
@@ -674,7 +685,11 @@ object AnimeMediaDetailsScreen {
             streamingLinksSection(entry = entry2)
             otherLinksSection(entry = entry2)
         } else if (entry2Result.loading) {
-            item("secondaryDataError") {
+            item(
+                key = "secondaryDataLoading",
+                span = GridUtils.maxSpanFunction,
+                contentType = "secondaryDataLoading",
+            ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -685,7 +700,11 @@ object AnimeMediaDetailsScreen {
                 }
             }
         } else {
-            item("secondaryDataError") {
+            item(
+                key = "secondaryDataError",
+                span = GridUtils.maxSpanFunction,
+                contentType = "secondaryDataError",
+            ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -726,7 +745,7 @@ object AnimeMediaDetailsScreen {
     }
 
     @Composable
-    private fun LazyItemScope.GenreSection(
+    private fun LazyGridItemScope.GenreSection(
         genres: List<Entry.Genre>,
         mediaType: MediaType?,
     ) {
@@ -766,7 +785,7 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.relationsSection(
+    private fun LazyGridScope.relationsSection(
         viewer: AniListViewer?,
         entry: Entry,
         relationsExpanded: () -> Boolean,
@@ -787,8 +806,12 @@ object AnimeMediaDetailsScreen {
         )
     }
 
-    private fun LazyListScope.infoSection(entry: Entry) {
-        item("infoHeader") {
+    private fun LazyGridScope.infoSection(entry: Entry) {
+        item(
+            key = "infoHeader",
+            span = GridUtils.maxSpanFunction,
+            contentType = "detailsSectionHeader",
+        ) {
             DetailsSectionHeader(
                 stringResource(Res.string.anime_media_details_information_label),
                 modifier = Modifier.animateItem()
@@ -797,7 +820,7 @@ object AnimeMediaDetailsScreen {
 
         val media = entry.media
 
-        item("infoSectionOne") {
+        item(key = "infoSectionOne", contentType = "infoSectionOne") {
             ElevatedCard(
                 modifier = Modifier
                     .animateContentSize()
@@ -852,12 +875,19 @@ object AnimeMediaDetailsScreen {
             }
         }
 
-        item("infoSectionTwo") {
+        item(key = "infoSectionTwo", contentType = "infoSectionTwo") {
+            val spans = GridUtils.standardWidthSpans()
+
             ElevatedCard(
                 modifier = Modifier
                     .animateContentSize()
                     .animateItem()
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 2.dp)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = if (spans.size > 1) 0.dp else 16.dp,
+                        bottom = 2.dp
+                    )
             ) {
                 var shown = twoColumnInfoText(
                     labelOne = stringResource(Res.string.anime_media_details_average_score_label),
@@ -885,12 +915,13 @@ object AnimeMediaDetailsScreen {
             }
         }
 
-        item("infoSectionThree") {
-            val showTopPadding = media.averageScore != null
-                    || media.meanScore != null
-                    || media.popularity != null
-                    || media.favourites != null
-                    || media.trending != null
+        item(key = "infoSectionThree", contentType = "infoSectionThree") {
+            val showTopPadding = GridUtils.standardWidthSpans().size == 1 &&
+                    (media.averageScore != null
+                            || media.meanScore != null
+                            || media.popularity != null
+                            || media.favourites != null
+                            || media.trending != null)
 
             ElevatedCard(
                 modifier = Modifier
@@ -974,15 +1005,19 @@ object AnimeMediaDetailsScreen {
         )
     }
 
-    private fun LazyListScope.statsSection(entry: Entry2) {
-        item("statsHeader") {
+    private fun LazyGridScope.statsSection(entry: Entry2) {
+        item(
+            key = "statsHeader",
+            span = GridUtils.maxSpanFunction,
+            contentType = "detailsSectionHeader",
+        ) {
             DetailsSectionHeader(
                 stringResource(Res.string.anime_media_details_stats_label),
                 modifier = Modifier.animateItem()
             )
         }
 
-        item("statsSection") {
+        item(key = "statsSection", span = GridUtils.maxSpanFunction, contentType = "statsSection") {
             ElevatedCard(
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
@@ -1080,19 +1115,23 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.tagsSection(
+    private fun LazyGridScope.tagsSection(
         entry: Entry2,
         coverImageState: CoilImageState?,
     ) {
         if (entry.tags.isNotEmpty()) {
-            item("tagsHeader") {
+            item(key = "tagsHeader", span = GridUtils.maxSpanFunction, "detailsSectionHeader") {
                 DetailsSectionHeader(
                     stringResource(Res.string.anime_media_details_tags_label),
                     modifier = Modifier.animateItem()
                 )
             }
 
-            item("tagsSection") {
+            item(
+                key = "tagsSection",
+                span = GridUtils.maxSpanFunction,
+                contentType = "tagsSection"
+            ) {
                 val navigationCallback = LocalNavigationCallback.current
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1134,7 +1173,7 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.trailerSection(
+    private fun LazyGridScope.trailerSection(
         entry: Entry2,
     ) {
         val trailer = entry.media.trailer ?: return
@@ -1142,7 +1181,7 @@ object AnimeMediaDetailsScreen {
 
         val videoId = trailer.id ?: return
 
-        item("trailerHeader") {
+        item(key = "trailerHeader", span = GridUtils.maxSpanFunction, "detailsSectionHeader") {
             DetailsSectionHeader(
                 stringResource(Res.string.anime_media_details_trailer_label),
                 modifier = Modifier.animateItem()
@@ -1150,7 +1189,11 @@ object AnimeMediaDetailsScreen {
         }
 
         if (trailer.site == "youtube") {
-            item("trailerSection") {
+            item(
+                key = "trailerSection",
+                span = GridUtils.maxSpanFunction,
+                contentType = "trailerSection",
+            ) {
                 ElevatedCard(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
@@ -1160,7 +1203,11 @@ object AnimeMediaDetailsScreen {
                 }
             }
         } else {
-            item("trailerSection") {
+            item(
+                key = "trailerSection",
+                span = GridUtils.maxSpanFunction,
+                contentType = "trailerSection",
+            ) {
                 val uriHandler = LocalUriHandler.current
                 ElevatedCard(
                     onClick = { uriHandler.openUri(MediaUtils.dailymotionUrl(videoId)) },
@@ -1182,7 +1229,7 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.streamingEpisodesSection(
+    private fun LazyGridScope.streamingEpisodesSection(
         entry: Entry2,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
@@ -1281,29 +1328,37 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.socialLinksSection(entry: Entry2) {
+    private fun LazyGridScope.socialLinksSection(entry: Entry2) {
         linksSection(Res.string.anime_media_details_social_links_label, entry.socialLinks)
     }
 
-    private fun LazyListScope.streamingLinksSection(entry: Entry2) {
+    private fun LazyGridScope.streamingLinksSection(entry: Entry2) {
         linksSection(Res.string.anime_media_details_streaming_links_label, entry.streamingLinks)
     }
 
-    private fun LazyListScope.otherLinksSection(entry: Entry2) {
+    private fun LazyGridScope.otherLinksSection(entry: Entry2) {
         linksSection(Res.string.anime_media_details_other_links_label, entry.otherLinks)
     }
 
-    private fun LazyListScope.linksSection(headerRes: StringResource, links: List<Entry2.Link>) {
+    private fun LazyGridScope.linksSection(headerRes: StringResource, links: List<Entry2.Link>) {
         if (links.isEmpty()) return
 
-        item("linksHeader-$headerRes") {
+        item(
+            key = "linksHeader-$headerRes",
+            span = GridUtils.maxSpanFunction,
+            contentType = "detailsSectionHeader",
+        ) {
             DetailsSectionHeader(
                 stringResource(headerRes),
                 modifier = Modifier.animateItem()
             )
         }
 
-        item("linksSection-$headerRes") {
+        item(
+            key = "linksSection-$headerRes",
+            span = GridUtils.maxSpanFunction,
+            contentType = "linksSection",
+        ) {
             val uriHandler = LocalUriHandler.current
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1733,7 +1788,7 @@ object AnimeMediaDetailsScreen {
         }
 
         interface SectionMetadata {
-            abstract fun count(viewer: AniListViewer?, expanded: Boolean): Int
+            fun count(viewer: AniListViewer?, expanded: Boolean): Int
 
             data object Empty : SectionMetadata {
                 override fun count(viewer: AniListViewer?, expanded: Boolean) = 0

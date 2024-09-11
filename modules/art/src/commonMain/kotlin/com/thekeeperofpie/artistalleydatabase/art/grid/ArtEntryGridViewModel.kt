@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 
 abstract class ArtEntryGridViewModel(
     protected val appFileSystem: AppFileSystem,

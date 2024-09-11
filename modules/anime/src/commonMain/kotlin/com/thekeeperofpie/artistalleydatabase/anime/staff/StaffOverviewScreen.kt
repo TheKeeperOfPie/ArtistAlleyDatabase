@@ -4,8 +4,8 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -33,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
@@ -52,12 +53,17 @@ object StaffOverviewScreen {
         val characters = viewModel.characters.collectAsLazyPagingItems()
         val staffName = entry.staff.name?.primaryName()
         val staffSubtitle = entry.staff.name?.subtitleName()
-        LazyColumn(
+        LazyVerticalGrid(
+            columns = GridUtils.standardWidthAdaptiveCells,
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
             if (entry.description != null) {
-                item("descriptionSection", "descriptionSection") {
+                item(
+                    key = "descriptionSection",
+                    span = GridUtils.maxSpanFunction,
+                    contentType = "descriptionSection",
+                ) {
                     DescriptionSection(
                         markdownText = entry.description,
                         expanded = expandedState::description,
@@ -90,12 +96,16 @@ object StaffOverviewScreen {
         }
     }
 
-    private fun LazyListScope.infoSection(entry: StaffDetailsScreen.Entry) {
-        item {
+    private fun LazyGridScope.infoSection(entry: StaffDetailsScreen.Entry) {
+        item(
+            key = "infoHeader",
+            span = GridUtils.maxSpanFunction,
+            contentType = "detailsSectionHeader",
+        ) {
             DetailsSectionHeader(stringResource(Res.string.anime_staff_details_information_label))
         }
 
-        item {
+        item(key = "infoSection", span = GridUtils.maxSpanFunction, contentType = "infoSection") {
             ElevatedCard(
                 modifier = Modifier
                     .animateContentSize()

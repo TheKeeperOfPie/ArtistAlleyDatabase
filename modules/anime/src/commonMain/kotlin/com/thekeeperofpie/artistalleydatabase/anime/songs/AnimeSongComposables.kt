@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
@@ -81,7 +81,7 @@ object AnimeSongComposables {
 
     const val SONGS_ABOVE_FOLD = 3
 
-    context (LazyListScope)
+    context(LazyGridScope)
     fun songsSection(
         viewModel: AnimeSongsViewModel,
         songsExpanded: () -> Boolean,

@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ElevatedCard
@@ -78,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
@@ -176,7 +177,8 @@ object CharacterDetailsScreen {
                         val character = entry.result?.character
                         val characterName = character?.name?.primaryName()
                         val characterSubtitle = character?.name?.subtitleName()
-                        LazyColumn(
+                        LazyVerticalGrid(
+                            columns = GridUtils.standardWidthAdaptiveCells,
                             contentPadding = PaddingValues(bottom = 16.dp),
                             modifier = Modifier
                                 .fillMaxSize()
@@ -206,7 +208,7 @@ object CharacterDetailsScreen {
         }
     }
 
-    private fun LazyListScope.content(
+    private fun LazyGridScope.content(
         editViewModel: MediaEditViewModel,
         headerValues: CharacterHeaderValues,
         entry: Entry,
@@ -218,7 +220,11 @@ object CharacterDetailsScreen {
         expandedState: ExpandedState,
     ) {
         if (entry.description != null) {
-            item("descriptionSection", "descriptionSection") {
+            item(
+                key = "descriptionSection",
+                span = GridUtils.maxSpanFunction,
+                contentType = "descriptionSection",
+            ) {
                 DescriptionSection(
                     markdownText = entry.description,
                     expanded = expandedState::description,
@@ -248,12 +254,16 @@ object CharacterDetailsScreen {
         infoSection(entry = entry)
     }
 
-    private fun LazyListScope.infoSection(entry: Entry) {
-        item {
+    private fun LazyGridScope.infoSection(entry: Entry) {
+        item(
+            key = "infoHeader",
+            span = GridUtils.maxSpanFunction,
+            contentType = "detailsSectionHeader",
+        ) {
             DetailsSectionHeader(stringResource(Res.string.anime_media_details_information_label))
         }
 
-        item {
+        item(key = "infoSection", span = GridUtils.maxSpanFunction, contentType = "infoSection") {
             ElevatedCard(
                 modifier = Modifier
                     .animateContentSize()
@@ -408,7 +418,7 @@ object CharacterDetailsScreen {
         }
     }
 
-    private fun LazyListScope.mediaSection(
+    private fun LazyGridScope.mediaSection(
         viewer: AniListViewer?,
         editViewModel: MediaEditViewModel,
         entry: Entry,

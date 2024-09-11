@@ -27,6 +27,6 @@ val MediaViewOption.widthAdaptiveCells
         MediaViewOption.SMALL_CARD,
         MediaViewOption.LARGE_CARD,
         MediaViewOption.COMPACT,
-            -> GridUtils.standardMediaWidthAdaptiveCells
-        MediaViewOption.GRID -> GridUtils.smallMediaWidthAdaptiveCells
+            -> GridUtils.standardWidthAdaptiveCells
+        MediaViewOption.GRID -> GridUtils.smallWidthAdaptiveCells
     }

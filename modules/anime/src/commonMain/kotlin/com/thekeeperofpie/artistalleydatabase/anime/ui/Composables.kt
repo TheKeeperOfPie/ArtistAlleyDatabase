@@ -16,9 +16,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -80,6 +80,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
@@ -265,7 +266,7 @@ fun StartEndDateDialog(
     }
 }
 
-fun <T> LazyListScope.listSection(
+fun <T> LazyGridScope.listSection(
     titleRes: StringResource,
     values: List<T>?,
     valueToId: (T) -> String?,
@@ -279,7 +280,7 @@ fun <T> LazyListScope.listSection(
     viewAllContentDescriptionTextRes: StringResource? = null,
     loading: Boolean = false,
     headerSideEffect: (() -> Unit)? = null,
-    itemContent: @Composable LazyItemScope.(T, paddingBottom: Dp) -> Unit,
+    itemContent: @Composable LazyGridItemScope.(T, paddingBottom: Dp) -> Unit,
 ) {
     // TODO: There must be a better way to do this
     if (headerSideEffect != null) {
@@ -288,7 +289,11 @@ fun <T> LazyListScope.listSection(
         }
     }
     if (values != null && values.isEmpty()) return
-    item("$titleRes-header") {
+    item(
+        key = "$titleRes-header",
+        span = GridUtils.maxSpanFunction,
+        contentType = "detailsSectionHeader",
+    ) {
         val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             text = stringResource(titleRes),
@@ -297,7 +302,7 @@ fun <T> LazyListScope.listSection(
         )
     }
     if (loading) {
-        item {
+        item(key = "$titleRes-loading", span = GridUtils.maxSpanFunction) {
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 CircularProgressIndicator()
             }
@@ -320,7 +325,7 @@ fun <T> LazyListScope.listSection(
     )
 }
 
-fun <T> LazyListScope.listSectionWithoutHeader(
+fun <T> LazyGridScope.listSectionWithoutHeader(
     titleRes: StringResource,
     values: List<T>?,
     valueToId: (T) -> String?,
@@ -332,12 +337,15 @@ fun <T> LazyListScope.listSectionWithoutHeader(
     hidden: () -> Boolean = { false },
     hiddenContent: @Composable () -> Unit = {},
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
-    itemContent: @Composable LazyItemScope.(T, paddingBottom: Dp) -> Unit,
+    itemContent: @Composable LazyGridItemScope.(T, paddingBottom: Dp) -> Unit,
 ) {
     if (values == null) return
     if (values.isEmpty()) {
         if (noResultsTextRes != null) {
-            item("$titleRes-noResults") {
+            item(
+                key = "$titleRes-noResults",
+                span = GridUtils.maxSpanFunction,
+            ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(noResultsTextRes),
@@ -353,7 +361,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
     }
 
     if (hidden()) {
-        item("$titleRes-hidden") {
+        item(key = "$titleRes-hidden", span = GridUtils.maxSpanFunction) {
             hiddenContent()
         }
         return
@@ -406,7 +414,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
             if (hasMoreValues) {
                 showAllButton()
             } else {
-                item("$titleRes-showLess") {
+                item(key = "$titleRes-showLess", span = GridUtils.maxSpanFunction) {
                     ElevatedCard(
                         onClick = { onExpandedChange(false) },
                         modifier = Modifier
@@ -424,7 +432,7 @@ fun <T> LazyListScope.listSectionWithoutHeader(
                 }
             }
         } else {
-            item("$titleRes-showMore") {
+            item(key = "$titleRes-showMore", span = GridUtils.maxSpanFunction) {
                 ElevatedCard(
                     onClick = { onExpandedChange(true) },
                     modifier = Modifier

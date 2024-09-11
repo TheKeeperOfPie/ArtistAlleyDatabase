@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -34,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleNam
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
@@ -47,7 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-fun LazyListScope.staffSection(
+fun LazyGridScope.staffSection(
     titleRes: StringResource?,
     staffList: LazyPagingItems<DetailsStaff>,
     roleLines: Int = 1,
@@ -56,7 +57,11 @@ fun LazyListScope.staffSection(
 ) {
     if (staffList.itemCount == 0) return
     if (titleRes != null) {
-        item(key = "staffHeader-$titleRes") {
+        item(
+            key = "staffHeader-$titleRes",
+            span = GridUtils.maxSpanFunction,
+            contentType = "detailsSectionHeader",
+        ) {
             val navigationCallback = LocalNavigationCallback.current
             DetailsSectionHeader(
                 stringResource(titleRes),
@@ -66,7 +71,11 @@ fun LazyListScope.staffSection(
         }
     }
 
-    item(key = "$titleRes-section") {
+    item(
+        key = "$titleRes-section",
+        span = GridUtils.maxSpanFunction,
+        contentType = "staffSection",
+    ) {
         StaffListRow(staffList = { staffList }, roleLines = roleLines)
     }
 }

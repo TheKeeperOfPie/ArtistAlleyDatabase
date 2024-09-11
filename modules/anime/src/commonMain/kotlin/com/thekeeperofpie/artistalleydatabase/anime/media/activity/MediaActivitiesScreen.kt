@@ -43,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteT
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
@@ -162,7 +163,7 @@ object MediaActivitiesScreen {
                             } else {
                                 LazyVerticalGrid(
                                     state = gridState,
-                                    columns = GridCells.Adaptive(350.dp),
+                                    columns = GridCells.Adaptive(450.dp),
                                     contentPadding = PaddingValues(
                                         top = 16.dp,
                                         start = 16.dp,
@@ -177,7 +178,11 @@ object MediaActivitiesScreen {
                                         .padding(scaffoldPadding)
                                 ) {
                                     if (viewer == null) {
-                                        item("header") {
+                                        item(
+                                            key = "header",
+                                            span = GridUtils.maxSpanFunction,
+                                            contentType = "detailsSectionHeader",
+                                        ) {
                                             DetailsSectionHeader(stringResource(Res.string.anime_media_activities_header))
                                         }
                                     }
@@ -199,10 +204,16 @@ object MediaActivitiesScreen {
                                     }
 
                                     when (items.loadState.append) {
-                                        is LoadState.Loading -> item("load_more_append") {
+                                        is LoadState.Loading -> item(
+                                            "load_more_append",
+                                            span = GridUtils.maxSpanFunction,
+                                        ) {
                                             AnimeMediaListScreen.LoadingMore()
                                         }
-                                        is LoadState.Error -> item("load_more_error") {
+                                        is LoadState.Error -> item(
+                                            "load_more_error",
+                                            span = GridUtils.maxSpanFunction,
+                                        ) {
                                             AnimeMediaListScreen.AppendError { items.retry() }
                                         }
                                         is LoadState.NotLoading -> Unit

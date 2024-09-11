@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,6 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
@@ -85,7 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-fun <T> LazyListScope.mediaListSection(
+fun <T> LazyGridScope.mediaListSection(
     onClickListEdit: (MediaNavigationData) -> Unit,
     viewer: AniListViewer?,
     titleRes: StringResource,
@@ -123,7 +124,7 @@ fun <T> LazyListScope.mediaListSection(
     )
 }
 
-fun LazyListScope.mediaHorizontalRow(
+fun LazyGridScope.mediaHorizontalRow(
     viewer: AniListViewer?,
     editViewModel: MediaEditViewModel,
     titleRes: StringResource,
@@ -133,7 +134,11 @@ fun LazyListScope.mediaHorizontalRow(
     viewAllContentDescriptionTextRes: StringResource,
 ) {
     if (entries.itemCount == 0) return
-    item("$titleRes-header") {
+    item(
+        key = "$titleRes-header",
+        span = GridUtils.maxSpanFunction,
+        contentType = "detailsSectionHeader",
+    ) {
         DetailsSectionHeader(
             text = stringResource(titleRes),
             onClickViewAll = onClickViewAll,
@@ -141,7 +146,11 @@ fun LazyListScope.mediaHorizontalRow(
         )
     }
 
-    item("$titleRes-media") {
+    item(
+        key = "$titleRes-media",
+        span = GridUtils.maxSpanFunction,
+        contentType = "mediaHorizontal",
+    ) {
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -469,7 +478,8 @@ fun MediaTagPreview(
                     )
                 }
                 Text(
-                    tag.description ?: stringResource(Res.string.anime_media_tag_no_description_error)
+                    tag.description
+                        ?: stringResource(Res.string.anime_media_tag_no_description_error)
                 )
             }
         },
