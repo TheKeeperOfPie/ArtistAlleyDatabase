@@ -59,25 +59,3 @@ include(
     ":modules:utils-room",
     ":modules:vgmdb",
 )
-
-// Utilities
-
-data class Prefix(val prefix: String, val builder: VersionCatalogBuilder)
-
-// gav is group:artifact:version but shortened for readability
-@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-fun VersionCatalogBuilder.library(
-    gav: String,
-    alias: String? = null,
-    prefix: String? = null,
-) {
-    val realPrefix = if (prefix == null) "" else "$prefix."
-    val artifact = gav.substringAfter(":").substringBefore(":")
-        .replaceFirstChar { it.lowercaseChar() }
-    library(alias ?: (realPrefix + artifact), gav)
-}
-
-fun VersionCatalogBuilder.prefix(prefix: String, block: Prefix.() -> Unit) =
-    Prefix(prefix, this).block()
-
-fun Prefix.library(gav: String) = builder.library(gav = gav, prefix = prefix)

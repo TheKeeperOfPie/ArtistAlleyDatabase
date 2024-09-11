@@ -1,7 +1,7 @@
 plugins {
     id("library-android")
     // Gradle --scan
-    id("com.gradle.build-scan") version "3.17.6" apply false
+    id("com.gradle.build-scan") version "3.18.1" apply false
 }
 
 android {
@@ -18,7 +18,7 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    val androidTools = "31.7.0-alpha09"
+    val androidTools = "31.8.0-alpha01"
     debugCompileOnly("com.android.tools.emulator:proto:$androidTools")
     debugCompileOnly("com.android.tools.utp:utp-common:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:$androidTools")
@@ -41,7 +41,7 @@ dependencies {
     debugCompileOnly("com.google.testing.platform:launcher:$googleTesting")
 
     // Gradle sync
-    val groovyVersion = "3.0.21"
+    val groovyVersion = "3.0.22"
     debugCompileOnly("org.codehaus.groovy:groovy:$groovyVersion")
     debugCompileOnly("org.codehaus.groovy:groovy-ant:$groovyVersion")
     debugCompileOnly("org.codehaus.groovy:groovy-astbuilder:$groovyVersion")

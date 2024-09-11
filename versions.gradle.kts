@@ -33,6 +33,7 @@ import Versions_gradle.Versions.junit.jupiter
 import Versions_gradle.Versions.junit.jupiterAndroid
 import Versions_gradle.Versions.kotlin.coroutines
 import Versions_gradle.Versions.kotlin.datetime
+import Versions_gradle.Versions.kotlin.io
 import Versions_gradle.Versions.kotlin.ksp
 import Versions_gradle.Versions.kotlin.serialization
 import org.gradle.api.initialization.dsl.VersionCatalogBuilder
@@ -41,22 +42,22 @@ import org.gradle.api.initialization.resolve.RepositoriesMode
 import org.gradle.kotlin.dsl.maven
 
 object Versions {
-    const val accompanist = "0.35.2-beta"
+    const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.7.0-alpha09"
+        const val gradle = "8.8.0-alpha01"
     }
 
     const val androidJunit5 = "1.11.0.0"
 
     object androidx {
         const val activity = "1.9.0"
-        const val annotation = "1.9.0-alpha02"
+        const val annotation = "1.9.0-alpha03"
         const val browser = "1.8.0"
         const val core = "1.15.0-alpha02"
-        const val lifecycle = "2.9.0-alpha01"
-        const val media3 = "1.4.1"
-        const val navigation = "2.8.0-rc01"
+        const val lifecycle = "2.9.0-alpha02"
+        const val media3 = "1.5.0-alpha01"
+        const val navigation = "2.8.0"
         const val paging = "3.3.2"
         const val palette = "1.0.0"
         const val room = "2.7.0-SNAPSHOT"
@@ -65,7 +66,7 @@ object Versions {
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
-        const val work = "2.10.0-alpha02"
+        const val work = "2.10.0-alpha03"
     }
 
     const val androidyoutubeplayer = "12.1.0"
@@ -86,16 +87,16 @@ object Versions {
     const val colormath = "3.6.0"
 
     object compose {
-        const val core = "1.7.0-rc01"
+        const val core = "1.8.0-alpha01"
         const val runtimeTracing = "1.0.0-beta01"
     }
 
     object composeMultiplatform {
         object androidx {
-            const val navigation = "2.8.0-alpha09"
+            const val navigation = "2.8.0-alpha10"
         }
-        const val plugin = "1.7.0-alpha03"
-        const val runtime = "1.7.0-alpha03"
+        const val plugin = "1.7.0-beta02"
+        const val runtime = "1.7.0-beta02"
     }
 
     const val cronetEmbedded = "119.6045.31"
@@ -117,14 +118,14 @@ object Versions {
         const val userMessagingPlatform = "3.0.0"
     }
 
-    const val graphQlJava = "22.1"
+    const val graphQlJava = "22.3"
     const val htmlText = "1.6.0"
-    const val humanReadable = "1.9.0"
-    const val jackson = "2.17.2"
+    const val humanReadable = "1.10.0"
+    const val jackson = "2.18.0-rc1"
     const val jaredsBurrowsLicense = "0.9.8"
     const val javaPoet = "1.13.0"
     const val jimfs = "1.3.0"
-    const val jsonTree = "2.2.0"
+    const val jsonTree = "2.3.0"
 
     object junit {
         const val four = "4.13.2"
@@ -140,7 +141,7 @@ object Versions {
         const val coroutines = "1.9.0-RC.2"
         const val datetime = "0.6.1"
         const val io = "0.5.3"
-        const val ksp = "2.0.20-1.0.24"
+        const val ksp = "2.0.20-1.0.25"
         const val serialization = "1.7.1"
     }
 
@@ -148,12 +149,12 @@ object Versions {
     const val kotlinPoet = "1.15.3"
 
     // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
-    const val ktor = "3.0.0-beta-2"
-    const val ksoup = "0.1.6-alpha1"
+    const val ktor = "3.0.0-rc-1"
+    const val ksoup = "0.1.6"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.30"
+    const val manifoldGraphql = "2024.1.32"
     const val markwon = "4.6.2"
-    const val material3 = "1.3.0-rc01"
+    const val material3 = "1.3.0"
     const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
@@ -163,7 +164,7 @@ object Versions {
     const val placeholder = "1.0.8"
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
-    const val statelyConcurrentCollections = "2.0.0"
+    const val statelyConcurrentCollections = "2.1.0"
     const val unityAds = "4.12.2"
     const val uriKmp = "0.0.18"
     const val xmlUtil = "0.90.2-beta1"
