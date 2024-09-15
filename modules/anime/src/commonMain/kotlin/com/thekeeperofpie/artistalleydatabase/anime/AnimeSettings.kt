@@ -5,8 +5,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface AnimeSettings {
 
@@ -27,7 +27,7 @@ interface AnimeSettings {
     val mediaIgnoreHide: MutableStateFlow<Boolean>
 
     // Invert boolean and remove this
-    val showIgnored: Flow<Boolean>
+    val showIgnored: StateFlow<Boolean>
 
     val languageOptionMedia: MutableStateFlow<AniListLanguageOption>
     val languageOptionCharacters: MutableStateFlow<AniListLanguageOption>

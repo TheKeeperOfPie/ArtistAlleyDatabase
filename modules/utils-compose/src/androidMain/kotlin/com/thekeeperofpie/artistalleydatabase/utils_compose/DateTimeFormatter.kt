@@ -7,6 +7,7 @@ import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.ui.platform.LocalContext
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
@@ -61,20 +62,22 @@ actual class DateTimeFormatter(private val context: Context) {
                 DateUtils.FORMAT_SHOW_TIME
     )
 
-    actual fun formatAiringAt(timeInMillis: Long, showDate: Boolean): String = DateUtils.formatDateTime(
-        context,
-        timeInMillis,
-        (baseDateFormatFlags or DateUtils.FORMAT_SHOW_TIME).transformIf(showDate) {
-            this or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
-        }
-    )
+    actual fun formatAiringAt(instant: Instant, showDate: Boolean): String =
+        DateUtils.formatDateTime(
+            context,
+            instant.toEpochMilliseconds(),
+            (baseDateFormatFlags or DateUtils.FORMAT_SHOW_TIME).transformIf(showDate) {
+                this or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
+            }
+        )
 
-    actual fun formatRemainingTime(timeInMillis: Long): CharSequence = DateUtils.getRelativeTimeSpanString(
-        timeInMillis,
-        Clock.System.now().toEpochMilliseconds(),
-        0,
-        baseDateFormatFlags,
-    )
+    actual fun formatRemainingTime(instant: Instant): CharSequence =
+        DateUtils.getRelativeTimeSpanString(
+            instant.toEpochMilliseconds(),
+            Clock.System.now().toEpochMilliseconds(),
+            0,
+            baseDateFormatFlags,
+        )
 
     actual fun formatShortDay(localDate: LocalDate): String = DateUtils.formatDateTime(
         context,

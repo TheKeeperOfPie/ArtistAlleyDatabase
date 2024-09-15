@@ -79,5 +79,7 @@ class StudioMediasViewModel(
             statusController = statusController,
             ignoreController = ignoreController,
             settings = settings,
+            mediaFilterable = { it.mediaFilterable },
+            copy = { copy(mediaFilterable = it) },
         )
 }

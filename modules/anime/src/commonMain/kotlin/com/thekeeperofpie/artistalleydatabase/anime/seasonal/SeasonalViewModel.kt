@@ -26,7 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges2
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
@@ -165,10 +165,12 @@ class SeasonalViewModel(
                     .map { it.mapOnIO { MediaPreviewWithDescriptionEntry(it) } }
                     .cachedIn(viewModelScope)
                     .flatMapLatest { sortFilterController.filterMedia(it) { it.media } }
-                    .applyMediaStatusChanges2(
+                    .applyMediaStatusChanges(
                         statusController = statusController,
                         ignoreController = ignoreController,
                         settings = settings,
+                        mediaFilterable = { it.mediaFilterable },
+                        copy = { copy(mediaFilterable = it) },
                     )
                     .cachedIn(viewModelScope)
                     .flowOn(CustomDispatchers.IO)

@@ -219,7 +219,7 @@ object UserListRow {
                     val imageState = rememberCoilImageState(it?.media?.coverImage?.extraLarge)
                     ListRowSmallImage(
                         density = density,
-                        ignored = it?.ignored ?: false,
+                        ignored = it?.mediaFilterable?.ignored ?: false,
                         imageState = imageState,
                         contentDescriptionTextRes = Res.string.anime_media_cover_image_content_description,
                         width = MEDIA_WIDTH,
@@ -243,7 +243,7 @@ object UserListRow {
                         MediaListQuickEditIconButton(
                             viewer = viewer,
                             mediaType = it.media.type,
-                            media = it,
+                            media = it.mediaFilterable,
                             maxProgress = MediaUtils.maxProgress(it.media),
                             maxProgressVolumes = it.media.volumes,
                             onClick = { onClickListEdit(it.media) },

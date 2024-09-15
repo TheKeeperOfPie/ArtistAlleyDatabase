@@ -41,7 +41,8 @@ class CharacterMediasViewModel(
     aniListApi = aniListApi,
     loadingErrorTextRes = Res.string.anime_character_medias_error_loading,
 ) {
-    private val destination = savedStateHandle.toDestination<AnimeDestination.CharacterMedias>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.CharacterMedias>(navigationTypeMap)
     val characterId = destination.characterId
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
@@ -85,5 +86,7 @@ class CharacterMediasViewModel(
             statusController = statusController,
             ignoreController = ignoreController,
             settings = settings,
+            mediaFilterable = { it.mediaFilterable },
+            copy = { copy(mediaFilterable = it) },
         )
 }

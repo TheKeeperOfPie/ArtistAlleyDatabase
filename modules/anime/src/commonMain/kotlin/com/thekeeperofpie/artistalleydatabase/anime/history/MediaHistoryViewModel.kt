@@ -98,18 +98,8 @@ class MediaHistoryViewModel(
                     statusController = mediaListStatusController,
                     ignoreController = ignoreController,
                     settings = settings,
-                    media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        copy(
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    },
+                    mediaFilterable = { it.mediaFilterable },
+                    copy = { copy(mediaFilterable = it) },
                 )
                 .collectLatest(content::emit)
         }

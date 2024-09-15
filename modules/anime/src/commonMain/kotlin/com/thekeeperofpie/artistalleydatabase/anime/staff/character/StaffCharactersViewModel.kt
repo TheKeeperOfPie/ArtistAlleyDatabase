@@ -7,7 +7,6 @@ import androidx.paging.PagingData
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_characters_error_loading
 import com.anilist.fragment.CharacterWithRoleAndFavorites
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -20,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestina
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
@@ -47,7 +48,8 @@ class StaffCharactersViewModel(
     aniListApi = aniListApi,
     loadingErrorTextRes = Res.string.anime_staff_characters_error_loading,
 ) {
-    private val destination = savedStateHandle.toDestination<AnimeDestination.StaffCharacters>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.StaffCharacters>(navigationTypeMap)
     val staffId = destination.staffId
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
@@ -92,34 +94,17 @@ class StaffCharactersViewModel(
             combine(
                 mediaListStatusController.allChanges(),
                 ignoreController.updates(),
-                settings.showIgnored,
-                settings.showAdult,
-                settings.showLessImportantTags,
-                settings.showSpoilerTags,
-            ) { statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                settings.mediaFilteringData(),
+            ) { statuses, _, filteringData ->
                 it.mapNotNull {
                     it.copy(media = it.media.mapNotNull {
                         applyMediaFiltering(
                             statuses = statuses,
                             ignoreController = ignoreController,
-                            showAdult = showAdult,
-                            showIgnored = showIgnored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
+                            filteringData = filteringData,
                             entry = it,
-                            transform = { it },
-                            media = it.media,
-                            copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                copy(
-                                    mediaListStatus = mediaListStatus,
-                                    progress = progress,
-                                    progressVolumes = progressVolumes,
-                                    scoreRaw = scoreRaw,
-                                    ignored = ignored,
-                                    showLessImportantTags = showLessImportantTags,
-                                    showSpoilerTags = showSpoilerTags,
-                                )
-                            },
+                            filterableData = it.mediaFilterable,
+                            copy = { copy(mediaFilterable = it) },
                         )
                     })
                 }

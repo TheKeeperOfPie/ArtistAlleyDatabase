@@ -38,7 +38,6 @@ import com.anilist.type.MediaFormat
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.StudioSort
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
@@ -60,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresCont
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
@@ -284,7 +284,7 @@ class AnimeSearchViewModel(
             when (it) {
                 MediaType.ANIME,
                 MediaType.UNKNOWN__,
-                -> AnimeSearchViewModel.SearchType.ANIME
+                    -> AnimeSearchViewModel.SearchType.ANIME
                 MediaType.MANGA -> AnimeSearchViewModel.SearchType.MANGA
             }
         } ?: run {
@@ -305,7 +305,7 @@ class AnimeSearchViewModel(
                 it to when (it) {
                     SearchType.ANIME,
                     SearchType.MANGA,
-                    -> PagingData.empty<AnimeSearchEntry.Media>(loadStates)
+                        -> PagingData.empty<AnimeSearchEntry.Media>(loadStates)
                     SearchType.CHARACTER -> PagingData.empty<AnimeSearchEntry.Character>(loadStates)
                     SearchType.STAFF -> PagingData.empty<AnimeSearchEntry.Staff>(loadStates)
                     SearchType.STUDIO -> PagingData.empty<AnimeSearchEntry.Studio>(loadStates)
@@ -376,19 +376,8 @@ class AnimeSearchViewModel(
                     statusController = statusController,
                     ignoreController = ignoreController,
                     settings = settings,
-                    media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        AnimeSearchEntry.Media(
-                            media = media,
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    },
+                    mediaFilterable = { it.entry.mediaFilterable },
+                    copy = { copy(entry = entry.copy(mediaFilterable = it)) },
                 )
             }
         )
@@ -420,19 +409,8 @@ class AnimeSearchViewModel(
                     statusController = statusController,
                     ignoreController = ignoreController,
                     settings = settings,
-                    media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        AnimeSearchEntry.Media(
-                            media = media,
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    },
+                    mediaFilterable = { it.entry.mediaFilterable },
+                    copy = { copy(entry = entry.copy(mediaFilterable = it)) },
                 )
             }
         )
@@ -474,34 +452,17 @@ class AnimeSearchViewModel(
                     combine(
                         statusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showIgnored,
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { statuses, _, filteringData ->
                         it.mapNotNull {
                             it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
                                 applyMediaFiltering(
                                     statuses = statuses,
                                     ignoreController = ignoreController,
-                                    showAdult = showAdult,
-                                    showIgnored = showIgnored,
-                                    showLessImportantTags = showLessImportantTags,
-                                    showSpoilerTags = showSpoilerTags,
+                                    filteringData = filteringData,
                                     entry = it,
-                                    transform = { it },
-                                    media = it.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                        copy(
-                                            mediaListStatus = mediaListStatus,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            scoreRaw = scoreRaw,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    },
+                                    filterableData = it.mediaFilterable,
+                                    copy = { copy(mediaFilterable = it) },
                                 )
                             }))
                         }
@@ -547,34 +508,17 @@ class AnimeSearchViewModel(
                     combine(
                         statusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showIgnored,
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { statuses, _, filteringData ->
                         it.mapNotNull {
                             it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
                                 applyMediaFiltering(
                                     statuses = statuses,
                                     ignoreController = ignoreController,
-                                    showAdult = showAdult,
-                                    showIgnored = showIgnored,
-                                    showLessImportantTags = showLessImportantTags,
-                                    showSpoilerTags = showSpoilerTags,
+                                    filteringData = filteringData,
                                     entry = it,
-                                    transform = { it },
-                                    media = it.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                        copy(
-                                            mediaListStatus = mediaListStatus,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            scoreRaw = scoreRaw,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    },
+                                    filterableData = it.mediaFilterable,
+                                    copy = { copy(mediaFilterable = it) },
                                 )
                             }))
                         }
@@ -623,34 +567,17 @@ class AnimeSearchViewModel(
                     combine(
                         statusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showIgnored,
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { statuses, _, filteringData ->
                         it.mapNotNull {
                             it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
                                 applyMediaFiltering(
                                     statuses = statuses,
                                     ignoreController = ignoreController,
-                                    showAdult = showAdult,
-                                    showIgnored = showIgnored,
-                                    showLessImportantTags = showLessImportantTags,
-                                    showSpoilerTags = showSpoilerTags,
+                                    filteringData = filteringData,
                                     entry = it,
-                                    transform = { it },
-                                    media = it.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                        copy(
-                                            mediaListStatus = mediaListStatus,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            scoreRaw = scoreRaw,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    },
+                                    filterableData = it.mediaFilterable,
+                                    copy = { copy(mediaFilterable = it) },
                                 )
                             }))
                         }
@@ -694,34 +621,17 @@ class AnimeSearchViewModel(
                     combine(
                         statusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showIgnored,
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { statuses, _, filteringData ->
                         it.mapNotNull {
                             it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
                                 applyMediaFiltering(
                                     statuses = statuses,
                                     ignoreController = ignoreController,
-                                    showAdult = showAdult,
-                                    showIgnored = showIgnored,
-                                    showLessImportantTags = showLessImportantTags,
-                                    showSpoilerTags = showSpoilerTags,
+                                    filteringData = filteringData,
                                     entry = it,
-                                    transform = { it },
-                                    media = it.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                        copy(
-                                            mediaListStatus = mediaListStatus,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            scoreRaw = scoreRaw,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    },
+                                    filterableData = it.mediaFilterable,
+                                    copy = { copy(mediaFilterable = it) },
                                 )
                             }))
                         }

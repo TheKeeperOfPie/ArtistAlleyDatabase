@@ -3,9 +3,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.activity
 import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
@@ -50,23 +52,20 @@ suspend fun <ActivityEntry> applyActivityFiltering(
     mediaListStatuses: Map<String, MediaListStatusController.Update>,
     activityStatuses: Map<String, ActivityStatusController.Update>,
     ignoreController: IgnoreController,
-    showAdult: Boolean,
-    showIgnored: Boolean,
-    showLessImportantTags: Boolean,
-    showSpoilerTags: Boolean,
+    filteringData: MediaFilteringData,
     entry: ActivityEntry,
     activityId: String?,
     activityStatusAware: ActivityStatusAware?,
     media: MediaWithListStatus?,
-    mediaStatusAware: MediaStatusAware?,
-    copyMedia: ActivityEntry.(status: MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> ActivityEntry,
+    mediaFilterable: MediaFilterableData?,
+    copyMedia: ActivityEntry.(MediaFilterableData) -> ActivityEntry,
     copyActivity: ActivityEntry.(liked: Boolean, subscribed: Boolean) -> ActivityEntry,
 ): ActivityEntry? {
-    if (!showAdult && media?.isAdult == true) return null
+    if (!filteringData.showAdult && media?.isAdult == true) return null
     var copiedEntry = entry
-    if (media != null && mediaStatusAware != null) {
+    if (media != null && mediaFilterable != null) {
         val ignored = ignoreController.isIgnored(media.id.toString())
-        if (!showIgnored && ignored) return null
+        if (!filteringData.showIgnored && ignored) return null
 
         val status: MediaListStatus?
         val progress: Int?
@@ -82,14 +81,23 @@ suspend fun <ActivityEntry> applyActivityFiltering(
             progress = media.mediaListEntry?.progress
             progressVolumes = media.mediaListEntry?.progressVolumes
         }
-        if (mediaStatusAware.mediaListStatus != status
-            || mediaStatusAware.ignored != ignored
-            || mediaStatusAware.progress != progress
-            || mediaStatusAware.progressVolumes != progressVolumes
-            || mediaStatusAware.showLessImportantTags != showLessImportantTags
-            || mediaStatusAware.showSpoilerTags != showSpoilerTags
+        if (mediaFilterable.mediaListStatus != status
+            || mediaFilterable.ignored != ignored
+            || mediaFilterable.progress != progress
+            || mediaFilterable.progressVolumes != progressVolumes
+            || mediaFilterable.showLessImportantTags != filteringData.showLessImportantTags
+            || mediaFilterable.showSpoilerTags != filteringData.showSpoilerTags
         ) {
-            copiedEntry = copiedEntry.copyMedia(status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags)
+            copiedEntry = copiedEntry.copyMedia(
+                mediaFilterable.copy(
+                    mediaListStatus = status?.toMediaListStatus(),
+                    progress = progress,
+                    progressVolumes = progressVolumes,
+                    ignored = ignored,
+                    showLessImportantTags = filteringData.showLessImportantTags,
+                    showSpoilerTags = filteringData.showSpoilerTags
+                )
+            )
         }
     }
 

@@ -22,7 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges2
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -90,10 +90,12 @@ class UserFavoriteMediaViewModel(
                 .mapLatest { it.mapOnIO { MediaPreviewWithDescriptionEntry(MediaWrapper(it)) } }
                 .enforceUniqueIds { it.mediaId }
                 .cachedIn(viewModelScope)
-                .applyMediaStatusChanges2(
+                .applyMediaStatusChanges(
                     statusController = mediaListStatusController,
                     ignoreController = ignoreController,
                     settings = settings,
+                    mediaFilterable = { it.mediaFilterable },
+                    copy = { copy(mediaFilterable = it) },
                 )
                 .cachedIn(viewModelScope)
                 .collectLatest(media::emit)

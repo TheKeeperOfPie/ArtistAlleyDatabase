@@ -7,7 +7,6 @@ import androidx.paging.cachedIn
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.NotificationsQuery
 import com.anilist.fragment.ActivityItem.Companion.asListActivity
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -21,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCo
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -158,34 +158,23 @@ class NotificationsViewModel(
                         activityStatusController.allChanges(),
                         commentStatusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showIgnored,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { mediaListStatuses, activityStatuses, commentUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { mediaListStatuses, activityStatuses, commentUpdates, _, filteringData ->
                         pagingData.mapNotNull { entry ->
                             applyActivityFiltering(
                                 mediaListStatuses = mediaListStatuses,
                                 activityStatuses = activityStatuses,
                                 ignoreController = ignoreController,
-                                showAdult = showAdult,
-                                showIgnored = showIgnored,
-                                showLessImportantTags = showLessImportantTags,
-                                showSpoilerTags = showSpoilerTags,
+                                filteringData = filteringData,
                                 entry = entry,
                                 activityId = entry.activityEntry?.id,
                                 activityStatusAware = entry.activityEntry,
                                 media = entry.mediaEntry?.media,
-                                mediaStatusAware = entry.mediaEntry,
-                                copyMedia = { status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                mediaFilterable = entry.mediaEntry?.mediaFilterable,
+                                copyMedia = {
                                     copy(
                                         mediaEntry = mediaEntry?.copy(
-                                            mediaListStatus = status,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
+                                            mediaFilterable = it
                                         )
                                     )
                                 },

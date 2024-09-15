@@ -17,6 +17,7 @@ import Versions_gradle.Versions.androidx.tracing
 import Versions_gradle.Versions.androidx.work
 import Versions_gradle.Versions.apache.commonsCompress
 import Versions_gradle.Versions.apache.commonsCsv
+import Versions_gradle.Versions.compose.materialIcons
 import Versions_gradle.Versions.compose.runtimeTracing
 import Versions_gradle.Versions.composeMultiplatform.runtime
 import Versions_gradle.Versions.google.appUpdate
@@ -87,7 +88,9 @@ object Versions {
     const val colormath = "3.6.0"
 
     object compose {
-        const val core = "1.8.0-alpha01"
+        // Beyond 1.7.1 breaks navigation drawer due to API change with AnchoredDraggableState
+        const val core = "1.7.1"
+        const val materialIcons = "1.7.1" // TODO: Remove once newer version is published
         const val runtimeTracing = "1.0.0-beta01"
     }
 
@@ -381,14 +384,16 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     with(Versions.compose) {
                         withVersion(core) {
                             library("androidx.compose.animation:animation")
-                            library("androidx.compose.material:material-icons-core")
-                            library("androidx.compose.material:material-icons-extended")
                             library("androidx.compose.runtime:runtime")
                             library("androidx.compose.ui:ui-test-junit4")
                             library("androidx.compose.ui:ui-test-manifest")
                             library("androidx.compose.ui:ui-tooling-preview")
                             library("androidx.compose.ui:ui-tooling")
                             library("androidx.compose.ui:ui")
+                        }
+                        withVersion(materialIcons) {
+                            library("androidx.compose.material:material-icons-core")
+                            library("androidx.compose.material:material-icons-extended")
                         }
 
                         library("androidx.compose.runtime:runtime-tracing:$runtimeTracing")

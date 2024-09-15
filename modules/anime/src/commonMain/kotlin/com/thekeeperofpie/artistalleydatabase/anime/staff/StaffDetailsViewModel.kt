@@ -15,21 +15,21 @@ import artistalleydatabase.modules.anime.generated.resources.anime_staff_error_l
 import com.anilist.fragment.StaffDetailsCharacterMediaPage
 import com.anilist.fragment.StaffDetailsStaffMediaPage
 import com.anilist.type.CharacterRole
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -251,35 +251,18 @@ class StaffDetailsViewModel(
                     combine(
                         mediaListStatusUpdates,
                         ignoreController.updates(),
-                        settings.showIgnored,
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { updates, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { updates, _, filteringData ->
                         timeline.copy(
                             yearsToMedia = timeline.yearsToMedia.map { (year, media) ->
                                 year to media.mapNotNull {
                                     applyMediaFiltering(
                                         statuses = updates,
                                         ignoreController = ignoreController,
-                                        showAdult = showAdult,
-                                        showIgnored = showIgnored,
-                                        showLessImportantTags = showLessImportantTags,
-                                        showSpoilerTags = showSpoilerTags,
+                                        filteringData = filteringData,
                                         entry = it,
-                                        transform = { it },
-                                        media = it.media,
-                                        copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                            copy(
-                                                mediaListStatus = mediaListStatus,
-                                                progress = progress,
-                                                progressVolumes = progressVolumes,
-                                                scoreRaw = scoreRaw,
-                                                ignored = ignored,
-                                                showLessImportantTags = showLessImportantTags,
-                                                showSpoilerTags = showSpoilerTags,
-                                            )
-                                        }
+                                        filterableData = it.mediaFilterable,
+                                        copy = { copy(mediaFilterable = it) },
                                     )
                                 }
                             }
@@ -419,25 +402,41 @@ class StaffDetailsViewModel(
             val id: String,
             val role: String?,
             override val media: StaffDetailsStaffMediaPage.Edge.Node,
-            override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-            override val progress: Int? = media.mediaListEntry?.progress,
-            override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
-            override val scoreRaw: Double? = media.mediaListEntry?.score,
-            override val ignored: Boolean = false,
-            override val showLessImportantTags: Boolean = false,
-            override val showSpoilerTags: Boolean = false,
-            override val type: MediaType? = media.type,
+            val mediaFilterable: MediaFilterableData = MediaFilterableData(
+                mediaId = media.id.toString(),
+                isAdult = media.isAdult,
+                mediaListStatus = media.mediaListEntry?.status?.toMediaListStatus(),
+                progress = media.mediaListEntry?.progress,
+                progressVolumes = media.mediaListEntry?.progressVolumes,
+                scoreRaw = media.mediaListEntry?.score,
+                ignored = false,
+                showLessImportantTags = false,
+                showSpoilerTags = false,
+            ),
             override val color: Color? = media.coverImage?.color
                 ?.let(ComposeColorUtils::hexToColor),
-            override val maxProgress: Int? = MediaUtils.maxProgress(
-                type = media.type,
-                chapters = media.chapters,
-                episodes = media.episodes,
-                nextAiringEpisode = media.nextAiringEpisode?.episode,
-            ),
-            override val maxProgressVolumes: Int? = media.volumes,
             override val averageScore: Int? = media.averageScore,
-        ) : MediaGridCard.Entry
+        ) : MediaGridCard.Entry {
+            override val type
+                get() = media.type
+            override val chapters
+                get() = media.chapters
+            override val episodes
+                get() = media.episodes
+            override val volumes
+                get() = media.volumes
+            override val nextAiringEpisode = media.nextAiringEpisode?.toNextAiringEpisode()
+            override val mediaListStatus
+                get() = mediaFilterable.mediaListStatus
+            override val ignored
+                get() = mediaFilterable.ignored
+            override val progress
+                get() = mediaFilterable.progress
+            override val progressVolumes
+                get() = mediaFilterable.progressVolumes
+            override val scoreRaw
+                get() = mediaFilterable.scoreRaw
+        }
 
         sealed interface LoadMoreState {
             data object None : LoadMoreState

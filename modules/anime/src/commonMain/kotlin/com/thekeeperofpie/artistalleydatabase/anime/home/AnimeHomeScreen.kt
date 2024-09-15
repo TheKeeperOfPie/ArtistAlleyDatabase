@@ -73,7 +73,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
@@ -115,8 +114,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
@@ -691,7 +690,7 @@ object AnimeHomeScreen {
                 val media = item?.media
                 MediaCard(
                     media = media,
-                    mediaStatusAware = item,
+                    mediaFilterable = item?.mediaFilterable,
                     ignored = item?.ignored ?: false,
                     viewer = viewer,
                     selected = remember {
@@ -759,7 +758,7 @@ object AnimeHomeScreen {
             modifier = modifier
                 .widthIn(max = CURRENT_ROW_IMAGE_WIDTH)
                 .clip(RoundedCornerShape(12.dp))
-                .alpha(if (entry?.ignored == true) 0.38f else 1f)
+                .alpha(if (entry?.mediaFilterable?.ignored == true) 0.38f else 1f)
                 .padding(2.dp)
         ) {
             CurrentMediaCardContent(
@@ -787,7 +786,6 @@ object AnimeHomeScreen {
     ) {
         val media = entry?.media
         Box(modifier = Modifier.recomposeHighlighter()) {
-            val density = LocalDensity.current
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
             MediaCoverImage(
                 imageState = coverImageState,
@@ -812,7 +810,7 @@ object AnimeHomeScreen {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
                     mediaType = media.type,
-                    media = entry,
+                    media = entry.mediaFilterable,
                     maxProgress = maxProgress,
                     maxProgressVolumes = media.volumes,
                     onClick = { onClickListEdit(media) },
@@ -823,7 +821,13 @@ object AnimeHomeScreen {
                         .align(Alignment.BottomStart)
                 )
 
-                if ((entry.progress ?: 0) < (maxProgress ?: 1)) {
+                val progress = when (media.type) {
+                    MediaType.ANIME -> entry.mediaFilterable.progress
+                    MediaType.MANGA -> entry.mediaFilterable.progressVolumes
+                    MediaType.UNKNOWN__,
+                    null -> 0
+                } ?: 0
+                if (progress < (maxProgress ?: 1)) {
                     IconButton(
                         onClick = { onClickIncrementProgress(entry) },
                         modifier = Modifier
@@ -867,7 +871,7 @@ object AnimeHomeScreen {
     @Composable
     private fun MediaCard(
         media: HomeMedia?,
-        mediaStatusAware: MediaStatusAware?,
+        mediaFilterable: MediaFilterable?,
         ignored: Boolean,
         viewer: AniListViewer?,
         selected: Boolean,
@@ -932,7 +936,7 @@ object AnimeHomeScreen {
         ) {
             MediaCardContent(
                 media = media,
-                mediaStatusAware = mediaStatusAware,
+                mediaFilterable = mediaFilterable,
                 viewer = viewer,
                 onClickListEdit = onClickListEdit,
                 textColor = ComposeColorUtils.bestTextColor(containerColor),
@@ -945,7 +949,7 @@ object AnimeHomeScreen {
     @Composable
     private fun MediaCardContent(
         media: HomeMedia?,
-        mediaStatusAware: MediaStatusAware?,
+        mediaFilterable: MediaFilterable?,
         viewer: AniListViewer?,
         textColor: Color?,
         title: String?,
@@ -986,11 +990,11 @@ object AnimeHomeScreen {
                 )
             }
 
-            if (viewer != null && media != null && mediaStatusAware != null) {
+            if (viewer != null && media != null && mediaFilterable != null) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
                     mediaType = media.type,
-                    media = mediaStatusAware,
+                    media = mediaFilterable,
                     maxProgress = MediaUtils.maxProgress(
                         type = media.type,
                         chapters = media.chapters,

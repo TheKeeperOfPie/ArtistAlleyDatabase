@@ -47,7 +47,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
@@ -245,10 +244,7 @@ object AnimeMediaCompactListRow {
             if (viewer != null && entry != null && showQuickEdit) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
-                    mediaType = entry.media.type,
                     media = entry,
-                    maxProgress = MediaUtils.maxProgress(entry.media),
-                    maxProgressVolumes = entry.media.volumes,
                     onClick = { onClickListEdit(entry.media) },
                     padding = 6.dp,
                     forceListEditIcon = forceListEditIcon,
@@ -313,8 +309,9 @@ object AnimeMediaCompactListRow {
     }
 
     @Stable
-    interface Entry : MediaStatusAware {
+    interface Entry : MediaListQuickEditButtonData {
         val media: MediaCompactWithTags
         val tags: List<AnimeMediaTagEntry>
+        val ignored: Boolean
     }
 }

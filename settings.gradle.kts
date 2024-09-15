@@ -29,6 +29,7 @@ include(
     ":modules:anilist",
     ":modules:anilist-data",
     ":modules:anime",
+    ":modules:anime:data",
     ":modules:anime2anime",
     ":modules:animethemes",
     ":modules:apollo",

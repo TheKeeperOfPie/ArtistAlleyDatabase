@@ -152,7 +152,7 @@ object StudioListRow {
                     val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
                     ListRowSmallImage(
                         density = density,
-                        ignored = item?.ignored ?: false,
+                        ignored = item?.mediaFilterable?.ignored ?: false,
                         imageState = imageState,
                         contentDescriptionTextRes = Res.string.anime_media_cover_image_content_description,
                         onClick = {
@@ -181,7 +181,7 @@ object StudioListRow {
                         MediaListQuickEditIconButton(
                             viewer = viewer,
                             mediaType = item.media.type,
-                            media = item,
+                            media = item.mediaFilterable,
                             maxProgress = MediaUtils.maxProgress(item.media),
                             maxProgressVolumes = item.media.volumes,
                             onClick = { onClickListEdit(item.media) },

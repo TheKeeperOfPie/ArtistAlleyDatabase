@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,7 +44,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_banner_image_content_description
-import com.anilist.fragment.MediaHeaderData
+import com.anilist.type.MediaFormat
+import com.anilist.type.MediaSeason
+import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
@@ -52,10 +55,13 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.data.CoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaQuickEditData
+import com.thekeeperofpie.artistalleydatabase.anime.data.Title
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
@@ -82,7 +88,7 @@ object AnimeMediaLargeCard {
     private val HEIGHT = 200.dp
     private val DESCRIPTION_PLACEHOLDER =
         "Some really long placeholder description for a loading media large card, "
-        .repeat(3)
+            .repeat(3)
 
     @Composable
     operator fun invoke(
@@ -96,12 +102,12 @@ object AnimeMediaLargeCard {
     ) {
         val sharedTransitionKey = entry?.mediaId?.let { SharedTransitionKey.makeKeyForId(it) }
         val sharedContentState = rememberSharedContentState(
-            sharedTransitionKey.takeIf { entry?.imageBanner != null || shouldTransitionCoverImageIfUsed },
-            if (entry?.imageBanner != null) "media_banner_image" else "media_image",
+            sharedTransitionKey.takeIf { entry?.bannerImage != null || shouldTransitionCoverImageIfUsed },
+            if (entry?.bannerImage != null) "media_banner_image" else "media_image",
         )
         ElevatedCard(
             modifier = modifier
-                .conditionally(entry?.imageBanner != null || shouldTransitionCoverImageIfUsed) {
+                .conditionally(entry?.bannerImage != null || shouldTransitionCoverImageIfUsed) {
                     sharedElement(sharedContentState)
                 }
                 .fillMaxWidth()
@@ -113,8 +119,8 @@ object AnimeMediaLargeCard {
             val ignoreController = LocalIgnoreController.current
             val title = entry?.primaryTitle()
             val imageState =
-                rememberCoilImageState(entry?.imageBanner ?: entry?.image, requestColors = true)
-            val isBanner = entry?.imageBanner != null
+                rememberCoilImageState(entry?.bannerImage ?: entry?.image, requestColors = true)
+            val isBanner = entry?.bannerImage != null
             Box(
                 modifier = Modifier.combinedClickable(
                     enabled = entry != null,
@@ -130,13 +136,12 @@ object AnimeMediaLargeCard {
                                         ImageState(entry.image)
                                     },
                                     sharedTransitionKey = sharedTransitionKey,
-                                    headerParams = MediaHeaderParams(
-                                        bannerImage = imageState.takeIf { isBanner }
+                                    headerParams = entry.toMediaHeaderParams(
+                                        bannerImageState = imageState.takeIf { isBanner }
                                             ?.toImageState(),
-                                        coverImage = imageState.takeUnless { isBanner }
+                                        coverImageState = imageState.takeUnless { isBanner }
                                             ?.toImageState(),
                                         title = title,
-                                        media = entry,
                                     ),
                                 )
                             )
@@ -144,16 +149,7 @@ object AnimeMediaLargeCard {
                     },
                     onLongClick = {
                         if (entry != null) {
-                            ignoreController.toggle(
-                                mediaId = entry.mediaId,
-                                type = entry.type,
-                                isAdult = entry.isAdult,
-                                bannerImage = entry.imageBanner,
-                                coverImage = entry.image,
-                                titleRomaji = entry.titleRomaji,
-                                titleEnglish = entry.titleEnglish,
-                                titleNative = entry.titleNative,
-                            )
+                            ignoreController.toggle(entry)
                         }
                     }
                 )
@@ -199,12 +195,10 @@ object AnimeMediaLargeCard {
 
                     Row(verticalAlignment = Alignment.Bottom) {
                         Column(modifier = Modifier.weight(1f)) {
-                            val nextAiringAt = entry?.nextAiringEpisode?.airingAt
-                            val nextAiringEpisode = entry?.nextAiringEpisode?.episode
-                            if (nextAiringAt != null && nextAiringEpisode != null) {
+                            val nextAiringEpisode = entry?.nextAiringEpisode
+                            if (nextAiringEpisode != null) {
                                 MediaNextAiringSection(
-                                    airingAtAniListTimestamp = nextAiringAt,
-                                    episode = nextAiringEpisode,
+                                    nextAiringEpisode = nextAiringEpisode,
                                     episodes = entry.episodes,
                                     format = entry.format,
                                 )
@@ -217,7 +211,9 @@ object AnimeMediaLargeCard {
                                     if (entry != null) {
                                         navigationCallback.navigate(
                                             AnimeDestination.SearchMedia(
-                                                title = AnimeDestination.SearchMedia.Title.Custom(name),
+                                                title = AnimeDestination.SearchMedia.Title.Custom(
+                                                    name
+                                                ),
                                                 tagId = id,
                                                 mediaType = entry.type ?: MediaType.ANIME,
                                             )
@@ -377,45 +373,49 @@ object AnimeMediaLargeCard {
             val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
             MediaListQuickEditIconButton(
                 viewer = viewer,
-                mediaType = entry.type,
                 media = entry,
-                maxProgress = MediaUtils.maxProgress(
-                    type = entry.type,
-                    chapters = entry.chapters,
-                    episodes = entry.episodes,
-                    nextAiringEpisode = nextAiringEpisode,
-                ),
-                maxProgressVolumes = entry.volumes,
                 forceListEditIcon = forceListEditIcon,
-                onClick = {
-                    editViewModel.initialize(
-                        mediaId = entry.mediaId,
-                        coverImage = entry.image,
-                        type = entry.type,
-                        titleRomaji = entry.titleRomaji,
-                        titleEnglish = entry.titleEnglish,
-                        titleNative = entry.titleNative,
-                    )
-                },
+                onClick = { editViewModel.initialize(entry) },
             )
         }
     }
 
-    interface Entry : MediaStatusAware, MediaHeaderData {
-        val mediaId: String
+    interface Entry : IgnoreController.Data, MediaQuickEditData, MediaListQuickEditButtonData {
         val image: String?
-        val imageBanner: String?
         val color: Color?
         val rating: Int?
         val tags: List<AnimeMediaTagEntry>
         val description: String?
-        val titleRomaji: String?
-        val titleEnglish: String?
-        val titleNative: String?
-        val chapters: Int?
-        val volumes: Int?
+        val title: Title?
+        val coverImage: CoverImage?
+        val bannerImage: String?
+        val format: MediaFormat?
+        val status: MediaStatus?
+        val season: MediaSeason?
+        val seasonYear: Int?
+        val popularity: Int?
+        val isFavourite: Boolean
+        val ignored: Boolean
 
         @Composable
         fun primaryTitle(): String?
+
+        fun toMediaHeaderParams(
+            bannerImageState: ImageState?,
+            coverImageState: ImageState?,
+            title: String?,
+        ) = MediaHeaderParams(
+            title = title,
+            bannerImage = bannerImageState,
+            coverImage = coverImageState,
+            subtitleFormat = format,
+            subtitleStatus = status,
+            subtitleSeason = season,
+            subtitleSeasonYear = seasonYear,
+            nextAiringEpisode = nextAiringEpisode,
+            colorArgb = coverImage?.color?.toArgb(),
+            type = type,
+            favorite = isFavourite,
+        )
     }
 }

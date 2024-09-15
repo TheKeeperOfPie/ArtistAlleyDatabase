@@ -127,6 +127,8 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterable
+import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
@@ -361,7 +363,7 @@ object MediaUtils {
         MediaFormat.ONE_SHOT -> Res.string.anime_media_format_one_shot
         MediaFormat.UNKNOWN__,
         null,
-        -> Res.string.anime_media_format_unknown
+            -> Res.string.anime_media_format_unknown
     }
 
     fun MediaFormat?.toColor() = when (this) {
@@ -404,7 +406,7 @@ object MediaUtils {
         MediaSource.WEB_NOVEL -> Res.string.anime_media_filter_source_web_novel
         MediaSource.UNKNOWN__,
         null,
-        -> Res.string.anime_media_filter_source_unknown
+            -> Res.string.anime_media_filter_source_unknown
     }
 
     fun MediaRelation?.toTextRes() = when (this) {
@@ -423,7 +425,7 @@ object MediaUtils {
         MediaRelation.CONTAINS -> Res.string.anime_media_relation_contains
         MediaRelation.UNKNOWN__,
         null,
-        -> Res.string.anime_media_relation_unknown
+            -> Res.string.anime_media_relation_unknown
     }
 
     @Composable
@@ -467,7 +469,11 @@ object MediaUtils {
     } else if (ranking.allTime == true) {
         stringResource(allTimeTextRes, ranking.rank)
     } else {
-        stringResource(Res.string.anime_media_details_ranking_unknown, ranking.rank, ranking.context)
+        stringResource(
+            Res.string.anime_media_details_ranking_unknown,
+            ranking.rank,
+            ranking.context
+        )
     }
 
     fun dailymotionUrl(videoId: String) = "https://www.dailymotion.com/video/$videoId"
@@ -507,11 +513,12 @@ object MediaUtils {
         else -> Color.Red
     }
 
-    fun <SortType : SortOption, MediaEntryType : MediaStatusAware> filterEntries(
+    fun <SortType : SortOption, MediaEntryType> filterEntries(
         filterParams: MediaSortFilterController.FilterParams<SortType>,
         showTagWhenSpoiler: Boolean,
         entries: List<MediaEntryType>,
         media: (MediaEntryType) -> MediaPreview,
+        mediaFilterable: (MediaEntryType) -> MediaFilterable,
         forceShowIgnored: Boolean = false,
     ): List<MediaEntryType> {
         var filteredEntries = entries
@@ -578,7 +585,7 @@ object MediaUtils {
         }
 
         if (!filterParams.showIgnored && !forceShowIgnored) {
-            filteredEntries = filteredEntries.filterNot { it.ignored }
+            filteredEntries = filteredEntries.filterNot { mediaFilterable(it).ignored }
         }
 
         filteredEntries = when (val airingDate = filterParams.airingDate) {
@@ -697,13 +704,13 @@ object MediaUtils {
             val myScoreEnd = myScore.endInt
             if (myScoreStart > 0) {
                 filteredEntries = filteredEntries.filter {
-                    it.scoreRaw.let { it != null && it >= myScoreStart }
+                    mediaFilterable(it).scoreRaw.let { it != null && it >= myScoreStart }
                 }
             }
             if (myScoreEnd != null) {
                 // TODO: How should this handle null?
                 filteredEntries = filteredEntries.filter {
-                    it.scoreRaw.let { it == null || it <= myScoreEnd }
+                    mediaFilterable(it).scoreRaw.let { it == null || it <= myScoreEnd }
                 }
             }
         }
@@ -790,6 +797,18 @@ object MediaUtils {
             episodes ?: nextAiringEpisode?.let { (it - 1).coerceAtLeast(1) }
         }
 
+    fun maxProgress(
+        type: MediaType?,
+        chapters: Int?,
+        episodes: Int?,
+        nextAiringEpisode: NextAiringEpisode?,
+    ) =
+        if (type == MediaType.MANGA) {
+            chapters
+        } else {
+            episodes ?: nextAiringEpisode?.episode?.let { (it - 1).coerceAtLeast(1) }
+        }
+
     fun MediaType?.toFavoriteType() = if (this == MediaType.ANIME) {
         FavoriteType.ANIME
     } else {
@@ -812,7 +831,7 @@ object MediaUtils {
             UserTitleLanguage.NATIVE_STYLISED -> titleNative
             UserTitleLanguage.UNKNOWN__,
             null,
-            -> null
+                -> null
         }
         AniListLanguageOption.ENGLISH -> titleEnglish
         AniListLanguageOption.NATIVE -> titleNative
@@ -880,48 +899,45 @@ object MediaUtils {
 
     @Composable
     fun nextAiringSectionText(
-        airingAtAniListTimestamp: Int,
-        episode: Int,
+        nextAiringEpisode: NextAiringEpisode,
         episodes: Int?,
         format: MediaFormat?,
         showDate: Boolean = true,
     ): String {
         val dateTimeFormatter = LocalDateTimeFormatter.current
-        val airingAt = remember {
-            dateTimeFormatter.formatAiringAt(airingAtAniListTimestamp * 1000L, showDate = showDate)
-        }
+        val airingAtText =
+            remember { dateTimeFormatter.formatAiringAt(nextAiringEpisode.airingAt, showDate) }
 
         // TODO: De-dupe airingAt and remainingTime if both show a specific date
         //  (airing > 7 days away)
-        val remainingTime = remember {
-            dateTimeFormatter.formatRemainingTime(airingAtAniListTimestamp * 1000L)
-        }
+        val remainingTime =
+            remember { dateTimeFormatter.formatRemainingTime(nextAiringEpisode.airingAt) }
 
         return if (episodes == 1 || (episodes == null && format == MediaFormat.MOVIE)) {
-            if (airingAt.contains(remainingTime)) {
+            if (airingAtText.contains(remainingTime)) {
                 stringResource(
                     Res.string.anime_media_next_airing_episode_without_episode,
-                    airingAt,
+                    airingAtText,
                 )
             } else {
                 stringResource(
                     Res.string.anime_media_next_airing_episode_without_episode_with_relative,
-                    airingAt,
+                    airingAtText,
                     remainingTime,
                 )
             }
         } else {
-            if (airingAt.contains(remainingTime)) {
+            if (airingAtText.contains(remainingTime)) {
                 stringResource(
                     Res.string.anime_media_next_airing_episode_with_episode,
-                    episode,
-                    airingAt,
+                    nextAiringEpisode.episode,
+                    airingAtText,
                 )
             } else {
                 stringResource(
                     Res.string.anime_media_next_airing_episode_with_episode_with_relative,
-                    episode,
-                    airingAt,
+                    nextAiringEpisode.episode,
+                    airingAtText,
                     remainingTime,
                 )
             }

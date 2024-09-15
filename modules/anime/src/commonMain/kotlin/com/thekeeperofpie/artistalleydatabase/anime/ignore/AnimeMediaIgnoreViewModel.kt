@@ -106,20 +106,8 @@ class AnimeMediaIgnoreViewModel(
                     statusController = statusController,
                     ignoreController = ignoreController,
                     settings = settings,
-                    media = { it.media },
-                    forceShowIgnored = true,
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        copy(
-                            media = media,
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    },
+                    mediaFilterable = { it.mediaFilterable },
+                    copy = { copy(mediaFilterable = it) },
                 )
                 .cachedIn(viewModelScope)
                 .flowOn(CustomDispatchers.IO)

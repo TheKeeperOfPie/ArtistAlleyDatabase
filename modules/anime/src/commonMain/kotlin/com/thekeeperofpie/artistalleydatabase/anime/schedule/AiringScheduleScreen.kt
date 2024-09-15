@@ -44,7 +44,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedu
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
 import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_icon_content_description
-import com.anilist.AiringScheduleQuery
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
@@ -245,15 +244,10 @@ object AiringScheduleScreen {
                                     ) { index ->
                                         val schedule = content[index]
                                         AnimeMediaListRow(
-                                            entry = schedule?.entry,
+                                            entry = schedule?.media,
                                             viewer = viewer,
                                             onClickListEdit = editViewModel::initialize,
-                                            nextAiringEpisode = schedule?.data?.let {
-                                                AiringScheduleQuery.Data.Page.AiringSchedule.Media.NextAiringEpisode(
-                                                    episode = it.episode,
-                                                    airingAt = it.airingAt,
-                                                )
-                                            },
+                                            nextAiringEpisode = schedule?.nextAiringEpisode,
                                             showDate = false,
                                         )
                                     }

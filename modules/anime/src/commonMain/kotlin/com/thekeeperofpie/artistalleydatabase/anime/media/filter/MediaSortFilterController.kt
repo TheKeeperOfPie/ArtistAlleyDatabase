@@ -42,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -343,7 +342,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         }
     }
 
-    fun <Entry : MediaStatusAware> filterMedia(
+    fun <Entry : Any> filterMedia(
         result: PagingData<Entry>,
         transform: (Entry) -> MediaPreview,
     ) = combine(

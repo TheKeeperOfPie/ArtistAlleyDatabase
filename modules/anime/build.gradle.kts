@@ -15,6 +15,7 @@ kotlin {
         }
         commonMain.dependencies {
             api(project(":modules:anilist"))
+            api(project(":modules:anime:data"))
             api(project(":modules:cds"))
             api(project(":modules:markdown"))
             api(project(":modules:media"))

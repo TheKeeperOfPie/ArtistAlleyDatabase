@@ -27,6 +27,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelpe
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -89,55 +91,59 @@ class ActivityDetailsViewModel(
                 }
             }
                 .flatMapLatest { activity ->
-                    combine(
-                        statusController.allChanges(activityId),
-                        if (activity.result is ActivityDetailsQuery.Data.ListActivityActivity) {
-                            mediaListStatusController.allChanges(activityId)
-                        } else {
-                            flowOf(null)
-                        },
-                        ignoreController.updates(),
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { activityUpdates, mediaListUpdate, ignoredIds, showLessImportantTags, showSpoilerTags ->
-                        // TODO: Unused ignoredIds?
-                        activity.transformResult {
-                            val liked = activityUpdates?.liked ?: when (it) {
-                                is ActivityDetailsQuery.Data.ListActivityActivity -> it.isLiked
-                                is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isLiked
-                                is ActivityDetailsQuery.Data.TextActivityActivity -> it.isLiked
-                                is ActivityDetailsQuery.Data.OtherActivity -> false
-                            } ?: false
-                            val subscribed = activityUpdates?.subscribed ?: when (it) {
-                                is ActivityDetailsQuery.Data.ListActivityActivity -> it.isSubscribed
-                                is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isSubscribed
-                                is ActivityDetailsQuery.Data.TextActivityActivity -> it.isSubscribed
-                                is ActivityDetailsQuery.Data.OtherActivity -> false
-                            } ?: false
-                            Entry(
-                                activity = it,
-                                liked = liked,
-                                subscribed = subscribed,
-                                mediaEntry = (it as? ActivityDetailsQuery.Data.ListActivityActivity)?.media?.let {
-                                    if (mediaListUpdate == null) {
-                                        MediaCompactWithTagsEntry(
-                                            media = it,
-                                            ignored = ignoreController.isIgnored(it.id.toString()),
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    } else {
-                                        MediaCompactWithTagsEntry(
-                                            media = it,
-                                            ignored = ignoreController.isIgnored(it.id.toString()),
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
+                    statusController.allChanges(activityId)
+                        .mapLatest { activityUpdates ->
+                            activity.transformResult {
+                                val liked = activityUpdates?.liked ?: when (it) {
+                                    is ActivityDetailsQuery.Data.ListActivityActivity -> it.isLiked
+                                    is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isLiked
+                                    is ActivityDetailsQuery.Data.TextActivityActivity -> it.isLiked
+                                    is ActivityDetailsQuery.Data.OtherActivity -> false
+                                } ?: false
+                                val subscribed = activityUpdates?.subscribed ?: when (it) {
+                                    is ActivityDetailsQuery.Data.ListActivityActivity -> it.isSubscribed
+                                    is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isSubscribed
+                                    is ActivityDetailsQuery.Data.TextActivityActivity -> it.isSubscribed
+                                    is ActivityDetailsQuery.Data.OtherActivity -> false
+                                } ?: false
+                                Entry(
+                                    activity = it,
+                                    liked = liked,
+                                    subscribed = subscribed,
+                                    mediaEntry = (it as? ActivityDetailsQuery.Data.ListActivityActivity)?.media?.let {
+                                        MediaCompactWithTagsEntry(media = it)
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
-                    }
+                        .flatMapLatest { result ->
+                            combine(
+                                if (activity.result is ActivityDetailsQuery.Data.ListActivityActivity) {
+                                    mediaListStatusController.allChanges(activityId)
+                                } else {
+                                    flowOf(null)
+                                },
+                                ignoreController.updates(),
+                                settings.mediaFilteringData(forceShowIgnored = true),
+                            ) { statuses, _, filteringData ->
+                                result.transformResult {
+                                    if (it.mediaEntry == null) return@transformResult it
+                                    val mediaId = it.mediaEntry.media?.id?.toString()
+                                    applyMediaFiltering(
+                                        statuses = if (mediaId == null || statuses == null) {
+                                            emptyMap()
+                                        } else {
+                                            mapOf(mediaId to statuses)
+                                        },
+                                        ignoreController = ignoreController,
+                                        filteringData = filteringData,
+                                        entry = it,
+                                        filterableData = it.mediaEntry.mediaFilterable,
+                                        copy = { copy(mediaEntry = mediaEntry?.copy(mediaFilterable = it)) },
+                                    )
+                                }
+                            }
+                        }
                 }
                 .catch {
                     emit(

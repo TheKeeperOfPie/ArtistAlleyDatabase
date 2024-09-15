@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +35,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -128,7 +128,7 @@ class SettingsProvider(
 
     override val mediaIgnoreEnabled = MutableStateFlow(deserialize("mediaIgnoreEnabled") ?: false)
     override val mediaIgnoreHide = MutableStateFlow(deserialize("mediaIgnoreHide") ?: false)
-    override val showIgnored = mediaIgnoreHide.map(Boolean::not)
+    override val showIgnored = mediaIgnoreHide.mapState(scope, Boolean::not)
 
     // Not exported
     override val aniListViewer = MutableStateFlow<AniListViewer?>(deserialize("aniListViewer"))

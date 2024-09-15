@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
@@ -23,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
@@ -107,38 +109,21 @@ class ReviewsViewModel(
                 }
                 .cachedIn(viewModelScope)
                 .flatMapLatest { pagingData ->
-                    com.hoc081098.flowext.combine(
+                    combine(
                         mediaListStatusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showIgnored,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { mediaStatusUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { mediaStatusUpdates, _, filteringData ->
                         pagingData.mapNotNull {
-                            applyMediaFiltering(
-                                statuses = mediaStatusUpdates,
-                                ignoreController = ignoreController,
-                                showAdult = showAdult,
-                                showIgnored = showIgnored,
-                                showLessImportantTags = showLessImportantTags,
-                                showSpoilerTags = showSpoilerTags,
-                                entry = it,
-                                transform = { it.media },
-                                media = it.media.media,
-                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                    copy(
-                                        media = media.copy(
-                                            mediaListStatus = mediaListStatus,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            scoreRaw = scoreRaw,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    )
-                                }
+                            it.copy(
+                                media = applyMediaFiltering(
+                                    statuses = mediaStatusUpdates,
+                                    ignoreController = ignoreController,
+                                    filteringData = filteringData,
+                                    entry = it.media,
+                                    filterableData = it.media.mediaFilterable,
+                                    copy = { copy(mediaFilterable = it) },
+                                ) ?: return@mapNotNull null
                             )
                         }
                     }

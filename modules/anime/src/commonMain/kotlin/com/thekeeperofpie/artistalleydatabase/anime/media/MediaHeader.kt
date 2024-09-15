@@ -46,6 +46,7 @@ import com.anilist.type.MediaSeason
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaRatingIconsSection
@@ -62,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.maybeOverride
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
 
@@ -156,16 +158,14 @@ fun MediaHeader(
                         }
                     }
 
-                    val nextEpisodeAiringAt = headerValues.nextEpisodeAiringAt
-                    val nextEpisode = headerValues.nextEpisode
+                    val nextAiringEpisode = headerValues.nextAiringEpisode
                     AnimatedVisibility(
-                        nextEpisodeAiringAt != null && nextEpisode != null,
-                        label = "Media details nextEpisodeAiringAt text"
+                        nextAiringEpisode != null,
+                        label = "Media details nextAiringEpisode text"
                     ) {
-                        if (nextEpisodeAiringAt != null && nextEpisode != null) {
+                        if (nextAiringEpisode != null) {
                             val nextAiringAtText = MediaUtils.nextAiringSectionText(
-                                airingAtAniListTimestamp = nextEpisodeAiringAt,
-                                episode = nextEpisode,
+                                nextAiringEpisode = nextAiringEpisode,
                                 episodes = episodes,
                                 format = format,
                             )
@@ -239,8 +239,7 @@ data class MediaHeaderParams(
     val subtitleStatus: MediaStatus? = null,
     val subtitleSeason: MediaSeason? = null,
     val subtitleSeasonYear: Int? = null,
-    val nextEpisode: Int? = null,
-    val nextEpisodeAiringAt: Int? = null,
+    val nextAiringEpisode: NextAiringEpisode? = null,
     val colorArgb: Int? = null,
     val type: MediaType? = null,
     val favorite: Boolean? = null,
@@ -259,8 +258,12 @@ data class MediaHeaderParams(
         subtitleStatus = media?.status,
         subtitleSeason = media?.season,
         subtitleSeasonYear = media?.seasonYear,
-        nextEpisode = media?.nextAiringEpisode?.episode,
-        nextEpisodeAiringAt = media?.nextAiringEpisode?.airingAt,
+        nextAiringEpisode = media?.nextAiringEpisode?.let {
+            NextAiringEpisode(
+                episode = it.episode,
+                airingAt = Instant.fromEpochSeconds(it.airingAt.toLong()),
+            )
+        },
         colorArgb = media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb(),
         type = media?.type,
         favorite = favorite,
@@ -280,8 +283,12 @@ data class MediaHeaderParams(
         subtitleStatus = null,
         subtitleSeason = mediaCompactWithTags?.season,
         subtitleSeasonYear = mediaCompactWithTags?.seasonYear,
-        nextEpisode = mediaCompactWithTags?.nextAiringEpisode?.episode,
-        nextEpisodeAiringAt = null,
+        nextAiringEpisode = mediaCompactWithTags?.nextAiringEpisode?.let {
+            NextAiringEpisode(
+                episode = it.episode,
+                airingAt = Instant.fromEpochSeconds(it.airingAt.toLong()),
+            )
+        },
         colorArgb = mediaCompactWithTags?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
             ?.toArgb(),
         favorite = favorite,
@@ -302,8 +309,12 @@ data class MediaHeaderParams(
         subtitleStatus = null,
         subtitleSeason = null,
         subtitleSeasonYear = null,
-        nextEpisode = mediaWithListStatus?.nextAiringEpisode?.episode,
-        nextEpisodeAiringAt = null,
+        nextAiringEpisode = mediaWithListStatus?.nextAiringEpisode?.let {
+            NextAiringEpisode(
+                episode = it.episode,
+                airingAt = Instant.fromEpochSeconds(it.airingAt.toLong()),
+            )
+        },
         colorArgb = null,
         type = mediaWithListStatus?.type,
         favorite = favorite,
@@ -322,12 +333,13 @@ class MediaHeaderValues(
     override val defaultColor = media()?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         ?: params?.colorArgb?.let { Color(it) }
         ?: Color.Unspecified
-    val nextEpisode
-        get() = media()?.nextAiringEpisode?.episode
-            ?: params?.nextEpisode
-    val nextEpisodeAiringAt
-        get() = media()?.nextAiringEpisode?.airingAt
-            ?: params?.nextEpisodeAiringAt
+    val nextAiringEpisode
+        get() = media()?.nextAiringEpisode?.let {
+            NextAiringEpisode(
+                episode = it.episode,
+                airingAt = Instant.fromEpochSeconds(it.airingAt.toLong())
+            )
+        } ?: params?.nextAiringEpisode
     val favorite
         get() = favoriteUpdate() ?: media()?.isFavourite ?: params?.favorite
     val type

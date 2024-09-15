@@ -28,6 +28,7 @@
             <option value="$PROJECT_DIR$/modules/anilist" />
             <option value="$PROJECT_DIR$/modules/anilist-data" />
             <option value="$PROJECT_DIR$/modules/anime" />
+            <option value="$PROJECT_DIR$/modules/anime/data" />
             <option value="$PROJECT_DIR$/modules/anime2anime" />
             <option value="$PROJECT_DIR$/modules/animethemes" />
             <option value="$PROJECT_DIR$/modules/apollo" />

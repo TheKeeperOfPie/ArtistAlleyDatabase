@@ -285,7 +285,7 @@ object StaffListRow {
                     val imageState = rememberCoilImageState(it.media.coverImage?.extraLarge)
                     ListRowSmallImage(
                         density = density,
-                        ignored = it.ignored,
+                        ignored = it.mediaFilterable.ignored,
                         imageState = imageState,
                         contentDescriptionTextRes = Res.string.anime_media_cover_image_content_description,
                         onClick = {
@@ -312,7 +312,7 @@ object StaffListRow {
                         MediaListQuickEditIconButton(
                             viewer = viewer,
                             mediaType = it.media.type,
-                            media = it,
+                            media = it.mediaFilterable,
                             maxProgress = MediaUtils.maxProgress(it.media),
                             maxProgressVolumes = it.media.volumes,
                             onClick = { onClickListEdit(it.media) },

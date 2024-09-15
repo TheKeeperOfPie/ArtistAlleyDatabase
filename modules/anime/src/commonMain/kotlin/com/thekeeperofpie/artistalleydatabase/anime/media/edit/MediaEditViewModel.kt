@@ -20,6 +20,7 @@ import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaQuickEditData
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -149,6 +150,20 @@ class MediaEditViewModel(
         editData.showing = true
     }
 
+    fun initialize(mediaQuickEditData: MediaQuickEditData) = initialize(
+        mediaId = mediaQuickEditData.mediaId,
+        coverImage = mediaQuickEditData.coverImageUrl,
+        type = when (mediaQuickEditData.mediaType) {
+            com.thekeeperofpie.artistalleydatabase.anime.data.MediaType.ANIME -> MediaType.ANIME
+            com.thekeeperofpie.artistalleydatabase.anime.data.MediaType.MANGA -> MediaType.MANGA
+            com.thekeeperofpie.artistalleydatabase.anime.data.MediaType.UNKNOWN -> MediaType.UNKNOWN__
+            null -> null
+        },
+        titleRomaji = mediaQuickEditData.titleRomaji,
+        titleEnglish = mediaQuickEditData.titleEnglish,
+        titleNative = mediaQuickEditData.titleNative,
+    )
+
     fun initialize(
         mediaId: String,
         coverImage: String?,
@@ -221,7 +236,7 @@ class MediaEditViewModel(
     }
 
     fun incrementProgress(entry: UserMediaListController.MediaEntry) {
-        val newProgress = (entry.progress ?: 0) + 1
+        val newProgress = (entry.mediaFilterable.progress ?: 0) + 1
         if (newProgress > (MediaUtils.maxProgress(entry.media) ?: 0)) return
         viewModelScope.launch(CustomDispatchers.IO) {
             try {

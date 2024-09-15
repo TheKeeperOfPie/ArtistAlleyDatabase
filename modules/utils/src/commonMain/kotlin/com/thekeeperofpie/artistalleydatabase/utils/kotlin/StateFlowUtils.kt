@@ -2,11 +2,13 @@
 
 package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 fun <T1, T2, R> combineStates(
@@ -71,3 +73,6 @@ private inline fun <reified T, R> combineStatesUnsafe(
                 .collect(collector)
         }
 }
+
+fun <Input, Output> StateFlow<Input>.mapState(scope: CoroutineScope, mapping : (Input) -> Output) =
+    map { mapping(it) }.stateIn(scope, SharingStarted.Eagerly, mapping(value))

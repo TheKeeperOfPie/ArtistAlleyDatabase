@@ -15,6 +15,7 @@ import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
@@ -27,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresCont
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -172,7 +174,7 @@ class AnimeUserListViewModel(
                         MediaType.MANGA -> userMediaListController.manga(it)
                         MediaType.ANIME,
                         MediaType.UNKNOWN__,
-                        -> userMediaListController.anime(it)
+                            -> userMediaListController.anime(it)
                     }
                 }
             } else {
@@ -214,35 +216,18 @@ class AnimeUserListViewModel(
             ).flatMapLatest { (lists, mediaUpdates, query, filterParams, showTagWhenSpoiler) ->
                 combine(
                     ignoreController.updates(),
-                    settings.showAdult,
-                    settings.showLessImportantTags,
-                    settings.showSpoilerTags,
-                ) { _, showAdult, showLessImportantTags, showSpoilerTags ->
+                    settings.mediaFilteringData(forceShowIgnored = true)
+                ) { _, filteringData ->
                     suspend fun List<MediaEntry>.mapEntries() = mapNotNull {
-                        applyMediaFiltering(
+                        val newEntry = applyMediaFiltering(
                             statuses = mediaUpdates,
                             ignoreController = ignoreController,
-                            showAdult = showAdult,
-                            showIgnored = true,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                            entry = it,
-                            transform = { it.entry },
-                            media = it.entry.media,
-                            copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                copy(
-                                    entry = entry.copy(
-                                        mediaListStatus = mediaListStatus,
-                                        progress = progress,
-                                        progressVolumes = progressVolumes,
-                                        scoreRaw = scoreRaw,
-                                        ignored = ignored,
-                                        showLessImportantTags = showLessImportantTags,
-                                        showSpoilerTags = showSpoilerTags,
-                                    )
-                                )
-                            }
-                        )
+                            filteringData = filteringData,
+                            entry = it.entry,
+                            filterableData = it.entry.mediaFilterable,
+                            copy = { copy(mediaFilterable = it) }
+                        ) ?: return@mapNotNull null
+                        it.copy(entry = newEntry)
                     }
 
                     lists.transformResult { allLists ->
@@ -254,7 +239,10 @@ class AnimeUserListViewModel(
                                         filterParams.myListStatuses,
                                         it,
                                         {
-                                            listOfNotNull(it.mediaListStatus)
+                                            listOfNotNull(
+                                                it.mediaFilterable.mediaListStatus
+                                                    ?.toMediaListStatus()
+                                            )
                                         },
                                     )
                                 }
@@ -318,6 +306,7 @@ class AnimeUserListViewModel(
             showTagWhenSpoiler = showTagWhenSpoiler,
             entries = this,
             media = { it.media },
+            mediaFilterable = { it.mediaFilterable },
         ).let {
             val theirScore = filterParams.theirScore
             var filteredByTheirScore = it
@@ -341,13 +330,13 @@ class AnimeUserListViewModel(
             if (filterParams.onList == null) return@run this
             if (filterParams.onList) {
                 filter {
-                    it.mediaListStatus != null
-                            && it.mediaListStatus != MediaListStatus.UNKNOWN__
+                    it.mediaFilterable.mediaListStatus != null
+                            && it.mediaFilterable.mediaListStatus != com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.UNKNOWN
                 }
             } else {
                 filter {
-                    it.mediaListStatus == null
-                            || it.mediaListStatus == MediaListStatus.UNKNOWN__
+                    it.mediaFilterable.mediaListStatus == null
+                            || it.mediaFilterable.mediaListStatus == com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.UNKNOWN
                 }
             }
         }
@@ -388,7 +377,7 @@ class AnimeUserListViewModel(
                     MediaListSortOption.TITLE_ENGLISH -> compareBy { it.media.title?.english }
                     MediaListSortOption.TITLE_NATIVE -> compareBy { it.media.title?.native }
                     MediaListSortOption.POPULARITY -> compareBy { it.media.popularity }
-                    MediaListSortOption.MY_SCORE -> compareBy { it.scoreRaw }
+                    MediaListSortOption.MY_SCORE -> compareBy { it.mediaFilterable.scoreRaw }
                     MediaListSortOption.THEIR_SCORE -> compareBy { it.authorData?.rawScore }
                 }
 
@@ -402,14 +391,8 @@ class AnimeUserListViewModel(
         return filteredEntries.map {
             MediaEntry(
                 entry = MediaPreviewWithDescriptionEntry(
-                    it.media,
-                    mediaListStatus = it.mediaListStatus,
-                    progress = it.progress,
-                    progressVolumes = it.progressVolumes,
-                    scoreRaw = it.scoreRaw,
-                    ignored = it.ignored,
-                    showLessImportantTags = it.showLessImportantTags,
-                    showSpoilerTags = it.showSpoilerTags,
+                    media = it.media,
+                    mediaFilterable = it.mediaFilterable,
                 ),
                 authorData = it.authorData,
             )

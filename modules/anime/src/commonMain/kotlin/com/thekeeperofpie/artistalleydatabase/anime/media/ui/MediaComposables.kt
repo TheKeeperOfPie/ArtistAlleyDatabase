@@ -55,7 +55,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_no_description_error
 import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -64,6 +63,9 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterable
+import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
@@ -253,31 +255,13 @@ fun MediaRatingIconsSection(
 
 @Composable
 fun MediaNextAiringSection(
-    nextAiringEpisode: MediaPreview.NextAiringEpisode,
-    episodes: Int?,
-    format: MediaFormat?,
-    showDate: Boolean = true,
-) {
-    MediaNextAiringSection(
-        airingAtAniListTimestamp = nextAiringEpisode.airingAt,
-        episode = nextAiringEpisode.episode,
-        episodes = episodes,
-        format = format,
-        showDate = showDate,
-    )
-}
-
-@Composable
-fun MediaNextAiringSection(
-    airingAtAniListTimestamp: Int,
-    episode: Int,
+    nextAiringEpisode: NextAiringEpisode,
     episodes: Int?,
     format: MediaFormat?,
     showDate: Boolean = true,
 ) {
     val text = MediaUtils.nextAiringSectionText(
-        airingAtAniListTimestamp = airingAtAniListTimestamp,
-        episode = episode,
+        nextAiringEpisode = nextAiringEpisode,
         episodes = episodes,
         format = format,
         showDate = showDate,
@@ -351,6 +335,52 @@ fun MediaTagRow(
     }
 }
 
+interface MediaListQuickEditButtonData {
+    val mediaListStatus: com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus?
+    val progress: Int?
+    val progressVolumes: Int?
+    val scoreRaw: Double?
+    val type: MediaType?
+    val chapters: Int?
+    val episodes: Int?
+    val volumes: Int?
+    val nextAiringEpisode: NextAiringEpisode?
+}
+
+@Composable
+fun MediaListQuickEditIconButton(
+    viewer: AniListViewer?,
+    media: MediaListQuickEditButtonData,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    textVerticalPadding: Dp = 4.dp,
+    padding: Dp = 8.dp,
+    iconSize: Dp = 20.dp,
+    forceListEditIcon: Boolean = false,
+) {
+    MediaListQuickEditIconButton(
+        viewer = viewer,
+        mediaType = media.type,
+        listStatus = media.mediaListStatus?.toMediaListStatus(),
+        progress = media.progress,
+        progressVolumes = media.progressVolumes,
+        scoreRaw = media.scoreRaw,
+        maxProgress = MediaUtils.maxProgress(
+            type = media.type,
+            chapters = media.chapters,
+            episodes = media.episodes,
+            nextAiringEpisode = media.nextAiringEpisode,
+        ),
+        maxProgressVolumes = media.volumes,
+        onClick = onClick,
+        modifier = modifier,
+        textVerticalPadding = textVerticalPadding,
+        padding = padding,
+        iconSize = iconSize,
+        forceListEditIcon = forceListEditIcon
+    )
+}
+
 @Composable
 fun MediaListQuickEditIconButton(
     viewer: AniListViewer?,
@@ -369,6 +399,38 @@ fun MediaListQuickEditIconButton(
         viewer = viewer,
         mediaType = mediaType,
         listStatus = media.mediaListStatus,
+        progress = media.progress,
+        progressVolumes = media.progressVolumes,
+        scoreRaw = media.scoreRaw,
+        maxProgress = maxProgress,
+        maxProgressVolumes = maxProgressVolumes,
+        onClick = onClick,
+        modifier = modifier,
+        textVerticalPadding = textVerticalPadding,
+        padding = padding,
+        iconSize = iconSize,
+        forceListEditIcon = forceListEditIcon
+    )
+}
+
+@Composable
+fun MediaListQuickEditIconButton(
+    viewer: AniListViewer?,
+    mediaType: MediaType?,
+    media: MediaFilterable,
+    maxProgress: Int?,
+    maxProgressVolumes: Int?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    textVerticalPadding: Dp = 4.dp,
+    padding: Dp = 8.dp,
+    iconSize: Dp = 20.dp,
+    forceListEditIcon: Boolean = false,
+) {
+    MediaListQuickEditIconButton(
+        viewer = viewer,
+        mediaType = mediaType,
+        listStatus = media.mediaListStatus?.toMediaListStatus(),
         progress = media.progress,
         progressVolumes = media.progressVolumes,
         scoreRaw = media.scoreRaw,

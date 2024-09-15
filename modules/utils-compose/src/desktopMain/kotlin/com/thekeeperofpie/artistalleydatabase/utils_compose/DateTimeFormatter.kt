@@ -38,12 +38,9 @@ actual class DateTimeFormatter {
                 .toLocalDateTime(TimeZone.currentSystemDefault()).date
         )
 
-    actual fun formatAiringAt(timeInMillis: Long, showDate: Boolean) =
-        HumanReadable.timeAgo(Instant.fromEpochMilliseconds(timeInMillis))
+    actual fun formatAiringAt(instant: Instant, showDate: Boolean) = HumanReadable.timeAgo(instant)
 
-    actual fun formatRemainingTime(timeInMillis: Long): CharSequence {
-        return HumanReadable.timeAgo(Instant.fromEpochMilliseconds(timeInMillis))
-    }
+    actual fun formatRemainingTime(instant: Instant): CharSequence = HumanReadable.timeAgo(instant)
 
     // TODO
     actual fun formatShortDay(localDate: LocalDate) =

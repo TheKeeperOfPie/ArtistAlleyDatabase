@@ -8,7 +8,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.RecommendationRating
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -16,10 +15,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -84,48 +85,30 @@ class AnimeMediaDetailsRecommendationsViewModel(
                             recommendationMediaIds,
                         ),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { mediaListUpdates, recommendationUpdates, _, showAdult, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(forceShowIgnored = true),
+                    ) { mediaListUpdates, recommendationUpdates, _, filteringData ->
                         RecommendationsEntry(
                             recommendations = recommendations.mapNotNull {
-                                applyMediaFiltering(
-                                    statuses = mediaListUpdates,
-                                    ignoreController = ignoreController,
-                                    showAdult = showAdult,
-                                    showIgnored = true,
-                                    showLessImportantTags = showLessImportantTags,
-                                    showSpoilerTags = showSpoilerTags,
-                                    entry = it,
-                                    transform = { it.entry },
-                                    media = it.entry.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                        copy(
-                                            entry = this.entry.copy(
-                                                media = it.entry.media,
-                                                mediaListStatus = mediaListStatus,
-                                                progress = progress,
-                                                progressVolumes = progressVolumes,
-                                                scoreRaw = scoreRaw,
-                                                ignored = ignored,
-                                                showLessImportantTags = showLessImportantTags,
-                                                showSpoilerTags = showSpoilerTags,
-                                            )
+                                val filtered = it.copy(
+                                    entry = applyMediaFiltering(
+                                        statuses = mediaListUpdates,
+                                        ignoreController = ignoreController,
+                                        filteringData = filteringData,
+                                        entry = it.entry,
+                                        filterableData = it.entry.mediaFilterable,
+                                        copy = { copy(mediaFilterable = it) },
+                                    ) ?: return@mapNotNull null
+                                )
+                                val recommendationUpdate =
+                                    recommendationUpdates[it.data.mediaId to it.data.recommendationMediaId]
+                                val userRating = recommendationUpdate?.rating
+                                    ?: it.data.userRating
+                                filtered.transformIf(userRating != it.data.userRating) {
+                                    copy(
+                                        data = data.copy(
+                                            userRating = userRating
                                         )
-                                    }
-                                )?.let {
-                                    val recommendationUpdate =
-                                        recommendationUpdates[it.data.mediaId to it.data.recommendationMediaId]
-                                    val userRating = recommendationUpdate?.rating
-                                        ?: it.data.userRating
-                                    it.transformIf(userRating != it.data.userRating) {
-                                        copy(
-                                            data = data.copy(
-                                                userRating = userRating
-                                            )
-                                        )
-                                    }
+                                    )
                                 }
                             },
                             hasMore = media.recommendations?.pageInfo?.hasNextPage

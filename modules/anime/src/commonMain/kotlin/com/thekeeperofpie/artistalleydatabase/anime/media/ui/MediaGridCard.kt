@@ -35,7 +35,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_i
 import coil3.annotation.ExperimentalCoilApi
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaWithListStatus
-import com.anilist.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
@@ -44,7 +43,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconContentDescription
@@ -248,10 +246,7 @@ object MediaGridCard {
             if (viewer != null && entry != null && showQuickEdit) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
-                    mediaType = entry.type,
                     media = entry,
-                    maxProgress = entry.maxProgress,
-                    maxProgressVolumes = entry.maxProgressVolumes,
                     onClick = { onClickListEdit(entry.media) },
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.align(Alignment.BottomStart)
@@ -260,12 +255,10 @@ object MediaGridCard {
         }
     }
 
-    interface Entry : MediaStatusAware {
+    interface Entry : MediaListQuickEditButtonData {
         val media: MediaWithListStatus
-        val type: MediaType?
         val color: Color?
-        val maxProgress: Int?
-        val maxProgressVolumes: Int?
         val averageScore: Int?
+        val ignored: Boolean
     }
 }

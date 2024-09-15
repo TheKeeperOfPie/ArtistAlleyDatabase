@@ -9,14 +9,13 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.AiringScheduleQuery
 import com.anilist.type.AiringSort
-import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -36,6 +35,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
@@ -59,10 +59,11 @@ class AiringScheduleViewModel(
         AiringScheduleSortFilterController(viewModelScope, settings, featureOverrideProvider)
     var refresh = MutableStateFlow(-1)
 
-    private val startDay = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let {
-        it.minus(it.dayOfWeek.value.toLong() - 1, DateTimeUnit.DAY)
-            .minus(1, DateTimeUnit.WEEK)
-    }
+    private val startDay =
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let {
+            it.minus(it.dayOfWeek.value.toLong() - 1, DateTimeUnit.DAY)
+                .minus(1, DateTimeUnit.WEEK)
+        }
 
     // Spans last week, current week, next week
     private val dayFlows = Array(21) {
@@ -85,18 +86,8 @@ class AiringScheduleViewModel(
                     statusController = statusController,
                     ignoreController = ignoreController,
                     settings = settings,
-                    media = { it.data.media },
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        copy(
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    },
+                    mediaFilterable = { it.media?.mediaFilterable },
+                    copy = { copy(media = media?.copy(mediaFilterable = it)) },
                 )
                 .cachedIn(viewModelScope)
                 .collectLatest(dayFlows[index]::emit)
@@ -186,25 +177,11 @@ class AiringScheduleViewModel(
 
     data class Entry(
         val data: AiringScheduleQuery.Data.Page.AiringSchedule,
-        override val mediaListStatus: MediaListStatus? = data.media?.mediaListEntry?.status,
-        override val progress: Int? = data.media?.mediaListEntry?.progress,
-        override val progressVolumes: Int? = data.media?.mediaListEntry?.progressVolumes,
-        override val scoreRaw: Double? = data.media?.mediaListEntry?.score,
-        override val ignored: Boolean = false,
-        override val showLessImportantTags: Boolean = false,
-        override val showSpoilerTags: Boolean = false,
-    ) : MediaStatusAware {
-        val entry = data.media?.let {
-            MediaPreviewEntry(
-                media = it,
-                mediaListStatus = mediaListStatus,
-                progress = progress,
-                progressVolumes = progressVolumes,
-                scoreRaw = scoreRaw,
-                ignored = ignored,
-                showLessImportantTags = showLessImportantTags,
-                showSpoilerTags = showSpoilerTags,
-            )
-        }
+        val media: MediaPreviewEntry? = data.media?.let { MediaPreviewEntry(media = it) },
+    ) {
+        val nextAiringEpisode = NextAiringEpisode(
+            episode = data.episode,
+            airingAt = Instant.fromEpochSeconds(data.airingAt.toLong()),
+        )
     }
 }

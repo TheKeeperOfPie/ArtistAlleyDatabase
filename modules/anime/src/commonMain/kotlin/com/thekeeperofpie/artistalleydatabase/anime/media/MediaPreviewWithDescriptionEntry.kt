@@ -2,55 +2,76 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaPreviewWithDescription
-import com.anilist.type.MediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
+import com.thekeeperofpie.artistalleydatabase.anime.data.toCoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaType
+import com.thekeeperofpie.artistalleydatabase.anime.data.toTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
+import kotlinx.datetime.Instant
 
 @Immutable
 data class MediaPreviewWithDescriptionEntry(
     override val media: MediaPreviewWithDescription,
-    override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-    override val progress: Int? = media.mediaListEntry?.progress,
-    override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
-    override val scoreRaw: Double? = media.mediaListEntry?.score,
-    override val ignored: Boolean = false,
-    override val showLessImportantTags: Boolean = false,
-    override val showSpoilerTags: Boolean = false,
-) : AnimeMediaListRow.Entry, MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry,
-    AnimeMediaCompactListRow.Entry, MediaHeaderData by media {
+    val mediaFilterable: MediaFilterableData = MediaFilterableData(
+        mediaId = media.id.toString(),
+        isAdult = media.isAdult,
+        mediaListStatus = media.mediaListEntry?.status?.toMediaListStatus(),
+        progress = media.mediaListEntry?.progress,
+        progressVolumes = media.mediaListEntry?.progressVolumes,
+        scoreRaw = media.mediaListEntry?.score,
+        ignored = false,
+        showLessImportantTags = false,
+        showSpoilerTags = false,
+    ),
+) : AnimeMediaListRow.Entry, AnimeMediaLargeCard.Entry, MediaGridCard.Entry,
+    AnimeMediaCompactListRow.Entry {
     override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
     override val type = media.type
-    override val maxProgress = MediaUtils.maxProgress(media)
-    override val maxProgressVolumes = media.volumes
     override val averageScore = media.averageScore
 
     // So that enough meaningful text is shown, strip any double newlines
     override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
-    override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
+    override val tags = MediaUtils.buildTags(
+        media = media,
+        showLessImportantTags = mediaFilterable.showLessImportantTags,
+        showSpoilerTags = mediaFilterable.showSpoilerTags,
+    )
 
     override val mediaId: String
         get() = media.id.toString()
     override val image
         get() = media.coverImage?.extraLarge
-    override val imageBanner
-        get() = media.bannerImage
 
     override val rating
         get() = media.averageScore
     override val popularity
         get() = media.popularity
 
-    override val nextAiringEpisode
-        get() = media.nextAiringEpisode
+    override val nextAiringEpisode = media.nextAiringEpisode?.let {
+        NextAiringEpisode(
+            episode = it.episode,
+            airingAt = Instant.fromEpochSeconds(it.airingAt.toLong()),
+        )
+    }
+
+    // TODO: Favorite local overrides
+    override val isFavourite
+        get() = media.isFavourite
 
     override val isAdult
         get() = media.isAdult
+    override val bannerImageUrl
+        get() = media.bannerImage
+    override val coverImageUrl
+        get() = coverImage?.url
 
     override val titleRomaji
         get() = media.title?.romaji
@@ -58,6 +79,7 @@ data class MediaPreviewWithDescriptionEntry(
         get() = media.title?.english
     override val titleNative
         get() = media.title?.native
+    override val mediaType = media.type?.toMediaType()
 
     override val format
         get() = media.format
@@ -73,6 +95,16 @@ data class MediaPreviewWithDescriptionEntry(
         get() = media.chapters
     override val volumes: Int?
         get() = media.volumes
+    override val title = media.title?.toTitle()
+    override val coverImage = media.coverImage?.toCoverImage()
+    override val bannerImage
+        get() = media.bannerImage
+
+    override val mediaListStatus get() = mediaFilterable.mediaListStatus
+    override val progress get() = mediaFilterable.progress
+    override val progressVolumes get() = mediaFilterable.progressVolumes
+    override val scoreRaw get() = mediaFilterable.scoreRaw
+    override val ignored get() = mediaFilterable.ignored
 
     @Composable
     override fun primaryTitle() = media.title?.primaryTitle()

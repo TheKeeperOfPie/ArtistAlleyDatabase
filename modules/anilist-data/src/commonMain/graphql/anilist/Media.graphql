@@ -18,6 +18,7 @@ fragment MediaWithListStatus on Media {
     ...MediaNavigationData
     nextAiringEpisode {
         episode
+        airingAt
     }
     episodes
     chapters

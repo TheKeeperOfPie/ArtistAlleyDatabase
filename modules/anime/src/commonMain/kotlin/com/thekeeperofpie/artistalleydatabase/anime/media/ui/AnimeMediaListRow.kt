@@ -58,10 +58,10 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
@@ -75,6 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
+import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(
@@ -91,7 +92,12 @@ object AnimeMediaListRow {
         onClickListEdit: (MediaNavigationData) -> Unit,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
-        nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
+        nextAiringEpisode: NextAiringEpisode? = entry?.media?.nextAiringEpisode?.let {
+            NextAiringEpisode(
+                episode = it.episode,
+                airingAt = Instant.fromEpochSeconds(it.airingAt.toLong()),
+            )
+        },
         showDate: Boolean = true,
         recommendation: RecommendationData? = null,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
@@ -332,10 +338,7 @@ object AnimeMediaListRow {
             if (viewer != null && entry != null && showQuickEdit) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
-                    mediaType = entry.media.type,
                     media = entry,
-                    maxProgress = MediaUtils.maxProgress(entry.media),
-                    maxProgressVolumes = entry.media.volumes,
                     onClick = { onClickListEdit(entry.media) },
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier
@@ -391,9 +394,10 @@ object AnimeMediaListRow {
         )
     }
 
-    interface Entry : MediaStatusAware {
+    interface Entry : MediaListQuickEditButtonData {
         val media: MediaPreview
         val color: Color?
         val tags: List<AnimeMediaTagEntry>
+        val ignored: Boolean
     }
 }

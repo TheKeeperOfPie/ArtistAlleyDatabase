@@ -17,11 +17,12 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
-import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.flowFromSuspend
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
@@ -184,17 +185,11 @@ class UserMediaListController(
                 combine(
                     statusController.allChanges(),
                     ignoreController.updates(),
-                    settings.showAdult,
-                    settings.showIgnored,
-                    settings.showLessImportantTags,
-                    settings.showSpoilerTags,
-                ) { statuses, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                    settings.mediaFilteringData(),
+                ) { statuses, _, filteringData ->
                     applyStatus(
                         statuses = statuses,
-                        showAdult = showAdult,
-                        showIgnored = showIgnored,
-                        showLessImportantTags = showLessImportantTags,
-                        showSpoilerTags = showSpoilerTags,
+                        mediaFilteringData = filteringData,
                         result = entry,
                     )
                 }
@@ -236,10 +231,7 @@ class UserMediaListController(
 
     private suspend fun applyStatus(
         statuses: Map<String, MediaListStatusController.Update>,
-        showAdult: Boolean,
-        showIgnored: Boolean,
-        showLessImportantTags: Boolean,
-        showSpoilerTags: Boolean,
+        mediaFilteringData: MediaFilteringData,
         result: LoadingResult<List<ListEntry>>,
     ) = result.transformResult {
         it.map {
@@ -247,25 +239,10 @@ class UserMediaListController(
                 applyMediaFiltering(
                     statuses = statuses,
                     ignoreController = ignoreController,
-                    showAdult = showAdult,
-                    showIgnored = showIgnored,
-                    showLessImportantTags = showLessImportantTags,
-                    showSpoilerTags = showSpoilerTags,
+                    filteringData = mediaFilteringData,
                     entry = it,
-                    transform = { it },
-                    media = it.media,
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        MediaEntry(
-                            media = media,
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    }
+                    filterableData = it.mediaFilterable,
+                    copy = { copy(mediaFilterable = it) }
                 )
             })
         }
@@ -328,15 +305,19 @@ class UserMediaListController(
     @Serializable
     data class MediaEntry(
         val media: Media,
-        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = media.mediaListEntry?.progress,
-        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
-        override val scoreRaw: Double? = media.mediaListEntry?.score,
-        override val ignored: Boolean = false,
-        override val showLessImportantTags: Boolean = false,
-        override val showSpoilerTags: Boolean = false,
+        val mediaFilterable: MediaFilterableData = MediaFilterableData(
+            mediaId = media.id.toString(),
+            isAdult = media.isAdult,
+            mediaListStatus = media.mediaListEntry?.status?.toMediaListStatus(),
+            progress = media.mediaListEntry?.progress,
+            progressVolumes = media.mediaListEntry?.progressVolumes,
+            scoreRaw = media.mediaListEntry?.score,
+            ignored = false,
+            showLessImportantTags = false,
+            showSpoilerTags = false,
+        ),
         val authorData: AuthorData? = null,
-    ) : MediaStatusAware {
+    ) {
         constructor(
             entry: UserMediaListQuery.Data.MediaListCollection.List.Entry,
         ) : this(

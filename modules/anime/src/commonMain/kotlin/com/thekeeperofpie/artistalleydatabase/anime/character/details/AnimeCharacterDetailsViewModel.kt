@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -59,7 +60,8 @@ class AnimeCharacterDetailsViewModel(
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestination.CharacterDetails>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.CharacterDetails>(navigationTypeMap)
     val characterId = destination.characterId
 
     val viewer = aniListApi.authedUser
@@ -93,38 +95,21 @@ class AnimeCharacterDetailsViewModel(
                             .allChanges(media.map { it.mediaPreviewEntry.media.id.toString() }
                                 .toSet()),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { statuses, _, showAdult, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(forceShowIgnored = true),
+                    ) { statuses, _, filteringData ->
                         result.transformResult { character ->
                             CharacterDetailsScreen.Entry(
                                 character = character.character!!,
                                 media = media.mapNotNull {
-                                    applyMediaFiltering(
-                                        statuses = statuses,
-                                        ignoreController = ignoreController,
-                                        showAdult = showAdult,
-                                        showIgnored = true,
-                                        showLessImportantTags = showLessImportantTags,
-                                        showSpoilerTags = showSpoilerTags,
-                                        entry = it,
-                                        transform = { it.mediaPreviewEntry },
-                                        media = it.mediaPreviewEntry.media,
-                                        copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                            copy(
-                                                mediaPreviewEntry = mediaPreviewEntry.copy(
-                                                    mediaListStatus = mediaListStatus,
-                                                    progress = progress,
-                                                    progressVolumes = progressVolumes,
-                                                    scoreRaw = scoreRaw,
-                                                    ignored = ignored,
-                                                    showLessImportantTags = showLessImportantTags,
-                                                    showSpoilerTags = showSpoilerTags,
-                                                )
-                                            )
-
-                                        }
+                                    it.copy(
+                                        mediaPreviewEntry = applyMediaFiltering(
+                                            statuses = statuses,
+                                            ignoreController = ignoreController,
+                                            filteringData = filteringData,
+                                            entry = it.mediaPreviewEntry,
+                                            filterableData = it.mediaPreviewEntry.mediaFilterable,
+                                            copy = { copy(mediaFilterable = it) },
+                                        ) ?: return@mapNotNull null
                                     )
                                 },
                                 description = character.character?.description

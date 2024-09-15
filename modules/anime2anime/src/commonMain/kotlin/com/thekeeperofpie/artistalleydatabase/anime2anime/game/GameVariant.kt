@@ -20,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChangesForList
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResult
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
@@ -83,26 +83,24 @@ abstract class GameVariant<Options>(
     init {
         scope.launch(CustomDispatchers.Main) {
             snapshotFlow { continuations }
-                .applyMediaStatusChangesForList(
-                    statusController = mediaListStatusController,
-                    ignoreController = ignoreController,
-                    settings = settings,
-                    media = { it.media.media },
-                    mediaStatusAware = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        copy(
-                            media = media.copy(
-                                mediaListStatus = mediaListStatus,
-                                progress = progress,
-                                progressVolumes = progressVolumes,
-                                scoreRaw = scoreRaw,
-                                ignored = ignored,
-                                showLessImportantTags = showLessImportantTags,
-                                showSpoilerTags = showSpoilerTags,
+                .flatMapLatest { data ->
+                    combine(
+                        mediaListStatusController.allChanges(),
+                        ignoreController.updates(),
+                        settings.mediaFilteringData(),
+                    ) { statuses, _, filteringData ->
+                        data.mapNotNull {
+                            applyMediaFiltering(
+                                statuses = statuses,
+                                ignoreController = ignoreController,
+                                filteringData = filteringData,
+                                entry = it,
+                                filterableData = it.media.mediaFilterable,
+                                copy = { copy(media = media.copy(mediaFilterable = it)) },
                             )
-                        )
-                    },
-                )
+                        }
+                    }
+                }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { state.continuations = it }
         }
@@ -180,34 +178,15 @@ abstract class GameVariant<Options>(
         return combine(
             mediaListStatusController.allChanges(setOf(media.media.media.id.toString())),
             ignoreController.updates(),
-            settings.showAdult,
-            settings.showLessImportantTags,
-            settings.showSpoilerTags,
-        ) { mediaListUpdates, _, showAdult, showLessImportantTags, showSpoilerTags ->
+            settings.mediaFilteringData(forceShowIgnored = true),
+        ) { mediaListUpdates, _, filteringData ->
             val mediaUpdated = applyMediaFiltering(
                 statuses = mediaListUpdates,
                 ignoreController = ignoreController,
-                showAdult = showAdult,
-                showIgnored = true,
-                showLessImportantTags = showLessImportantTags,
-                showSpoilerTags = showSpoilerTags,
+                filteringData = filteringData,
                 entry = media,
-                transform = { media.media },
-                media = media.media.media,
-                forceShowIgnored = true,
-                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                    copy(
-                        media = this.media.copy(
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    )
-                }
+                filterableData = media.media.mediaFilterable,
+                copy = { copy(media = this.media.copy(mediaFilterable = it)) },
             )
 
             if (mediaUpdated != null) {

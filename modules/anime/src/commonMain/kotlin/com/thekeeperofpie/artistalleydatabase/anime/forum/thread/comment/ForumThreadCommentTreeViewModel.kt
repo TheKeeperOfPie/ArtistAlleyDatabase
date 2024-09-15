@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -129,32 +130,16 @@ class ForumThreadCommentTreeViewModel(
                         mediaListStatusController.allChanges(media.map { it.media.id.toString() }
                             .toSet()),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { updates, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(forceShowIgnored = true),
+                    ) { updates, _, filteringData ->
                         media.mapNotNull {
                             applyMediaFiltering(
                                 statuses = updates,
                                 ignoreController = ignoreController,
-                                showAdult = showAdult,
-                                showIgnored = true,
-                                showLessImportantTags = showLessImportantTags,
-                                showSpoilerTags = showSpoilerTags,
+                                filteringData = filteringData,
                                 entry = it,
-                                transform = { it },
-                                media = it.media,
-                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                    copy(
-                                        mediaListStatus = mediaListStatus,
-                                        progress = progress,
-                                        progressVolumes = progressVolumes,
-                                        scoreRaw = scoreRaw,
-                                        ignored = ignored,
-                                        showLessImportantTags = showLessImportantTags,
-                                        showSpoilerTags = showSpoilerTags,
-                                    )
-                                }
+                                filterableData = it.mediaFilterable,
+                                copy = { copy(mediaFilterable = it) },
                             )
                         }
                     }

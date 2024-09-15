@@ -7,7 +7,6 @@ import androidx.paging.PagingData
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_error_loading
 import com.anilist.fragment.MediaAndRecommendationsRecommendation
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -17,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
@@ -29,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestina
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
@@ -96,41 +97,23 @@ class MediaRecommendationsViewModel(
                 mediaListStatusController.allChanges(),
                 recommendationStatusController.allChanges(),
                 ignoreController.updates(),
-                settings.showIgnored,
-                settings.showAdult,
-                settings.showLessImportantTags,
-                settings.showSpoilerTags,
-            ) { mediaListUpdates, recommendationUpdates, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                settings.mediaFilteringData(),
+            ) { mediaListUpdates, recommendationUpdates, _, filteringData ->
                 pagingData.mapNotNull {
-                    val mediaPreview = it.recommendation.mediaRecommendation
-                    applyMediaFiltering(
+                    val newMedia = applyMediaFiltering(
                         statuses = mediaListUpdates,
                         ignoreController = ignoreController,
-                        showAdult = showAdult,
-                        showIgnored = showIgnored,
-                        showLessImportantTags = showLessImportantTags,
-                        showSpoilerTags = showSpoilerTags,
-                        entry = it,
-                        transform = { it },
-                        media = mediaPreview,
-                        copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                            copy(
-                                mediaListStatus = mediaListStatus,
-                                progress = progress,
-                                progressVolumes = progressVolumes,
-                                scoreRaw = scoreRaw,
-                                ignored = ignored,
-                                showLessImportantTags = showLessImportantTags,
-                                showSpoilerTags = showSpoilerTags,
-                            )
-                        },
-                    )?.let {
-                        val recommendationUpdate =
-                            recommendationUpdates[it.mediaId to it.recommendation.mediaRecommendation.id.toString()]
-                        val userRating = recommendationUpdate?.rating ?: it.userRating
-                        it.transformIf(userRating != it.userRating) {
-                            copy(userRating = userRating)
-                        }
+                        filteringData = filteringData,
+                        entry = it.media,
+                        filterableData = it.media.mediaFilterable,
+                        copy = { copy(mediaFilterable = it) },
+                    ) ?: return@mapNotNull null
+                    val filtered = it.copy(media = newMedia)
+                    val recommendationUpdate =
+                        recommendationUpdates[it.mediaId to it.recommendation.mediaRecommendation.id.toString()]
+                    val userRating = recommendationUpdate?.rating ?: it.userRating
+                    filtered.transformIf(userRating != it.userRating) {
+                        copy(userRating = userRating)
                     }
                 }
             }

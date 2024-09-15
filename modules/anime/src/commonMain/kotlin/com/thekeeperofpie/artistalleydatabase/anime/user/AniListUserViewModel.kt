@@ -19,8 +19,6 @@ import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.PaginationInfo
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserMediaStatistics
-import com.anilist.type.MediaListStatus
-import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
@@ -34,11 +32,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelpe
 import com.thekeeperofpie.artistalleydatabase.anime.activity.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
@@ -94,7 +95,8 @@ class AniListUserViewModel(
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestination.User>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.User>(navigationTypeMap)
     val userId = destination.userId
 
     var entry by mutableStateOf<AniListUserScreen.Entry?>(null)
@@ -188,18 +190,8 @@ class AniListUserViewModel(
                     statusController = mediaListStatusController,
                     ignoreController = ignoreController,
                     settings = settings,
-                    media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        copy(
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    },
+                    mediaFilterable = { it.mediaFilterable },
+                    copy = { copy(mediaFilterable = it) },
                 )
             }
         )
@@ -225,18 +217,8 @@ class AniListUserViewModel(
                     statusController = mediaListStatusController,
                     ignoreController = ignoreController,
                     settings = settings,
-                    media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                        copy(
-                            mediaListStatus = mediaListStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            scoreRaw = scoreRaw,
-                            ignored = ignored,
-                            showLessImportantTags = showLessImportantTags,
-                            showSpoilerTags = showSpoilerTags,
-                        )
-                    },
+                    mediaFilterable = { it.mediaFilterable },
+                    copy = { copy(mediaFilterable = it) },
                 )
             }
         )
@@ -382,37 +364,20 @@ class AniListUserViewModel(
                         mediaListStatusController.allChanges(),
                         activityStatusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showIgnored,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { mediaListStatuses, activityStatuses, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { mediaListStatuses, activityStatuses, _, filteringData ->
                         pagingData.mapNotNull {
                             applyActivityFiltering(
                                 mediaListStatuses = mediaListStatuses,
                                 activityStatuses = activityStatuses,
                                 ignoreController = ignoreController,
-                                showAdult = showAdult,
-                                showIgnored = showIgnored,
-                                showLessImportantTags = showLessImportantTags,
-                                showSpoilerTags = showSpoilerTags,
+                                filteringData = filteringData,
                                 entry = it,
                                 activityId = it.activityId.valueId,
                                 activityStatusAware = it,
                                 media = (it.activity as? UserSocialActivityQuery.Data.Page.ListActivityActivity)?.media,
-                                mediaStatusAware = it.media,
-                                copyMedia = { status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
-                                    copy(
-                                        media = media?.copy(
-                                            mediaListStatus = status,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    )
-                                },
+                                mediaFilterable = it.media?.mediaFilterable,
+                                copyMedia = { copy(media = media?.copy(mediaFilterable = it)) },
                                 copyActivity = { liked, subscribed ->
                                     copy(liked = liked, subscribed = subscribed)
                                 }
@@ -532,30 +497,31 @@ class AniListUserViewModel(
 
     data class MediaEntry(
         val userMedia: UserFavoriteMediaNode,
-        override val mediaListStatus: MediaListStatus? = userMedia.mediaListEntry?.status,
-        override val progress: Int? = MediaUtils.maxProgress(
-            type = userMedia.type,
-            chapters = userMedia.chapters,
-            episodes = userMedia.episodes,
-            nextAiringEpisode = userMedia.nextAiringEpisode?.episode,
+        val mediaFilterable: MediaFilterableData = MediaFilterableData(
+            mediaId = userMedia.id.toString(),
+            isAdult = userMedia.isAdult,
+            mediaListStatus = userMedia.mediaListEntry?.status?.toMediaListStatus(),
+            progress = userMedia.mediaListEntry?.progress,
+            progressVolumes = userMedia.mediaListEntry?.progressVolumes,
+            scoreRaw = userMedia.mediaListEntry?.score,
+            ignored = false,
+            showLessImportantTags = false,
+            showSpoilerTags = false,
         ),
-        override val progressVolumes: Int? = userMedia.volumes,
-        override val scoreRaw: Double? = userMedia.mediaListEntry?.score,
-        override val ignored: Boolean = false,
-        override val showLessImportantTags: Boolean = false,
-        override val showSpoilerTags: Boolean = false,
     ) : MediaGridCard.Entry {
-        override val media = userMedia
-        override val type = userMedia.type
-        override val maxProgress = MediaUtils.maxProgress(
-            type = userMedia.type,
-            chapters = userMedia.chapters,
-            episodes = userMedia.episodes,
-            nextAiringEpisode = userMedia.nextAiringEpisode?.episode,
-        )
-        override val maxProgressVolumes = userMedia.volumes
-        override val averageScore = userMedia.averageScore
+        override val media get() = userMedia
+        override val type get() = userMedia.type
         override val color = userMedia.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        override val averageScore get() = userMedia.averageScore
+        override val chapters get() = userMedia.chapters
+        override val episodes get() = userMedia.episodes
+        override val volumes get() = userMedia.volumes
+        override val nextAiringEpisode get() = userMedia.nextAiringEpisode?.toNextAiringEpisode()
+        override val ignored get() = mediaFilterable.ignored
+        override val mediaListStatus get() = mediaFilterable.mediaListStatus
+        override val progress get() = mediaFilterable.progress
+        override val progressVolumes get() = mediaFilterable.progressVolumes
+        override val scoreRaw get() = mediaFilterable.scoreRaw
     }
 
     data class StudiosEntry(

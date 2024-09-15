@@ -23,7 +23,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_trending
 import com.anilist.fragment.HomeMedia
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -34,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -44,6 +44,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -125,35 +126,17 @@ abstract class AnimeHomeMediaViewModel(
                     combine(
                         mediaListStatusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showIgnored,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { mediaStatusUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { mediaStatusUpdates, _, filteringData ->
                         current.transformResult {
                             it.mapNotNull {
                                 applyMediaFiltering(
                                     statuses = mediaStatusUpdates,
                                     ignoreController = ignoreController,
-                                    showAdult = showAdult,
-                                    showIgnored = showIgnored,
-                                    showLessImportantTags = showLessImportantTags,
-                                    showSpoilerTags = showSpoilerTags,
+                                    filteringData = filteringData,
                                     entry = it,
-                                    transform = { it },
-                                    media = it.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                        UserMediaListController.MediaEntry(
-                                            media = media,
-                                            mediaListStatus = mediaListStatus,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            scoreRaw = scoreRaw,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    }
+                                    filterableData = it.mediaFilterable,
+                                    copy = { copy(mediaFilterable = it) },
                                 )
                             }
                         }
@@ -177,11 +160,8 @@ abstract class AnimeHomeMediaViewModel(
                     combine(
                         mediaListStatusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showIgnored,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { mediaStatusUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                        settings.mediaFilteringData(),
+                    ) { mediaStatusUpdates, _, filteringData ->
                         mediaResult.transformResult { rows ->
                             AnimeHomeDataEntry(
                                 lists = rows.map {
@@ -194,29 +174,10 @@ abstract class AnimeHomeMediaViewModel(
                                                 applyMediaFiltering(
                                                     statuses = mediaStatusUpdates,
                                                     ignoreController = ignoreController,
-                                                    showAdult = showAdult,
-                                                    showIgnored = showIgnored,
-                                                    showLessImportantTags = showLessImportantTags,
-                                                    showSpoilerTags = showSpoilerTags,
+                                                    filteringData = filteringData,
                                                     entry = it,
-                                                    transform = { it },
-                                                    mediaId = it.media.id.toString(),
-                                                    isAdult = it.media.isAdult,
-                                                    status = it.media.mediaListEntry?.status,
-                                                    progress = it.media.mediaListEntry?.progress,
-                                                    progressVolumes = it.media.mediaListEntry?.progressVolumes,
-                                                    scoreRaw = it.media.mediaListEntry?.score,
-                                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                                        copy(
-                                                            mediaListStatus = mediaListStatus,
-                                                            progress = progress,
-                                                            progressVolumes = progressVolumes,
-                                                            scoreRaw = scoreRaw,
-                                                            ignored = ignored,
-                                                            showLessImportantTags = showLessImportantTags,
-                                                            showSpoilerTags = showSpoilerTags,
-                                                        )
-                                                    }
+                                                    filterableData = it.mediaFilterable,
+                                                    copy = { copy(mediaFilterable = it) },
                                                 )
                                             },
                                         viewAllRoute = it.viewAllRoute,
@@ -250,37 +211,19 @@ abstract class AnimeHomeMediaViewModel(
                     combine(
                         mediaListStatusController.allChanges(),
                         ignoreController.updates(),
-                        settings.showAdult,
-                        settings.showIgnored,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { mediaStatusUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
-                        pagingData.mapNotNull {
-                            applyMediaFiltering(
-                                statuses = mediaStatusUpdates,
-                                ignoreController = ignoreController,
-                                showAdult = showAdult,
-                                showIgnored = showIgnored,
-                                showLessImportantTags = showLessImportantTags,
-                                showSpoilerTags = showSpoilerTags,
-                                entry = it,
-                                transform = { it.media },
-                                media = it.media.media,
-                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                    copy(
-                                        media = media.copy(
-                                            mediaListStatus = mediaListStatus,
-                                            progress = progress,
-                                            progressVolumes = progressVolumes,
-                                            scoreRaw = scoreRaw,
-                                            ignored = ignored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    )
-                                }
-                            )
-                        }
+                        settings.mediaFilteringData(),
+                    ) { mediaStatusUpdates, _, filteringData ->
+                        pagingData
+                            .mapNotNull {
+                                applyMediaFiltering(
+                                    statuses = mediaStatusUpdates,
+                                    ignoreController = ignoreController,
+                                    filteringData = filteringData,
+                                    entry = it,
+                                    filterableData = it.media.mediaFilterable,
+                                    copy = { copy(media = media.copy(mediaFilterable = it)) },
+                                )
+                            }
                     }
                 }
                 .cachedIn(viewModelScope)

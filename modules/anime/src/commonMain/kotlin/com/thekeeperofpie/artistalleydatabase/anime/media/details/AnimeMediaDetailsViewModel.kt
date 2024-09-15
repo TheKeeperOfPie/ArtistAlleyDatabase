@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -64,7 +65,8 @@ class AnimeMediaDetailsViewModel(
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
-    val mediaId = savedStateHandle.toDestination<AnimeDestination.MediaDetails>(navigationTypeMap).mediaId
+    val mediaId =
+        savedStateHandle.toDestination<AnimeDestination.MediaDetails>(navigationTypeMap).mediaId
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
@@ -154,10 +156,8 @@ class AnimeMediaDetailsViewModel(
                         combine(
                             mediaListStatusController.allChanges(mediaIds),
                             ignoreController.updates(),
-                            settings.showAdult,
-                            settings.showLessImportantTags,
-                            settings.showSpoilerTags,
-                        ) { mediaListUpdates, _, showAdult, showLessImportantTags, showSpoilerTags ->
+                            settings.mediaFilteringData(forceShowIgnored = true),
+                        ) { mediaListUpdates, _, filteringData ->
                             loadingResult.transformResult {
                                 AnimeMediaDetailsScreen.Entry(
                                     mediaId,
@@ -166,26 +166,12 @@ class AnimeMediaDetailsViewModel(
                                         applyMediaFiltering(
                                             statuses = mediaListUpdates,
                                             ignoreController = ignoreController,
-                                            showAdult = showAdult,
-                                            showIgnored = true,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
+                                            filteringData = filteringData,
                                             entry = it,
-                                            transform = { it.entry },
-                                            media = it.entry.media,
-                                            copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-                                                copy(
-                                                    entry = entry.copy(
-                                                        mediaListStatus = mediaListStatus,
-                                                        progress = progress,
-                                                        progressVolumes = progressVolumes,
-                                                        scoreRaw = scoreRaw,
-                                                        ignored = ignored,
-                                                        showLessImportantTags = showLessImportantTags,
-                                                        showSpoilerTags = showSpoilerTags,
-                                                    )
-                                                )
-                                            }
+                                            filterableData = it.entry.mediaFilterable,
+                                            copy = {
+                                                copy(entry = entry.copy(mediaFilterable = it))
+                                            },
                                         )
                                     },
                                     description = descriptionPair?.second,
@@ -195,7 +181,14 @@ class AnimeMediaDetailsViewModel(
                     }
                 }
                 .foldPreviousResult()
-                .catch { emit(LoadingResult.error(Res.string.anime_media_details_error_loading, it)) }
+                .catch {
+                    emit(
+                        LoadingResult.error(
+                            Res.string.anime_media_details_error_loading,
+                            it
+                        )
+                    )
+                }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { entry = it }
         }

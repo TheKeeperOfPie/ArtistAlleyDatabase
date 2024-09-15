@@ -4,20 +4,20 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.paging.PagingData
 import com.anilist.fragment.MediaDetailsListEntry
-import com.anilist.fragment.MediaWithListStatus
-import com.anilist.type.MediaListStatus
-import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.runningFold
 import me.tatarka.inject.annotations.Inject
 
@@ -55,282 +55,103 @@ class MediaListStatusController {
     )
 }
 
-suspend fun applyMediaFiltering(
-    statuses: Map<String, MediaListStatusController.Update>,
-    ignoreController: IgnoreController,
-    showAdult: Boolean,
-    showIgnored: Boolean,
-    showLessImportantTags: Boolean,
-    showSpoilerTags: Boolean,
-    entry: MediaCompactWithTagsEntry,
-) = applyMediaFiltering(
-    statuses = statuses,
-    ignoreController = ignoreController,
-    showAdult = showAdult,
-    showIgnored = showIgnored,
-    showLessImportantTags = showLessImportantTags,
-    showSpoilerTags = showSpoilerTags,
-    entry = entry,
-    transform = { it },
-    media = entry.media,
-    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-        copy(
-            mediaListStatus = mediaListStatus,
-            progress = progress,
-            progressVolumes = progressVolumes,
-            scoreRaw = scoreRaw,
-            ignored = ignored,
-            showLessImportantTags = showLessImportantTags,
-            showSpoilerTags = showSpoilerTags,
-        )
-    }
+data class MediaFilteringData(
+    val showAdult: Boolean,
+    val showIgnored: Boolean,
+    val showLessImportantTags: Boolean,
+    val showSpoilerTags: Boolean,
 )
 
-suspend fun applyMediaFiltering(
-    statuses: Map<String, MediaListStatusController.Update>,
-    ignoreController: IgnoreController,
-    showAdult: Boolean,
-    showIgnored: Boolean,
-    showLessImportantTags: Boolean,
-    showSpoilerTags: Boolean,
-    entry: MediaPreviewEntry,
-) = applyMediaFiltering(
-    statuses = statuses,
-    ignoreController = ignoreController,
-    showAdult = showAdult,
-    showIgnored = showIgnored,
-    showLessImportantTags = showLessImportantTags,
-    showSpoilerTags = showSpoilerTags,
-    entry = entry,
-    transform = { it },
-    media = entry.media,
-    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-        copy(
-            mediaListStatus = mediaListStatus,
-            progress = progress,
-            progressVolumes = progressVolumes,
-            scoreRaw = scoreRaw,
-            ignored = ignored,
+fun AnimeSettings.mediaFilteringData(forceShowIgnored: Boolean = false) =
+    combineStates(
+        showAdult,
+        showIgnored,
+        showLessImportantTags,
+        showSpoilerTags,
+    ) { showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+        MediaFilteringData(
+            showAdult = showAdult,
+            showIgnored = if (forceShowIgnored) true else showIgnored,
             showLessImportantTags = showLessImportantTags,
-            showSpoilerTags = showSpoilerTags,
+            showSpoilerTags = showSpoilerTags
         )
     }
-)
 
 suspend fun <Input> applyMediaFiltering(
     statuses: Map<String, MediaListStatusController.Update>,
     ignoreController: IgnoreController,
-    showAdult: Boolean,
-    showIgnored: Boolean,
-    showLessImportantTags: Boolean,
-    showSpoilerTags: Boolean,
+    filteringData: MediaFilteringData,
     entry: Input,
-    transform: (Input) -> MediaStatusAware,
-    media: MediaWithListStatus?,
-    forceShowIgnored: Boolean = false,
-    copy: Input.(MediaListStatus?, progress: Int?, progressVolumes: Int?, scoreRaw: Double?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> Input,
-): Input? = applyMediaFiltering(
-    statuses = statuses,
-    ignoreController = ignoreController,
-    showAdult = showAdult,
-    showIgnored = showIgnored,
-    showLessImportantTags = showLessImportantTags,
-    showSpoilerTags = showSpoilerTags,
-    entry = entry,
-    transform = transform,
-    mediaId = media?.id?.toString(),
-    isAdult = media?.isAdult,
-    status = media?.mediaListEntry?.status,
-    progress = media?.mediaListEntry?.progress,
-    progressVolumes = media?.mediaListEntry?.progressVolumes,
-    scoreRaw = media?.mediaListEntry?.score,
-    forceShowIgnored = forceShowIgnored,
-    copy = copy,
-)
-
-suspend fun <Input> applyMediaFiltering(
-    statuses: Map<String, MediaListStatusController.Update>,
-    ignoreController: IgnoreController,
-    showAdult: Boolean,
-    showIgnored: Boolean,
-    showLessImportantTags: Boolean,
-    showSpoilerTags: Boolean,
-    entry: Input,
-    transform: (Input) -> MediaStatusAware,
-    mediaId: String?,
-    isAdult: Boolean?,
-    status: MediaListStatus?,
-    progress: Int?,
-    progressVolumes: Int?,
-    scoreRaw: Double?,
-    forceShowIgnored: Boolean = false,
-    copy: Input.(MediaListStatus?, progress: Int?, progressVolumes: Int?, scoreRaw: Double?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> Input,
+    filterableData: MediaFilterableData,
+    copy: Input.(MediaFilterableData) -> Input,
 ): Input? {
+    val (showAdult, showIgnored, showLessImportantTags, showSpoilerTags) = filteringData
+    val (mediaId, isAdult, mediaListStatus, progress, progressVolumes, scoreRaw) = filterableData
     if (!showAdult && isAdult != false) return null
-    val newStatus: MediaListStatus?
+    val newStatus: com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus?
     val newProgress: Int?
     val newProgressVolumes: Int?
     val newScoreRaw: Double?
-    if (mediaId == null || !statuses.containsKey(mediaId.toString())) {
-        newStatus = status
+    if (!statuses.containsKey(mediaId.toString())) {
+        newStatus = mediaListStatus
         newProgress = progress
         newProgressVolumes = progressVolumes
         newScoreRaw = scoreRaw
     } else {
         val update = statuses[mediaId.toString()]?.entry
-        newStatus = update?.status
+        newStatus = update?.status?.toMediaListStatus()
         newProgress = update?.progress
         newProgressVolumes = update?.progressVolumes
         newScoreRaw = update?.score
     }
 
-    val ignored = if (forceShowIgnored) {
-        false
-    } else {
-        mediaId?.let { ignoreController.isIgnored(it) } ?: false
-    }
-
+    val ignored = ignoreController.isIgnored(mediaId)
     if (!showIgnored && ignored) return null
-    val mediaStatusAware = transform(entry)
-    return if (newStatus == mediaStatusAware.mediaListStatus
-        && mediaStatusAware.progress == newProgress
-        && mediaStatusAware.progressVolumes == newProgressVolumes
-        && mediaStatusAware.scoreRaw == newScoreRaw
-        && mediaStatusAware.ignored == ignored
-        && mediaStatusAware.showLessImportantTags == showLessImportantTags
-        && mediaStatusAware.showSpoilerTags == showSpoilerTags
+    return if (newStatus == filterableData.mediaListStatus
+        && filterableData.progress == newProgress
+        && filterableData.progressVolumes == newProgressVolumes
+        && filterableData.scoreRaw == newScoreRaw
+        && filterableData.ignored == ignored
+        && filterableData.showLessImportantTags == showLessImportantTags
+        && filterableData.showSpoilerTags == showSpoilerTags
     ) {
         entry
     } else {
         entry.copy(
-            newStatus,
-            newProgress,
-            newProgressVolumes,
-            newScoreRaw,
-            ignored,
-            showLessImportantTags,
-            showSpoilerTags,
+            filterableData.copy(
+                mediaListStatus = newStatus,
+                progress = newProgress,
+                progressVolumes = newProgressVolumes,
+                scoreRaw = newScoreRaw,
+                ignored = ignored,
+                showLessImportantTags = showLessImportantTags,
+                showSpoilerTags = showSpoilerTags,
+            )
         )
     }
 }
 
-fun Flow<PagingData<MediaPreviewEntry>>.applyMediaStatusChanges(
+fun <Input : Any> Flow<PagingData<Input>>.applyMediaStatusChanges(
     statusController: MediaListStatusController,
     ignoreController: IgnoreController,
     settings: AnimeSettings,
-    forceShowIgnored: Boolean = false,
-) = applyMediaStatusChanges(
-    statusController = statusController,
-    ignoreController = ignoreController,
-    settings = settings,
-    media = { it.media },
-    forceShowIgnored = forceShowIgnored,
-    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-        copy(
-            mediaListStatus = mediaListStatus,
-            progress = progress,
-            progressVolumes = progressVolumes,
-            scoreRaw = scoreRaw,
-            ignored = ignored,
-            showLessImportantTags = showLessImportantTags,
-            showSpoilerTags = showSpoilerTags
-        )
-    }
-)
-
-fun Flow<PagingData<MediaPreviewWithDescriptionEntry>>.applyMediaStatusChanges2(
-    statusController: MediaListStatusController,
-    ignoreController: IgnoreController,
-    settings: AnimeSettings,
-    forceShowIgnored: Boolean = false,
-) = applyMediaStatusChanges(
-    statusController = statusController,
-    ignoreController = ignoreController,
-    settings = settings,
-    media = { it.media },
-    forceShowIgnored = forceShowIgnored,
-    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
-        copy(
-            mediaListStatus = mediaListStatus,
-            progress = progress,
-            progressVolumes = progressVolumes,
-            scoreRaw = scoreRaw,
-            ignored = ignored,
-            showLessImportantTags = showLessImportantTags,
-            showSpoilerTags = showSpoilerTags
-        )
-    }
-)
-
-fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
-    statusController: MediaListStatusController,
-    ignoreController: IgnoreController,
-    settings: AnimeSettings,
-    media: (T) -> MediaWithListStatus?,
-    forceShowIgnored: Boolean = false,
-    copy: T.(MediaListStatus?, progress: Int?, progressVolumes: Int?, scoreRaw: Double?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> T,
+    mediaFilterable: (Input) -> MediaFilterableData?,
+    copy: Input.(MediaFilterableData) -> Input,
 ) = flatMapLatest { pagingData ->
     combine(
         statusController.allChanges(),
         ignoreController.updates(),
-        settings.showIgnored,
-        settings.showAdult,
-        settings.showLessImportantTags,
-        settings.showSpoilerTags,
-        ::MediaStatusParams,
-    ).mapLatest {
-        val (statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags) = it
+        settings.mediaFilteringData(),
+    ) { statuses, _, filteringData ->
         pagingData.mapNotNull {
-            val mediaPreview = media(it)
+            @Suppress("NAME_SHADOWING")
+            val mediaFilterable = mediaFilterable(it) ?: return@mapNotNull null
             applyMediaFiltering(
                 statuses = statuses,
                 ignoreController = ignoreController,
-                showAdult = showAdult,
-                showIgnored = showIgnored,
-                showLessImportantTags = showLessImportantTags,
-                showSpoilerTags = showSpoilerTags,
+                filteringData = filteringData,
                 entry = it,
-                transform = { it },
-                media = mediaPreview,
-                forceShowIgnored = forceShowIgnored,
-                copy = copy,
-            )
-        }
-    }
-}
-
-fun <T> Flow<List<T>>.applyMediaStatusChangesForList(
-    statusController: MediaListStatusController,
-    ignoreController: IgnoreController,
-    settings: AnimeSettings,
-    media: (T) -> MediaWithListStatus?,
-    mediaStatusAware: (T) -> MediaStatusAware,
-    forceShowIgnored: Boolean = false,
-    copy: T.(MediaListStatus?, progress: Int?, progressVolumes: Int?, scoreRaw: Double?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> T,
-) = flatMapLatest { data ->
-    combine(
-        statusController.allChanges(),
-        ignoreController.updates(),
-        settings.showIgnored,
-        settings.showAdult,
-        settings.showLessImportantTags,
-        settings.showSpoilerTags,
-        ::MediaStatusParams,
-    ).mapLatest {
-        val (statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags) = it
-        data.mapNotNull {
-            val mediaPreview = media(it)
-            applyMediaFiltering(
-                statuses = statuses,
-                ignoreController = ignoreController,
-                showAdult = showAdult,
-                showIgnored = showIgnored,
-                showLessImportantTags = showLessImportantTags,
-                showSpoilerTags = showSpoilerTags,
-                entry = it,
-                transform = { mediaStatusAware(it) },
-                media = mediaPreview,
-                forceShowIgnored = forceShowIgnored,
+                filterableData = mediaFilterable,
                 copy = copy,
             )
         }
