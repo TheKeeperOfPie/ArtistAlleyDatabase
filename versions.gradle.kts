@@ -45,7 +45,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.8.0-alpha01"
+        const val gradle = "8.8.0-alpha02"
     }
 
     const val androidJunit5 = "1.11.0.0"
@@ -100,7 +100,7 @@ object Versions {
     }
 
     const val cronetEmbedded = "119.6045.31"
-    const val dependencyAnalysis = "2.0.1"
+    const val dependencyAnalysis = "2.0.2"
     const val dexmakerInline = "2.28.4"
     const val diffUtils = "0.7.0"
     const val flowExt = "1.0.0-RC"
@@ -138,21 +138,21 @@ object Versions {
 
     object kotlin {
         const val core = "2.0.20"
-        const val coroutines = "1.9.0-RC.2"
+        const val coroutines = "1.9.0"
         const val datetime = "0.6.1"
         const val io = "0.5.3"
         const val ksp = "2.0.20-1.0.25"
         const val serialization = "1.7.1"
     }
 
-    const val kotlinInject = "0.7.1"
+    const val kotlinInject = "0.7.2"
     const val kotlinPoet = "1.15.3"
 
     // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
     const val ktor = "3.0.0-rc-1"
     const val ksoup = "0.1.6"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.32"
+    const val manifoldGraphql = "2024.1.33"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
