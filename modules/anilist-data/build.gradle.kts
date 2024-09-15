@@ -32,6 +32,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.apollo.runtime)
+            implementation(project(":modules:apollo:utils"))
             implementation(libs.jetBrainsCompose.runtime)
         }
     }

@@ -3,14 +3,29 @@ package com.thekeeperofpie.artistalleydatabase.apollo
 import com.apollographql.apollo3.compiler.ApolloCompilerPlugin
 import com.apollographql.apollo3.compiler.Transform
 import com.apollographql.apollo3.compiler.codegen.kotlin.KotlinOutput
+import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.TypeVariableName
 
 class CustomPlugin : ApolloCompilerPlugin {
 
-    override fun kotlinOutputTransform() = chain(DefaultValuesTransform, ComposeStableTransform)
+    companion object {
+        // TODO: These are special cased because they accept Any in the constructor,
+        //  and editing that to work correctly seems very difficult
+        private fun exclude(typeSpec: TypeSpec) =
+            typeSpec.name == "HomeMangaQuery" || typeSpec.name == "MediaAdvancedSearchQuery"
+    }
+
+    override fun kotlinOutputTransform() = chain(
+        DefaultValuesTransform,
+        ComposeImmutableTransform,
+        KotlinXSerializationTransform,
+        OptionalSerializerTransform,
+    )
 
     private fun <T> chain(vararg transforms: Transform<T>) = object : Transform<T> {
         override fun transform(input: T) = transforms.fold(input) { acc, transform ->
@@ -18,16 +33,31 @@ class CustomPlugin : ApolloCompilerPlugin {
         }
     }
 
-    object ComposeStableTransform : Transform<KotlinOutput> {
+    object ComposeImmutableTransform : AnnotationTransform(
+        annotation = ClassName("androidx.compose.runtime", "Immutable"),
+        includeInterfaces = true,
+    )
 
-        private val stableAnnotation = ClassName("androidx.compose.runtime", "Stable")
+    object KotlinXSerializationTransform : AnnotationTransform(
+        ClassName("kotlinx.serialization", "Serializable")
+    )
+
+    abstract class AnnotationTransform(
+        private val annotation: ClassName,
+        private val includeInterfaces: Boolean = false,
+    ) : Transform<KotlinOutput> {
 
         override fun transform(input: KotlinOutput) = KotlinOutput(
             fileSpecs = input.fileSpecs.map {
                 it.toBuilder()
                     .apply {
                         members.replaceAll {
-                            (it as? TypeSpec)?.addComposeStableAnnotation() ?: it
+                            val typeSpec = it as? TypeSpec ?: return@replaceAll it
+                            if (exclude(typeSpec)) return@replaceAll it
+                            if (!includeInterfaces && typeSpec.kind == TypeSpec.Kind.INTERFACE) {
+                                return@replaceAll it
+                            }
+                            (it as? TypeSpec)?.addAnnotation() ?: it
                         }
                     }
                     .build()
@@ -35,9 +65,105 @@ class CustomPlugin : ApolloCompilerPlugin {
             codegenMetadata = input.codegenMetadata,
         )
 
-        private fun TypeSpec.addComposeStableAnnotation() = toBuilder()
-            .addAnnotation(stableAnnotation)
+        private fun TypeSpec.addAnnotation() = toBuilder()
+            .addAnnotation(annotation)
             .build()
+    }
+
+    object OptionalSerializerTransform : Transform<KotlinOutput> {
+
+        private val annotation = ClassName("kotlinx.serialization", "Serializable")
+        private val optionalType = ClassName("com.apollographql.apollo3.api", "Optional")
+        private val optionalSerializer =
+            ClassName("com.thekeeperofpie.artistalleydatabase.apollo.utils", "OptionalSerializer")
+        private val fuzzyDateInput = ClassName("com.anilist.type", "FuzzyDateInput")
+        private val any = ClassName("kotlin", "Any")
+        private val anyNullable = any.copy(nullable = true)
+
+        override fun transform(input: KotlinOutput) = KotlinOutput(
+            fileSpecs = input.fileSpecs.map {
+                it.toBuilder()
+                    .apply {
+                        members.replaceAll {
+                            val typeSpec = it as? TypeSpec ?: return@replaceAll it
+                            if (exclude(typeSpec)) return@replaceAll it
+                            val newPropertySpecs = typeSpec.propertySpecs.map mapProperties@{
+                                val typeName = it.type as? ParameterizedTypeName
+                                    ?: return@mapProperties it
+                                if (typeName.rawType != optionalType) {
+                                    return@mapProperties it.toBuilder()
+                                        .addKdoc("Not optional")
+                                        .build()
+                                }
+
+                                val typeArgument = typeName.typeArguments.singleOrNull()
+                                val newTypeName = if (typeArgument == any
+                                    || typeArgument == anyNullable
+                                ) {
+                                    typeName.copy(
+                                        typeArguments = listOf(
+                                            TypeVariableName(
+                                                fuzzyDateInput.canonicalName
+                                            ).copy(nullable = typeArgument.isNullable)
+                                        )
+                                    )
+                                } else {
+                                    typeName
+                                }
+                                it.toBuilder(type = newTypeName)
+                                    .addAnnotation(
+                                        AnnotationSpec.Companion.builder(annotation)
+                                            .addMember("%T::class", optionalSerializer)
+                                            .build()
+                                    )
+                                    .apply {
+                                    }
+                                    .build()
+                            }
+                            val newConstructor = typeSpec.primaryConstructor
+                                ?.takeIf { typeSpec.modifiers.contains(KModifier.DATA) }
+                                ?.let {
+                                    it.toBuilder()
+                                        .apply {
+                                            parameters.replaceAll replaceParameters@{
+                                                val typeName = it.type as? ParameterizedTypeName
+                                                    ?: return@replaceParameters it
+                                                val typeArgument =
+                                                    typeName.typeArguments.singleOrNull()
+                                                if (typeArgument != any
+                                                    && typeArgument != anyNullable
+                                                ) {
+                                                    return@replaceParameters it
+                                                }
+
+                                                it.toBuilder(
+                                                    type = typeName.copy(
+                                                        typeArguments = listOf(
+                                                            TypeVariableName(
+                                                                fuzzyDateInput.canonicalName
+                                                            ).copy(nullable = typeArgument.isNullable)
+                                                        )
+                                                    )
+                                                ).build()
+                                            }
+                                        }
+                                        .build()
+                                }
+                            typeSpec.toBuilder()
+                                .apply {
+                                    if (newConstructor != null) {
+                                        primaryConstructor(newConstructor)
+                                    }
+                                    propertySpecs.clear()
+                                    propertySpecs += newPropertySpecs
+                                }
+                                .build()
+                        }
+                    }
+                    .build()
+            },
+            codegenMetadata = input.codegenMetadata,
+        )
     }
 
     object DefaultValuesTransform : Transform<KotlinOutput> {
@@ -73,26 +199,26 @@ class CustomPlugin : ApolloCompilerPlugin {
                                             com.squareup.kotlinpoet.BYTE,
                                             com.squareup.kotlinpoet.SHORT,
                                             com.squareup.kotlinpoet.INT,
-                                            -> "-1"
+                                                -> "-1"
                                             com.squareup.kotlinpoet.LONG -> "-1L"
                                             com.squareup.kotlinpoet.CHAR -> "'-'"
                                             com.squareup.kotlinpoet.FLOAT -> "-1f"
                                             com.squareup.kotlinpoet.DOUBLE -> "-1.0"
                                             com.squareup.kotlinpoet.STRING,
                                             com.squareup.kotlinpoet.CHAR_SEQUENCE,
-                                            -> "\"Default\""
+                                                -> "\"Default\""
                                             com.squareup.kotlinpoet.NOTHING -> "Nothing"
                                             com.squareup.kotlinpoet.NUMBER -> "-1"
                                             com.squareup.kotlinpoet.ITERABLE,
                                             com.squareup.kotlinpoet.COLLECTION,
                                             com.squareup.kotlinpoet.LIST,
-                                            -> "emptyList()"
+                                                -> "emptyList()"
                                             com.squareup.kotlinpoet.SET -> "emptySet()"
                                             com.squareup.kotlinpoet.MAP -> "emptyMap()"
                                             com.squareup.kotlinpoet.MUTABLE_ITERABLE,
                                             com.squareup.kotlinpoet.MUTABLE_COLLECTION,
                                             com.squareup.kotlinpoet.MUTABLE_LIST,
-                                            -> "mutableListOf()"
+                                                -> "mutableListOf()"
                                             com.squareup.kotlinpoet.MUTABLE_SET -> "mutableSetOf()"
                                             com.squareup.kotlinpoet.MUTABLE_MAP -> "mutableMapOf()"
                                             com.squareup.kotlinpoet.BOOLEAN_ARRAY -> "booleanArrayOf()"
@@ -107,7 +233,7 @@ class CustomPlugin : ApolloCompilerPlugin {
                                             com.squareup.kotlinpoet.U_SHORT,
                                             com.squareup.kotlinpoet.U_INT,
                                             com.squareup.kotlinpoet.U_LONG,
-                                            -> "0u"
+                                                -> "0u"
                                             com.squareup.kotlinpoet.U_BYTE_ARRAY -> "ubyteArrayOf()"
                                             com.squareup.kotlinpoet.U_SHORT_ARRAY -> "ushortArrayOf()"
                                             com.squareup.kotlinpoet.U_INT_ARRAY -> "uintArrayOf()"
