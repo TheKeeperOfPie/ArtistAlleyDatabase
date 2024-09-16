@@ -152,7 +152,8 @@ object Versions {
     const val kotlinPoet = "1.15.3"
 
     // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
-    const val ktor = "3.0.0-rc-1"
+    // TODO: 3.0.0-rc-1 crashes on Android at start up
+    const val ktor = "3.0.0-beta-2"
     const val ksoup = "0.1.6"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.33"
