@@ -400,6 +400,7 @@
 -dontwarn okhttp3.internal.Util
 -dontwarn coil3.PlatformContext
 -dontwarn libcore.icu.NativePluralRules
+-dontwarn io.ktor.client.network.sockets.SocketTimeoutException
 
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
 -dontwarn com.google.errorprone.annotations.CheckReturnValue

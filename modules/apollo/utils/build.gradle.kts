@@ -1,12 +1,16 @@
 plugins {
     id("library-android")
     id("library-desktop")
+    id("library-inject")
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.apollo.runtime)
+            implementation(project(":modules:utils"))
+            implementation(libs.kermit)
+            implementation(libs.kotlinx.serialization.json.io)
         }
     }
 }

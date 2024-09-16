@@ -16,8 +16,14 @@ class CustomPlugin : ApolloCompilerPlugin {
     companion object {
         // TODO: These are special cased because they accept Any in the constructor,
         //  and editing that to work correctly seems very difficult
-        private fun exclude(typeSpec: TypeSpec) =
-            typeSpec.name == "HomeMangaQuery" || typeSpec.name == "MediaAdvancedSearchQuery"
+        private val EXCLUDED = setOf(
+            "ForumThreadCommentQuery",
+            "ForumThread_CommentsQuery",
+            "HomeMangaQuery",
+            "MediaAdvancedSearchQuery",
+            "MediaDetailsQuery",
+            "MediaListEntryQuery",
+        )
     }
 
     override fun kotlinOutputTransform() = chain(
@@ -33,19 +39,8 @@ class CustomPlugin : ApolloCompilerPlugin {
         }
     }
 
-    object ComposeImmutableTransform : AnnotationTransform(
-        annotation = ClassName("androidx.compose.runtime", "Immutable"),
-        includeInterfaces = true,
-    )
-
-    object KotlinXSerializationTransform : AnnotationTransform(
-        ClassName("kotlinx.serialization", "Serializable")
-    )
-
-    abstract class AnnotationTransform(
-        private val annotation: ClassName,
-        private val includeInterfaces: Boolean = false,
-    ) : Transform<KotlinOutput> {
+    object ComposeImmutableTransform : Transform<KotlinOutput> {
+        private val annotation = ClassName("androidx.compose.runtime", "Immutable")
 
         override fun transform(input: KotlinOutput) = KotlinOutput(
             fileSpecs = input.fileSpecs.map {
@@ -53,11 +48,45 @@ class CustomPlugin : ApolloCompilerPlugin {
                     .apply {
                         members.replaceAll {
                             val typeSpec = it as? TypeSpec ?: return@replaceAll it
-                            if (exclude(typeSpec)) return@replaceAll it
-                            if (!includeInterfaces && typeSpec.kind == TypeSpec.Kind.INTERFACE) {
+                            if (EXCLUDED.contains(typeSpec.name)) return@replaceAll it
+                            typeSpec.toBuilder()
+                                .addAnnotation(annotation)
+                                .build()
+                        }
+                    }
+                    .build()
+            },
+            codegenMetadata = input.codegenMetadata,
+        )
+    }
+
+    object KotlinXSerializationTransform : Transform<KotlinOutput> {
+        private val mutation = ClassName("com.apollographql.apollo3.api", "Mutation")
+        private val annotation = ClassName("kotlinx.serialization", "Serializable")
+        private val any = ClassName("kotlin", "Any")
+        private val anyNullable = any.copy(nullable = true)
+        private val int = ClassName("kotlin", "Int")
+
+        override fun transform(input: KotlinOutput) = KotlinOutput(
+            fileSpecs = input.fileSpecs.map {
+                it.toBuilder()
+                    .apply {
+                        members.replaceAll {
+                            val typeSpec = it as? TypeSpec ?: return@replaceAll it
+                            if (EXCLUDED.contains(typeSpec.name)) return@replaceAll it
+                            if (typeSpec.superinterfaces
+                                    .any { (it.key as? ParameterizedTypeName)?.rawType == mutation }
+                            ) {
                                 return@replaceAll it
                             }
-                            (it as? TypeSpec)?.addAnnotation() ?: it
+                            if (typeSpec.kind == TypeSpec.Kind.INTERFACE) {
+                                return@replaceAll it
+                            }
+
+                            addToInner(typeSpec)
+                                .toBuilder()
+                                .addAnnotation(annotation)
+                                .build()
                         }
                     }
                     .build()
@@ -65,9 +94,21 @@ class CustomPlugin : ApolloCompilerPlugin {
             codegenMetadata = input.codegenMetadata,
         )
 
-        private fun TypeSpec.addAnnotation() = toBuilder()
-            .addAnnotation(annotation)
-            .build()
+        private fun addToInner(typeSpec: TypeSpec): TypeSpec {
+            val newInnerTypeSpecs = typeSpec.typeSpecs.map {
+                if (it.kind == TypeSpec.Kind.OBJECT) return@map it
+                addToInner(it)
+                    .toBuilder()
+                    .addAnnotation(annotation)
+                    .build()
+            }
+            return typeSpec.toBuilder()
+                .apply {
+                    typeSpecs.clear()
+                    typeSpecs += newInnerTypeSpecs
+                }
+                .build()
+        }
     }
 
     object OptionalSerializerTransform : Transform<KotlinOutput> {
@@ -86,7 +127,7 @@ class CustomPlugin : ApolloCompilerPlugin {
                     .apply {
                         members.replaceAll {
                             val typeSpec = it as? TypeSpec ?: return@replaceAll it
-                            if (exclude(typeSpec)) return@replaceAll it
+                            if (EXCLUDED.contains(typeSpec.name)) return@replaceAll it
                             val newPropertySpecs = typeSpec.propertySpecs.map mapProperties@{
                                 val typeName = it.type as? ParameterizedTypeName
                                     ?: return@mapProperties it

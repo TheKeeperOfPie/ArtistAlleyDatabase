@@ -146,6 +146,8 @@ import com.apollographql.apollo3.cache.normalized.fetchPolicy
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.apollo.utils.ApolloCache
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
@@ -177,6 +179,8 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.days
 
 @OptIn(ExperimentalCoroutinesApi::class)
 open class AuthedAniListApi(
@@ -185,12 +189,16 @@ open class AuthedAniListApi(
     aniListSettings: AniListSettings,
     private val httpClient: HttpClient,
     private val apolloClient: ApolloClient,
+    private val appFileSystem: AppFileSystem,
+    private val json: Json,
 ) {
     companion object {
         private const val TAG = "AuthedAniListApi"
     }
 
     val authedUser = MutableStateFlow<AniListViewer?>(null)
+
+    private val cache = ApolloCache(scope, apolloClient, appFileSystem, json)
 
     init {
         scope.launch(CustomDispatchers.IO) {
@@ -318,9 +326,9 @@ open class AuthedAniListApi(
         )
     }
 
-    open suspend fun genres() = query(GenresQuery())
+    open suspend fun genres() = cache.query(GenresQuery(), cacheTime = 1.days)
 
-    open suspend fun tags() = query(MediaTagsQuery())
+    open suspend fun tags() = cache.query(MediaTagsQuery(), cacheTime = 1.days)
 
     open suspend fun mediaDetails(id: String, skipCache: Boolean) =
         queryLoadingResult(MediaDetailsQuery(id.toInt()), skipCache)
@@ -933,7 +941,8 @@ open class AuthedAniListApi(
         ).saveActivityReply
 
     open suspend fun licensors(mediaType: ExternalLinkMediaType) =
-        query(LicensorsQuery(mediaType = mediaType)).externalLinkSourceCollection.filterNotNull()
+        cache.query(LicensorsQuery(mediaType = mediaType), cacheTime = 1.days)
+            .externalLinkSourceCollection.filterNotNull()
 
     open suspend fun notifications(
         page: Int,

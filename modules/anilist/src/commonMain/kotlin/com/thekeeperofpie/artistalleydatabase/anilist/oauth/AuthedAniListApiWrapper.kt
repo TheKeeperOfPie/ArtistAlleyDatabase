@@ -27,10 +27,12 @@ import com.anilist.type.ThreadSort
 import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
 import java.io.IOException
 
 /**
@@ -42,12 +44,16 @@ class AuthedAniListApiWrapper(
     aniListSettings: AniListSettings,
     httpClient: HttpClient,
     apolloClient: ApolloClient,
+    appFileSystem: AppFileSystem,
+    json: Json,
 ) : AuthedAniListApi(
-    scope,
-    oAuthStore,
-    aniListSettings,
-    httpClient,
-    apolloClient,
+    scope = scope,
+    oAuthStore = oAuthStore,
+    aniListSettings = aniListSettings,
+    httpClient = httpClient,
+    apolloClient = apolloClient,
+    appFileSystem = appFileSystem,
+    json = json,
 ) {
 
     override suspend fun viewerMediaList(

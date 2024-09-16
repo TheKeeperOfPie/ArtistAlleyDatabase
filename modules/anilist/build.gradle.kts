@@ -16,6 +16,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":modules:anilist-data"))
             api(project(":modules:entry"))
+            implementation(project(":modules:apollo:utils"))
             implementation(project(":modules:utils"))
             implementation(project(":modules:utils-compose"))
             implementation(project(":modules:utils-network"))

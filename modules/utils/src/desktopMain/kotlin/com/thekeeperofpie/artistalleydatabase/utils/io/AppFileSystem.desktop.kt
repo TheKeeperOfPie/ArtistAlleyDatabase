@@ -4,6 +4,7 @@ import com.eygraber.uri.Uri
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import kotlinx.datetime.toKotlinInstant
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.asSink
@@ -152,4 +153,7 @@ actual class AppFileSystem {
         if (mode.contains("r")) options += StandardOpenOption.READ
         return options
     }
+
+    actual fun lastModifiedTime(path: Path) =
+        Files.getLastModifiedTime(fileSystem.getPath(path.toString())).toInstant().toKotlinInstant()
 }

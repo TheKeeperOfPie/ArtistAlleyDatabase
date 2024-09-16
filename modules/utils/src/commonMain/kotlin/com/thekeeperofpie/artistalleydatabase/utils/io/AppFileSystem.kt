@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils.io
 
 import com.eygraber.uri.Uri
+import kotlinx.datetime.Instant
 import kotlinx.io.RawSink
 import kotlinx.io.RawSource
 import kotlinx.io.Sink
@@ -34,4 +35,5 @@ expect class AppFileSystem {
     fun list(path: Path): Collection<Path>
     fun atomicMove(source: Path, destination: Path)
     fun source(path: Path): RawSource
+    fun lastModifiedTime(path: Path): Instant
 }

@@ -9,6 +9,7 @@ import co.touchlab.kermit.Logger
 import com.eygraber.uri.Uri
 import com.eygraber.uri.toAndroidUri
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import kotlinx.datetime.Instant
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.asInputStream
@@ -156,4 +157,8 @@ actual class AppFileSystem(private val application: Application, private val mas
         SystemFileSystem.atomicMove(source, destination)
 
     actual fun source(path: Path) = SystemFileSystem.source(path)
+
+    // TODO: Doesn't handle multiplatform
+    actual fun lastModifiedTime(path: Path) =
+        Instant.fromEpochMilliseconds(File(path.toString()).lastModified())
 }
