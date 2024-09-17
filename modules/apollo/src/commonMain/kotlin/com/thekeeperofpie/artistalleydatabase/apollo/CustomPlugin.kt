@@ -21,7 +21,6 @@ class CustomPlugin : ApolloCompilerPlugin {
             "ForumThread_CommentsQuery",
             "HomeMangaQuery",
             "MediaAdvancedSearchQuery",
-            "MediaDetailsQuery",
             "MediaListEntryQuery",
         )
     }

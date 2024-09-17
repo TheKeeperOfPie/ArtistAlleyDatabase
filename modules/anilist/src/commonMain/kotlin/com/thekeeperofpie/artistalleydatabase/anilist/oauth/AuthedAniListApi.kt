@@ -178,6 +178,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.days
@@ -330,8 +332,23 @@ open class AuthedAniListApi(
 
     open suspend fun tags() = cache.query(MediaTagsQuery(), cacheTime = 1.days)
 
-    open suspend fun mediaDetails(id: String, skipCache: Boolean) =
-        queryLoadingResult(MediaDetailsQuery(id.toInt()), skipCache)
+    open suspend fun mediaDetails(id: String, skipCache: Boolean) = queryLoadingResult {
+        runCatching {
+            cache.query(MediaDetailsQuery(id.toInt()), skipCache = skipCache) {
+                // TODO: This doesn't work, updatedAt is far more frequent than expected
+                // If the media was last updated in the distant past,
+                // assume it won't change a lot and use an expiry of 7 days
+                val updatedAt = it.media?.updatedAt
+                if (updatedAt != null && Instant.fromEpochSeconds(updatedAt.toLong())
+                        .plus(90.days) < Clock.System.now()
+                ) {
+                    7.days
+                } else {
+                    1.days
+                }
+            }
+        }
+    }
 
     open suspend fun mediaDetails2(id: String, skipCache: Boolean) =
         queryLoadingResult(MediaDetails2Query(id.toInt()), skipCache)
@@ -1252,9 +1269,15 @@ open class AuthedAniListApi(
     private suspend fun <Data : Query.Data> queryLoadingResult(
         query: Query<Data>,
         skipCache: Boolean,
-    ): LoadingResult<Data> {
+    ) = queryLoadingResult {
         val fetchPolicy = if (skipCache) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst
-        val result = queryResult(query, fetchPolicy = fetchPolicy) { it }
+        queryResult(query, fetchPolicy = fetchPolicy) { it }
+    }
+
+    private suspend fun <Data : Query.Data> queryLoadingResult(
+        query: suspend () -> Result<Data>,
+    ): LoadingResult<Data> {
+        val result = query()
         val data = result.getOrNull()
         if (result.isFailure || data == null) {
             return LoadingResult.error(

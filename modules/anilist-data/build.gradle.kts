@@ -19,6 +19,7 @@ apollo {
         codegenModels.set("responseBased")
         decapitalizeFields.set(true)
 
+        mapScalarToKotlinString("CountryCode")
         plugin(project(":modules:apollo"))
     }
 }

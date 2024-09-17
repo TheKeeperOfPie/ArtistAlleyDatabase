@@ -163,7 +163,6 @@ fragment MediaDetailsListEntry on MediaList {
     private
     hiddenFromStatusLists
     notes
-    advancedScores
     startedAt {
         ...AniListDate
     }
@@ -265,6 +264,7 @@ query MediaDetails($mediaId: Int!) {
         type
         volumes
         chapters
+        updatedAt
     }
 }
 

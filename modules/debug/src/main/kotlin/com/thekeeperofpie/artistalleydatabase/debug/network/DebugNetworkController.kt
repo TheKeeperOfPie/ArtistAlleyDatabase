@@ -34,6 +34,9 @@ class DebugNetworkController(scope: ApplicationScope) {
 
     companion object {
         private const val TAG = "DebugNetworkController"
+        // language=json
+        private const val TOO_LARGE_ERROR_BODY =
+            """{ "data": {"message": "Response too large, over 10 KB"} }"""
     }
 
     val apolloHttpInterceptor = object : HttpInterceptor {
@@ -68,6 +71,15 @@ class DebugNetworkController(scope: ApplicationScope) {
 
             val responseBody = response.body
             if (responseBody != null && responseBody.buffer.size > 10_000) {
+                graphQlResponses.trySend(
+                    GraphQlResponse(
+                        id = id,
+                        headers = response.headers.associate { it.name to it.value },
+                        bodyString = TOO_LARGE_ERROR_BODY,
+                        timestamp = Clock.System.now(),
+                        final = true,
+                    )
+                )
                 return response
             }
 
