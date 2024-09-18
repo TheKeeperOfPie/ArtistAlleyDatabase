@@ -141,7 +141,7 @@ object ActivityDetailsScreen {
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
         ) {
-            val refresh by viewModel.refresh.collectAsState()
+            val refresh by viewModel.refresh.updates.collectAsState()
             val sheetState = rememberStandardBottomSheetState(
                 initialValue = SheetValue.Hidden,
                 skipHiddenState = false

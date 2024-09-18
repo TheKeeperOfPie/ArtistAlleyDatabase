@@ -31,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -48,7 +49,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
@@ -71,7 +71,7 @@ class ActivityDetailsViewModel(
     val activityId = destination.activityId
 
     val viewer = aniListApi.authedUser
-    val refresh = MutableStateFlow(-1L)
+    val refresh = RefreshFlow()
     var entry by mutableStateOf<LoadingResult<Entry>>(LoadingResult.loading())
     var replies = MutableStateFlow(PagingData.empty<Entry.ReplyEntry>())
 
@@ -85,7 +85,7 @@ class ActivityDetailsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh, Res.string.anime_activity_details_error_loading) {
+            flowForRefreshableContent(refresh.updates, Res.string.anime_activity_details_error_loading) {
                 flowFromSuspend {
                     aniListApi.activityDetails(activityId).activity
                 }
@@ -158,7 +158,8 @@ class ActivityDetailsViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest {
+            refresh.updates
+                .flatMapLatest {
                 AniListPager {
                     val result = aniListApi.activityReplies(id = activityId, page = it)
                     result.page?.pageInfo to result.page?.activityReplies?.filterNotNull()
@@ -181,9 +182,7 @@ class ActivityDetailsViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 
     fun delete(deletePromptData: Either<Unit, Entry.ReplyEntry>) {
         if (deleting) return
@@ -196,7 +195,7 @@ class ActivityDetailsViewModel(
                     aniListApi.deleteActivity(activityId)
                 }
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(Clock.System.now().toEpochMilliseconds())
+                    refresh.refresh()
                     deleting = false
                 }
             } catch (t: Throwable) {
@@ -215,7 +214,7 @@ class ActivityDetailsViewModel(
             try {
                 aniListApi.saveActivityReply(activityId = activityId, replyId = null, text = reply)
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(Clock.System.now().toEpochMilliseconds())
+                    refresh.refresh()
                     replying = false
                 }
             } catch (t: Throwable) {

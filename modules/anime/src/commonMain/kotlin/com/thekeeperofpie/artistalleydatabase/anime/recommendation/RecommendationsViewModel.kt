@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
@@ -27,7 +28,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -54,12 +54,12 @@ class RecommendationsViewModel(
     val recommendationToggleHelper =
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            sortFilterController.filterParams
-                .flatMapLatest { filterParams ->
+            combine(sortFilterController.filterParams, refresh.updates, ::Pair)
+                .flatMapLatest { (filterParams) ->
                     AniListPager {
                         val result = aniListApi.recommendationSearch(
                             sort = filterParams.sort
@@ -142,7 +142,5 @@ class RecommendationsViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 }

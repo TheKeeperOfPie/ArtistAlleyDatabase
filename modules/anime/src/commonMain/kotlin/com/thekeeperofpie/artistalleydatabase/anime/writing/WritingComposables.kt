@@ -48,6 +48,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_writing_reply
 import artistalleydatabase.modules.anime.generated.resources.anime_writing_replying_to_op
 import artistalleydatabase.modules.anime.generated.resources.anime_writing_send_button
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.launch
@@ -56,7 +57,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun WritingReplyPanelScaffold(
-    refreshEvent: Long,
+    refreshEvent: RefreshFlow.Event,
     committing: Boolean,
     onClickSend: (String) -> Unit,
     modifier: Modifier = Modifier,

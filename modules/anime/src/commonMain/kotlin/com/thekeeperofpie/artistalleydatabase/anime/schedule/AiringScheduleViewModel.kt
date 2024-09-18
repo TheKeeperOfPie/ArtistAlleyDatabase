@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
@@ -57,7 +58,7 @@ class AiringScheduleViewModel(
     val viewer = aniListApi.authedUser
     var sortFilterController =
         AiringScheduleSortFilterController(viewModelScope, settings, featureOverrideProvider)
-    var refresh = MutableStateFlow(-1)
+    var refresh = RefreshFlow()
 
     private val startDay =
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let {
@@ -75,11 +76,11 @@ class AiringScheduleViewModel(
         initialized[index] = true
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
-                refresh,
                 sortFilterController.filterParams,
+                refresh.updates,
                 ::Pair
             )
-                .flatMapLatest { (_, filterParams) -> buildPagingData(index, filterParams) }
+                .flatMapLatest { (filterParams) -> buildPagingData(index, filterParams) }
                 .map { it.mapOnIO { Entry(data = it) } }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
@@ -174,6 +175,8 @@ class AiringScheduleViewModel(
         }
         return dayFlows[index].collectAsLazyPagingItems()
     }
+
+    fun refresh() = refresh.refresh()
 
     data class Entry(
         val data: AiringScheduleQuery.Data.Page.AiringSchedule,

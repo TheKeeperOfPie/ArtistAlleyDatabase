@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
@@ -28,7 +29,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -43,28 +43,26 @@ class UserFavoriteStudiosViewModel(
     navigationTypeMap: NavigationTypeMap,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestination.UserFavoriteStudios>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.UserFavoriteStudios>(navigationTypeMap)
     val userId = destination.userId
     val viewer = aniListApi.authedUser
     val studios = MutableStateFlow(PagingData.empty<StudioListRow.Entry>())
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            combine(
-                viewer,
-                refresh,
-                ::Pair,
-            ).flatMapLatest { (viewer) ->
-                val userId = userId ?: viewer?.id
-                AniListPager {
-                    val result = aniListApi.userFavoritesStudios(userId = userId!!, page = it)
-                    result.user?.favourites?.studios?.pageInfo to
-                            result.user?.favourites?.studios?.nodes?.filterNotNull()
-                                .orEmpty()
+            combine(viewer, refresh.updates, ::Pair)
+                .flatMapLatest { (viewer) ->
+                    val userId = userId ?: viewer?.id
+                    AniListPager {
+                        val result = aniListApi.userFavoritesStudios(userId = userId!!, page = it)
+                        result.user?.favourites?.studios?.pageInfo to
+                                result.user?.favourites?.studios?.nodes?.filterNotNull()
+                                    .orEmpty()
+                    }
                 }
-            }
                 .mapLatest {
                     it.mapOnIO {
                         StudioListRow.Entry(
@@ -104,7 +102,5 @@ class UserFavoriteStudiosViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 }

@@ -14,16 +14,15 @@ import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 
 @Inject
@@ -40,12 +39,12 @@ class AnimeNewsViewModel(
     var news by mutableStateOf<List<AnimeNewsEntry<*>>?>(null)
         private set
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(
-                refresh,
+                refresh.updates,
                 sortFilterController.filterParams,
                 ::Pair
             )
@@ -75,7 +74,5 @@ class AnimeNewsViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 }

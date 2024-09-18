@@ -57,7 +57,7 @@ class AnimeForumThreadsViewModel(
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { barrier.filter { it } }
                 .flatMapLatest {
-                    mediaDetailsViewModel.refresh.mapLatest {
+                    mediaDetailsViewModel.refresh.updates.mapLatest {
                         aniListApi.forumThreadSearch(
                             null,
                             false,

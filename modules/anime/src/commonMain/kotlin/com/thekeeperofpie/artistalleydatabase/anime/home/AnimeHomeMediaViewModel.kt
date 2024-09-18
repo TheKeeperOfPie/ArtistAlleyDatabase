@@ -36,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
@@ -52,7 +53,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 
@@ -77,7 +77,7 @@ abstract class AnimeHomeMediaViewModel(
     )
     val reviews = MutableStateFlow(PagingData.empty<ReviewEntry>())
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         collectCurrent()
@@ -114,14 +114,14 @@ abstract class AnimeHomeMediaViewModel(
     }
 
     fun refresh() {
-        val refresh = Clock.System.now().toEpochMilliseconds()
+        refresh.refresh()
         userMediaListController.refresh(mediaType)
-        this.refresh.value = refresh
     }
 
     private fun collectCurrent() {
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest { current() }
+            refresh.updates
+                .flatMapLatest { current() }
                 .flatMapLatest { current ->
                     combine(
                         mediaListStatusController.allChanges(),
@@ -155,7 +155,7 @@ abstract class AnimeHomeMediaViewModel(
 
     private fun collectMedia() {
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh, errorTextRes) { rows() }
+            flowForRefreshableContent(refresh.updates, errorTextRes) { rows() }
                 .flatMapLatest { mediaResult ->
                     combine(
                         mediaListStatusController.allChanges(),
@@ -194,7 +194,8 @@ abstract class AnimeHomeMediaViewModel(
 
     private fun collectReviews() {
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest {
+            refresh.updates
+                .flatMapLatest {
                 AniListPager(perPage = 6, prefetchDistance = 1) {
                     val result =
                         aniListApi.homeReviews(mediaType = mediaType, page = it, perPage = 6)

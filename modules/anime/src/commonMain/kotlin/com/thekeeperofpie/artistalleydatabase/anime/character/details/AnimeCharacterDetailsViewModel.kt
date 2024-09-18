@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -43,7 +44,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -68,7 +68,7 @@ class AnimeCharacterDetailsViewModel(
 
     var entry by mutableStateOf<LoadingResult<CharacterDetailsScreen.Entry>>(LoadingResult.loading())
 
-    val refresh = MutableStateFlow(-1L)
+    val refresh = RefreshFlow()
 
     val voiceActorsDeferred = MutableStateFlow(PagingData.empty<DetailsStaff>())
 
@@ -77,7 +77,8 @@ class AnimeCharacterDetailsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.mapLatest { aniListApi.characterDetails(characterId, it > 0) }
+            refresh.updates
+                .mapLatest { aniListApi.characterDetails(characterId, skipCache = it.fromUser) }
                 .flatMapLatest { result ->
                     val media = result.result?.character?.media?.edges
                         ?.distinctBy { it?.node?.id }
@@ -173,9 +174,7 @@ class AnimeCharacterDetailsViewModel(
         )
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 
     data class MediaEntry(
         val mediaPreviewEntry: MediaPreviewEntry,

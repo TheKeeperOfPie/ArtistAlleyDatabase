@@ -30,12 +30,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
@@ -62,11 +61,12 @@ class ForumThreadCommentTreeViewModel(
     settings: AnimeSettings,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestination.ForumThreadComment>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.ForumThreadComment>(navigationTypeMap)
     val threadId = destination.threadId
     val commentId = destination.commentId
     val viewer = aniListApi.authedUser
-    val refresh = MutableStateFlow(-1L)
+    val refresh = RefreshFlow()
     var entry by mutableStateOf(LoadingResult.loading<ForumThreadEntry>())
     var media by mutableStateOf<List<MediaCompactWithTagsEntry>>(emptyList())
     var comments by mutableStateOf(LoadingResult.loading<List<ForumCommentEntry>>())
@@ -84,7 +84,10 @@ class ForumThreadCommentTreeViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh, Res.string.anime_forum_thread_error_loading) {
+            flowForRefreshableContent(
+                refresh.updates,
+                Res.string.anime_forum_thread_error_loading,
+            ) {
                 flowFromSuspend {
                     val thread = aniListApi.forumThread(threadId)
                     val bodyMarkdown = thread.thread.body?.let(markdown::convertMarkdownText)
@@ -149,7 +152,10 @@ class ForumThreadCommentTreeViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh, Res.string.anime_forum_thread_error_loading) {
+            flowForRefreshableContent(
+                refresh.updates,
+                Res.string.anime_forum_thread_error_loading,
+            ) {
                 flowFromSuspend {
                     aniListApi.forumThreadSingleCommentTree(threadId, commentId)
                         .threadComment
@@ -196,9 +202,7 @@ class ForumThreadCommentTreeViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 
     fun onClickReplyComment(commentId: String?, commentMarkdown: MarkdownText?) {
         replyData = ReplyData(commentId, commentMarkdown)
@@ -218,7 +222,7 @@ class ForumThreadCommentTreeViewModel(
                     text = text,
                 )
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(Clock.System.now().toEpochMilliseconds())
+                    refresh.refresh()
                     this@ForumThreadCommentTreeViewModel.replyData = null
                     committing = false
                 }
@@ -238,7 +242,7 @@ class ForumThreadCommentTreeViewModel(
             try {
                 aniListApi.deleteForumThreadComment(commentId)
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(Clock.System.now().toEpochMilliseconds())
+                    refresh.refresh()
                     deleting = false
                 }
             } catch (t: Throwable) {

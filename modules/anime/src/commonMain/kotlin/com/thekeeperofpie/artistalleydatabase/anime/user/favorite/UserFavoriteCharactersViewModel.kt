@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -25,7 +26,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -43,13 +43,13 @@ class UserFavoriteCharactersViewModel(
     val viewer = aniListApi.authedUser
     val characters = MutableStateFlow(PagingData.empty<CharacterListRow.Entry>())
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 viewer,
-                refresh,
+                refresh.updates,
                 ::Pair,
             ).flatMapLatest { (viewer) ->
                 val userId = userId ?: viewer?.id
@@ -104,7 +104,5 @@ class UserFavoriteCharactersViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 }

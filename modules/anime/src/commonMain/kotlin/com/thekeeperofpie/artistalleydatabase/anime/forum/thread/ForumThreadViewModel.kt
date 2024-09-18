@@ -30,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -46,7 +47,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
@@ -66,14 +66,15 @@ class ForumThreadViewModel(
     oAuthStore: AniListOAuthStore,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestination.ForumThread>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.ForumThread>(navigationTypeMap)
 
     // TODO: Block forum screens if not unlocked
     val hasAuth = oAuthStore.hasAuth
 
     val threadId = destination.threadId
     val viewer = aniListApi.authedUser
-    val refresh = MutableStateFlow(-1L)
+    val refresh = RefreshFlow()
     var entry by mutableStateOf(LoadingResult.loading<ForumThreadEntry>())
     var media by mutableStateOf<List<MediaCompactWithTagsEntry>>(emptyList())
     val comments = MutableStateFlow(PagingData.empty<ForumCommentEntry>())
@@ -90,7 +91,10 @@ class ForumThreadViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh, Res.string.anime_forum_thread_error_loading) {
+            flowForRefreshableContent(
+                refresh.updates,
+                Res.string.anime_forum_thread_error_loading
+            ) {
                 flowFromSuspend {
                     val thread = aniListApi.forumThread(threadId)
                     val bodyMarkdown = thread.thread.body?.let(markdown::convertMarkdownText)
@@ -155,14 +159,15 @@ class ForumThreadViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest {
-                // TODO: Make an AniListPager which forces jumpThreshold to skip network requests
-                AniListPager {
-                    val result = aniListApi.forumThreadComments(threadId, page = it)
-                    result.page?.pageInfo to result.page?.threadComments?.filterNotNull()
-                        .orEmpty()
+            refresh.updates
+                .flatMapLatest {
+                    // TODO: Make an AniListPager which forces jumpThreshold to skip network requests
+                    AniListPager {
+                        val result = aniListApi.forumThreadComments(threadId, page = it)
+                        result.page?.pageInfo to result.page?.threadComments?.filterNotNull()
+                            .orEmpty()
+                    }
                 }
-            }
                 .map {
                     it.mapOnIO {
                         val children = (it.childComments as? List<*>)?.filterNotNull()
@@ -218,7 +223,7 @@ class ForumThreadViewModel(
                     text = text,
                 )
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(Clock.System.now().toEpochMilliseconds())
+                    refresh.refresh()
                     this@ForumThreadViewModel.replyData = null
                     committing = false
                 }
@@ -238,7 +243,7 @@ class ForumThreadViewModel(
             try {
                 aniListApi.deleteForumThreadComment(commentId)
                 withContext(CustomDispatchers.Main) {
-                    refresh.emit(Clock.System.now().toEpochMilliseconds())
+                    refresh.refresh()
                     deleting = false
                 }
             } catch (t: Throwable) {

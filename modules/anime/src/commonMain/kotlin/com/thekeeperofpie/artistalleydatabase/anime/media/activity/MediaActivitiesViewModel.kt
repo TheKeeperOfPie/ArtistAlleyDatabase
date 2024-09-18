@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelp
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
@@ -63,14 +64,15 @@ class MediaActivitiesViewModel(
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
-    val activitySortFilterController = ActivitySortFilterController(
+    private val activitySortFilterController = ActivitySortFilterController(
         scope = viewModelScope,
         aniListApi = aniListApi,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
     )
 
-    private val destination = savedStateHandle.toDestination<AnimeDestination.MediaActivities>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.MediaActivities>(navigationTypeMap)
     val mediaId = destination.mediaId
     var entry by mutableStateOf(LoadingResult.empty<MediaActivitiesScreen.Entry>())
         private set
@@ -81,7 +83,8 @@ class MediaActivitiesViewModel(
     private val initialIsFollowing = destination.showFollowing
     var selectedIsFollowing by mutableStateOf(initialIsFollowing)
 
-    private val refresh = MutableStateFlow(-1L)
+    // TODO: Refresh not exposed to user
+    private val refresh = RefreshFlow()
 
     init {
         favoritesToggleHelper.initializeTracking(
@@ -93,13 +96,16 @@ class MediaActivitiesViewModel(
         )
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh, Res.string.anime_media_activities_error_loading) {
-                combine(activitySortFilterController.filterParams, refresh, ::Pair)
-                    .mapLatest { (filterParams) ->
+            flowForRefreshableContent(
+                refresh.updates,
+                Res.string.anime_media_activities_error_loading,
+            ) {
+                activitySortFilterController.filterParams
+                    .mapLatest {
                         MediaActivitiesScreen.Entry(
                             aniListApi.mediaActivities(
                                 id = mediaId,
-                                sort = filterParams.sort.selectedOption(ActivitySortOption.NEWEST)
+                                sort = it.sort.selectedOption(ActivitySortOption.NEWEST)
                                     .toApiValue(),
                                 following = initialIsFollowing,
                             )
@@ -118,7 +124,7 @@ class MediaActivitiesViewModel(
             )
                 .filterNotNull()
                 .flatMapLatest { (entry) ->
-                    combine(activitySortFilterController.filterParams, refresh, ::Pair)
+                    combine(activitySortFilterController.filterParams, refresh.updates, ::Pair)
                         .flatMapLatest { (filterParams) ->
                             AniListPager { page ->
                                 if (page == 1 && initialIsFollowing) {
@@ -174,7 +180,7 @@ class MediaActivitiesViewModel(
                 .flowOn(CustomDispatchers.Main)
                 .filterNotNull()
                 .flatMapLatest { entry ->
-                    combine(activitySortFilterController.filterParams, refresh, ::Pair)
+                    combine(activitySortFilterController.filterParams, refresh.updates, ::Pair)
                         .flatMapLatest { (filterParams) ->
                             AniListPager { page ->
                                 if (page == 1 && !initialIsFollowing) {

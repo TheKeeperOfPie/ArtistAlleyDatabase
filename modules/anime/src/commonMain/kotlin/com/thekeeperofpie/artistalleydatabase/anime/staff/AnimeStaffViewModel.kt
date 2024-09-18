@@ -36,7 +36,7 @@ class AnimeStaffViewModel(
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
-                mediaDetailsViewModel.refresh,
+                mediaDetailsViewModel.refresh.updates,
                 snapshotFlow { mediaDetailsViewModel.entry.result }
                     .filterNotNull(),
             ) { it, _ -> it }
@@ -46,7 +46,7 @@ class AnimeStaffViewModel(
                     AniListPager2(
                         perPage = perPage,
                         prefetchDistance = 1,
-                        skipCache = refresh > 0,
+                        skipCache = refresh.fromUser,
                     ) { (page, skipCache) ->
                         val result =
                             aniListApi.mediaDetailsStaffPage(

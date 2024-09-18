@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescri
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,7 +34,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -56,14 +56,14 @@ class UserFavoriteMediaViewModel(
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val media = MutableStateFlow(PagingData.empty<MediaPreviewWithDescriptionEntry>())
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
                 viewer,
-                refresh,
+                refresh.updates,
                 ::Triple,
             ).flatMapLatest { (includeDescription, viewer) ->
                 val userId = userId ?: viewer?.id
@@ -102,9 +102,7 @@ class UserFavoriteMediaViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 
     data class MediaWrapper(
         val media: UserFavoriteMedia,

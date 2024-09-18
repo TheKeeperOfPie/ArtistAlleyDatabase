@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
@@ -27,7 +28,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import org.jetbrains.compose.resources.StringResource
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -44,11 +44,11 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
 
     abstract val sortFilterController: AnimeSettingsSortFilterController<FilterParams>
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh, loadingErrorTextRes) {
+            flowForRefreshableContent(refresh.updates, loadingErrorTextRes) {
                 sortFilterController.filterParams
                     .mapLatest(::initialRequest)
             }
@@ -58,7 +58,8 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            refresh.flatMapLatest { sortFilterController.filterParams }
+            refresh.updates
+                .flatMapLatest { sortFilterController.filterParams }
                 .flatMapLatest { filterParams ->
                     AniListPager { pagedRequest(it, filterParams) }
                 }
@@ -85,9 +86,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
     protected open fun Flow<PagingData<ListEntryType>>.transformFlow():
             Flow<PagingData<ListEntryType>> = this
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 
     fun clearError() {
         entry = entry.copy(error = null)

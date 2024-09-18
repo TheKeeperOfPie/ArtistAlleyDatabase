@@ -197,7 +197,7 @@ object AiringScheduleScreen {
                         val loading = refreshState is LoadState.Loading
                         val pullRefreshState = rememberPullRefreshState(
                             refreshing = loading,
-                            onRefresh = { viewModel.refresh.tryEmit(page) },
+                            onRefresh = viewModel::refresh,
                         )
                         val listState = rememberLazyListState()
                         viewModel.sortFilterController.ImmediateScrollResetEffect(listState)

@@ -17,11 +17,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
@@ -56,14 +56,14 @@ class ReviewDetailsViewModel(
     private val userRatingUpdates = MutableSharedFlow<ReviewRating>(1, 1)
 
     // TODO: Refresh isn't exposed to the user
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh
+            refresh.updates
                 .mapLatest {
                     aniListApi.reviewDetails(reviewId)
                         .let(ReviewDetailsScreen::Entry)

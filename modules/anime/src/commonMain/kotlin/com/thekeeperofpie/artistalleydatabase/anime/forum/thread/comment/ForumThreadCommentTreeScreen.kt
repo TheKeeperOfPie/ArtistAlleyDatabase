@@ -90,7 +90,7 @@ object ForumThreadCommentTreeScreen {
         title: String?,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val refresh by viewModel.refresh.collectAsState()
+        val refresh by viewModel.refresh.updates.collectAsState()
         val snackbarHostState = remember { SnackbarHostState() }
         val entry = viewModel.entry
         val errorText = entry.error?.let { stringResource(it.first) }

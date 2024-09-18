@@ -11,14 +11,13 @@ import com.anilist.fragment.ForumThread
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 
 @Inject
@@ -26,7 +25,7 @@ class ForumRootScreenViewModel(
     aniListApi: AuthedAniListApi,
 ) : ViewModel() {
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     var content by mutableStateOf(LoadingResult.loading<Entry>())
 
@@ -34,7 +33,7 @@ class ForumRootScreenViewModel(
         // TODO: Filter showAdult for forums in general
         viewModelScope.launch(CustomDispatchers.Main) {
             flowForRefreshableContent(
-                refresh = refresh,
+                refresh = refresh.updates,
                 errorTextRes = Res.string.anime_forum_root_error_loading,
             ) { flowFromSuspend { aniListApi.forumRoot() } }
                 .map {
@@ -53,9 +52,7 @@ class ForumRootScreenViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 
     data class Entry(
         val stickied: List<ForumThread>,

@@ -30,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.recommendation.Recommendatio
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -41,7 +42,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 
 @Inject
@@ -64,7 +64,7 @@ class AnimeHomeViewModel(
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
     val activity = MutableStateFlow(PagingData.empty<ActivityEntry>())
     val recommendations = MutableStateFlow(PagingData.empty<RecommendationEntry>())
 
@@ -78,7 +78,7 @@ class AnimeHomeViewModel(
 
     private fun collectActivity() {
         viewModelScope.launch(CustomDispatchers.IO) {
-            combine(refresh, aniListApi.authedUser, ::Pair)
+            combine(refresh.updates, aniListApi.authedUser, ::Pair)
                 .flatMapLatest { (_, viewer) ->
                     AniListPager(perPage = 6, prefetchDistance = 1) {
                         val result = aniListApi.userSocialActivity(
@@ -140,13 +140,14 @@ class AnimeHomeViewModel(
 
     private fun collectRecommendations() {
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest {
-                AniListPager(perPage = 6, prefetchDistance = 1) {
-                    val result =
-                        aniListApi.homeRecommendations(onList = true, page = it, perPage = 6)
-                    result.page.pageInfo to result.page.recommendations.filterNotNull()
+            refresh.updates
+                .flatMapLatest {
+                    AniListPager(perPage = 6, prefetchDistance = 1) {
+                        val result =
+                            aniListApi.homeRecommendations(onList = true, page = it, perPage = 6)
+                        result.page.pageInfo to result.page.recommendations.filterNotNull()
+                    }
                 }
-            }
                 .mapLatest {
                     it.mapOnIO {
                         RecommendationEntry(
@@ -213,8 +214,8 @@ class AnimeHomeViewModel(
     }
 
     fun refresh() {
+        refresh.refresh()
         newsController.refresh()
-        refresh.value = Clock.System.now().toEpochMilliseconds()
         notificationsController.forceRefresh()
     }
 }

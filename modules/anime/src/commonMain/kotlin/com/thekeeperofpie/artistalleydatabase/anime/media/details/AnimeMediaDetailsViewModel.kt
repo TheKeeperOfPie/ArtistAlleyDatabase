@@ -26,12 +26,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -71,7 +70,7 @@ class AnimeMediaDetailsViewModel(
 
     val hasAuth = oAuthStore.hasAuth
 
-    val refresh = MutableStateFlow(-1L)
+    val refresh = RefreshFlow()
 
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
     var listStatus by mutableStateOf(LoadingResult.loading<MediaListStatusController.Update>())
@@ -86,7 +85,8 @@ class AnimeMediaDetailsViewModel(
         )
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.mapLatest { aniListApi.mediaDetails(mediaId, it > 0) }
+            refresh.updates
+                .mapLatest { aniListApi.mediaDetails(mediaId, skipCache = it.fromUser) }
                 .mapLatest {
                     val result = it.result
                     if (result != null && result.media?.isAdult != false
@@ -189,7 +189,8 @@ class AnimeMediaDetailsViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.mapLatest { aniListApi.mediaDetailsUserData(mediaId) }
+            refresh.updates
+                .mapLatest { aniListApi.mediaDetailsUserData(mediaId) }
                 .flatMapLatest { result ->
                 mediaListStatusController.allChanges(mediaId)
                     .mapLatest { update ->
@@ -207,7 +208,5 @@ class AnimeMediaDetailsViewModel(
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 }

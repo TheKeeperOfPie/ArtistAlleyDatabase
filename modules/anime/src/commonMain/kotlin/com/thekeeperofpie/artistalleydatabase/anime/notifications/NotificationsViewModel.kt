@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
@@ -59,13 +60,13 @@ class NotificationsViewModel(
 
     val content = MutableStateFlow(PagingData.empty<NotificationEntry>())
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 settings.showAdult,
-                refresh,
+                refresh.updates,
                 ::Pair,
             ).flatMapLatest { (showAdult) ->
                 AniListPager {

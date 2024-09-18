@@ -3,20 +3,18 @@ package com.thekeeperofpie.artistalleydatabase.anime.notifications
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
-import com.hoc081098.flowext.throttleTime
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.minutes
 
@@ -28,16 +26,11 @@ class NotificationsController(scope: ApplicationScope, aniListApi: AuthedAniList
     var unreadCount by mutableIntStateOf(0)
         private set
 
-    private val refresh = MutableStateFlow(-1L)
-    private val forceRefresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow(throttle = 15.minutes)
 
     init {
         scope.launch(CustomDispatchers.Main) {
-            combine(
-                aniListApi.authedUser,
-                refresh.throttleTime(15.minutes),
-                forceRefresh,
-            ) { authedUser, _, _ ->
+            combine(aniListApi.authedUser, refresh.updates) { authedUser, _ ->
                 if (authedUser == null) 0 else {
                     aniListApi.unreadNotificationCount()
                 }
@@ -48,13 +41,9 @@ class NotificationsController(scope: ApplicationScope, aniListApi: AuthedAniList
         }
     }
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 
-    fun forceRefresh() {
-        forceRefresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun forceRefresh() = refresh.forceRefresh()
 
     suspend fun clear() {
         withContext(CustomDispatchers.Main) {

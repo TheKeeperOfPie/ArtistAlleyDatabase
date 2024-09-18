@@ -5,14 +5,13 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -20,21 +19,20 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi) {
 
-    private val refresh = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
-    val tags = refresh.mapLatest {
-        aniListApi.tags().mediaTagCollection
-            ?.filterNotNull()
-            ?.let(::buildTagSections)
-            .orEmpty()
-    }
+    val tags = refresh.updates
+        .mapLatest {
+            aniListApi.tags().mediaTagCollection
+                ?.filterNotNull()
+                ?.let(::buildTagSections)
+                .orEmpty()
+        }
         .catch { emit(emptyMap()) }
         .flowOn(CustomDispatchers.IO)
         .shareIn(scope, SharingStarted.Lazily, replay = 1)
 
-    fun refresh() {
-        refresh.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 
     /**
      * Categories are provided from the API in the form of "Parent-Child". This un-flattens the

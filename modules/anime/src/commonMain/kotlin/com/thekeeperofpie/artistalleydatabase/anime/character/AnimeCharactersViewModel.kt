@@ -54,7 +54,7 @@ class AnimeCharactersViewModel(
 
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
-                mediaDetailsViewModel.refresh,
+                mediaDetailsViewModel.refresh.updates,
                 snapshotFlow { mediaDetailsViewModel.entry.result?.media?.characters }
                     .filterNotNull(),
                 ::Pair,
@@ -65,7 +65,7 @@ class AnimeCharactersViewModel(
                     AniListPager2(
                         perPage = perPage,
                         prefetchDistance = 1,
-                        skipCache = refresh > 0,
+                        skipCache = refresh.fromUser,
                     ) { (page, skipCache) ->
                         if (page == 1) {
                             characters.run { pageInfo to edges }
