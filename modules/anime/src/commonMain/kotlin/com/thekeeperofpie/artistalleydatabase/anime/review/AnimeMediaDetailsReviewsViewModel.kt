@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.MediaDetails2Query
+import com.anilist.MediaDetailsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,7 +27,7 @@ class AnimeMediaDetailsReviewsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { mediaDetailsViewModel.entry2.result?.media }
+            snapshotFlow { mediaDetailsViewModel.entry.result?.media }
                 .mapLatest {
                     ReviewsEntry(
                         reviews = it?.reviews?.nodes?.filterNotNull().orEmpty(),
@@ -39,7 +39,7 @@ class AnimeMediaDetailsReviewsViewModel(
     }
 
     data class ReviewsEntry(
-        val reviews: List<MediaDetails2Query.Data.Media.Reviews.Node>,
+        val reviews: List<MediaDetailsQuery.Data.Media.Reviews.Node>,
         val hasMore: Boolean,
     )
 }

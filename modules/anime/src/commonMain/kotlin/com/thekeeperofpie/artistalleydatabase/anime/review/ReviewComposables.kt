@@ -41,7 +41,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_user_avatar_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_view_all_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_icon_content_description
-import com.anilist.MediaDetails2Query
+import com.anilist.MediaDetailsQuery
 import com.anilist.fragment.MediaAndReviewsReview
 import com.anilist.fragment.MediaNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
@@ -329,7 +329,7 @@ fun LazyGridScope.reviewsSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
-    onReviewClick: (AnimeNavigator.NavigationCallback, MediaDetails2Query.Data.Media.Reviews.Node) -> Unit,
+    onReviewClick: (AnimeNavigator.NavigationCallback, MediaDetailsQuery.Data.Media.Reviews.Node) -> Unit,
 ) {
     if (entry != null && entry.reviews.isEmpty()) return
     listSection(

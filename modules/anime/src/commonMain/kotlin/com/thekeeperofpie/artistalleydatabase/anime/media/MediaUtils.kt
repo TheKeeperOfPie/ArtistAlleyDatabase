@@ -107,7 +107,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_is_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_is_spoiler
 import artistalleydatabase.modules.anime.generated.resources.anime_media_type_anime_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_type_manga_icon_content_description
-import com.anilist.MediaDetails2Query
+import com.anilist.MediaDetailsQuery
 import com.anilist.MediaListEntryQuery
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaDetailsListEntry
@@ -449,7 +449,7 @@ object MediaUtils {
 
     @Composable
     fun formatRanking(
-        ranking: MediaDetails2Query.Data.Media.Ranking,
+        ranking: MediaDetailsQuery.Data.Media.Ranking,
         seasonYearTextRes: StringResource,
         yearTextRes: StringResource,
         allTimeTextRes: StringResource,

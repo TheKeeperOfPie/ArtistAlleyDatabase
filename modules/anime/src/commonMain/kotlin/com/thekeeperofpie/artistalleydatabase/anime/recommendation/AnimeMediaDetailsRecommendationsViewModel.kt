@@ -52,7 +52,7 @@ class AnimeMediaDetailsRecommendationsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { mediaDetailsViewModel.entry2.result }
+            snapshotFlow { mediaDetailsViewModel.entry.result }
                 .filterNotNull()
                 .take(1)
                 .flatMapLatest {

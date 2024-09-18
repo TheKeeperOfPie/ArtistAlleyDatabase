@@ -47,11 +47,11 @@ import com.anilist.MediaAndReviewsPaginationQuery
 import com.anilist.MediaAndReviewsQuery
 import com.anilist.MediaAutocompleteQuery
 import com.anilist.MediaByIdsQuery
-import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsActivityQuery
 import com.anilist.MediaDetailsCharactersPageQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaDetailsStaffPageQuery
+import com.anilist.MediaDetailsUserDataQuery
 import com.anilist.MediaListEntryQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
@@ -350,8 +350,8 @@ open class AuthedAniListApi(
         }
     }
 
-    open suspend fun mediaDetails2(id: String, skipCache: Boolean) =
-        queryLoadingResult(MediaDetails2Query(id.toInt()), skipCache)
+    open suspend fun mediaDetailsUserData(id: String) =
+        queryLoadingResult(MediaDetailsUserDataQuery(id.toInt()), skipCache = true)
 
     open suspend fun mediaDetailsCharactersPage(
         mediaId: String,

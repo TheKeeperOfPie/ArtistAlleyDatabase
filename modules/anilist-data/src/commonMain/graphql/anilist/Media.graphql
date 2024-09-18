@@ -229,9 +229,6 @@ query MediaDetails($mediaId: Int!) {
         genres
         hashtag
         isLicensed
-        mediaListEntry {
-            ...MediaDetailsListEntry
-        }
         nextAiringEpisode {
             episode
             airingAt
@@ -265,13 +262,6 @@ query MediaDetails($mediaId: Int!) {
         volumes
         chapters
         updatedAt
-    }
-}
-
-query MediaDetails2($mediaId: Int!) {
-    Media(id: $mediaId) {
-        isAdult
-        type
         externalLinks {
             id
             type
@@ -340,6 +330,17 @@ query MediaDetails2($mediaId: Int!) {
             id
             site
             thumbnail
+        }
+    }
+}
+
+# Separated out to always load latest user data when viewing media
+query MediaDetailsUserData($mediaId: Int!) {
+    Media(id: $mediaId) {
+        isAdult
+        type
+        mediaListEntry {
+            ...MediaDetailsListEntry
         }
     }
 }

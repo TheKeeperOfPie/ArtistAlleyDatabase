@@ -22,7 +22,6 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_adult
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_long_click_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_spoiler
-import com.anilist.MediaDetails2Query
 import com.anilist.MediaDetailsQuery
 import com.anilist.fragment.GeneralMediaTag
 import com.anilist.fragment.HomeMedia
@@ -150,12 +149,6 @@ data class AnimeMediaTagEntry(
     )
 
     constructor(tag: MediaDetailsQuery.Data.Media.Tag) : this(
-        tag,
-        isMediaSpoiler = tag.isMediaSpoiler,
-        rank = tag.rank
-    )
-
-    constructor(tag: MediaDetails2Query.Data.Media.Tag) : this(
         tag,
         isMediaSpoiler = tag.isMediaSpoiler,
         rank = tag.rank

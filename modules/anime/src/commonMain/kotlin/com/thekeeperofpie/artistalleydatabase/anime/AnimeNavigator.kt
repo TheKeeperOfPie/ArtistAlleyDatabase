@@ -329,7 +329,6 @@ object AnimeNavigator {
                         }
                     )
                 },
-                requestLoadMedia2 = mediaDetailsViewModel::requestLoadMedia2,
                 recommendationsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
                     items = recommendationsViewModel.recommendations?.recommendations,
                     aboveFold = RecommendationComposables.RECOMMENDATIONS_ABOVE_FOLD,

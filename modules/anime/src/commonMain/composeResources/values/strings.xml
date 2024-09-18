@@ -363,6 +363,7 @@
     <string name="anime_media_details_streaming_episode_icon_content_description">Episode site icon</string>
     <string name="anime_media_details_streaming_episode_spoiler_content_description">Episodes spoiler warning</string>
     <string name="anime_media_details_streaming_episode_spoiler">Spoiler</string>
+
     <string name="anime_media_details_fab_user_status_current_anime">Watching %1$d/%2$d</string>
     <string name="anime_media_details_fab_user_status_current_anime_unknown_max">Watching %1$d/?</string>
     <string name="anime_media_details_fab_user_status_current_not_anime">Reading %1$d/%2$d</string>
@@ -375,6 +376,7 @@
     <string name="anime_media_details_fab_user_status_paused">On hold</string>
     <string name="anime_media_details_fab_user_status_repeating">Repeating</string>
     <string name="anime_media_details_fab_user_status_unknown">Unknown</string>
+    <string name="anime_media_details_fab_user_status_failed_to_load_content_description">Media user list status error</string>
     <string name="anime_media_details_fab_user_status_current_anime_icon_content_description">Watching icon</string>
     <string name="anime_media_details_fab_user_status_current_not_anime_icon_content_description">Reading icon</string>
     <string name="anime_media_details_fab_user_status_planning_icon_content_description">Planning icon</string>

@@ -35,7 +35,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -43,7 +42,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.runningFold
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
@@ -74,12 +72,9 @@ class AnimeMediaDetailsViewModel(
     val hasAuth = oAuthStore.hasAuth
 
     val refresh = MutableStateFlow(-1L)
-    private val refreshSecondary = MutableStateFlow(-1L)
-    private val barrierMedia2 = MutableStateFlow(false)
 
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
-    var entry2 by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry2>>(LoadingResult.loading())
-    var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
+    var listStatus by mutableStateOf(LoadingResult.loading<MediaListStatusController.Update>())
 
     init {
         favoritesToggleHelper.initializeTracking(
@@ -194,55 +189,25 @@ class AnimeMediaDetailsViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            combine(
-                snapshotFlow { entry.result }.filterNotNull().flowOn(CustomDispatchers.Main),
-                mediaListStatusController.allChanges(mediaId),
-            ) { entry, update ->
-                val mediaListEntry = entry.media.mediaListEntry
-                MediaListStatusController.Update(
-                    mediaId = entry.mediaId,
-                    entry = if (update == null) mediaListEntry else update.entry,
-                )
-            }
-                .catch {}
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest { listStatus = it }
-        }
-
-        viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { entry.result }
-                .filterNotNull()
-                .take(1)
-                .flatMapLatest { barrierMedia2.filter { it } }
-                .flatMapLatest {
-                    combine(refresh, refreshSecondary, ::Pair)
-                        .mapLatest {
-                            aniListApi.mediaDetails2(
-                                id = mediaId,
-                                skipCache = it.first > 0 || it.second > 0,
+            refresh.mapLatest { aniListApi.mediaDetailsUserData(mediaId) }
+                .flatMapLatest { result ->
+                mediaListStatusController.allChanges(mediaId)
+                    .mapLatest { update ->
+                        result.transformResult {
+                            val mediaListEntry = it.media?.mediaListEntry
+                            MediaListStatusController.Update(
+                                mediaId = mediaId,
+                                entry = if (update == null) mediaListEntry else update.entry,
                             )
                         }
-                        .flowOn(CustomDispatchers.IO)
-                        .mapLatest { result ->
-                            result.transformResult {
-                                result.result?.media?.let {
-                                    AnimeMediaDetailsScreen.Entry2(mediaId, it)
-                                }
-                            }
-                        }
-                }
-                .foldPreviousResult(initialResult = LoadingResult.empty())
-                .collectLatest { entry2 = it }
+                    }
+            }
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { listStatus = it }
         }
     }
 
     fun refresh() {
         refresh.value = Clock.System.now().toEpochMilliseconds()
     }
-
-    fun refreshSecondary() {
-        refreshSecondary.value = Clock.System.now().toEpochMilliseconds()
-    }
-
-    fun requestLoadMedia2() = barrierMedia2.tryEmit(true)
 }
