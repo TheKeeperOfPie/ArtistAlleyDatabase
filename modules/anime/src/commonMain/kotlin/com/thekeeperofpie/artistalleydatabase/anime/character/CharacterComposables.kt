@@ -74,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
@@ -198,7 +199,8 @@ fun CharacterSmallCard(
                             .size(width = 40.dp, height = 40.dp)
                             .sharedElement(
                                 innerSharedTransitionKey,
-                                innerSharedTransitionIdentifier
+                                innerSharedTransitionIdentifier,
+                                zIndexInOverlay = 1f,
                             )
                             .align(Alignment.BottomEnd)
                             .clip(clipShape)
@@ -362,99 +364,107 @@ fun CharactersSectionItem(
     character: DetailsCharacter?,
     showVoiceActorAsMain: Boolean,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
-    val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
-    val characterName = character?.character?.name?.primaryName()
-    val image = if (showVoiceActorAsMain) voiceActor?.image else character?.image
-    val innerImage = if (showVoiceActorAsMain) character?.image else voiceActor?.image
-    val imageState = rememberImageStateBelowInnerImage(image, innerImage)
-    val innerImageState = rememberCoilImageState(innerImage)
-    val characterSharedTransitionKey = character?.id?.let { SharedTransitionKey.makeKeyForId(it) }
-    val voiceActorTransitionKey = voiceActor?.id?.let { SharedTransitionKey.makeKeyForId(it) }
-    val onClickCharacter: () -> Unit = {
-        if (character?.character != null) {
-            navigationCallback.navigate(
-                AnimeDestination.CharacterDetails(
-                    characterId = character.id,
-                    sharedTransitionKey = characterSharedTransitionKey,
-                    headerParams = CharacterHeaderParams(
-                        name = characterName,
-                        subtitle = null,
-                        favorite = null,
-                        coverImage = if (showVoiceActorAsMain) {
-                            innerImageState
-                        } else {
-                            imageState
-                        }.toImageState(),
+    val sharedTransitionScopeKey = character?.id.toString()
+    SharedTransitionKeyScope(sharedTransitionScopeKey) {
+        val navigationCallback = LocalNavigationCallback.current
+        val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
+        val characterName = character?.character?.name?.primaryName()
+        val image = if (showVoiceActorAsMain) voiceActor?.image else character?.image
+        val innerImage = if (showVoiceActorAsMain) character?.image else voiceActor?.image
+        val imageState = rememberImageStateBelowInnerImage(image, innerImage)
+        val innerImageState = rememberCoilImageState(innerImage)
+        val characterSharedTransitionKey =
+            character?.id?.let { SharedTransitionKey.makeKeyForId(it) }
+
+        // Manually attach a scope to mirror StaffListRow
+        val voiceActorTransitionKey = voiceActor?.id?.let {
+            SharedTransitionKey.makeKeyWithScope(it, "staff_card", voiceActor.idWithRole)
+        }
+        val onClickCharacter: () -> Unit = {
+            if (character?.character != null) {
+                navigationCallback.navigate(
+                    AnimeDestination.CharacterDetails(
+                        characterId = character.id,
+                        sharedTransitionScopeKey = sharedTransitionScopeKey,
+                        headerParams = CharacterHeaderParams(
+                            name = characterName,
+                            subtitle = null,
+                            favorite = null,
+                            coverImage = if (showVoiceActorAsMain) {
+                                innerImageState
+                            } else {
+                                imageState
+                            }.toImageState(),
+                        )
                     )
                 )
-            )
-        }
-    }
-    val voiceActorName = voiceActor?.staff?.name?.primaryName()
-    val voiceActorSubtitle = voiceActor?.staff?.name?.subtitleName()
-    val onClickVoiceActor: () -> Unit = {
-        voiceActor?.let {
-            navigationCallback.navigate(
-                AnimeDestination.StaffDetails(
-                    staffId = voiceActor.id,
-                    sharedTransitionKey = voiceActorTransitionKey,
-                    headerParams = StaffHeaderParams(
-                        name = voiceActorName,
-                        subtitle = voiceActorSubtitle,
-                        coverImage = if (showVoiceActorAsMain) {
-                            imageState
-                        } else {
-                            innerImageState
-                        }.toImageState(),
-                        favorite = null,
-                    )
-                )
-            )
-        }
-    }
-    CharactersSectionItem(
-        sharedTransitionKey = if (showVoiceActorAsMain) {
-            voiceActorTransitionKey
-        } else {
-            characterSharedTransitionKey
-        },
-        sharedTransitionIdentifier = if (showVoiceActorAsMain) {
-            "staff_image"
-        } else {
-            "character_image"
-        },
-        innerSharedTransitionKey = if (showVoiceActorAsMain) {
-            characterSharedTransitionKey
-        } else {
-            voiceActorTransitionKey
-        },
-        innerSharedTransitionIdentifier = if (showVoiceActorAsMain) {
-            "character_image"
-        } else {
-            "staff_image"
-        },
-        imageState = imageState,
-        innerImageState = innerImageState,
-        onClick = if (showVoiceActorAsMain) {
-            onClickVoiceActor
-        } else {
-            onClickCharacter
-        },
-        onClickInnerImage = if (showVoiceActorAsMain) {
-            onClickCharacter
-        } else {
-            onClickVoiceActor
-        },
-        text = {
-            if (showVoiceActorAsMain) {
-                voiceActor?.name.orEmpty()
-            } else {
-                character?.name?.primaryName().orEmpty()
             }
-        },
-        isStaffMain = showVoiceActorAsMain,
-    )
+        }
+        val voiceActorName = voiceActor?.staff?.name?.primaryName()
+        val voiceActorSubtitle = voiceActor?.staff?.name?.subtitleName()
+        val onClickVoiceActor: () -> Unit = {
+            voiceActor?.let {
+                navigationCallback.navigate(
+                    AnimeDestination.StaffDetails(
+                        staffId = voiceActor.id,
+                        sharedTransitionKey = voiceActorTransitionKey,
+                        headerParams = StaffHeaderParams(
+                            name = voiceActorName,
+                            subtitle = voiceActorSubtitle,
+                            coverImage = if (showVoiceActorAsMain) {
+                                imageState
+                            } else {
+                                innerImageState
+                            }.toImageState(),
+                            favorite = null,
+                        )
+                    )
+                )
+            }
+        }
+        CharactersSectionItem(
+            sharedTransitionKey = if (showVoiceActorAsMain) {
+                voiceActorTransitionKey
+            } else {
+                characterSharedTransitionKey
+            },
+            sharedTransitionIdentifier = if (showVoiceActorAsMain) {
+                "staff_image"
+            } else {
+                "character_image"
+            },
+            innerSharedTransitionKey = if (showVoiceActorAsMain) {
+                characterSharedTransitionKey
+            } else {
+                voiceActorTransitionKey
+            },
+            innerSharedTransitionIdentifier = if (showVoiceActorAsMain) {
+                "character_image"
+            } else {
+                "staff_image"
+            },
+            imageState = imageState,
+            innerImageState = innerImageState,
+            onClick = if (showVoiceActorAsMain) {
+                onClickVoiceActor
+            } else {
+                onClickCharacter
+            },
+            onClickInnerImage = if (showVoiceActorAsMain) {
+                onClickCharacter
+            } else {
+                onClickVoiceActor
+            },
+            text = {
+                if (showVoiceActorAsMain) {
+                    voiceActor?.name.orEmpty()
+                } else {
+                    character?.name?.primaryName().orEmpty()
+                }
+            },
+            isStaffMain = showVoiceActorAsMain,
+        )
+    }
 }
 
 @Composable
@@ -503,132 +513,52 @@ fun CharacterCard(
     character: DetailsCharacter?,
     voiceActorLanguage: VoiceActorLanguageOption = LocalLanguageOptionVoiceActor.current.first,
 ) {
-    val coverImageState = rememberCoilImageState(character?.character?.image?.large)
-    val navigationCallback = LocalNavigationCallback.current
-    val characterName = character?.character?.name?.primaryName()
+    val sharedTransitionScopeKey = character?.id.toString()
+    SharedTransitionKeyScope(sharedTransitionScopeKey) {
+        val coverImageState = rememberCoilImageState(character?.character?.image?.large)
+        val navigationCallback = LocalNavigationCallback.current
+        val characterName = character?.character?.name?.primaryName()
 
-    val voiceActor = AniListUtils.selectVoiceActor(
-        map = character?.languageToVoiceActor,
-        voiceActorLanguage = voiceActorLanguage
-    )
-    val characterSharedTransitionKey = character?.id?.let { SharedTransitionKey.makeKeyForId(it) }
-    val voiceActorSharedTransitionKey = voiceActor?.id?.let { SharedTransitionKey.makeKeyForId(it) }
-    ElevatedCard(
-        onClick = {
-            character?.character?.let {
-                navigationCallback.navigate(
-                    AnimeDestination.CharacterDetails(
-                        characterId = character.id,
-                        sharedTransitionKey = characterSharedTransitionKey,
-                        headerParams = CharacterHeaderParams(
-                            name = characterName,
-                            subtitle = null,
-                            favorite = null,
-                            coverImage = coverImageState.toImageState(),
-                        )
-                    )
-                )
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .height(IntrinsicSize.Min)
-                .heightIn(min = minHeight)
-        ) {
-            val density = LocalDensity.current
-            val width = density.run { imageWidth.roundToPx() }
-            CharacterCoverImage(
-                imageState = coverImageState,
-                image = coverImageState.request()
-                    .crossfade(true)
-                    .allowHardware(true)
-                    .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
-                    .build(),
-                modifier = Modifier
-                    .width(imageWidth)
-                    .fillMaxHeight()
-                    .sharedElement(characterSharedTransitionKey, "character_image")
-                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-                    .placeholder(
-                        visible = character == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    ),
-                contentScale = ContentScale.Crop
-            )
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(vertical = 10.dp)
-                ) {
-                    Text(
-                        text = character?.name?.primaryName() ?: "FirstName LastName",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier.placeholder(
-                            visible = character == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                    )
-
-                    if (character == null || character.roleTextRes != null) {
-                        Text(
-                            text = stringResource(
-                                character?.roleTextRes ?: Res.string.anime_character_role_main
-                            ),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.typography.labelSmall.color
-                                .takeOrElse { LocalContentColor.current }
-                                .copy(alpha = 0.8f),
-                            modifier = Modifier.placeholder(
-                                visible = character == null,
-                                highlight = PlaceholderHighlight.shimmer(),
+        val voiceActor = AniListUtils.selectVoiceActor(
+            map = character?.languageToVoiceActor,
+            voiceActorLanguage = voiceActorLanguage
+        )
+        val characterSharedTransitionKey =
+            character?.id?.let { SharedTransitionKey.makeKeyForId(it) }
+        val voiceActorSharedTransitionKey =
+            voiceActor?.id?.let { SharedTransitionKey.makeKeyForId(it) }
+        ElevatedCard(
+            onClick = {
+                character?.character?.let {
+                    navigationCallback.navigate(
+                        AnimeDestination.CharacterDetails(
+                            characterId = character.id,
+                            sharedTransitionScopeKey = sharedTransitionScopeKey,
+                            headerParams = CharacterHeaderParams(
+                                name = characterName,
+                                subtitle = null,
+                                favorite = null,
+                                coverImage = coverImageState.toImageState(),
                             )
                         )
-                    }
+                    )
                 }
-
-                Spacer(Modifier.weight(1f))
-
-                if (character == null || voiceActor != null) {
-                    Box(
-                        contentAlignment = Alignment.BottomEnd,
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .align(Alignment.End)
-                    ) {
-                        AutoSizeText(
-                            text = voiceActor?.name ?: "FirstName LastName",
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier
-                                .padding(vertical = 10.dp)
-                                .placeholder(
-                                    visible = character == null,
-                                    highlight = PlaceholderHighlight.shimmer(),
-                                )
-                        )
-                    }
-                }
-            }
-
-            if (character == null || voiceActor?.image != null) {
-                val voiceActorImageState = rememberCoilImageState(voiceActor?.image)
-                val voiceActorName = voiceActor?.staff?.name?.primaryName()
-                val voiceActorSubtitle = voiceActor?.staff?.name?.subtitleName()
-                StaffCoverImage(
-                    imageState = voiceActorImageState,
-                    image = voiceActorImageState.request()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .heightIn(min = minHeight)
+            ) {
+                val density = LocalDensity.current
+                val width = density.run { imageWidth.roundToPx() }
+                CharacterCoverImage(
+                    imageState = coverImageState,
+                    image = coverImageState.request()
                         .crossfade(true)
                         .allowHardware(true)
                         .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
@@ -636,31 +566,116 @@ fun CharacterCard(
                     modifier = Modifier
                         .width(imageWidth)
                         .fillMaxHeight()
-                        .sharedElement(voiceActorSharedTransitionKey, "staff_image")
-                        .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                        .sharedElement(characterSharedTransitionKey, "character_image")
+                        .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                         .placeholder(
                             visible = character == null,
                             highlight = PlaceholderHighlight.shimmer(),
+                        ),
+                    contentScale = ContentScale.Crop
+                )
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.Start,
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .padding(vertical = 10.dp)
+                    ) {
+                        Text(
+                            text = character?.name?.primaryName() ?: "FirstName LastName",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.placeholder(
+                                visible = character == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
                         )
-                        .clickable {
-                            if (voiceActor != null) {
-                                navigationCallback.navigate(
-                                    AnimeDestination.StaffDetails(
-                                        staffId = voiceActor.staff.id.toString(),
-                                        sharedTransitionKey = voiceActorSharedTransitionKey,
-                                        headerParams = StaffHeaderParams(
-                                            name = voiceActorName,
-                                            subtitle = voiceActorSubtitle,
-                                            coverImage = voiceActorImageState.toImageState(),
-                                            favorite = null,
+
+                        if (character == null || character.roleTextRes != null) {
+                            Text(
+                                text = stringResource(
+                                    character?.roleTextRes ?: Res.string.anime_character_role_main
+                                ),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.typography.labelSmall.color
+                                    .takeOrElse { LocalContentColor.current }
+                                    .copy(alpha = 0.8f),
+                                modifier = Modifier.placeholder(
+                                    visible = character == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.weight(1f))
+
+                    if (character == null || voiceActor != null) {
+                        Box(
+                            contentAlignment = Alignment.BottomEnd,
+                            modifier = Modifier
+                                .wrapContentWidth()
+                                .align(Alignment.End)
+                        ) {
+                            AutoSizeText(
+                                text = voiceActor?.name ?: "FirstName LastName",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .placeholder(
+                                        visible = character == null,
+                                        highlight = PlaceholderHighlight.shimmer(),
+                                    )
+                            )
+                        }
+                    }
+                }
+
+                if (character == null || voiceActor?.image != null) {
+                    val voiceActorImageState = rememberCoilImageState(voiceActor?.image)
+                    val voiceActorName = voiceActor?.staff?.name?.primaryName()
+                    val voiceActorSubtitle = voiceActor?.staff?.name?.subtitleName()
+                    StaffCoverImage(
+                        imageState = voiceActorImageState,
+                        image = voiceActorImageState.request()
+                            .crossfade(true)
+                            .allowHardware(true)
+                            .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
+                            .build(),
+                        modifier = Modifier
+                            .width(imageWidth)
+                            .fillMaxHeight()
+                            .sharedElement(voiceActorSharedTransitionKey, "staff_image")
+                            .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                            .placeholder(
+                                visible = character == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                            .clickable {
+                                if (voiceActor != null) {
+                                    navigationCallback.navigate(
+                                        AnimeDestination.StaffDetails(
+                                            staffId = voiceActor.staff.id.toString(),
+                                            sharedTransitionKey = voiceActorSharedTransitionKey,
+                                            headerParams = StaffHeaderParams(
+                                                name = voiceActorName,
+                                                subtitle = voiceActorSubtitle,
+                                                coverImage = voiceActorImageState.toImageState(),
+                                                favorite = null,
+                                            )
                                         )
                                     )
-                                )
-                            }
-                        },
-                    contentScale = ContentScale.Crop,
-                    contentDescriptionTextRes = Res.string.anime_media_voice_actor_image
-                )
+                                }
+                            },
+                        contentScale = ContentScale.Crop,
+                        contentDescriptionTextRes = Res.string.anime_media_voice_actor_image
+                    )
+                }
             }
         }
     }

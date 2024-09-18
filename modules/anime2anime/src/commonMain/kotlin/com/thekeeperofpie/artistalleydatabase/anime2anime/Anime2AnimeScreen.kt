@@ -121,6 +121,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
@@ -549,6 +550,7 @@ object Anime2AnimeScreen {
         val subtitleName = character.name?.subtitleName()
         val coverImageState = rememberCoilImageState(character.image?.large)
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(character.id.toString())
+        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         CharacterCoverImage(
             imageState = coverImageState,
             image = coverImageState.request().build(),
@@ -556,12 +558,13 @@ object Anime2AnimeScreen {
                 .fillMaxHeight()
                 .width(48.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
+                .sharedElement(sharedTransitionKey, "character_image")
                 .combinedClickable(
                     onClick = {
                         navigationCallback.navigate(
                             AnimeDestination.CharacterDetails(
                                 characterId = character.id.toString(),
-                                sharedTransitionKey = sharedTransitionKey,
+                                sharedTransitionScopeKey = sharedTransitionScopeKey,
                                 headerParams = CharacterHeaderParams(
                                     name = characterName,
                                     subtitle = subtitleName,

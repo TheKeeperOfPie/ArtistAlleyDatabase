@@ -65,6 +65,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_banner_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
 import artistalleydatabase.modules.anime.generated.resources.anime_unfold_less_text
+import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
@@ -230,6 +231,9 @@ internal fun CoverAndBannerHeader(
                     ElevatedCard(
                         modifier = Modifier
                             .sharedElement(sharedTransitionKey, coverImageSharedTransitionIdentifier)
+                            .also {
+                                Logger.d("SharedDebug") { "CharacterHeader = $sharedTransitionKey - $coverImageSharedTransitionIdentifier" }
+                            }
                     ) {
                         val imageHeight = rowHeight - 20.dp
                         val maxWidth = LocalWindowConfiguration.current.screenWidthDp * 0.4f

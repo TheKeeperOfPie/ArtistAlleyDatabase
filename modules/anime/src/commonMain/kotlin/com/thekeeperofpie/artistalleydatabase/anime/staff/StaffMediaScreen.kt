@@ -31,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.pri
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.character.rememberImageStateBelowInnerImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
@@ -80,6 +81,8 @@ object StaffMediaScreen {
                                     SharedTransitionKey.makeKeyForId(it.character.id.toString())
                                 val mediaSharedTransitionKey = it.media?.id?.toString()
                                     ?.let { SharedTransitionKey.makeKeyForId(it) }
+                                val sharedTransitionScopeKey =
+                                    LocalSharedTransitionPrefixKeys.current
                                 CharacterSmallCard(
                                     sharedTransitionKey = characterSharedTransitionKey,
                                     sharedTransitionIdentifier = "character_image",
@@ -93,7 +96,7 @@ object StaffMediaScreen {
                                         navigationCallback.navigate(
                                             AnimeDestination.CharacterDetails(
                                                 characterId = it.character.id.toString(),
-                                                sharedTransitionKey = characterSharedTransitionKey,
+                                                sharedTransitionScopeKey = sharedTransitionScopeKey,
                                                 headerParams = CharacterHeaderParams(
                                                     name = characterName,
                                                     subtitle = null,

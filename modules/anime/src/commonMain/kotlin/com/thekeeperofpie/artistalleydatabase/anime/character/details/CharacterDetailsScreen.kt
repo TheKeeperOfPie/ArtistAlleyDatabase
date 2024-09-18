@@ -108,7 +108,6 @@ object CharacterDetailsScreen {
         viewModel: AnimeCharacterDetailsViewModel,
         upIconOption: UpIconOption?,
         headerValues: CharacterHeaderValues,
-        sharedTransitionKey: SharedTransitionKey?,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -149,7 +148,7 @@ object CharacterDetailsScreen {
                             characterId = viewModel.characterId,
                             progress = it,
                             headerValues = headerValues,
-                            sharedTransitionKey = sharedTransitionKey,
+                            sharedTransitionKey = SharedTransitionKey.makeKeyForId(viewModel.characterId),
                             coverImageState = coverImageState,
                             onFavoriteChanged = {
                                 viewModel.favoritesToggleHelper

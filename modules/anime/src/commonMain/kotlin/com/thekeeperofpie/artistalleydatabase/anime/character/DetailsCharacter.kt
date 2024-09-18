@@ -21,5 +21,7 @@ data class DetailsCharacter(
         val image: String?,
         val language: String,
         val staff: StaffNavigationData,
-    )
+    ) {
+        val idWithRole = "$id-$language"
+    }
 }

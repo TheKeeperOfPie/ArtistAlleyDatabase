@@ -45,6 +45,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_character_fav
 import artistalleydatabase.modules.anime.generated.resources.anime_character_image_long_press_preview
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_content_description
+import co.touchlab.kermit.Logger
 import coil3.request.crossfade
 import com.anilist.CharacterAdvancedSearchQuery.Data.Page.Character
 import com.anilist.fragment.CharacterNavigationData
@@ -73,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -102,12 +104,13 @@ object CharacterListRow {
         val navigationCallback = LocalNavigationCallback.current
         val characterName = entry?.character?.name?.primaryName()
         val characterSharedTransitionKey = entry?.character?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
+        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         val onClick = {
             if (entry != null) {
                 navigationCallback.navigate(
                     AnimeDestination.CharacterDetails(
                         characterId = entry.character.id.toString(),
-                        sharedTransitionKey = characterSharedTransitionKey,
+                        sharedTransitionScopeKey = sharedTransitionScopeKey,
                         headerParams = CharacterHeaderParams(
                             name = characterName,
                             subtitle = null,
@@ -131,6 +134,7 @@ object CharacterListRow {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 CharacterImage(
                     imageState = coverImageState,
+                    sharedTransitionKey = characterSharedTransitionKey,
                     entry = entry,
                     onClick = onClick,
                 )
@@ -177,6 +181,7 @@ object CharacterListRow {
     @Composable
     private fun CharacterImage(
         imageState: CoilImageState,
+        sharedTransitionKey: SharedTransitionKey?,
         entry: Entry?,
         onClick: () -> Unit,
     ) {
@@ -191,6 +196,10 @@ object CharacterListRow {
                 .heightIn(min = MIN_HEIGHT)
                 .width(IMAGE_WIDTH)
                 .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                .sharedElement(sharedTransitionKey, "character_image")
+                .also {
+                    Logger.d("SharedDebug") { "CharacterListRow Image = $sharedTransitionKey - character_image" }
+                }
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .placeholder(
                     visible = entry == null,

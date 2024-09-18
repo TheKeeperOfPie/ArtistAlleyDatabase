@@ -66,6 +66,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
@@ -250,6 +251,7 @@ object StaffListRow {
                 val characterName = it.name?.primaryName()
                 val imageState = rememberCoilImageState(it.image?.large)
                 val sharedTransitionKey = SharedTransitionKey.makeKeyForId(it.id.toString())
+                val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
                 ListRowSmallImage(
                     density = density,
                     ignored = false,
@@ -259,7 +261,7 @@ object StaffListRow {
                         navigationCallback.navigate(
                             AnimeDestination.CharacterDetails(
                                 characterId = it.id.toString(),
-                                sharedTransitionKey = sharedTransitionKey,
+                                sharedTransitionScopeKey = sharedTransitionScopeKey,
                                 headerParams = CharacterHeaderParams(
                                     name = characterName,
                                     subtitle = null,

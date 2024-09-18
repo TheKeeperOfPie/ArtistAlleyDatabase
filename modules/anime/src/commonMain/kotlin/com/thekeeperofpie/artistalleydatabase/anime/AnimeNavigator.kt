@@ -466,12 +466,13 @@ object AnimeNavigator {
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
-            CharacterDetailsScreen(
-                viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
-                headerValues = headerValues,
-                sharedTransitionKey = destination.sharedTransitionKey,
-            )
+            SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
+                CharacterDetailsScreen(
+                    viewModel = viewModel,
+                    upIconOption = UpIconOption.Back(navHostController),
+                    headerValues = headerValues,
+                )
+            }
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.CharacterMedias>(

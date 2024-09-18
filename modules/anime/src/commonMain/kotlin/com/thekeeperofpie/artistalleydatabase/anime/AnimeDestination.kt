@@ -65,7 +65,7 @@ sealed interface AnimeDestination {
     @Serializable
     data class CharacterDetails(
         val characterId: String,
-        val sharedTransitionKey: SharedTransitionKey? = null,
+        val sharedTransitionScopeKey: String? = null,
         val headerParams: CharacterHeaderParams? = null,
     ) : AnimeDestination
 
