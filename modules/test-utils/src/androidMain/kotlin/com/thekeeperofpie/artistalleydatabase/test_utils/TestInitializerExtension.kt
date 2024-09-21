@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.test_utils
 
 import android.annotation.SuppressLint
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -10,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtensionContext
 class TestInitializerExtension : BeforeAllCallback, AfterAllCallback {
 
     override fun beforeAll(context: ExtensionContext?) {
-        CustomDispatchers.enable()
+//        CustomDispatchers.enable()
         TestNetworkController.initialize()
     }
 

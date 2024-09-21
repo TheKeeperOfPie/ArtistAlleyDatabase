@@ -1,13 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("com.android.application")
-    kotlin("android")
-    id("com.google.devtools.ksp")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    alias(libs.plugins.com.jaredsburrows.license)
-    id("com.google.android.gms.oss-licenses-plugin")
-    id("org.jetbrains.kotlin.plugin.compose")
+    id("app-android")
 }
 
 licenseReport {

@@ -2,6 +2,7 @@ plugins {
     id("library-android")
     id("library-kotlin")
     id("library-desktop")
+    id("library-inject")
     id("com.google.devtools.ksp")
 }
 

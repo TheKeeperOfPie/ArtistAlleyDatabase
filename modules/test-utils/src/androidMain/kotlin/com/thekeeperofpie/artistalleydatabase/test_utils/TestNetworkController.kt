@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.test_utils
 
-import com.thekeeperofpie.artistalleydatabase.server.AniListServer.graphQlModule
 import io.ktor.client.HttpClient
 import io.ktor.client.request.headers
 import io.ktor.client.request.request
@@ -62,7 +61,7 @@ object TestNetworkController {
     fun initialize() {
         testApplication = TestApplication {
             application {
-                graphQlModule()
+//                graphQlModule()
             }
         }
         testApplication.start()

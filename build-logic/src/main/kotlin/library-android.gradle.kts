@@ -1,5 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -79,8 +80,18 @@ kotlin {
                 "libs.junit5.android.test.runner",
             ).forEach(::runtimeOnly)
         }
-//        androidInstrumentedTest.dependencies {
-//        androidTest.dependencies {
-//        }
+    }
+}
+
+// https://github.com/autonomousapps/dependency-analysis-gradle-plugin/issues/912
+androidComponents {
+    beforeVariants(selector().all()) { variant ->
+        val name = variant.name.capitalized()
+        val resourceTask = "generateActualResourceCollectorsForAndroidMain"
+        tasks.configureEach {
+            if (this.name == "explodeCodeSource$name" && tasks.findByName(resourceTask) != null) {
+                dependsOn(resourceTask)
+            }
+        }
     }
 }

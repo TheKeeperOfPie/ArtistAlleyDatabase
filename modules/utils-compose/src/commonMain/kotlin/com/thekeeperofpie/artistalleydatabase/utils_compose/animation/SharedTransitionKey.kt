@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.serialization.Serializable
 
+@ConsistentCopyVisibility
 @Suppress("DataClassPrivateConstructor")
 @Serializable
 data class SharedTransitionKey private constructor(val key: String) {

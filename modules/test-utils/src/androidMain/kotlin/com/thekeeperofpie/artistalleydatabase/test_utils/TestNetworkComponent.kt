@@ -1,23 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.test_utils
 
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
+import android.app.Application
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import javax.inject.Singleton
+import me.tatarka.inject.annotations.Provides
 
-@Module
-@InstallIn(SingletonComponent::class)
-class TestNetworkHiltModule {
+interface TestNetworkComponent {
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideOkHttpClient(testNetworkController: TestNetworkController) =
         testNetworkController.okHttpClient
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideKtorClient(testNetworkController: TestNetworkController) = HttpClient(OkHttp) {
         engine {
@@ -25,7 +21,11 @@ class TestNetworkHiltModule {
         }
     }
 
-    @Singleton
+    @SingletonScope
     @Provides
     fun provideTestNetworkController() = TestNetworkController
+
+    @SingletonScope
+    @Provides
+    fun provideMasterKey(application: Application): Any = TODO()
 }

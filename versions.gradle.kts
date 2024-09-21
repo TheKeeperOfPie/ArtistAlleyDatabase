@@ -98,6 +98,7 @@ object Versions {
         object androidx {
             const val navigation = "2.8.0-alpha10"
         }
+
         const val plugin = "1.7.0-beta02"
         const val runtime = "1.7.0-beta02"
     }
@@ -140,11 +141,11 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.0.20"
+        const val core = "2.1.0-Beta1"
         const val coroutines = "1.9.0"
         const val datetime = "0.6.1"
         const val io = "0.5.3"
-        const val ksp = "2.0.20-1.0.25"
+        const val ksp = "2.1.0-Beta1-1.0.25"
         const val serialization = "1.7.1"
     }
 
@@ -197,17 +198,20 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
             create("libs") {
                 fun plugin(id: String) = plugin(id, id)
+                plugin("com.android.application").version(Versions.android.gradle)
                 plugin("com.android.library").version(Versions.android.gradle)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
                 plugin("com.autonomousapps.dependency-analysis").version(Versions.dependencyAnalysis)
+                plugin("com.codingfeline.buildkonfig").version(Versions.buildKonfig)
                 plugin("com.github.ben-manes.versions").version(Versions.benManesVersions)
+                plugin("com.google.devtools.ksp").version(Versions.kotlin.ksp)
                 plugin("com.jaredsburrows.license").version(Versions.jaredsBurrowsLicense)
                 plugin("com.netflix.dgs.codegen").version(Versions.netflixDgsCodegen)
                 plugin("de.mannodermaus.android-junit5").version(Versions.androidJunit5)
                 plugin("io.ktor.plugin").version(Versions.ktor)
-                plugin("org.barfuin.gradle.taskinfo").version(Versions.barfuinTaskInfo)
                 plugin("org.jetbrains.compose").version(Versions.composeMultiplatform.plugin)
-                plugin("com.codingfeline.buildkonfig").version(Versions.buildKonfig)
+                plugin("org.jetbrains.kotlin.android").version(Versions.kotlin.core)
+                plugin("org.jetbrains.kotlin.plugin.serialization").version(Versions.kotlin.core)
 
                 with(Versions.kotlin) {
                     plugin("org.jetbrains.kotlin.multiplatform").version(core)
@@ -445,6 +449,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.google.jimfs:jimfs:${Versions.jimfs}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
+                library("com.jaredsburrows:gradle-license-plugin:${Versions.jaredsBurrowsLicense}")
                 library("com.kmpalette:kmpalette-core:${Versions.kmpalette}")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")
