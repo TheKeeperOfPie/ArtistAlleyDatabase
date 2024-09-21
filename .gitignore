@@ -14,3 +14,4 @@ secrets.properties
 default.jks
 keystore.properties
 /.kotlin/
+**/build
