@@ -5,8 +5,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
 @Inject
 class AnimeThemesSongsProvider(private val animeThemesApi: AnimeThemesApi) : AnimeSongsProvider {
 

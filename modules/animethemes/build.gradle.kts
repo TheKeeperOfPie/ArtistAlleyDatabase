@@ -11,6 +11,7 @@ kotlin {
             api(project(":modules:utils-network"))
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.serialization.json.io)
+            implementation(libs.kermit)
         }
     }
 }
