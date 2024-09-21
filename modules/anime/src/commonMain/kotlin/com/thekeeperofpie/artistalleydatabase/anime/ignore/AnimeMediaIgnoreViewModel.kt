@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescri
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.utils.RequestBatcher
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
@@ -34,9 +35,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -65,7 +64,7 @@ class AnimeMediaIgnoreViewModel(
 //    private val localContentManga =
 //        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
 
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     private val mediaRequestBatcher = RequestBatcher(
         scope = viewModelScope,
@@ -82,7 +81,7 @@ class AnimeMediaIgnoreViewModel(
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(
                 snapshotFlow { selectedType },
-                refreshUptimeMillis,
+                refresh.updates,
                 ignoreController.updates(),
                 ::Triple,
             )
@@ -115,7 +114,7 @@ class AnimeMediaIgnoreViewModel(
         }
     }
 
-    fun onRefresh() = refreshUptimeMillis.update { Clock.System.now().toEpochMilliseconds() }
+    fun onRefresh() = refresh.refresh()
 
     fun placeholder(index: Int, mediaType: MediaType): MediaPreviewWithDescriptionEntry? {
         return null

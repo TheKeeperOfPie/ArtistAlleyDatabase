@@ -10,6 +10,7 @@ import com.anilist.fragment.PaginationInfo
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +32,7 @@ abstract class UserSocialViewModel<T : Any>(
 ) : ViewModel() {
 
     private val viewer = aniListApi.authedUser
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     private var data = MutableStateFlow(PagingData.empty<T>())
     private var job: Job? = null
@@ -41,7 +42,7 @@ abstract class UserSocialViewModel<T : Any>(
             job = viewModelScope.launch(CustomDispatchers.IO) {
                 (if (userId != null) flowOf(userId) else viewer.mapNotNull { it?.id })
                     .flatMapLatest { userId ->
-                        refreshUptimeMillis
+                        refresh.updates
                             .flatMapLatest {
                                 AniListPager { apiCall(userId, it) }
                             }

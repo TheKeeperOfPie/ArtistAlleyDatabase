@@ -31,12 +31,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsContro
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -46,7 +46,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -89,7 +88,7 @@ class AnimeUserListViewModel(
 
     lateinit var sortFilterController: MediaSortFilterController<MediaListSortOption, *>
 
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         val defaultSort = if (userId == null) {
@@ -179,7 +178,7 @@ class AnimeUserListViewModel(
                 }
             } else {
                 flowForRefreshableContent(
-                    refreshUptimeMillis,
+                    refresh.updates,
                     Res.string.anime_media_list_error_loading,
                 ) {
                     includeDescriptionFlow.mapLatest {
@@ -292,7 +291,7 @@ class AnimeUserListViewModel(
         if (userId == null) {
             userMediaListController.refresh(mediaType)
         } else {
-            refreshUptimeMillis.value = Clock.System.now().toEpochMilliseconds()
+            refresh.refresh()
         }
     }
 

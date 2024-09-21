@@ -72,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserUtils
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
@@ -93,9 +94,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
@@ -277,7 +276,7 @@ class AnimeSearchViewModel(
     val userSortFilterController =
         UserSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     var selectedType by mutableStateOf(
         destination.mediaType?.let {
@@ -355,7 +354,7 @@ class AnimeSearchViewModel(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     includeDescriptionFlow,
-                    refreshUptimeMillis,
+                    refresh.updates,
                     animeSortFilterController.filterParams,
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
@@ -388,7 +387,7 @@ class AnimeSearchViewModel(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     includeDescriptionFlow,
-                    refreshUptimeMillis,
+                    refresh.updates,
                     mangaSortFilterController.filterParams,
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
@@ -421,7 +420,7 @@ class AnimeSearchViewModel(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     characterSortFilterController.filterParams,
-                    refreshUptimeMillis,
+                    refresh.updates,
                     ::Triple
                 )
             },
@@ -477,7 +476,7 @@ class AnimeSearchViewModel(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     staffSortFilterController.filterParams,
-                    refreshUptimeMillis,
+                    refresh.updates,
                     ::Triple
                 )
             },
@@ -532,7 +531,7 @@ class AnimeSearchViewModel(
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
-                    refreshUptimeMillis,
+                    refresh.updates,
                     studioSortFilterController.filterParams,
                     ::Triple,
                 )
@@ -592,7 +591,7 @@ class AnimeSearchViewModel(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     userSortFilterController.filterParams,
-                    refreshUptimeMillis,
+                    refresh.updates,
                     ::Triple,
                 )
             },
@@ -689,7 +688,7 @@ class AnimeSearchViewModel(
         }
     }
 
-    fun onRefresh() = refreshUptimeMillis.update { Clock.System.now().toEpochMilliseconds() }
+    fun onRefresh() = refresh.refresh()
 
     enum class SearchType(val textRes: StringResource) {
         ANIME(Res.string.anime_search_type_anime),

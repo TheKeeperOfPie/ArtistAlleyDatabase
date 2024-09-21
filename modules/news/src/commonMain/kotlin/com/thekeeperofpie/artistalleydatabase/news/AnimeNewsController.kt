@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.news.ann.ANIME_NEWS_NETWORK_ATOM_U
 import com.thekeeperofpie.artistalleydatabase.news.cr.CRUNCHYROLL_NEWS_RSS_URL
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -29,7 +30,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -48,7 +48,7 @@ class AnimeNewsController(
     private var job: Job? = null
     private val news = MutableStateFlow<List<AnimeNewsEntry<*>>?>(null)
     private var newsDateDescending by mutableStateOf<List<AnimeNewsEntry<*>>?>(null)
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     fun news(): MutableStateFlow<List<AnimeNewsEntry<*>>?> {
         startJobIfNeeded()
@@ -65,7 +65,7 @@ class AnimeNewsController(
         if (job != null) return
         job = scope.launch(CustomDispatchers.IO) {
             val animeNewsNetwork =
-                combine(settings.animeNewsNetworkRegion, refreshUptimeMillis, ::Pair)
+                combine(settings.animeNewsNetworkRegion, refresh.updates, ::Pair)
                     .flatMapLatest { (region) ->
                         flow {
                             val result = async {
@@ -91,7 +91,7 @@ class AnimeNewsController(
                         emit(null)
                     }
 
-            val crunchyroll = refreshUptimeMillis
+            val crunchyroll = refresh.updates
                 .flatMapLatest {
                     flow {
                         val result = async {
@@ -176,7 +176,5 @@ class AnimeNewsController(
         }
     }
 
-    fun refresh() {
-        refreshUptimeMillis.value = Clock.System.now().toEpochMilliseconds()
-    }
+    fun refresh() = refresh.refresh()
 }

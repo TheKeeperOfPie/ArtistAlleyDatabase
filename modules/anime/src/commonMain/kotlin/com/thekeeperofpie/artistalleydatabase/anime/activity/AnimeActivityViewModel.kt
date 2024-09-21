@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
@@ -59,7 +60,7 @@ class AnimeActivityViewModel(
         featureOverrideProvider = featureOverrideProvider,
     )
 
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     private val globalActivity =
         MutableStateFlow(PagingData.empty<ActivityEntry>())
@@ -110,7 +111,7 @@ class AnimeActivityViewModel(
         aniListApi.authedUser.flatMapLatest { viewer ->
             combine(
                 sortFilterController.filterParams,
-                refreshUptimeMillis,
+                refresh.updates,
                 ::Pair
             ).flatMapLatest { (filterParams) ->
                 AniListPager {

@@ -46,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
@@ -138,11 +139,11 @@ class AniListUserViewModel(
         get() = initialFollowState ?: toggleFollowingResult?.isFollowing ?: entry?.user?.isFollowing
         ?: false
 
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            combine(refreshUptimeMillis, aniListApi.authedUser, ::Pair)
+            combine(refresh.updates, aniListApi.authedUser, ::Pair)
                 .collectLatest { (_, viewer) ->
                     withContext(CustomDispatchers.Main) {
                         entry = null
@@ -312,7 +313,7 @@ class AniListUserViewModel(
                 .flatMapLatest { (entry) ->
                     combine(
                         activitySortFilterController.filterParams,
-                        refreshUptimeMillis,
+                        refresh.updates,
                         ::Pair
                     ).flatMapLatest { (filterParams) ->
                         AniListPager {
@@ -414,7 +415,7 @@ class AniListUserViewModel(
         }
     }
 
-    fun refresh() = refreshUptimeMillis.tryEmit(System.currentTimeMillis())
+    fun refresh() = refresh.refresh()
 
     fun logOut() = aniListApi.logOut()
 

@@ -35,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsContro
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -51,9 +52,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -98,7 +97,7 @@ class SeasonalViewModel(
         mediaLicensorsController = mediaLicensorsController,
     )
 
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = RefreshFlow()
 
     init {
         sortFilterController.initialize(
@@ -110,7 +109,7 @@ class SeasonalViewModel(
         )
     }
 
-    fun onRefresh() = refreshUptimeMillis.update { Clock.System.now().toEpochMilliseconds() }
+    fun onRefresh() = refresh.refresh()
 
     @Composable
     fun items(page: Int): LazyPagingItems<MediaPreviewWithDescriptionEntry> {
@@ -134,13 +133,13 @@ class SeasonalViewModel(
             viewModelScope.launch(CustomDispatchers.Main) {
                 combine(
                     MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
-                    refreshUptimeMillis,
+                    refresh.updates,
                     sortFilterController.filterParams,
-                ) { includeDescription, requestMillis, filterParams ->
+                ) { includeDescription, refreshEvent, filterParams ->
                     AnimeSearchMediaPagingSource.RefreshParams(
                         query = "",
                         includeDescription = includeDescription,
-                        requestMillis = requestMillis,
+                        refreshEvent = refreshEvent,
                         filterParams = filterParams,
                         seasonYearOverride = seasonYear,
                     )

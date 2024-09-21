@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.minus
@@ -110,7 +111,7 @@ class AnimeSearchMediaPagingSource(
     data class RefreshParams(
         val query: String,
         val includeDescription: Boolean,
-        val requestMillis: Long,
+        val refreshEvent: RefreshFlow.Event,
         val filterParams: MediaSortFilterController.FilterParams<MediaSortOption>,
         val seasonYearOverride: Pair<MediaSeason, Int>? = null,
     ) {
