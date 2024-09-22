@@ -4,15 +4,20 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -21,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -28,18 +34,33 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.UnfoldLess
+import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,6 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.clear
+import artistalleydatabase.modules.utils_compose.generated.resources.section_expand_all_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_ascending
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_descending
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_ascending_content_description
@@ -54,11 +76,16 @@ import artistalleydatabase.modules.utils_compose.generated.resources.sort_direct
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_label
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_expand_content_description
 import coil3.compose.AsyncImage
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
+import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -642,4 +669,167 @@ fun SortFilterOptionsPanel(
             }
         }
     }
+}
+
+@Composable
+fun SheetDragHandle(
+    sortFilterController: SortFilterController<*>?,
+    targetValue: () -> SheetValue,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
+
+        val collapseOnClose = sortFilterController?.collapseOnClose()
+        if (collapseOnClose != null) {
+            @Suppress("NAME_SHADOWING")
+            val targetValue = targetValue()
+
+            val expandedState = sortFilterController.state.expandedState
+            LaunchedEffect(targetValue) {
+                if (targetValue != SheetValue.Expanded) {
+                    if (collapseOnClose) {
+                        expandedState.clear()
+                    }
+                }
+            }
+
+            val showExpandAll by remember { derivedStateOf { expandedState.none { it.value } } }
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 8.dp)
+            ) {
+                val activatedCount by remember {
+                    derivedStateOf { sortFilterController.sections.count { it.nonDefault() } }
+                }
+
+                val badgeProgress by animateFloatAsState(
+                    targetValue = if (activatedCount > 0) 1f else 0f,
+                    label = "Sort filter badge progress",
+                )
+                if (badgeProgress > 0f) {
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .size(32.dp * badgeProgress)
+                            .background(MaterialTheme.colorScheme.secondary, CircleShape)
+                            .padding(4.dp * badgeProgress)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        AutoSizeText(
+                            text = activatedCount.coerceAtLeast(1).toString(),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
+
+                AnimatedVisibility(visible = targetValue == SheetValue.Expanded) {
+                    IconButton(
+                        onClick = {
+                            if (showExpandAll) {
+                                sortFilterController.sections.forEach {
+                                    expandedState[it.id] = true
+                                    if (it is SortFilterSection.Group<*> && it.children.size == 1) {
+                                        expandedState[it.children.first().id] = true
+                                    }
+                                }
+                            } else {
+                                expandedState.clear()
+                            }
+                        },
+                    ) {
+                        Icon(
+                            imageVector = if (showExpandAll) {
+                                Icons.Filled.UnfoldMore
+                            } else {
+                                Icons.Filled.UnfoldLess
+                            },
+                            contentDescription = stringResource(
+                                Res.string.section_expand_all_content_description
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SheetContent(
+    sortFilterController: SortFilterController<*>?,
+    bottomNavigationState: BottomNavigationState?,
+) {
+    if (sortFilterController != null) {
+        SortFilterOptionsPanel(
+            sections = { sortFilterController.sections },
+            sectionState = { sortFilterController.state },
+            modifier = Modifier.padding(
+                bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
+            )
+        )
+    }
+}
+
+@Composable
+fun SortFilterBottomScaffold(
+    sortFilterController: SortFilterController<*>?,
+    modifier: Modifier = Modifier,
+    topBar: @Composable (() -> Unit)? = null,
+    sheetState: SheetState = rememberStandardBottomSheetState(),
+    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
+    bottomNavigationState: BottomNavigationState? = null,
+    content: @Composable (PaddingValues) -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val bottomSheetState = scaffoldState.bottomSheetState
+    BackHandler(
+        enabled = bottomSheetState.targetValue == SheetValue.Expanded
+                && !WindowInsets.isImeVisibleKmp
+    ) {
+        scope.launch { bottomSheetState.partialExpand() }
+    }
+
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = if (sortFilterController == null) {
+            0.dp
+        } else {
+            56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
+        },
+        sheetDragHandle = {
+            SheetDragHandle(
+                sortFilterController = sortFilterController,
+                targetValue = { bottomSheetState.targetValue },
+                onClick = {
+                    if (bottomSheetState.currentValue == SheetValue.Expanded) {
+                        scope.launch { bottomSheetState.partialExpand() }
+                    } else {
+                        scope.launch { bottomSheetState.expand() }
+                    }
+                },
+            )
+        },
+        sheetContent = {
+            SheetContent(
+                sortFilterController = sortFilterController,
+                bottomNavigationState = bottomNavigationState,
+            )
+        },
+        sheetTonalElevation = 4.dp,
+        sheetShadowElevation = 4.dp,
+        topBar = topBar,
+        modifier = modifier,
+        content = content,
+        // TODO: Error state
+        // snackbarHost = {},
+    )
 }

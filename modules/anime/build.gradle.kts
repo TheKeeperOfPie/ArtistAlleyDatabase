@@ -16,11 +16,11 @@ kotlin {
         commonMain.dependencies {
             api(projects.modules.anilist)
             api(projects.modules.anime.data)
+            api(projects.modules.anime.news)
             api(projects.modules.cds)
             api(projects.modules.markdown)
             api(projects.modules.media)
             api(projects.modules.monetization)
-            api(projects.modules.news)
             api(projects.modules.utilsCompose)
             api(projects.modules.utilsNetwork)
 

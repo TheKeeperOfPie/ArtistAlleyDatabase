@@ -29,6 +29,7 @@
             <option value="$PROJECT_DIR$/modules/anilist-data" />
             <option value="$PROJECT_DIR$/modules/anime" />
             <option value="$PROJECT_DIR$/modules/anime/data" />
+            <option value="$PROJECT_DIR$/modules/anime/news" />
             <option value="$PROJECT_DIR$/modules/anime2anime" />
             <option value="$PROJECT_DIR$/modules/animethemes" />
             <option value="$PROJECT_DIR$/modules/apollo" />
@@ -47,7 +48,6 @@
             <option value="$PROJECT_DIR$/modules/monetization/debug" />
             <option value="$PROJECT_DIR$/modules/monetization/unity" />
             <option value="$PROJECT_DIR$/modules/musical-artists" />
-            <option value="$PROJECT_DIR$/modules/news" />
             <option value="$PROJECT_DIR$/modules/play" />
             <option value="$PROJECT_DIR$/modules/secrets" />
             <option value="$PROJECT_DIR$/modules/server" />

@@ -51,4 +51,7 @@ abstract class SortFilterController<FilterParams>(scope: CoroutineScope) {
             lazyListState.scrollToItem(0)
         }
     }
+
+    @Composable
+    open fun collapseOnClose() = false
 }

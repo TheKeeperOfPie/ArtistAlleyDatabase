@@ -235,7 +235,6 @@
     <string name="anime_media_filter_source_unknown">Unknown</string>
     <string name="anime_media_filter_tag_rank_label">Minimum rank</string>
 
-    <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
     <string name="anime_media_filter_show_less_important_tags">Show less important tags</string>
     <string name="anime_media_filter_show_spoiler_tags">Show spoiler tags</string>
     <string name="anime_media_filter_setting_title_language">Title language</string>
@@ -707,29 +706,6 @@
     <string name="anime_seasonal_icon_content_description">Seasonal schedule</string>
 
     <string name="anime_news_home_title">NEWS</string>
-    <string name="anime_news_title">News</string>
-    <string name="anime_news_site_logo_content_description">News site logo</string>
-    <string name="anime_news_article_image_content_description">News article image</string>
-    <string name="anime_news_sort_datetime">Datetime</string>
-    <string name="anime_news_sort_title">Title</string>
-    <string name="anime_news_sort_source">Source</string>
-    <string name="anime_news_no_results">No results</string>
-
-    <string name="anime_news_filter_anime_news_network_group_label">Anime News Network</string>
-    <string name="anime_news_filter_anime_news_network_group_content_description">Anime News Network group expand</string>
-
-    <string name="anime_news_filter_anime_news_network_region_label">Region</string>
-    <string name="anime_news_filter_anime_news_network_region_content_description">Anime News Network region expand</string>
-    <string name="anime_news_filter_anime_news_network_region_chip_state_content_description">Anime News Network region chip state</string>
-
-    <string name="anime_news_filter_anime_news_network_categories_label">Categories</string>
-    <string name="anime_news_filter_anime_news_network_categories_content_description">Anime News Network categories expand</string>
-    <string name="anime_news_filter_anime_news_network_categories_chip_state_content_description">Anime News Network category chip state</string>
-
-    <string name="anime_news_filter_crunchyroll_news_categories_label">Crunchyroll News categories</string>
-    <string name="anime_news_filter_crunchyroll_news_categories_content_description">Crunchyroll News categories expand</string>
-    <string name="anime_news_filter_crunchyroll_news_categories_chip_state_content_description">Crunchyroll News category chip state</string>
-    <string name="anime_news_filter_sort_label">Sort</string>
 
     <string name="anime_activity_tab_own">Me</string>
     <string name="anime_activity_tab_following">Following</string>

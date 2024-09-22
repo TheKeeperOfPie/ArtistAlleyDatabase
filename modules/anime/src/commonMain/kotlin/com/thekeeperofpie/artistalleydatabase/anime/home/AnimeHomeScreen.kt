@@ -123,7 +123,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
@@ -131,9 +130,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
+import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
@@ -153,6 +152,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -482,6 +482,7 @@ object AnimeHomeScreen {
         val itemCount = data?.size ?: 3
         if (itemCount == 0) return
         val pagerState = rememberPagerState(pageCount = { itemCount })
+        val fullscreenImageHandler = LocalFullscreenImageHandler.current
         HorizontalPager(
             state = pagerState,
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
@@ -490,7 +491,10 @@ object AnimeHomeScreen {
             verticalAlignment = Alignment.Top,
             modifier = Modifier.recomposeHighlighter()
         ) {
-            AnimeNewsSmallCard(entry = data?.get(it))
+            AnimeNewsSmallCard(
+                entry = data?.get(it),
+                onOpenImage = fullscreenImageHandler::openImage,
+            )
         }
     }
 
@@ -825,7 +829,8 @@ object AnimeHomeScreen {
                     MediaType.ANIME -> entry.mediaFilterable.progress
                     MediaType.MANGA -> entry.mediaFilterable.progressVolumes
                     MediaType.UNKNOWN__,
-                    null -> 0
+                    null,
+                        -> 0
                 } ?: 0
                 if (progress < (maxProgress ?: 1)) {
                     IconButton(

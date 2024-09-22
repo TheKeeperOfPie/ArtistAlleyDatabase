@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalCoroutinesApi::class)
 
-package com.thekeeperofpie.artistalleydatabase.anime.news
+package com.thekeeperofpie.artistalleydatabase.news
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,11 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
-import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
-import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
@@ -27,14 +22,11 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class AnimeNewsViewModel(
-    animeSettings: AnimeSettings,
     settings: NewsSettings,
-    featureOverrideProvider: FeatureOverrideProvider,
     private val animeNewsController: AnimeNewsController,
 ) : ViewModel() {
 
-    val sortFilterController =
-        NewsSortFilterController(viewModelScope, animeSettings, settings, featureOverrideProvider)
+    val sortFilterController = NewsSortFilterController(viewModelScope, settings)
 
     var news by mutableStateOf<List<AnimeNewsEntry<*>>?>(null)
         private set

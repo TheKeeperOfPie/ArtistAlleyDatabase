@@ -25,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActiviti
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.AnimeMediaDetailsRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
@@ -51,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
+import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsComponent
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 import kotlin.reflect.KType
@@ -59,7 +59,7 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
     throw IllegalArgumentException("No AnimeComponent provided")
 }
 
-interface AnimeComponent {
+interface AnimeComponent : AnimeNewsComponent {
 
     val activityDetailsViewModel: (SavedStateHandle) -> ActivityDetailsViewModel
     val airingScheduleViewModel: () -> AiringScheduleViewModel
@@ -76,7 +76,6 @@ interface AnimeComponent {
     val animeMediaDetailsReviewsViewModel: (AnimeMediaDetailsViewModel) -> AnimeMediaDetailsReviewsViewModel
     val animeMediaDetailsViewModel: (SavedStateHandle) -> AnimeMediaDetailsViewModel
     val animeMediaIgnoreViewModel: (SavedStateHandle) -> AnimeMediaIgnoreViewModel
-    val animeNewsViewModel: () -> AnimeNewsViewModel
     val animeRootViewModel: () -> AnimeRootViewModel
     val animeSearchViewModel: (SavedStateHandle) -> AnimeSearchViewModel
     val animeSongsViewModel: (AnimeMediaDetailsViewModel) -> AnimeSongsViewModel

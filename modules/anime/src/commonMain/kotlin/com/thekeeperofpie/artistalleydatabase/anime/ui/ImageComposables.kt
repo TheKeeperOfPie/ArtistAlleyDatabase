@@ -5,10 +5,8 @@ import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.BiasAbsoluteAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_character_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
@@ -16,10 +14,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_staff_image
 import artistalleydatabase.modules.anime.generated.resources.anime_user_image
 import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -120,9 +117,3 @@ fun UserAvatarImage(
         modifier = modifier.blurForScreenshotMode(),
     )
 }
-
-private val ScreenshotBlur by lazy { Modifier.blur(6.dp) }
-
-@Composable
-fun Modifier.blurForScreenshotMode() =
-    conditionally(LocalAnimeComposeSettings.current.screenshotMode) { ScreenshotBlur }

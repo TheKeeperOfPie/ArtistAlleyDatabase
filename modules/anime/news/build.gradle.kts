@@ -16,9 +16,13 @@ kotlin {
             api(libs.kotlinx.datetime)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
-            implementation(libs.xmlutil.serialization)
-            implementation(libs.ktor.client.core)
+            implementation(libs.coil3.coil.compose)
+            implementation(libs.compose.placeholder.material3)
+            implementation(libs.human.readable)
             implementation(libs.kermit)
+            implementation(libs.ktor.client.core)
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.xmlutil.serialization)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

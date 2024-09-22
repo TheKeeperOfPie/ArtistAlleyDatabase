@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.news
+package com.thekeeperofpie.artistalleydatabase.news
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,17 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
-import artistalleydatabase.modules.anime.generated.resources.anime_news_title
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
+import artistalleydatabase.modules.anime.news.generated.resources.Res
+import artistalleydatabase.modules.anime.news.generated.resources.anime_news_no_results
+import artistalleydatabase.modules.anime.news.generated.resources.anime_news_title
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
@@ -42,8 +38,9 @@ object AnimeNewsScreen {
 
     @Composable
     operator fun invoke(
-        animeComponent: AnimeComponent = LocalAnimeComponent.current,
-        viewModel: AnimeNewsViewModel = viewModel { animeComponent.animeNewsViewModel() },
+        viewModel: AnimeNewsViewModel,
+        onBackClick: () -> Unit,
+        onOpenImage: (url: String) -> Unit,
     ) {
         val scaffoldState = rememberBottomSheetScaffoldState()
         val scope = rememberCoroutineScope()
@@ -57,10 +54,9 @@ object AnimeNewsScreen {
         SortFilterBottomScaffold(
             sortFilterController = viewModel.sortFilterController,
             topBar = {
-                val navigationCallback = LocalNavigationCallback.current
                 AppBar(
                     text = stringResource(Res.string.anime_news_title),
-                    upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },
+                    upIconOption = UpIconOption.Back(onBackClick),
                     scrollBehavior = scrollBehavior,
                 )
             },
@@ -69,9 +65,11 @@ object AnimeNewsScreen {
             val news = viewModel.news
             val pullRefreshState =
                 rememberPullRefreshState(refreshing = news == null, onRefresh = viewModel::refresh)
-            Box(modifier = Modifier
-                .padding(scaffoldPadding)
-                .fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .padding(scaffoldPadding)
+                    .fillMaxSize()
+            ) {
                 val listState = rememberLazyListState()
                 viewModel.sortFilterController.ImmediateScrollResetEffect(listState)
                 LazyColumn(
@@ -93,7 +91,7 @@ object AnimeNewsScreen {
                                     modifier = Modifier.fillMaxSize()
                                 ) {
                                     Text(
-                                        stringResource(Res.string.anime_media_list_no_results),
+                                        stringResource(Res.string.anime_news_no_results),
                                         style = MaterialTheme.typography.bodyLarge,
                                         modifier = Modifier.padding(
                                             horizontal = 16.dp,
@@ -107,7 +105,7 @@ object AnimeNewsScreen {
                                 count = news.size,
                                 key = { news[it].id },
                                 contentType = { "news " }) {
-                                AnimeNewsSmallCard(entry = news[it])
+                                AnimeNewsSmallCard(entry = news[it], onOpenImage = onOpenImage)
                             }
                         }
                     }

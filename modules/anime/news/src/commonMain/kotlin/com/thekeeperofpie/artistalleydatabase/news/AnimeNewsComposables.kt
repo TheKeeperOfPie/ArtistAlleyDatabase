@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.news
+package com.thekeeperofpie.artistalleydatabase.news
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -26,25 +26,23 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_news_article_image_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_news_site_logo_content_description
+import artistalleydatabase.modules.anime.news.generated.resources.Res
+import artistalleydatabase.modules.anime.news.generated.resources.anime_news_article_image_content_description
+import artistalleydatabase.modules.anime.news.generated.resources.anime_news_site_logo_content_description
 import coil3.compose.AsyncImage
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
-import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AnimeNewsSmallCard(entry: AnimeNewsEntry<*>?) {
+fun AnimeNewsSmallCard(entry: AnimeNewsEntry<*>?, onOpenImage: (url: String) -> Unit) {
     val uriHandler = LocalUriHandler.current
     val onClick = entry?.link?.let { { uriHandler.openUri(it) } }
     val content: @Composable ColumnScope.() -> Unit = {
@@ -55,11 +53,11 @@ fun AnimeNewsSmallCard(entry: AnimeNewsEntry<*>?) {
                 }
                 .recomposeHighlighter()
         ) {
-            if (entry == null || entry.image != null) {
+            val image = entry?.image
+            if (entry == null || image != null) {
                 Box {
-                    val fullscreenImageHandler = LocalFullscreenImageHandler.current
                     AsyncImage(
-                        model = entry?.image,
+                        model = image,
                         contentDescription = stringResource(
                             Res.string.anime_news_article_image_content_description
                         ),
@@ -70,7 +68,9 @@ fun AnimeNewsSmallCard(entry: AnimeNewsEntry<*>?) {
                             .fillMaxHeight()
                             .combinedClickable(
                                 onClick = { onClick?.invoke() },
-                                onLongClick = { entry?.image?.let(fullscreenImageHandler::openImage) },
+                                onLongClick = if (image == null) null else {
+                                    { onOpenImage(image) }
+                                },
                             )
                             .blurForScreenshotMode()
                     )

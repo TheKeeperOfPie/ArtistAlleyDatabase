@@ -75,7 +75,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceAc
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
@@ -100,6 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalComposeSettings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
@@ -193,7 +193,7 @@ class MainActivity : ComponentActivity() {
                     LocalNavigationCallback provides navigationCallback,
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
                     LocalMarkdown provides markdown,
-                    LocalAnimeComposeSettings provides settings.composeSettingsData(),
+                    LocalComposeSettings provides settings.composeSettingsData(),
                     LocalImageColorsState provides imageColorsState,
                     LocalIgnoreController provides ignoreController,
                     LocalAnimeComponent provides applicationComponent,

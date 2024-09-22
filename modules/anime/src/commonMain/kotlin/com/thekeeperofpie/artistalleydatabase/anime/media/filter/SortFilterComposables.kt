@@ -4,39 +4,27 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.RemoveCircleOutline
-import androidx.compose.material.icons.filled.UnfoldLess
-import androidx.compose.material.icons.filled.UnfoldMore
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,23 +32,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,7 +63,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_year_decrement_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_year_increment_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_year_today_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_expand_all_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_category_expand_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_chip_state_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_content_description
@@ -92,13 +72,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_lon
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_clear_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_placeholder
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_show_when_spoiler
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilterChip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ItemDropdown
@@ -108,180 +84,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExcludeIcon
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
-
-@Composable
-fun SortFilterBottomScaffold(
-    sortFilterController: AnimeSettingsSortFilterController<*>?,
-    modifier: Modifier = Modifier,
-    topBar: @Composable (() -> Unit)? = null,
-    sheetState: SheetState = rememberStandardBottomSheetState(),
-    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
-    bottomNavigationState: BottomNavigationState? = null,
-    content: @Composable (PaddingValues) -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(
-        enabled = bottomSheetState.targetValue == SheetValue.Expanded
-                && !WindowInsets.isImeVisibleKmp
-    ) {
-        scope.launch { bottomSheetState.partialExpand() }
-    }
-
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = if (sortFilterController == null) {
-            0.dp
-        } else {
-            56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
-        },
-        sheetDragHandle = {
-            SheetDragHandle(
-                sortFilterController = sortFilterController,
-                targetValue = { bottomSheetState.targetValue },
-                onClick = {
-                    if (bottomSheetState.currentValue == SheetValue.Expanded) {
-                        scope.launch { bottomSheetState.partialExpand() }
-                    } else {
-                        scope.launch { bottomSheetState.expand() }
-                    }
-                },
-            )
-        },
-        sheetContent = {
-            SheetContent(
-                sortFilterController = sortFilterController,
-                bottomNavigationState = bottomNavigationState,
-            )
-        },
-        sheetTonalElevation = 4.dp,
-        sheetShadowElevation = 4.dp,
-        topBar = topBar,
-        modifier = modifier,
-        content = content,
-        // TODO: Error state
-        // snackbarHost = {},
-    )
-}
-
-@Composable
-private fun SheetDragHandle(
-    sortFilterController: AnimeSettingsSortFilterController<*>?,
-    targetValue: () -> SheetValue,
-    onClick: () -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
-        BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
-
-        val collapseOnClose = sortFilterController?.collapseOnClose()
-        if (collapseOnClose != null) {
-            @Suppress("NAME_SHADOWING")
-            val targetValue = targetValue()
-
-            val expandedState = sortFilterController.state.expandedState
-            LaunchedEffect(targetValue) {
-                if (targetValue != SheetValue.Expanded) {
-                    if (collapseOnClose) {
-                        expandedState.clear()
-                    }
-                }
-            }
-
-            val showExpandAll by remember { derivedStateOf { expandedState.none { it.value } } }
-
-            Row(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 8.dp)
-            ) {
-                val activatedCount by remember {
-                    derivedStateOf { sortFilterController.sections.count { it.nonDefault() } }
-                }
-
-                val badgeProgress by animateFloatAsState(
-                    targetValue = if (activatedCount > 0) 1f else 0f,
-                    label = "Sort filter badge progress",
-                )
-                if (badgeProgress > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .size(32.dp * badgeProgress)
-                            .background(MaterialTheme.colorScheme.secondary, CircleShape)
-                            .padding(4.dp * badgeProgress)
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        AutoSizeText(
-                            text = activatedCount.coerceAtLeast(1).toString(),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                }
-
-                AnimatedVisibility(visible = targetValue == SheetValue.Expanded) {
-                    IconButton(
-                        onClick = {
-                            if (showExpandAll) {
-                                sortFilterController.sections.forEach {
-                                    expandedState[it.id] = true
-                                    if (it is SortFilterSection.Group<*> && it.children.size == 1) {
-                                        expandedState[it.children.first().id] = true
-                                    }
-                                }
-                            } else {
-                                expandedState.clear()
-                            }
-                        },
-                    ) {
-                        Icon(
-                            imageVector = if (showExpandAll) {
-                                Icons.Filled.UnfoldMore
-                            } else {
-                                Icons.Filled.UnfoldLess
-                            },
-                            contentDescription = stringResource(
-                                Res.string.anime_media_filter_expand_all_content_description
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SheetContent(
-    sortFilterController: SortFilterController<*>?,
-    bottomNavigationState: BottomNavigationState?,
-) {
-    if (sortFilterController != null) {
-        SortFilterOptionsPanel(
-            sections = { sortFilterController.sections },
-            sectionState = { sortFilterController.state },
-            modifier = Modifier.padding(
-                bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
-            )
-        )
-    }
-}
 
 @Composable
 fun AiringDateSection(

@@ -42,5 +42,5 @@ abstract class AnimeSettingsSortFilterController<FilterParams>(
     )
 
     @Composable
-    open fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
+    override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 }

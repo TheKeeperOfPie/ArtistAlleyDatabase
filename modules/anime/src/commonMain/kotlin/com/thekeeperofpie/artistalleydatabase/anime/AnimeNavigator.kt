@@ -68,7 +68,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationComposables
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
@@ -95,11 +94,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMe
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStaffScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
+import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
@@ -574,7 +575,13 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.News>(navigationTypeMap) {
-            AnimeNewsScreen()
+            val navigationCallback = LocalNavigationCallback.current
+            val fullscreenImageHandler = LocalFullscreenImageHandler.current
+            AnimeNewsScreen(
+                viewModel = viewModel { animeComponent.animeNewsViewModel() },
+                onBackClick = navigationCallback::navigateUp,
+                onOpenImage = fullscreenImageHandler::openImage,
+            )
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Activity>(navigationTypeMap) {
