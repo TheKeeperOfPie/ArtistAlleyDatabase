@@ -1,12 +1,12 @@
-package com.thekeeperofpie.artistalleydatabase.news
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import co.touchlab.kermit.Logger
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.ANIME_NEWS_NETWORK_ATOM_URL_PREFIX
+import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CRUNCHYROLL_NEWS_RSS_URL
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import com.thekeeperofpie.artistalleydatabase.news.ann.ANIME_NEWS_NETWORK_ATOM_URL_PREFIX
-import com.thekeeperofpie.artistalleydatabase.news.cr.CRUNCHYROLL_NEWS_RSS_URL
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow

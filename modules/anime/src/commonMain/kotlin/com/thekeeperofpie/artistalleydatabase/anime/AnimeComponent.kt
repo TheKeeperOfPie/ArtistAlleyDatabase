@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActiviti
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.AnimeMediaDetailsRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
@@ -50,7 +51,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
-import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsComponent
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 import kotlin.reflect.KType

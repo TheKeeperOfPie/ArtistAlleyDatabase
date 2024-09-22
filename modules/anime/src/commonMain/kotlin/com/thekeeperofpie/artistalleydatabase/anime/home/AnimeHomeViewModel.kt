@@ -22,13 +22,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEn
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
-import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf

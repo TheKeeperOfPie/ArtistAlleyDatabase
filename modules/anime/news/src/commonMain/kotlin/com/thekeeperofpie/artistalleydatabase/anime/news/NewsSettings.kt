@@ -1,8 +1,8 @@
-package com.thekeeperofpie.artistalleydatabase.news
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
-import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
-import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
-import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkRegion
+import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 
 interface NewsSettings {

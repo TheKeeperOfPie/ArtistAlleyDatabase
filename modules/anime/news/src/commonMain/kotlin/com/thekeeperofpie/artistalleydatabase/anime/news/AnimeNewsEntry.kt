@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.news
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import androidx.compose.runtime.Immutable
 import kotlinx.datetime.Instant

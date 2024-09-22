@@ -123,6 +123,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
@@ -131,8 +133,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsEntry
-import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils

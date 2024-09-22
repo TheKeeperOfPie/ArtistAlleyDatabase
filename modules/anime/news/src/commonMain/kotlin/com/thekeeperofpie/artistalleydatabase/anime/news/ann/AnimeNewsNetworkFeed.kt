@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.news.ann
+package com.thekeeperofpie.artistalleydatabase.anime.news.ann
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

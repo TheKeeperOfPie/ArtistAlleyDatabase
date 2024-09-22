@@ -9,17 +9,18 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkRegion
+import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
-import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
-import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
-import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
-import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class DesktopSettingsProvider : AniListSettings, AnimeSettings, CropSettings, MonetizationSettings, NewsSettings, NetworkSettings {
+class DesktopSettingsProvider : AniListSettings, AnimeSettings, CropSettings, MonetizationSettings,
+    NewsSettings, NetworkSettings {
 
     val appTheme = MutableStateFlow(AppThemeSetting.AUTO)
 

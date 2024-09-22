@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.rss
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
 internal object TestData {
 

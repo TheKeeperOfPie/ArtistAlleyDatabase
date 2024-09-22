@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.news
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

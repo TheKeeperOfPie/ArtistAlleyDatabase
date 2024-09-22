@@ -1,10 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.rss
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
-import com.thekeeperofpie.artistalleydatabase.news.NewsXml
-import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
-import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkFeed
-import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
-import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsFeed
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkFeed
+import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsFeed
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.UtcOffset

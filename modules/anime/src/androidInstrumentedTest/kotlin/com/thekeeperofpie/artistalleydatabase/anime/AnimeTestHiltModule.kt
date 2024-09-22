@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryFt
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeMediaHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreEntry
+import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryFts
@@ -21,7 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideP
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
-import com.thekeeperofpie.artistalleydatabase.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils_room.Converters

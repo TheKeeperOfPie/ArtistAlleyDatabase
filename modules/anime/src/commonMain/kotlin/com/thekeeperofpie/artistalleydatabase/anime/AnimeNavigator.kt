@@ -68,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationComposables
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
@@ -100,7 +101,6 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
-import com.thekeeperofpie.artistalleydatabase.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope

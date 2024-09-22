@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.news
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import artistalleydatabase.modules.anime.news.generated.resources.Res
 import artistalleydatabase.modules.anime.news.generated.resources.anime_news_sort_datetime

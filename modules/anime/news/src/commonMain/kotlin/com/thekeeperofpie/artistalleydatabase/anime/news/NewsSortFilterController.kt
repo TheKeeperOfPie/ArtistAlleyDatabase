@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.news
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
@@ -15,9 +15,9 @@ import artistalleydatabase.modules.anime.news.generated.resources.anime_news_fil
 import artistalleydatabase.modules.anime.news.generated.resources.anime_news_filter_crunchyroll_news_categories_content_description
 import artistalleydatabase.modules.anime.news.generated.resources.anime_news_filter_crunchyroll_news_categories_label
 import artistalleydatabase.modules.anime.news.generated.resources.anime_news_filter_sort_label
-import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkCategory
-import com.thekeeperofpie.artistalleydatabase.news.ann.AnimeNewsNetworkRegion
-import com.thekeeperofpie.artistalleydatabase.news.cr.CrunchyrollNewsCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkRegion
+import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry

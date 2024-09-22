@@ -31,5 +31,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.news"
+    namespace = "com.thekeeperofpie.artistalleydatabase.anime.news"
 }

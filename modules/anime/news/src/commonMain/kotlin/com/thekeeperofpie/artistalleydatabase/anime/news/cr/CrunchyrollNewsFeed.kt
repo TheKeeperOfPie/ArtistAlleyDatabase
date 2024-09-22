@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.news.cr
+package com.thekeeperofpie.artistalleydatabase.anime.news.cr
 
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.TrimmingStringSerializer
 import kotlinx.datetime.Instant

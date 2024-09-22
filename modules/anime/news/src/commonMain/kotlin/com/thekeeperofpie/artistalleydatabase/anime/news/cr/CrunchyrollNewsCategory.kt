@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.news.cr
+package com.thekeeperofpie.artistalleydatabase.anime.news.cr
 
 import artistalleydatabase.modules.anime.news.generated.resources.Res
 import artistalleydatabase.modules.anime.news.generated.resources.anime_news_crunchyroll_category_announcements
