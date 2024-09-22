@@ -4,13 +4,11 @@ import com.apollographql.apollo3.api.http.HttpRequest
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import com.thekeeperofpie.artistalleydatabase.monetization.unity.UnityComponent
-import com.thekeeperofpie.artistalleydatabase.play.PlayComponent
 import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 
-interface VariantComponent : PlayComponent, UnityComponent {
+interface ApplicationVariantComponent {
 
 
     /**

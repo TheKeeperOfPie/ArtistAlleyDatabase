@@ -3,4 +3,4 @@ package com.thekeeperofpie.artistalleydatabase
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesComponent
 import com.thekeeperofpie.artistalleydatabase.debug.DebugComponent
 
-interface VariantComponent : DebugComponent, AnimeThemesComponent
+interface ApplicationVariantComponent : DebugComponent, AnimeThemesComponent

@@ -1,0 +1,3 @@
+package com.thekeeperofpie.artistalleydatabase
+
+interface ActivityVariantComponent

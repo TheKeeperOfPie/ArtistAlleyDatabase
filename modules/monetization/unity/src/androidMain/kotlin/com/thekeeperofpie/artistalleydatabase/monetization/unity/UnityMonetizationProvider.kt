@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.monetization.unity
 
-import android.app.Activity
 import android.app.Application
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,7 +22,6 @@ import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.UnityAds
 import com.unity3d.services.banners.BannerView
 import com.unity3d.services.banners.UnityBannerSize
-import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 
@@ -32,7 +30,7 @@ class UnityMonetizationProvider(
     private val application: Application,
     private val settings: MonetizationSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-    @Assisted private val activity: ComponentActivity,
+    private val activity: ComponentActivity,
 ) : MonetizationProvider {
 
     companion object {

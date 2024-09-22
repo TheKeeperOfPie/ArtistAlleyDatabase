@@ -123,7 +123,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private val appMetadataProvider by lazy { applicationComponent.appMetadataProvider }
-    private val appUpdateChecker by lazy { applicationComponent.appUpdateChecker(this) }
     private val artEntryNavigator by lazy { applicationComponent.artEntryNavigator }
     private val cdEntryNavigator by lazy { applicationComponent.cdEntryNavigator }
     private val featureOverrideProvider by lazy { applicationComponent.featureOverrideProvider }
@@ -132,13 +131,18 @@ class MainActivity : ComponentActivity() {
     private val mediaGenreDialogController by lazy { applicationComponent.mediaGenreDialogController }
     private val mediaTagDialogController by lazy { applicationComponent.mediaTagDialogController }
     private val monetizationController by lazy { applicationComponent.monetizationController }
-    private val monetizationProvider by lazy { applicationComponent.monetizationProvider(this) }
     private val navigationTypeMap by lazy { applicationComponent.navigationTypeMap }
     private val notificationsController by lazy { applicationComponent.notificationsController }
     private val platformOAuthStore by lazy { applicationComponent.platformOAuthStore }
     private val settings by lazy { applicationComponent.settingsProvider }
-    private val subscriptionProvider by lazy { applicationComponent.subscriptionProvider(this) }
     private val workManager by lazy { applicationComponent.workManager }
+
+    private val activityComponent by lazy {
+        ActivityComponent::class.create(applicationComponent, this)
+    }
+    private val appUpdateChecker by lazy { activityComponent.injector.appUpdateChecker }
+    private val monetizationProvider by lazy { activityComponent.injector.monetizationProvider }
+    private val subscriptionProvider by lazy { activityComponent.injector.subscriptionProvider }
 
     private val fullScreenImageHandler = FullscreenImageHandler()
 

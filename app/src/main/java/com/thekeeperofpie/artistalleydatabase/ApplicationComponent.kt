@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
-import androidx.activity.ComponentActivity
 import androidx.navigation.NavType
 import androidx.room.Room
 import androidx.work.WorkManager
@@ -32,8 +31,6 @@ import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
-import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistComponent
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsComponent
@@ -42,7 +39,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
@@ -65,7 +61,7 @@ import kotlin.reflect.KType
 abstract class ApplicationComponent(
     @get:Provides val application: Application,
 ) : AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent, BrowseComponent,
-    CdEntryComponent, MusicalArtistComponent, NetworkComponent, SettingsComponent, VariantComponent,
+    CdEntryComponent, MusicalArtistComponent, NetworkComponent, SettingsComponent, ApplicationVariantComponent,
     VgmdbComponent, WorkerComponent {
 
     abstract val chooserViewModel: () -> ChooserViewModel
@@ -87,36 +83,28 @@ abstract class ApplicationComponent(
     abstract val settingsProvider: SettingsProvider
     abstract val workManager: WorkManager
 
-    // TODO: Move to an Activity scoped component instead of assisted inject?
-    open val appUpdateChecker: (ComponentActivity) -> AppUpdateChecker?
-        get() = { null }
-    open val monetizationProvider: (ComponentActivity) -> MonetizationProvider?
-        get() = { null }
-    open val subscriptionProvider: (ComponentActivity) -> SubscriptionProvider?
-        get() = { null }
-
-    protected val AppMonetizationOverrideProvider.bind: MonetizationOverrideProvider
+    val AppMonetizationOverrideProvider.bind: MonetizationOverrideProvider
         @Provides get() = this
 
-    protected val AppFeatureOverrideProvider.bind: FeatureOverrideProvider
+    val AppFeatureOverrideProvider.bind: FeatureOverrideProvider
         @Provides get() = this
 
-    protected val AppDatabase.bindAniListDatabase: AniListDatabase
+    val AppDatabase.bindAniListDatabase: AniListDatabase
         @Provides get() = this
 
-    protected val AppDatabase.bindAnimeDatabase: AnimeDatabase
+    val AppDatabase.bindAnimeDatabase: AnimeDatabase
         @Provides get() = this
 
-    protected val AppDatabase.bindArtEntryDatabase: ArtEntryDatabase
+    val AppDatabase.bindArtEntryDatabase: ArtEntryDatabase
         @Provides get() = this
 
-    protected val AppDatabase.bindCdEntryDatabase: CdEntryDatabase
+    val AppDatabase.bindCdEntryDatabase: CdEntryDatabase
         @Provides get() = this
 
-    protected val AppDatabase.bindMusicalArtistDatabase: MusicalArtistDatabase
+    val AppDatabase.bindMusicalArtistDatabase: MusicalArtistDatabase
         @Provides get() = this
 
-    protected val AppDatabase.bindVgmdbDatabase: VgmdbDatabase
+    val AppDatabase.bindVgmdbDatabase: VgmdbDatabase
         @Provides get() = this
 
     @SingletonScope

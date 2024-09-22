@@ -4,4 +4,4 @@ import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesComponent
 import com.thekeeperofpie.artistalleydatabase.debug.DebugComponent
 import com.thekeeperofpie.artistalleydatabase.monetization.debug.DebugMonetizationComponent
 
-interface VariantComponent : DebugComponent, DebugMonetizationComponent, AnimeThemesComponent
+interface ApplicationVariantComponent : DebugComponent, DebugMonetizationComponent, AnimeThemesComponent

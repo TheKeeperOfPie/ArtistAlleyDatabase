@@ -1,0 +1,6 @@
+package com.thekeeperofpie.artistalleydatabase
+
+import com.thekeeperofpie.artistalleydatabase.monetization.unity.UnityComponent
+import com.thekeeperofpie.artistalleydatabase.play.PlayComponent
+
+interface ActivityVariantComponent : PlayComponent, UnityComponent

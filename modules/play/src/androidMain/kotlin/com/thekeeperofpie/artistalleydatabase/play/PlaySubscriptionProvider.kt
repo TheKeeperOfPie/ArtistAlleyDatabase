@@ -27,7 +27,6 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.queryProductDetails
 import com.android.billingclient.api.queryPurchasesAsync
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionDetails
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
@@ -41,7 +40,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.DateTimePeriod
-import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Duration.Companion.seconds
@@ -51,7 +49,7 @@ class PlaySubscriptionProvider(
     private val scope: ApplicationScope,
     private val application: Application,
     private val settings: MonetizationSettings,
-    @Assisted activity: ComponentActivity,
+    activity: ComponentActivity,
 ) : SubscriptionProvider, DefaultLifecycleObserver {
 
     override val subscriptionDetails =

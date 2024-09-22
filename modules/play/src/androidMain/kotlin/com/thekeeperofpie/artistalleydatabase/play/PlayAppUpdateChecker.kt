@@ -37,14 +37,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 
 @Inject
 class PlayAppUpdateChecker(
     application: Application,
-    @Assisted private val activity: ComponentActivity,
+    private val activity: ComponentActivity,
 ) : AppUpdateChecker, DefaultLifecycleObserver {
 
     private val appUpdateManager = AppUpdateManagerFactory.create(application)

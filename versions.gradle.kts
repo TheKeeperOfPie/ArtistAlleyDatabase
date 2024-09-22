@@ -52,22 +52,22 @@ object Versions {
     const val androidJunit5 = "1.11.0.0"
 
     object androidx {
-        const val activity = "1.9.0"
-        const val annotation = "1.9.0-alpha03"
+        const val activity = "1.10.0-alpha02"
+        const val annotation = "1.9.0-beta01"
         const val browser = "1.8.0"
         const val core = "1.15.0-alpha02"
-        const val lifecycle = "2.9.0-alpha02"
+        const val lifecycle = "2.9.0-alpha03"
         const val media3 = "1.5.0-alpha01"
-        const val navigation = "2.8.0"
+        const val navigation = "2.8.1"
         const val paging = "3.3.2"
         const val palette = "1.0.0"
-        const val room = "2.7.0-SNAPSHOT"
+        const val room = "2.7.0-alpha08"
         const val securityCrypto = "1.1.0-alpha06"
-        const val sqlite = "2.5.0-alpha07"
+        const val sqlite = "2.5.0-alpha08"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
-        const val work = "2.10.0-alpha03"
+        const val work = "2.10.0-alpha04"
     }
 
     const val androidyoutubeplayer = "12.1.0"
@@ -91,7 +91,7 @@ object Versions {
         // Beyond 1.7.1 breaks navigation drawer due to API change with AnchoredDraggableState
         const val core = "1.7.1"
         const val materialIcons = "1.7.1" // TODO: Remove once newer version is published
-        const val runtimeTracing = "1.0.0-beta01"
+        const val runtimeTracing = "1.7.0-rc01"
     }
 
     object composeMultiplatform {
@@ -112,7 +112,7 @@ object Versions {
 
     object google {
         const val appUpdate = "2.1.0"
-        const val billing = "7.0.0"
+        const val billing = "7.1.0"
         const val cronetOkHttp = "0.1.0"
         const val ossLicensesPlugin = "0.10.6"
         const val playServicesAds = "23.3.0"
@@ -144,9 +144,9 @@ object Versions {
         const val core = "2.1.0-Beta1"
         const val coroutines = "1.9.0"
         const val datetime = "0.6.1"
-        const val io = "0.5.3"
+        const val io = "0.5.4"
         const val ksp = "2.1.0-Beta1-1.0.25"
-        const val serialization = "1.7.1"
+        const val serialization = "1.7.3"
     }
 
     const val kotlinInject = "0.7.2"
@@ -155,7 +155,7 @@ object Versions {
     // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
     // TODO: 3.0.0-rc-1 crashes on Android at start up
     const val ktor = "3.0.0-beta-2"
-    const val ksoup = "0.1.6"
+    const val ksoup = "0.1.8"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.33"
     const val markwon = "4.6.2"
@@ -170,7 +170,7 @@ object Versions {
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
     const val statelyConcurrentCollections = "2.1.0"
-    const val unityAds = "4.12.2"
+    const val unityAds = "4.12.3"
     const val uriKmp = "0.0.18"
     const val xmlUtil = "0.90.2-beta1"
 }
@@ -179,11 +179,9 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
     dependencyResolutionManagement.apply {
         repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
         repositories {
-            maven("https://androidx.dev/snapshots/builds/12338415/artifacts/repository")
             maven("https://jitpack.io/")
             maven("https://oss.sonatype.org/content/repositories/snapshots")
             maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
-            maven("https://androidx.dev/storage/compose-compiler/repository/")
             google()
             mavenCentral()
             flatDir { dirs = setOf(rootProject.projectDir.resolve("/libs")) }
