@@ -8,12 +8,12 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":modules:anilist"))
-            api(project(":modules:browse"))
-            api(project(":modules:data"))
-            api(project(":modules:entry"))
-            implementation(project(":modules:utils-compose"))
-            implementation(project(":modules:utils-room"))
+            api(projects.modules.anilist)
+            api(projects.modules.browse)
+            api(projects.modules.data)
+            api(projects.modules.entry)
+            implementation(projects.modules.utilsCompose)
+            implementation(projects.modules.utilsRoom)
 
             implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kermit)

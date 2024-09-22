@@ -8,8 +8,8 @@ plugins {
 kotlin {
     sourceSets {
         androidMain.dependencies {
-            implementation(project(":modules:utils"))
-            implementation(project(":modules:utils-compose"))
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsCompose)
             implementation(libs.androidx.core.ktx)
             implementation(libs.activity.compose)
         }

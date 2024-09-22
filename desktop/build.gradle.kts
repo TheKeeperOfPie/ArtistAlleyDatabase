@@ -11,8 +11,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             commonMain.dependencies {
-                implementation(project(":modules:anime"))
-                implementation(project(":modules:utils-room"))
+                implementation(projects.modules.anime)
+                implementation(projects.modules.utilsRoom)
                 implementation(libs.jetBrainsCompose.navigation.compose)
                 implementation(libs.kermit)
                 implementation(libs.lifecycle.viewmodel.compose)

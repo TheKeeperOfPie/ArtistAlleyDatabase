@@ -8,8 +8,8 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":modules:anilist"))
-            api(project(":modules:anime"))
+            api(projects.modules.anilist)
+            api(projects.modules.anime)
 
             implementation(libs.accompanist.flowlayout)
             implementation(libs.coil3.coil.compose)

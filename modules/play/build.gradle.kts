@@ -11,7 +11,7 @@ android {
 kotlin {
     sourceSets {
         androidMain.dependencies {
-            api(project(":modules:monetization"))
+            api(projects.modules.monetization)
             implementation(libs.app.update.ktx)
             implementation(libs.billing.ktx)
         }

@@ -155,7 +155,7 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
 
 dependencies {
-    implementation(project(":modules:alley"))
+    implementation(projects.modules.alley)
 
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)

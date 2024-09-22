@@ -11,7 +11,7 @@ android {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":modules:monetization"))
+            api(projects.modules.monetization)
         }
     }
 }

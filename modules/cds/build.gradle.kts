@@ -8,14 +8,14 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":modules:anilist"))
-            api(project(":modules:browse"))
-            api(project(":modules:data"))
-            api(project(":modules:entry"))
-            api(project(":modules:musical-artists"))
-            implementation(project(":modules:utils"))
-            implementation(project(":modules:utils-room"))
-            api(project(":modules:vgmdb"))
+            api(projects.modules.anilist)
+            api(projects.modules.browse)
+            api(projects.modules.data)
+            api(projects.modules.entry)
+            api(projects.modules.musicalArtists)
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsRoom)
+            api(projects.modules.vgmdb)
 
             implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kermit)

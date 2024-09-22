@@ -14,8 +14,8 @@ kotlin {
         commonMain.dependencies {
             api(libs.kotlinx.io.core)
             api(libs.kotlinx.datetime)
-            implementation(project(":modules:utils"))
-            implementation(project(":modules:utils-compose"))
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsCompose)
             implementation(libs.xmlutil.serialization)
             implementation(libs.ktor.client.core)
             implementation(libs.kermit)

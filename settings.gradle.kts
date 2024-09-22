@@ -27,45 +27,19 @@ plugins {
     id("org.jetbrains.kotlin.jvm").version("2.1.0-Beta1").apply(false)
 }
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "ArtistAlleyDatabase"
 includeBuild("build-logic")
-include(
-    ":app",
-    ":desktop",
-//    ":modules:alley",
-//    ":modules:alley-app",
-    ":modules:anilist",
-    ":modules:anilist-data",
-    ":modules:anime",
-    ":modules:anime:data",
-    ":modules:anime2anime",
-    ":modules:animethemes",
-    ":modules:apollo",
-    ":modules:apollo:utils",
-    ":modules:art",
-    ":modules:browse",
-    ":modules:cds",
-    ":modules:data",
-    ":modules:debug",
-    ":modules:dependencies",
-    ":modules:entry",
-    ":modules:image",
-    ":modules:markdown",
-    ":modules:media",
-    ":modules:monetization",
-    ":modules:monetization:debug",
-    ":modules:monetization:unity",
-    ":modules:musical-artists",
-    ":modules:play",
-    ":modules:news",
-    ":modules:secrets",
-    ":modules:server",
-    ":modules:settings",
-    ":modules:test-utils",
-    ":modules:utils",
-    ":modules:utils-compose",
-    ":modules:utils-inject",
-    ":modules:utils-network",
-    ":modules:utils-room",
-    ":modules:vgmdb",
-)
+include(":app")
+include(":desktop")
+
+val excludedDirectories = setOf(".idea", "build", "alley-app", "alley")
+file("modules")
+    .walkTopDown()
+    .onEnter { !excludedDirectories.contains(it.name) }
+    .filter { it.isDirectory }
+    .filter { it.list()?.contains("build.gradle.kts") == true }
+    .map { it.relativeTo(rootProject.projectDir).path.replace(File.separator, ":") }
+    .toList()
+    .let { include(it) }

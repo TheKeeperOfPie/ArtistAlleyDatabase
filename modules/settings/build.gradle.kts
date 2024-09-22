@@ -13,7 +13,7 @@ kotlin {
             api(libs.work.runtime.ktx)
         }
         androidInstrumentedTest.dependencies {
-            implementation(project(":modules:test-utils"))
+            implementation(projects.modules.testUtils)
             implementation(libs.androidx.junit.test)
             implementation(libs.androidx.test.runner)
             implementation(libs.junit.jupiter.api)
@@ -21,11 +21,11 @@ kotlin {
             runtimeOnly(libs.junit5.android.test.runner)
         }
         commonMain.dependencies {
-            api(project(":modules:anime"))
-            api(project(":modules:art"))
-            api(project(":modules:cds"))
-            api(project(":modules:monetization"))
-            api(project(":modules:secrets"))
+            api(projects.modules.anime)
+            api(projects.modules.art)
+            api(projects.modules.cds)
+            api(projects.modules.monetization)
+            api(projects.modules.secrets)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.kermit)

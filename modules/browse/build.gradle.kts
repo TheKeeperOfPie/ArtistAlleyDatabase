@@ -12,9 +12,9 @@ android {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":modules:entry"))
-            implementation(project(":modules:utils"))
-            implementation(project(":modules:utils-compose"))
+            implementation(projects.modules.entry)
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsCompose)
             implementation(libs.jetBrainsCompose.navigation.compose)
         }
     }

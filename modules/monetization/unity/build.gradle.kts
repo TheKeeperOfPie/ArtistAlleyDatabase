@@ -11,8 +11,8 @@ android {
 kotlin {
     sourceSets {
         androidMain.dependencies {
-            api(project(":modules:monetization"))
-            implementation(project(":modules:secrets"))
+            api(projects.modules.monetization)
+            implementation(projects.modules.secrets)
             implementation(libs.unity.ads)
         }
     }

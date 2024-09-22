@@ -3,3 +3,5 @@ dependencyResolutionManagement {
     @Suppress("UNCHECKED_CAST")
     (extra["versions"] as (DependencyResolutionManagement) -> Unit)(this)
 }
+
+rootProject.name = "build-logic"

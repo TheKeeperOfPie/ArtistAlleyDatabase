@@ -8,10 +8,10 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":modules:image"))
-            implementation(project(":modules:utils"))
-            implementation(project(":modules:utils-compose"))
-            implementation(project(":modules:utils-room"))
+            api(projects.modules.image)
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsCompose)
+            implementation(projects.modules.utilsRoom)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.flowExt)

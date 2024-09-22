@@ -16,6 +16,7 @@ plugins {
     alias(libs.plugins.com.google.devtools.ksp).apply(false)
     alias(libs.plugins.com.jaredsburrows.license).apply(false)
     alias(libs.plugins.org.jetbrains.compose).apply(false)
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.compose).apply(false)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization).apply(false)
     id(libs.plugins.com.android.application.get().pluginId).apply(false)
     id(libs.plugins.com.android.library.get().pluginId).apply(false)

@@ -11,8 +11,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":modules:server"))
-    implementation(project(":modules:utils-network"))
+    implementation(projects.modules.server)
+    implementation(projects.modules.utilsNetwork)
 
     implementation(libs.dexmaker.mockito.inline.extended)
     implementation(libs.mockito.kotlin)

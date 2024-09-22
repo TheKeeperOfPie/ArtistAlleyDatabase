@@ -20,7 +20,7 @@ apollo {
         decapitalizeFields.set(true)
 
         mapScalarToKotlinString("CountryCode")
-        plugin(project(":modules:apollo"))
+        plugin(projects.modules.apollo)
     }
 }
 
@@ -33,7 +33,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.apollo.runtime)
-            implementation(project(":modules:apollo:utils"))
+            implementation(projects.modules.apollo.utils)
             implementation(libs.jetBrainsCompose.runtime)
         }
     }

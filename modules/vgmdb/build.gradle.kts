@@ -9,10 +9,10 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":modules:entry"))
-            api(project(":modules:utils"))
-            api(project(":modules:utils-compose"))
-            api(project(":modules:utils-network"))
+            api(projects.modules.entry)
+            api(projects.modules.utils)
+            api(projects.modules.utilsCompose)
+            api(projects.modules.utilsNetwork)
 
             implementation(libs.kermit)
             implementation(libs.ksoup)

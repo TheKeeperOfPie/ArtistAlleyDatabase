@@ -13,9 +13,9 @@ secrets {
 }
 
 dependencies {
-    implementation(project(":modules:anilist"))
-    api(project(":modules:data"))
-    api(project(":modules:entry"))
+    implementation(projects.modules.anilist)
+    api(projects.modules.data)
+    api(projects.modules.entry)
 
     implementation(libs.kotlinx.serialization.json)
 

@@ -9,17 +9,17 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.androidx.security.crypto)
-            implementation(project(":modules:secrets"))
+            implementation(projects.modules.secrets)
             implementation(libs.androidx.browser)
             implementation(libs.activity.compose)
         }
         commonMain.dependencies {
-            api(project(":modules:anilist-data"))
-            api(project(":modules:entry"))
-            implementation(project(":modules:apollo:utils"))
-            implementation(project(":modules:utils"))
-            implementation(project(":modules:utils-compose"))
-            implementation(project(":modules:utils-network"))
+            api(projects.modules.anilistData)
+            api(projects.modules.entry)
+            implementation(projects.modules.apollo.utils)
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsCompose)
+            implementation(projects.modules.utilsNetwork)
 
             api(libs.room.ktx)
             api(libs.room.paging)

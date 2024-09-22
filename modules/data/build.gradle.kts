@@ -12,9 +12,9 @@ android {
 kotlin{
     sourceSets{
         commonMain.dependencies {
-            api(project(":modules:anilist"))
-            api(project(":modules:entry"))
-            api(project(":modules:utils"))
+            api(projects.modules.anilist)
+            api(projects.modules.entry)
+            api(projects.modules.utils)
             implementation(libs.kermit)
         }
     }

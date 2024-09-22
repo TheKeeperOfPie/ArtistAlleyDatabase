@@ -8,7 +8,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.apollo.runtime)
-            implementation(project(":modules:utils"))
+            implementation(projects.modules.utils)
             implementation(libs.apollo.normalized.cache)
             implementation(libs.kermit)
             implementation(libs.kotlinx.serialization.json.io)

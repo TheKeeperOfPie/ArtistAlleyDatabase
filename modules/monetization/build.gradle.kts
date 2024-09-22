@@ -15,8 +15,8 @@ kotlin {
             api(libs.activity.compose)
         }
         commonMain.dependencies {
-            api(project(":modules:utils"))
-            api(project(":modules:utils-compose"))
+            api(projects.modules.utils)
+            api(projects.modules.utilsCompose)
             implementation(libs.lifecycle.viewmodel.compose)
         }
     }

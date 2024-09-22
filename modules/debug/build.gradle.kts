@@ -8,9 +8,9 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":modules:utils"))
-            implementation(project(":modules:utils-compose"))
-            implementation(project(":modules:utils-network"))
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsCompose)
+            implementation(projects.modules.utilsNetwork)
 
             implementation(libs.apollo.runtime)
             implementation(libs.graphql.java)

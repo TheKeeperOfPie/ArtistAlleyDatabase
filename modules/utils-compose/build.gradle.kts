@@ -13,8 +13,8 @@ kotlin {
         }
         commonMain.dependencies {
             api(compose.components.resources)
-            implementation(project(":modules:secrets"))
-            implementation(project(":modules:utils"))
+            implementation(projects.modules.secrets)
+            implementation(projects.modules.utils)
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)
             implementation(libs.jetBrainsCompose.navigation.compose)

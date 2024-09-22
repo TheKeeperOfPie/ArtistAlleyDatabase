@@ -7,8 +7,8 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":modules:anime"))
-            api(project(":modules:utils-network"))
+            api(projects.modules.anime)
+            api(projects.modules.utilsNetwork)
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.kermit)
