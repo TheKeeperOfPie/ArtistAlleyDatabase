@@ -100,6 +100,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalComposeSettings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
@@ -143,6 +144,7 @@ class MainActivity : ComponentActivity() {
     private val appUpdateChecker by lazy { activityComponent.injector.appUpdateChecker }
     private val monetizationProvider by lazy { activityComponent.injector.monetizationProvider }
     private val subscriptionProvider by lazy { activityComponent.injector.subscriptionProvider }
+    private val shareHandler by lazy { activityComponent.injector.shareHandler }
 
     private val fullScreenImageHandler = FullscreenImageHandler()
 
@@ -197,6 +199,7 @@ class MainActivity : ComponentActivity() {
                     LocalImageColorsState provides imageColorsState,
                     LocalIgnoreController provides ignoreController,
                     LocalAnimeComponent provides applicationComponent,
+                    LocalShareHandler provides shareHandler,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {

@@ -1,6 +1,7 @@
 # Changelog
 
 ### Next (16)
+- Add share/copy actions to media details menu
 
 ### 0.50 (15)
 - Add subscription price before button press

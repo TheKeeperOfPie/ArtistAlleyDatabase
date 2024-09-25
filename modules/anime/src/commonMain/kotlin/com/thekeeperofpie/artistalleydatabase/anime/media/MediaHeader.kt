@@ -86,7 +86,7 @@ fun MediaHeader(
     onCoverImageClick: (() -> Unit)? = null,
     menuContent: @Composable() (() -> Unit)? = null,
 ) {
-    val defaultTitle = headerValues.title()
+    val defaultTitle = headerValues.title().orEmpty()
     var preferredTitle by remember(defaultTitle, titles) {
         mutableIntStateOf(
             titles?.indexOf(defaultTitle)?.coerceAtLeast(0) ?: 0
@@ -116,7 +116,7 @@ fun MediaHeader(
         Column {
             Row(modifier = Modifier.weight(1f)) {
                 AutoResizeHeightText(
-                    text = titles?.getOrNull(preferredTitle) ?: headerValues.title(),
+                    text = titles?.getOrNull(preferredTitle) ?: headerValues.title() ?: "",
                     style = MaterialTheme.typography.headlineLarge
                         .copy(lineBreak = LineBreak.Simple),
                     modifier = Modifier
@@ -346,7 +346,7 @@ class MediaHeaderValues(
         get() = media()?.type ?: params?.type ?: MediaType.UNKNOWN__
 
     @Composable
-    fun title() = media()?.title?.primaryTitle() ?: params?.title ?: ""
+    fun title() = media()?.title?.primaryTitle() ?: params?.title
 
     @Composable
     fun subtitleText() = media()?.let {

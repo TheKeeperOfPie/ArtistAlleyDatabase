@@ -29,9 +29,11 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -67,8 +69,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -78,6 +82,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_cds_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_chapters_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_characters_label
+import artistalleydatabase.modules.anime.generated.resources.anime_media_details_copy_link
+import artistalleydatabase.modules.anime.generated.resources.anime_media_details_copy_link_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_country_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_duration_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_duration_minutes
@@ -112,6 +118,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_score_distribution_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_season_label
+import artistalleydatabase.modules.anime.generated.resources.anime_media_details_share
+import artistalleydatabase.modules.anime.generated.resources.anime_media_details_share_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_social_links_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_songs_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_source_label
@@ -195,6 +203,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHea
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -378,6 +387,15 @@ object AnimeMediaDetailsScreen {
                                         expanded = showMenu,
                                         onDismissRequest = { showMenu = false },
                                     ) {
+                                        fun url(forceExternal: Boolean = false): String {
+                                            val url = AniListUtils.mediaUrl(
+                                                entry.result?.media?.type ?: headerValues.type,
+                                                viewModel.mediaId,
+                                            )
+                                            if (!forceExternal) return url
+                                            return "$url?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true"
+                                        }
+
                                         DropdownMenuItem(
                                             text = { Text(stringResource(Res.string.anime_media_details_open_external)) },
                                             leadingIcon = {
@@ -390,13 +408,45 @@ object AnimeMediaDetailsScreen {
                                             },
                                             onClick = {
                                                 showMenu = false
-                                                uriHandler.openUri(
-                                                    AniListUtils.mediaUrl(
-                                                        // TODO: Pass media type if known so that open external works even if entry can't be loaded?
-                                                        entry.result?.media?.type
-                                                            ?: MediaType.ANIME,
-                                                        viewModel.mediaId,
-                                                    ) + "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true"
+                                                uriHandler.openUri(url(forceExternal = true))
+                                            }
+                                        )
+
+                                        val shareHandler = LocalShareHandler.current
+                                        if (shareHandler != null) {
+                                            val title = headerValues.title()
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(Res.string.anime_media_details_share)) },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.Share,
+                                                        contentDescription = stringResource(
+                                                            Res.string.anime_media_details_share_icon_content_description
+                                                        )
+                                                    )
+                                                },
+                                                onClick = {
+                                                    showMenu = false
+                                                    shareHandler.shareUrl(title, url())
+                                                }
+                                            )
+                                        }
+
+                                        val clipboardManager = LocalClipboardManager.current
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(Res.string.anime_media_details_copy_link)) },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Filled.ContentCopy,
+                                                    contentDescription = stringResource(
+                                                        Res.string.anime_media_details_copy_link_icon_content_description
+                                                    )
+                                                )
+                                            },
+                                            onClick = {
+                                                showMenu = false
+                                                clipboardManager.setText(
+                                                    buildAnnotatedString { append(url()) }
                                                 )
                                             }
                                         )

@@ -7,6 +7,10 @@ import me.tatarka.inject.annotations.Scope
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER)
 annotation class SingletonScope
 
+@Scope
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER)
+annotation class ActivityScope
+
 @Qualifier
 @Target(
     AnnotationTarget.PROPERTY_GETTER,
