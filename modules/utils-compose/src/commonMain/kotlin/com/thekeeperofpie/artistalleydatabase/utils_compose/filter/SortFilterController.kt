@@ -10,7 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUiDispatcher
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.debounce
 import kotlinx.coroutines.CoroutineScope
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 abstract class SortFilterController<FilterParams>(scope: CoroutineScope) {
     abstract val sections: List<SortFilterSection>
@@ -19,7 +19,7 @@ abstract class SortFilterController<FilterParams>(scope: CoroutineScope) {
     private val moleculeScope = CoroutineScope(scope.coroutineContext + ComposeUiDispatcher.Main)
     val filterParams by lazy(LazyThreadSafetyMode.NONE) {
         moleculeScope.launchMolecule(ComposeUiDispatcher.recompositionMode) {
-            debounce(currentValue = filterParams(), duration = 500.milliseconds)
+            debounce(currentValue = filterParams(), duration = 1.seconds)
         }
     }
 

@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -78,6 +79,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -176,31 +178,7 @@ object AnimeSearchScreen {
                     ),
                 ) {
                     if (!selectedUnlocked) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = stringResource(Res.string.anime_requires_unlock),
-                                    modifier = Modifier.padding(vertical = 10.dp)
-                                )
-                                val navigationCallback = LocalNavigationCallback.current
-                                Button(
-                                    onClick = {
-                                        navigationCallback.navigate(AnimeDestination.FeatureTiers)
-                                    }
-                                ) {
-                                    Text(
-                                        text = stringResource(
-                                            Res.string.anime_open_feature_tiers_button
-                                        )
-                                    )
-                                }
-                            }
-                        }
+                        LockedFeatureTiers()
                     } else {
                         val columns =
                             if (selectedType == AnimeSearchViewModel.SearchType.ANIME || selectedType == AnimeSearchViewModel.SearchType.MANGA) {
@@ -318,6 +296,31 @@ object AnimeSearchScreen {
                                             }
                                         }
                                     }
+
+                                    when (content.loadState.append) {
+                                        is LoadState.Error -> item(
+                                            key = "append_error",
+                                            span = GridUtils.maxSpanFunction
+                                        ) {
+                                            Box(Modifier.fillMaxWidth()) {
+                                                Text(
+                                                    text = stringResource(Res.string.anime_media_list_error_loading),
+                                                    modifier = Modifier.align(Alignment.Center),
+                                                )
+                                            }
+                                        }
+                                        LoadState.Loading -> item(
+                                            key = "append_loading",
+                                            span = GridUtils.maxSpanFunction
+                                        ) {
+                                            Box(Modifier.fillMaxWidth()) {
+                                                CircularProgressIndicator(
+                                                    Modifier.align(Alignment.Center)
+                                                )
+                                            }
+                                        }
+                                        is LoadState.NotLoading -> Unit
+                                    }
                                 }
                             }
 
@@ -332,6 +335,35 @@ object AnimeSearchScreen {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun LockedFeatureTiers() {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = stringResource(Res.string.anime_requires_unlock),
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
+                val navigationCallback = LocalNavigationCallback.current
+                Button(
+                    onClick = {
+                        navigationCallback.navigate(AnimeDestination.FeatureTiers)
+                    }
+                ) {
+                    Text(
+                        text = stringResource(
+                            Res.string.anime_open_feature_tiers_button
+                        )
+                    )
                 }
             }
         }

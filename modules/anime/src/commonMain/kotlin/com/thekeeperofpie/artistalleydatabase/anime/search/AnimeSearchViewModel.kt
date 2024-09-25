@@ -100,6 +100,7 @@ import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @Inject
@@ -352,7 +353,7 @@ class AnimeSearchViewModel(
             searchType = SearchType.ANIME,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(500.milliseconds),
+                    snapshotFlow { query }.debounce(1.seconds),
                     includeDescriptionFlow,
                     refresh.updates,
                     animeSortFilterController.filterParams,
@@ -385,7 +386,7 @@ class AnimeSearchViewModel(
             searchType = SearchType.MANGA,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(500.milliseconds),
+                    snapshotFlow { query }.debounce(1.seconds),
                     includeDescriptionFlow,
                     refresh.updates,
                     mangaSortFilterController.filterParams,
@@ -418,17 +419,18 @@ class AnimeSearchViewModel(
             searchType = SearchType.CHARACTER,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(500.milliseconds),
+                    snapshotFlow { query }.debounce(1.seconds),
                     characterSortFilterController.filterParams,
                     refresh.updates,
                     ::Triple
                 )
             },
             pagingSource = { (query, filterParams), cache: LruCache<Int, PagingSource.LoadResult.Page<Int, CharacterAdvancedSearchQuery.Data.Page.Character>> ->
-                AniListPagingSource(cache = cache) {
+                AniListPagingSource(cache = cache, perPage = 25) {
                     aniListApi.searchCharacters(
                         query = query,
                         page = it,
+                        perPage = 25,
                         sort = filterParams.sort.selectedOption(CharacterSortOption.SEARCH_MATCH)
                             .toApiValueForSearch(filterParams.sortAscending),
                         isBirthday = filterParams.isBirthday,
@@ -474,17 +476,18 @@ class AnimeSearchViewModel(
             searchType = SearchType.STAFF,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(500.milliseconds),
+                    snapshotFlow { query }.debounce(1.seconds),
                     staffSortFilterController.filterParams,
                     refresh.updates,
                     ::Triple
                 )
             },
             pagingSource = { (query, filterParams), cache: LruCache<Int, PagingSource.LoadResult.Page<Int, StaffSearchQuery.Data.Page.Staff>> ->
-                AniListPagingSource(cache = cache) {
+                AniListPagingSource(cache = cache, perPage = 25) {
                     aniListApi.searchStaff(
                         query = query,
                         page = it,
+                        perPage = 25,
                         sort = filterParams.sort.selectedOption(StaffSortOption.SEARCH_MATCH)
                             .toApiValueForSearch(filterParams.sortAscending),
                         isBirthday = filterParams.isBirthday,
@@ -530,18 +533,18 @@ class AnimeSearchViewModel(
             searchType = SearchType.STUDIO,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(500.milliseconds),
+                    snapshotFlow { query }.debounce(1.seconds),
                     refresh.updates,
                     studioSortFilterController.filterParams,
                     ::Triple,
                 )
             },
             pagingSource = { (query, _, filterParams), cache: LruCache<Int, PagingSource.LoadResult.Page<Int, StudioSearchQuery.Data.Page.Studio>> ->
-                AniListPagingSource(cache = cache) {
+                AniListPagingSource(cache = cache, perPage = 25) {
                     aniListApi.searchStudios(
                         query = query,
                         page = it,
-                        perPage = 10,
+                        perPage = 25,
                         sort = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
                             .flatMap { it.value.toApiValue(filterParams.sortAscending) }
                             .ifEmpty { listOf(StudioSort.SEARCH_MATCH) }
@@ -589,7 +592,7 @@ class AnimeSearchViewModel(
             searchType = SearchType.USER,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(500.milliseconds),
+                    snapshotFlow { query }.debounce(1.seconds),
                     userSortFilterController.filterParams,
                     refresh.updates,
                     ::Triple,
@@ -662,9 +665,9 @@ class AnimeSearchViewModel(
                     val cache = LruCache<Int, PagingSource.LoadResult.Page<Int, Result>>(20)
                     Pager(
                         PagingConfig(
-                            pageSize = 10,
-                            initialLoadSize = 10,
-                            jumpThreshold = 20,
+                            pageSize = 25,
+                            initialLoadSize = 25,
+                            jumpThreshold = 25,
                             enablePlaceholders = true,
                         )
                     ) {
