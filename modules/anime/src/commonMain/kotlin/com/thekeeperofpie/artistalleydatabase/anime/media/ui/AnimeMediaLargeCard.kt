@@ -229,7 +229,6 @@ object AnimeMediaLargeCard {
                             MediaQuickEdit(
                                 viewer = viewer,
                                 entry = entry,
-                                nextAiringEpisode = entry.nextAiringEpisode?.episode,
                                 forceListEditIcon = forceListEditIcon,
                             )
                         }
@@ -361,7 +360,6 @@ object AnimeMediaLargeCard {
     private fun MediaQuickEdit(
         viewer: AniListViewer?,
         entry: Entry,
-        nextAiringEpisode: Int?,
         forceListEditIcon: Boolean,
     ) {
         Box(

@@ -1,22 +1,25 @@
 package com.thekeeperofpie.artistalleydatabase
 
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.DoubleModalNavigationDrawer
-import com.thekeeperofpie.artistalleydatabase.utils_compose.DrawerState
 
 object DebugDoubleDrawer {
 
     @Composable
     operator fun invoke(
         applicationComponent: ApplicationComponent,
-        drawerState: DrawerState,
-        gesturesEnabled: Boolean,
         drawerContent: @Composable () -> Unit,
+        startDrawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
+        endDrawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
+        gesturesEnabled: Boolean,
         content: @Composable () -> Unit,
-    ) = DoubleModalNavigationDrawer(
-        startDrawerContent = drawerContent,
+    ) = ModalNavigationDrawer(
+        drawerContent = drawerContent,
+        drawerState = startDrawerState,
         gesturesEnabled = gesturesEnabled,
-        drawerState = drawerState,
         content = content,
     )
 }

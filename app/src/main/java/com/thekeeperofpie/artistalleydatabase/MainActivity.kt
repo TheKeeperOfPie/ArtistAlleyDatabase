@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +34,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -97,7 +100,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
-import com.thekeeperofpie.artistalleydatabase.utils_compose.DoubleDrawerValue
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalComposeSettings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
@@ -107,7 +109,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDrawerState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.enums.EnumEntries
@@ -203,11 +204,12 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {
-                        val drawerState = rememberDrawerState(DoubleDrawerValue.Closed)
+                        val startDrawerState = rememberDrawerState(DrawerValue.Closed)
+                        val endDrawerState = rememberDrawerState(DrawerValue.Closed)
                         val scope = rememberCoroutineScope()
                         val navDrawerItems = NavDrawerItems.entries
 
-                        fun onClickNav() = scope.launch { drawerState.openStart() }
+                        fun onClickNav() = scope.launch { startDrawerState.open() }
                         val unlockDatabaseFeatures by monetizationController.unlockDatabaseFeatures
                             .collectAsState(false)
 
@@ -231,7 +233,8 @@ class MainActivity : ComponentActivity() {
                             }
                             DebugDoubleDrawer(
                                 applicationComponent = applicationComponent,
-                                drawerState = drawerState,
+                                startDrawerState = startDrawerState,
+                                endDrawerState = endDrawerState,
                                 gesturesEnabled = gesturesEnabled,
                                 drawerContent = {
                                     // TODO: This is not a good way to to infer the selected root
@@ -242,11 +245,12 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     StartDrawer(
+                                        drawerState = startDrawerState,
                                         navDrawerItems = { navDrawerItems },
                                         selectedIndex = { selectedRouteIndex },
                                         onSelectIndex = {
                                             if (selectedRouteIndex == it) {
-                                                scope.launch { drawerState.close() }
+                                                scope.launch { startDrawerState.close() }
                                             } else {
                                                 selectedRouteIndex = it
                                                 val navDrawerItem = navDrawerItems[it]
@@ -271,7 +275,7 @@ class MainActivity : ComponentActivity() {
                                                 }
                                             }
                                         },
-                                        onCloseDrawer = { scope.launch { drawerState.close() } },
+                                        onCloseDrawer = { scope.launch { startDrawerState.close() } },
                                     )
                                 }
                             ) {
@@ -281,7 +285,7 @@ class MainActivity : ComponentActivity() {
                                     onClickNav = ::onClickNav,
                                     startDestination = startDestination,
                                     onVariantBannerClick = {
-                                        scope.launch { drawerState.openEnd() }
+                                        scope.launch { endDrawerState.open() }
                                     },
                                 )
                             }
@@ -291,7 +295,7 @@ class MainActivity : ComponentActivity() {
                                 unlockDatabaseFeatures = false,
                                 onClickNav = ::onClickNav,
                                 startDestination = startDestination,
-                                onVariantBannerClick = { scope.launch { drawerState.openEnd() } },
+                                onVariantBannerClick = { scope.launch { endDrawerState.open() } },
                             )
                         }
                     }
@@ -325,12 +329,13 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun StartDrawer(
+        drawerState: DrawerState,
         navDrawerItems: () -> EnumEntries<NavDrawerItems>,
         selectedIndex: () -> Int,
         onSelectIndex: (Int) -> Unit,
         onCloseDrawer: () -> Unit,
     ) {
-        ModalDrawerSheet {
+        ModalDrawerSheet(drawerState = drawerState) {
             Spacer(modifier = Modifier.height(16.dp))
             val preferredMediaType by settings.preferredMediaType.collectAsState()
             navDrawerItems().forEachIndexed { index, item ->

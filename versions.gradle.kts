@@ -46,7 +46,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.8.0-alpha02"
+        const val gradle = "8.8.0-alpha03"
     }
 
     const val androidJunit5 = "1.11.0.0"
@@ -70,7 +70,7 @@ object Versions {
         const val work = "2.10.0-alpha04"
     }
 
-    const val androidyoutubeplayer = "12.1.0"
+    const val androidyoutubeplayer = "12.1.1"
 
     object apache {
         const val commonsCompress = "1.27.1"
@@ -88,9 +88,8 @@ object Versions {
     const val colormath = "3.6.0"
 
     object compose {
-        // Beyond 1.7.1 breaks navigation drawer due to API change with AnchoredDraggableState
-        const val core = "1.7.1"
-        const val materialIcons = "1.7.1" // TODO: Remove once newer version is published
+        const val core = "1.7.2"
+        const val materialIcons = "1.7.2"
         const val runtimeTracing = "1.7.0-rc01"
     }
 
@@ -107,7 +106,7 @@ object Versions {
     const val dependencyAnalysis = "2.0.2"
     const val dexmakerInline = "2.28.4"
     const val diffUtils = "0.7.0"
-    const val flowExt = "1.0.0-RC"
+    const val flowExt = "1.0.0"
     const val fluidI18n = "0.13.0"
 
     object google {
@@ -133,7 +132,7 @@ object Versions {
 
     object junit {
         const val four = "4.13.2"
-        const val jupiter = "5.11.0"
+        const val jupiter = "5.11.1"
         const val jupiterAndroid = "1.5.0"
     }
 
@@ -155,7 +154,7 @@ object Versions {
     // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
     // TODO: 3.0.0-rc-1 crashes on Android at start up
     const val ktor = "3.0.0-beta-2"
-    const val ksoup = "0.1.8"
+    const val ksoup = "0.1.9"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.33"
     const val markwon = "4.6.2"
