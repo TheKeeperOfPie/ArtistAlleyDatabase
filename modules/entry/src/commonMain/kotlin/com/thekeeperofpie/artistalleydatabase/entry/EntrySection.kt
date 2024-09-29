@@ -16,10 +16,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.different_indicator_content_description
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceId
 import com.thekeeperofpie.artistalleydatabase.utils_compose.observableStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,6 +34,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 
 sealed class EntrySection(private val initialLockState: LockState? = null) {
@@ -97,44 +94,13 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
     protected abstract fun clearSection()
 
     class MultiText(
-        val headerZero: StringResourceCompat,
-        val headerOne: StringResourceCompat,
-        val headerMany: StringResourceCompat,
+        val headerZero: StringResource,
+        val headerOne: StringResource,
+        val headerMany: StringResource,
         initialPendingValue: String = "",
         lockState: LockState? = null,
         val navRoute: ((Entry) -> String)? = null,
     ) : EntrySection(lockState) {
-        constructor(
-            headerZero: Int,
-            headerOne: Int,
-            headerMany: Int,
-            initialPendingValue: String = "",
-            lockState: LockState? = null,
-            navRoute: ((Entry) -> String)? = null,
-        ) : this(
-            headerZero = StringResourceId(headerZero),
-            headerOne = StringResourceId(headerOne),
-            headerMany = StringResourceId(headerMany),
-            initialPendingValue = initialPendingValue,
-            lockState = lockState,
-            navRoute = navRoute,
-        )
-        constructor(
-            headerZero: StringResource,
-            headerOne: StringResource,
-            headerMany: StringResource,
-            initialPendingValue: String = "",
-            lockState: LockState? = null,
-            navRoute: ((Entry) -> String)? = null,
-        ) : this(
-            headerZero = StringResourceCompose(headerZero),
-            headerOne = StringResourceCompose(headerOne),
-            headerMany = StringResourceCompose(headerMany),
-            initialPendingValue = initialPendingValue,
-            lockState = lockState,
-            navRoute = navRoute,
-        )
-
         val contents = mutableStateListOf<Entry>()
         private var contentUpdates = MutableStateFlow(emptyList<Entry>())
 
@@ -296,7 +262,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
             val id: String,
             val text: String,
             val trailingIcon: ImageVector? = null,
-            val trailingIconContentDescription: StringResourceCompat? = null,
+            val trailingIconContentDescription: StringResource? = null,
             val serializedValue: String = text,
             val searchableValue: String = text,
         ) {
@@ -307,8 +273,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
                 id = "different",
                 text = "",
                 trailingIcon = Icons.Default.ViewKanban,
-                trailingIconContentDescription =
-                StringResourceCompose(Res.string.different_indicator_content_description)
+                trailingIconContentDescription = Res.string.different_indicator_content_description,
             )
 
             class Prefilled<T>(
@@ -329,8 +294,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
                 id = id,
                 text = text,
                 trailingIcon = trailingIcon,
-                trailingIconContentDescription = trailingIconContentDescription
-                    ?.let(::StringResourceCompose),
+                trailingIconContentDescription = trailingIconContentDescription,
                 serializedValue = serializedValue,
                 searchableValue = searchableValue,
             )
@@ -342,29 +306,10 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
     }
 
     class LongText(
-        val headerRes: StringResourceCompat,
+        val headerRes: StringResource,
         initialPendingValue: String = "",
         lockState: LockState? = null,
     ) : EntrySection(lockState) {
-        constructor(
-            headerRes: Int,
-            initialPendingValue: String = "",
-            lockState: LockState? = null,
-        ) : this(
-            headerRes = StringResourceId(headerRes),
-            initialPendingValue = initialPendingValue,
-            lockState = lockState,
-        )
-        constructor(
-            headerRes: StringResource,
-            initialPendingValue: String = "",
-            lockState: LockState? = null,
-        ) : this(
-            headerRes = StringResourceCompose(headerRes),
-            initialPendingValue = initialPendingValue,
-            lockState = lockState,
-        )
-
         var value by mutableStateOf(initialPendingValue)
 
         fun setContents(value: String?, lockState: LockState?) {
@@ -378,34 +323,11 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
     }
 
     open class Dropdown(
-        val headerRes: StringResourceCompat,
-        val arrowContentDescription: StringResourceCompat,
+        val headerRes: StringResource,
+        val arrowContentDescription: StringResource,
         var options: SnapshotStateList<Item> = mutableStateListOf(),
         lockState: LockState? = null,
     ) : EntrySection(lockState) {
-        constructor(
-            headerRes: Int,
-            arrowContentDescription: Int,
-            options: SnapshotStateList<Item> = mutableStateListOf(),
-            lockState: LockState? = null,
-        ) : this(
-            headerRes = StringResourceId(headerRes),
-            arrowContentDescription = StringResourceId(arrowContentDescription),
-            options = options,
-            lockState = lockState,
-        )
-        constructor(
-            headerRes: StringResource,
-            arrowContentDescription: StringResource,
-            options: SnapshotStateList<Item> = mutableStateListOf(),
-            lockState: LockState? = null,
-        ) : this(
-            headerRes = StringResourceCompose(headerRes),
-            arrowContentDescription = StringResourceCompose(arrowContentDescription),
-            options = options,
-            lockState = lockState,
-        )
-
         var expanded by mutableStateOf(false)
         var selectedIndex by mutableIntStateOf(0)
 
@@ -425,16 +347,12 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
             fun Content(lockState: LockState?) {
             }
 
-            class Basic<T>(val value: T, val textRes: StringResourceCompat) : Item {
-
-                constructor(value: T, textRes: Int) : this(value, StringResourceId(textRes))
-
-                constructor(value: T, textRes: StringResource) : this(value, StringResourceCompose(textRes))
+            class Basic<T>(val value: T, val textRes: StringResource) : Item {
 
                 override val hasCustomView = false
 
                 @Composable
-                override fun fieldText() = ComposeResourceUtils.stringResourceCompat(textRes)
+                override fun fieldText() = stringResource(textRes)
 
                 @Composable
                 override fun DropdownItemText() = Text(fieldText())
@@ -448,7 +366,7 @@ sealed class EntrySection(private val initialLockState: LockState? = null) {
 
     abstract class Custom<OutputType>(lockState: LockState? = null) : EntrySection(lockState) {
 
-        abstract fun headerRes(): StringResourceCompat
+        abstract fun headerRes(): StringResource
 
         @Composable
         abstract fun Content(lockState: LockState?)

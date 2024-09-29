@@ -75,7 +75,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIco
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -547,7 +546,7 @@ fun MediaTagPreview(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = ComposeResourceUtils.stringResource(UtilsStrings.close))
+                Text(text = stringResource(UtilsStrings.close))
             }
         }
     )
@@ -573,7 +572,7 @@ fun MediaGenrePreview(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = ComposeResourceUtils.stringResource(UtilsStrings.close))
+                Text(text = stringResource(UtilsStrings.close))
             }
         }
     )

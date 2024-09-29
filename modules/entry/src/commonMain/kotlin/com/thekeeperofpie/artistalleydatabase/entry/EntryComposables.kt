@@ -34,7 +34,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.different
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -146,7 +145,7 @@ fun EntryPrefilledAutocompleteDropdown(
                                     Icon(
                                         imageVector = imageVector,
                                         contentDescription = entry.trailingIconContentDescription
-                                            ?.let { ComposeResourceUtils.stringResourceCompat(it) },
+                                            ?.let { stringResource(it) },
                                     )
                                 }
 

@@ -26,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -449,6 +448,6 @@ class ArtEntryDetailsViewModel(
 
     fun onClickSaveTemplate() {
         artSettings.artEntryTemplate.value = makeBaseEntry()
-        errorResource = StringResourceCompose(Res.string.art_template_saved) to null
+        errorResource = Res.string.art_template_saved to null
     }
 }

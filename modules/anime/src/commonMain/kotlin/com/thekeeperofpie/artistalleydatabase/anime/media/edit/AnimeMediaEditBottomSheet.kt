@@ -117,7 +117,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
@@ -195,7 +194,7 @@ object AnimeMediaEditBottomSheet {
                                 CircularProgressIndicator()
                             } else {
                                 Text(
-                                    text = ComposeResourceUtils.stringResource(UtilsStrings.delete),
+                                    text = stringResource(UtilsStrings.delete),
                                     modifier = Modifier.padding(
                                         horizontal = 16.dp,
                                         vertical = 10.dp
@@ -215,7 +214,7 @@ object AnimeMediaEditBottomSheet {
                             CircularProgressIndicator()
                         } else {
                             Text(
-                                text = ComposeResourceUtils.stringResource(UtilsStrings.save),
+                                text = stringResource(UtilsStrings.save),
                                 modifier = Modifier.padding(
                                     horizontal = 16.dp,
                                     vertical = 10.dp
@@ -236,12 +235,12 @@ object AnimeMediaEditBottomSheet {
                         showDelete = false
                         viewModel.onClickDelete()
                     }) {
-                        Text(ComposeResourceUtils.stringResource(UtilsStrings.yes))
+                        Text(stringResource(UtilsStrings.yes))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDelete = false }) {
-                        Text(ComposeResourceUtils.stringResource(UtilsStrings.no))
+                        Text(stringResource(UtilsStrings.no))
                     }
                 },
             )

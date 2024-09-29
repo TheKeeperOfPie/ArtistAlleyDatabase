@@ -45,7 +45,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -150,7 +149,7 @@ object AniListViewerProfileScreen {
                         value = ""
                         onSubmitAuthToken(token)
                     }) {
-                        Text(ComposeResourceUtils.stringResource(UtilsStrings.confirm))
+                        Text(stringResource(UtilsStrings.confirm))
                     }
 
                     Spacer(Modifier.height(88.dp))

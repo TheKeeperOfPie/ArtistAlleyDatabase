@@ -86,7 +86,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
@@ -316,9 +315,7 @@ object ActivityDetailsScreen {
                                             modifier = Modifier.alpha(1f - loadingAlpha)
                                         ) {
                                             Text(
-                                                text = ComposeResourceUtils.stringResource(
-                                                    UtilsStrings.delete
-                                                )
+                                                text = stringResource(UtilsStrings.delete)
                                             )
                                         }
                                         CircularProgressIndicator(
@@ -330,7 +327,7 @@ object ActivityDetailsScreen {
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { deletePromptData = null }) {
-                                        Text(text = ComposeResourceUtils.stringResource(UtilsStrings.cancel))
+                                        Text(text = stringResource(UtilsStrings.cancel))
                                     }
                                 }
                             )

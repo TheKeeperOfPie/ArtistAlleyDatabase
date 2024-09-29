@@ -197,7 +197,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
@@ -901,7 +900,7 @@ object AnimeMediaDetailsScreen {
             ) {
                 var shown = twoColumnInfoText(
                     labelOne = stringResource(Res.string.anime_media_details_licensed_label),
-                    bodyOne = entry.licensedTextRes?.let { ComposeResourceUtils.stringResource(it) },
+                    bodyOne = entry.licensedTextRes?.let { stringResource(it) },
                     labelTwo = stringResource(Res.string.anime_media_details_country_label),
                     bodyTwo = io.fluidsonic.locale.Locale.forLanguageTagOrNull(
                         androidx.compose.ui.text.intl.Locale.current.toLanguageTag()

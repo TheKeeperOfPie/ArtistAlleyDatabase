@@ -96,7 +96,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
@@ -142,8 +141,8 @@ class SettingsViewModel(
         children = listOf(
             SettingsSection.Dropdown(
                 labelTextRes = Res.string.settings_subsection_theme_label,
-                options = AppThemeSetting.values().toList(),
-                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
+                options = AppThemeSetting.entries,
+                optionToText = { stringResource(it.textRes) },
                 property = settings.appTheme,
             ),
         )
@@ -169,22 +168,22 @@ class SettingsViewModel(
             ),
             SettingsSection.Dropdown(
                 labelTextRes = Res.string.settings_subsection_behavior_media_view_option_label,
-                options = MediaViewOption.values().toList(),
-                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
+                options = MediaViewOption.entries,
+                optionToText = { stringResource(it.textRes) },
                 property = settings.mediaViewOption,
             ),
             SettingsSection.Dropdown(
                 labelTextRes = Res.string.settings_subsection_behavior_starting_screen_option_label,
-                options = AnimeRootNavDestination.values()
+                options = AnimeRootNavDestination.entries
                     .filterNot { it == AnimeRootNavDestination.UNLOCK }
                     .toList(),
-                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
+                optionToText = { stringResource(it.textRes) },
                 property = settings.rootNavDestination,
             ),
             SettingsSection.Dropdown(
                 labelTextRes = Res.string.settings_subsection_behavior_language_option_media_label,
-                options = AniListLanguageOption.values().toList(),
-                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
+                options = AniListLanguageOption.entries,
+                optionToText = { stringResource(it.textRes) },
                 property = settings.languageOptionMedia,
             ),
             SettingsSection.Dropdown(
@@ -194,7 +193,7 @@ class SettingsViewModel(
                     AniListLanguageOption.NATIVE,
                     AniListLanguageOption.ROMAJI,
                 ),
-                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
+                optionToText = { stringResource(it.textRes) },
                 property = settings.languageOptionCharacters,
             ),
             SettingsSection.Dropdown(
@@ -204,13 +203,13 @@ class SettingsViewModel(
                     AniListLanguageOption.NATIVE,
                     AniListLanguageOption.ROMAJI,
                 ),
-                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
+                optionToText = { stringResource(it.textRes) },
                 property = settings.languageOptionStaff,
             ),
             SettingsSection.Dropdown(
                 labelTextRes = Res.string.settings_subsection_behavior_language_option_voice_actor_label,
-                options = VoiceActorLanguageOption.values().toList(),
-                optionToText = { ComposeResourceUtils.stringResource(it.textRes) },
+                options = VoiceActorLanguageOption.entries,
+                optionToText = { stringResource(it.textRes) },
                 property = settings.languageOptionVoiceActor,
             ),
             SettingsSection.Switch(
@@ -369,15 +368,15 @@ class SettingsViewModel(
             ),
             SettingsSection.Dropdown(
                 labelTextRes = Res.string.settings_network_logging_level_label,
-                options = NetworkSettings.NetworkLoggingLevel.values().toList(),
+                options = NetworkSettings.NetworkLoggingLevel.entries,
                 optionToText = { it.name },
                 property = settings.networkLoggingLevel,
             ),
             object : SettingsSection.Custom(id = "clearDatabaseById") {
-                private var selectedDatabase by mutableStateOf(SettingsScreen.DatabaseType.values()[0])
+                private var selectedDatabase by mutableStateOf(SettingsScreen.DatabaseType.entries[0])
                 private val dropdown = Dropdown(
                     labelTextRes = Res.string.settings_database_type,
-                    options = SettingsScreen.DatabaseType.values().toList(),
+                    options = SettingsScreen.DatabaseType.entries,
                     optionToText = { stringResource(it.labelRes) },
                     onItemSelected = { selectedDatabase = it },
                 )
@@ -414,7 +413,7 @@ class SettingsViewModel(
             SettingsSection.Dropdown(
                 id = "rebuildDatabase",
                 labelTextRes = Res.string.settings_database_type,
-                options = SettingsScreen.DatabaseType.values().toList(),
+                options = SettingsScreen.DatabaseType.entries,
                 optionToText = { stringResource(it.labelRes) },
                 buttonTextRes = Res.string.settings_rebuild,
                 onClickButton = ::onClickRebuildDatabase,

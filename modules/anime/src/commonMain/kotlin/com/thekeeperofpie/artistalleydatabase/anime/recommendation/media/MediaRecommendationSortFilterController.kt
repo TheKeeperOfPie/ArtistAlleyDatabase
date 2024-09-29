@@ -10,10 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
+import org.jetbrains.compose.resources.stringResource
 
 class MediaRecommendationSortFilterController(
     scope: CoroutineScope,
@@ -34,7 +34,7 @@ class MediaRecommendationSortFilterController(
     private val titleLanguageSection = SortFilterSection.Dropdown(
         labelTextRes = Res.string.anime_media_recommendations_filter_setting_title_language,
         values = AniListLanguageOption.entries,
-        valueToText = { ComposeResourceUtils.stringResource(it.textRes) },
+        valueToText = { stringResource(it.textRes) },
         property = settings.languageOptionMedia,
     )
 

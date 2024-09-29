@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art.sections
 
-import androidx.annotation.StringRes
 import artistalleydatabase.modules.art.generated.resources.Res
 import artistalleydatabase.modules.art.generated.resources.art_entry_source_convention
 import artistalleydatabase.modules.art.generated.resources.art_entry_source_custom
@@ -18,7 +17,7 @@ import org.jetbrains.compose.resources.StringResource
 @Serializable
 sealed class SourceType(
     @Transient val serializedType: String = "",
-    @Transient @StringRes val textRes: StringResource = Res.string.art_entry_source_unknown,
+    @Transient val textRes: StringResource = Res.string.art_entry_source_unknown,
 ) {
 
     abstract fun serializedValue(json: Json): String

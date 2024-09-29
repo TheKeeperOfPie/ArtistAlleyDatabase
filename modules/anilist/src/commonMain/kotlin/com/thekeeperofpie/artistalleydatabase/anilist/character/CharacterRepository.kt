@@ -7,7 +7,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 
@@ -35,7 +34,7 @@ class CharacterRepository(
             .forEach { insertCachedEntry(it) }
         null
     } catch (e: Exception) {
-        StringResourceCompose(Res.string.aniList_error_fetching_character) to e
+        Res.string.aniList_error_fetching_character to e
     }
 
     private fun makeEntry(character: AniListCharacter) = CharacterEntry(

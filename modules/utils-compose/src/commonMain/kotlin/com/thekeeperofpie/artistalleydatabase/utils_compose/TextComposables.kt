@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
-import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -716,7 +715,7 @@ fun <T> expandableListInfoText(
     onClick: ((T) -> Unit)? = null,
     showDividerAbove: Boolean = true,
     allowExpand: Boolean = values.size > 3,
-    header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(ComposeResourceUtils.stringResource(labelTextRes)) },
+    header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(stringResource(labelTextRes)) },
 ): Boolean {
     if (values.isEmpty()) return false
 
@@ -774,7 +773,7 @@ fun <T> expandableListInfoText(
         if (showExpand) {
             TrailingDropdownIconButton(
                 expanded = expanded,
-                contentDescription = contentDescriptionTextRes?.let { ComposeResourceUtils.stringResource(it) },
+                contentDescription = contentDescriptionTextRes?.let { stringResource(it) },
                 onClick = { expanded = !expanded },
                 modifier = Modifier.align(Alignment.TopEnd),
             )

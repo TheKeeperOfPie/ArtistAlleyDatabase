@@ -7,7 +7,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import me.tatarka.inject.annotations.Inject
 
 @SingletonScope
@@ -32,7 +31,7 @@ class MediaRepository(
             .forEach { insertCachedEntry(it) }
         null
     } catch (e: Exception) {
-        StringResourceCompose(Res.string.aniList_error_fetching_series) to e
+        Res.string.aniList_error_fetching_series to e
     }
 
     private fun makeEntry(media: AniListMedia) = MediaEntry(

@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,20 +55,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-
-@Composable
-fun SnackbarErrorText(
-    @StringRes errorRes: Int?,
-    exception: Throwable?,
-    onErrorDismiss: (() -> Unit)? = null,
-) {
-    errorRes ?: return
-    SnackbarErrorText(
-        error = { ComposeResourceUtils.stringResource(errorRes) },
-        exception = exception,
-        onErrorDismiss = onErrorDismiss,
-    )
-}
 
 @Composable
 fun SnackbarErrorText(
@@ -230,12 +215,12 @@ fun <T> ItemDropdown(
             onValueChange = {},
             readOnly = true,
             maxLines = maxLines,
-            label = label?.let { { Text(ComposeResourceUtils.stringResource(it)) } },
+            label = label?.let { { Text(stringResource(it)) } },
             leadingIcon = iconForValue?.let { { iconForValue(value) } },
             trailingIcon = {
                 TrailingDropdownIcon(
                     expanded = expanded,
-                    contentDescription = ComposeResourceUtils.stringResource(iconContentDescription),
+                    contentDescription = stringResource(iconContentDescription),
                 )
             },
             colors = ExposedDropdownMenuDefaults.textFieldColors(),
@@ -303,7 +288,7 @@ fun ButtonFooter(vararg pairs: Pair<StringResource, () -> Unit>) {
         pairs.forEach { (stringRes, onClick) ->
             TextButton(onClick = onClick) {
                 Text(
-                    ComposeResourceUtils.stringResource(stringRes),
+                    stringResource(stringRes),
                     Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
                 )
             }

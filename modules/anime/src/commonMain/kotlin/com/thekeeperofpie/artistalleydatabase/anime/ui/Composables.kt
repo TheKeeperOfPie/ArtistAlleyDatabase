@@ -78,7 +78,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
@@ -251,12 +250,12 @@ fun StartEndDateDialog(
                     },
                     enabled = confirmEnabled,
                 ) {
-                    Text(text = ComposeResourceUtils.stringResource(UtilsStrings.confirm))
+                    Text(text = stringResource(UtilsStrings.confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { onShownForStartDateChange(null) }) {
-                    Text(text = ComposeResourceUtils.stringResource(UtilsStrings.cancel))
+                    Text(text = stringResource(UtilsStrings.cancel))
                 }
             },
             modifier = Modifier.fillMaxSize(),
@@ -393,7 +392,7 @@ fun <T> LazyGridScope.listSectionWithoutHeader(
                     .animateItem()
             ) {
                 Text(
-                    text = ComposeResourceUtils.stringResource(UtilsStrings.view_all),
+                    text = stringResource(UtilsStrings.view_all),
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 10.dp)
                         .align(Alignment.CenterHorizontally)
@@ -423,7 +422,7 @@ fun <T> LazyGridScope.listSectionWithoutHeader(
                             .animateItem()
                     ) {
                         Text(
-                            text = ComposeResourceUtils.stringResource(UtilsStrings.show_less),
+                            text = stringResource(UtilsStrings.show_less),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                                 .align(Alignment.CenterHorizontally)
@@ -441,7 +440,7 @@ fun <T> LazyGridScope.listSectionWithoutHeader(
                         .animateItem()
                 ) {
                     Text(
-                        text = ComposeResourceUtils.stringResource(UtilsStrings.show_more),
+                        text = stringResource(UtilsStrings.show_more),
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 10.dp)
                             .align(Alignment.CenterHorizontally)

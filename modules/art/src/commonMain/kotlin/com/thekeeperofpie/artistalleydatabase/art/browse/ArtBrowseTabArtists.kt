@@ -18,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.parseStringList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
@@ -45,7 +44,7 @@ class ArtBrowseTabArtists(
 
     override val tab = BrowseScreen.TabContent(
         "art_entry_browse_artists",
-        { StringResourceCompose(Res.string.art_browse_tab_artists) },
+        { Res.string.art_browse_tab_artists },
         { Either.Left(artists) },
         artEntryNavigator::navigate,
     )

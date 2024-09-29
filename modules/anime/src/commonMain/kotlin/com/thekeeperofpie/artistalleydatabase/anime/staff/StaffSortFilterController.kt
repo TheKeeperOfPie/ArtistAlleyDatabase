@@ -10,11 +10,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(FlowPreview::class)
 class StaffSortFilterController(
@@ -45,8 +45,8 @@ class StaffSortFilterController(
 
     private val titleLanguageSection = SortFilterSection.Dropdown(
         labelTextRes = Res.string.anime_staff_filter_setting_title_language,
-        values = AniListLanguageOption.values().toList(),
-        valueToText = { ComposeResourceUtils.stringResource(it.textRes) },
+        values = AniListLanguageOption.entries,
+        valueToText = { stringResource(it.textRes) },
         property = settings.languageOptionStaff,
     )
 

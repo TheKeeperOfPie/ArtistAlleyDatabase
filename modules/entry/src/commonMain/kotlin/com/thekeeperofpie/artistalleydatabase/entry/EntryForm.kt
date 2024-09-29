@@ -125,7 +125,6 @@ import coil3.request.crossfade
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.image.rememberImageSelectController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
@@ -302,7 +301,7 @@ private fun MultiTextSection(
         1 -> section.headerOne
         else -> section.headerMany
     }
-        .let { ComposeResourceUtils.stringResourceCompat(it) }
+        .let { stringResource(it) }
         .let {
             SectionHeader(
                 text = { it },
@@ -420,7 +419,7 @@ private fun LongTextSection(
     onFocusChanged: (Boolean) -> Unit,
 ) {
     SectionHeader(
-        text = { ComposeResourceUtils.stringResourceCompat(section.headerRes) },
+        text = { stringResource(section.headerRes) },
         lockState = { section.lockState },
         onClick = { section.rotateLockState() }
     )
@@ -555,7 +554,7 @@ private fun PrefilledSectionField(
                     Icon(
                         imageVector = imageVector,
                         contentDescription = entry.trailingIconContentDescription
-                            ?.let { ComposeResourceUtils.stringResourceCompat(it) },
+                            ?.let { stringResource(it) },
                     )
                 }
 
@@ -642,7 +641,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = imageVector,
                                 contentDescription = entry.trailingIconContentDescription
-                                    ?.let { ComposeResourceUtils.stringResourceCompat(it) },
+                                    ?.let { stringResource(it) },
                                 modifier = if (lockState?.editable != false) Modifier else
                                     Modifier.padding(start = 16.dp),
                             )
@@ -808,7 +807,7 @@ private fun DropdownSection(
     onFocusChanged: (Boolean) -> Unit,
 ) {
     SectionHeader(
-        text = { ComposeResourceUtils.stringResourceCompat(section.headerRes) },
+        text = { stringResource(section.headerRes) },
         lockState = { section.lockState },
         onClick = { section.rotateLockState() }
     )
@@ -840,7 +839,7 @@ private fun DropdownSection(
                     ) {
                         TrailingDropdownIcon(
                             expanded = section.expanded,
-                            contentDescription = ComposeResourceUtils.stringResourceCompat(section.arrowContentDescription),
+                            contentDescription = stringResource(section.arrowContentDescription),
                         )
                     }
                 },
@@ -878,7 +877,7 @@ private fun DropdownSection(
 @Composable
 private fun CustomSection(section: EntrySection.Custom<*>) {
     SectionHeader(
-        text = { ComposeResourceUtils.stringResourceCompat(section.headerRes()) },
+        text = { stringResource(section.headerRes()) },
         lockState = { section.lockState },
         onClick = { section.rotateLockState() }
     )

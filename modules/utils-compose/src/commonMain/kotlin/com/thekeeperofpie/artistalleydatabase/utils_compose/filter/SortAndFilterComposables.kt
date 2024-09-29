@@ -79,7 +79,6 @@ import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -328,7 +327,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
                     {
                         AsyncImage(
                             model = customIcon,
-                            contentDescription = ComposeResourceUtils.stringResource(iconContentDescriptionRes),
+                            contentDescription = stringResource(iconContentDescriptionRes),
                             modifier = Modifier
                                 .size(24.dp)
                                 .padding(2.dp),
@@ -357,7 +356,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
         if (!locked) {
             TrailingDropdownIconButton(
                 expanded = expanded,
-                contentDescription = ComposeResourceUtils.stringResource(titleDropdownContentDescriptionRes),
+                contentDescription = stringResource(titleDropdownContentDescriptionRes),
                 onClick = { onExpandedChange(!expanded) },
                 modifier = Modifier.align(Alignment.Top),
             )
@@ -408,7 +407,7 @@ fun <T> SuggestionsSection(
 
         TrailingDropdownIconButton(
             expanded = expanded,
-            contentDescription = ComposeResourceUtils.stringResource(titleDropdownContentDescriptionRes),
+            contentDescription = stringResource(titleDropdownContentDescriptionRes),
             onClick = { onExpandedChange(!expanded) },
             modifier = Modifier.align(Alignment.Top),
         )
@@ -429,7 +428,7 @@ fun IncludeExcludeIcon(
         if (entry.leadingIconVector != null) {
             Icon(
                 imageVector = entry.leadingIconVector!!,
-                contentDescription = ComposeResourceUtils.stringResource(entry.leadingIconContentDescription!!),
+                contentDescription = stringResource(entry.leadingIconContentDescription!!),
                 modifier = Modifier
                     .padding(vertical = 6.dp)
                     .size(20.dp)
@@ -443,7 +442,7 @@ fun IncludeExcludeIcon(
         }?.let {
             Icon(
                 imageVector = it,
-                contentDescription = ComposeResourceUtils.stringResource(contentDescriptionRes)
+                contentDescription = stringResource(contentDescriptionRes)
             )
         }
     }
@@ -493,7 +492,7 @@ fun CustomFilterSection(
 
         TrailingDropdownIconButton(
             expanded = expanded,
-            contentDescription = ComposeResourceUtils.stringResource(titleDropdownContentDescriptionRes),
+            contentDescription = stringResource(titleDropdownContentDescriptionRes),
             onClick = { onExpandedChange(!expanded) },
         )
     }

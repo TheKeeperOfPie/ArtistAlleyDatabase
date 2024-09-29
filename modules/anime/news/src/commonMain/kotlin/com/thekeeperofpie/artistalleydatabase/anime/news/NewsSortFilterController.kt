@@ -18,12 +18,12 @@ import artistalleydatabase.modules.anime.news.generated.resources.anime_news_fil
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCategory
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
+import org.jetbrains.compose.resources.stringResource
 
 class NewsSortFilterController(
     scope: CoroutineScope,
@@ -42,7 +42,7 @@ class NewsSortFilterController(
         includeExcludeIconContentDescriptionRes = Res.string.anime_news_filter_anime_news_network_region_chip_state_content_description,
         values = AnimeNewsNetworkRegion.entries,
         includedSetting = settings.animeNewsNetworkRegion,
-        valueToText = { ComposeResourceUtils.stringResource(it.value.textRes) },
+        valueToText = { stringResource(it.value.textRes) },
         selectionMethod = SortFilterSection.Filter.SelectionMethod.SINGLE_EXCLUSIVE,
     )
 
@@ -53,17 +53,17 @@ class NewsSortFilterController(
         values = AnimeNewsNetworkCategory.entries,
         includedSettings = settings.animeNewsNetworkCategoriesIncluded,
         excludedSettings = settings.animeNewsNetworkCategoriesExcluded,
-        valueToText = { ComposeResourceUtils.stringResource(it.value.textRes) },
+        valueToText = { stringResource(it.value.textRes) },
     )
 
     private val crunchyrollCategorySection = SortFilterSection.Filter(
         titleRes = Res.string.anime_news_filter_crunchyroll_news_categories_label,
         titleDropdownContentDescriptionRes = Res.string.anime_news_filter_crunchyroll_news_categories_content_description,
         includeExcludeIconContentDescriptionRes = Res.string.anime_news_filter_crunchyroll_news_categories_chip_state_content_description,
-        values = CrunchyrollNewsCategory.values().toList(),
+        values = CrunchyrollNewsCategory.entries,
         includedSettings = settings.crunchyrollNewsCategoriesIncluded,
         excludedSettings = settings.crunchyrollNewsCategoriesExcluded,
-        valueToText = { ComposeResourceUtils.stringResource(it.value.textRes) },
+        valueToText = { stringResource(it.value.textRes) },
     )
 
     private val animeNewsNetworkRegion = SortFilterSection.Group(

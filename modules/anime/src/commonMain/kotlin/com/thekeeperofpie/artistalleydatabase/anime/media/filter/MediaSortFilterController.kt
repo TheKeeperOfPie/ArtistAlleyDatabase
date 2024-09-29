@@ -46,7 +46,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
@@ -253,7 +252,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     protected val titleLanguageSection = SortFilterSection.Dropdown(
         labelTextRes = Res.string.anime_media_filter_setting_title_language,
         values = AniListLanguageOption.values().toList(),
-        valueToText = { ComposeResourceUtils.stringResource(it.textRes) },
+        valueToText = { stringResource(it.textRes) },
         property = settings.languageOptionMedia,
     )
 

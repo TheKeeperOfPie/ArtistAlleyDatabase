@@ -51,7 +51,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
@@ -113,7 +112,7 @@ object AniListUserScreen {
                                     IconButton(onClick = { menuExpanded = true }) {
                                         Icon(
                                             imageVector = Icons.Default.MoreVert,
-                                            contentDescription = ComposeResourceUtils.stringResource(
+                                            contentDescription = stringResource(
                                                 EntryStrings.more_actions_content_description
                                             ),
                                         )
@@ -124,7 +123,7 @@ object AniListUserScreen {
                                         onDismissRequest = { menuExpanded = false },
                                     ) {
                                         DropdownMenuItem(
-                                            text = { Text(ComposeResourceUtils.stringResource(EntryStrings.log_out)) },
+                                            text = { Text(stringResource(EntryStrings.log_out)) },
                                             onClick = {
                                                 viewModel.logOut()
                                                 menuExpanded = false

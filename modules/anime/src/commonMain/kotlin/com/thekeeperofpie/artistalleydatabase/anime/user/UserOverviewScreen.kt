@@ -60,7 +60,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
@@ -321,7 +320,7 @@ object UserOverviewScreen {
                         .animateItem()
                 ) {
                     Text(
-                        text = ComposeResourceUtils.stringResource(UtilsStrings.view_all),
+                        text = stringResource(UtilsStrings.view_all),
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 10.dp)
                             .align(Alignment.CenterHorizontally)

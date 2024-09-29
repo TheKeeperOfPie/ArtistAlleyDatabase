@@ -82,7 +82,6 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropRequestDialog
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
@@ -184,7 +183,7 @@ object EntryDetailsScreen {
                 val errorRes = viewModel.errorResource
                 SnackbarErrorText(
                     error = {
-                        errorRes?.first?.let { ComposeResourceUtils.stringResourceCompat(it) }
+                        errorRes?.first?.let { stringResource(it) }
                     },
                     exception = errorRes?.second,
                     onErrorDismiss = { viewModel.errorResource = null },

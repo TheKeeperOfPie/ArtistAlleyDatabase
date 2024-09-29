@@ -42,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import org.jetbrains.compose.resources.stringResource
@@ -119,7 +118,7 @@ object ChooserScreen {
                         query(),
                         placeholder = {
                             Text(
-                                text = ComposeResourceUtils.stringResource(
+                                text = stringResource(
                                     EntryStrings.entry_search_hint_with_entry_count,
                                     entries().itemCount,
                                 ),

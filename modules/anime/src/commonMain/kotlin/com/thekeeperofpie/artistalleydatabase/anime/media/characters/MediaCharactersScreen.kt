@@ -34,7 +34,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import org.jetbrains.compose.resources.stringResource
 
@@ -131,7 +130,7 @@ object MediaCharactersScreen {
                             ) {
                                 VoiceActorLanguageOption.entries.forEach {
                                     DropdownMenuItem(
-                                        text = { Text(ComposeResourceUtils.stringResource(it.textRes)) },
+                                        text = { Text(stringResource(it.textRes)) },
                                         onClick = {
                                             voiceActorLanguage = it
                                             showMenu = false

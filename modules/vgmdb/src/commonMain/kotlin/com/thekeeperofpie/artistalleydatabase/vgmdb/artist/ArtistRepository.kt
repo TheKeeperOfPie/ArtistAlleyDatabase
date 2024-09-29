@@ -5,7 +5,6 @@ import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_error_fetchin
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -35,6 +34,6 @@ class ArtistRepository(
         }
         null
     } catch (e: Exception) {
-        StringResourceCompose(Res.string.vgmdb_error_fetching_artist) to e
+        Res.string.vgmdb_error_fetching_artist to e
     }
 }

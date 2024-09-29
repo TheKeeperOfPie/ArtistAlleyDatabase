@@ -100,7 +100,6 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalComposeSettings
@@ -354,7 +353,7 @@ class MainActivity : ComponentActivity() {
                         if (item == NavDrawerItems.ANIME && preferredMediaType == MediaType.MANGA) {
                             Text(stringResource(Res.string.nav_drawer_manga))
                         } else {
-                            Text(ComposeResourceUtils.stringResource(item.titleRes))
+                            Text(stringResource(item.titleRes))
                         }
                     },
                     selected = index == selectedIndex(),

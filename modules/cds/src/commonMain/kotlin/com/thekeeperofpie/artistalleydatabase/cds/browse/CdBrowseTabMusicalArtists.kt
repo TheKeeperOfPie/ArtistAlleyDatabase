@@ -17,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.utils.Either
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbUtils
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
@@ -45,7 +44,7 @@ class CdBrowseTabMusicalArtists(
 
     override val tab = BrowseScreen.TabContent(
         "cd_entry_browse_musical_artists",
-        { StringResourceCompose(Res.string.cd_browse_tab_musical_artists) },
+        { Res.string.cd_browse_tab_musical_artists },
         { Either.Right(musicalArtists.collectAsLazyPagingItems()) },
         cdEntryNavigator::navigate,
     )

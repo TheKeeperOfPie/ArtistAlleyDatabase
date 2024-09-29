@@ -11,8 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import io.github.petertrr.diffutils.text.DiffRow
 import io.github.petertrr.diffutils.text.DiffRowGenerator
 import io.github.petertrr.diffutils.text.DiffTagGenerator
@@ -26,6 +24,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
+import org.jetbrains.compose.resources.StringResource
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -65,8 +64,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
 
     var showExitPrompt by mutableStateOf(false)
 
-    // TODO: Move to StringResource
-    var errorResource by mutableStateOf<Pair<StringResourceCompat, Throwable?>?>(null)
+    var errorResource by mutableStateOf<Pair<StringResource, Throwable?>?>(null)
 
     var sectionsLoading by mutableStateOf(true)
         private set
@@ -80,7 +78,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         scope = viewModelScope,
         appFileSystem = appFileSystem,
         scopedIdType = scopedIdType,
-        onError = { errorResource = StringResourceCompose(it.first) to it.second },
+        onError = { errorResource = it },
         onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) },
     )
 

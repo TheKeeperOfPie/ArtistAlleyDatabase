@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.browse
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,19 +33,18 @@ import artistalleydatabase.modules.browse.generated.resources.browse
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 object BrowseScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,
@@ -76,7 +74,7 @@ object BrowseScreen {
                         tabs.forEachIndexed { index, tab ->
                             Tab(
                                 selected = selectedTabIndex == index,
-                                text = { Text(ComposeResourceUtils.stringResourceCompat(tab.textRes())) },
+                                text = { Text(stringResource(tab.textRes())) },
                                 onClick = {
                                     coroutineScope.launch {
                                         pagerState.animateScrollToPage(index)
@@ -161,7 +159,7 @@ object BrowseScreen {
     @Immutable
     data class TabContent(
         val id: String,
-        val textRes: () -> StringResourceCompat,
+        val textRes: () -> StringResource,
         val content: @Composable () -> Either<List<BrowseEntryModel>,
                 LazyPagingItems<BrowseEntryModel>>,
         val onSelected: (NavHostController, BrowseEntryModel) -> Unit,

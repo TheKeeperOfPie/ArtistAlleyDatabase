@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 abstract class ApiRepository<DataType>(protected val scope: ApplicationScope) {
 
@@ -61,5 +62,5 @@ abstract class ApiRepository<DataType>(protected val scope: ApplicationScope) {
             }
         }
 
-    abstract suspend fun ensureSaved(ids: List<String>): Pair<StringResourceCompat, Exception?>?
+    abstract suspend fun ensureSaved(ids: List<String>): Pair<StringResource, Exception?>?
 }

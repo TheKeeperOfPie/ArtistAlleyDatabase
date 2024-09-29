@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import androidx.annotation.MainThread
-import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortSection
@@ -62,7 +60,7 @@ sealed class SortFilterSection(val id: String) {
 
     class SortBySetting<SortType : SortOption>(
         enumClass: KClass<SortType>,
-        @StringRes headerTextRes: StringResource,
+        headerTextRes: StringResource,
         sortProperty: MutableStateFlow<String>,
         sortAscendingProperty: MutableStateFlow<Boolean>,
         deserialize: (String) -> SortType,
@@ -206,7 +204,7 @@ sealed class SortFilterSection(val id: String) {
             selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
         ) : this(
             id = titleRes.toString(),
-            title = { ComposeResourceUtils.stringResource(titleRes) },
+            title = { stringResource(titleRes) },
             titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
             includeExcludeIconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
             values = values,
@@ -432,7 +430,7 @@ sealed class SortFilterSection(val id: String) {
                     }
             ) {
                 Text(
-                    text = ComposeResourceUtils.stringResource(titleRes),
+                    text = stringResource(titleRes),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -501,7 +499,7 @@ sealed class SortFilterSection(val id: String) {
 
                 TrailingDropdownIconButton(
                     expanded = expanded,
-                    contentDescription = ComposeResourceUtils.stringResource(titleDropdownContentDescriptionRes),
+                    contentDescription = stringResource(titleDropdownContentDescriptionRes),
                     onClick = { state.expandedState[id] = !expanded },
                 )
             }
@@ -543,7 +541,7 @@ sealed class SortFilterSection(val id: String) {
                     .clickable { expanded = true }
             ) {
                 Text(
-                    text = ComposeResourceUtils.stringResource(labelTextRes),
+                    text = stringResource(labelTextRes),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .weight(1f)

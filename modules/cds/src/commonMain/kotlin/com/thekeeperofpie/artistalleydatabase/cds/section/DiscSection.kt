@@ -51,9 +51,7 @@ import artistalleydatabase.modules.entry.generated.resources.move_down
 import artistalleydatabase.modules.entry.generated.resources.move_up
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StringResourceCompose
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import kotlinx.serialization.encodeToString
@@ -67,13 +65,11 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
 
     private val discs = mutableStateListOf(DiscData().apply { tracks += DiscData.TrackData() })
 
-    override fun headerRes() = StringResourceCompose(
-        when (discs.size) {
-            0 -> Res.string.cd_entry_discs_header_zero
-            1 -> Res.string.cd_entry_discs_header_one
-            else -> Res.string.cd_entry_discs_header_many
-        }
-    )
+    override fun headerRes() = when (discs.size) {
+        0 -> Res.string.cd_entry_discs_header_zero
+        1 -> Res.string.cd_entry_discs_header_one
+        else -> Res.string.cd_entry_discs_header_many
+    }
 
     @Composable
     override fun Content(lockState: LockState?) {
@@ -116,7 +112,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     onDismissRequest = { showOverflow = false },
                 ) {
                     DropdownMenuItem(
-                        text = { Text(ComposeResourceUtils.stringResource(EntryStrings.delete)) },
+                        text = { Text(stringResource(EntryStrings.delete)) },
                         onClick = {
                             discs.removeAt(index)
                             showOverflow = false
@@ -124,7 +120,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     )
                     if (index > 0) {
                         DropdownMenuItem(
-                            text = { Text(ComposeResourceUtils.stringResource(EntryStrings.move_up)) },
+                            text = { Text(stringResource(EntryStrings.move_up)) },
                             onClick = {
                                 val oldValue = discs[index]
                                 discs[index] = discs[index - 1]
@@ -135,7 +131,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     }
                     if (index < discs.size - 1) {
                         DropdownMenuItem(
-                            text = { Text(ComposeResourceUtils.stringResource(EntryStrings.move_down)) },
+                            text = { Text(stringResource(EntryStrings.move_down)) },
                             onClick = {
                                 val oldValue = discs[index]
                                 discs[index] = discs[index + 1]
@@ -197,7 +193,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                 IconButton(onClick = onClickMore) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
-                        contentDescription = ComposeResourceUtils.stringResource(
+                        contentDescription = stringResource(
                             EntryStrings.more_actions_content_description
                         ),
                     )
@@ -238,7 +234,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                             onDismissRequest = { showOverflow = false },
                         ) {
                             DropdownMenuItem(
-                                text = { Text(ComposeResourceUtils.stringResource(EntryStrings.delete)) },
+                                text = { Text(stringResource(EntryStrings.delete)) },
                                 onClick = {
                                     tracks.removeAt(index)
                                     showOverflow = false
@@ -246,7 +242,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                             )
                             if (index > 0) {
                                 DropdownMenuItem(
-                                    text = { Text(ComposeResourceUtils.stringResource(EntryStrings.move_up)) },
+                                    text = { Text(stringResource(EntryStrings.move_up)) },
                                     onClick = {
                                         val oldValue = tracks[index]
                                         tracks[index] = tracks[index - 1]
@@ -257,7 +253,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                             }
                             if (index < tracks.size - 1) {
                                 DropdownMenuItem(
-                                    text = { Text(ComposeResourceUtils.stringResource(EntryStrings.move_down)) },
+                                    text = { Text(stringResource(EntryStrings.move_down)) },
                                     onClick = {
                                         val oldValue = tracks[index]
                                         tracks[index] = tracks[index + 1]
@@ -318,7 +314,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                 IconButton(onClick = onClickMore) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
-                        contentDescription = ComposeResourceUtils.stringResource(
+                        contentDescription = stringResource(
                             EntryStrings.more_actions_content_description
                         ),
                     )
