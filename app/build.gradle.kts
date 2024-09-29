@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id("app-android")
 }
@@ -21,7 +19,8 @@ android {
         versionCode = 15
         versionName = "0.50"
 
-        testInstrumentationRunner = "com.thekeeperofpie.artistalleydatabase.test_utils.CustomAndroidJUnitRunner"
+        testInstrumentationRunner =
+            "com.thekeeperofpie.artistalleydatabase.test_utils.CustomAndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -96,9 +95,6 @@ android {
         compose = true
         buildConfig = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
     packaging {
         resources {
             merges += "/META-INF/*"
@@ -126,7 +122,6 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_18
         jvmToolchain(18)
         sourceSets.all {
             languageSettings {
@@ -135,6 +130,96 @@ kotlin {
         }
         freeCompilerArgs.add("-Xcontext-receivers")
     }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlin.inject.runtime.kmp)
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
+            implementation(compose.ui)
+            implementation(libs.jetBrainsCompose.navigation.compose)
+        }
+        invokeWhenCreated("androidDebug") {
+            dependencies {
+                implementation(projects.modules.monetization.debug)
+                implementation(projects.modules.animethemes)
+                implementation(projects.modules.debug)
+                implementation(libs.leakcanary.android)
+
+                runtimeOnly(libs.cronet.embedded)
+            }
+        }
+        invokeWhenCreated("androidInternal") {
+            dependencies {
+                implementation(projects.modules.debug)
+                implementation(projects.modules.monetization.debug)
+                implementation(projects.modules.animethemes)
+                runtimeOnly(libs.cronet.embedded)
+            }
+        }
+        invokeWhenCreated("androidRelease") {
+            dependencies {
+                implementation(projects.modules.play)
+                implementation(projects.modules.monetization.unity)
+                runtimeOnly(libs.cronet.play)
+            }
+        }
+        androidMain.dependencies {
+
+            implementation(projects.modules.anime)
+            implementation(projects.modules.anime2anime)
+            implementation(projects.modules.anilist)
+            implementation(projects.modules.art)
+            implementation(projects.modules.browse)
+            implementation(projects.modules.cds)
+            implementation(projects.modules.image)
+            implementation(projects.modules.data)
+            implementation(projects.modules.entry)
+            implementation(projects.modules.monetization)
+            implementation(projects.modules.utilsInject)
+            implementation(projects.modules.utilsRoom)
+            implementation(projects.modules.settings)
+
+            runtimeOnly(kotlin("reflect"))
+
+            implementation(libs.kotlinx.serialization.json)
+            runtimeOnly(libs.kotlinx.coroutines.android)
+
+            implementation(libs.paging.runtime.ktx)
+
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.lifecycle.livedata.ktx)
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.activity.compose)
+
+            implementation(libs.androidx.security.crypto)
+
+            runtimeOnly(libs.paging.runtime.ktx)
+
+            runtimeOnly(libs.room.runtime)
+            implementation(libs.room.ktx)
+            implementation(libs.room.paging)
+
+            implementation(libs.work.runtime)
+            implementation(libs.work.runtime.ktx)
+
+            implementation(libs.commons.compress)
+            implementation(libs.coil3.coil.compose)
+            implementation(libs.coil3.coil.network.okhttp)
+
+            implementation(libs.play.services.oss.licenses)
+        }
+    }
+}
+
+dependencies {
+    add("kspAndroid", kspProcessors.room.compiler)
+    add("kspAndroid", kspProcessors.kotlin.inject.compiler.ksp)
+    add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
 }
 
 ksp {
@@ -209,81 +294,3 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
-
-dependencies {
-    implementation(projects.modules.anime)
-    implementation(projects.modules.anime2anime)
-    implementation(projects.modules.anilist)
-    implementation(projects.modules.art)
-    implementation(projects.modules.browse)
-    implementation(projects.modules.cds)
-    implementation(projects.modules.image)
-    implementation(projects.modules.data)
-    implementation(projects.modules.entry)
-    implementation(projects.modules.monetization)
-    debugImplementation(projects.modules.monetization.debug)
-    implementation(projects.modules.utilsInject)
-    implementation(projects.modules.utilsRoom)
-
-    debugImplementation(projects.modules.animethemes)
-    debugImplementation(projects.modules.debug)
-    "internalImplementation"(projects.modules.debug)
-    "internalImplementation"(projects.modules.monetization.debug)
-    "internalImplementation"(projects.modules.animethemes)
-
-    releaseImplementation(projects.modules.play)
-    releaseImplementation(projects.modules.monetization.unity)
-    implementation(projects.modules.settings)
-
-    runtimeOnly(kotlin("reflect"))
-
-    implementation(libs.kotlinx.serialization.json)
-    runtimeOnly(libs.kotlinx.coroutines.android)
-
-    implementation(libs.navigation.compose)
-    implementation(libs.paging.runtime.ktx)
-
-    implementation(libs.kotlin.inject.runtime.kmp)
-    ksp(kspProcessors.kotlin.inject.compiler.ksp)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.lifecycle.livedata.ktx)
-    implementation(libs.lifecycle.viewmodel.compose)
-    implementation(libs.activity.compose)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.compose.material.icons.core)
-    implementation(libs.compose.material.icons.extended)
-    runtimeOnly(libs.compose.runtime.tracing)
-
-    implementation(libs.material3)
-    implementation(libs.androidx.security.crypto)
-
-    runtimeOnly(libs.paging.runtime.ktx)
-
-    runtimeOnly(libs.room.runtime)
-    ksp(kspProcessors.room.compiler)
-    implementation(libs.room.ktx)
-    testImplementation(libs.room.testing)
-    implementation(libs.room.paging)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit.test)
-    debugRuntimeOnly(libs.compose.ui.tooling)
-    debugRuntimeOnly(libs.compose.ui.test.manifest)
-
-    implementation(libs.work.runtime)
-    implementation(libs.work.runtime.ktx)
-
-    implementation(libs.commons.compress)
-    implementation(libs.coil3.coil.compose)
-    implementation(libs.coil3.coil.network.okhttp)
-
-    implementation(libs.play.services.oss.licenses)
-
-    debugImplementation(libs.leakcanary.android)
-
-    releaseRuntimeOnly(libs.cronet.play)
-    "internalRuntimeOnly"(libs.cronet.embedded)
-    debugRuntimeOnly(libs.cronet.embedded)
-}
