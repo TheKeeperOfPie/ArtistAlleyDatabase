@@ -21,22 +21,13 @@ actual class ShareHandler(
     private val appFileSystem: AppFileSystem,
     private val activity: ComponentActivity,
 ) {
-    actual fun shareUrl(title: String?, url: String) {
-        val shareIntent = Intent()
-            .apply {
-                action = Intent.ACTION_SEND
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, url)
-                if (title != null) {
-                    putExtra(Intent.EXTRA_TITLE, title)
-                }
-            }
-            .let { Intent.createChooser(it, null) }
-        activity.startActivity(shareIntent)
-    }
-
-    actual fun shareImage(path: Path?, uri: Uri?) {
-        val (finalUri, mimeType) = if (path != null && appFileSystem.exists(path)) {
+    companion object {
+        fun getShareUriAndMimeTypeForPath(
+            application: Application,
+            appFileSystem: AppFileSystem,
+            path: Path?,
+            uri: Uri?,
+        ): Pair<android.net.Uri?, String?> = if (path != null && appFileSystem.exists(path)) {
             // Some consumers require a file extension to parse the image correctly.
             val mimeType = appFileSystem.getImageType(path)
             val extension = when (mimeType) {
@@ -65,7 +56,7 @@ actual class ShareHandler(
             val androidUri = uri?.toAndroidUriOrNull()
             if (androidUri != null) {
                 try {
-                    activity.contentResolver.openInputStream(androidUri).use {
+                    application.contentResolver.openInputStream(androidUri).use {
                         BitmapFactory.decodeStream(it, null, options)
                     }
                 } catch (ignored: Exception) {
@@ -74,7 +65,25 @@ actual class ShareHandler(
 
             androidUri to options.outMimeType
         }
+    }
 
+    actual fun shareUrl(title: String?, url: String) {
+        val shareIntent = Intent()
+            .apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, url)
+                if (title != null) {
+                    putExtra(Intent.EXTRA_TITLE, title)
+                }
+            }
+            .let { Intent.createChooser(it, null) }
+        activity.startActivity(shareIntent)
+    }
+
+    actual fun shareImage(path: Path?, uri: Uri?) {
+        val (finalUri, mimeType) =
+            getShareUriAndMimeTypeForPath(application, appFileSystem, path, uri)
         finalUri ?: return
 
         val shareIntent = Intent()
@@ -86,6 +95,5 @@ actual class ShareHandler(
             }
             .let { Intent.createChooser(it, null) }
         activity.startActivity(shareIntent)
-
     }
 }
