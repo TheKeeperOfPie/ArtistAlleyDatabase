@@ -157,7 +157,11 @@ object EntryHomeScreen {
         BottomSheetScaffold(
             scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState),
             sheetContent = {
-                SearchFilterSheet(sections = sections, onNavigate = onNavigate)
+                SearchFilterSheet(
+                    sections = sections,
+                    onNavigate = onNavigate,
+                    onAnySectionFocused = { scope.launch { bottomSheetState.expand() } },
+                )
             },
             modifier = Modifier.nestedScroll(
                 NestedScrollSplitter(
@@ -289,6 +293,7 @@ object EntryHomeScreen {
     private fun SearchFilterSheet(
         sections: List<EntrySection>,
         onNavigate: (String) -> Unit,
+        onAnySectionFocused: () -> Unit,
     ) {
         HorizontalDivider()
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -296,6 +301,7 @@ object EntryHomeScreen {
                 areSectionsLoading = { false },
                 sections = { sections },
                 onNavigate = onNavigate,
+                onAnySectionFocused = onAnySectionFocused,
             )
         }
         HorizontalDivider()

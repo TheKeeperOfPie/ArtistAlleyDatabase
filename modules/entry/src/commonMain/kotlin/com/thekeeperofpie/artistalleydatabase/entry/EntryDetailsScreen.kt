@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -82,6 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeResourceUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
@@ -92,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
@@ -148,6 +151,13 @@ object EntryDetailsScreen {
             }
         }
 
+        val isImeVisible = WindowInsets.isImeVisibleKmp
+        LaunchedEffect(isImeVisible) {
+            if (isImeVisible) {
+                scaffoldState.bottomSheetState.expand()
+            }
+        }
+
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetPeekHeight = density.run {
@@ -163,7 +173,11 @@ object EntryDetailsScreen {
                     onClickSave = onClickSave,
                     onLongClickSave = onLongClickSave,
                     onClickSaveTemplate = onClickSaveTemplate,
-                    onNavigate = onNavigate, onShowDeleteDialogChange = { showDeleteDialog = it },
+                    onNavigate = onNavigate,
+                    onShowDeleteDialogChange = { showDeleteDialog = it },
+                    onAnySectionFocused = {
+                        coroutineScope.launch { scaffoldState.bottomSheetState.expand() }
+                    },
                 )
             },
             snackbarHost = {
@@ -184,6 +198,7 @@ object EntryDetailsScreen {
                 .onSizeChanged { scaffoldHeightPixels = it.height }
         ) {
             Box {
+                val shareHandler = LocalShareHandler.current
                 HeaderImage(
                     imageState = { viewModel.entryImageController.imageState },
                     imageCornerDp = imageCornerDp,
@@ -200,6 +215,14 @@ object EntryDetailsScreen {
                                     uri = imageUri,
                                 )
                             )
+                        }
+                    },
+                    onClickShareImage = if (shareHandler == null) null else {
+                        {
+                            val image = viewModel.entryImageController.images[it]
+                            val imagePath = viewModel.getImagePathForShare(image)
+                            val imageUri = image.croppedUri ?: image.uri
+                            shareHandler.shareImage(imagePath, imageUri)
                         }
                     },
                     modifier = Modifier.onSizeChanged { imageHeightPixels = it.height }
@@ -248,6 +271,7 @@ object EntryDetailsScreen {
         onClickSaveTemplate: (() -> Unit)? = null,
         onNavigate: (String) -> Unit,
         onShowDeleteDialogChange: (Boolean) -> Unit,
+        onAnySectionFocused: () -> Unit,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -269,6 +293,7 @@ object EntryDetailsScreen {
                 areSectionsLoading = { viewModel.sectionsLoading },
                 sections = { viewModel.sections },
                 onNavigate = onNavigate,
+                onAnySectionFocused = onAnySectionFocused,
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.surface)
             )
@@ -408,6 +433,7 @@ object EntryDetailsScreen {
         modifier: Modifier = Modifier,
         onClickOpenImage: (index: Int) -> Unit,
         onClickCropImage: (index: Int) -> Unit,
+        onClickShareImage: ((index: Int) -> Unit)?,
     ) {
         Box(modifier = modifier) {
             val images = imageState().images()
@@ -419,6 +445,7 @@ object EntryDetailsScreen {
                 imageState = imageState,
                 onClickOpenImage = onClickOpenImage,
                 onClickCropImage = onClickCropImage,
+                onClickShareImage = onClickShareImage,
             ) { entryImage, zoomPanState ->
                 val uri = entryImage.croppedUri ?: entryImage.uri
                 if (uri != null) {

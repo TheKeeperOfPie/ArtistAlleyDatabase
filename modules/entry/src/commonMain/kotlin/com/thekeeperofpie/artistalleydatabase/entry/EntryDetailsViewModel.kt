@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.Path
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -220,6 +221,11 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
 
     fun onLongClickSave(navHostController: NavHostController) {
         save(navHostController, skipIgnoreableErrors = true)
+    }
+
+    fun getImagePathForShare(image: EntryImage): Path? {
+        val entryId = image.entryId ?: return null
+        return EntryUtils.getImagePath(appFileSystem, entryId)
     }
 
     private fun save(navHostController: NavHostController, skipIgnoreableErrors: Boolean) {

@@ -85,6 +85,7 @@ class ChooserViewModel(
 
         // TODO: Find a better solution for the file extension problem
         // TODO: Offer an option to compress before export in case the caller has a size limitation
+        appFileSystem.createDirectories(appFileSystem.filePath("external"))
         val externalFile = appFileSystem.filePath("external/external.$extension")
         appFileSystem.source(path).buffered().use { input ->
             appFileSystem.sink(externalFile).buffered().use { output ->

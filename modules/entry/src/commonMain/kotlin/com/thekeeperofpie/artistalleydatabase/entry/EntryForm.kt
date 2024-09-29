@@ -109,6 +109,7 @@ import artistalleydatabase.modules.entry.generated.resources.entry_image_content
 import artistalleydatabase.modules.entry.generated.resources.entry_image_menu_option_crop
 import artistalleydatabase.modules.entry.generated.resources.entry_image_menu_option_edit
 import artistalleydatabase.modules.entry.generated.resources.entry_image_menu_option_open
+import artistalleydatabase.modules.entry.generated.resources.entry_image_menu_option_share
 import artistalleydatabase.modules.entry.generated.resources.entry_open_more_content_description
 import artistalleydatabase.modules.entry.generated.resources.label_open_entry_link
 import artistalleydatabase.modules.entry.generated.resources.lock_state_different_content_description
@@ -140,6 +141,7 @@ fun EntryForm(
     areSectionsLoading: () -> Boolean = { false },
     sections: () -> List<EntrySection> = { emptyList() },
     onNavigate: (String) -> Unit,
+    onAnySectionFocused: () -> Unit,
 ) {
     Box(modifier.fillMaxWidth()) {
         AnimatedContent(
@@ -222,12 +224,21 @@ fun EntryForm(
                                     section = section,
                                     focusRequester = focusRequester,
                                     onNavigate = onNavigate,
+                                    onFocusChanged = { if (it) onAnySectionFocused() },
                                     onFocusPrevious = { onFocusPrevious(index) },
                                     onFocusNext = { onFocusNext(index) },
                                 )
                             }
-                            is EntrySection.LongText -> LongTextSection(section, focusRequester)
-                            is EntrySection.Dropdown -> DropdownSection(section, focusRequester)
+                            is EntrySection.LongText -> LongTextSection(
+                                section = section,
+                                focusRequester = focusRequester,
+                                onFocusChanged = { if (it) onAnySectionFocused() },
+                            )
+                            is EntrySection.Dropdown -> DropdownSection(
+                                section = section,
+                                focusRequester = focusRequester,
+                                onFocusChanged = { if (it) onAnySectionFocused() },
+                            )
                             // TODO: Custom section FocusRequester
                             is EntrySection.Custom<*> -> CustomSection(section)
                         }
@@ -282,6 +293,7 @@ private fun MultiTextSection(
     section: EntrySection.MultiText,
     focusRequester: FocusRequester,
     onNavigate: (String) -> Unit,
+    onFocusChanged: (Boolean) -> Unit,
     onFocusPrevious: () -> Boolean,
     onFocusNext: () -> Unit,
 ) {
@@ -391,7 +403,10 @@ private fun MultiTextSection(
                 onFocusNext = onFocusNext,
                 bringIntoViewRequester = bringIntoViewRequester,
                 focusRequester = focusRequester,
-                onFocusChanged = { focused = it },
+                onFocusChanged = {
+                    focused = it
+                    onFocusChanged(it)
+                },
                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable),
             )
         }
@@ -399,7 +414,11 @@ private fun MultiTextSection(
 }
 
 @Composable
-private fun LongTextSection(section: EntrySection.LongText, focusRequester: FocusRequester) {
+private fun LongTextSection(
+    section: EntrySection.LongText,
+    focusRequester: FocusRequester,
+    onFocusChanged: (Boolean) -> Unit,
+) {
     SectionHeader(
         text = { ComposeResourceUtils.stringResourceCompat(section.headerRes) },
         lockState = { section.lockState },
@@ -412,6 +431,7 @@ private fun LongTextSection(section: EntrySection.LongText, focusRequester: Focu
         readOnly = section.lockState?.editable == false,
         modifier = Modifier
             .focusRequester(focusRequester)
+            .onFocusChanged { onFocusChanged(it.isFocused) }
             .focusable(section.lockState?.editable != false)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
@@ -782,7 +802,11 @@ private fun OpenSectionField(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DropdownSection(section: EntrySection.Dropdown, focusRequester: FocusRequester) {
+private fun DropdownSection(
+    section: EntrySection.Dropdown,
+    focusRequester: FocusRequester,
+    onFocusChanged: (Boolean) -> Unit,
+) {
     SectionHeader(
         text = { ComposeResourceUtils.stringResourceCompat(section.headerRes) },
         lockState = { section.lockState },
@@ -824,6 +848,7 @@ private fun DropdownSection(section: EntrySection.Dropdown, focusRequester: Focu
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
+                    .onFocusChanged { onFocusChanged(it.isFocused) }
                     .menuAnchor(MenuAnchorType.PrimaryEditable)
             )
             ExposedDropdownMenu(
@@ -873,6 +898,7 @@ fun MultiImageSelectBox(
     imageState: () -> EntryImageState,
     onClickOpenImage: (index: Int) -> Unit,
     onClickCropImage: (index: Int) -> Unit,
+    onClickShareImage: ((index: Int) -> Unit)?,
     imageContent: @Composable (image: EntryImage, zoomPanState: ZoomPanState) -> Unit,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -968,6 +994,18 @@ fun MultiImageSelectBox(
                         }
                     },
                 )
+
+                HorizontalDivider()
+
+                if (onClickShareImage != null) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(Res.string.entry_image_menu_option_share)) },
+                        onClick = {
+                            showMenu = false
+                            onClickShareImage(pagerState.currentPage)
+                        },
+                    )
+                }
 
                 HorizontalDivider()
 
