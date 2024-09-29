@@ -20,7 +20,7 @@ dependencies {
     api(libs.awaitility) {
         exclude("org.hamcrest", "hamcrest")
     }
-    api(kotlin("reflect"))
+    api(libs.kotlin.reflect)
     api(libs.kotlinx.coroutines.android)
     api(libs.kotlinx.coroutines.test)
     api(libs.junit.jupiter.api)

@@ -11,7 +11,6 @@ kotlin {
         androidInstrumentedTest.dependencies {
             implementation(libs.junit.jupiter.params)
             implementation(libs.junit5.android.test.compose)
-            runtimeOnly(libs.compose.ui.test.manifest)
         }
         commonMain.dependencies {
             api(projects.modules.anilist)

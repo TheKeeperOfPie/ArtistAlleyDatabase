@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     id("app-android")
 }
@@ -131,6 +133,7 @@ kotlin {
         freeCompilerArgs.add("-Xcontext-receivers")
     }
 
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlin.inject.runtime.kmp)
@@ -184,7 +187,7 @@ kotlin {
             implementation(projects.modules.utilsRoom)
             implementation(projects.modules.settings)
 
-            runtimeOnly(kotlin("reflect"))
+            runtimeOnly(libs.kotlin.reflect)
 
             implementation(libs.kotlinx.serialization.json)
             runtimeOnly(libs.kotlinx.coroutines.android)

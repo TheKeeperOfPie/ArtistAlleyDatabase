@@ -17,8 +17,6 @@ import Versions_gradle.Versions.androidx.tracing
 import Versions_gradle.Versions.androidx.work
 import Versions_gradle.Versions.apache.commonsCompress
 import Versions_gradle.Versions.apache.commonsCsv
-import Versions_gradle.Versions.compose.materialIcons
-import Versions_gradle.Versions.compose.runtimeTracing
 import Versions_gradle.Versions.composeMultiplatform.runtime
 import Versions_gradle.Versions.google.appUpdate
 import Versions_gradle.Versions.google.billing
@@ -46,7 +44,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.8.0-alpha03"
+        const val gradle = "8.8.0-alpha04"
     }
 
     const val androidJunit5 = "1.11.0.0"
@@ -124,7 +122,7 @@ object Versions {
     const val graphQlJava = "22.3"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.10.0"
-    const val jackson = "2.18.0-rc1"
+    const val jackson = "2.18.0"
     const val jaredsBurrowsLicense = "0.9.8"
     const val javaPoet = "1.13.0"
     const val jimfs = "1.3.0"
@@ -156,7 +154,7 @@ object Versions {
     const val ktor = "3.0.0-beta-2"
     const val ksoup = "0.1.9"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.33"
+    const val manifoldGraphql = "2024.1.34"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
@@ -213,9 +211,13 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 with(Versions.kotlin) {
                     plugin("org.jetbrains.kotlin.multiplatform").version(core)
                     plugin("org.jetbrains.kotlin.plugin.compose").version(core)
-                    library("org.jetbrains.kotlin:kotlin-test:$core")
-                    library("org.jetbrains.kotlin.plugin.parcelize:org.jetbrains.kotlin.plugin.parcelize.gradle.plugin:$core")
-                    library("org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin:$core")
+
+                    withVersion(core) {
+                        library("org.jetbrains.kotlin:kotlin-reflect")
+                        library("org.jetbrains.kotlin:kotlin-test")
+                        library("org.jetbrains.kotlin.plugin.parcelize:org.jetbrains.kotlin.plugin.parcelize.gradle.plugin")
+                        library("org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin")
+                    }
                 }
 
                 with(Versions.androidx) {
@@ -382,26 +384,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.mockito:mockito-core")
                 }
 
-                prefix("compose") {
-                    with(Versions.compose) {
-                        withVersion(core) {
-                            library("androidx.compose.animation:animation")
-                            library("androidx.compose.runtime:runtime")
-                            library("androidx.compose.ui:ui-test-junit4")
-                            library("androidx.compose.ui:ui-test-manifest")
-                            library("androidx.compose.ui:ui-tooling-preview")
-                            library("androidx.compose.ui:ui-tooling")
-                            library("androidx.compose.ui:ui")
-                        }
-                        withVersion(materialIcons) {
-                            library("androidx.compose.material:material-icons-core")
-                            library("androidx.compose.material:material-icons-extended")
-                        }
-
-                        library("androidx.compose.runtime:runtime-tracing:$runtimeTracing")
-                    }
-                }
-
+                // TODO: Add a way to build debug/internal with higher versions of Android Compose
                 prefix("jetBrainsCompose") {
                     with(Versions.composeMultiplatform) {
                         library("org.jetbrains.compose:compose-gradle-plugin:$plugin")
