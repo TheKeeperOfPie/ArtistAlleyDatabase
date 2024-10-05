@@ -1,9 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.markdown
 
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.mikepenz.markdown.m3.markdownTypography
 
 @Composable
 actual fun MarkdownText(
@@ -13,10 +14,15 @@ actual fun MarkdownText(
     maxLines: Int?,
     onOverflowChange: (Boolean) -> Unit,
 ) {
-    Text(
-        text = markdownText?.value.orEmpty(),
-        maxLines = maxLines ?: Int.MAX_VALUE,
-        color = textColor ?: Color.Unspecified,
-        modifier = modifier
+    val typography = markdownTypography(
+        paragraph = MaterialTheme.typography.bodyLarge.copy(
+            color = textColor ?: Color.Unspecified
+        )
+    )
+    // Desktop ignores maxLines since this library doesn't expose overflow
+    com.mikepenz.markdown.m3.Markdown(
+        content = markdownText?.value.orEmpty(),
+        typography = typography,
+        modifier = modifier,
     )
 }

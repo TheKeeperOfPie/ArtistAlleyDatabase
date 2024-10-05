@@ -29,7 +29,6 @@ sealed interface AnimeSearchEntry {
         override val averageScore get() = entry.averageScore
 
         // TODO: Clean up below
-        // So that enough meaningful text is shown, strip any double newlines
         override val description get() = entry.description
         override val tags get() = entry.tags
 

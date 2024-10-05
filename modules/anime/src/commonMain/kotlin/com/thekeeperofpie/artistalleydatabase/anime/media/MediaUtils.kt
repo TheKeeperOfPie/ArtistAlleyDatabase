@@ -954,4 +954,9 @@ object MediaUtils {
                 !it
             }
             .distinctUntilChanged()
+
+    /** So that enough meaningful text is shown, strip any double newlines */
+    fun stripDoubleNewlinesFromDescription(description: String) =
+        description.replace("<br><br>\n\n", "<br>")
+            .replace("<br><br>\n", "<br>")
 }

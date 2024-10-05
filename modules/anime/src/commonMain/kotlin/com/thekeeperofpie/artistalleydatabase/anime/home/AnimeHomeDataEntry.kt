@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import androidx.compose.runtime.Composable
+import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
 import com.anilist.fragment.HomeMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.data.CoverImage
@@ -101,7 +102,9 @@ data class AnimeHomeDataEntry(
         )
 
         // So that enough meaningful text is shown, strip any double newlines
-        override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
+        override val description = media.description
+            ?.let(MediaUtils::stripDoubleNewlinesFromDescription)
+            ?.let(::htmlToAnnotatedString)
         override val tags = media.tags?.asSequence()
             ?.filterNotNull()
             ?.filter {

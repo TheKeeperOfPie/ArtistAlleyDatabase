@@ -37,8 +37,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -64,13 +65,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
@@ -86,9 +87,12 @@ import org.jetbrains.compose.resources.stringResource
 object AnimeMediaLargeCard {
 
     private val HEIGHT = 200.dp
-    private val DESCRIPTION_PLACEHOLDER =
-        "Some really long placeholder description for a loading media large card, "
-            .repeat(3)
+    private val DESCRIPTION_PLACEHOLDER = buildAnnotatedString {
+        append(
+            "Some really long placeholder description for a loading media large card, "
+                .repeat(3)
+        )
+    }
 
     @Composable
     operator fun invoke(
@@ -338,16 +342,14 @@ object AnimeMediaLargeCard {
         if (description == null) {
             Spacer(Modifier.weight(1f))
         } else {
-            CustomHtmlText(
+            Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Black),
-                fontWeight = FontWeight.Black,
-                overflow = TextOverflow.Ellipsis,
-                detectTaps = false,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+                    .fadingEdgeBottom(firstStop = 0.7f)
                     .placeholder(
                         visible = entry == null,
                         highlight = PlaceholderHighlight.shimmer(),
@@ -383,7 +385,7 @@ object AnimeMediaLargeCard {
         val color: Color?
         val rating: Int?
         val tags: List<AnimeMediaTagEntry>
-        val description: String?
+        val description: AnnotatedString?
         val title: Title?
         val coverImage: CoverImage?
         val bannerImage: String?

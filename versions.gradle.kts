@@ -120,6 +120,7 @@ object Versions {
     }
 
     const val graphQlJava = "22.3"
+    const val htmlConverter = "0.9.5"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.10.0"
     const val jackson = "2.18.0"
@@ -160,6 +161,7 @@ object Versions {
     const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
+    const val multiplatformMarkdown = "0.26.0"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "6.3.0"
     const val okhttp = "5.0.0-alpha.14"
@@ -408,6 +410,11 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     }
                 }
 
+                withVersion(Versions.multiplatformMarkdown) {
+                    library("com.mikepenz:multiplatform-markdown-renderer-m3")
+                    library("com.mikepenz:multiplatform-markdown-renderer-coil3")
+                }
+
                 prefix("xmlutil") {
                     withVersion(Versions.xmlUtil) {
                         library("io.github.pdvrieze.xmlutil:serialization")
@@ -417,6 +424,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 library("app.cash.molecule:molecule-runtime:${Versions.molecule}")
+                library("be.digitalia.compose.htmlconverter:htmlconverter:${Versions.htmlConverter}")
                 library("co.touchlab:kermit:${Versions.kermit}")
                 library("co.touchlab:stately-concurrent-collections:${Versions.statelyConcurrentCollections}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")

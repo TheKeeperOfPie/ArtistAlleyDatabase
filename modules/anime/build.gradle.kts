@@ -31,6 +31,7 @@ kotlin {
             implementation(libs.compose.placeholder.material3)
             implementation(libs.fluid.country)
             implementation(libs.fluid.i18n)
+            implementation(libs.htmlconverter)
             implementation(libs.human.readable)
             implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kermit)

@@ -145,12 +145,12 @@ fun Modifier.fadingEdgeEnd(
         }
 }
 
-fun Modifier.fadingEdgeBottom(show: Boolean = true, firstStop: Float = 0.8f) =
+fun Modifier.fadingEdgeBottom(show: Boolean = true, firstStop: Float = 0.8f, lastStop: Float = 1f) =
     graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
         .drawWithCache {
             val brush = Brush.verticalGradient(
                 firstStop to Color.Black,
-                1f to Color.Transparent,
+                lastStop to Color.Transparent,
             )
             onDrawWithContent {
                 drawContent()

@@ -82,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.image.crop.CropRequestDialog
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.SnackbarErrorText
@@ -396,7 +397,7 @@ object EntryDetailsScreen {
                                 .weight(1f)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            Text(text = oldText)
+                            CustomHtmlText(text = oldText)
                         }
 
                         Column(
@@ -404,7 +405,7 @@ object EntryDetailsScreen {
                                 .weight(1f)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            Text(text = newText)
+                            CustomHtmlText(text = newText)
                         }
                     }
                 }

@@ -427,7 +427,7 @@ query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int) {
 
 fragment MediaPreviewWithDescription on Media {
     ...MediaPreview
-    description(asHtml: true) @include(if: $includeDescription)
+    description @include(if: $includeDescription)
 }
 
 query AiringSchedule(

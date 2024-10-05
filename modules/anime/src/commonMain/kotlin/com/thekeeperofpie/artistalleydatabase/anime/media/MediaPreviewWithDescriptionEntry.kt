@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
@@ -37,8 +38,9 @@ data class MediaPreviewWithDescriptionEntry(
     override val type = media.type
     override val averageScore = media.averageScore
 
-    // So that enough meaningful text is shown, strip any double newlines
-    override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
+    override val description = media.description
+        ?.let(MediaUtils::stripDoubleNewlinesFromDescription)
+        ?.let(::htmlToAnnotatedString)
     override val tags = MediaUtils.buildTags(
         media = media,
         showLessImportantTags = mediaFilterable.showLessImportantTags,
