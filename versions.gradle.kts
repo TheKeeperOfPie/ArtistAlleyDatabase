@@ -44,28 +44,28 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.8.0-alpha04"
+        const val gradle = "8.8.0-alpha05"
     }
 
-    const val androidJunit5 = "1.11.0.0"
+    const val androidJunit5 = "1.11.2.0"
 
     object androidx {
         const val activity = "1.10.0-alpha02"
-        const val annotation = "1.9.0-beta01"
+        const val annotation = "1.9.0-rc01"
         const val browser = "1.8.0"
-        const val core = "1.15.0-alpha02"
-        const val lifecycle = "2.9.0-alpha03"
+        const val core = "1.15.0-beta01"
+        const val lifecycle = "2.9.0-alpha04"
         const val media3 = "1.5.0-alpha01"
         const val navigation = "2.8.1"
         const val paging = "3.3.2"
         const val palette = "1.0.0"
-        const val room = "2.7.0-alpha08"
+        const val room = "2.7.0-alpha09"
         const val securityCrypto = "1.1.0-alpha06"
-        const val sqlite = "2.5.0-alpha08"
+        const val sqlite = "2.5.0-alpha09"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
-        const val work = "2.10.0-alpha04"
+        const val work = "2.10.0-beta01"
     }
 
     const val androidyoutubeplayer = "12.1.1"
@@ -96,8 +96,8 @@ object Versions {
             const val navigation = "2.8.0-alpha10"
         }
 
-        const val plugin = "1.7.0-beta02"
-        const val runtime = "1.7.0-beta02"
+        const val plugin = "1.7.0-rc01"
+        const val runtime = "1.7.0-rc01"
     }
 
     const val cronetEmbedded = "119.6045.31"
@@ -109,7 +109,7 @@ object Versions {
 
     object google {
         const val appUpdate = "2.1.0"
-        const val billing = "7.1.0"
+        const val billing = "7.1.1"
         const val cronetOkHttp = "0.1.0"
         const val ossLicensesPlugin = "0.10.6"
         const val playServicesAds = "23.3.0"
@@ -131,8 +131,8 @@ object Versions {
 
     object junit {
         const val four = "4.13.2"
-        const val jupiter = "5.11.1"
-        const val jupiterAndroid = "1.5.0"
+        const val jupiter = "5.11.2"
+        const val jupiterAndroid = "1.6.0"
     }
 
     const val kermit = "2.0.4"
@@ -161,7 +161,7 @@ object Versions {
     const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.26.0"
+    const val multiplatformMarkdown = "0.27.0-b02"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "6.3.0"
     const val okhttp = "5.0.0-alpha.14"
