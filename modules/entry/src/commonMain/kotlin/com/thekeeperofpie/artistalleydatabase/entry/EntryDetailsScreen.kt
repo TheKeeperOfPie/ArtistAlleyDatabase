@@ -4,8 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.animateDp
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -39,6 +37,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -158,93 +157,108 @@ object EntryDetailsScreen {
             }
         }
 
-        BottomSheetScaffold(
-            scaffoldState = scaffoldState,
-            sheetPeekHeight = density.run {
-                // Add sheetPeekHeight to offset the spacer below the image that allows scrolling
-                // the full image into view, even the part that would've been covered by the sheet
-                (scaffoldHeightPixels - imageHeightPixels + sheetPeekHeight)
-                    .coerceAtLeast(sheetPeekHeight).toDp()
-            },
-            sheetDragHandle = null,
-            sheetContent = {
-                BottomSheet(
-                    viewModel = viewModel,
-                    onClickSave = onClickSave,
-                    onLongClickSave = onLongClickSave,
-                    onClickSaveTemplate = onClickSaveTemplate,
-                    onNavigate = onNavigate,
-                    onShowDeleteDialogChange = { showDeleteDialog = it },
-                    onAnySectionFocused = {
-                        coroutineScope.launch { scaffoldState.bottomSheetState.expand() }
-                    },
-                )
-            },
-            snackbarHost = {
-                val errorRes = viewModel.errorResource
-                SnackbarErrorText(
-                    error = {
-                        errorRes?.first?.let { stringResource(it) }
-                    },
-                    exception = errorRes?.second,
-                    onErrorDismiss = { viewModel.errorResource = null },
-                )
-            },
+        Column(
             modifier = Modifier
                 .imePadding()
                 .offset(y = offsetY)
-                .pullRefresh(pullRefreshState)
-                .fillMaxSize()
-                .onSizeChanged { scaffoldHeightPixels = it.height }
         ) {
-            Box {
-                val shareHandler = LocalShareHandler.current
-                HeaderImage(
-                    imageState = { viewModel.entryImageController.imageState },
-                    imageCornerDp = imageCornerDp,
-                    onClickOpenImage = onClickOpenImage,
-                    onClickCropImage = {
-                        val image = viewModel.entryImageController.images[it]
-                        val entryId = image.entryId
-                        val imageUri = image.uri
-                        if (entryId != null && imageUri != null) {
-                            viewModel.cropController.onRequestCrop(
-                                CropState.CropRequest(
-                                    imageFolderName = entryId.imageFolderName,
-                                    id = image.imageId,
-                                    uri = imageUri,
-                                )
-                            )
-                        }
+            // Applying these directly on the BottomSheetScaffold doesn't seem to work
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .onSizeChanged { scaffoldHeightPixels = it.height }
+            ) {
+                BottomSheetScaffold(
+                    scaffoldState = scaffoldState,
+                    sheetPeekHeight = density.run {
+                        // Add sheetPeekHeight to offset the spacer below the image that allows scrolling
+                        // the full image into view, even the part that would've been covered by the sheet
+                        (scaffoldHeightPixels - imageHeightPixels + sheetPeekHeight)
+                            .coerceAtLeast(sheetPeekHeight).toDp()
                     },
-                    onClickShareImage = if (shareHandler == null) null else {
-                        {
-                            val image = viewModel.entryImageController.images[it]
-                            val imagePath = viewModel.getImagePathForShare(image)
-                            val imageUri = image.croppedUri ?: image.uri
-                            shareHandler.shareImage(imagePath, imageUri)
-                        }
+                    sheetDragHandle = null,
+                    sheetContent = {
+                        BottomSheet(
+                            viewModel = viewModel,
+                            bottomSheetState = scaffoldState.bottomSheetState,
+                            onNavigate = onNavigate,
+                            onAnySectionFocused = {
+                                coroutineScope.launch { scaffoldState.bottomSheetState.expand() }
+                            },
+                        )
                     },
-                    modifier = Modifier.onSizeChanged { imageHeightPixels = it.height }
-                )
-
-                // TODO: NavHostController#navigateUp doesn't invoke the back press handler
-                ArrowBackIconButton(
-                    onClick = {
-                        if (viewModel.onNavigateBack()) {
-                            onClickBack()
-                        }
+                    snackbarHost = {
+                        val errorRes = viewModel.errorResource
+                        SnackbarErrorText(
+                            error = {
+                                errorRes?.first?.let { stringResource(it) }
+                            },
+                            exception = errorRes?.second,
+                            onErrorDismiss = { viewModel.errorResource = null },
+                        )
                     },
                     modifier = Modifier
-                        .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
-                        .animateEnterExit()
-                        .align(Alignment.TopStart)
-                        .background(
-                            Color.DarkGray.copy(alpha = 0.33f),
-                            RoundedCornerShape(bottomEnd = 8.dp),
+                        .pullRefresh(pullRefreshState)
+                        .fillMaxSize()
+                ) {
+                    Box {
+                        val shareHandler = LocalShareHandler.current
+                        HeaderImage(
+                            imageState = { viewModel.entryImageController.imageState },
+                            imageCornerDp = imageCornerDp,
+                            onClickOpenImage = onClickOpenImage,
+                            onClickCropImage = {
+                                val image = viewModel.entryImageController.images[it]
+                                val entryId = image.entryId
+                                val imageUri = image.uri
+                                if (entryId != null && imageUri != null) {
+                                    viewModel.cropController.onRequestCrop(
+                                        CropState.CropRequest(
+                                            imageFolderName = entryId.imageFolderName,
+                                            id = image.imageId,
+                                            uri = imageUri,
+                                        )
+                                    )
+                                }
+                            },
+                            onClickShareImage = if (shareHandler == null) null else {
+                                {
+                                    val image = viewModel.entryImageController.images[it]
+                                    val imagePath = viewModel.getImagePathForShare(image)
+                                    val imageUri = image.croppedUri ?: image.uri
+                                    shareHandler.shareImage(imagePath, imageUri)
+                                }
+                            },
+                            modifier = Modifier.onSizeChanged { imageHeightPixels = it.height }
                         )
-                )
+
+                        // TODO: NavHostController#navigateUp doesn't invoke the back press handler
+                        ArrowBackIconButton(
+                            onClick = {
+                                if (viewModel.onNavigateBack()) {
+                                    onClickBack()
+                                }
+                            },
+                            modifier = Modifier
+                                .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                                .animateEnterExit()
+                                .align(Alignment.TopStart)
+                                .background(
+                                    Color.DarkGray.copy(alpha = 0.33f),
+                                    RoundedCornerShape(bottomEnd = 8.dp),
+                                )
+                        )
+                    }
+                }
             }
+
+            BottomButtonRow(
+                viewModel = viewModel,
+                onClickSave = onClickSave,
+                onLongClickSave = onLongClickSave,
+                onClickSaveTemplate = onClickSaveTemplate,
+                onShowDeleteDialogChange = { showDeleteDialog = it },
+            )
         }
 
         CropRequestDialog(viewModel.cropController)
@@ -266,13 +280,17 @@ object EntryDetailsScreen {
     @Composable
     private fun ColumnScope.BottomSheet(
         viewModel: EntryDetailsViewModel<*, *>,
-        onClickSave: () -> Unit = {},
-        onLongClickSave: () -> Unit = {},
-        onClickSaveTemplate: (() -> Unit)? = null,
+        bottomSheetState: SheetState,
         onNavigate: (String) -> Unit,
-        onShowDeleteDialogChange: (Boolean) -> Unit,
         onAnySectionFocused: () -> Unit,
     ) {
+        val scrollState = rememberScrollState()
+        val bottomSheetTargetValue = bottomSheetState.targetValue
+        LaunchedEffect(bottomSheetTargetValue) {
+            if (bottomSheetTargetValue == SheetValue.PartiallyExpanded) {
+                scrollState.animateScrollTo(0)
+            }
+        }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -284,7 +302,7 @@ object EntryDetailsScreen {
                 )
                 .fillMaxWidth()
                 .weight(1f, fill = false)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
         ) {
             // TODO: Semantics
             BottomSheetDefaults.DragHandle()
@@ -298,11 +316,20 @@ object EntryDetailsScreen {
                     .background(color = MaterialTheme.colorScheme.surface)
             )
         }
+    }
 
+    @Composable
+    private fun BottomButtonRow(
+        viewModel: EntryDetailsViewModel<*, *>,
+        onClickSave: () -> Unit = {},
+        onLongClickSave: () -> Unit = {},
+        onClickSaveTemplate: (() -> Unit)? = null,
+        onShowDeleteDialogChange: (Boolean) -> Unit,
+    ) {
         AnimatedVisibility(
             visible = !viewModel.sectionsLoading,
-            enter = fadeIn(),
-            exit = fadeOut(),
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
