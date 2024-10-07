@@ -65,6 +65,9 @@ fragment MediaCompactWithTags on Media {
     format
     season
     seasonYear
+    startDate {
+        ...AniListDate
+    }
 }
 
 fragment MediaCompactWithoutTags on Media {
@@ -466,6 +469,9 @@ fragment MediaHeaderData on Media {
     status
     season
     seasonYear
+    startDate {
+        ...AniListDate
+    }
     episodes
     averageScore
     popularity

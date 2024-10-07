@@ -13,4 +13,5 @@ expect class DateTimeFormatter {
     fun formatRemainingTime(instant: Instant): CharSequence
     fun formatShortDay(localDate: LocalDate): String
     fun formatShortWeekday(localDate: LocalDate): String
+    fun formatSubtitleMonthYear(year: Int?, month: Int?): String?
 }

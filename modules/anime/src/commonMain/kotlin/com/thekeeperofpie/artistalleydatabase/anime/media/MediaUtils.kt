@@ -109,6 +109,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_type_an
 import artistalleydatabase.modules.anime.generated.resources.anime_media_type_manga_icon_content_description
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaListEntryQuery
+import com.anilist.fragment.AniListDate
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.MediaPreview
@@ -496,15 +497,23 @@ object MediaUtils {
         status: MediaStatus?,
         season: MediaSeason?,
         seasonYear: Int?,
-    ) = if (format == null && status == null && season == null && seasonYear == null) {
-        ""
-    } else {
-        listOfNotNull(
+        startDate: AniListDate?,
+    ): String? {
+        format ?: status ?: season ?: seasonYear ?: return null
+        return listOfNotNull(
             format?.toTextRes()?.let { stringResource(it) },
             status?.toTextRes()?.let { stringResource(it) },
-            formatSeasonYear(season, seasonYear, withSeparator = true),
+            formatSeasonYear(season, seasonYear, withSeparator = true)
+                ?: startDate?.let { formatMonthYearStartDate(it) },
         ).joinToString(separator = " - ")
     }
+
+    @Composable
+    fun formatMonthYearStartDate(startDate: AniListDate) =
+        LocalDateTimeFormatter.current.formatSubtitleMonthYear(
+            year = startDate.year,
+            month = startDate.month,
+        )
 
     fun ratingColor(rating: Int) = when {
         rating > 80 -> Color.Green

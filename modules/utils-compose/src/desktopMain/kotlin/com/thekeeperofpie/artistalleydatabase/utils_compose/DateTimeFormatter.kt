@@ -22,13 +22,25 @@ actual class DateTimeFormatter {
         dayOfMonth: Int?,
     ): String? {
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-        return DateTimeUtils.shortDateFormat.format(
-            LocalDate(
-                year = year ?: today.year,
-                month = Month(month ?: today.month.value),
-                dayOfMonth = dayOfMonth ?: today.dayOfMonth,
+        if (year == null) return null
+        if (month == null) return year.toString()
+        return if (dayOfMonth == null) {
+            DateTimeUtils.yearMonthFormat.format(
+                LocalDate(
+                    year = year,
+                    month = Month(month),
+                    dayOfMonth = today.dayOfMonth,
+                )
             )
-        )
+        } else {
+            DateTimeUtils.shortDateFormat.format(
+                LocalDate(
+                    year = year,
+                    month = Month(month),
+                    dayOfMonth = dayOfMonth,
+                )
+            )
+        }
     }
 
     // TODO
@@ -49,4 +61,10 @@ actual class DateTimeFormatter {
     // TODO
     actual fun formatShortWeekday(localDate: LocalDate) =
         DateTimeUtils.shortDateFormat.format(localDate)
+
+    actual fun formatSubtitleMonthYear(year: Int?, month: Int?): String? {
+        year ?: return null
+        if (month == null) return year.toString()
+        return DateTimeUtils.subtitleMonthYearFormat.format(LocalDate(year, month, 1))
+    }
 }

@@ -10,6 +10,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_suggesti
 import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_top
 import artistalleydatabase.modules.anime.generated.resources.anime_home_top_released_this_year_title
 import artistalleydatabase.modules.anime.generated.resources.anime_home_trending_screen_title
+import com.anilist.fragment.AniListDate
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
@@ -32,6 +33,7 @@ import kotlin.reflect.typeOf
 sealed interface AnimeDestination {
     companion object {
         val typeMap = mapOf(
+            typeOf<AniListDate?>() to CustomNavTypes.SerializableType<AniListDate>(),
             typeOf<CharacterHeaderParams?>() to CustomNavTypes.SerializableType<CharacterHeaderParams>(),
             typeOf<ForumThreadSortOption?>() to CustomNavTypes.NullableEnumType(
                 ForumThreadSortOption::valueOf

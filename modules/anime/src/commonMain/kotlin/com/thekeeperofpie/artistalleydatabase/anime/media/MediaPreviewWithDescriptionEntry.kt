@@ -47,15 +47,11 @@ data class MediaPreviewWithDescriptionEntry(
         showSpoilerTags = mediaFilterable.showSpoilerTags,
     )
 
-    override val mediaId: String
-        get() = media.id.toString()
-    override val image
-        get() = media.coverImage?.extraLarge
+    override val mediaId: String get() = media.id.toString()
+    override val image get() = media.coverImage?.extraLarge
 
-    override val rating
-        get() = media.averageScore
-    override val popularity
-        get() = media.popularity
+    override val rating get() = media.averageScore
+    override val popularity get() = media.popularity
 
     override val nextAiringEpisode = media.nextAiringEpisode?.let {
         NextAiringEpisode(
@@ -65,42 +61,28 @@ data class MediaPreviewWithDescriptionEntry(
     }
 
     // TODO: Favorite local overrides
-    override val isFavourite
-        get() = media.isFavourite
+    override val isFavourite get() = media.isFavourite
 
-    override val isAdult
-        get() = media.isAdult
-    override val bannerImageUrl
-        get() = media.bannerImage
-    override val coverImageUrl
-        get() = coverImage?.url
+    override val isAdult get() = media.isAdult
+    override val bannerImageUrl get() = media.bannerImage
+    override val coverImageUrl get() = coverImage?.url
 
-    override val titleRomaji
-        get() = media.title?.romaji
-    override val titleEnglish
-        get() = media.title?.english
-    override val titleNative
-        get() = media.title?.native
+    override val titleRomaji get() = media.title?.romaji
+    override val titleEnglish get() = media.title?.english
+    override val titleNative get() = media.title?.native
     override val mediaType = media.type?.toMediaType()
 
-    override val format
-        get() = media.format
-    override val status
-        get() = media.status
-    override val season
-        get() = media.season
-    override val seasonYear
-        get() = media.seasonYear
-    override val episodes
-        get() = media.episodes
-    override val chapters: Int?
-        get() = media.chapters
-    override val volumes: Int?
-        get() = media.volumes
+    override val format get() = media.format
+    override val status get() = media.status
+    override val season get() = media.season
+    override val seasonYear get() = media.seasonYear
+    override val startDate get() = media.startDate
+    override val episodes get() = media.episodes
+    override val chapters: Int? get() = media.chapters
+    override val volumes: Int? get() = media.volumes
     override val title = media.title?.toTitle()
     override val coverImage = media.coverImage?.toCoverImage()
-    override val bannerImage
-        get() = media.bannerImage
+    override val bannerImage get() = media.bannerImage
 
     override val mediaListStatus get() = mediaFilterable.mediaListStatus
     override val progress get() = mediaFilterable.progress

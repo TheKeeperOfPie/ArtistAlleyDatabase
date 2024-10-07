@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_banner_image_content_description
+import com.anilist.fragment.AniListDate
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaStatus
@@ -314,7 +315,8 @@ object AnimeMediaLargeCard {
                     status = entry.status,
                     season = entry.season,
                     seasonYear = entry.seasonYear,
-                )
+                    startDate = entry.startDate,
+                ).orEmpty()
             },
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.W500,
@@ -393,6 +395,7 @@ object AnimeMediaLargeCard {
         val status: MediaStatus?
         val season: MediaSeason?
         val seasonYear: Int?
+        val startDate: AniListDate?
         val popularity: Int?
         val isFavourite: Boolean
         val ignored: Boolean
@@ -412,6 +415,7 @@ object AnimeMediaLargeCard {
             subtitleStatus = status,
             subtitleSeason = season,
             subtitleSeasonYear = seasonYear,
+            subtitleStartDate = startDate,
             nextAiringEpisode = nextAiringEpisode,
             colorArgb = coverImage?.color?.toArgb(),
             type = type,

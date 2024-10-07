@@ -38,6 +38,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_open_external
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_open_external_icon_content_description
 import coil3.annotation.ExperimentalCoilApi
+import com.anilist.fragment.AniListDate
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaWithListStatus
@@ -46,9 +47,9 @@ import com.anilist.type.MediaSeason
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDateSerializer
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
@@ -239,6 +240,8 @@ data class MediaHeaderParams(
     val subtitleStatus: MediaStatus? = null,
     val subtitleSeason: MediaSeason? = null,
     val subtitleSeasonYear: Int? = null,
+    @Serializable(with = AniListDateSerializer::class)
+    val subtitleStartDate: AniListDate? = null,
     val nextAiringEpisode: NextAiringEpisode? = null,
     val colorArgb: Int? = null,
     val type: MediaType? = null,
@@ -258,6 +261,7 @@ data class MediaHeaderParams(
         subtitleStatus = media?.status,
         subtitleSeason = media?.season,
         subtitleSeasonYear = media?.seasonYear,
+        subtitleStartDate = media?.startDate,
         nextAiringEpisode = media?.nextAiringEpisode?.let {
             NextAiringEpisode(
                 episode = it.episode,
@@ -283,6 +287,7 @@ data class MediaHeaderParams(
         subtitleStatus = null,
         subtitleSeason = mediaCompactWithTags?.season,
         subtitleSeasonYear = mediaCompactWithTags?.seasonYear,
+        subtitleStartDate = mediaCompactWithTags?.startDate,
         nextAiringEpisode = mediaCompactWithTags?.nextAiringEpisode?.let {
             NextAiringEpisode(
                 episode = it.episode,
@@ -309,6 +314,7 @@ data class MediaHeaderParams(
         subtitleStatus = null,
         subtitleSeason = null,
         subtitleSeasonYear = null,
+        subtitleStartDate = null,
         nextAiringEpisode = mediaWithListStatus?.nextAiringEpisode?.let {
             NextAiringEpisode(
                 episode = it.episode,
@@ -355,16 +361,13 @@ class MediaHeaderValues(
             status = it.status,
             season = it.season,
             seasonYear = it.seasonYear,
+            startDate = it.startDate,
         )
-    } ?: listOfNotNull(
-        params?.subtitleFormat?.toTextRes()?.let { stringResource(it) },
-        params?.subtitleStatus?.toTextRes()?.let { stringResource(it) },
-        MediaUtils.formatSeasonYear(
-            params?.subtitleSeason,
-            params?.subtitleSeasonYear,
-            withSeparator = true,
-        ),
+    } ?: MediaUtils.formatSubtitle(
+        format = params?.subtitleFormat,
+        status = params?.subtitleStatus,
+        season = params?.subtitleSeason,
+        seasonYear = params?.subtitleSeasonYear,
+        startDate = params?.subtitleStartDate,
     )
-        .joinToString(separator = " - ")
-        .ifEmpty { null }
 }

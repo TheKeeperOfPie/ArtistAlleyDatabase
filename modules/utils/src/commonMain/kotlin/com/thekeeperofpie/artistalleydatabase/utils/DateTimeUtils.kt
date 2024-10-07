@@ -13,4 +13,14 @@ object DateTimeUtils {
         char(' ')
         dayOfMonth()
     }
+    val yearMonthFormat = LocalDate.Format {
+        year()
+        chars(", ")
+        monthName(MonthNames.ENGLISH_ABBREVIATED)
+    }
+    val subtitleMonthYearFormat = LocalDate.Format {
+        monthName(MonthNames.ENGLISH_ABBREVIATED)
+        chars(" - ")
+        year()
+    }
 }

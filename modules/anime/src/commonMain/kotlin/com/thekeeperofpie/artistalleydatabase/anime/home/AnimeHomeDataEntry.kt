@@ -73,6 +73,7 @@ data class AnimeHomeDataEntry(
         override val status get() = media.status
         override val season get() = media.season
         override val seasonYear get() = media.seasonYear
+        override val startDate get() = media.startDate
         override val episodes get() = media.episodes
         override val chapters get() = media.chapters
         override val volumes get() = media.volumes

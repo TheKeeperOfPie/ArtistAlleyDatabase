@@ -292,7 +292,8 @@ object AnimeMediaCompactListRow {
                     status = null,
                     season = media?.season,
                     seasonYear = media?.seasonYear,
-                )
+                    startDate = media?.startDate,
+                ).orEmpty()
             },
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.typography.labelSmall.color
