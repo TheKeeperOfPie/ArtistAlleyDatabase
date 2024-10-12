@@ -120,6 +120,7 @@
     <string name="anime_media_filter_tag_chip_state_content_description">Tag chip state</string>
     <string name="anime_media_filter_tag_misc">Miscellaneous</string>
     <string name="anime_media_filter_tag_category_expand_content_description">Tag %1$s expand</string>
+    <string name="anime_media_filter_tag_rank_query_summary">%1$s "%2$s"</string>
 
     <string name="anime_media_filter_licensed_by_label">Licensed by</string>
     <string name="anime_media_filter_licensed_by_general_label">General</string>

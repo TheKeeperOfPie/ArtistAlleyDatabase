@@ -5,6 +5,7 @@
 - Show airing start date for non-seasonal
 - Fix start/end date user media list sorts
 - Fix staff years active
+- Improve tag filter search/summary
 
 ### 0.50 (15)
 - Add subscription price before button press

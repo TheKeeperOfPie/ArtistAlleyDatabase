@@ -68,6 +68,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_rank_label
+import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_rank_query_summary
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_long_click_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_clear_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_placeholder
@@ -375,10 +376,17 @@ fun TagSection(
         titleDropdownContentDescriptionRes = Res.string.anime_media_filter_tag_content_description,
         summaryText = {
             @Suppress("NAME_SHADOWING")
-            when (val tagRank = tagRank().toIntOrNull()?.coerceIn(0, 100)) {
+            val rank = when (val tagRank = tagRank().toIntOrNull()?.coerceIn(0, 100)) {
                 null, 0 -> null
                 100 -> "== 100"
                 else -> "≥ $tagRank"
+            }
+            if (query.isEmpty()) {
+                rank
+            } else if (rank == null) {
+                null
+            } else {
+                stringResource(Res.string.anime_media_filter_tag_rank_query_summary, rank, query)
             }
         },
         onSummaryClick = { onTagRankChange("") },
@@ -387,22 +395,20 @@ fun TagSection(
         Column(modifier = Modifier.animateContentSize()) {
             @Suppress("NAME_SHADOWING")
             val tags = tags()
-            val subcategoriesToShow = if (expanded) {
-                tags.values
-            } else {
-                if (query.isNotBlank()) {
-                    tags.values.mapNotNull {
-                        it.filter {
-                            it.state != FilterIncludeExcludeState.DEFAULT
-                                    || it.name.contains(query, ignoreCase = true)
-                        }
-                    }
-                } else {
-                    tags.values.mapNotNull {
-                        it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+            val subcategoriesToShow = (if (query.isNotBlank()) {
+                tags.values.mapNotNull {
+                    it.filter {
+                        it.state != FilterIncludeExcludeState.DEFAULT
+                                || it.name.contains(query, ignoreCase = true)
                     }
                 }
-            }.filterIsInstance<TagSection.Category>()
+            } else if (expanded) {
+                tags.values
+            } else {
+                tags.values.mapNotNull {
+                    it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+                }
+            }).filterIsInstance<TagSection.Category>()
 
             if (expanded || subcategoriesToShow.isNotEmpty()) {
                 Row(
@@ -564,35 +570,31 @@ private fun TagSubsection(
     }
 
     val tags = children.filterIsInstance<TagSection.Tag>()
-    val tagsToShow = if (expanded) {
+    val tagsToShow = if (query.isNotBlank()) {
+        tags.filter {
+            it.state != FilterIncludeExcludeState.DEFAULT
+                    || it.name.contains(query, ignoreCase = true)
+        }
+    } else if (expanded) {
         tags
     } else {
-        if (query.isNotBlank()) {
-            tags.filter {
-                it.state != FilterIncludeExcludeState.DEFAULT
-                        || it.name.contains(query, ignoreCase = true)
-            }
-        } else {
-            tags.filter { it.state != FilterIncludeExcludeState.DEFAULT }
-        }
+        tags.filter { it.state != FilterIncludeExcludeState.DEFAULT }
     }
 
     val subcategories =
         children.filterIsInstance<TagSection.Category>()
-    val subcategoriesToShow = if (expanded) {
+    val subcategoriesToShow = if (query.isNotBlank()) {
+        subcategories.mapNotNull {
+            it.filter {
+                it.state != FilterIncludeExcludeState.DEFAULT
+                        || it.name.contains(query, ignoreCase = true)
+            } as? TagSection.Category
+        }
+    } else if (expanded) {
         subcategories
     } else {
-        if (query.isNotBlank()) {
-            subcategories.mapNotNull {
-                it.filter {
-                    it.state != FilterIncludeExcludeState.DEFAULT
-                            || it.name.contains(query, ignoreCase = true)
-                } as? TagSection.Category
-            }
-        } else {
-            subcategories.mapNotNull {
-                it.filter { it.state != FilterIncludeExcludeState.DEFAULT } as? TagSection.Category
-            }
+        subcategories.mapNotNull {
+            it.filter { it.state != FilterIncludeExcludeState.DEFAULT } as? TagSection.Category
         }
     }
 
