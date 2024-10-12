@@ -640,7 +640,7 @@
     <string name="anime_staff_details_primary_occupations_expand_content_description">Occupations expand</string>
     <string name="anime_staff_details_years_active_label">Years active</string>
     <string name="anime_staff_details_years_active_beginning">%1$d - Present</string>
-    <string name="anime_staff_details_years_active_beginning_and_end">%1$d - %1$d</string>
+    <string name="anime_staff_details_years_active_beginning_and_end">%1$d - %2$d</string>
     <string name="anime_staff_details_favorites_label">Favorites</string>
     <string name="anime_staff_details_characters_label">Characters</string>
     <string name="anime_staff_details_media_load_retry">Retry</string>
