@@ -4,6 +4,12 @@ fragment UserMediaListMedia on Media {
         priority
         updatedAt
         createdAt
+        startedAt {
+            ...AniListDate
+        }
+        completedAt {
+            ...AniListDate
+        }
     }
     synonyms
     endDate {

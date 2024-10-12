@@ -2,12 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.anime.list
 
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_average_score
+import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_end_date
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_my_added_time
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_my_finished_on
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_my_started_on
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_my_updated_time
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_priority
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_progress
+import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_start_date
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_status
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_their_added_time
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_sort_their_finished_on
@@ -31,6 +33,8 @@ enum class MediaListSortOption(
     STATUS(Res.string.anime_media_list_sort_status),
     PROGRESS(Res.string.anime_media_list_sort_progress),
     PRIORITY(Res.string.anime_media_list_sort_priority),
+    START_DATE(Res.string.anime_media_list_sort_start_date),
+    END_DATE(Res.string.anime_media_list_sort_end_date),
     MY_STARTED_ON(Res.string.anime_media_list_sort_my_started_on, forDifferentUser = false),
     MY_FINISHED_ON(Res.string.anime_media_list_sort_my_finished_on, forDifferentUser = false),
     THEIR_STARTED_ON(Res.string.anime_media_list_sort_their_started_on, forDifferentUser = true),

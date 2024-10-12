@@ -364,8 +364,10 @@ class AnimeUserListViewModel(
                         compareBy { it.media.mediaListEntry?.progressVolumes }
                     }
                     MediaListSortOption.PRIORITY -> compareBy { it.media.mediaListEntry?.priority }
-                    MediaListSortOption.MY_STARTED_ON -> compareByAniListDate { it.media.startDate }
-                    MediaListSortOption.MY_FINISHED_ON -> compareByAniListDate { it.media.endDate }
+                    MediaListSortOption.START_DATE -> compareByAniListDate { it.media.startDate }
+                    MediaListSortOption.END_DATE -> compareByAniListDate { it.media.endDate }
+                    MediaListSortOption.MY_STARTED_ON -> compareByAniListDate { it.media.mediaListEntry?.startedAt }
+                    MediaListSortOption.MY_FINISHED_ON -> compareByAniListDate { it.media.mediaListEntry?.completedAt }
                     MediaListSortOption.THEIR_STARTED_ON -> compareByAniListDate { it.authorData?.startedAt }
                     MediaListSortOption.THEIR_FINISHED_ON -> compareByAniListDate { it.authorData?.completedAt }
                     MediaListSortOption.MY_ADDED_TIME -> compareBy { it.media.mediaListEntry?.createdAt }

@@ -54,6 +54,8 @@
     <string name="anime_media_list_sort_status">Status</string>
     <string name="anime_media_list_sort_progress">Progress</string>
     <string name="anime_media_list_sort_priority">Priority</string>
+    <string name="anime_media_list_sort_start_date">Start date</string>
+    <string name="anime_media_list_sort_end_date">Finish date</string>
     <string name="anime_media_list_sort_my_started_on">My start date</string>
     <string name="anime_media_list_sort_my_finished_on">My finish date</string>
     <string name="anime_media_list_sort_their_started_on">Their start date</string>

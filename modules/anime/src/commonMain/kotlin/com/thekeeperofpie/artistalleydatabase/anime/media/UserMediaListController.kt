@@ -19,6 +19,7 @@ import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.hoc081098.flowext.flowFromSuspend
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDateSerializer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
@@ -455,6 +456,10 @@ class UserMediaListController(
                 val priority: Int? = null,
                 val createdAt: Int? = null,
                 val updatedAt: Int? = null,
+                @Serializable(AniListDateSerializer::class)
+                val startedAt: AniListDate? = null,
+                @Serializable(AniListDateSerializer::class)
+                val completedAt: AniListDate? = null,
             ) : MediaPreviewWithDescription.MediaListEntry {
                 constructor(mediaListEntry: UserMediaListMedia.MediaListEntry) : this(
                     id = mediaListEntry.id,
@@ -465,6 +470,8 @@ class UserMediaListController(
                     priority = mediaListEntry.priority,
                     createdAt = mediaListEntry.createdAt,
                     updatedAt = mediaListEntry.updatedAt,
+                    startedAt = mediaListEntry.startedAt,
+                    completedAt = mediaListEntry.completedAt,
                 )
             }
 

@@ -3,6 +3,7 @@
 ### Next (16)
 - Add share/copy actions to media details menu
 - Show airing start date for non-seasonal
+- Fix start/end date user media list sorts
 
 ### 0.50 (15)
 - Add subscription price before button press
