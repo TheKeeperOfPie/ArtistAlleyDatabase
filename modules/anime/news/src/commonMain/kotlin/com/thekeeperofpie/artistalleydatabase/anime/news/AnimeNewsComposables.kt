@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,17 +32,51 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import artistalleydatabase.modules.anime.news.generated.resources.Res
 import artistalleydatabase.modules.anime.news.generated.resources.anime_news_article_image_content_description
+import artistalleydatabase.modules.anime.news.generated.resources.anime_news_row_title
+import artistalleydatabase.modules.anime.news.generated.resources.anime_news_row_view_all_content_description
 import artistalleydatabase.modules.anime.news.generated.resources.anime_news_site_logo_content_description
 import coil3.compose.AsyncImage
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomHtmlText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun NewsRow(
+    data: List<AnimeNewsEntry<*>>?,
+    pageSize: PageSize,
+) {
+    NavigationHeader(
+        titleRes = Res.string.anime_news_row_title,
+        viewAllRoute = AnimeNewsNavDestinations.News,
+        viewAllContentDescriptionTextRes = Res.string.anime_news_row_view_all_content_description,
+    )
+
+    val itemCount = data?.size ?: 3
+    if (itemCount == 0) return
+    val pagerState = rememberPagerState(pageCount = { itemCount })
+    val fullscreenImageHandler = LocalFullscreenImageHandler.current
+    HorizontalPager(
+        state = pagerState,
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+        pageSpacing = 16.dp,
+        pageSize = pageSize,
+        verticalAlignment = Alignment.Top,
+        modifier = Modifier.recomposeHighlighter()
+    ) {
+        AnimeNewsSmallCard(
+            entry = data?.get(it),
+            onOpenImage = fullscreenImageHandler::openImage,
+        )
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

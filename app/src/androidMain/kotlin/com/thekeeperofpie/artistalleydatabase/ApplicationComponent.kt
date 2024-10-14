@@ -40,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestinationProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
@@ -82,6 +83,8 @@ abstract class ApplicationComponent(
     abstract val platformOAuthStore: PlatformOAuthStore
     abstract val settingsProvider: SettingsProvider
     abstract val workManager: WorkManager
+
+    abstract val navDestinationProviders: Set<NavDestinationProvider>
 
     val AppMonetizationOverrideProvider.bind: MonetizationOverrideProvider
         @Provides get() = this

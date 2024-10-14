@@ -42,7 +42,7 @@ fun <T : Any> SavedStateHandle.internalToRoute(
     return serializer.decodeArguments(this, map)
 }
 
-inline fun <reified T : Any> NavGraphBuilder.sharedElementComposable(
+inline fun <reified T : NavDestination> NavGraphBuilder.sharedElementComposable(
     navigationTypeMap: NavigationTypeMap,
     deepLinks: List<NavDeepLink> = emptyList(),
     noinline enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = {

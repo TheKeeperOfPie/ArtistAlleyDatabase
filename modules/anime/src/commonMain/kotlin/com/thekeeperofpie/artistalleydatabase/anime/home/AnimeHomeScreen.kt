@@ -31,7 +31,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -94,7 +93,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_media_ty
 import artistalleydatabase.modules.anime.generated.resources.anime_home_row_view_all_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestions_header
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_news_home_title
 import artistalleydatabase.modules.anime.generated.resources.anime_notifications_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_home_title
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_home_title
@@ -123,21 +121,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.news.NewsRow
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
-import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
-import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -155,6 +151,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.getOrNull
@@ -466,35 +463,6 @@ object AnimeHomeScreen {
             )
 
             Spacer(modifier = Modifier.height(32.dp + bottomNavBarPadding))
-        }
-    }
-
-    @Composable
-    private fun NewsRow(
-        data: List<AnimeNewsEntry<*>>?,
-        pageSize: PageSize,
-    ) {
-        RowHeader(
-            titleRes = Res.string.anime_news_home_title,
-            viewAllRoute = AnimeDestination.News,
-        )
-
-        val itemCount = data?.size ?: 3
-        if (itemCount == 0) return
-        val pagerState = rememberPagerState(pageCount = { itemCount })
-        val fullscreenImageHandler = LocalFullscreenImageHandler.current
-        HorizontalPager(
-            state = pagerState,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-            pageSpacing = 16.dp,
-            pageSize = pageSize,
-            verticalAlignment = Alignment.Top,
-            modifier = Modifier.recomposeHighlighter()
-        ) {
-            AnimeNewsSmallCard(
-                entry = data?.get(it),
-                onOpenImage = fullscreenImageHandler::openImage,
-            )
         }
     }
 

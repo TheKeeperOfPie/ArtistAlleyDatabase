@@ -86,8 +86,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogC
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGenrePreview
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaTagPreview
-import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
@@ -101,8 +99,10 @@ import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
+import com.thekeeperofpie.artistalleydatabase.utils_compose.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalComposeSettings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
@@ -407,6 +407,10 @@ class MainActivity : ComponentActivity() {
                             navController = navHostController,
                             startDestination = startDestination,
                         ) {
+                            applicationComponent.navDestinationProviders.forEach {
+                                it.composable(this, navigationTypeMap)
+                            }
+
                             AnimeNavigator.initialize(
                                 navHostController = navHostController,
                                 navGraphBuilder = this,

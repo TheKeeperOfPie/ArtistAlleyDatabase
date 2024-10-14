@@ -74,7 +74,6 @@ import coil3.request.crossfade
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
@@ -84,7 +83,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -581,30 +579,4 @@ fun FavoriteIconButton(
             }
         }
     }
-}
-
-
-@Composable
-fun NavigationHeader(
-    titleRes: StringResource,
-    viewAllRoute: AnimeDestination?,
-    modifier: Modifier = Modifier,
-    viewAllContentDescriptionTextRes: StringResource? = null,
-) {
-    val navigationCallback = LocalNavigationCallback.current
-    DetailsSectionHeader(
-        text = stringResource(titleRes),
-        onClickViewAll = viewAllRoute?.let {
-            {
-                navigationCallback.navigate(viewAllRoute)
-            }
-        },
-        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
-        modifier = Modifier
-            .clickable(enabled = viewAllRoute != null) {
-                navigationCallback.navigate(viewAllRoute!!)
-            }
-            .then(modifier)
-            .recomposeHighlighter()
-    )
 }

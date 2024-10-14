@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestinationProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkComponent
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
@@ -52,6 +53,8 @@ abstract class DesktopComponent(
     abstract val mediaTagDialogController: MediaTagDialogController
     abstract val navigationTypeMap: NavigationTypeMap
     abstract val settingsProvider: DesktopSettingsProvider
+
+    abstract val navDestinationProviders: Set<NavDestinationProvider>
 
     val DesktopSettingsProvider.bindAniListSettings: AniListSettings
         @Provides get() = this

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="anime_news_row_title">NEWS</string>
+    <string name="anime_news_row_view_all_content_description">View news</string>
+
     <string name="anime_news_network_category_anime">Anime</string>
     <string name="anime_news_network_category_manga">Manga</string>
     <string name="anime_news_network_category_live_action">Live action</string>

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.utils
+package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,11 +20,11 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_full_image_content_description
+import artistalleydatabase.modules.utils_compose.generated.resources.Res
+import artistalleydatabase.modules.utils_compose.generated.resources.full_image_content_description
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import org.jetbrains.compose.resources.stringResource
+
 
 class FullscreenImageHandler {
 
@@ -51,7 +51,7 @@ class FullscreenImageHandler {
                             model = imageUrl,
                             contentScale = ContentScale.FillWidth,
                             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                            contentDescription = stringResource(Res.string.anime_full_image_content_description),
+                            contentDescription = stringResource(Res.string.full_image_content_description),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .widthIn(min = 240.dp),

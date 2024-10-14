@@ -838,7 +838,6 @@
     <string name="anime_notifications_icon_content_description">Notifications</string>
     <string name="anime_notification_episode_aired">Episode %1$d aired</string>
     <string name="anime_notification_related_added">Recently added</string>
-    <string name="anime_full_image_content_description">Full image</string>
 
     <string name="anime_forum_header">Forum</string>
     <string name="anime_forum_icon_content_description">Forum</string>

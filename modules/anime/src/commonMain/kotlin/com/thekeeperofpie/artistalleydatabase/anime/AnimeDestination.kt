@@ -26,11 +26,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.typeOf
 
-sealed interface AnimeDestination {
+sealed interface AnimeDestination : NavDestination {
     companion object {
         val typeMap = mapOf(
             typeOf<AniListDate?>() to CustomNavTypes.SerializableType<AniListDate>(),
@@ -199,9 +200,6 @@ sealed interface AnimeDestination {
     data class MediaHistory(
         val mediaType: MediaType?,
     ) : AnimeDestination
-
-    @Serializable
-    data object News : AnimeDestination
 
     @Serializable
     data object Notifications : AnimeDestination

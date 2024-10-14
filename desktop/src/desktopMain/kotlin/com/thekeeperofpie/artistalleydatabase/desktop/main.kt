@@ -45,12 +45,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogC
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGenrePreview
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaTagPreview
-import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.markdown.LocalMarkdown
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
+import com.thekeeperofpie.artistalleydatabase.utils_compose.FullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
@@ -141,6 +141,10 @@ fun main() = application {
                                 navController = navHostController,
                                 startDestination = AnimeNavDestinations.HOME.id,
                             ) {
+                                desktopComponent.navDestinationProviders.forEach {
+                                    it.composable(this, navigationTypeMap)
+                                }
+
                                 AnimeNavigator.initialize(
                                     navHostController = navHostController,
                                     navGraphBuilder = this,
