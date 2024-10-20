@@ -40,6 +40,7 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomHtmlText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
@@ -50,7 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun NewsRow(
-    data: List<AnimeNewsEntry<*>>?,
+    result: LoadingResult<List<AnimeNewsEntry<*>>>,
     pageSize: PageSize,
 ) {
     NavigationHeader(
@@ -59,7 +60,8 @@ fun NewsRow(
         viewAllContentDescriptionTextRes = Res.string.anime_news_row_view_all_content_description,
     )
 
-    val itemCount = data?.size ?: 3
+    val news = result.result
+    val itemCount = news?.size ?: 3
     if (itemCount == 0) return
     val pagerState = rememberPagerState(pageCount = { itemCount })
     val fullscreenImageHandler = LocalFullscreenImageHandler.current
@@ -72,7 +74,7 @@ fun NewsRow(
         modifier = Modifier.recomposeHighlighter()
     ) {
         AnimeNewsSmallCard(
-            entry = data?.get(it),
+            entry = news?.get(it),
             onOpenImage = fullscreenImageHandler::openImage,
         )
     }

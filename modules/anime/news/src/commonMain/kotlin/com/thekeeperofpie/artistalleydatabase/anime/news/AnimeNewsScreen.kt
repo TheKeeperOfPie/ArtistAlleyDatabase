@@ -15,6 +15,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,9 +64,12 @@ object AnimeNewsScreen {
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) { scaffoldPadding ->
-            val news = viewModel.news
-            val pullRefreshState =
-                rememberPullRefreshState(refreshing = news == null, onRefresh = viewModel::refresh)
+            // TODO: Error/loading indicator
+            val newsResult by viewModel.news.collectAsState()
+            val pullRefreshState = rememberPullRefreshState(
+                refreshing = newsResult.loading,
+                onRefresh = viewModel::refresh,
+            )
             Box(
                 modifier = Modifier
                     .padding(scaffoldPadding)
@@ -72,6 +77,7 @@ object AnimeNewsScreen {
             ) {
                 val listState = rememberLazyListState()
                 viewModel.sortFilterController.ImmediateScrollResetEffect(listState)
+                val news = newsResult.result
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(

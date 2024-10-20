@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
+import androidx.compose.runtime.Immutable
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.runningFold
 import org.jetbrains.compose.resources.StringResource
 
+@Immutable
 data class LoadingResult<T>(
     val loading: Boolean = false,
     val success: Boolean = false,
@@ -25,11 +28,24 @@ data class LoadingResult<T>(
             LoadingResult<T>(error = error to throwable)
 
         fun <T> success(value: T) = LoadingResult(loading = false, success = true, result = value)
+
+        fun <T> combine(
+            vararg results: LoadingResult<T>,
+            combiner: (List<T>) -> T,
+        ): LoadingResult<T> {
+            val loading = results.any { it.loading }
+            return LoadingResult(
+                loading = loading,
+                success = !loading,
+                result = combiner(results.mapNotNull { it.result }),
+                error = results.firstNotNullOfOrNull { it.error },
+            )
+        }
     }
 
     fun isEmpty() = !loading && !success && result == null && error == null
 
-    suspend fun <Output> transformResult(transform: suspend (T) -> Output?): LoadingResult<Output> {
+    inline fun <Output> transformResult(transform: (T) -> Output?): LoadingResult<Output> {
         val newResult = result?.let { transform(it) }
         return LoadingResult(
             loading = loading,
@@ -39,6 +55,16 @@ data class LoadingResult<T>(
         )
     }
 }
+
+fun <T> flowForRefreshableContent(
+    refresh: RefreshFlow,
+    errorTextRes: StringResource,
+    producer: suspend () -> Flow<T>,
+) = flowForRefreshableContent(
+    refresh = refresh.updates,
+    errorTextRes = errorTextRes,
+    producer = producer,
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun <T> flowForRefreshableContent(

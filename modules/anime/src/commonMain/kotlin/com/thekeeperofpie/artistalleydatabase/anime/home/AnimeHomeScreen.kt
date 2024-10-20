@@ -212,7 +212,7 @@ object AnimeHomeScreen {
         val reviews = mediaViewModel.reviews.collectAsLazyPagingItems()
         val refreshing by remember {
             derivedStateOf {
-                viewModel.newsController.newsDateDescending() == null
+                viewModel.newsController.newsDateDescending == null
                         || activity.loadState.refresh == LoadState.Loading
                         || recommendations.loadState.refresh == LoadState.Loading
                         || reviews.loadState.refresh == LoadState.Loading
@@ -400,10 +400,8 @@ object AnimeHomeScreen {
             val pageSize = remember {
                 PageSize.Fixed(420.dp.coerceAtMost(screenWidthDp - 32.dp))
             }
-            NewsRow(
-                data = viewModel.newsController.newsDateDescending(),
-                pageSize = pageSize,
-            )
+            val newsDateDescending by viewModel.newsController.newsDateDescending.collectAsState()
+            NewsRow(result = newsDateDescending, pageSize = pageSize)
 
             val viewer by viewModel.viewer.collectAsState()
             Activities(

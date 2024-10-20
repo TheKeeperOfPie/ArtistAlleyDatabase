@@ -228,7 +228,7 @@ class HomeScreenTest {
         mediaReviewsLoading: Boolean = false,
     ): Pair<AnimeHomeViewModel, AnimeHomeMediaViewModel> {
         val spiedNewsController = spyStrict(newsController) {
-            whenever(newsDateDescending()) {
+            whenever(newsDateDescending) {
                 if (newsLoading) {
                     null
                 } else {

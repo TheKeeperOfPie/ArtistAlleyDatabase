@@ -51,4 +51,7 @@
     <string name="anime_news_no_results">No results</string>
     <string name="anime_news_site_logo_content_description">News site logo</string>
     <string name="anime_news_article_image_content_description">News article image</string>
+
+    <string name="anime_news_error_loading_crunchyroll">Error loading CR News</string>
+    <string name="anime_news_error_loading_anime_news_network">Error loading ANN</string>
 </resources>
