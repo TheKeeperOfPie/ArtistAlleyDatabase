@@ -44,24 +44,24 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.8.0-alpha05"
+        const val gradle = "8.8.0-alpha07"
     }
 
     const val androidJunit5 = "1.11.2.0"
 
     object androidx {
         const val activity = "1.10.0-alpha02"
-        const val annotation = "1.9.0-rc01"
+        const val annotation = "1.9.0"
         const val browser = "1.8.0"
-        const val core = "1.15.0-beta01"
-        const val lifecycle = "2.9.0-alpha04"
+        const val core = "1.15.0-rc01"
+        const val lifecycle = "2.9.0-alpha05"
         const val media3 = "1.5.0-alpha01"
         const val navigation = "2.8.1"
         const val paging = "3.3.2"
         const val palette = "1.0.0"
-        const val room = "2.7.0-alpha09"
+        const val room = "2.7.0-alpha10"
         const val securityCrypto = "1.1.0-alpha06"
-        const val sqlite = "2.5.0-alpha09"
+        const val sqlite = "2.5.0-alpha10"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
@@ -82,7 +82,7 @@ object Versions {
     const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.15.2"
-    const val coil = "3.0.0-alpha10"
+    const val coil = "3.0.0-rc01"
     const val colormath = "3.6.0"
 
     object compose {
@@ -96,8 +96,8 @@ object Versions {
             const val navigation = "2.8.0-alpha10"
         }
 
-        const val plugin = "1.7.0-rc01"
-        const val runtime = "1.7.0-rc01"
+        const val plugin = "1.7.0"
+        const val runtime = "1.7.0"
     }
 
     const val cronetEmbedded = "119.6045.31"
@@ -120,7 +120,7 @@ object Versions {
     }
 
     const val graphQlJava = "22.3"
-    const val htmlConverter = "0.9.5"
+    const val htmlConverter = "1.0.2"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.10.0"
     const val jackson = "2.18.0"
@@ -139,29 +139,26 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.1.0-Beta1"
+        const val core = "2.1.0-Beta2"
         const val coroutines = "1.9.0"
         const val datetime = "0.6.1"
         const val io = "0.5.4"
-        const val ksp = "2.1.0-Beta1-1.0.25"
+        const val ksp = "2.1.0-Beta2-1.0.25"
         const val serialization = "1.7.3"
     }
 
     const val kotlinInject = "0.7.2"
     const val kotlinPoet = "1.15.3"
-
-    // TODO: Versions after 2.3.4 don't support changing Dispatcher and break instrumentation tests
-    // TODO: 3.0.0-rc-1 crashes on Android at start up
-    const val ktor = "3.0.0-beta-2"
+    const val ktor = "3.0.0"
     const val ksoup = "0.1.9"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.34"
+    const val manifoldGraphql = "2024.1.36"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.27.0-b02"
+    const val multiplatformMarkdown = "0.27.0-rc02"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "6.3.0"
     const val okhttp = "5.0.0-alpha.14"
@@ -171,7 +168,7 @@ object Versions {
     const val statelyConcurrentCollections = "2.1.0"
     const val unityAds = "4.12.3"
     const val uriKmp = "0.0.18"
-    const val xmlUtil = "0.90.2-beta1"
+    const val xmlUtil = "0.90.2"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
