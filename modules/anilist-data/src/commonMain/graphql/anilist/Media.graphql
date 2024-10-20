@@ -244,7 +244,7 @@ query MediaDetails($mediaId: Int!) {
             }
             edges {
                 id
-                relationType
+                relationType(version: 2)
                 node {
                     ...MediaPreview
                 }
