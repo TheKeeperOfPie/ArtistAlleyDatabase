@@ -18,7 +18,7 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
-    val androidTools = "31.8.0-alpha07"
+    val androidTools = "31.8.0-alpha08"
     debugCompileOnly("com.android.tools.emulator:proto:$androidTools")
     debugCompileOnly("com.android.tools.utp:utp-common:$androidTools")
     debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:$androidTools")
@@ -55,4 +55,16 @@ dependencies {
     debugCompileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")
     debugCompileOnly("org.codehaus.groovy:groovy-test:$groovyVersion")
     debugCompileOnly("org.codehaus.groovy:groovy-xml:$groovyVersion")
+    debugCompileOnly("org.apache:apache:3")
+    debugCompileOnly("org.eclipse.jetty:jetty-client:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty:jetty-http:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty:jetty-io:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty:jetty-project:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty:jetty-util:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty:jetty-xml:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty.websocket:websocket-api:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty.websocket:websocket-client:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty.websocket:websocket-common:9.4.19.v20190610")
+    debugCompileOnly("org.eclipse.jetty.websocket:websocket-parent:9.4.19.v20190610")
+    debugCompileOnly("xml-apis:xml-apis:1.3.04")
 }

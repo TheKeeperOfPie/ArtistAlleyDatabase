@@ -44,7 +44,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.8.0-alpha07"
+        const val gradle = "8.8.0-alpha08"
     }
 
     const val androidJunit5 = "1.11.2.0"
@@ -65,7 +65,7 @@ object Versions {
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
-        const val work = "2.10.0-beta01"
+        const val work = "2.10.0-rc01"
     }
 
     const val androidyoutubeplayer = "12.1.1"
@@ -88,7 +88,6 @@ object Versions {
     object compose {
         const val core = "1.7.2"
         const val materialIcons = "1.7.2"
-        const val runtimeTracing = "1.7.0-rc01"
     }
 
     object composeMultiplatform {
@@ -96,8 +95,8 @@ object Versions {
             const val navigation = "2.8.0-alpha10"
         }
 
-        const val plugin = "1.7.0"
-        const val runtime = "1.7.0"
+        const val plugin = "1.8.0-dev1890"
+        const val runtime = "1.8.0-dev1890"
     }
 
     const val cronetEmbedded = "119.6045.31"
@@ -131,7 +130,7 @@ object Versions {
 
     object junit {
         const val four = "4.13.2"
-        const val jupiter = "5.11.2"
+        const val jupiter = "5.11.3"
         const val jupiterAndroid = "1.6.0"
     }
 
@@ -143,7 +142,7 @@ object Versions {
         const val coroutines = "1.9.0"
         const val datetime = "0.6.1"
         const val io = "0.5.4"
-        const val ksp = "2.1.0-Beta2-1.0.25"
+        const val ksp = "2.1.0-Beta2-1.0.26"
         const val serialization = "1.7.3"
     }
 
@@ -152,7 +151,7 @@ object Versions {
     const val ktor = "3.0.0"
     const val ksoup = "0.1.9"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.36"
+    const val manifoldGraphql = "2024.1.37"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
@@ -166,7 +165,7 @@ object Versions {
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
     const val statelyConcurrentCollections = "2.1.0"
-    const val unityAds = "4.12.3"
+    const val unityAds = "4.12.4"
     const val uriKmp = "0.0.18"
     const val xmlUtil = "0.90.2"
 }
@@ -178,6 +177,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
             maven("https://jitpack.io/")
             maven("https://oss.sonatype.org/content/repositories/snapshots")
             maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+            maven("https://maven.pkg.jetbrains.space/public/p/compose/dev/")
             google()
             mavenCentral()
             flatDir { dirs = setOf(rootProject.projectDir.resolve("/libs")) }

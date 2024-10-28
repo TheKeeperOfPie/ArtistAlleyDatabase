@@ -51,7 +51,7 @@ tasks.register("generateVerificationMetadata") {
 
     // TODO: Re-enable test-utils once it's fixed
     dependsOn(subprojects.filter { it.name != "test-utils" }
-        .mapNotNull { it.tasks.findByName("assembleDebug") })
+        .mapNotNull { it.tasks.findByName("assemble") })
     dependsOn("dependencyUpdates")
 
     // https://github.com/autonomousapps/dependency-analysis-gradle-plugin/issues/1185
