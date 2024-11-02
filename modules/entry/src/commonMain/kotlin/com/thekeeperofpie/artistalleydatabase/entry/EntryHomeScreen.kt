@@ -103,6 +103,9 @@ object EntryHomeScreen {
             val density = LocalDensity.current
             val topBarPadding by remember {
                 derivedStateOf {
+                    // Force a snapshot read so that this recomposes
+                    // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
+                    scrollBehavior.state.heightOffset
                     PaddingValues(
                         top = scrollBehavior.state.heightOffsetLimit
                             .takeUnless { it == -Float.MAX_VALUE }

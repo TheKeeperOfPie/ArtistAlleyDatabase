@@ -236,6 +236,9 @@ class BottomNavigationState(private val scrollBehavior: NavigationBarEnterAlways
         val density = LocalDensity.current
         return remember {
             derivedStateOf {
+                // Force a snapshot read so that this recomposes
+                // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
+                scrollBehavior.state.heightOffset
                 scrollBehavior.state.heightOffsetLimit
                     .takeUnless { it == -Float.MAX_VALUE }
                     ?.let { density.run { -it.toDp() } }
