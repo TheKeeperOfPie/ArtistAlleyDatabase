@@ -64,7 +64,7 @@ object TestNetworkController {
 //                graphQlModule()
             }
         }
-        testApplication.start()
+        runBlocking { testApplication.start() }
         testClient = testApplication.client
 
     }

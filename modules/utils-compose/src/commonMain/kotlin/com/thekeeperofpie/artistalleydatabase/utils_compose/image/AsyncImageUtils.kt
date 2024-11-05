@@ -19,8 +19,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import coil3.SingletonImageLoader
 import coil3.compose.AsyncImagePainter
-import coil3.compose.DefaultModelEqualityDelegate
-import coil3.compose.EqualityDelegate
 import coil3.compose.LocalPlatformContext
 import coil3.memory.MemoryCache
 import coil3.request.ImageRequest
@@ -183,7 +181,6 @@ fun CoilImage(
     colorFilter: ColorFilter? = null,
     filterQuality: FilterQuality = DefaultFilterQuality,
     clipToBounds: Boolean = true,
-    modelEqualityDelegate: EqualityDelegate = DefaultModelEqualityDelegate,
 ) = coil3.compose.AsyncImage(
     model = model,
     contentDescription = contentDescription,
@@ -204,6 +201,5 @@ fun CoilImage(
     colorFilter = colorFilter,
     filterQuality = filterQuality,
     clipToBounds = clipToBounds,
-    modelEqualityDelegate = modelEqualityDelegate,
 )
 
