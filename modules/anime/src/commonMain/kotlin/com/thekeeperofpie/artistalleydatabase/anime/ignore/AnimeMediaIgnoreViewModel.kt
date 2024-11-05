@@ -13,6 +13,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.map
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -107,7 +108,12 @@ class AnimeMediaIgnoreViewModel(
                     settings = settings,
                     mediaFilterable = { it.mediaFilterable },
                     copy = { copy(mediaFilterable = it) },
+                    forceShowIgnored = true,
                 )
+                .map {
+                    // Coerce to not ignored so media doesn't render grayed out
+                    it.map { it.copy(mediaFilterable = it.mediaFilterable.copy(ignored = false)) }
+                }
                 .cachedIn(viewModelScope)
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest(content::emit)

@@ -137,11 +137,12 @@ fun <Input : Any> Flow<PagingData<Input>>.applyMediaStatusChanges(
     settings: AnimeSettings,
     mediaFilterable: (Input) -> MediaFilterableData?,
     copy: Input.(MediaFilterableData) -> Input,
+    forceShowIgnored: Boolean = false,
 ) = flatMapLatest { pagingData ->
     combine(
         statusController.allChanges(),
         ignoreController.updates(),
-        settings.mediaFilteringData(),
+        settings.mediaFilteringData(forceShowIgnored),
     ) { statuses, _, filteringData ->
         pagingData.mapNotNull {
             @Suppress("NAME_SHADOWING")
