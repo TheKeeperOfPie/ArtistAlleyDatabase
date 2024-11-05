@@ -301,7 +301,7 @@ class AnimeSearchViewModel(
             LoadState.NotLoading(true),
             LoadState.NotLoading(true),
         ).let { loadStates ->
-            SearchType.values().map {
+            SearchType.entries.map {
                 it to when (it) {
                     SearchType.ANIME,
                     SearchType.MANGA,

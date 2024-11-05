@@ -14,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterCon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import kotlinx.coroutines.CoroutineScope
 
-abstract class AnimeSettingsSortFilterController<FilterParams>(
+abstract class AnimeSettingsSortFilterController<FilterParams : Any>(
     scope: CoroutineScope,
     protected val settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,

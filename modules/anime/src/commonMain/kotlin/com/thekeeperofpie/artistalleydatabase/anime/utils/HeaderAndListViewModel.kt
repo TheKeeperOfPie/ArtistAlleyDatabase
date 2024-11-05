@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryType : Any, SortType : SortOption, FilterParams>(
+abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryType : Any, SortType : SortOption, FilterParams : Any>(
     protected val aniListApi: AuthedAniListApi,
     private val loadingErrorTextRes: StringResource,
 ) : ViewModel() {

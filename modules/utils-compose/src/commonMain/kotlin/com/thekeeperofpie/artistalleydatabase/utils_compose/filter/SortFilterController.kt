@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.debounce
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration.Companion.seconds
 
-abstract class SortFilterController<FilterParams>(scope: CoroutineScope) {
+abstract class SortFilterController<FilterParams : Any>(scope: CoroutineScope) {
     abstract val sections: List<SortFilterSection>
     val state = SortFilterSection.ExpandedState()
 
