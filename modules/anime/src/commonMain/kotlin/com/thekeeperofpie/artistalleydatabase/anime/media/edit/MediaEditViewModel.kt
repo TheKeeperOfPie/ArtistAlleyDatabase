@@ -54,10 +54,10 @@ class MediaEditViewModel(
     private val settings: AnimeSettings,
 ) : ViewModel() {
 
-    val initialParams = MutableStateFlow<MediaEditData.InitialParams?>(null)
+    val initialParams = MutableStateFlow<MediaEditState.InitialParams?>(null)
     private val mediaEntryRequest = MutableStateFlow<MediaRequest?>(null)
 
-    val editData = MediaEditData()
+    val editData = MediaEditState()
 
     private val rawScore = MutableSharedFlow<Double?>(1, 1)
     val scoreFormat = MutableStateFlow(ScoreFormat.POINT_100)
@@ -209,7 +209,7 @@ class MediaEditViewModel(
         maxProgressVolumes: Int?,
         loading: Boolean = false,
     ) {
-        initialParams.value = MediaEditData.InitialParams(
+        initialParams.value = MediaEditState.InitialParams(
             mediaId = mediaId,
             coverImage = coverImage,
             title = title,

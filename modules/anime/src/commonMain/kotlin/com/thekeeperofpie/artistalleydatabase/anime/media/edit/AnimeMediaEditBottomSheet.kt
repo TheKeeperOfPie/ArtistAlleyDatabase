@@ -140,11 +140,39 @@ object AnimeMediaEditBottomSheet {
         modifier: Modifier = Modifier,
         onDismiss: () -> Unit,
     ) {
+        val initialParams by viewModel.initialParams.collectAsState()
+        val scoreFormat by viewModel.scoreFormat.collectAsState()
+        AnimeMediaEditBottomSheet(
+            initialParams = { initialParams },
+            editData = { viewModel.editData },
+            onDismiss = onDismiss,
+            onClickSave = viewModel::onClickSave,
+            onClickDelete = viewModel::onClickDelete,
+            onStatusChange = viewModel::onStatusChange,
+            scoreFormat = { scoreFormat },
+            onDateChange = viewModel::onDateChange,
+            modifier = modifier,
+        )
+    }
+
+    @Composable
+    operator fun invoke(
+        initialParams: () -> MediaEditState.InitialParams?,
+        editData: () -> MediaEditState,
+        onDismiss: () -> Unit,
+        onClickSave: () -> Unit,
+        onClickDelete: () -> Unit,
+        onStatusChange: (MediaListStatus?) -> Unit,
+        scoreFormat: () -> ScoreFormat,
+        onDateChange: (start: Boolean, Long?) -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
         var showDelete by remember { mutableStateOf(false) }
 
         HorizontalDivider()
 
-        val initialParams by viewModel.initialParams.collectAsState()
+        val initialParams = initialParams()
+        val editData = editData()
         Column(modifier = modifier) {
             Column(
                 Modifier
@@ -167,8 +195,11 @@ object AnimeMediaEditBottomSheet {
                         Column {
                             SharedTransitionKeyScope("media_edit_bottom_sheet") {
                                 Form(
-                                    viewModel = viewModel,
                                     initialParams = initialParams,
+                                    editData = editData,
+                                    onStatusChange = onStatusChange,
+                                    scoreFormat = scoreFormat,
+                                    onDateChange = onDateChange,
                                 )
                             }
                         }
@@ -187,7 +218,7 @@ object AnimeMediaEditBottomSheet {
                 if (initialParams?.id != null) {
                     TextButton(onClick = { showDelete = true }) {
                         Crossfade(
-                            targetState = viewModel.editData.deleting,
+                            targetState = editData.deleting,
                             label = "Media edit delete indicator crossfade"
                         ) {
                             if (it) {
@@ -205,9 +236,9 @@ object AnimeMediaEditBottomSheet {
                     }
                 }
 
-                TextButton(onClick = viewModel::onClickSave) {
+                TextButton(onClick = onClickSave) {
                     Crossfade(
-                        targetState = viewModel.editData.saving,
+                        targetState = editData.saving,
                         label = "Media edit save indicator crossfade"
                     ) {
                         if (it) {
@@ -233,7 +264,7 @@ object AnimeMediaEditBottomSheet {
                 confirmButton = {
                     TextButton(onClick = {
                         showDelete = false
-                        viewModel.onClickDelete()
+                        onClickDelete()
                     }) {
                         Text(stringResource(UtilsStrings.yes))
                     }
@@ -244,23 +275,23 @@ object AnimeMediaEditBottomSheet {
                     }
                 },
             )
-        } else if (viewModel.editData.showConfirmClose) {
+        } else if (editData.showConfirmClose) {
             AlertDialog(
-                onDismissRequest = { viewModel.editData.showConfirmClose = false },
+                onDismissRequest = { editData.showConfirmClose = false },
                 title = { Text(stringResource(Res.string.anime_media_edit_confirm_close_title)) },
                 text = { Text(stringResource(Res.string.anime_media_edit_confirm_close_text)) },
                 confirmButton = {
                     TextButton(onClick = {
-                        viewModel.editData.showConfirmClose = false
-                        viewModel.onClickSave()
+                        editData.showConfirmClose = false
+                        onClickSave()
                     }) {
                         Text(stringResource(Res.string.anime_media_edit_confirm_delete_save_button))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = {
-                        viewModel.editData.showConfirmClose = false
-                        viewModel.editData.showing = false
+                        editData.showConfirmClose = false
+                        editData.showing = false
                         onDismiss()
                     }) {
                         Text(stringResource(Res.string.anime_media_edit_confirm_delete_exit_button))
@@ -272,13 +303,15 @@ object AnimeMediaEditBottomSheet {
 
     @Composable
     private fun ColumnScope.Form(
-        viewModel: MediaEditViewModel,
-        initialParams: MediaEditData.InitialParams?,
+        initialParams: MediaEditState.InitialParams?,
+        editData: MediaEditState,
+        onStatusChange: (MediaListStatus?) -> Unit,
+        scoreFormat: () -> ScoreFormat,
+        onDateChange: (start: Boolean, Long?) -> Unit,
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
         val mediaId = initialParams?.mediaId
         val coverImage = initialParams?.coverImage
-        val editData = viewModel.editData
         if (mediaId != null && editData.showing) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -360,7 +393,7 @@ object AnimeMediaEditBottomSheet {
                 )
             },
             textForValue = { stringResource(it.toTextRes(isAnime)) },
-            onSelectItem = viewModel::onStatusChange,
+            onSelectItem = onStatusChange,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
 
@@ -397,7 +430,7 @@ object AnimeMediaEditBottomSheet {
         }
 
         ScoreSection(
-            format = { viewModel.scoreFormat.collectAsState().value },
+            format = scoreFormat,
             score = { editData.score },
             onScoreChange = { editData.score = it },
         )
@@ -407,14 +440,14 @@ object AnimeMediaEditBottomSheet {
             startDate = editData.startDate,
             endDate = editData.endDate,
             onRequestDatePicker = { startEndDateShown = it },
-            onDateChange = viewModel::onDateChange,
+            onDateChange = onDateChange,
         )
 
         if (startEndDateShown != null) {
             StartEndDateDialog(
                 shownForStartDate = startEndDateShown,
                 onShownForStartDateChange = { startEndDateShown = it },
-                onDateChange = viewModel::onDateChange,
+                onDateChange = onDateChange,
             )
         }
 
@@ -750,7 +783,7 @@ object AnimeMediaEditBottomSheet {
 
     @Composable
     private fun ColumnScope.ScoreSection(
-        format: @Composable () -> ScoreFormat,
+        format: () -> ScoreFormat,
         score: () -> String,
         onScoreChange: (String) -> Unit,
     ) {

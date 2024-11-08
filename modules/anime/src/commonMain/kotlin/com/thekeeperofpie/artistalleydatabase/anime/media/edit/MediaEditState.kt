@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,7 +13,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.SimpleResult
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.StringResource
 
-class MediaEditData {
+@Stable
+class MediaEditState {
     var status by mutableStateOf<MediaListStatus?>(null)
     var score by mutableStateOf("")
     var progress by mutableStateOf("")

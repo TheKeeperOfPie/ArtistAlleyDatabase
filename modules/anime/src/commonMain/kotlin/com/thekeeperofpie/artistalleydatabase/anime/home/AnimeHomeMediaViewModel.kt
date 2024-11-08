@@ -1,7 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -110,6 +113,19 @@ abstract class AnimeHomeMediaViewModel(
                         .orEmpty()
                 }
             }
+        }
+    }
+
+    @Composable
+    fun currentMediaState(): CurrentMediaState {
+        val previousSize by currentMediaPreviousSize.collectAsState()
+        return remember(currentMedia, previousSize) {
+            CurrentMediaState(
+                result = currentMedia,
+                headerTextRes = currentHeaderTextRes,
+                mediaType = mediaType,
+                previousSize = previousSize,
+            )
         }
     }
 
@@ -405,5 +421,12 @@ abstract class AnimeHomeMediaViewModel(
         val titleRes: StringResource,
         val viewAllRoute: AnimeDestination,
         val list: List<HomeMedia?>? = null,
+    )
+
+    data class CurrentMediaState(
+        val result: LoadingResult<List<UserMediaListController.MediaEntry>>,
+        val headerTextRes: StringResource,
+        val mediaType: MediaType,
+        val previousSize: Int,
     )
 }

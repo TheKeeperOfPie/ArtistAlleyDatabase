@@ -48,6 +48,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -81,7 +82,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
-import androidx.paging.PagingData
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedule_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_icon_content_description
@@ -101,6 +101,8 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.anilist.type.RecommendationRating
+import com.anilist.type.ScoreFormat
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
@@ -113,16 +115,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterable
+import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsRow
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationCard
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
@@ -163,7 +168,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefr
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
-import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -206,51 +210,129 @@ object AnimeHomeScreen {
             mutableStateOf(viewModel.preferredMediaType == MediaType.ANIME)
         }
         val mediaViewModel = mediaViewModel(selectedIsAnime)
+        val unlocked by viewModel.unlocked.collectAsState()
+        val viewer by viewModel.viewer.collectAsState()
+        val currentMediaState = mediaViewModel.currentMediaState()
+        val news by viewModel.newsController.newsDateDescending.collectAsState()
+        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
+        val initialParams by editViewModel.initialParams.collectAsState()
+        val scoreFormat by editViewModel.scoreFormat.collectAsState()
+        AnimeHomeScreen(
+            upIconOption = upIconOption,
+            scrollStateSaver = scrollStateSaver,
+            bottomNavigationState = bottomNavigationState,
+            selectedIsAnime = selectedIsAnime,
+            onSelectedIsAnimeChanged = { selectedIsAnime = it },
+            onRefresh = {
+                viewModel.refresh()
+                mediaViewModel.refresh()
+            },
+            activity = viewModel.activity.collectAsLazyPagingItems(),
+            recommendations = viewModel.recommendations.collectAsLazyPagingItems(),
+            reviews = mediaViewModel.reviews.collectAsLazyPagingItems(),
+            news = { news },
+            homeEntry = { mediaViewModel.entry },
+            currentMedia = { mediaViewModel.currentMedia },
+            currentMediaState = { currentMediaState },
+            suggestions = mediaViewModel.suggestions,
+            notificationsUnreadCount = { viewModel.notificationsController.unreadCount },
+            unlocked = { unlocked },
+            viewer = { viewer },
+            onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+            onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
+            editData = editViewModel.editData,
+            onEditSheetValueChange = editViewModel::onEditSheetValueChange,
+            onHide = editViewModel::hide,
+            onAttemptDismiss = editViewModel::attemptDismiss,
+            initialParams = { initialParams },
+            onClickSave = editViewModel::onClickSave,
+            onClickDelete = editViewModel::onClickDelete,
+            onStatusChange = editViewModel::onStatusChange,
+            scoreFormat = { scoreFormat },
+            onDateChange = editViewModel::onDateChange,
+            onClickListEdit = editViewModel::initialize,
+            onClickIncrementProgress = editViewModel::incrementProgress,
+        )
+    }
 
-        val activity = viewModel.activity.collectAsLazyPagingItems()
-        val recommendations = viewModel.recommendations.collectAsLazyPagingItems()
-        val reviews = mediaViewModel.reviews.collectAsLazyPagingItems()
+    @Composable
+    operator fun invoke(
+        upIconOption: UpIconOption?,
+        scrollStateSaver: ScrollStateSaver,
+        bottomNavigationState: BottomNavigationState?,
+        selectedIsAnime: Boolean,
+        onSelectedIsAnimeChanged: (Boolean) -> Unit,
+        onRefresh: () -> Unit,
+        activity: LazyPagingItems<ActivityEntry>,
+        recommendations: LazyPagingItems<RecommendationEntry>,
+        reviews: LazyPagingItems<ReviewEntry>,
+        news: () -> LoadingResult<List<AnimeNewsEntry<*>>>,
+        homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
+        currentMedia: () -> LoadingResult<List<UserMediaListController.MediaEntry>>,
+        currentMediaState: () -> CurrentMediaState,
+        suggestions: List<Pair<StringResource, AnimeDestination>>,
+        notificationsUnreadCount: () -> Int,
+        unlocked: () -> Boolean,
+        viewer: () -> AniListViewer?,
+        onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+        onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
+        editData: MediaEditState,
+        onEditSheetValueChange: (SheetValue) -> Boolean,
+        onHide: () -> Unit,
+        onAttemptDismiss: () -> Boolean,
+        initialParams: () -> MediaEditState.InitialParams?,
+        onClickSave: () -> Unit,
+        onClickDelete: () -> Unit,
+        onStatusChange: (MediaListStatus?) -> Unit,
+        scoreFormat: () -> ScoreFormat,
+        onDateChange: (start: Boolean, Long?) -> Unit,
+        onClickListEdit: (MediaNavigationData) -> Unit,
+        onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
+    ) {
         val refreshing by remember {
             derivedStateOf {
-                viewModel.newsController.newsDateDescending == null
+                news().loading
                         || activity.loadState.refresh == LoadState.Loading
                         || recommendations.loadState.refresh == LoadState.Loading
                         || reviews.loadState.refresh == LoadState.Loading
-                        || mediaViewModel.entry.loading
-                        || mediaViewModel.currentMedia.loading
+                        || homeEntry().loading
+                        || currentMedia().loading
             }
         }
         val pullRefreshState = rememberPullRefreshState(
             refreshing = refreshing,
-            onRefresh = {
-                viewModel.refresh()
-                mediaViewModel.refresh()
-            }
+            onRefresh = onRefresh,
         )
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
-            modifier = Modifier
-                .conditionallyNonNull(bottomNavigationState) {
-                    nestedScroll(it.nestedScrollConnection)
-                }
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
-            viewModel = editViewModel,
+            editData = editData,
+            onEditSheetValueChange = onEditSheetValueChange,
+            onHide = onHide,
+            onAttemptDismiss = onAttemptDismiss,
+            initialParams = initialParams,
+            onClickSave = onClickSave,
+            onClickDelete = onClickDelete,
+            onStatusChange = onStatusChange,
+            scoreFormat = scoreFormat,
+            onDateChange = onDateChange,
             topBar = {
-                val unlocked by viewModel.unlocked.collectAsState()
-                val viewer by viewModel.viewer.collectAsState()
                 TopBar(
                     scrollBehavior = scrollBehavior,
                     upIconOption = upIconOption,
                     selectedIsAnime = selectedIsAnime,
-                    onSelectedIsAnimeChange = { selectedIsAnime = it },
-                    unlocked = { unlocked },
-                    viewer = { viewer },
-                    unreadCount = { viewModel.notificationsController.unreadCount },
+                    onSelectedIsAnimeChange = onSelectedIsAnimeChanged,
+                    unlocked = unlocked,
+                    viewer = viewer,
+                    unreadCount = notificationsUnreadCount,
                 )
             },
-            bottomNavigationState = bottomNavigationState
+            bottomNavigationState = bottomNavigationState,
+            modifier = Modifier
+                .conditionallyNonNull(bottomNavigationState) {
+                    nestedScroll(it.nestedScrollConnection)
+                }
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             Box(
                 modifier = Modifier
@@ -260,11 +342,18 @@ object AnimeHomeScreen {
                 Content(
                     scrollState = scrollStateSaver.scrollState(),
                     bottomNavBarPadding = bottomNavigationState?.bottomNavBarPadding() ?: 0.dp,
-                    viewModel = viewModel,
-                    mediaViewModel = mediaViewModel,
-                    editViewModel = editViewModel,
+                    viewer = viewer,
+                    news = news,
+                    homeEntry = homeEntry,
+                    currentMediaState = currentMediaState,
+                    suggestions = suggestions,
+                    onClickListEdit = onClickListEdit,
+                    onClickIncrementProgress = onClickIncrementProgress,
                     recommendations = recommendations,
                     reviews = reviews,
+                    activity = activity,
+                    onActivityStatusUpdate = onActivityStatusUpdate,
+                    onUserRecommendationRating = onUserRecommendationRating,
                 )
 
                 PullRefreshIndicator(
@@ -383,11 +472,18 @@ object AnimeHomeScreen {
     private fun Content(
         scrollState: ScrollState,
         bottomNavBarPadding: Dp,
-        viewModel: AnimeHomeViewModel,
-        mediaViewModel: AnimeHomeMediaViewModel,
-        editViewModel: MediaEditViewModel,
+        viewer: () -> AniListViewer?,
+        news: () -> LoadingResult<List<AnimeNewsEntry<*>>>,
+        homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
+        activity: LazyPagingItems<ActivityEntry>,
+        currentMediaState: () -> CurrentMediaState,
+        suggestions: List<Pair<StringResource, AnimeDestination>>,
+        onClickListEdit: (MediaNavigationData) -> Unit,
+        onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         recommendations: LazyPagingItems<RecommendationEntry>,
+        onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
         reviews: LazyPagingItems<ReviewEntry>,
+        onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     ) {
         Column(
             modifier = Modifier
@@ -397,67 +493,46 @@ object AnimeHomeScreen {
         ) {
             val configuration = LocalWindowConfiguration.current
             val screenWidthDp = configuration.screenWidthDp
-            val pageSize = remember {
+            val pageSize = remember(screenWidthDp) {
                 PageSize.Fixed(420.dp.coerceAtMost(screenWidthDp - 32.dp))
             }
-            val newsDateDescending by viewModel.newsController.newsDateDescending.collectAsState()
-            NewsRow(result = newsDateDescending, pageSize = pageSize)
+            NewsRow(result = news, pageSize = pageSize)
 
-            val viewer by viewModel.viewer.collectAsState()
             Activities(
                 viewer = viewer,
-                data = viewModel.activity,
+                activities = activity,
                 pageSize = pageSize,
-                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                onClickListEdit = editViewModel::initialize,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+                onClickListEdit = onClickListEdit,
             )
 
             CurrentMediaRow(
-                mediaViewModel = mediaViewModel,
+                currentMediaState = currentMediaState,
                 viewer = viewer,
-                onClickListEdit = editViewModel::initialize,
-                onClickIncrementProgress = editViewModel::incrementProgress,
+                onClickListEdit = onClickListEdit,
+                onClickIncrementProgress = onClickIncrementProgress,
             )
 
             Recommendations(
-                viewModel = viewModel,
-                editViewModel = editViewModel,
                 viewer = viewer,
                 recommendations = recommendations,
+                onUserRecommendationRating = onUserRecommendationRating,
+                onClickListEdit = onClickListEdit,
                 pageSize = pageSize,
             )
 
-            val selectedItemTracker = remember { SelectedItemTracker() }
-            val contentPadding = PaddingValues(
-                start = 16.dp,
-                end = (screenWidthDp - MEDIA_ROW_IMAGE_WIDTH).let {
-                    it - 16.dp - MEDIA_ROW_IMAGE_WIDTH
-                }.coerceAtLeast(0.dp),
-            )
-            val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
-                .coerceAtLeast(1) + 1
-            mediaViewModel.entry.result?.lists?.forEach {
-                SharedTransitionKeyScope("anime_home_media_list_row_${it.id}") {
-                    MediaRow(
-                        data = it,
-                        viewer = viewer,
-                        onClickListEdit = editViewModel::initialize,
-                        selectedItemTracker = selectedItemTracker,
-                        contentPadding = contentPadding,
-                        placeholderCount = placeholderCount,
-                    )
-                }
-            }
+            MediaRows(homeEntry = homeEntry, viewer = viewer, onClickListEdit = onClickListEdit)
 
             Reviews(
                 viewer = viewer,
                 reviews = reviews,
                 pageSize = pageSize,
-                onClickListEdit = editViewModel::initialize,
+                onClickListEdit = onClickListEdit,
             )
 
             Suggestions(
-                mediaViewModel = mediaViewModel,
+                mediaType = currentMediaState().mediaType,
+                suggestions = suggestions,
             )
 
             Spacer(modifier = Modifier.height(32.dp + bottomNavBarPadding))
@@ -466,8 +541,8 @@ object AnimeHomeScreen {
 
     @Composable
     private fun Activities(
-        viewer: AniListViewer?,
-        data: Flow<PagingData<ActivityEntry>>,
+        viewer: () -> AniListViewer?,
+        activities: LazyPagingItems<ActivityEntry>,
         pageSize: PageSize,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -479,7 +554,7 @@ object AnimeHomeScreen {
 
         ActivityRow(
             viewer = viewer,
-            data = data,
+            activities = activities,
             pageSize = pageSize,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
@@ -488,13 +563,12 @@ object AnimeHomeScreen {
 
     @Composable
     private fun ActivityRow(
-        viewer: AniListViewer?,
-        data: Flow<PagingData<ActivityEntry>>,
+        viewer: () -> AniListViewer?,
+        activities: LazyPagingItems<ActivityEntry>,
         pageSize: PageSize,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
-        val activities = data.collectAsLazyPagingItems()
         val pagerState = rememberPagerState(data = activities, placeholderCount = 3)
         HorizontalPager(
             state = pagerState,
@@ -507,7 +581,7 @@ object AnimeHomeScreen {
             val entry = activities.getOrNull(it)
             SharedTransitionKeyScope("anime_home_activity_${entry?.activityId?.valueId}") {
                 ActivitySmallCard(
-                    viewer = viewer,
+                    viewer = viewer(),
                     activity = entry?.activity,
                     mediaEntry = entry?.media,
                     entry = entry,
@@ -523,20 +597,20 @@ object AnimeHomeScreen {
      */
     @Composable
     private fun ColumnScope.CurrentMediaRow(
-        mediaViewModel: AnimeHomeMediaViewModel,
-        viewer: AniListViewer?,
+        currentMediaState: () -> CurrentMediaState,
+        viewer: () -> AniListViewer?,
         onClickListEdit: (MediaNavigationData) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
     ) {
-        val media = mediaViewModel.currentMedia.result
+        val currentMediaState = currentMediaState()
+        val media = currentMediaState.result.result
         if (media?.isEmpty() == true) return
-        val headerTextRes = mediaViewModel.currentHeaderTextRes
         RowHeader(
-            titleRes = headerTextRes,
+            titleRes = currentMediaState.headerTextRes,
             viewAllRoute = AnimeDestination.UserList(
                 userId = null,
                 userName = null,
-                mediaType = mediaViewModel.mediaType,
+                mediaType = currentMediaState.mediaType,
                 mediaListStatus = MediaListStatus.CURRENT,
             ),
         )
@@ -544,8 +618,8 @@ object AnimeHomeScreen {
         SharedTransitionKeyScope("anime_home_current_media_row") {
             CurrentMediaRow(
                 viewer = viewer,
-                mediaResult = mediaViewModel::currentMedia,
-                currentMediaPreviousSize = mediaViewModel.currentMediaPreviousSize.collectAsState().value,
+                mediaResult = { currentMediaState.result },
+                currentMediaPreviousSize = currentMediaState.previousSize,
                 onClickListEdit = onClickListEdit,
                 onClickIncrementProgress = onClickIncrementProgress,
             )
@@ -554,7 +628,7 @@ object AnimeHomeScreen {
 
     @Composable
     private fun CurrentMediaRow(
-        viewer: AniListViewer?,
+        viewer: () -> AniListViewer?,
         mediaResult: () -> LoadingResult<List<UserMediaListController.MediaEntry>>,
         currentMediaPreviousSize: Int,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -601,7 +675,7 @@ object AnimeHomeScreen {
     @Composable
     private fun MediaRow(
         data: AnimeHomeDataEntry.RowData,
-        viewer: AniListViewer?,
+        viewer: () -> AniListViewer?,
         onClickListEdit: (MediaNavigationData) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         contentPadding: PaddingValues,
@@ -623,7 +697,7 @@ object AnimeHomeScreen {
         ) {
             val entry = entries?.getOrNull(it)
             AnimeMediaLargeCard(
-                viewer = viewer,
+                viewer = viewer(),
                 entry = entry,
                 shouldTransitionCoverImageIfUsed = false,
             )
@@ -661,7 +735,7 @@ object AnimeHomeScreen {
                 MediaCard(
                     media = media,
                     mediaFilterable = item?.mediaFilterable,
-                    ignored = item?.ignored ?: false,
+                    ignored = item?.ignored == true,
                     viewer = viewer,
                     selected = remember {
                         derivedStateOf {
@@ -687,7 +761,7 @@ object AnimeHomeScreen {
     @Composable
     private fun CurrentMediaCard(
         entry: UserMediaListController.MediaEntry?,
-        viewer: AniListViewer?,
+        viewer: () -> AniListViewer?,
         onClickListEdit: (MediaPreview) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         modifier: Modifier = Modifier,
@@ -748,7 +822,7 @@ object AnimeHomeScreen {
     private fun ColumnScope.CurrentMediaCardContent(
         entry: UserMediaListController.MediaEntry?,
         sharedTransitionKey: SharedTransitionKey,
-        viewer: AniListViewer?,
+        viewer: () -> AniListViewer?,
         textColor: Color?,
         onClickListEdit: (MediaPreview) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
@@ -775,6 +849,7 @@ object AnimeHomeScreen {
                 contentScale = ContentScale.Crop,
             )
 
+            val viewer = viewer()
             if (viewer != null && media != null) {
                 val maxProgress = MediaUtils.maxProgress(media)
                 MediaListQuickEditIconButton(
@@ -844,7 +919,7 @@ object AnimeHomeScreen {
         media: HomeMedia?,
         mediaFilterable: MediaFilterable?,
         ignored: Boolean,
-        viewer: AniListViewer?,
+        viewer: () -> AniListViewer?,
         selected: Boolean,
         onClickListEdit: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
@@ -921,7 +996,7 @@ object AnimeHomeScreen {
     private fun MediaCardContent(
         media: HomeMedia?,
         mediaFilterable: MediaFilterable?,
-        viewer: AniListViewer?,
+        viewer: () -> AniListViewer?,
         textColor: Color?,
         title: String?,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -930,7 +1005,7 @@ object AnimeHomeScreen {
         Box(modifier = Modifier.recomposeHighlighter()) {
             var showTitle by remember(media) { mutableStateOf(false) }
 
-            // TODO: Size constaints removed because it doesn't work on desktop
+            // TODO: Size constraints removed because it doesn't work on desktop
             CoilImage(
                 state = coverImageState,
                 model = coverImageState.request().build(),
@@ -961,6 +1036,7 @@ object AnimeHomeScreen {
                 )
             }
 
+            val viewer = viewer()
             if (viewer != null && media != null && mediaFilterable != null) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
@@ -1004,10 +1080,10 @@ object AnimeHomeScreen {
 
     @Composable
     private fun Recommendations(
-        viewModel: AnimeHomeViewModel,
-        editViewModel: MediaEditViewModel,
-        viewer: AniListViewer?,
+        viewer: () -> AniListViewer?,
         recommendations: LazyPagingItems<RecommendationEntry>,
+        onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
+        onClickListEdit: (MediaNavigationData) -> Unit,
         pageSize: PageSize,
     ) {
         RowHeader(
@@ -1027,13 +1103,44 @@ object AnimeHomeScreen {
             val entry = recommendations.getOrNull(it)
             SharedTransitionKeyScope("anime_home_recommendation_card_${entry?.id}") {
                 RecommendationCard(
-                    viewer = viewer,
+                    viewer = viewer(),
                     user = entry?.user,
                     media = entry?.media,
                     mediaRecommendation = entry?.mediaRecommendation,
-                    onClickListEdit = editViewModel::initialize,
+                    onClickListEdit = onClickListEdit,
                     recommendation = entry?.data,
-                    onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
+                    onUserRecommendationRating = onUserRecommendationRating,
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun MediaRows(
+        homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
+        viewer: () -> AniListViewer?,
+        onClickListEdit: (MediaNavigationData) -> Unit,
+    ) {
+        val selectedItemTracker = remember { SelectedItemTracker() }
+        val configuration = LocalWindowConfiguration.current
+        val screenWidthDp = configuration.screenWidthDp
+        val contentPadding = PaddingValues(
+            start = 16.dp,
+            end = (screenWidthDp - MEDIA_ROW_IMAGE_WIDTH).let {
+                it - 16.dp - MEDIA_ROW_IMAGE_WIDTH
+            }.coerceAtLeast(0.dp),
+        )
+        val placeholderCount = (screenWidthDp / (MEDIA_ROW_IMAGE_WIDTH + 16.dp)).toInt()
+            .coerceAtLeast(1) + 1
+        homeEntry().result?.lists?.forEach {
+            SharedTransitionKeyScope("anime_home_media_list_row_${it.id}") {
+                MediaRow(
+                    data = it,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    selectedItemTracker = selectedItemTracker,
+                    contentPadding = contentPadding,
+                    placeholderCount = placeholderCount,
                 )
             }
         }
@@ -1041,7 +1148,7 @@ object AnimeHomeScreen {
 
     @Composable
     private fun Reviews(
-        viewer: AniListViewer?,
+        viewer: () -> AniListViewer?,
         reviews: LazyPagingItems<ReviewEntry>,
         pageSize: PageSize,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -1065,7 +1172,7 @@ object AnimeHomeScreen {
             SharedTransitionKeyScope("anime_home_review_${entry?.review?.id}") {
                 val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
                 ReviewCard(
-                    viewer = viewer,
+                    viewer = viewer(),
                     review = entry?.review,
                     media = entry?.media,
                     onClick = { navigationCallback, coverImageState ->
@@ -1092,7 +1199,8 @@ object AnimeHomeScreen {
 
     @Composable
     private fun Suggestions(
-        mediaViewModel: AnimeHomeMediaViewModel,
+        mediaType: MediaType,
+        suggestions: List<Pair<StringResource, AnimeDestination>>,
     ) {
         RowHeader(
             titleRes = Res.string.anime_home_suggestions_header,
@@ -1108,8 +1216,8 @@ object AnimeHomeScreen {
                 .recomposeHighlighter()
         ) {
             items(
-                items = mediaViewModel.suggestions,
-                key = { "${mediaViewModel.mediaType}-suggestion-${it.second}" },
+                items = suggestions,
+                key = { "${mediaType}-suggestion-${it.second}" },
                 contentType = { "suggestion" },
             ) {
                 SuggestionChip(

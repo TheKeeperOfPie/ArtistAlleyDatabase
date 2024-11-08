@@ -51,7 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun NewsRow(
-    result: LoadingResult<List<AnimeNewsEntry<*>>>,
+    result: () -> LoadingResult<List<AnimeNewsEntry<*>>>,
     pageSize: PageSize,
 ) {
     NavigationHeader(
@@ -60,7 +60,7 @@ fun NewsRow(
         viewAllContentDescriptionTextRes = Res.string.anime_news_row_view_all_content_description,
     )
 
-    val news = result.result
+    val news = result().result
     val itemCount = news?.size ?: 3
     if (itemCount == 0) return
     val pagerState = rememberPagerState(pageCount = { itemCount })
