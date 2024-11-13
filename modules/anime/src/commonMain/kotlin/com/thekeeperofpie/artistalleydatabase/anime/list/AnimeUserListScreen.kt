@@ -155,7 +155,7 @@ object AnimeUserListScreen {
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 val error = entry.error
-                val errorText = error?.first?.let { stringResource(it) }
+                val errorText = error?.message()
                 LaunchedEffect(error) {
                     if (errorText != null) {
                         scope.launch {
@@ -193,8 +193,8 @@ object AnimeUserListScreen {
                         when {
                             !entry.loading && !entry.success && !hasItems ->
                                 AnimeMediaListScreen.Error(
-                                    errorTextRes = error?.first,
-                                    exception = error?.second,
+                                    error = error?.message,
+                                    exception = error?.throwable,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             else -> {

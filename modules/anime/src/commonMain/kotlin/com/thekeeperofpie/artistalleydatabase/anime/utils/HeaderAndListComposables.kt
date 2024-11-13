@@ -103,7 +103,7 @@ fun <ListEntryType : Any> HeaderAndMediaListScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val error = viewModel.entry.error
-    val errorString = error?.first?.let { stringResource(it) }
+    val errorString = error?.message()
     LaunchedEffect(errorString) {
         if (errorString != null) {
             snackbarHostState.showSnackbar(

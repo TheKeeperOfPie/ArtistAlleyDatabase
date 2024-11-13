@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
@@ -58,6 +59,14 @@ object AnimeMediaListScreen {
     @Composable
     fun Error(
         modifier: Modifier = Modifier,
+        exception: Throwable? = null,
+    ) {
+        Error(modifier = modifier, errorTextRes = null, exception)
+    }
+
+    @Composable
+    fun Error(
+        modifier: Modifier = Modifier,
         errorTextRes: StringResource? = null,
         exception: Throwable? = null,
     ) {
@@ -72,12 +81,50 @@ object AnimeMediaListScreen {
     }
 
     @Composable
+    fun Error(
+        modifier: Modifier = Modifier,
+        error: Either<String, StringResource>? = null,
+        exception: Throwable? = null,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier
+                .wrapContentSize()
+                .verticalScroll(rememberScrollState()),
+        ) {
+            ErrorContent(error, exception)
+        }
+    }
+
+    @Composable
     fun ErrorContent(
         errorTextRes: StringResource? = null,
         exception: Throwable? = null,
+    ) = ErrorContent(
+        errorText = stringResource(errorTextRes ?: Res.string.anime_media_list_error_loading),
+        exception = exception,
+    )
+
+    @Composable
+    fun ErrorContent(
+        error: Either<String, StringResource>? = null,
+        exception: Throwable? = null,
+    ) = ErrorContent(
+        errorText = when (error) {
+            is Either.Left -> error.value
+            is Either.Right -> stringResource(error.value)
+            null -> stringResource(Res.string.anime_media_list_error_loading)
+        },
+        exception = exception,
+    )
+
+    @Composable
+    fun ErrorContent(
+        errorText: String,
+        exception: Throwable? = null,
     ) {
         Text(
-            text = stringResource(errorTextRes ?: Res.string.anime_media_list_error_loading),
+            text = errorText,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
         )

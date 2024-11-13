@@ -138,11 +138,14 @@ import com.anilist.type.StudioSort
 import com.anilist.type.ThreadSort
 import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Mutation
+import com.apollographql.apollo3.api.Operation
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.cache.normalized.FetchPolicy
 import com.apollographql.apollo3.cache.normalized.fetchPolicy
+import com.apollographql.apollo3.exception.DefaultApolloException
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -182,6 +185,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
+import java.io.IOException
 import kotlin.time.Duration.Companion.days
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -616,11 +620,12 @@ open class AuthedAniListApi(
 
     open suspend fun homeAnime(
         perPage: Int = 10,
-    ): HomeAnimeQuery.Data {
+        skipCache: Boolean,
+    ): LoadingResult<HomeAnimeQuery.Data> {
         val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
         val nextSeasonYear = AniListUtils.getNextSeasonYear(currentSeasonYear)
         val lastSeasonYear = AniListUtils.getPreviousSeasonYear(currentSeasonYear)
-        return query(
+        return queryLoadingResult(
             HomeAnimeQuery(
                 currentSeason = currentSeasonYear.first,
                 currentYear = currentSeasonYear.second,
@@ -629,15 +634,17 @@ open class AuthedAniListApi(
                 nextSeason = nextSeasonYear.first,
                 nextYear = nextSeasonYear.second,
                 perPage = perPage,
-            )
+            ),
+            skipCache = skipCache,
         )
     }
 
-    open suspend fun homeManga(perPage: Int = 10) = query(
+    open suspend fun homeManga(perPage: Int = 10, skipCache: Boolean) = queryLoadingResult(
         HomeMangaQuery(
             perPage = perPage,
             thisYearStart = "${AniListUtils.getCurrentSeasonYear().second}0000",
-        )
+        ),
+        skipCache = skipCache,
     )
 
     open suspend fun airingSchedule(
@@ -1264,14 +1271,34 @@ open class AuthedAniListApi(
         apolloClient.query(query)
             .fetchPolicy(if (skipCache) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
             .execute()
-            .dataOrThrow()
+            .dataOrError
 
     private suspend fun <Data : Query.Data> queryLoadingResult(
         query: Query<Data>,
         skipCache: Boolean,
-    ) = queryLoadingResult {
+    ): LoadingResult<Data> {
         val fetchPolicy = if (skipCache) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst
-        queryResult(query, fetchPolicy = fetchPolicy) { it }
+        val result = apolloClient.query(query)
+            .fetchPolicy(fetchPolicy)
+            .execute()
+        val errors = result.errors
+        val error =  if (errors.isNullOrEmpty()) {
+            LoadingResult.Error(
+                message = UtilsStrings.error_loading_from_network,
+                throwable = result.exception,
+            )
+        } else {
+            LoadingResult.Error(
+                message = errors.joinToString { it.message },
+                throwable = result.exception,
+            )
+        }
+        return LoadingResult(
+            loading = false,
+            success = result.data != null,
+            result = result.data,
+            error = error,
+        )
     }
 
     private suspend fun <Data : Query.Data> queryLoadingResult(
@@ -1341,9 +1368,9 @@ open class AuthedAniListApi(
                     success = !networkHasErrors,
                     result = result,
                     error = if (networkHasErrors) {
-                        UtilsStrings.error_loading_from_network to network.exception
+                        LoadingResult.Error(UtilsStrings.error_loading_from_network, network.exception)
                     } else if (result == null && cacheHasErrors) {
-                        UtilsStrings.error_loading_from_cache to cache?.exception
+                        LoadingResult.Error(UtilsStrings.error_loading_from_cache, cache.exception)
                     } else {
                         null
                     },
@@ -1359,4 +1386,11 @@ open class AuthedAniListApi(
                 )
             }
         }
+
+    val <D : Operation.Data> ApolloResponse<D>.dataOrError get() = when {
+        data != null -> data!!
+        hasErrors() -> throw IOException(errors!!.joinToString { it.message })
+        exception != null -> throw DefaultApolloException("An exception happened", exception)
+        else -> dataOrThrow()
+    }
 }

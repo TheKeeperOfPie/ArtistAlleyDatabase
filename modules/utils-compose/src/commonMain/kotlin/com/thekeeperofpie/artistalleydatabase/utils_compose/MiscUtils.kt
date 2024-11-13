@@ -14,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.UriHandler
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import kotlinx.coroutines.delay
-import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration
 
 @Composable
@@ -59,7 +58,7 @@ fun LazyGridState.showFloatingActionButtonOnVerticalScroll(firstIndexToHide: Int
 
 @Composable
 fun LoadingResult<*>.ErrorSnackbar(snackbarHostState: SnackbarHostState) {
-    val errorMessage = error?.first?.let { stringResource(it) }
+    val errorMessage = error?.message()
     LaunchedEffect(errorMessage) {
         if (errorMessage != null) {
             snackbarHostState.showSnackbar(

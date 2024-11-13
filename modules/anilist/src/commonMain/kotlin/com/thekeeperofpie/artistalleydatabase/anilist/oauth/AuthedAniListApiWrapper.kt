@@ -385,21 +385,31 @@ class AuthedAniListApiWrapper(
         perPage: Int,
     ) = super.userDetailsStudiosPage(userId, page, perPage)
 
-    override suspend fun homeAnime(perPage: Int) = super.homeAnime(perPage).let {
-        it.copy(
-            trending = it.trending?.copy(media = it.trending?.media?.filter { it?.isAdult == false }),
-            popularThisSeason = it.popularThisSeason?.copy(media = it.popularThisSeason?.media?.filter { it?.isAdult == false }),
-            lastAdded = it.lastAdded?.copy(media = it.lastAdded?.media?.filter { it?.isAdult == false }),
-            popularLastSeason = it.popularLastSeason?.copy(media = it.popularLastSeason?.media?.filter { it?.isAdult == false }),
-            popularNextSeason = it.popularNextSeason?.copy(media = it.popularNextSeason?.media?.filter { it?.isAdult == false }),
-        )
+    override suspend fun homeAnime(
+        perPage: Int,
+        skipCache: Boolean,
+    ) = super.homeAnime(perPage, skipCache).let {
+        it.transformResult {
+            it.copy(
+                trending = it.trending?.copy(media = it.trending?.media?.filter { it?.isAdult == false }),
+                popularThisSeason = it.popularThisSeason?.copy(media = it.popularThisSeason?.media?.filter { it?.isAdult == false }),
+                lastAdded = it.lastAdded?.copy(media = it.lastAdded?.media?.filter { it?.isAdult == false }),
+                popularLastSeason = it.popularLastSeason?.copy(media = it.popularLastSeason?.media?.filter { it?.isAdult == false }),
+                popularNextSeason = it.popularNextSeason?.copy(media = it.popularNextSeason?.media?.filter { it?.isAdult == false }),
+            )
+        }
     }
 
-    override suspend fun homeManga(perPage: Int) = super.homeManga(perPage).let {
-        it.copy(
-            trending = it.trending?.copy(media = it.trending?.media?.filter { it?.isAdult == false }),
-            lastAdded = it.lastAdded?.copy(media = it.lastAdded?.media?.filter { it?.isAdult == false }),
-        )
+    override suspend fun homeManga(
+        perPage: Int,
+        skipCache: Boolean,
+    ) = super.homeManga(perPage, skipCache).let {
+        it.transformResult {
+            it.copy(
+                trending = it.trending?.copy(media = it.trending?.media?.filter { it?.isAdult == false }),
+                lastAdded = it.lastAdded?.copy(media = it.lastAdded?.media?.filter { it?.isAdult == false }),
+            )
+        }
     }
 
     override suspend fun airingSchedule(

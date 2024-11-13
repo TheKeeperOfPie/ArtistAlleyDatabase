@@ -93,7 +93,7 @@ object ForumThreadCommentTreeScreen {
         val refresh by viewModel.refresh.updates.collectAsState()
         val snackbarHostState = remember { SnackbarHostState() }
         val entry = viewModel.entry
-        val errorText = entry.error?.let { stringResource(it.first) }
+        val errorText = entry.error?.message()
             ?: viewModel.error?.first?.let { stringResource(it) }
         LaunchedEffect(errorText) {
             if (errorText != null) {
@@ -272,8 +272,8 @@ object ForumThreadCommentTreeScreen {
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
                                                 AnimeMediaListScreen.ErrorContent(
-                                                    errorTextRes = error.first,
-                                                    exception = error.second,
+                                                    error = error.message,
+                                                    exception = error.throwable,
                                                 )
                                             }
                                         }

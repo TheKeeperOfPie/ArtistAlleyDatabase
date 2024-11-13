@@ -163,8 +163,8 @@ object CharacterDetailsScreen {
                 Crossfade(targetState = finalError, label = "Character details crossfade") {
                     if (it) {
                         AnimeMediaListScreen.Error(
-                            errorTextRes = entry.error?.first,
-                            exception = entry.error?.second,
+                            error = entry.error?.message,
+                            exception = entry.error?.throwable,
                         )
                     } else if (entry.result != null) {
                         val voiceActorsInitial = (entry.result?.voiceActorsInitial

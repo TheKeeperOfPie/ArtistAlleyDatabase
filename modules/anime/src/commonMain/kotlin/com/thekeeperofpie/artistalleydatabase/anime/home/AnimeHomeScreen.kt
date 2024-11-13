@@ -28,7 +28,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -156,10 +155,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.HorizontalPagerItemsRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.getOrNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsIndexed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.rememberPagerState
@@ -351,7 +350,7 @@ object AnimeHomeScreen {
                     onClickIncrementProgress = onClickIncrementProgress,
                     recommendations = recommendations,
                     reviews = reviews,
-                    activity = activity,
+                    activities = activity,
                     onActivityStatusUpdate = onActivityStatusUpdate,
                     onUserRecommendationRating = onUserRecommendationRating,
                 )
@@ -475,7 +474,7 @@ object AnimeHomeScreen {
         viewer: () -> AniListViewer?,
         news: () -> LoadingResult<List<AnimeNewsEntry<*>>>,
         homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
-        activity: LazyPagingItems<ActivityEntry>,
+        activities: LazyPagingItems<ActivityEntry>,
         currentMediaState: () -> CurrentMediaState,
         suggestions: List<Pair<StringResource, AnimeDestination>>,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -500,8 +499,7 @@ object AnimeHomeScreen {
 
             Activities(
                 viewer = viewer,
-                activities = activity,
-                pageSize = pageSize,
+                activities = activities,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 onClickListEdit = onClickListEdit,
             )
@@ -518,7 +516,6 @@ object AnimeHomeScreen {
                 recommendations = recommendations,
                 onUserRecommendationRating = onUserRecommendationRating,
                 onClickListEdit = onClickListEdit,
-                pageSize = pageSize,
             )
 
             MediaRows(homeEntry = homeEntry, viewer = viewer, onClickListEdit = onClickListEdit)
@@ -526,7 +523,6 @@ object AnimeHomeScreen {
             Reviews(
                 viewer = viewer,
                 reviews = reviews,
-                pageSize = pageSize,
                 onClickListEdit = onClickListEdit,
             )
 
@@ -543,48 +539,21 @@ object AnimeHomeScreen {
     private fun Activities(
         viewer: () -> AniListViewer?,
         activities: LazyPagingItems<ActivityEntry>,
-        pageSize: PageSize,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
-        RowHeader(
-            titleRes = Res.string.anime_home_activity_label,
-            viewAllRoute = AnimeDestination.Activity
-        )
-
-        ActivityRow(
-            viewer = viewer,
-            activities = activities,
-            pageSize = pageSize,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
-        )
-    }
-
-    @Composable
-    private fun ActivityRow(
-        viewer: () -> AniListViewer?,
-        activities: LazyPagingItems<ActivityEntry>,
-        pageSize: PageSize,
-        onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-        onClickListEdit: (MediaNavigationData) -> Unit,
-    ) {
-        val pagerState = rememberPagerState(data = activities, placeholderCount = 3)
-        HorizontalPager(
-            state = pagerState,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-            pageSpacing = 16.dp,
-            pageSize = pageSize,
-            verticalAlignment = Alignment.Top,
-            modifier = Modifier.recomposeHighlighter()
+        HorizontalPagerItemsRow(
+            title = Res.string.anime_home_activity_label,
+            viewAllRoute = AnimeDestination.Activity,
+            viewAllContentDescription = Res.string.anime_home_row_view_all_content_description,
+            items = activities,
         ) {
-            val entry = activities.getOrNull(it)
-            SharedTransitionKeyScope("anime_home_activity_${entry?.activityId?.valueId}") {
+            SharedTransitionKeyScope("anime_home_activity_${it?.activityId?.valueId}") {
                 ActivitySmallCard(
                     viewer = viewer(),
-                    activity = entry?.activity,
-                    mediaEntry = entry?.media,
-                    entry = entry,
+                    activity = it?.activity,
+                    mediaEntry = it?.media,
+                    entry = it,
                     onActivityStatusUpdate = onActivityStatusUpdate,
                     onClickListEdit = onClickListEdit,
                 )
@@ -682,23 +651,19 @@ object AnimeHomeScreen {
         placeholderCount: Int,
     ) {
         val (rowKey, titleRes, entries, viewAllRoute) = data
-        RowHeader(
-            titleRes = titleRes,
-            viewAllRoute = viewAllRoute
-        )
-
         val pagerState = rememberPagerState(data = entries, placeholderCount = 3)
-        HorizontalPager(
-            state = pagerState,
+        HorizontalPagerItemsRow(
+            title = titleRes,
+            viewAllRoute = viewAllRoute,
+            viewAllContentDescription = Res.string.anime_home_row_view_all_content_description,
+            items = entries,
             contentPadding = LargeMediaPagerContentPadding,
             pageSize = FillOr450,
-            pageSpacing = 8.dp,
-            modifier = Modifier.recomposeHighlighter()
+            pagerState = pagerState,
         ) {
-            val entry = entries?.getOrNull(it)
             AnimeMediaLargeCard(
                 viewer = viewer(),
-                entry = entry,
+                entry = it,
                 shouldTransitionCoverImageIfUsed = false,
             )
         }
@@ -1084,31 +1049,21 @@ object AnimeHomeScreen {
         recommendations: LazyPagingItems<RecommendationEntry>,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
         onClickListEdit: (MediaNavigationData) -> Unit,
-        pageSize: PageSize,
     ) {
-        RowHeader(
-            titleRes = Res.string.anime_recommendations_home_title,
+        HorizontalPagerItemsRow(
+            title = Res.string.anime_recommendations_home_title,
             viewAllRoute = AnimeDestination.Recommendations,
-        )
-
-        val pagerState = rememberPagerState(data = recommendations, placeholderCount = 3)
-        HorizontalPager(
-            state = pagerState,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-            pageSpacing = 16.dp,
-            pageSize = pageSize,
-            verticalAlignment = Alignment.Top,
-            modifier = Modifier.recomposeHighlighter()
+            viewAllContentDescription = Res.string.anime_home_row_view_all_content_description,
+            items = recommendations,
         ) {
-            val entry = recommendations.getOrNull(it)
-            SharedTransitionKeyScope("anime_home_recommendation_card_${entry?.id}") {
+            SharedTransitionKeyScope("anime_home_recommendation_card_${it?.id}") {
                 RecommendationCard(
                     viewer = viewer(),
-                    user = entry?.user,
-                    media = entry?.media,
-                    mediaRecommendation = entry?.mediaRecommendation,
+                    user = it?.user,
+                    media = it?.media,
+                    mediaRecommendation = it?.mediaRecommendation,
                     onClickListEdit = onClickListEdit,
-                    recommendation = entry?.data,
+                    recommendation = it?.data,
                     onUserRecommendationRating = onUserRecommendationRating,
                 )
             }
@@ -1150,41 +1105,31 @@ object AnimeHomeScreen {
     private fun Reviews(
         viewer: () -> AniListViewer?,
         reviews: LazyPagingItems<ReviewEntry>,
-        pageSize: PageSize,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
-        RowHeader(
-            titleRes = Res.string.anime_reviews_home_title,
+        HorizontalPagerItemsRow(
+            title = Res.string.anime_reviews_home_title,
             viewAllRoute = AnimeDestination.Reviews,
-        )
-
-        val pagerState = rememberPagerState(data = reviews, placeholderCount = 3)
-        HorizontalPager(
-            state = pagerState,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-            pageSpacing = 16.dp,
-            pageSize = pageSize,
-            verticalAlignment = Alignment.Top,
-            modifier = Modifier.recomposeHighlighter()
+            viewAllContentDescription = Res.string.anime_home_row_view_all_content_description,
+            items = reviews,
         ) {
-            val entry = reviews.getOrNull(it)
-            val mediaTitle = entry?.media?.media?.title?.primaryTitle()
-            SharedTransitionKeyScope("anime_home_review_${entry?.review?.id}") {
+            val mediaTitle = it?.media?.media?.title?.primaryTitle()
+            SharedTransitionKeyScope("anime_home_review_${it?.review?.id}") {
                 val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
                 ReviewCard(
                     viewer = viewer(),
-                    review = entry?.review,
-                    media = entry?.media,
+                    review = it?.review,
+                    media = it?.media,
                     onClick = { navigationCallback, coverImageState ->
-                        if (entry != null) {
+                        if (it != null) {
                             navigationCallback.navigate(
                                 AnimeDestination.ReviewDetails(
-                                    reviewId = entry.review.id.toString(),
+                                    reviewId = it.review.id.toString(),
                                     sharedTransitionScopeKey = sharedTransitionScopeKey,
                                     headerParams = MediaHeaderParams(
                                         title = mediaTitle,
                                         coverImage = coverImageState.toImageState(),
-                                        mediaCompactWithTags = entry.media.media,
+                                        mediaCompactWithTags = it.media.media,
                                         favorite = null,
                                     )
                                 )

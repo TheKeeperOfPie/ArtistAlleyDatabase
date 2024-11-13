@@ -573,8 +573,8 @@ object AnimeMediaDetailsScreen {
                     Crossfade(targetState = finalError, label = "Media details crossfade") {
                         if (it) {
                             AnimeMediaListScreen.Error(
-                                errorTextRes = entry.error?.first,
-                                exception = entry.error?.second,
+                                error = entry.error?.message,
+                                exception = entry.error?.throwable,
                             )
                         } else if (entry.result != null) {
                             LazyVerticalGrid(

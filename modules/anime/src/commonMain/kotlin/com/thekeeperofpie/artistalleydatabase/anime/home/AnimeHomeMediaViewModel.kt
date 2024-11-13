@@ -41,7 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -88,7 +87,7 @@ abstract class AnimeHomeMediaViewModel(
         collectReviews()
     }
 
-    protected abstract suspend fun rows(): Flow<List<RowInput>>
+    protected abstract suspend fun rows(): Flow<LoadingResult<List<RowInput>>>
 
     abstract val suggestions: List<Pair<StringResource, AnimeDestination>>
 
@@ -171,7 +170,7 @@ abstract class AnimeHomeMediaViewModel(
 
     private fun collectMedia() {
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh.updates, errorTextRes) { rows() }
+            refresh.updates.flatMapLatest { rows() }
                 .flatMapLatest { mediaResult ->
                     combine(
                         mediaListStatusController.allChanges(),
@@ -212,12 +211,12 @@ abstract class AnimeHomeMediaViewModel(
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.updates
                 .flatMapLatest {
-                AniListPager(perPage = 6, prefetchDistance = 1) {
-                    val result =
-                        aniListApi.homeReviews(mediaType = mediaType, page = it, perPage = 6)
-                    result.page.pageInfo to result.page.reviews.filterNotNull()
+                    AniListPager(perPage = 6, prefetchDistance = 1) {
+                        val result =
+                            aniListApi.homeReviews(mediaType = mediaType, page = it, perPage = 6)
+                        result.page.pageInfo to result.page.reviews.filterNotNull()
+                    }
                 }
-            }
                 .mapLatest {
                     it.mapOnIO {
                         ReviewEntry(it, MediaCompactWithTagsEntry(it.media))
@@ -316,24 +315,30 @@ abstract class AnimeHomeMediaViewModel(
             )
 
             emit(
-                listOf(
-                    trending,
-                    popularThisSeason,
-                    lastAdded,
-                    popularLastSeason,
-                    popularNextSeason,
+                LoadingResult(
+                    loading = true,
+                    result = listOf(
+                        trending,
+                        popularThisSeason,
+                        lastAdded,
+                        popularLastSeason,
+                        popularNextSeason,
+                    )
                 )
             )
 
-            val result = aniListApi.homeAnime()
+            // TODO: caching and skipCache
+            val result = aniListApi.homeAnime(skipCache = true)
             emit(
-                listOf(
-                    trending.copy(list = result.trending?.media.orEmpty()),
-                    popularThisSeason.copy(list = result.popularThisSeason?.media.orEmpty()),
-                    lastAdded.copy(list = result.lastAdded?.media.orEmpty()),
-                    popularLastSeason.copy(list = result.popularLastSeason?.media.orEmpty()),
-                    popularNextSeason.copy(list = result.popularNextSeason?.media.orEmpty()),
-                )
+                result.transformResult {
+                    listOf(
+                        trending.copy(list = it.trending?.media.orEmpty()),
+                        popularThisSeason.copy(list = it.popularThisSeason?.media.orEmpty()),
+                        lastAdded.copy(list = it.lastAdded?.media.orEmpty()),
+                        popularLastSeason.copy(list = it.popularLastSeason?.media.orEmpty()),
+                        popularNextSeason.copy(list = it.popularNextSeason?.media.orEmpty()),
+                    )
+                }
             )
         }
     }
@@ -398,20 +403,26 @@ abstract class AnimeHomeMediaViewModel(
                 )
             )
             emit(
-                listOf(
-                    trending,
-                    lastAdded,
-                    topReleasedThisYear,
+                LoadingResult(
+                    loading = true,
+                    result = listOf(
+                        trending,
+                        lastAdded,
+                        topReleasedThisYear,
+                    )
                 )
             )
 
-            val result = aniListApi.homeManga()
+            // TODO: caching and skipCache
+            val result = aniListApi.homeManga(skipCache = true)
             emit(
-                listOf(
-                    trending.copy(list = result.trending?.media.orEmpty()),
-                    lastAdded.copy(list = result.lastAdded?.media.orEmpty()),
-                    topReleasedThisYear.copy(list = result.topThisYear?.media.orEmpty()),
-                )
+                result.transformResult {
+                    listOf(
+                        trending.copy(list = it.trending?.media.orEmpty()),
+                        lastAdded.copy(list = it.lastAdded?.media.orEmpty()),
+                        topReleasedThisYear.copy(list = it.topThisYear?.media.orEmpty()),
+                    )
+                }
             )
         }
     }

@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,19 +15,22 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.runningFold
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Immutable
 data class LoadingResult<T>(
     val loading: Boolean = false,
     val success: Boolean = false,
     val result: T? = null,
-    val error: Pair<StringResource, Throwable?>? = null,
+    val error: Error? = null,
 ) {
     companion object {
         fun <T> loading() = LoadingResult<T>(loading = true)
         fun <T> empty() = LoadingResult<T>()
+        fun <T> error(error: String, throwable: Throwable? = null) =
+            LoadingResult<T>(error = Error(error, throwable))
         fun <T> error(error: StringResource, throwable: Throwable? = null) =
-            LoadingResult<T>(error = error to throwable)
+            LoadingResult<T>(error = Error(error, throwable))
 
         fun <T> success(value: T) = LoadingResult(loading = false, success = true, result = value)
 
@@ -54,6 +59,23 @@ data class LoadingResult<T>(
             error = error,
         )
     }
+
+    data class Error(
+        val message: Either<String, StringResource>,
+        val throwable: Throwable?,
+    ) {
+        constructor(message: String, throwable: Throwable? = null) :
+                this(Either.Left(message), throwable)
+
+        constructor(message: StringResource, throwable: Throwable? = null) :
+                this(Either.Right(message), throwable)
+
+        @Composable
+        fun message() = when (message) {
+            is Either.Left -> message.value
+            is Either.Right -> stringResource(message.value)
+        }
+    }
 }
 
 fun <T> flowForRefreshableContent(
@@ -80,7 +102,7 @@ fun <T> flowForRefreshableContent(
                     result = it
                 )
             }
-            .catch { emit(LoadingResult(error = errorTextRes to it)) }
+            .catch { emit(LoadingResult(error = LoadingResult.Error(errorTextRes, it))) }
             .startWith(
                 LoadingResult(
                     loading = true,

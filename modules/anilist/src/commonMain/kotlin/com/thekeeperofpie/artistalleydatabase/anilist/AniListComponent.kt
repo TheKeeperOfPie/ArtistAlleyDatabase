@@ -2,9 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.annotations.ApolloExperimental
+import com.apollographql.apollo3.api.http.HttpRequest
+import com.apollographql.apollo3.api.http.HttpResponse
 import com.apollographql.apollo3.cache.normalized.api.MemoryCacheFactory
 import com.apollographql.apollo3.cache.normalized.normalizedCache
 import com.apollographql.apollo3.network.http.HttpInterceptor
+import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.apollographql.apollo3.network.http.KtorHttpEngine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthViewModel
@@ -60,7 +63,23 @@ interface AniListComponent : AniListSqlCacheComponent {
             .httpEngine(KtorHttpEngine(httpClient))
             .addLoggingInterceptors("AniListApi", networkSettings)
             .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
-            .apply { apolloHttpInterceptors?.forEach(::addHttpInterceptor) }
+            .apply { apolloHttpInterceptors.forEach(::addHttpInterceptor) }
+            .addHttpInterceptor(object : HttpInterceptor {
+                override suspend fun intercept(
+                    request: HttpRequest,
+                    chain: HttpInterceptorChain,
+                ): HttpResponse {
+                    val initialResponse = chain.proceed(request)
+                    // Coerce all responses to 200 so that error parsing works as expected
+                    // https://api.akeneo.com/graphql/error-codes.html#status-and-error-codes
+                    return HttpResponse.Builder(200)
+                        .apply {
+                            addHeaders(initialResponse.headers)
+                            initialResponse.body?.let(::body)
+                        }
+                        .build()
+                }
+            })
             .build()
     }
 
