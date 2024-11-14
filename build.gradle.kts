@@ -48,12 +48,10 @@ tasks.register("recopyVerificationMetadata") {
 
 tasks.register("generateVerificationMetadata") {
     dependsOn("recopyVerificationMetadata")
-
-    // TODO: Re-enable test-utils once it's fixed
-    dependsOn(subprojects.filter { it.name != "test-utils" }
-        .mapNotNull { it.tasks.findByName("assemble") })
+    dependsOn("help")
+    dependsOn(":app:internalOssLicensesTask")
+    dependsOn(":app:releaseOssLicensesTask")
     dependsOn("dependencyUpdates")
-
     // https://github.com/autonomousapps/dependency-analysis-gradle-plugin/issues/1185
 //    dependsOn("buildHealth")
     finalizedBy(":app:licenseReleaseReport")

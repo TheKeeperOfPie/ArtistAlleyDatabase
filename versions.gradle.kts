@@ -44,20 +44,20 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.8.0-alpha09"
+        const val gradle = "8.9.0-alpha01"
     }
 
     const val androidJunit5 = "1.11.2.0"
 
     object androidx {
-        const val activity = "1.10.0-alpha03"
+        const val activity = "1.10.0-beta01"
         const val annotation = "1.9.1"
         const val browser = "1.8.0"
         const val core = "1.15.0"
-        const val lifecycle = "2.9.0-alpha06"
+        const val lifecycle = "2.9.0-alpha07"
         const val media3 = "1.5.0-beta01"
         const val navigation = "2.8.1"
-        const val paging = "3.3.2"
+        const val paging = "3.3.4"
         const val palette = "1.0.0"
         const val room = "2.7.0-alpha11"
         const val securityCrypto = "1.1.0-alpha06"
@@ -82,7 +82,7 @@ object Versions {
     const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.15.2"
-    const val coil = "3.0.0"
+    const val coil = "3.0.2"
     const val colormath = "3.6.0"
 
     object compose {
@@ -142,7 +142,7 @@ object Versions {
         const val coroutines = "1.9.0"
         const val datetime = "0.6.1"
         const val io = "0.5.4"
-        const val ksp = "2.1.0-Beta2-1.0.26"
+        const val ksp = "2.1.0-RC-1.0.27"
         const val serialization = "1.7.3"
     }
 
@@ -151,7 +151,7 @@ object Versions {
     const val ktor = "3.0.1"
     const val ksoup = "0.2.0"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.39"
+    const val manifoldGraphql = "2024.1.41"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"

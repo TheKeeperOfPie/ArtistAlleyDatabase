@@ -9,15 +9,19 @@
         <trusted-artifacts>
             <trust file=".*-javadoc[.]jar" regex="true" />
             <trust file=".*-sources[.]jar" regex="true" />
-            <trust file="aapt2-8.6.0-alpha05-\d*[.]pom" />
-            <trust file="aapt2-8.6.0-alpha05-\d*-windows[.]jar" />
+            <trust file="aapt2-.*" regex="true" />
 
-            <!-- buildHealth failure when committing during AGP 8.3.0-alpha14 upgrade -->
-            <trust file="kotlin-.*-1.*" regex="true" />
-            <trust file="kotlin-.*-2.0.*" regex="true" />
+            <!-- Android Studio instrumentation testing -->
+            <trust file="com.android.tools.*" regex="true" />
+            <trust file="com.google.testing.platform*" regex="true" />
 
-            <!-- Error when building -->
-            <trust file="org.gradle.kotlin.*" regex="true" />
+            <!-- Gradle sync -->
+            <trust file="apache-3.*" regex="true"/>
+            <trust file="org.codehaus.groovy.*" regex="true"/>
+            <trust file="groovy-.*" regex="true"/>
+            <trust file="jetty-.*" regex="true"/>
+            <trust file="websocket-.*" regex="true"/>
+            <trust file="xml-apis.*" regex="true"/>
         </trusted-artifacts>
     </configuration>
     <components/>

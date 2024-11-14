@@ -22,7 +22,7 @@ dependencyResolutionManagement {
 
 plugins {
     id("com.autonomousapps.build-health").version("2.0.2")
-    id("com.android.application").version("8.8.0-alpha09").apply(false)
+    id("com.android.application").version("8.9.0-alpha01").apply(false)
     id("org.jetbrains.kotlin.android").version("2.1.0-RC").apply(false)
     id("org.jetbrains.kotlin.jvm").version("2.1.0-RC").apply(false)
 }
