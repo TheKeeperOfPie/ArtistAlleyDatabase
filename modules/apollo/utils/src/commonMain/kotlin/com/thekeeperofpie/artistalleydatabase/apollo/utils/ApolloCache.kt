@@ -6,6 +6,7 @@ import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.cache.normalized.FetchPolicy
 import com.apollographql.apollo3.cache.normalized.fetchPolicy
+import com.thekeeperofpie.artistalleydatabase.inject.Named
 import com.thekeeperofpie.artistalleydatabase.utils.debug
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
@@ -24,6 +25,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
 import kotlinx.serialization.serializer
+import me.tatarka.inject.annotations.Inject
 import kotlin.reflect.KClass
 import kotlin.time.Duration
 
@@ -32,9 +34,10 @@ import kotlin.time.Duration
     InternalSerializationApi::class,
     ApolloExperimental::class
 )
+@Inject
 class ApolloCache(
     scope: ApplicationScope,
-    private val apolloClient: ApolloClient,
+    @Named("AniList") private val apolloClient: ApolloClient,
     private val appFileSystem: AppFileSystem,
     private val json: Json,
 ) {
@@ -81,6 +84,7 @@ class ApolloCache(
         val fileName = "$queryName-$hash.json"
     }
 
+    // TODO: Make all of these methods return LoadingResult
     suspend inline fun <reified DataType : Query.Data, reified QueryType : Query<DataType>> query(
         query: QueryType,
         cacheTime: Duration,
@@ -106,9 +110,7 @@ class ApolloCache(
         skipCache = skipCache,
         cacheDuration = cacheTime,
         cacheEntry = cached@{
-            val entry = appFileSystem.source(it).buffered()
-                .use { json.decodeFromSource(CacheEntry.serializer(dataType.serializer()), it) }
-                .also { Logger.debug(TAG) { "Cached value: $it" } }
+            val entry = cachedEntry(dataType, it)
             val cacheExpiry = cacheTime(entry.data)
             val stillValid = entry.created.plus(cacheExpiry) > Clock.System.now()
             entry.data.takeIf { stillValid }
@@ -130,12 +132,37 @@ class ApolloCache(
         cacheEntry = cached@{
             val lastModifiedTime = appFileSystem.lastModifiedTime(it)
             if (lastModifiedTime.plus(cacheTime) < Clock.System.now()) return@cached null
-            appFileSystem.source(it).buffered()
-                .use { json.decodeFromSource(CacheEntry.serializer(dataType.serializer()), it) }
-                .also { Logger.debug(TAG) { "Cached value: $it" } }
-                .data
+            cachedEntry(dataType, it).data
         }
     )
+
+    /**
+     * Delete a cache entry immediately.
+     * @return true if something was deleted
+     */
+    inline fun <reified QueryType : Query<*>> evict(query: QueryType) =
+        evict(query, QueryType::class)
+
+    fun <QueryType : Query<*>> evict(query: QueryType, queryType: KClass<QueryType>): Boolean {
+        try {
+            val queryName = query.name()
+            val hash = hash(queryType, query)
+            val cacheFileName = CacheFileName(queryName, hash)
+            val cachedPath = appFileSystem.list(cacheDir).find { it.name == cacheFileName.fileName }
+            if (cachedPath != null) {
+                appFileSystem.deleteRecursively(cachedPath)
+                return true
+            }
+        } catch (t: Throwable) {
+            Logger.debug(TAG, t) { "Failed to read cache" }
+        }
+        return false
+    }
+
+    private fun <DataType : Query.Data> cachedEntry(dataType: KClass<DataType>, path: Path) =
+        appFileSystem.source(path).buffered()
+            .use { json.decodeFromSource(CacheEntry.serializer(dataType.serializer()), it) }
+            .also { Logger.debug(TAG) { "Cached value: $it" } }
 
     private suspend fun <DataType : Query.Data, QueryType : Query<DataType>> queryInternal(
         query: QueryType,

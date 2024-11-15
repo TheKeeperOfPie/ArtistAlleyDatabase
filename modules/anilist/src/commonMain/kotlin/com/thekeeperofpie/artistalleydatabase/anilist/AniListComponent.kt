@@ -13,15 +13,14 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthViewModel
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApiWrapper
+import com.thekeeperofpie.artistalleydatabase.apollo.utils.ApolloCache
 import com.thekeeperofpie.artistalleydatabase.inject.Named
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import io.ktor.client.HttpClient
-import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 import kotlin.time.Duration.Companion.minutes
@@ -92,8 +91,7 @@ interface AniListComponent : AniListSqlCacheComponent {
         httpClient: HttpClient,
         @Named("AniList") apolloClient: ApolloClient,
         featureOverrideProvider: FeatureOverrideProvider,
-        appFileSystem: AppFileSystem,
-        json: Json,
+        apolloCache: ApolloCache,
     ) = if (featureOverrideProvider.isReleaseBuild) {
         AuthedAniListApiWrapper(
             scope = scope,
@@ -101,8 +99,7 @@ interface AniListComponent : AniListSqlCacheComponent {
             aniListSettings = aniListSettings,
             httpClient = httpClient,
             apolloClient = apolloClient,
-            appFileSystem = appFileSystem,
-            json = json,
+            cache = apolloCache,
         )
     } else {
         AuthedAniListApi(
@@ -111,8 +108,7 @@ interface AniListComponent : AniListSqlCacheComponent {
             aniListSettings = aniListSettings,
             httpClient = httpClient,
             apolloClient = apolloClient,
-            appFileSystem = appFileSystem,
-            json = json,
+            cache = apolloCache,
         )
     }
 

@@ -119,7 +119,7 @@ class SettingsViewModel(
     private val settings: SettingsProvider,
     private val vgmdbApi: VgmdbApi,
     private val aniListOAuthStore: AniListOAuthStore,
-    private val monetizationController: MonetizationController,
+    monetizationController: MonetizationController,
     featureOverrideProvider: FeatureOverrideProvider,
     appMetadataProvider: AppMetadataProvider,
     private val aniListApi: AuthedAniListApi,
@@ -521,7 +521,7 @@ class SettingsViewModel(
 
     private fun onClickClearAniListOAuth() {
         viewModelScope.launch {
-            aniListOAuthStore.clearAuthToken()
+            aniListApi.logOut()
         }
     }
 
