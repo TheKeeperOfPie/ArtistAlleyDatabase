@@ -44,7 +44,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.9.0-alpha01"
+        const val gradle = "8.9.0-alpha02"
     }
 
     const val androidJunit5 = "1.11.2.0"
@@ -55,7 +55,7 @@ object Versions {
         const val browser = "1.8.0"
         const val core = "1.15.0"
         const val lifecycle = "2.9.0-alpha07"
-        const val media3 = "1.5.0-beta01"
+        const val media3 = "1.5.0-rc01"
         const val navigation = "2.8.1"
         const val paging = "3.3.4"
         const val palette = "1.0.0"
@@ -82,7 +82,7 @@ object Versions {
     const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.15.2"
-    const val coil = "3.0.2"
+    const val coil = "3.0.3"
     const val colormath = "3.6.0"
 
     object compose {
@@ -157,7 +157,7 @@ object Versions {
     const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.27.0"
+    const val multiplatformMarkdown = "0.28.0-b01"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "6.3.0"
     const val okhttp = "5.0.0-alpha.14"

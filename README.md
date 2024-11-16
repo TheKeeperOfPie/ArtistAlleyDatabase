@@ -106,7 +106,7 @@ done by deleting [`./gradle/verification-metadata.xml`](gradle/verification-meta
 
 [//]: # (TODO: Full clean build is starting to get annoying, need better way to regenerate metadata)
 
-`./gradlew --write-verification-metadata sha256 generateVerificationMetadata --stacktrace`
+`./gradlew --no-configuration-cache --write-verification-metadata sha256 generateVerificationMetadata --stacktrace`
 
 ### :modules:dependencies
 
