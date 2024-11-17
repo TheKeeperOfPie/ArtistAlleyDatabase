@@ -26,7 +26,7 @@
             <option value="$PROJECT_DIR$/desktop" />
             <option value="$PROJECT_DIR$/modules" />
             <option value="$PROJECT_DIR$/modules/anilist" />
-            <option value="$PROJECT_DIR$/modules/anilist-data" />
+            <option value="$PROJECT_DIR$/modules/anilist/data" />
             <option value="$PROJECT_DIR$/modules/anime" />
             <option value="$PROJECT_DIR$/modules/anime/data" />
             <option value="$PROJECT_DIR$/modules/anime/news" />

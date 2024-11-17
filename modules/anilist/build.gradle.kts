@@ -14,7 +14,7 @@ kotlin {
             implementation(libs.activity.compose)
         }
         commonMain.dependencies {
-            api(projects.modules.anilistData)
+            api(projects.modules.anilist.data)
             api(projects.modules.entry)
             api(projects.modules.apollo.utils)
             implementation(projects.modules.utils)

@@ -40,5 +40,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.anilist_data"
+    namespace = "com.thekeeperofpie.artistalleydatabase.anilist.data"
 }

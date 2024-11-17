@@ -16,7 +16,7 @@ kotlin {
             implementation(libs.manifold.graphql.rt)
         }
         commonTest.dependencies {
-            implementation(projects.modules.anilistData)
+            implementation(projects.modules.anilist.data)
             implementation(libs.junit.jupiter.api)
             implementation(libs.ktor.server.test.host)
             implementation(libs.truth)
