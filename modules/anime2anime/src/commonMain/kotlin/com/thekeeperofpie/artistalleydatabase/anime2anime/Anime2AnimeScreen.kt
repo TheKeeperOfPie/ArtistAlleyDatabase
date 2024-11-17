@@ -90,10 +90,10 @@ import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_s
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_submit_restart_button
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_swap_start_target_content_description
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_target_media_header
-import com.anilist.fragment.AniListMedia
-import com.anilist.fragment.CharacterNavigationData
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.StaffNavigationData
+import com.anilist.data.fragment.AniListMedia
+import com.anilist.data.fragment.CharacterNavigationData
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeStrings

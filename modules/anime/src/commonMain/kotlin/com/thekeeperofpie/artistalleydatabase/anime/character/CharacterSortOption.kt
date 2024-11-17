@@ -6,7 +6,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_character_sor
 import artistalleydatabase.modules.anime.generated.resources.anime_character_sort_relevance
 import artistalleydatabase.modules.anime.generated.resources.anime_character_sort_role
 import artistalleydatabase.modules.anime.generated.resources.anime_character_sort_search_match
-import com.anilist.type.CharacterSort
+import com.anilist.data.type.CharacterSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

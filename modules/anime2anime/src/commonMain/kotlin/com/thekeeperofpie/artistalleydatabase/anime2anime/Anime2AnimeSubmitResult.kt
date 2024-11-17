@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime2anime
 
-import com.anilist.fragment.AniListMedia
+import com.anilist.data.fragment.AniListMedia
 
 sealed interface Anime2AnimeSubmitResult {
     data object None : Anime2AnimeSubmitResult

@@ -2,9 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.anime2anime.game
 
 import artistalleydatabase.modules.anime2anime.generated.resources.Res
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_error_could_not_fetch_media
-import com.anilist.Anime2AnimeCountQuery
-import com.anilist.Anime2AnimeRandomAnimeQuery
-import com.anilist.type.MediaStatus
+import com.anilist.data.Anime2AnimeCountQuery
+import com.anilist.data.Anime2AnimeRandomAnimeQuery
+import com.anilist.data.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController

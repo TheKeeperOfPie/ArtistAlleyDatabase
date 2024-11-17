@@ -34,8 +34,8 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_user_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.UserNavigationData
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.fragment.UserNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

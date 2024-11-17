@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_sort_id
 import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_sort_rating
-import com.anilist.type.RecommendationSort
+import com.anilist.data.type.RecommendationSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

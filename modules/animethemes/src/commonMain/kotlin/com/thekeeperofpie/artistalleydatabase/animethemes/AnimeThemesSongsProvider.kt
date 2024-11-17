@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.animethemes
 
-import com.anilist.MediaDetailsQuery
+import com.anilist.data.MediaDetailsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider

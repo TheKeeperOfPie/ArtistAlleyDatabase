@@ -6,7 +6,7 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_review_filter_media_expand_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_review_filter_media_label
 import artistalleydatabase.modules.anime.generated.resources.anime_review_filter_sort_label
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController

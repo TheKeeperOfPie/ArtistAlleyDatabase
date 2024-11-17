@@ -13,11 +13,11 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_edit_er
 import artistalleydatabase.modules.anime.generated.resources.anime_media_edit_error_invalid_status
 import artistalleydatabase.modules.anime.generated.resources.anime_media_edit_error_loading
 import artistalleydatabase.modules.anime.generated.resources.anime_media_edit_error_saving
-import com.anilist.fragment.MediaDetailsListEntry
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
-import com.anilist.type.ScoreFormat
+import com.anilist.data.fragment.MediaDetailsListEntry
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
+import com.anilist.data.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaQuickEditData

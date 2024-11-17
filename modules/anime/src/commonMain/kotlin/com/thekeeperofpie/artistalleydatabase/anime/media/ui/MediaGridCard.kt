@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.MediaWithListStatus
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.fragment.MediaWithListStatus
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

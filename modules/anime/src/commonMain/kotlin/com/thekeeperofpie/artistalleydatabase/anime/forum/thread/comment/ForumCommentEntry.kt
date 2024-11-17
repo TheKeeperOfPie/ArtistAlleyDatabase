@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 
-import com.anilist.fragment.ForumThreadComment
-import com.anilist.fragment.UserNavigationData
+import com.anilist.data.fragment.ForumThreadComment
+import com.anilist.data.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 
 data class ForumCommentEntry(

@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
-import com.anilist.type.RecommendationRating
+import com.anilist.data.type.RecommendationRating
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.MutableSharedFlow

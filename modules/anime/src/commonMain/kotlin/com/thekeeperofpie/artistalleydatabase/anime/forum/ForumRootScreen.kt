@@ -49,7 +49,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_forum_search_
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_stickied_header
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_stickied_header_expand_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_view_all_content_description
-import com.anilist.fragment.ForumThread
+import com.anilist.data.fragment.ForumThread
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen

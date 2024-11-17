@@ -96,8 +96,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_view_count_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_forum_threads_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_view_all_content_description
-import com.anilist.fragment.ForumThread
-import com.anilist.fragment.UserNavigationData
+import com.anilist.data.fragment.ForumThread
+import com.anilist.data.fragment.UserNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

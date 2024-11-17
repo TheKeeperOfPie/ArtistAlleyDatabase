@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.character
 
 import artistalleydatabase.modules.anilist.generated.resources.Res
 import artistalleydatabase.modules.anilist.generated.resources.aniList_error_fetching_character
-import com.anilist.fragment.AniListCharacter
+import com.anilist.data.fragment.AniListCharacter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope

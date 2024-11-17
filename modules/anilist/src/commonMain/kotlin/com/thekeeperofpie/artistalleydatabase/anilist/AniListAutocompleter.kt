@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 
 import androidx.annotation.WorkerThread
 import co.touchlab.kermit.Logger
-import com.anilist.fragment.AniListMedia
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.AniListMedia
+import com.anilist.data.type.MediaType
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository

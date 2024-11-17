@@ -48,8 +48,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_review_details_downvote_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_review_details_score
 import artistalleydatabase.modules.anime.generated.resources.anime_review_details_upvote_content_description
-import com.anilist.ReviewDetailsQuery
-import com.anilist.type.ReviewRating
+import com.anilist.data.ReviewDetailsQuery
+import com.anilist.data.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader

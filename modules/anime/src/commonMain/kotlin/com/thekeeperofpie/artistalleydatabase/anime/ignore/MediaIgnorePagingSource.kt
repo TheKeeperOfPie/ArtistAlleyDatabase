@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.withContext
 

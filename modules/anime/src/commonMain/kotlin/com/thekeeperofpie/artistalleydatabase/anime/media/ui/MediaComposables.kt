@@ -54,10 +54,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_population_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_no_description_error
 import artistalleydatabase.modules.utils_compose.generated.resources.close
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.type.MediaFormat
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.type.MediaFormat
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

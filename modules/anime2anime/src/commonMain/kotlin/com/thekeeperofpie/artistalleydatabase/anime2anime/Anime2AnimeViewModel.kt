@@ -6,9 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.Anime2AnimeCountQuery
-import com.anilist.fragment.AniListMedia
-import com.anilist.type.MediaType
+import com.anilist.data.Anime2AnimeCountQuery
+import com.anilist.data.fragment.AniListMedia
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings

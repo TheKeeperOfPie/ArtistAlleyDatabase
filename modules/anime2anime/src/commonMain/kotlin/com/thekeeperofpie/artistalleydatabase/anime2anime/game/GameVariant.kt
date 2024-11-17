@@ -9,10 +9,10 @@ import app.cash.molecule.launchMolecule
 import artistalleydatabase.modules.anime2anime.generated.resources.Res
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_error_loading_media
 import co.touchlab.kermit.Logger
-import com.anilist.Anime2AnimeConnectionsQuery
-import com.anilist.Anime2AnimeCountQuery
-import com.anilist.fragment.AniListMedia
-import com.anilist.fragment.Anime2AnimeConnectionsStaffMedia
+import com.anilist.data.Anime2AnimeConnectionsQuery
+import com.anilist.data.Anime2AnimeCountQuery
+import com.anilist.data.fragment.AniListMedia
+import com.anilist.data.fragment.Anime2AnimeConnectionsStaffMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController

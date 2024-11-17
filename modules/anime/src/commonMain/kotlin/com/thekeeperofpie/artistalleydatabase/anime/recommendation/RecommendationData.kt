@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
-import com.anilist.type.RecommendationRating
+import com.anilist.data.type.RecommendationRating
 
 data class RecommendationData(
     val mediaId: String,

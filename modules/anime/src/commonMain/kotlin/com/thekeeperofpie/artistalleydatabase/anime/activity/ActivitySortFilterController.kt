@@ -18,7 +18,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_activity_filt
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_filter_type_label
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_sort_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_release_date_content_description
-import com.anilist.type.ActivityType
+import com.anilist.data.type.ActivityType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.toTextRes

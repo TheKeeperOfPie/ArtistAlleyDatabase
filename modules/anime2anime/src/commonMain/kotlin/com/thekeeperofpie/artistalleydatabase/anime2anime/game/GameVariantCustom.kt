@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anime2anime.game
 
 import android.os.SystemClock
 import androidx.compose.runtime.snapshotFlow
-import com.anilist.Anime2AnimeCountQuery
-import com.anilist.type.MediaType
+import com.anilist.data.Anime2AnimeCountQuery
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings

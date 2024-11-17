@@ -34,7 +34,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_tab_anime
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_tab_manga
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen

@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import com.anilist.type.MediaFormat
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaSeason
-import com.anilist.type.MediaSource
-import com.anilist.type.MediaStatus
+import com.anilist.data.type.MediaFormat
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaSeason
+import com.anilist.data.type.MediaSource
+import com.anilist.data.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable

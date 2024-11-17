@@ -2,10 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 
 import androidx.compose.runtime.Composable
 import co.touchlab.kermit.Logger
-import com.anilist.fragment.AniListCharacter
-import com.anilist.fragment.AniListMedia
-import com.anilist.type.MediaSeason
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.AniListCharacter
+import com.anilist.data.fragment.AniListMedia
+import com.anilist.data.type.MediaSeason
+import com.anilist.data.type.MediaType
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.network.http.LoggingInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry

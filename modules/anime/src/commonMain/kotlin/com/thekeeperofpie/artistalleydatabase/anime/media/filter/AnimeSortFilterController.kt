@@ -12,9 +12,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_format_chip_state_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_format_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_format_label
-import com.anilist.type.MediaFormat
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaFormat
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings

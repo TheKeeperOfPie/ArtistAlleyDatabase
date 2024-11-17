@@ -9,7 +9,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_spring
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_summer
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_winter
-import com.anilist.type.MediaSeason
+import com.anilist.data.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils

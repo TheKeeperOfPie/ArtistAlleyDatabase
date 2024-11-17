@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 
 @Dao
 interface AnimeHistoryDao {

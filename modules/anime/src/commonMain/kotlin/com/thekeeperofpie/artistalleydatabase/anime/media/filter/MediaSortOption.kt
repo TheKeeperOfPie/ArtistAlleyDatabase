@@ -20,7 +20,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_sort_tr
 import artistalleydatabase.modules.anime.generated.resources.anime_media_sort_type
 import artistalleydatabase.modules.anime.generated.resources.anime_media_sort_updated_at
 import artistalleydatabase.modules.anime.generated.resources.anime_media_sort_volumes
-import com.anilist.type.MediaSort
+import com.anilist.data.type.MediaSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

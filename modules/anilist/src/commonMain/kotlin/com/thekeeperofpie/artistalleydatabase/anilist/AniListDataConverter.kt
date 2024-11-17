@@ -6,9 +6,9 @@ import androidx.compose.material.icons.filled.Monitor
 import artistalleydatabase.modules.anilist.generated.resources.Res
 import artistalleydatabase.modules.anilist.generated.resources.aniList_entry_anime_indicator_content_description
 import artistalleydatabase.modules.anilist.generated.resources.aniList_entry_manga_indicator_content_description
-import com.anilist.fragment.AniListCharacter
-import com.anilist.fragment.AniListMedia
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.AniListCharacter
+import com.anilist.data.fragment.AniListMedia
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils

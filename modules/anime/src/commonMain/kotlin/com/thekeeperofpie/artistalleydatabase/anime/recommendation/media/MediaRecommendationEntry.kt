@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation.media
 
-import com.anilist.fragment.MediaAndRecommendationsRecommendation
-import com.anilist.type.RecommendationRating
+import com.anilist.data.fragment.MediaAndRecommendationsRecommendation
+import com.anilist.data.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 

@@ -12,9 +12,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.anilist.UserByIdQuery
-import com.anilist.fragment.UserMediaStatistics
-import com.anilist.type.MediaType
+import com.anilist.data.UserByIdQuery
+import com.anilist.data.fragment.UserMediaStatistics
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback

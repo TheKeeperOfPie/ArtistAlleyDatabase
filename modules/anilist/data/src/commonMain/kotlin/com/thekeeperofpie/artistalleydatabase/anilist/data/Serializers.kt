@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.data
 
-import com.anilist.fragment.AniListDate
+import com.anilist.data.fragment.AniListDate
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encoding.Decoder

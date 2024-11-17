@@ -5,7 +5,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_studio_sort_f
 import artistalleydatabase.modules.anime.generated.resources.anime_studio_sort_id
 import artistalleydatabase.modules.anime.generated.resources.anime_studio_sort_name
 import artistalleydatabase.modules.anime.generated.resources.anime_studio_sort_search_match
-import com.anilist.type.StudioSort
+import com.anilist.data.type.StudioSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

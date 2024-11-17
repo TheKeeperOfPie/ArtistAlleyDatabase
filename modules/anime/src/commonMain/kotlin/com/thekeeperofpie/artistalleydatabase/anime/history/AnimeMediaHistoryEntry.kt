@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.history
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 
 @Entity("anime_media_history")
 data class AnimeMediaHistoryEntry(

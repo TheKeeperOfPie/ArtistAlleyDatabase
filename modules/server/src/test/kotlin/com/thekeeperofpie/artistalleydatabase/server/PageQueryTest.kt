@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.server
 
-import com.anilist.HomeMangaQuery
-import com.anilist.type.MediaType
+import com.anilist.data.HomeMangaQuery
+import com.anilist.data.type.MediaType
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 

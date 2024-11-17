@@ -1,9 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
 import androidx.compose.runtime.Immutable
-import com.anilist.fragment.CharacterNameLanguageFragment
-import com.anilist.fragment.CharacterNavigationData
-import com.anilist.fragment.StaffNavigationData
+import com.anilist.data.fragment.CharacterNameLanguageFragment
+import com.anilist.data.fragment.CharacterNavigationData
+import com.anilist.data.fragment.StaffNavigationData
 import org.jetbrains.compose.resources.StringResource
 
 @Immutable

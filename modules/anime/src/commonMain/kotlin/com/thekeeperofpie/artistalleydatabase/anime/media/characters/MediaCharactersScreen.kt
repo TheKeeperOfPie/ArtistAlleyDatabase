@@ -24,8 +24,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_characters_me
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_more_actions_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_open_external
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_open_external_icon_content_description
-import com.anilist.MediaAndCharactersQuery
-import com.anilist.type.MediaType
+import com.anilist.data.MediaAndCharactersQuery
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption

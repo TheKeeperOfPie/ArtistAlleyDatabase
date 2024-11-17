@@ -5,7 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 import kotlinx.coroutines.flow.Flow
 
 @Dao

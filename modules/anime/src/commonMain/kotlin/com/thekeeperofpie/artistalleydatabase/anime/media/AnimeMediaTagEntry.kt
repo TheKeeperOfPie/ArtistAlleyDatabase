@@ -22,10 +22,10 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_adult
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_long_click_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_spoiler
-import com.anilist.MediaDetailsQuery
-import com.anilist.fragment.GeneralMediaTag
-import com.anilist.fragment.HomeMedia
-import com.anilist.fragment.MediaPreview
+import com.anilist.data.MediaDetailsQuery
+import com.anilist.data.fragment.GeneralMediaTag
+import com.anilist.data.fragment.HomeMedia
+import com.anilist.data.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.assistChipColors

@@ -15,9 +15,9 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
-import com.anilist.MediaAdvancedSearchQuery
-import com.anilist.type.MediaSeason
-import com.anilist.type.MediaType
+import com.anilist.data.MediaAdvancedSearchQuery
+import com.anilist.data.type.MediaSeason
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

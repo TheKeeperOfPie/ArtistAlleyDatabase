@@ -8,7 +8,7 @@ import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import co.touchlab.kermit.Logger
-import com.anilist.fragment.AniListCharacter
+import com.anilist.data.fragment.AniListCharacter
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

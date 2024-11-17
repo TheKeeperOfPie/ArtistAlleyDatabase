@@ -40,8 +40,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_follower
 import artistalleydatabase.modules.anime.generated.resources.anime_user_followers_you
 import artistalleydatabase.modules.anime.generated.resources.anime_user_following_user
 import artistalleydatabase.modules.anime.generated.resources.anime_user_following_you
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables

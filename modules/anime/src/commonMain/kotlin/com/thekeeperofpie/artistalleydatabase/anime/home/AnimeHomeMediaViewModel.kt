@@ -23,9 +23,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_suggesti
 import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_top
 import artistalleydatabase.modules.anime.generated.resources.anime_home_top_released_this_year
 import artistalleydatabase.modules.anime.generated.resources.anime_home_trending_row_label
-import com.anilist.fragment.HomeMedia
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.HomeMedia
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

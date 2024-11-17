@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.StudioListRowFragment
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.fragment.StudioListRowFragment
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

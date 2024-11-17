@@ -14,7 +14,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToKey
 import androidx.lifecycle.SavedStateHandle
-import com.anilist.fragment.ListActivityMediaListActivityItem
+import com.anilist.data.fragment.ListActivityMediaListActivityItem
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.activity.activitiesSection
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
@@ -56,7 +57,6 @@ import org.junit.jupiter.api.parallel.ResourceLock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import javax.inject.Inject
-import kotlin.text.Typography.dagger
 
 @OptIn(ExperimentalTestApi::class, ExperimentalSharedTransitionApi::class)
 @ExtendWith(HiltInjectExtension::class)

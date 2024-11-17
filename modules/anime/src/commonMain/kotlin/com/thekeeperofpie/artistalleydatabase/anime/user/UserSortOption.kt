@@ -6,7 +6,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_sort_id
 import artistalleydatabase.modules.anime.generated.resources.anime_user_sort_search_match
 import artistalleydatabase.modules.anime.generated.resources.anime_user_sort_username
 import artistalleydatabase.modules.anime.generated.resources.anime_user_sort_watched_time
-import com.anilist.type.UserSort
+import com.anilist.data.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

@@ -32,10 +32,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_stats_fo
 import artistalleydatabase.modules.anime.generated.resources.anime_user_stats_lengths_label
 import artistalleydatabase.modules.anime.generated.resources.anime_user_stats_scores_label
 import artistalleydatabase.modules.anime.generated.resources.anime_user_stats_statuses_label
-import com.anilist.UserByIdQuery
-import com.anilist.type.MediaFormat
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.UserByIdQuery
+import com.anilist.data.type.MediaFormat
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

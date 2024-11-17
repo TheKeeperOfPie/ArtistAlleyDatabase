@@ -38,7 +38,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_history
 import artistalleydatabase.modules.anime.generated.resources.anime_media_history_not_enabled_button
 import artistalleydatabase.modules.anime.generated.resources.anime_media_history_not_enabled_prompt
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen

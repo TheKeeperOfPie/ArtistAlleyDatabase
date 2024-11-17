@@ -41,11 +41,11 @@ import artistalleydatabase.modules.anime.generated.resources.anime_character_ima
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
-import com.anilist.StaffSearchQuery
-import com.anilist.UserFavoritesStaffQuery
-import com.anilist.fragment.CharacterNavigationData
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.StaffNavigationData
+import com.anilist.data.StaffSearchQuery
+import com.anilist.data.UserFavoritesStaffQuery
+import com.anilist.data.fragment.CharacterNavigationData
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.fragment.StaffNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

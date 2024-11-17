@@ -59,9 +59,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_list_man
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_tab_all
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_user_name_anime_search
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_user_name_manga_search
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.type.MediaType
-import com.anilist.type.ScoreFormat
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.type.MediaType
+import com.anilist.data.type.ScoreFormat
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

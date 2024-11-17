@@ -12,7 +12,7 @@ import androidx.paging.cachedIn
 import androidx.paging.flatMap
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_character_error_loading
-import com.anilist.type.CharacterRole
+import com.anilist.data.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

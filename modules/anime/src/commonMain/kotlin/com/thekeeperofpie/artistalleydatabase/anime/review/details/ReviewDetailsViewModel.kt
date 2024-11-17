@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_review_details_error_rating
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_error_loading_details
-import com.anilist.type.ReviewRating
+import com.anilist.data.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController

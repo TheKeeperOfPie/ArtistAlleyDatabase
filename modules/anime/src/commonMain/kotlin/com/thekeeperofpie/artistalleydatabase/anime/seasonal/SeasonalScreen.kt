@@ -47,7 +47,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no
 import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_season_year
 import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_title
-import com.anilist.type.MediaSeason
+import com.anilist.data.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent

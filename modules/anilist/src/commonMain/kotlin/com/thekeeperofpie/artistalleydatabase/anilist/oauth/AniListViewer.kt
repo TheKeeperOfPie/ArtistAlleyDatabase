@@ -1,9 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import androidx.compose.runtime.Stable
-import com.anilist.AuthedUserQuery
-import com.anilist.type.ScoreFormat
-import com.anilist.type.UserTitleLanguage
+import com.anilist.data.AuthedUserQuery
+import com.anilist.data.type.ScoreFormat
+import com.anilist.data.type.UserTitleLanguage
 import kotlinx.serialization.Serializable
 
 @Stable

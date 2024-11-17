@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.character
 
-import com.anilist.fragment.AniListCharacter
-import com.anilist.fragment.AniListMedia
+import com.anilist.data.fragment.AniListCharacter
+import com.anilist.data.fragment.AniListMedia
 import kotlinx.serialization.json.Json
 
 object CharacterUtils {

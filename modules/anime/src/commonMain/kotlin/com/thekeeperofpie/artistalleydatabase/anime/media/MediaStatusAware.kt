@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.runtime.Stable
-import com.anilist.type.MediaListStatus
+import com.anilist.data.type.MediaListStatus
 
 @Stable
 interface MediaStatusAware {

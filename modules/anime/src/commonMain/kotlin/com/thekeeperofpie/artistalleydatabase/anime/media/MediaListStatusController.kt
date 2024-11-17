@@ -3,7 +3,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.paging.PagingData
-import com.anilist.fragment.MediaDetailsListEntry
+import com.anilist.data.fragment.MediaDetailsListEntry
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData

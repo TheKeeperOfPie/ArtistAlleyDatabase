@@ -7,8 +7,8 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.AiringScheduleQuery
-import com.anilist.type.AiringSort
+import com.anilist.data.AiringScheduleQuery
+import com.anilist.data.type.AiringSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings

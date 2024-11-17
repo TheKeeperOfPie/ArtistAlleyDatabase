@@ -46,8 +46,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_search_media_placeholder_anime
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_search_media_placeholder_manga
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_search_media_placeholder_media
-import com.anilist.MediaAutocompleteQuery.Data.Page.Medium
-import com.anilist.type.MediaType
+import com.anilist.data.MediaAutocompleteQuery.Data.Page.Medium
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

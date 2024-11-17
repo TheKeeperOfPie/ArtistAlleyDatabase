@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
-import com.anilist.fragment.MediaPreviewWithDescription
+import com.anilist.data.fragment.MediaPreviewWithDescription
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.data.toCoverImage

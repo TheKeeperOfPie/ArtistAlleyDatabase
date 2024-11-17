@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.notifications
 
-import com.anilist.NotificationsQuery.Data.Page
+import com.anilist.data.NotificationsQuery.Data.Page
 
 val Page.Notification.id
     get() = when (this) {

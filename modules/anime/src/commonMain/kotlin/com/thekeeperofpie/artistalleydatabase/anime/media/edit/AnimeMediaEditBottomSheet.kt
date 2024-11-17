@@ -102,9 +102,9 @@ import artistalleydatabase.modules.utils_compose.generated.resources.no
 import artistalleydatabase.modules.utils_compose.generated.resources.save
 import artistalleydatabase.modules.utils_compose.generated.resources.yes
 import coil3.annotation.ExperimentalCoilApi
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
-import com.anilist.type.ScoreFormat
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
+import com.anilist.data.type.ScoreFormat
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

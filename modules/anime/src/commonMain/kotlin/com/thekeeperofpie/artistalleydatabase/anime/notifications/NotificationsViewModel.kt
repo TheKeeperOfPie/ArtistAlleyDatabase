@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.NotificationMediaAndActivityQuery
-import com.anilist.NotificationsQuery
-import com.anilist.fragment.ActivityItem.Companion.asListActivity
+import com.anilist.data.NotificationMediaAndActivityQuery
+import com.anilist.data.NotificationsQuery
+import com.anilist.data.fragment.ActivityItem.Companion.asListActivity
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings

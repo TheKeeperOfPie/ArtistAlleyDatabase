@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.server
 
-import com.anilist.server.api.model.types.Page
+import com.anilist.data.server.api.model.types.Page
 import graphql.ExecutionInput
 import graphql.GraphQL
 import graphql.GraphQLError

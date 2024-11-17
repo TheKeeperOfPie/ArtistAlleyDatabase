@@ -69,7 +69,7 @@ import androidx.work.OutOfQuotaPolicy
 import artistalleydatabase.app.generated.resources.Res
 import artistalleydatabase.app.generated.resources.crash_share_chooser_title
 import artistalleydatabase.app.generated.resources.nav_drawer_manga
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R

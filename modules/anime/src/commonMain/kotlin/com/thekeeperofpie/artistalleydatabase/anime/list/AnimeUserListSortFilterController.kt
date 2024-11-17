@@ -10,8 +10,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_user_my_score_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_user_their_score_expand_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_user_their_score_label
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes

@@ -12,8 +12,8 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_details_error_loading
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_error_deleting
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_error_replying
-import com.anilist.ActivityDetailsQuery
-import com.anilist.ActivityDetailsRepliesQuery
+import com.anilist.data.ActivityDetailsQuery
+import com.anilist.data.ActivityDetailsRepliesQuery
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager

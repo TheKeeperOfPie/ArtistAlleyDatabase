@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.paging
 import androidx.collection.LruCache
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.anilist.fragment.PaginationInfo
+import com.anilist.data.fragment.PaginationInfo
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.withContext
 

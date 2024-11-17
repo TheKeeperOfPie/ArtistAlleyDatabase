@@ -31,7 +31,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_social_f
 import artistalleydatabase.modules.anime.generated.resources.anime_user_social_following
 import artistalleydatabase.modules.anime.generated.resources.anime_user_social_not_following_anyone
 import coil3.annotation.ExperimentalCoilApi
-import com.anilist.fragment.UserNavigationData
+import com.anilist.data.fragment.UserNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

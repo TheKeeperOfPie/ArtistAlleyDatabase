@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.desktop
 
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption

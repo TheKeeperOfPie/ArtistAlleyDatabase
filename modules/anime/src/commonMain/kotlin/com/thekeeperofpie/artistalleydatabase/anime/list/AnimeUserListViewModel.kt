@@ -9,10 +9,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
-import com.anilist.fragment.AniListDate
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
-import com.anilist.type.ScoreFormat
+import com.anilist.data.fragment.AniListDate
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
+import com.anilist.data.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus

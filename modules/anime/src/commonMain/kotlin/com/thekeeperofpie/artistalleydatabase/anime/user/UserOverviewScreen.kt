@@ -46,8 +46,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_is_not_f
 import artistalleydatabase.modules.anime.generated.resources.anime_user_is_not_following_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_user_previous_names_label
 import artistalleydatabase.modules.utils_compose.generated.resources.view_all
-import com.anilist.UserByIdQuery
-import com.anilist.type.MediaType
+import com.anilist.data.UserByIdQuery
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator

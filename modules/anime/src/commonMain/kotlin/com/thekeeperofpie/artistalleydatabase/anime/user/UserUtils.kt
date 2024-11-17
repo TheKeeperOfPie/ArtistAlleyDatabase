@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import com.anilist.fragment.UserWithFavorites
+import com.anilist.data.fragment.UserWithFavorites
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 
 object UserUtils {

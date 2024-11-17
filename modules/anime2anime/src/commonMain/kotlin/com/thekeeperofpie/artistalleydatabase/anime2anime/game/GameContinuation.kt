@@ -6,9 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import com.anilist.fragment.Anime2AnimeConnectionsMedia
-import com.anilist.fragment.CharacterNavigationData
-import com.anilist.fragment.StaffNavigationData
+import com.anilist.data.fragment.Anime2AnimeConnectionsMedia
+import com.anilist.data.fragment.CharacterNavigationData
+import com.anilist.data.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils

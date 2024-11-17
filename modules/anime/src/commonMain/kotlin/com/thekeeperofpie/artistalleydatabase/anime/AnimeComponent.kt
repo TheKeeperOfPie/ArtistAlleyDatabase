@@ -3,8 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.anime
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavType
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsViewModel

@@ -1,13 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.server
 
-import com.anilist.server.api.model.types.Media
-import com.anilist.server.api.model.types.MediaCoverImage
-import com.anilist.server.api.model.types.MediaFormat
-import com.anilist.server.api.model.types.MediaSeason
-import com.anilist.server.api.model.types.MediaStatus
-import com.anilist.server.api.model.types.MediaTag
-import com.anilist.server.api.model.types.MediaTitle
-import com.anilist.server.api.model.types.MediaType
+import com.anilist.data.server.api.model.types.Media
+import com.anilist.data.server.api.model.types.MediaCoverImage
+import com.anilist.data.server.api.model.types.MediaFormat
+import com.anilist.data.server.api.model.types.MediaSeason
+import com.anilist.data.server.api.model.types.MediaStatus
+import com.anilist.data.server.api.model.types.MediaTag
+import com.anilist.data.server.api.model.types.MediaTitle
+import com.anilist.data.server.api.model.types.MediaType
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 

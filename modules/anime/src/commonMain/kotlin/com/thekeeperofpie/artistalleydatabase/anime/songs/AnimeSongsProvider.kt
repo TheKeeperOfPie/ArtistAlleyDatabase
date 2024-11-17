@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.songs
 
-import com.anilist.MediaDetailsQuery
+import com.anilist.data.MediaDetailsQuery
 
 interface AnimeSongsProvider {
 

@@ -6,7 +6,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_reviews_sort_
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_sort_rating
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_sort_score
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_sort_updated_at
-import com.anilist.type.ReviewSort
+import com.anilist.data.type.ReviewSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

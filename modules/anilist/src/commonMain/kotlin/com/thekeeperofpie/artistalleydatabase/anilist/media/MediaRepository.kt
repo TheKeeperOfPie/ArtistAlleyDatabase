@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.media
 
 import artistalleydatabase.modules.anilist.generated.resources.Res
 import artistalleydatabase.modules.anilist.generated.resources.aniList_error_fetching_series
-import com.anilist.fragment.AniListMedia
+import com.anilist.data.fragment.AniListMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope

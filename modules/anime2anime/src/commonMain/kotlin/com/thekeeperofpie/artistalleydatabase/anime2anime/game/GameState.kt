@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime2anime.game
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.anilist.fragment.AniListMedia
+import com.anilist.data.fragment.AniListMedia
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeSubmitResult
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult

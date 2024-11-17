@@ -29,8 +29,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_reviews_heade
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_header_with_media
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_tab_anime
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_tab_manga
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

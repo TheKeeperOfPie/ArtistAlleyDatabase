@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.UserSocialActivityQuery.Data.Page.ListActivityActivity
-import com.anilist.UserSocialActivityQuery.Data.Page.MessageActivityActivity
-import com.anilist.UserSocialActivityQuery.Data.Page.OtherActivity
-import com.anilist.UserSocialActivityQuery.Data.Page.TextActivityActivity
+import com.anilist.data.UserSocialActivityQuery.Data.Page.ListActivityActivity
+import com.anilist.data.UserSocialActivityQuery.Data.Page.MessageActivityActivity
+import com.anilist.data.UserSocialActivityQuery.Data.Page.OtherActivity
+import com.anilist.data.UserSocialActivityQuery.Data.Page.TextActivityActivity
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings

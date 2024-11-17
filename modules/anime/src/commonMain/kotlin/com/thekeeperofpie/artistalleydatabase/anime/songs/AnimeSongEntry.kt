@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.songs
 
 import androidx.compose.runtime.Composable
-import com.anilist.fragment.CharacterNameLanguageFragment
+import com.anilist.data.fragment.CharacterNameLanguageFragment
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 

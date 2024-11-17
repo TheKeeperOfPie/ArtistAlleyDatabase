@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.collection.LruCache
-import com.anilist.MediaAdvancedSearchQuery
-import com.anilist.type.MediaSeason
-import com.anilist.type.MediaSort
-import com.anilist.type.MediaType
+import com.anilist.data.MediaAdvancedSearchQuery
+import com.anilist.data.type.MediaSeason
+import com.anilist.data.type.MediaSort
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.toAniListFuzzyDateInt

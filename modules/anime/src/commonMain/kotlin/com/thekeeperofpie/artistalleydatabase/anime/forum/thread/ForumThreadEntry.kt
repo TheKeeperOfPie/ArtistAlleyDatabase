@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread
 
-import com.anilist.fragment.ForumThread
+import com.anilist.data.fragment.ForumThread
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 
 data class ForumThreadEntry(

@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
-import com.anilist.ForumThread_CommentsQuery
-import com.anilist.fragment.ForumThreadComment
+import com.anilist.data.ForumThread_CommentsQuery
+import com.anilist.data.fragment.ForumThreadComment
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentChild
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown

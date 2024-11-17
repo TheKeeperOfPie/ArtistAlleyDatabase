@@ -33,7 +33,7 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_activities_header
 import artistalleydatabase.modules.anime.generated.resources.anime_media_activities_tab_following
 import artistalleydatabase.modules.anime.generated.resources.anime_media_activities_tab_global
-import com.anilist.MediaActivityQuery
+import com.anilist.data.MediaActivityQuery
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen

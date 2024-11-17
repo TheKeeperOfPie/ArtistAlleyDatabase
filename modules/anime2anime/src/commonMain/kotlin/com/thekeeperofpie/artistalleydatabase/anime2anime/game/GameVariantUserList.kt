@@ -5,9 +5,9 @@ import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_e
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_filter_list_status_chip_state_content_description
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_filter_list_status_content_description
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_filter_list_status_label
-import com.anilist.Anime2AnimeCountQuery
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.Anime2AnimeCountQuery
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus

@@ -35,9 +35,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
-import com.anilist.fragment.MediaCompactWithTags
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.MediaCompactWithTags
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

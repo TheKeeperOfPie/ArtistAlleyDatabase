@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import androidx.compose.runtime.Composable
 import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
-import com.anilist.fragment.HomeMedia
+import com.anilist.data.fragment.HomeMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.data.CoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
@@ -59,9 +59,9 @@ data class AnimeHomeDataEntry(
         override val titleEnglish get() = media.title?.english
         override val titleNative get() = media.title?.native
         override val mediaType = when (media.type) {
-            com.anilist.type.MediaType.ANIME -> MediaType.ANIME
-            com.anilist.type.MediaType.MANGA -> MediaType.MANGA
-            com.anilist.type.MediaType.UNKNOWN__ -> MediaType.UNKNOWN
+            com.anilist.data.type.MediaType.ANIME -> MediaType.ANIME
+            com.anilist.data.type.MediaType.MANGA -> MediaType.MANGA
+            com.anilist.data.type.MediaType.UNKNOWN__ -> MediaType.UNKNOWN
             null -> null
         }
         override val mediaListStatus get() = mediaFilterable.mediaListStatus

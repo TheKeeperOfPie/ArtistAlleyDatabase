@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime2anime.game
 
-import com.anilist.Anime2AnimeCountQuery
+import com.anilist.data.Anime2AnimeCountQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController

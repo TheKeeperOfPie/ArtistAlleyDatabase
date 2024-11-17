@@ -7,7 +7,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_staff_sort_la
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_sort_relevance
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_sort_role
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_sort_search_match
-import com.anilist.type.StaffSort
+import com.anilist.data.type.StaffSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

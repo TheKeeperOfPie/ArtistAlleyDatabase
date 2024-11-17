@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import com.anilist.MediaTagsQuery
+import com.anilist.data.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState

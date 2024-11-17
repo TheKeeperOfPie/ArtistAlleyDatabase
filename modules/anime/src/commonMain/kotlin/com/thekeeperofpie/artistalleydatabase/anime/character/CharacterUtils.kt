@@ -6,9 +6,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_character_rol
 import artistalleydatabase.modules.anime.generated.resources.anime_character_role_main
 import artistalleydatabase.modules.anime.generated.resources.anime_character_role_supporting
 import artistalleydatabase.modules.anime.generated.resources.anime_character_role_unknown
-import com.anilist.fragment.CharacterNameLanguageFragment
-import com.anilist.fragment.DetailsCharacterEdge
-import com.anilist.type.CharacterRole
+import com.anilist.data.fragment.CharacterNameLanguageFragment
+import com.anilist.data.fragment.DetailsCharacterEdge
+import com.anilist.data.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
 

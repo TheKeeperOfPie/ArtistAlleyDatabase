@@ -56,7 +56,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_character_det
 import artistalleydatabase.modules.anime.generated.resources.anime_character_details_view_all_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_character_details_voice_actors_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_information_label
-import com.anilist.CharacterDetailsQuery.Data.Character
+import com.anilist.data.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent

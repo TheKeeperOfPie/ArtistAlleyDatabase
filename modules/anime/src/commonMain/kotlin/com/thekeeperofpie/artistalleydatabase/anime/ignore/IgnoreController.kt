@@ -3,10 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.anime.ignore
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.paging.PagingSource
-import com.anilist.fragment.MediaCompactWithTags
-import com.anilist.fragment.MediaPreview
-import com.anilist.fragment.MediaWithListStatus
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.MediaCompactWithTags
+import com.anilist.data.fragment.MediaPreview
+import com.anilist.data.fragment.MediaWithListStatus
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination

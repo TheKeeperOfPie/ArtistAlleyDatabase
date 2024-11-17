@@ -45,11 +45,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_banner_image_content_description
-import com.anilist.fragment.AniListDate
-import com.anilist.type.MediaFormat
-import com.anilist.type.MediaSeason
-import com.anilist.type.MediaStatus
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.AniListDate
+import com.anilist.data.type.MediaFormat
+import com.anilist.data.type.MediaSeason
+import com.anilist.data.type.MediaStatus
+import com.anilist.data.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

@@ -33,7 +33,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_his
 import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_ignored
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification_button
-import com.anilist.type.MediaType
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen

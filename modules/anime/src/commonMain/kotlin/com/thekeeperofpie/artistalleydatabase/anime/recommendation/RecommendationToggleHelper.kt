@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
 import co.touchlab.kermit.Logger
 import co.touchlab.stately.collections.ConcurrentMutableMap
-import com.anilist.type.RecommendationRating
+import com.anilist.data.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope

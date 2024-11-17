@@ -21,8 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.anilist.type.MediaListStatus
-import com.anilist.type.ScoreFormat
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ClickableBottomSheetDragHandle

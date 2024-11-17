@@ -8,7 +8,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_sort_title
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_sort_updated_at
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_sort_view_count
-import com.anilist.type.ThreadSort
+import com.anilist.data.type.ThreadSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

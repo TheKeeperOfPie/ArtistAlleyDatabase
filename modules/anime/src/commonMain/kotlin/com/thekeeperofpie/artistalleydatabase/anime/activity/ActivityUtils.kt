@@ -7,8 +7,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_activity_type
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_message
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_text
 import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_unknown
-import com.anilist.UserSocialActivityQuery
-import com.anilist.type.ActivityType
+import com.anilist.data.UserSocialActivityQuery
+import com.anilist.data.type.ActivityType
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 object ActivityUtils {

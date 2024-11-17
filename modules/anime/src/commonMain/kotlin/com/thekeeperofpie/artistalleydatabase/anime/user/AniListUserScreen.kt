@@ -40,8 +40,8 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_settings_content_description
 import artistalleydatabase.modules.entry.generated.resources.log_out
 import artistalleydatabase.modules.entry.generated.resources.more_actions_content_description
-import com.anilist.UserByIdQuery.Data.User
-import com.anilist.fragment.UserMediaStatistics
+import com.anilist.data.UserByIdQuery.Data.User
+import com.anilist.data.fragment.UserMediaStatistics
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold

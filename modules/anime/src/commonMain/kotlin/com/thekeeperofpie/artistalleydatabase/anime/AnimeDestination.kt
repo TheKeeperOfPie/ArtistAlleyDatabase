@@ -10,11 +10,11 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_suggesti
 import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_top
 import artistalleydatabase.modules.anime.generated.resources.anime_home_top_released_this_year_title
 import artistalleydatabase.modules.anime.generated.resources.anime_home_trending_screen_title
-import com.anilist.fragment.AniListDate
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaSeason
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.AniListDate
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaSeason
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption

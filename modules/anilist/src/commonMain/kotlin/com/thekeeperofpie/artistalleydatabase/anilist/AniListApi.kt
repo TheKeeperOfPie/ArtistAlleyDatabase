@@ -1,13 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
-import com.anilist.CharactersByIdsQuery
-import com.anilist.CharactersSearchQuery
-import com.anilist.MediaSearchQuery
-import com.anilist.MediaWithCharactersQuery
-import com.anilist.SimpleMediaByIdsQuery
-import com.anilist.fragment.AniListCharacter
-import com.anilist.fragment.AniListMedia
-import com.anilist.type.MediaType
+import com.anilist.data.CharactersByIdsQuery
+import com.anilist.data.CharactersSearchQuery
+import com.anilist.data.MediaSearchQuery
+import com.anilist.data.MediaWithCharactersQuery
+import com.anilist.data.SimpleMediaByIdsQuery
+import com.anilist.data.fragment.AniListCharacter
+import com.anilist.data.fragment.AniListMedia
+import com.anilist.data.type.MediaType
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import com.thekeeperofpie.artistalleydatabase.inject.Named

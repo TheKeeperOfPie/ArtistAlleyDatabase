@@ -4,10 +4,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.anilist.fragment.MediaDetailsListEntry
-import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
-import com.anilist.type.ScoreFormat
+import com.anilist.data.fragment.MediaDetailsListEntry
+import com.anilist.data.type.MediaListStatus
+import com.anilist.data.type.MediaType
+import com.anilist.data.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.utils.SimpleResult
 import kotlinx.datetime.LocalDate

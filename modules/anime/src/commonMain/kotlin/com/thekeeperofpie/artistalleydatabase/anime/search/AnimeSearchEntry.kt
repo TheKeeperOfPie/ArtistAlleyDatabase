@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
-import com.anilist.fragment.MediaPreviewWithDescription
+import com.anilist.data.fragment.MediaPreviewWithDescription
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry

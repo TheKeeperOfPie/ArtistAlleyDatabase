@@ -28,7 +28,7 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_character_details_more_actions_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_character_details_open_external
 import artistalleydatabase.modules.anime.generated.resources.anime_character_details_open_external_icon_content_description
-import com.anilist.fragment.CharacterHeaderData
+import com.anilist.data.fragment.CharacterHeaderData
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName

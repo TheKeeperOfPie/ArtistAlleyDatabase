@@ -48,10 +48,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_recomme
 import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_down_filled_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_up_empty_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_up_filled_content_description
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.MediaPreview
-import com.anilist.type.MediaType
-import com.anilist.type.RecommendationRating
+import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.fragment.MediaPreview
+import com.anilist.data.type.MediaType
+import com.anilist.data.type.RecommendationRating
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

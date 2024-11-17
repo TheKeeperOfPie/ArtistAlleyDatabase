@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
-import com.anilist.UserSocialActivityQuery
+import com.anilist.data.UserSocialActivityQuery
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entryId
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed

@@ -41,9 +41,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_user_avatar_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_view_all_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_icon_content_description
-import com.anilist.MediaDetailsQuery
-import com.anilist.fragment.MediaAndReviewsReview
-import com.anilist.fragment.MediaNavigationData
+import com.anilist.data.MediaDetailsQuery
+import com.anilist.data.fragment.MediaAndReviewsReview
+import com.anilist.data.fragment.MediaNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

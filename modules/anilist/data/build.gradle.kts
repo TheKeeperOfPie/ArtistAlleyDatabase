@@ -10,7 +10,7 @@ plugins {
 val aniListSchemaFile: File = project.file("src/commonMain/graphql/anilist/schema.graphqls")
 apollo {
     service("aniList") {
-        packageName.set("com.anilist")
+        packageName.set("com.anilist.data")
         schemaFiles.from(aniListSchemaFile)
         introspection {
             endpointUrl.set("https://graphql.anilist.co")

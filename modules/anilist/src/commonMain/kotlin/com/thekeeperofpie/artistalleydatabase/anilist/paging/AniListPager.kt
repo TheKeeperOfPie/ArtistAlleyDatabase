@@ -5,7 +5,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
-import com.anilist.fragment.PaginationInfo
+import com.anilist.data.fragment.PaginationInfo
 import kotlinx.coroutines.flow.Flow
 
 object AniListPager {

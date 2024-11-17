@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import com.anilist.MediaTagsQuery
+import com.anilist.data.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope

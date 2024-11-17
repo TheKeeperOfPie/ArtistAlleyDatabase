@@ -12,9 +12,9 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_error_loading
-import com.anilist.fragment.StaffDetailsCharacterMediaPage
-import com.anilist.fragment.StaffDetailsStaffMediaPage
-import com.anilist.type.CharacterRole
+import com.anilist.data.fragment.StaffDetailsCharacterMediaPage
+import com.anilist.data.fragment.StaffDetailsStaffMediaPage
+import com.anilist.data.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination

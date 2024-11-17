@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.data
 
-import com.anilist.fragment.MediaCompactWithTags
-import com.anilist.fragment.MediaPreviewWithDescription
-import com.anilist.fragment.StaffDetailsStaffMediaPage
-import com.anilist.fragment.UserFavoriteMediaNode
-import com.anilist.type.MediaType
+import com.anilist.data.fragment.MediaCompactWithTags
+import com.anilist.data.fragment.MediaPreviewWithDescription
+import com.anilist.data.fragment.StaffDetailsStaffMediaPage
+import com.anilist.data.fragment.UserFavoriteMediaNode
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import kotlinx.datetime.Instant
 
@@ -29,24 +29,24 @@ fun MediaPreviewWithDescription.CoverImage.toCoverImage() = CoverImage(
     color = color?.let(ComposeColorUtils::hexToColor),
 )
 
-fun com.anilist.type.MediaListStatus.toMediaListStatus() = when (this) {
-    com.anilist.type.MediaListStatus.CURRENT -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.CURRENT
-    com.anilist.type.MediaListStatus.PLANNING -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.PLANNING
-    com.anilist.type.MediaListStatus.COMPLETED -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.COMPLETED
-    com.anilist.type.MediaListStatus.DROPPED -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.DROPPED
-    com.anilist.type.MediaListStatus.PAUSED -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.PAUSED
-    com.anilist.type.MediaListStatus.REPEATING -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.REPEATING
-    com.anilist.type.MediaListStatus.UNKNOWN__ -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.UNKNOWN
+fun com.anilist.data.type.MediaListStatus.toMediaListStatus() = when (this) {
+    com.anilist.data.type.MediaListStatus.CURRENT -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.CURRENT
+    com.anilist.data.type.MediaListStatus.PLANNING -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.PLANNING
+    com.anilist.data.type.MediaListStatus.COMPLETED -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.COMPLETED
+    com.anilist.data.type.MediaListStatus.DROPPED -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.DROPPED
+    com.anilist.data.type.MediaListStatus.PAUSED -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.PAUSED
+    com.anilist.data.type.MediaListStatus.REPEATING -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.REPEATING
+    com.anilist.data.type.MediaListStatus.UNKNOWN__ -> com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.UNKNOWN
 }
 
 fun com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.toMediaListStatus() = when (this) {
-    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.CURRENT -> com.anilist.type.MediaListStatus.CURRENT
-    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.PLANNING -> com.anilist.type.MediaListStatus.PLANNING
-    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.COMPLETED -> com.anilist.type.MediaListStatus.COMPLETED
-    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.DROPPED -> com.anilist.type.MediaListStatus.DROPPED
-    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.PAUSED -> com.anilist.type.MediaListStatus.PAUSED
-    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.REPEATING -> com.anilist.type.MediaListStatus.REPEATING
-    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.UNKNOWN -> com.anilist.type.MediaListStatus.UNKNOWN__
+    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.CURRENT -> com.anilist.data.type.MediaListStatus.CURRENT
+    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.PLANNING -> com.anilist.data.type.MediaListStatus.PLANNING
+    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.COMPLETED -> com.anilist.data.type.MediaListStatus.COMPLETED
+    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.DROPPED -> com.anilist.data.type.MediaListStatus.DROPPED
+    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.PAUSED -> com.anilist.data.type.MediaListStatus.PAUSED
+    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.REPEATING -> com.anilist.data.type.MediaListStatus.REPEATING
+    com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.UNKNOWN -> com.anilist.data.type.MediaListStatus.UNKNOWN__
 }
 
 fun MediaCompactWithTags.NextAiringEpisode.toNextAiringEpisode() = NextAiringEpisode(

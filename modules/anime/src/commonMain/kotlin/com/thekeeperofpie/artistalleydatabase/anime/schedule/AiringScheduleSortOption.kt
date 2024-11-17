@@ -5,7 +5,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedu
 import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedule_sort_id
 import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedule_sort_popularity
 import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedule_sort_time
-import com.anilist.type.AiringSort
+import com.anilist.data.type.AiringSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

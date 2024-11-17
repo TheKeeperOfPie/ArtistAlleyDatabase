@@ -68,7 +68,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_activity_repl
 import artistalleydatabase.modules.anime.generated.resources.anime_writing_reply_fab_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.cancel
 import artistalleydatabase.modules.utils_compose.generated.resources.delete
-import com.anilist.ActivityDetailsQuery
+import com.anilist.data.ActivityDetailsQuery
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer

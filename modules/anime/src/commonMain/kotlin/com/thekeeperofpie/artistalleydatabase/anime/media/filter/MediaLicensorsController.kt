@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import com.anilist.LicensorsQuery
-import com.anilist.type.ExternalLinkMediaType
+import com.anilist.data.LicensorsQuery
+import com.anilist.data.type.ExternalLinkMediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
