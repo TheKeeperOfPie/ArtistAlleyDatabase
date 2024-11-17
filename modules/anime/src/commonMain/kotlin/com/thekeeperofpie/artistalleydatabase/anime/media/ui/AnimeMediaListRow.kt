@@ -83,6 +83,8 @@ import org.jetbrains.compose.resources.stringResource
 )
 object AnimeMediaListRow {
 
+    private val DEFAULT_IMAGE_WIDTH = 130.dp
+
     @Composable
     operator fun invoke(
         entry: Entry?,
@@ -135,17 +137,19 @@ object AnimeMediaListRow {
                     )
                 }
             }
-            Row(modifier = Modifier
-                .height(IntrinsicSize.Min)
-                .combinedClickable(
-                    enabled = entry != null,
-                    onClick = onClickEntry,
-                    onLongClick = {
-                        if (entry != null) {
-                            ignoreController.toggle(entry.media)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+                    .combinedClickable(
+                        enabled = entry != null,
+                        onClick = onClickEntry,
+                        onLongClick = {
+                            if (entry != null) {
+                                ignoreController.toggle(entry.media)
+                            }
                         }
-                    }
-                )
+                    )
             ) {
                 CoverImage(
                     entry = entry,
@@ -159,8 +163,10 @@ object AnimeMediaListRow {
                     forceListEditIcon = forceListEditIcon,
                     showQuickEdit = showQuickEdit,
                 )
-
-                Column(modifier = Modifier.heightIn(min = 180.dp)) {
+                Column(
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.heightIn(min = 180.dp)
+                ) {
                     Row(Modifier.fillMaxWidth()) {
                         Column(Modifier.weight(1f)) {
                             label?.invoke()
@@ -178,39 +184,40 @@ object AnimeMediaListRow {
                         )
                     }
 
-                    Spacer(Modifier.weight(1f))
+                    Column {
+                        nextAiringEpisode?.let {
+                            MediaNextAiringSection(
+                                nextAiringEpisode = nextAiringEpisode,
+                                episodes = entry?.media?.episodes,
+                                format = entry?.media?.format,
+                                showDate = showDate,
+                            )
+                        }
 
-                    nextAiringEpisode?.let {
-                        MediaNextAiringSection(
-                            nextAiringEpisode = nextAiringEpisode,
-                            episodes = entry?.media?.episodes,
-                            format = entry?.media?.format,
-                            showDate = showDate,
-                        )
-                    }
-
-                    val (containerColor, textColor) = coverImageState.colors
-                    val tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS
-                    if (tags.isEmpty()) {
-                        Spacer(Modifier.height(8.dp))
-                    } else {
-                        MediaTagRow(
-                            loading = entry == null,
-                            tags = tags,
-                            onTagClick = { id, name ->
-                                if (entry != null) {
-                                    navigationCallback.navigate(
-                                        AnimeDestination.SearchMedia(
-                                            title = AnimeDestination.SearchMedia.Title.Custom(name),
-                                            tagId = id,
-                                            mediaType = entry.media.type ?: MediaType.ANIME,
+                        val (containerColor, textColor) = coverImageState.colors
+                        val tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS
+                        if (tags.isEmpty()) {
+                            Spacer(Modifier.height(8.dp))
+                        } else {
+                            MediaTagRow(
+                                loading = entry == null,
+                                tags = tags,
+                                onTagClick = { id, name ->
+                                    if (entry != null) {
+                                        navigationCallback.navigate(
+                                            AnimeDestination.SearchMedia(
+                                                title =
+                                                    AnimeDestination.SearchMedia.Title.Custom(name),
+                                                tagId = id,
+                                                mediaType = entry.media.type ?: MediaType.ANIME,
+                                            )
                                         )
-                                    )
-                                }
-                            },
-                            tagContainerColor = containerColor,
-                            tagTextColor = textColor,
-                        )
+                                    }
+                                },
+                                tagContainerColor = containerColor,
+                                tagTextColor = textColor,
+                            )
+                        }
                     }
                 }
             }
@@ -233,7 +240,10 @@ object AnimeMediaListRow {
         forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
     ) {
-        Box {
+        Box(
+            Modifier.width(DEFAULT_IMAGE_WIDTH)
+                .fillMaxHeight()
+        ) {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
             val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
@@ -242,18 +252,16 @@ object AnimeMediaListRow {
                 image = imageState.request().build(),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .heightIn(min = 180.dp)
-                    .width(130.dp)
+                    .matchParentSize()
                     .placeholder(
                         visible = entry == null,
                         shape = shape,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
                     .sharedElement(sharedContentState)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(shape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .combinedClickable(
                         onClick = onClick,
                         onLongClick = { imageState.uri?.let(fullscreenImageHandler::openImage) },
@@ -268,7 +276,7 @@ object AnimeMediaListRow {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .width(130.dp)
+                        .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
                         .align(Alignment.TopStart)
                 ) {

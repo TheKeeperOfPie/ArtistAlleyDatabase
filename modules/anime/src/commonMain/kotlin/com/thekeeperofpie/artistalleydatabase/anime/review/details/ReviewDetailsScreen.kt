@@ -103,6 +103,7 @@ object ReviewDetailsScreen {
                     val mediaSharedTransitionKey = entry?.review?.media?.id?.toString()
                         ?.let { SharedTransitionKey.makeKeyForId(it) }
                     MediaHeader(
+                        viewer = viewModel.viewer.collectAsState().value,
                         upIconOption = upIconOption,
                         mediaId = entry?.review?.media?.id?.toString(),
                         mediaType = viewModel.entry?.review?.media?.type,
@@ -113,7 +114,6 @@ object ReviewDetailsScreen {
                         popularity = media?.popularity,
                         progress = it,
                         headerValues = headerValues,
-                        coverImageState = coverImageState,
                         onFavoriteChanged = {
                             viewModel.favoritesToggleHelper.set(
                                 headerValues.type.toFavoriteType(),
@@ -121,6 +121,7 @@ object ReviewDetailsScreen {
                                 it,
                             )
                         },
+                        coverImageState = coverImageState,
                         enableCoverImageSharedElement = false,
                         onCoverImageClick = {
                             entry?.review?.media?.let { media ->

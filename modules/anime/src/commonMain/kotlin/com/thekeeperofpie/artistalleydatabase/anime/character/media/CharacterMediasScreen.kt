@@ -37,6 +37,7 @@ object CharacterMediasScreen {
             headerTextRes = Res.string.anime_character_medias_header,
             header = {
                 CharacterHeader(
+                    viewer = viewer,
                     upIconOption = upIconOption,
                     characterId = viewModel.characterId,
                     progress = it,

@@ -144,6 +144,7 @@ object CharacterDetailsScreen {
                         scrollBehavior = scrollBehavior,
                     ) {
                         CharacterHeader(
+                            viewer = viewer,
                             upIconOption = upIconOption,
                             characterId = viewModel.characterId,
                             progress = it,

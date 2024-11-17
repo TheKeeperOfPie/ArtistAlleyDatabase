@@ -38,6 +38,7 @@ object MediaRecommendationsScreen {
             headerTextRes = Res.string.anime_recommendations_header,
             header = {
                 MediaHeader(
+                    viewer = viewer,
                     upIconOption = upIconOption,
                     mediaId = viewModel.mediaId,
                     mediaType = media?.type,

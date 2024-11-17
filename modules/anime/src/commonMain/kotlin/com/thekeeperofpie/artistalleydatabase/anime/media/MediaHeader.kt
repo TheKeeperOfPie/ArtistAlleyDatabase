@@ -3,6 +3,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,6 +50,7 @@ import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDateSerializer
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaRatingIconsSection
@@ -70,6 +73,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MediaHeader(
+    viewer: AniListViewer?,
     upIconOption: UpIconOption,
     mediaId: String?,
     mediaType: MediaType?,
@@ -105,11 +109,13 @@ fun MediaHeader(
         onClick = {
             preferredTitle = (preferredTitle + 1) % (titles?.size ?: 1)
         },
-        menuContent = {
-            FavoriteIconButton(
-                favorite = headerValues.favorite,
-                onFavoriteChanged = onFavoriteChanged,
-            )
+        menuContent = if (viewer == null) null else {
+            {
+                FavoriteIconButton(
+                    favorite = headerValues.favorite,
+                    onFavoriteChanged = onFavoriteChanged,
+                )
+            }
         },
         onCoverImageClick = onCoverImageClick,
         modifier = Modifier.sharedBounds(sharedTransitionKey, "media_header")
@@ -125,14 +131,21 @@ fun MediaHeader(
                         .weight(1f)
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
                 )
-                MediaRatingIconsSection(
-                    rating = averageScore,
-                    popularity = popularity,
-                    modifier = Modifier
-                        .alpha(if (progress > 0.6f) 1f - ((1f - progress) / 0.2f) else 0f)
-                        .padding(start = 8.dp, end = 8.dp, top = 12.dp)
-                        .align(Alignment.Top)
-                )
+                val ratingIconsAlpha = if (progress > 0.6f) 1f - ((1f - progress) / 0.2f) else 0f
+                AnimatedVisibility(
+                    visible = ratingIconsAlpha != 0f,
+                    enter = expandHorizontally(),
+                    exit = shrinkHorizontally()
+                ) {
+                    MediaRatingIconsSection(
+                        rating = averageScore,
+                        popularity = popularity,
+                        modifier = Modifier
+                            .alpha(ratingIconsAlpha)
+                            .padding(start = 8.dp, end = 8.dp, top = 12.dp)
+                            .align(Alignment.Top)
+                    )
+                }
             }
 
             Row(verticalAlignment = Alignment.Bottom) {

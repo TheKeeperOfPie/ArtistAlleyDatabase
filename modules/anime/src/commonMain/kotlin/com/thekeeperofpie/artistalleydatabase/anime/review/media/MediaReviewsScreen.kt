@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.review.media
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -36,6 +37,7 @@ object MediaReviewsScreen {
             headerTextRes = Res.string.anime_reviews_header,
             header = {
                 MediaHeader(
+                    viewer = viewModel.viewer.collectAsState().value,
                     upIconOption = upIconOption,
                     mediaId = viewModel.mediaId,
                     mediaType = media?.type,
@@ -46,7 +48,6 @@ object MediaReviewsScreen {
                     popularity = media?.popularity,
                     progress = it,
                     headerValues = headerValues,
-                    coverImageState = coverImageState,
                     onFavoriteChanged = {
                         viewModel.favoritesToggleHelper.set(
                             headerValues.type.toFavoriteType(),
@@ -54,6 +55,7 @@ object MediaReviewsScreen {
                             it,
                         )
                     },
+                    coverImageState = coverImageState,
                     enableCoverImageSharedElement = false
                 )
             },

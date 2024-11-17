@@ -23,21 +23,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import com.anilist.fragment.StaffHeaderData
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_more_actions_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_open_external
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_open_external_icon_content_description
+import com.anilist.fragment.StaffHeaderData
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedBounds
@@ -46,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.maybeOverride
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.stringResource
 
 // TODO: Collapse this with CharacterHeader?
 @Composable

@@ -93,6 +93,7 @@ object AnimeMediaCompactListRow {
             val title = entry?.media?.title?.primaryTitle().orEmpty()
             Row(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .height(IntrinsicSize.Min)
                     .combinedClickable(
                         enabled = entry != null,
@@ -210,7 +211,10 @@ object AnimeMediaCompactListRow {
         forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
     ) {
-        Box {
+        Box(
+            Modifier.width(DEFAULT_IMAGE_WIDTH)
+                .fillMaxHeight()
+        ) {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
             val shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
@@ -221,8 +225,7 @@ object AnimeMediaCompactListRow {
                 modifier = Modifier
                     // Pad inside to offset the 1.dp border from the OutlinedCard
                     .padding(start = 1.dp, top = 1.dp, bottom = 1.dp)
-                    .width(DEFAULT_IMAGE_WIDTH)
-                    .heightIn(min = DEFAULT_IMAGE_HEIGHT)
+                    .matchParentSize()
                     .sharedElement(sharedContentState)
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(shape)

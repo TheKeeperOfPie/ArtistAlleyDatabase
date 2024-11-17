@@ -350,6 +350,7 @@ object AnimeMediaDetailsScreen {
                         scrollBehavior = scrollBehavior,
                     ) {
                         MediaHeader(
+                            viewer = viewer,
                             upIconOption = upIconOption,
                             mediaId = viewModel.mediaId,
                             mediaType = viewModel.entry.result?.media?.type,

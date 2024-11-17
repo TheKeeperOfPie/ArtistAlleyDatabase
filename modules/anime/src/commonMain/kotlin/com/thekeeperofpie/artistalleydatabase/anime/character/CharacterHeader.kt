@@ -30,6 +30,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_character_det
 import artistalleydatabase.modules.anime.generated.resources.anime_character_details_open_external_icon_content_description
 import com.anilist.fragment.CharacterHeaderData
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
@@ -49,6 +50,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CharacterHeader(
+    viewer: AniListViewer?,
     upIconOption: UpIconOption?,
     characterId: String,
     progress: Float,
@@ -65,11 +67,13 @@ fun CharacterHeader(
         coverImageSharedTransitionIdentifier = "character_image",
         bannerImageSharedTransitionIdentifier = "character_banner_image",
         progress = progress,
-        menuContent = {
-            FavoriteIconButton(
-                favorite = headerValues.favorite,
-                onFavoriteChanged = onFavoriteChanged,
-            )
+        menuContent = if (viewer == null) null else {
+            {
+                FavoriteIconButton(
+                    favorite = headerValues.favorite,
+                    onFavoriteChanged = onFavoriteChanged,
+                )
+            }
         },
         fadeOutMenu = false,
         reserveMenuWidth = false,
