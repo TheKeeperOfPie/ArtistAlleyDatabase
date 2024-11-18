@@ -13,10 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
@@ -86,7 +87,7 @@ class AiringScheduleViewModel(
                 .applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreController = ignoreController,
-                    settings = settings,
+                    mediaFilteringData = settings.mediaFilteringData(false),
                     mediaFilterable = { it.media?.mediaFilterable },
                     copy = { copy(media = media?.copy(mediaFilterable = it)) },
                 )

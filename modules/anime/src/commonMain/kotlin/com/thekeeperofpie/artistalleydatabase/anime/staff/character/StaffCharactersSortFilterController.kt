@@ -8,7 +8,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_staff_charact
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
@@ -21,7 +21,7 @@ class StaffCharactersSortFilterController(
     scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : AnimeSettingsSortFilterController<StaffCharactersSortFilterController.FilterParams>(
+) : MediaDataSettingsSortFilterController<StaffCharactersSortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider

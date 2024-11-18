@@ -62,16 +62,15 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
-import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
@@ -98,7 +97,7 @@ fun <T> LazyGridScope.mediaListSection(
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
     label: @Composable ((T) -> Unit)? = null,
-    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+    onClickViewAll: (() -> Unit)? = null,
     viewAllContentDescriptionTextRes: StringResource? = null,
 ) = listSection(
     titleRes = titleRes,

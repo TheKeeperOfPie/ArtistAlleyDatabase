@@ -49,7 +49,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_character_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_artist_image
 import artistalleydatabase.modules.anime.generated.resources.anime_media_artist_no_image
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_song_artist_as_character
@@ -66,6 +65,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_song_spoiler_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_songs_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_voice_actor_image
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_character_image_content_description
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayerView
@@ -76,6 +76,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 object AnimeSongComposables {
 
@@ -348,7 +349,7 @@ object AnimeSongComposables {
                                     contentScale = ContentScale.FillHeight,
                                     fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                                     contentDescription = stringResource(
-                                        Res.string.anime_character_image_content_description
+                                        UiRes.string.anime_character_image_content_description
                                     ),
                                     modifier = modifier
                                         .sizeIn(minWidth = 44.dp, minHeight = 64.dp)

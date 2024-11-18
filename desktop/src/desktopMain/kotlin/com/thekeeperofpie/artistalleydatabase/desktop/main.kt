@@ -40,7 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGenrePreview

@@ -5,13 +5,13 @@ import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
 import com.anilist.data.fragment.HomeMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.data.CoverImage
-import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.data.Title
-import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import kotlinx.datetime.Instant

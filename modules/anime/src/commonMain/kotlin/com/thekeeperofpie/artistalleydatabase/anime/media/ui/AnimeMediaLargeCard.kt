@@ -60,8 +60,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.data.CoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaQuickEditData
 import com.thekeeperofpie.artistalleydatabase.anime.data.Title
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils

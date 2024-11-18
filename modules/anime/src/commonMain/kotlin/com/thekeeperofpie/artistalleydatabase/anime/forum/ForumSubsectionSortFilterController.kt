@@ -13,9 +13,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_forum_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_filter_subscribed_label
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_sort_label
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
@@ -30,7 +31,7 @@ class ForumSubsectionSortFilterController(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : AnimeSettingsSortFilterController<ForumSubsectionSortFilterController.FilterParams>(
+) : MediaDataSettingsSortFilterController<ForumSubsectionSortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,
@@ -63,6 +64,7 @@ class ForumSubsectionSortFilterController(
         aniListApi = aniListApi,
         settings = settings,
         mediaType = null,
+        mediaDetailsRoute = AnimeDestination::MediaDetails,
     )
 
     override var sections by mutableStateOf(emptyList<SortFilterSection>())

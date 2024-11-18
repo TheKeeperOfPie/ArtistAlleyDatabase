@@ -76,7 +76,6 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -1065,7 +1064,7 @@ fun LazyGridScope.activitiesSection(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
+    onClickViewAll: () -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     item(
@@ -1076,8 +1075,7 @@ fun LazyGridScope.activitiesSection(
         val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             text = stringResource(Res.string.anime_media_details_activities_label),
-            modifier = Modifier.clickable { onClickViewAll(navigationCallback) },
-            onClickViewAll = { onClickViewAll(navigationCallback) },
+            onClickViewAll = onClickViewAll,
             viewAllContentDescriptionTextRes = Res.string.anime_media_details_view_all_content_description
         )
     }

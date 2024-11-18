@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_media_cover_image_content_description">Media cover image</string>
+    <string name="anime_character_image_content_description">Character image</string>
+    <string name="anime_staff_image">Staff image</string>
+    <string name="anime_user_image">User image</string>
+
+    <string name="anime_generic_view_all_content_description">View all</string>
+    <string name="anime_generic_favorites_icon_content_description">Favorites</string>
+    <string name="anime_generic_favorite_is_favorite_icon_content_description">Is favorite</string>
+    <string name="anime_generic_favorite_is_not_favorite_icon_content_description">Is not favorite</string>
+
+    <string name="anime_media_edit_date_today_content_description">Set to today</string>
+    <string name="anime_media_edit_date_start_date_label">Start</string>
+    <string name="anime_media_edit_date_end_date_label">End</string>
+</resources>

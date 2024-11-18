@@ -37,9 +37,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_character_image_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_character_image_content_description
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.StaffSearchQuery
 import com.anilist.data.UserFavoritesStaffQuery
@@ -56,8 +56,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderPar
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
@@ -75,6 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
     ExperimentalCoilApi::class
@@ -256,7 +257,7 @@ object StaffListRow {
                     density = density,
                     ignored = false,
                     imageState = imageState,
-                    contentDescriptionTextRes = Res.string.anime_character_image_content_description,
+                    contentDescriptionTextRes = UiRes.string.anime_character_image_content_description,
                     onClick = {
                         navigationCallback.navigate(
                             AnimeDestination.CharacterDetails(
@@ -289,7 +290,7 @@ object StaffListRow {
                         density = density,
                         ignored = it.mediaFilterable.ignored,
                         imageState = imageState,
-                        contentDescriptionTextRes = Res.string.anime_media_cover_image_content_description,
+                        contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
                         onClick = {
                             navigationCallback.navigate(
                                 AnimeDestination.MediaDetails(

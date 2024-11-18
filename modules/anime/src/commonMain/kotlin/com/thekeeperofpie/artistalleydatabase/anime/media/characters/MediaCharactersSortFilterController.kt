@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
@@ -27,7 +27,7 @@ class MediaCharactersSortFilterController(
     scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : AnimeSettingsSortFilterController<MediaCharactersSortFilterController.FilterParams>(
+) : MediaDataSettingsSortFilterController<MediaCharactersSortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,

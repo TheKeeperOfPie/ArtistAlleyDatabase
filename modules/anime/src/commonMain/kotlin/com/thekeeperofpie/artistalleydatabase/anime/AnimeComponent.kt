@@ -23,13 +23,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewM
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.AnimeMediaDetailsRecommendationsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.AnimeMediaDetailsRecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.AnimeMediaDetailsReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsViewModel
@@ -72,7 +73,7 @@ interface AnimeComponent : AnimeNewsComponent {
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
     val animeHomeViewModel: () -> AnimeHomeViewModel
     val animeMediaDetailsActivityViewModel: (AnimeMediaDetailsViewModel) -> AnimeMediaDetailsActivityViewModel
-    val animeMediaDetailsRecommendationsViewModel: (SavedStateHandle, AnimeMediaDetailsViewModel) -> AnimeMediaDetailsRecommendationsViewModel
+    val animeMediaDetailsRecommendationsViewModelFactory: (SavedStateHandle) -> AnimeMediaDetailsRecommendationsViewModel.Factory
     val animeMediaDetailsReviewsViewModel: (AnimeMediaDetailsViewModel) -> AnimeMediaDetailsReviewsViewModel
     val animeMediaDetailsViewModel: (SavedStateHandle) -> AnimeMediaDetailsViewModel
     val animeMediaIgnoreViewModel: (SavedStateHandle) -> AnimeMediaIgnoreViewModel
@@ -99,7 +100,7 @@ interface AnimeComponent : AnimeNewsComponent {
     val mediaRecommendationsViewModel: (SavedStateHandle) -> MediaRecommendationsViewModel
     val mediaReviewsViewModel: (SavedStateHandle) -> MediaReviewsViewModel
     val notificationsViewModel: () -> NotificationsViewModel
-    val recommendationsViewModel: () -> RecommendationsViewModel
+    val recommendationsViewModelFactory: (MediaDetailsRoute) -> RecommendationsViewModel.Factory
     val reviewDetailsViewModel: (SavedStateHandle) -> ReviewDetailsViewModel
     val reviewsViewModel: () -> ReviewsViewModel
     val seasonalViewModel: (SavedStateHandle) -> SeasonalViewModel

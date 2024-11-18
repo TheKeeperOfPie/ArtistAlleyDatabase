@@ -41,11 +41,11 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconContentDescription
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toIcon
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler

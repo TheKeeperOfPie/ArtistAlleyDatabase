@@ -1,9 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import com.anilist.data.fragment.MediaPreview
-import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
-import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils

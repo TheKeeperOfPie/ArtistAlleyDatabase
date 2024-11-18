@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_error_loading
 import com.anilist.data.MediaDetailsQuery
+import com.anilist.data.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -17,12 +18,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.AnimeMediaDetailsRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -59,7 +62,8 @@ class AnimeMediaDetailsViewModel(
     private val markdown: Markdown,
     @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-) : ViewModel() {
+) : ViewModel(),
+    AnimeMediaDetailsRecommendationsViewModel.RecommendationsProvider<MediaPreviewEntry> {
 
     val viewer = aniListApi.authedUser
     val mediaId =
@@ -129,8 +133,9 @@ class AnimeMediaDetailsViewModel(
                 .flatMapLatest { (descriptionPair, loadingResult) ->
                     val media = loadingResult.result?.media
                     if (media == null) {
-                        flowOf(loadingResult
-                            .transformResult<AnimeMediaDetailsScreen.Entry> { null })
+                        flowOf(
+                            loadingResult
+                                .transformResult<AnimeMediaDetailsScreen.Entry> { null })
                     } else {
                         val relations = media.relations?.edges?.filterNotNull()
                             ?.mapNotNull {
@@ -192,21 +197,32 @@ class AnimeMediaDetailsViewModel(
             refresh.updates
                 .mapLatest { aniListApi.mediaDetailsUserData(mediaId) }
                 .flatMapLatest { result ->
-                mediaListStatusController.allChanges(mediaId)
-                    .mapLatest { update ->
-                        result.transformResult {
-                            val mediaListEntry = it.media?.mediaListEntry
-                            MediaListStatusController.Update(
-                                mediaId = mediaId,
-                                entry = if (update == null) mediaListEntry else update.entry,
-                            )
+                    mediaListStatusController.allChanges(mediaId)
+                        .mapLatest { update ->
+                            result.transformResult {
+                                val mediaListEntry = it.media?.mediaListEntry
+                                MediaListStatusController.Update(
+                                    mediaId = mediaId,
+                                    entry = if (update == null) mediaListEntry else update.entry,
+                                )
+                            }
                         }
-                    }
-            }
+                }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { listStatus = it }
         }
     }
 
     fun refresh() = refresh.refresh()
+
+    override fun recommendations() = snapshotFlow { entry.result?.media?.recommendations }
+
+    override fun mediaEntry(media: MediaPreview) = MediaPreviewEntry(media)
+
+    override fun mediaFilterable(entry: MediaPreviewEntry) = entry.mediaFilterable
+
+    override fun copyMediaEntry(
+        entry: MediaPreviewEntry,
+        data: MediaFilterableData,
+    ) = entry.copy(mediaFilterable = data)
 }

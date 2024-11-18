@@ -31,8 +31,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_user_image_long_press_preview
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.UserNavigationData
@@ -61,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilIm
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
@@ -221,7 +222,7 @@ object UserListRow {
                         density = density,
                         ignored = it?.mediaFilterable?.ignored ?: false,
                         imageState = imageState,
-                        contentDescriptionTextRes = Res.string.anime_media_cover_image_content_description,
+                        contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
                         width = MEDIA_WIDTH,
                         height = MEDIA_HEIGHT,
                         onClick = {

@@ -6,9 +6,7 @@
     <string name="anime_auth_button_log_in">Log in</string>
     <string name="anime_auth_button_why">Why?</string>
     <string name="anime_media_banner_image">Media banner image</string>
-    <string name="anime_media_cover_image_content_description">Media cover image</string>
     <string name="anime_media_banner_image_content_description">Media banner image</string>
-    <string name="anime_character_image_content_description">Character image</string>
     <string name="anime_staff_image_content_description">Staff image</string>
     <string name="anime_media_artist_image">Artist image</string>
     <string name="anime_media_artist_no_image">No artist image</string>
@@ -24,9 +22,6 @@
     <string name="anime_screen_profile">Profile</string>
     <string name="anime_screen_unlock">Unlock</string>
     <string name="anime_description_spoiler">[Spoiler]</string>
-
-    <string name="anime_media_type_anime_icon_content_description">Media type anime</string>
-    <string name="anime_media_type_manga_icon_content_description">Media type manga</string>
 
     <string name="anime_media_sort_default">Default</string>
     <string name="anime_media_sort_id">Last added</string>
@@ -242,12 +237,6 @@
     <string name="anime_media_filter_show_spoiler_tags">Show spoiler tags</string>
     <string name="anime_media_filter_setting_title_language">Title language</string>
 
-    <string name="anime_media_filter_hide_ignored">Hide ignored</string>
-    <string name="anime_media_filter_clear_media">Clear media</string>
-    <string name="anime_media_filter_search_media_placeholder_anime">Search anime…</string>
-    <string name="anime_media_filter_search_media_placeholder_manga">Search manga…</string>
-    <string name="anime_media_filter_search_media_placeholder_media">Search media…</string>
-
     <string name="anime_media_filter_suggestions_label">Suggestions</string>
     <string name="anime_media_filter_suggestions_expand_content_description">Suggestions expand</string>
     <string name="anime_media_filter_suggestions_recent_finished">Recent finished</string>
@@ -280,8 +269,6 @@
     <string name="anime_media_relation_compilation">Compilation</string>
     <string name="anime_media_relation_contains">Contains</string>
     <string name="anime_media_relation_unknown">Unknown</string>
-
-    <string name="anime_media_details_recommendations_label">Recommendations</string>
 
     <string name="anime_media_details_information_label">Information</string>
     <string name="anime_media_details_format_label">Format</string>
@@ -415,9 +402,6 @@
     <string name="anime_media_details_activity_following">Following</string>
     <string name="anime_media_details_activity_global">Global</string>
 
-    <string name="anime_media_edit_date_today_content_description">Set to today</string>
-    <string name="anime_media_edit_date_start_date_label">Start</string>
-    <string name="anime_media_edit_date_end_date_label">End</string>
     <string name="anime_media_edit_date_clear_content_description">Clear date</string>
     <string name="anime_media_edit_status_label">Status</string>
     <string name="anime_media_edit_status_dropdown_content_description">Status dropdown</string>
@@ -536,7 +520,6 @@
     <string name="anime_user_stats_tab_studios">Studios</string>
     <string name="anime_user_stats_tab_staff">Staff</string>
 
-    <string name="anime_user_image">User image</string>
     <string name="anime_user_image_long_press_preview">Preview user image</string>
     <string name="anime_user_sort_id">Last added</string>
     <string name="anime_user_sort_search_match">Search match</string>
@@ -578,11 +561,6 @@
     <string name="anime_media_view_option_compact">Compact</string>
     <string name="anime_media_view_option_grid">Grid</string>
     <string name="anime_media_view_option_icon_content_description">Change view type</string>
-
-    <string name="anime_media_recommendation_rate_down_empty_content_description">Rate down empty</string>
-    <string name="anime_media_recommendation_rate_down_filled_content_description">Rate down filled</string>
-    <string name="anime_media_recommendation_rate_up_empty_content_description">Rate up empty</string>
-    <string name="anime_media_recommendation_rate_up_filled_content_description">Rate up filled</string>
 
     <string name="anime_media_recommendations_filter_sort_label">Sort</string>
     <string name="anime_media_recommendations_filter_setting_title_language">Title language</string>
@@ -657,7 +635,6 @@
     <string name="anime_staff_sort_language">Language</string>
     <string name="anime_staff_sort_favorites">Favorites</string>
     <string name="anime_staff_sort_relevance">Relevance</string>
-    <string name="anime_staff_image">Staff image</string>
     <string name="anime_staff_image_long_press_preview">Preview staff image</string>
     <string name="anime_staff_favorites_icon_content_description">Favorites</string>
 
@@ -781,22 +758,9 @@
     <string name="anime_review_filter_media_label">Media</string>
     <string name="anime_review_filter_media_expand_content_description">Media expand</string>
 
-    <string name="anime_recommendations_sort_id">Last added</string>
-    <string name="anime_recommendations_sort_rating">Rating</string>
-    <string name="anime_recommendations_header">Recommendations</string>
     <string name="anime_recommendations_error_loading">Error loading recommendations</string>
 
-    <string name="anime_recommendation_user_avatar_content_description">Recommendation author avatar</string>
     <string name="anime_recommendations_home_title">RECOMMENDATIONS</string>
-
-    <string name="anime_recommendation_filter_sort_label">Sort</string>
-    <string name="anime_recommendation_filter_source_media_label">Source media</string>
-    <string name="anime_recommendation_filter_source_media_expand_content_description">Source media expand</string>
-    <string name="anime_recommendation_filter_target_media_label">Target media</string>
-    <string name="anime_recommendation_filter_target_media_expand_content_description">Target media expand</string>
-    <string name="anime_recommendation_filter_rating_label">Rating</string>
-    <string name="anime_recommendation_filter_rating_expand_content_description">Rating expand</string>
-    <string name="anime_recommendation_filter_on_list_label">On list</string>
 
     <string name="anime_character_medias_error_loading">Error loading media</string>
     <string name="anime_character_medias_header">Media</string>
@@ -810,13 +774,6 @@
     <string name="anime_staff_characters_filter_setting_name_language">Name language</string>
 
     <string name="anime_generic_filter_show_adult_content">Show adult content</string>
-    <string name="anime_generic_view_all_content_description">View all</string>
-    <string name="anime_generic_filter_collapse_on_close">Collapse sections on close</string>
-    <string name="anime_generic_favorites_icon_content_description">Favorites</string>
-    <string name="anime_generic_filter_advanced_group">Advanced</string>
-    <string name="anime_generic_filter_advanced_group_expand_content_description">Advanced group expand</string>
-    <string name="anime_generic_favorite_is_favorite_icon_content_description">Is favorite</string>
-    <string name="anime_generic_favorite_is_not_favorite_icon_content_description">Is not favorite</string>
 
     <string name="anime_studio_sort_search_match">Search match</string>
     <string name="anime_studio_sort_id">Last added</string>

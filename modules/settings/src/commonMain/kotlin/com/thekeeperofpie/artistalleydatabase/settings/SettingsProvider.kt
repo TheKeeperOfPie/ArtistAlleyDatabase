@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
@@ -50,7 +51,7 @@ class SettingsProvider(
     private val featureOverrideProvider: FeatureOverrideProvider,
     private val settingsStore: SettingsStore,
 ) : ArtSettings, CropSettings, NetworkSettings, AnimeSettings, MonetizationSettings,
-    AniListSettings, NewsSettings {
+    AniListSettings, IgnoreSettings, NewsSettings {
 
     companion object {
         const val EXPORT_FILE_NAME = "settings.json"

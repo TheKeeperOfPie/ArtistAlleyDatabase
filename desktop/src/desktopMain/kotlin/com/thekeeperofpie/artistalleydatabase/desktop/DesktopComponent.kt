@@ -9,7 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings

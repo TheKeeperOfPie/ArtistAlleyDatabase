@@ -228,6 +228,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     withVersion(lifecycle) {
                         library("androidx.lifecycle:lifecycle-livedata-ktx")
                         library("androidx.lifecycle:lifecycle-viewmodel-compose")
+                        library("androidx.lifecycle:lifecycle-viewmodel-savedstate")
                         library("androidx.lifecycle:lifecycle-runtime-ktx")
                     }
 

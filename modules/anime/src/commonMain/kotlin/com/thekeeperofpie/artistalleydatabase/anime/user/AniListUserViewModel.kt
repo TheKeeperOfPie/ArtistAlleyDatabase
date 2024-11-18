@@ -32,14 +32,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelpe
 import com.thekeeperofpie.artistalleydatabase.anime.activity.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
-import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
-import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
-import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
@@ -190,7 +190,7 @@ class AniListUserViewModel(
                 applyMediaStatusChanges(
                     statusController = mediaListStatusController,
                     ignoreController = ignoreController,
-                    settings = settings,
+                    mediaFilteringData = settings.mediaFilteringData(false),
                     mediaFilterable = { it.mediaFilterable },
                     copy = { copy(mediaFilterable = it) },
                 )
@@ -217,7 +217,7 @@ class AniListUserViewModel(
                 applyMediaStatusChanges(
                     statusController = mediaListStatusController,
                     ignoreController = ignoreController,
-                    settings = settings,
+                    mediaFilteringData = settings.mediaFilteringData(false),
                     mediaFilterable = { it.mediaFilterable },
                     copy = { copy(mediaFilterable = it) },
                 )

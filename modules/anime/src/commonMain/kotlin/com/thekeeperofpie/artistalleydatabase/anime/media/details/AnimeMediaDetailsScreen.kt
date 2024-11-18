@@ -113,7 +113,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_ranking_unknown
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_rankings_expand_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_rankings_label
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_recommendations_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_relations_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_score_distribution_label
@@ -153,6 +152,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_trending_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_volumes_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_long_click_content_description
+import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_details_recommendations_label
 import artistalleydatabase.modules.utils_compose.generated.resources.no
 import artistalleydatabase.modules.utils_compose.generated.resources.yes
 import coil3.compose.AsyncImage
@@ -177,12 +177,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
@@ -227,6 +227,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
+import artistalleydatabase.modules.anime.recommendations.generated.resources.Res as RecommendationsRes
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
@@ -1733,7 +1734,7 @@ object AnimeMediaDetailsScreen {
             TRAILER(Res.string.anime_media_details_trailer_label),
             EPISODES(Res.string.anime_media_details_episodes_label),
             LINKS(Res.string.anime_media_details_links_label),
-            RECOMMENDATIONS(Res.string.anime_media_details_recommendations_label),
+            RECOMMENDATIONS(RecommendationsRes.string.anime_media_details_recommendations_label),
             REVIEWS(Res.string.anime_media_details_reviews_label),
             ACTIVITIES(Res.string.anime_media_details_activities_label),
             FORUM_THREADS(Res.string.anime_media_details_forum_threads_label),

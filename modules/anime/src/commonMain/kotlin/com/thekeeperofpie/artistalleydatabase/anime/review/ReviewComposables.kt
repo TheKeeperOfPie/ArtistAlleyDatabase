@@ -328,7 +328,7 @@ fun LazyGridScope.reviewsSection(
     entry: AnimeMediaDetailsReviewsViewModel.ReviewsEntry?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+    onClickViewAll: (() -> Unit)? = null,
     onReviewClick: (AnimeNavigator.NavigationCallback, MediaDetailsQuery.Data.Media.Reviews.Node) -> Unit,
 ) {
     if (entry != null && entry.reviews.isEmpty()) return

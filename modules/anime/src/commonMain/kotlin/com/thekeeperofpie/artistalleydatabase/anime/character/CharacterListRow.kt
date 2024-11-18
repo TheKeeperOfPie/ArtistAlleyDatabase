@@ -43,8 +43,8 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_character_favorites_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_character_image_long_press_preview
-import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_content_description
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import co.touchlab.kermit.Logger
 import coil3.request.crossfade
 import com.anilist.data.CharacterAdvancedSearchQuery.Data.Page.Character
@@ -83,6 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 object CharacterListRow {
@@ -356,7 +357,7 @@ object CharacterListRow {
                         density = density,
                         ignored = item?.mediaFilterable?.ignored ?: false,
                         imageState = imageState,
-                        contentDescriptionTextRes = Res.string.anime_media_cover_image_content_description,
+                        contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
                         onClick = {
                             if (item != null) {
                                 navigationCallback.navigate(

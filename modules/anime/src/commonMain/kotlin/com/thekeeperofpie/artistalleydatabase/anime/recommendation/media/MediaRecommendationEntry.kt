@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.recommendation.media
 import com.anilist.data.fragment.MediaAndRecommendationsRecommendation
 import com.anilist.data.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
 
 data class MediaRecommendationEntry(
     val mediaId: String,

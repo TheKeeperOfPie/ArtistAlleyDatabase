@@ -46,12 +46,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
@@ -59,7 +60,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresCont
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
@@ -375,7 +375,7 @@ class AnimeSearchViewModel(
                 applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreController = ignoreController,
-                    settings = settings,
+                    mediaFilteringData = settings.mediaFilteringData(false),
                     mediaFilterable = { it.entry.mediaFilterable },
                     copy = { copy(entry = entry.copy(mediaFilterable = it)) },
                 )
@@ -408,7 +408,7 @@ class AnimeSearchViewModel(
                 applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreController = ignoreController,
-                    settings = settings,
+                    mediaFilteringData = settings.mediaFilteringData(false),
                     mediaFilterable = { it.entry.mediaFilterable },
                     copy = { copy(entry = entry.copy(mediaFilterable = it)) },
                 )

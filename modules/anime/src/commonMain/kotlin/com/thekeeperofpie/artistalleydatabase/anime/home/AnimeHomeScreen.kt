@@ -91,10 +91,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_media_in
 import artistalleydatabase.modules.anime.generated.resources.anime_home_media_type_switch_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_home_row_view_all_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestions_header
-import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_notifications_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_home_title
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_home_title
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import com.anilist.data.fragment.HomeMedia
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MediaPreview
@@ -113,25 +113,28 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
-import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsRow
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationCard
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationCard
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
@@ -169,6 +172,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @Suppress("NAME_SHADOWING")
 @OptIn(
@@ -263,7 +267,7 @@ object AnimeHomeScreen {
         onSelectedIsAnimeChanged: (Boolean) -> Unit,
         onRefresh: () -> Unit,
         activity: LazyPagingItems<ActivityEntry>,
-        recommendations: LazyPagingItems<RecommendationEntry>,
+        recommendations: LazyPagingItems<RecommendationEntry<MediaCompactWithTagsEntry>>,
         reviews: LazyPagingItems<ReviewEntry>,
         news: () -> LoadingResult<List<AnimeNewsEntry<*>>>,
         homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
@@ -479,7 +483,7 @@ object AnimeHomeScreen {
         suggestions: List<Pair<StringResource, AnimeDestination>>,
         onClickListEdit: (MediaNavigationData) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
-        recommendations: LazyPagingItems<RecommendationEntry>,
+        recommendations: LazyPagingItems<RecommendationEntry<MediaCompactWithTagsEntry>>,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
         reviews: LazyPagingItems<ReviewEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -975,7 +979,9 @@ object AnimeHomeScreen {
                 state = coverImageState,
                 model = coverImageState.request().build(),
                 contentScale = ContentScale.Crop,
-                contentDescription = stringResource(Res.string.anime_media_cover_image_content_description),
+                contentDescription = stringResource(
+                    UiRes.string.anime_media_cover_image_content_description
+                ),
                 onError = { showTitle = true },
                 modifier = Modifier
                     .fillMaxSize()
@@ -1046,7 +1052,7 @@ object AnimeHomeScreen {
     @Composable
     private fun Recommendations(
         viewer: () -> AniListViewer?,
-        recommendations: LazyPagingItems<RecommendationEntry>,
+        recommendations: LazyPagingItems<RecommendationEntry<MediaCompactWithTagsEntry>>,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
@@ -1061,10 +1067,40 @@ object AnimeHomeScreen {
                     viewer = viewer(),
                     user = it?.user,
                     media = it?.media,
-                    mediaRecommendation = it?.mediaRecommendation,
-                    onClickListEdit = onClickListEdit,
                     recommendation = it?.data,
                     onUserRecommendationRating = onUserRecommendationRating,
+                    mediaRows = {
+                        SharedTransitionKeyScope(
+                            "recommendation",
+                            it?.media?.media?.id.toString(),
+                            it?.mediaRecommendation?.media?.id.toString(),
+                        ) {
+                            AnimeMediaCompactListRow(
+                                viewer = viewer(),
+                                entry = it?.media,
+                                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                                onClickListEdit = onClickListEdit,
+                            )
+
+                            AnimeMediaCompactListRow(
+                                viewer = viewer(),
+                                entry = it?.mediaRecommendation,
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                onClickListEdit = onClickListEdit,
+                            )
+                        }
+                    },
+                    userRoute = { userId, userName, imageState, sharedTransitionKey ->
+                        AnimeDestination.User(
+                            userId = userId,
+                            sharedTransitionKey = sharedTransitionKey,
+                            headerParams = UserHeaderParams(
+                                name = userName,
+                                bannerImage = null,
+                                coverImage = imageState,
+                            )
+                        )
+                    },
                 )
             }
         }

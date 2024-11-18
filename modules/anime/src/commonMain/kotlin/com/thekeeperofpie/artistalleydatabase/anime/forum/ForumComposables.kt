@@ -104,13 +104,12 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentChild
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
@@ -1253,7 +1252,7 @@ fun LazyGridScope.forumThreadsSection(
     forumThreads: List<ForumThreadEntry>?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
+    onClickViewAll: () -> Unit,
     onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
     loading: Boolean,
     requestLoad: () -> Unit,

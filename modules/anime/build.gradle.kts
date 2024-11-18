@@ -3,6 +3,7 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
+    id("library-room")
     alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
@@ -15,17 +16,17 @@ kotlin {
         commonMain.dependencies {
             api(projects.modules.anilist)
             api(projects.modules.anime.data)
+            api(projects.modules.anime.ignore.data)
+            api(projects.modules.anime.media.data)
             api(projects.modules.anime.news)
+            api(projects.modules.anime.recommendations)
+            api(projects.modules.anime.ui)
             api(projects.modules.cds)
             api(projects.modules.markdown)
             api(projects.modules.media)
             api(projects.modules.monetization)
             api(projects.modules.utilsCompose)
             api(projects.modules.utilsNetwork)
-
-            api(libs.room.ktx)
-            api(libs.room.paging)
-            runtimeOnly(libs.room.runtime)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
@@ -43,10 +44,6 @@ kotlin {
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.anime"
-}
-
-dependencies {
-    add("kspAndroid", kspProcessors.room.compiler)
 }
 
 compose.resources {

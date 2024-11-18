@@ -41,6 +41,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.paging.PagingData
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_character_details_age_label
@@ -87,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
@@ -177,6 +179,7 @@ object CharacterDetailsScreen {
                         val character = entry.result?.character
                         val characterName = character?.name?.primaryName()
                         val characterSubtitle = character?.name?.subtitleName()
+                        val navHostController = LocalNavHostController.current
                         LazyVerticalGrid(
                             columns = GridUtils.standardWidthAdaptiveCells,
                             contentPadding = PaddingValues(bottom = 16.dp),
@@ -194,6 +197,7 @@ object CharacterDetailsScreen {
                                 viewer = viewer,
                                 coverImageState = coverImageState,
                                 expandedState = expandedState,
+                                navHostController = navHostController,
                             )
                         }
                     }
@@ -218,6 +222,7 @@ object CharacterDetailsScreen {
         viewer: AniListViewer?,
         coverImageState: CoilImageState,
         expandedState: ExpandedState,
+        navHostController: NavHostController,
     ) {
         if (entry.description != null) {
             item(
@@ -249,6 +254,7 @@ object CharacterDetailsScreen {
             coverImageState = coverImageState,
             expanded = expandedState::media,
             onExpandedChange = { expandedState.media = it },
+            navHostController = navHostController,
         )
 
         infoSection(entry = entry)
@@ -428,6 +434,7 @@ object CharacterDetailsScreen {
         coverImageState: CoilImageState,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
+        navHostController: NavHostController,
     ) {
         mediaListSection(
             onClickListEdit = editViewModel::initialize,
@@ -456,7 +463,7 @@ object CharacterDetailsScreen {
                 }
             },
             onClickViewAll = {
-                it.navigate(
+                navHostController.navigate(
                     AnimeDestination.CharacterMedias(
                         characterId = entry.character.id.toString(),
                         sharedTransitionKey = null,

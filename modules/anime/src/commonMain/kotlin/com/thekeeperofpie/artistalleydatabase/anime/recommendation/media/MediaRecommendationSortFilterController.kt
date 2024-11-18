@@ -7,8 +7,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_recomme
 import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendations_filter_sort_label
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
@@ -19,7 +19,7 @@ class MediaRecommendationSortFilterController(
     scope: CoroutineScope,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-) : AnimeSettingsSortFilterController<MediaRecommendationSortFilterController.FilterParams>(
+) : MediaDataSettingsSortFilterController<MediaRecommendationSortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,

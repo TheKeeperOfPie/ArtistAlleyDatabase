@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryFts
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeMediaHistoryEntry
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreEntry
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.AnimeMediaIgnoreEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase

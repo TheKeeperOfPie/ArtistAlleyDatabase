@@ -5,6 +5,8 @@ import androidx.compose.animation.core.EaseOutExpo
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -12,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -40,6 +43,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_follower
 import artistalleydatabase.modules.anime.generated.resources.anime_user_followers_you
 import artistalleydatabase.modules.anime.generated.resources.anime_user_following_user
 import artistalleydatabase.modules.anime.generated.resources.anime_user_following_you
+import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -62,17 +66,23 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumTh
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationComposables
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.recommendationsSection
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationComposables
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.recommendationsSection
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewComposables
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsScreen
@@ -88,6 +98,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharact
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaScreen
@@ -110,6 +121,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazy
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 object AnimeNavigator {
 
     fun initialize(
@@ -227,11 +239,11 @@ object AnimeNavigator {
 
             val viewer by mediaDetailsViewModel.viewer.collectAsState()
 
+            @Suppress("UNCHECKED_CAST")
             val recommendationsViewModel = viewModel {
-                animeComponent.animeMediaDetailsRecommendationsViewModel(
-                    createSavedStateHandle(),
-                    mediaDetailsViewModel,
-                )
+                animeComponent
+                    .animeMediaDetailsRecommendationsViewModelFactory(createSavedStateHandle())
+                    .create(mediaDetailsViewModel)
             }
 
             val activitiesViewModel = viewModel {
@@ -336,20 +348,28 @@ object AnimeNavigator {
                 recommendationsSection = { expanded, onExpandedChange, onClickListEdit ->
                     val entry = recommendationsViewModel.recommendations
                     recommendationsSection(
-                        viewer = viewer,
                         entry = entry,
                         expanded = expanded,
                         onExpandedChange = onExpandedChange,
-                        onClickListEdit = onClickListEdit,
                         onClickViewAll = {
-                            it.navigate(
+                            navigationCallback.navigate(
                                 AnimeDestination.MediaRecommendations(
                                     mediaId = mediaDetailsViewModel.mediaId,
                                     headerParams = mediaHeaderParams(),
                                 )
                             )
                         },
-                        onUserRecommendationRating = recommendationsViewModel.recommendationToggleHelper::toggle,
+                        mediaId = { it.entry.media.id.toString() },
+                        mediaRow = { item, modifier ->
+                            AnimeMediaListRow(
+                                entry = item.entry,
+                                viewer = viewer,
+                                modifier = modifier,
+                                onClickListEdit = onClickListEdit,
+                                recommendation = item.data,
+                                onUserRecommendationRating = recommendationsViewModel.recommendationToggleHelper::toggle
+                            )
+                        },
                     )
                 },
                 activitiesSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
@@ -377,7 +397,7 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChanged,
                         onClickListEdit = onClickListEdit,
                         onClickViewAll = {
-                            it.navigate(
+                            navigationCallback.navigate(
                                 AnimeDestination.MediaActivities(
                                     mediaId = mediaDetailsViewModel.mediaId,
                                     showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
@@ -400,7 +420,7 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChanged,
                         onClickViewAll = {
                             val entry = mediaDetailsViewModel.entry.result
-                            it.navigate(
+                            navigationCallback.navigate(
                                 AnimeDestination.ForumSearch(
                                     title = entry?.media?.title?.userPreferred
                                         ?.let(AnimeDestination.ForumSearch.Title::Custom),
@@ -424,7 +444,7 @@ object AnimeNavigator {
                         expanded = expanded,
                         onExpandedChange = onExpandedChange,
                         onClickViewAll = {
-                            it.navigate(
+                            navigationCallback.navigate(
                                 AnimeDestination.MediaReviews(
                                     mediaId = mediaDetailsViewModel.mediaId,
                                     headerParams = mediaHeaderParams()
@@ -625,9 +645,74 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Recommendations>(navigationTypeMap) {
-            RecommendationsScreen(
-                upIconOption = UpIconOption.Back(navHostController),
-            )
+            val viewModel = viewModel {
+                animeComponent.recommendationsViewModelFactory(AnimeDestination::MediaDetails)
+                    .create(object :
+                        RecommendationsViewModel.RecommendationsProvider<MediaCompactWithTagsEntry> {
+                        override fun mediaEntry(media: MediaCompactWithTags) =
+                            MediaCompactWithTagsEntry(media)
+
+                        override fun mediaFilterable(entry: MediaCompactWithTagsEntry) =
+                            entry.mediaFilterable
+
+                        override fun copyMediaEntry(
+                            entry: MediaCompactWithTagsEntry,
+                            data: MediaFilterableData,
+                        ) = entry.copy(mediaFilterable = data)
+                    })
+            }
+            val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
+            MediaEditBottomSheetScaffold(viewModel = editViewModel) {
+                RecommendationsScreen(
+                    upIconOption = UpIconOption.Back(navHostController),
+                    viewModel = viewModel,
+                    mediaRows = { media, mediaRecommendation ->
+                        SharedTransitionKeyScope(
+                            "recommendation",
+                            media?.media?.id.toString(),
+                            mediaRecommendation?.media?.id.toString(),
+                        ) {
+                            AnimeMediaCompactListRow(
+                                viewer = viewModel.viewer.collectAsState().value,
+                                entry = media,
+                                modifier = Modifier.padding(
+                                    start = 8.dp,
+                                    end = 8.dp,
+                                    bottom = 8.dp
+                                ),
+                                onClickListEdit = {
+                                    if (media != null) {
+                                        editViewModel.initialize(media.media)
+                                    }
+                                },
+                            )
+
+                            AnimeMediaCompactListRow(
+                                viewer = viewModel.viewer.collectAsState().value,
+                                entry = mediaRecommendation,
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                onClickListEdit = {
+                                    if (mediaRecommendation != null) {
+                                        editViewModel.initialize(mediaRecommendation.media)
+                                    }
+                                },
+                            )
+                        }
+                    },
+                    userRoute = { userId, userName, imageState, sharedTransitionKey ->
+                        AnimeDestination.User(
+                            userId = userId,
+                            sharedTransitionKey = sharedTransitionKey,
+                            headerParams = UserHeaderParams(
+                                name = userName,
+                                bannerImage = null,
+                                coverImage = imageState,
+                            )
+                        )
+                    },
+                    modifier = Modifier.padding(it)
+                )
+            }
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaRecommendations>(

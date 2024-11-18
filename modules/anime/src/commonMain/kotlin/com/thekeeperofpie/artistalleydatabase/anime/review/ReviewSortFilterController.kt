@@ -8,9 +8,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_review_filter
 import artistalleydatabase.modules.anime.generated.resources.anime_review_filter_sort_label
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
@@ -25,7 +26,7 @@ class ReviewSortFilterController(
     featureOverrideProvider: FeatureOverrideProvider,
     mediaType: MediaType?,
     private val sortSection: SortFilterSection.Sort<ReviewSortOption> = sortSection(),
-) : AnimeSettingsSortFilterController<ReviewSortFilterController.FilterParams>(
+) : MediaDataSettingsSortFilterController<ReviewSortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider
@@ -46,6 +47,7 @@ class ReviewSortFilterController(
         aniListApi = aniListApi,
         settings = settings,
         mediaType = mediaType,
+        mediaDetailsRoute = AnimeDestination::MediaDetails,
     )
 
     override var sections = listOf(

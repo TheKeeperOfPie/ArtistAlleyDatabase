@@ -105,15 +105,12 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_status_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_status_unknown
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_is_adult
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_is_spoiler
-import artistalleydatabase.modules.anime.generated.resources.anime_media_type_anime_icon_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_type_manga_icon_content_description
 import com.anilist.data.MediaDetailsQuery
 import com.anilist.data.MediaListEntryQuery
 import com.anilist.data.fragment.AniListDate
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaDetailsListEntry
 import com.anilist.data.fragment.MediaPreview
-import com.anilist.data.fragment.MediaTitleFragment
 import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.type.MediaFormat
 import com.anilist.data.type.MediaListStatus
@@ -128,9 +125,9 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
-import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
@@ -863,17 +860,6 @@ object MediaUtils {
         null -> null
     } ?: userPreferred ?: romaji ?: english ?: native
 
-    @Composable
-    fun MediaTitleFragment.primaryTitle() = primaryTitle(LocalLanguageOptionMedia.current)
-
-    fun MediaTitleFragment.primaryTitle(languageOption: AniListLanguageOption) =
-        when (languageOption) {
-            AniListLanguageOption.DEFAULT -> userPreferred
-            AniListLanguageOption.ENGLISH -> english
-            AniListLanguageOption.NATIVE -> native
-            AniListLanguageOption.ROMAJI -> romaji
-        } ?: userPreferred ?: romaji ?: english ?: native
-
     fun buildTags(
         media: MediaCompactWithTags,
         showLessImportantTags: Boolean,
@@ -890,21 +876,6 @@ object MediaUtils {
         ?.distinctBy { it.id }
         ?.toList()
         .orEmpty()
-
-    fun MediaType?.toIcon() = if (this == MediaType.ANIME) {
-        Icons.Filled.Monitor
-    } else {
-        Icons.Filled.MenuBook
-    }
-
-    @Composable
-    fun MediaType?.toIconContentDescription() = stringResource(
-        if (this == MediaType.ANIME) {
-            Res.string.anime_media_type_anime_icon_content_description
-        } else {
-            Res.string.anime_media_type_manga_icon_content_description
-        }
-    )
 
     @Composable
     fun nextAiringSectionText(

@@ -3,6 +3,7 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
+    id("library-room")
     id("com.google.devtools.ksp")
 }
 
@@ -18,10 +19,6 @@ kotlin {
             implementation(libs.ksoup)
             implementation(libs.ktor.client.core)
             implementation(libs.okhttp)
-
-            runtimeOnly(libs.room.runtime)
-            implementation(libs.room.ktx)
-            implementation(libs.room.paging)
         }
         commonTest.dependencies {
             implementation(libs.junit)
@@ -34,10 +31,6 @@ kotlin {
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.vgmdb"
-}
-
-dependencies {
-    add("kspCommonMainMetadata", kspProcessors.room.compiler)
 }
 
 compose.resources {

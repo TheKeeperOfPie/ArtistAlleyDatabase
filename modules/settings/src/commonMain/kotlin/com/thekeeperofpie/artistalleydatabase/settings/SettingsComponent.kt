@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.settings
 
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
@@ -13,28 +15,30 @@ interface SettingsComponent {
 
     val settingsViewModel: () -> SettingsViewModel
 
-    @Provides
-    fun provideArtSettings(settingsProvider: SettingsProvider) = settingsProvider as ArtSettings
+    val SettingsProvider.bindAnimeSettings: AnimeSettings
+        @Provides get() = this
 
-    @Provides
-    fun provideCropSettings(settingsProvider: SettingsProvider) = settingsProvider as CropSettings
+    val SettingsProvider.bindAniListSettings: AniListSettings
+        @Provides get() = this
 
-    @Provides
-    fun provideNetworkSettings(settingsProvider: SettingsProvider) =
-        settingsProvider as NetworkSettings
+    val SettingsProvider.bindArtSettings: ArtSettings
+        @Provides get() = this
 
-    @Provides
-    fun provideAnimeSettings(settingsProvider: SettingsProvider) =
-        settingsProvider as AnimeSettings
+    val SettingsProvider.bindCropSettings: CropSettings
+        @Provides get() = this
 
-    @Provides
-    fun provideMonetizationSettings(settingsProvider: SettingsProvider) =
-        settingsProvider as MonetizationSettings
+    val SettingsProvider.bindIgnoreSettings: IgnoreSettings
+        @Provides get() = this
 
-    @Provides
-    fun provideNewsSettings(settingsProvider: SettingsProvider) = settingsProvider as NewsSettings
+    val SettingsProvider.bindMediaDataSettings: MediaDataSettings
+        @Provides get() = this
 
-    @Provides
-    fun provideAniListSettings(settingsProvider: SettingsProvider) =
-        settingsProvider as AniListSettings
+    val SettingsProvider.bindMonetizationSettings: MonetizationSettings
+        @Provides get() = this
+
+    val SettingsProvider.bindNetworkSettings: NetworkSettings
+        @Provides get() = this
+
+    val SettingsProvider.bindNewsSettings: NewsSettings
+        @Provides get() = this
 }

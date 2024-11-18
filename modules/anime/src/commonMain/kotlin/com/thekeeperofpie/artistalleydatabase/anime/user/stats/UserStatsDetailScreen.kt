@@ -26,11 +26,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_user_statistics_anime_days_watched
 import artistalleydatabase.modules.anime.generated.resources.anime_user_statistics_count
 import artistalleydatabase.modules.anime.generated.resources.anime_user_statistics_manga_chapters_read
 import artistalleydatabase.modules.anime.generated.resources.anime_user_statistics_mean_score
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import coil3.request.crossfade
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
@@ -53,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @Suppress("NAME_SHADOWING")
 object UserStatsDetailScreen {
@@ -266,7 +267,7 @@ object UserStatsDetailScreen {
                     )
                     .build(),
                 contentScale = ContentScale.Crop,
-                contentDescription = stringResource(Res.string.anime_media_cover_image_content_description),
+                contentDescription = stringResource(UiRes.string.anime_media_cover_image_content_description),
                 modifier = Modifier
                     .sharedElement(sharedTransitionKey, sharedTransitionIdentifier)
                     .fillMaxHeight()

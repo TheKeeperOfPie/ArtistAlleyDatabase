@@ -1,6 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-
 val Project.libs: VersionCatalog
     get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
 val Project.kspProcessors: VersionCatalog

@@ -22,11 +22,12 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
@@ -167,7 +168,7 @@ class SeasonalViewModel(
                     .applyMediaStatusChanges(
                         statusController = statusController,
                         ignoreController = ignoreController,
-                        settings = settings,
+                        mediaFilteringData = settings.mediaFilteringData(false),
                         mediaFilterable = { it.mediaFilterable },
                         copy = { copy(mediaFilterable = it) },
                     )

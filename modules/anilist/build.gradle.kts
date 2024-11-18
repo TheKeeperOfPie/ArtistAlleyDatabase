@@ -3,6 +3,7 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
+    id("library-room")
 }
 
 kotlin {
@@ -21,10 +22,6 @@ kotlin {
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsNetwork)
 
-            api(libs.room.ktx)
-            api(libs.room.paging)
-            runtimeOnly(libs.room.runtime)
-
             implementation(libs.apollo.engine.ktor)
             implementation(libs.apollo.runtime)
             implementation(libs.apollo.normalized.cache)
@@ -42,10 +39,6 @@ kotlin {
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.anilist"
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-}
-
-dependencies {
-    add("kspAndroid", kspProcessors.room.compiler)
 }
 
 compose.resources {

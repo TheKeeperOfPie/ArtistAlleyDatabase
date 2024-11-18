@@ -3,6 +3,7 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
+    id("library-room")
 }
 
 kotlin {
@@ -18,20 +19,12 @@ kotlin {
             implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kermit)
             implementation(libs.coil3.coil.compose)
-
-            api(libs.room.ktx)
-            api(libs.room.paging)
-            runtimeOnly(libs.room.runtime)
         }
     }
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.art"
-}
-
-dependencies {
-    add("kspAndroid", kspProcessors.room.compiler)
 }
 
 compose.resources {

@@ -41,8 +41,8 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
@@ -78,7 +78,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaGenresController: MediaGenresController,
     private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
-) : AnimeSettingsSortFilterController<MediaSortFilterController.FilterParams<SortType>>(
+) : MediaDataSettingsSortFilterController<MediaSortFilterController.FilterParams<SortType>>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_generic_filter_show_adult_content">Show adult content</string>
+    <string name="anime_generic_filter_collapse_on_close">Collapse sections on close</string>
+    <string name="anime_media_filter_hide_ignored">Hide ignored</string>
+    <string name="anime_generic_filter_advanced_group">Advanced</string>
+    <string name="anime_generic_filter_advanced_group_expand_content_description">Advanced group expand</string>
+
+    <string name="anime_media_type_anime_icon_content_description">Media type anime</string>
+    <string name="anime_media_type_manga_icon_content_description">Media type manga</string>
+
+    <string name="anime_media_filter_search_media_placeholder_anime">Search anime…</string>
+    <string name="anime_media_filter_search_media_placeholder_manga">Search manga…</string>
+    <string name="anime_media_filter_search_media_placeholder_media">Search media…</string>
+
+    <string name="anime_media_filter_clear_media">Clear media</string>
+</resources>

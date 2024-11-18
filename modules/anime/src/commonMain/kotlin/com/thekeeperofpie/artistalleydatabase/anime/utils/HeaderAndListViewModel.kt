@@ -10,7 +10,7 @@ import androidx.paging.cachedIn
 import com.anilist.data.fragment.PaginationInfo
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -42,7 +42,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
 
     val items = MutableStateFlow(PagingData.empty<ListEntryType>())
 
-    abstract val sortFilterController: AnimeSettingsSortFilterController<FilterParams>
+    abstract val sortFilterController: MediaDataSettingsSortFilterController<FilterParams>
 
     private val refresh = RefreshFlow()
 

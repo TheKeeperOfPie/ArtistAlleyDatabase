@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController

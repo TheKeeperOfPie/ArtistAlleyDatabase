@@ -19,7 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams

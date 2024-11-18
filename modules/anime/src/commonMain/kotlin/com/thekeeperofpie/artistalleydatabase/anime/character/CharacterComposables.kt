@@ -46,9 +46,9 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_character_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_character_role_main
 import artistalleydatabase.modules.anime.generated.resources.anime_media_voice_actor_image
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_character_image_content_description
 import coil3.request.crossfade
 import coil3.size.Dimension
 import com.eygraber.compose.placeholder.PlaceholderHighlight
@@ -90,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @Composable
 fun CharacterSmallCard(
@@ -190,7 +191,7 @@ fun CharacterSmallCard(
                         contentDescription = stringResource(
                             // TODO: Swap based on innerImageKey
                             if (isStaffMain) {
-                                Res.string.anime_character_image_content_description
+                                UiRes.string.anime_character_image_content_description
                             } else {
                                 Res.string.anime_media_voice_actor_image
                             }

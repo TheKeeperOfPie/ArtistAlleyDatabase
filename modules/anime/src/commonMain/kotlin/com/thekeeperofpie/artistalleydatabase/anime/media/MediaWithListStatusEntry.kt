@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import com.anilist.data.fragment.MediaWithListStatus
-import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
-import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 
 data class MediaWithListStatusEntry(
     val media: MediaWithListStatus,

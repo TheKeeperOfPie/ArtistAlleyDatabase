@@ -7,8 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_header
+import artistalleydatabase.modules.anime.recommendations.generated.resources.Res
+import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_recommendations_header
 import com.anilist.data.MediaAndRecommendationsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader

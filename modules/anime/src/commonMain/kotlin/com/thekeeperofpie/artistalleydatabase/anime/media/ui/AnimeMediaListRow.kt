@@ -44,10 +44,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
-import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_down_empty_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_down_filled_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_up_empty_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_recommendation_rate_up_filled_content_description
+import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_recommendation_rate_down_empty_content_description
+import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_recommendation_rate_down_filled_content_description
+import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_recommendation_rate_up_empty_content_description
+import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_recommendation_rate_up_filled_content_description
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MediaPreview
 import com.anilist.data.type.MediaType
@@ -59,12 +59,12 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -77,6 +77,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.recommendations.generated.resources.Res as RecommendationsRes
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class
@@ -300,9 +301,9 @@ object AnimeMediaListRow {
                             },
                             contentDescription = stringResource(
                                 if (userRating == RecommendationRating.RATE_DOWN) {
-                                    Res.string.anime_media_recommendation_rate_down_filled_content_description
+                                    RecommendationsRes.string.anime_media_recommendation_rate_down_filled_content_description
                                 } else {
-                                    Res.string.anime_media_recommendation_rate_down_empty_content_description
+                                    RecommendationsRes.string.anime_media_recommendation_rate_down_empty_content_description
                                 }
                             ),
                         )
@@ -333,9 +334,9 @@ object AnimeMediaListRow {
                             },
                             contentDescription = stringResource(
                                 if (userRating == RecommendationRating.RATE_UP) {
-                                    Res.string.anime_media_recommendation_rate_up_filled_content_description
+                                    RecommendationsRes.string.anime_media_recommendation_rate_up_filled_content_description
                                 } else {
-                                    Res.string.anime_media_recommendation_rate_up_empty_content_description
+                                    RecommendationsRes.string.anime_media_recommendation_rate_up_empty_content_description
                                 }
                             ),
                         )

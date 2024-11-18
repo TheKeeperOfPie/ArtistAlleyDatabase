@@ -17,17 +17,17 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelpe
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entryId
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.mediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationEntry
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationToggleHelper
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
@@ -66,7 +66,7 @@ class AnimeHomeViewModel(
 
     private val refresh = RefreshFlow()
     val activity = MutableStateFlow(PagingData.empty<ActivityEntry>())
-    val recommendations = MutableStateFlow(PagingData.empty<RecommendationEntry>())
+    val recommendations = MutableStateFlow(PagingData.empty<RecommendationEntry<MediaCompactWithTagsEntry>>())
 
     val recommendationToggleHelper =
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)

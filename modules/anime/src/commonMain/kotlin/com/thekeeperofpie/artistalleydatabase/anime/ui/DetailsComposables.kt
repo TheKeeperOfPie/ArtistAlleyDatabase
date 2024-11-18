@@ -62,9 +62,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_banner_image
-import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_cover_image_long_press_preview
 import artistalleydatabase.modules.anime.generated.resources.anime_unfold_less_text
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
@@ -87,6 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @Composable
 internal fun CoverAndBannerHeader(
@@ -244,7 +245,7 @@ internal fun CoverAndBannerHeader(
                             contentScale = ContentScale.FillHeight,
                             error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                             fallback = null,
-                            contentDescription = stringResource(Res.string.anime_media_cover_image_content_description),
+                            contentDescription = stringResource(UiRes.string.anime_media_cover_image_content_description),
                             modifier = Modifier
                                 .height(imageHeight)
                                 .wrapContentWidth()

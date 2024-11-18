@@ -2,11 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.activity
 
 import com.anilist.data.fragment.MediaWithListStatus
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.anime.data.MediaFilterableData
-import com.thekeeperofpie.artistalleydatabase.anime.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter

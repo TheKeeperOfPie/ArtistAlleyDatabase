@@ -19,9 +19,13 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.AnimeIgnoreDao
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.AnimeMediaIgnoreEntry
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.utils.RequestBatcher
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
@@ -105,10 +109,9 @@ class AnimeMediaIgnoreViewModel(
                 .applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreController = ignoreController,
-                    settings = settings,
+                    mediaFilteringData = settings.mediaFilteringData(forceShowIgnored = true),
                     mediaFilterable = { it.mediaFilterable },
                     copy = { copy(mediaFilterable = it) },
-                    forceShowIgnored = true,
                 )
                 .map {
                     // Coerce to not ignored so media doesn't render grayed out

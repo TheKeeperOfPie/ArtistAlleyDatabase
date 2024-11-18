@@ -20,10 +20,11 @@ import artistalleydatabase.modules.anime.generated.resources.anime_activity_sort
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_release_date_content_description
 import com.anilist.data.type.ActivityType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.anime.filter.AnimeSettingsSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDateAdvancedSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
@@ -44,7 +45,7 @@ class ActivitySortFilterController(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     mediaSharedElement: Boolean = true,
-) : AnimeSettingsSortFilterController<ActivitySortFilterController.FilterParams>(
+) : MediaDataSettingsSortFilterController<ActivitySortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider
@@ -123,6 +124,7 @@ class ActivitySortFilterController(
         settings = settings,
         mediaType = null,
         mediaSharedElement = mediaSharedElement,
+        mediaDetailsRoute = AnimeDestination::MediaDetails,
     )
 
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
