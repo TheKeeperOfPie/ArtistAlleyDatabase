@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
@@ -26,8 +28,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+    }
 
-        resourceConfigurations += "en"
+    androidResources {
+        localeFilters += "en"
     }
 
     val proguardFiles = file("proguard").listFiles()!! +
@@ -298,3 +302,8 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
+
+tasks.named { it.contains("explodeCodeSource") }.configureEach {
+    dependsOn("generateResourceAccessorsForAndroidMain")
+    dependsOn("generateActualResourceCollectorsForAndroidMain")
+}

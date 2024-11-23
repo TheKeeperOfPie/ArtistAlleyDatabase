@@ -1,4 +1,5 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import dev.iurysouza.modulegraph.Theme
 
 buildscript {
     repositories {
@@ -20,8 +21,9 @@ plugins {
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization).apply(false)
     id(libs.plugins.com.android.application.get().pluginId).apply(false)
     id(libs.plugins.com.android.library.get().pluginId).apply(false)
-    id(libs.plugins.com.autonomousapps.dependency.analysis.get().pluginId).apply(false)
     id(libs.plugins.org.jetbrains.kotlin.android.get().pluginId).apply(false)
+
+    alias(libs.plugins.dev.iurysouza.modulegraph)
 }
 
 tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
@@ -30,6 +32,7 @@ tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
 }
 
 tasks.register("copyGitHooks", Copy::class) {
+    dependsOn("createModuleGraph") // Implicit dependency exists for some reason
     from(File(rootProject.rootDir, "scripts/git/pre-commit"))
     into(File(rootProject.rootDir, ".git/hooks"))
     filePermissions {
@@ -52,6 +55,7 @@ tasks.register("generateVerificationMetadata") {
     dependsOn(":app:internalOssLicensesTask")
     dependsOn(":app:releaseOssLicensesTask")
     dependsOn("dependencyUpdates")
+    dependsOn("createModuleGraph")
     // https://github.com/autonomousapps/dependency-analysis-gradle-plugin/issues/1185
 //    dependsOn("buildHealth")
     finalizedBy(":app:licenseReleaseReport")
@@ -68,4 +72,13 @@ dependencyAnalysis {
             }
         }
     }
+}
+
+moduleGraphConfig {
+    readmePath.set("./README.md")
+    heading = "#### Start Module Graph"
+    theme.set(Theme.DARK)
+    excludedConfigurationsRegex.set(".*test.*")
+    excludedModulesRegex.set(":")
+    rootModulesRegex.set(":app")
 }

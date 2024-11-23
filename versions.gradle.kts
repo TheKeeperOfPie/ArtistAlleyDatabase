@@ -100,7 +100,6 @@ object Versions {
     }
 
     const val cronetEmbedded = "119.6045.31"
-    const val dependencyAnalysis = "2.0.2"
     const val dexmakerInline = "2.28.4"
     const val diffUtils = "0.7.0"
     const val flowExt = "1.0.0"
@@ -156,6 +155,7 @@ object Versions {
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
+    const val moduleGraph = "0.10.1"
     const val molecule = "2.0.0"
     const val multiplatformMarkdown = "0.28.0-b01"
     const val netflixDgs = "9.1.0"
@@ -195,13 +195,13 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.android.application").version(Versions.android.gradle)
                 plugin("com.android.library").version(Versions.android.gradle)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
-                plugin("com.autonomousapps.dependency-analysis").version(Versions.dependencyAnalysis)
                 plugin("com.codingfeline.buildkonfig").version(Versions.buildKonfig)
                 plugin("com.github.ben-manes.versions").version(Versions.benManesVersions)
                 plugin("com.google.devtools.ksp").version(Versions.kotlin.ksp)
                 plugin("com.jaredsburrows.license").version(Versions.jaredsBurrowsLicense)
                 plugin("com.netflix.dgs.codegen").version(Versions.netflixDgsCodegen)
                 plugin("de.mannodermaus.android-junit5").version(Versions.androidJunit5)
+                plugin("dev.iurysouza.modulegraph").version(Versions.moduleGraph)
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.jetbrains.compose").version(Versions.composeMultiplatform.plugin)
                 plugin("org.jetbrains.kotlin.android").version(Versions.kotlin.core)
