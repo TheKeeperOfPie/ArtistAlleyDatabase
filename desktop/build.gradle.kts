@@ -12,6 +12,12 @@ kotlin {
         commonMain.dependencies {
             commonMain.dependencies {
                 implementation(projects.modules.anime)
+                implementation(projects.modules.cds)
+                implementation(projects.modules.markdown)
+                implementation(projects.modules.media)
+                implementation(projects.modules.monetization)
+                implementation(projects.modules.utils)
+                implementation(projects.modules.utilsNetwork)
                 implementation(projects.modules.utilsRoom)
                 implementation(libs.jetBrainsCompose.navigation.compose)
                 implementation(libs.kermit)

@@ -178,11 +178,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
@@ -516,8 +516,7 @@ object AnimeMediaDetailsScreen {
                                                     progress = progress,
                                                     progressMax = progressMax,
                                                     score = listStatusEntry.score,
-                                                    scoreFormat = editViewModel.scoreFormat
-                                                        .collectAsState().value,
+                                                    scoreFormat = editViewModel.state.scoreFormat,
                                                 )
                                             )
                                         }
@@ -560,7 +559,7 @@ object AnimeMediaDetailsScreen {
                                                 maxProgress = MediaUtils.maxProgress(media),
                                                 maxProgressVolumes = media.volumes,
                                             )
-                                            editViewModel.editData.showing = true
+                                            editViewModel.state.showing = true
                                         }
                                     },
                                 )

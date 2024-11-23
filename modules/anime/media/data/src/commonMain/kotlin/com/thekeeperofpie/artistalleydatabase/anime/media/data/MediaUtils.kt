@@ -12,6 +12,7 @@ import com.anilist.data.fragment.MediaTitleFragment
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import org.jetbrains.compose.resources.stringResource
@@ -41,6 +42,12 @@ fun MediaType?.toIconContentDescription() = stringResource(
         Res.string.anime_media_type_manga_icon_content_description
     }
 )
+
+fun MediaType?.toFavoriteType() = if (this == MediaType.ANIME) {
+    FavoriteType.ANIME
+} else {
+    FavoriteType.MANGA
+}
 
 /** Decouples MediaDetails from this module */
 typealias MediaDetailsRoute = (

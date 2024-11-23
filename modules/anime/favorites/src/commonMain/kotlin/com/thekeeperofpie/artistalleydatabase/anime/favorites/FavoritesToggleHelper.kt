@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.favorite
+package com.thekeeperofpie.artistalleydatabase.anime.favorites
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

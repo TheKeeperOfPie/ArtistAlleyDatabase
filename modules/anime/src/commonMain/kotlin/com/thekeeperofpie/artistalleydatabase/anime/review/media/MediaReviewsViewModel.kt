@@ -9,9 +9,9 @@ import com.anilist.data.fragment.MediaAndReviewsReview
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider

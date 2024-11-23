@@ -101,7 +101,6 @@ import com.anilist.data.fragment.MediaPreview
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.anilist.data.type.RecommendationRating
-import com.anilist.data.type.ScoreFormat
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
@@ -120,6 +119,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
@@ -218,8 +218,6 @@ object AnimeHomeScreen {
         val currentMediaState = mediaViewModel.currentMediaState()
         val news by viewModel.newsController.newsDateDescending.collectAsState()
         val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
-        val initialParams by editViewModel.initialParams.collectAsState()
-        val scoreFormat by editViewModel.scoreFormat.collectAsState()
         AnimeHomeScreen(
             upIconOption = upIconOption,
             scrollStateSaver = scrollStateSaver,
@@ -243,16 +241,10 @@ object AnimeHomeScreen {
             viewer = { viewer },
             onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
             onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
-            editData = editViewModel.editData,
             onEditSheetValueChange = editViewModel::onEditSheetValueChange,
-            onHide = editViewModel::hide,
             onAttemptDismiss = editViewModel::attemptDismiss,
-            initialParams = { initialParams },
-            onClickSave = editViewModel::onClickSave,
-            onClickDelete = editViewModel::onClickDelete,
-            onStatusChange = editViewModel::onStatusChange,
-            scoreFormat = { scoreFormat },
-            onDateChange = editViewModel::onDateChange,
+            editState = { editViewModel.state },
+            editEventSink = editViewModel::onEvent,
             onClickListEdit = editViewModel::initialize,
             onClickIncrementProgress = editViewModel::incrementProgress,
         )
@@ -279,16 +271,10 @@ object AnimeHomeScreen {
         viewer: () -> AniListViewer?,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
-        editData: MediaEditState,
         onEditSheetValueChange: (SheetValue) -> Boolean,
-        onHide: () -> Unit,
         onAttemptDismiss: () -> Boolean,
-        initialParams: () -> MediaEditState.InitialParams?,
-        onClickSave: () -> Unit,
-        onClickDelete: () -> Unit,
-        onStatusChange: (MediaListStatus?) -> Unit,
-        scoreFormat: () -> ScoreFormat,
-        onDateChange: (start: Boolean, Long?) -> Unit,
+        editState: () -> MediaEditState,
+        editEventSink: (AnimeMediaEditBottomSheet.Event) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
     ) {
@@ -309,16 +295,10 @@ object AnimeHomeScreen {
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         MediaEditBottomSheetScaffold(
-            editData = editData,
             onEditSheetValueChange = onEditSheetValueChange,
-            onHide = onHide,
             onAttemptDismiss = onAttemptDismiss,
-            initialParams = initialParams,
-            onClickSave = onClickSave,
-            onClickDelete = onClickDelete,
-            onStatusChange = onStatusChange,
-            scoreFormat = scoreFormat,
-            onDateChange = onDateChange,
+            state = editState,
+            eventSink = editEventSink,
             topBar = {
                 TopBar(
                     scrollBehavior = scrollBehavior,

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.favorite
+package com.thekeeperofpie.artistalleydatabase.anime.favorites
 
 enum class FavoriteType {
     ANIME,

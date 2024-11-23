@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
@@ -43,7 +43,7 @@ class RecommendationsViewModel<MediaEntry>(
     private val recommendationStatusController: RecommendationStatusController,
     private val ignoreController: IgnoreController,
     @Assisted mediaDetailsRoute: MediaDetailsRoute,
-    @Assisted recommendationsProvider: RecommendationsProvider<MediaEntry>,
+    @Assisted mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -88,9 +88,9 @@ class RecommendationsViewModel<MediaEntry>(
                         RecommendationEntry(
                             id = it.id.toString(),
                             user = it.user,
-                            media = recommendationsProvider.mediaEntry(it.media),
+                            media = mediaEntryProvider.mediaEntry(it.media),
                             mediaRecommendation =
-                                recommendationsProvider.mediaEntry(it.mediaRecommendation),
+                                mediaEntryProvider.mediaEntry(it.mediaRecommendation),
                             data = RecommendationData(
                                 it.media.id.toString(),
                                 it.mediaRecommendation.id.toString(),
@@ -114,16 +114,16 @@ class RecommendationsViewModel<MediaEntry>(
                                 ignoreController = ignoreController,
                                 filteringData = filteringData,
                                 entry = it.media,
-                                filterableData = recommendationsProvider.mediaFilterable(it.media),
-                                copy = { recommendationsProvider.copyMediaEntry(this, it) },
+                                filterableData = mediaEntryProvider.mediaFilterable(it.media),
+                                copy = { mediaEntryProvider.copyMediaEntry(this, it) },
                             ) ?: return@mapNotNull null
                             val newMediaRecommendation = applyMediaFiltering(
                                 statuses = mediaStatusUpdates,
                                 ignoreController = ignoreController,
                                 filteringData = filteringData,
                                 entry = it.mediaRecommendation,
-                                filterableData = recommendationsProvider.mediaFilterable(it.mediaRecommendation),
-                                copy = { recommendationsProvider.copyMediaEntry(this, it) },
+                                filterableData = mediaEntryProvider.mediaFilterable(it.mediaRecommendation),
+                                copy = { mediaEntryProvider.copyMediaEntry(this, it) },
                             ) ?: return@mapNotNull null
 
                             val filtered = it.copy(
@@ -152,13 +152,6 @@ class RecommendationsViewModel<MediaEntry>(
 
     fun refresh() = refresh.refresh()
 
-    interface RecommendationsProvider<MediaEntry> {
-        /** Proxies to a real type to decouple the media data class from recommendations */
-        fun mediaEntry(media: MediaCompactWithTags): MediaEntry
-        fun mediaFilterable(entry: MediaEntry): MediaFilterableData
-        fun copyMediaEntry(entry: MediaEntry, data: MediaFilterableData): MediaEntry
-    }
-
     @Inject
     class Factory(
         private val aniListApi: AuthedAniListApi,
@@ -169,16 +162,17 @@ class RecommendationsViewModel<MediaEntry>(
         private val ignoreController: IgnoreController,
         @Assisted private val mediaDetailsRoute: MediaDetailsRoute,
     ) {
-        fun <MediaEntry> create(recommendationsProvider: RecommendationsProvider<MediaEntry>) =
-            RecommendationsViewModel(
-                aniListApi = aniListApi,
-                settings = settings,
-                featureOverrideProvider = featureOverrideProvider,
-                mediaListStatusController = mediaListStatusController,
-                recommendationStatusController = recommendationStatusController,
-                ignoreController = ignoreController,
-                mediaDetailsRoute = mediaDetailsRoute,
-                recommendationsProvider = recommendationsProvider,
-            )
+        fun <MediaEntry> create(
+            mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
+        ) = RecommendationsViewModel(
+            aniListApi = aniListApi,
+            settings = settings,
+            featureOverrideProvider = featureOverrideProvider,
+            mediaListStatusController = mediaListStatusController,
+            recommendationStatusController = recommendationStatusController,
+            ignoreController = ignoreController,
+            mediaDetailsRoute = mediaDetailsRoute,
+            mediaEntryProvider = mediaEntryProvider,
+        )
     }
 }

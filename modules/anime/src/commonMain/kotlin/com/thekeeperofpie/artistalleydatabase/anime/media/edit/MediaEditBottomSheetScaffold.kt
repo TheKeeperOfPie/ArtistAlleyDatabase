@@ -15,14 +15,10 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.anilist.data.type.MediaListStatus
-import com.anilist.data.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ClickableBottomSheetDragHandle
@@ -34,6 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object MediaEditBottomSheetScaffold {
 
+    @Deprecated("Use state variant instead")
     @Composable
     operator fun invoke(
         viewModel: MediaEditViewModel,
@@ -48,20 +45,13 @@ object MediaEditBottomSheetScaffold {
         snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
         content: @Composable (PaddingValues) -> Unit,
     ) {
-        val initialParams by viewModel.initialParams.collectAsState()
-        val scoreFormat by viewModel.scoreFormat.collectAsState()
+        val state = viewModel.state
         MediaEditBottomSheetScaffold(
-            editData = viewModel.editData,
             onEditSheetValueChange = viewModel::onEditSheetValueChange,
-            onHide = viewModel::hide,
             onAttemptDismiss = viewModel::attemptDismiss,
-            initialParams = { initialParams },
-            onClickSave = viewModel::onClickSave,
-            onClickDelete = viewModel::onClickDelete,
-            onStatusChange = viewModel::onStatusChange,
-            scoreFormat = { scoreFormat },
-            onDateChange = viewModel::onDateChange,
-            modifier= modifier,
+            state = { state },
+            eventSink = viewModel::onEvent,
+            modifier = modifier,
             topBar = topBar,
             bottomNavigationState = bottomNavigationState,
             sheetState = sheetState,
@@ -72,16 +62,10 @@ object MediaEditBottomSheetScaffold {
 
     @Composable
     operator fun invoke(
-        editData: MediaEditState,
         onEditSheetValueChange: (SheetValue) -> Boolean,
-        onHide: () -> Unit,
         onAttemptDismiss: () -> Boolean,
-        initialParams: () -> MediaEditState.InitialParams?,
-        onClickSave: () -> Unit,
-        onClickDelete: () -> Unit,
-        onStatusChange: (MediaListStatus?) -> Unit,
-        onDateChange: (start: Boolean, Long?) -> Unit,
-        scoreFormat: () -> ScoreFormat,
+        state: () -> MediaEditState,
+        eventSink: (AnimeMediaEditBottomSheet.Event) -> Unit,
         modifier: Modifier = Modifier,
         topBar: @Composable() (() -> Unit)? = null,
         bottomNavigationState: BottomNavigationState? = null,
@@ -98,13 +82,14 @@ object MediaEditBottomSheetScaffold {
             snackbarHostState = snackbarHostState,
         )
 
-        val bottomSheetShowing = editData.showing
+        val state = state()
+        val bottomSheetShowing = state.showing
         LaunchedEffect(bottomSheetShowing) {
             if (bottomSheetShowing) {
                 launch { sheetState.expand() }
             } else {
                 launch { sheetState.hide() }
-                    .invokeOnCompletion { onHide() }
+                    .invokeOnCompletion { eventSink(AnimeMediaEditBottomSheet.Event.Hide) }
             }
         }
 
@@ -114,22 +99,24 @@ object MediaEditBottomSheetScaffold {
             if (currentValue != SheetValue.Expanded) {
                 if (onAttemptDismiss()) {
                     scope.launch { sheetState.hide() }
-                        .invokeOnCompletion { onHide() }
+                        .invokeOnCompletion { eventSink(AnimeMediaEditBottomSheet.Event.Hide) }
                 } else {
                     sheetState.expand()
                 }
             }
         }
 
-        BackHandler(enabled = sheetState.targetValue == SheetValue.Expanded
-                && !WindowInsets.isImeVisibleKmp) {
+        BackHandler(
+            enabled = sheetState.targetValue == SheetValue.Expanded
+                    && !WindowInsets.isImeVisibleKmp
+        ) {
             if (onAttemptDismiss()) {
                 scope.launch { sheetState.hide() }
-                    .invokeOnCompletion { onHide() }
+                    .invokeOnCompletion { eventSink(AnimeMediaEditBottomSheet.Event.Hide) }
             }
         }
 
-        val error = editData.error
+        val error = state.error
         val errorString = error?.first?.let { stringResource(it) }
         LaunchedEffect(error) {
             if (error != null) {
@@ -139,7 +126,7 @@ object MediaEditBottomSheetScaffold {
                     duration = SnackbarDuration.Long,
                 )
 
-                editData.error = null
+                state.error = null
             }
         }
 
@@ -154,18 +141,13 @@ object MediaEditBottomSheetScaffold {
             },
             sheetContent = {
                 AnimeMediaEditBottomSheet(
-                    initialParams = initialParams,
-                    editData = { editData },
-                    onClickSave = onClickSave,
-                    onClickDelete = onClickDelete,
-                    onStatusChange = onStatusChange,
-                    scoreFormat = scoreFormat,
-                    onDateChange = onDateChange,
+                    state = { state },
+                    eventSink = eventSink,
                     onDismiss = {
                         scope.launch { sheetState.hide() }
                             .invokeOnCompletion {
                                 if (!sheetState.isVisible) {
-                                    onHide()
+                                    eventSink(AnimeMediaEditBottomSheet.Event.Hide)
                                 }
                             }
                     },

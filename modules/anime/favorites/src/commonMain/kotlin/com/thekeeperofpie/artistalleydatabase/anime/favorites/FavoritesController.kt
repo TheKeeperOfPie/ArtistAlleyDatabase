@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.favorite
+package com.thekeeperofpie.artistalleydatabase.anime.favorites
 
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope

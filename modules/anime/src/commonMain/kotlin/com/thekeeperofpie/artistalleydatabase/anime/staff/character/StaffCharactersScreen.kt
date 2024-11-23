@@ -13,7 +13,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_staff_charact
 import com.anilist.data.StaffAndCharactersQuery
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeader
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues

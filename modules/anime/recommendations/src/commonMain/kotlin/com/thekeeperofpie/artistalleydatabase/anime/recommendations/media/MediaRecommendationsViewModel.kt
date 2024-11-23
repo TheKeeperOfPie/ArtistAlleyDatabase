@@ -1,31 +1,31 @@
-package com.thekeeperofpie.artistalleydatabase.anime.recommendation.media
+package com.thekeeperofpie.artistalleydatabase.anime.recommendations.media
 
 import androidx.compose.runtime.snapshotFlow
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_error_loading
+import artistalleydatabase.modules.anime.recommendations.generated.resources.Res
+import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_recommendations_error_loading
 import com.anilist.data.fragment.MediaAndRecommendationsRecommendation
+import com.anilist.data.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -36,23 +36,21 @@ import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class MediaRecommendationsViewModel(
-    aniListApi: AuthedAniListApi,
+class MediaRecommendationsViewModel<MediaEntry>(
+    private val aniListApi: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,
     private val recommendationStatusController: RecommendationStatusController,
     private val ignoreController: IgnoreController,
-    private val settings: AnimeSettings,
+    private val settings: MediaDataSettings,
     favoritesController: FavoritesController,
     featureOverrideProvider: FeatureOverrideProvider,
-    @Assisted savedStateHandle: SavedStateHandle,
-    navigationTypeMap: NavigationTypeMap,
-) : HeaderAndListViewModel<MediaRecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
-        MediaRecommendationEntry, RecommendationSortOption, MediaRecommendationSortFilterController.FilterParams>(
-    aniListApi = aniListApi,
+    @Assisted val mediaId: String,
+    @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
+) : SortFilteredViewModel<MediaRecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
+        MediaRecommendationEntry<MediaEntry>, MediaRecommendationSortFilterController.FilterParams>(
     loadingErrorTextRes = Res.string.anime_recommendations_error_loading
 ) {
-    private val destination = savedStateHandle.toDestination<AnimeDestination.MediaRecommendations>(navigationTypeMap)
-    val mediaId = destination.mediaId
+    val viewer = aniListApi.authedUser
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
@@ -73,25 +71,32 @@ class MediaRecommendationsViewModel(
     }
 
     override fun makeEntry(item: MediaAndRecommendationsRecommendation) =
-        MediaRecommendationEntry(mediaId = mediaId, recommendation = item)
+        MediaRecommendationEntry(
+            mediaId = mediaId,
+            recommendation = item,
+            media = mediaEntryProvider.mediaEntry(item.mediaRecommendation),
+        )
 
-    override fun entryId(entry: MediaRecommendationEntry) = entry.recommendation.id.toString()
+    override fun entryId(entry: MediaRecommendationEntry<MediaEntry>) =
+        entry.recommendation.id.toString()
 
     override suspend fun initialRequest(
         filterParams: MediaRecommendationSortFilterController.FilterParams?,
     ) = MediaRecommendationsScreen.Entry(aniListApi.mediaAndRecommendations(mediaId = mediaId))
 
-    override suspend fun pagedRequest(
-        page: Int,
+    override suspend fun request(
         filterParams: MediaRecommendationSortFilterController.FilterParams?,
-    ) = aniListApi.mediaAndRecommendationsPage(
-        mediaId = mediaId,
-        sort = filterParams!!.sort.selectedOption(RecommendationSortOption.RATING)
-            .toApiValue(filterParams.sortAscending),
-        page = page,
-    ).media.recommendations.run { pageInfo to nodes }
+    ): Flow<PagingData<MediaAndRecommendationsRecommendation>> =
+        AniListPager { page ->
+            aniListApi.mediaAndRecommendationsPage(
+                mediaId = mediaId,
+                sort = filterParams!!.sort.selectedOption(RecommendationSortOption.RATING)
+                    .toApiValue(filterParams.sortAscending),
+                page = page,
+            ).media.recommendations.run { pageInfo to nodes }
+        }
 
-    override fun Flow<PagingData<MediaRecommendationEntry>>.transformFlow() =
+    override fun Flow<PagingData<MediaRecommendationEntry<MediaEntry>>>.transformFlow() =
         flatMapLatest { pagingData ->
             combine(
                 mediaListStatusController.allChanges(),
@@ -105,8 +110,8 @@ class MediaRecommendationsViewModel(
                         ignoreController = ignoreController,
                         filteringData = filteringData,
                         entry = it.media,
-                        filterableData = it.media.mediaFilterable,
-                        copy = { copy(mediaFilterable = it) },
+                        filterableData = mediaEntryProvider.mediaFilterable(it.media),
+                        copy = { mediaEntryProvider.copyMediaEntry(this, it) },
                     ) ?: return@mapNotNull null
                     val filtered = it.copy(media = newMedia)
                     val recommendationUpdate =
@@ -118,4 +123,30 @@ class MediaRecommendationsViewModel(
                 }
             }
         }
+
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val mediaListStatusController: MediaListStatusController,
+        private val recommendationStatusController: RecommendationStatusController,
+        private val ignoreController: IgnoreController,
+        private val settings: MediaDataSettings,
+        private val favoritesController: FavoritesController,
+        private val featureOverrideProvider: FeatureOverrideProvider,
+        private val navigationTypeMap: NavigationTypeMap,
+        @Assisted private val mediaId: String,
+    ) {
+        fun <MediaEntry> create(mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>) =
+            MediaRecommendationsViewModel(
+                aniListApi = aniListApi,
+                mediaListStatusController = mediaListStatusController,
+                recommendationStatusController = recommendationStatusController,
+                ignoreController = ignoreController,
+                settings = settings,
+                favoritesController = favoritesController,
+                featureOverrideProvider = featureOverrideProvider,
+                mediaId = mediaId,
+                mediaEntryProvider = mediaEntryProvider,
+            )
+    }
 }

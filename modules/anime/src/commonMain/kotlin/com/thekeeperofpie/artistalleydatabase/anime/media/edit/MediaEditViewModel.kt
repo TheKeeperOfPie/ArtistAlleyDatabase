@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -17,7 +18,6 @@ import com.anilist.data.fragment.MediaDetailsListEntry
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
-import com.anilist.data.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaQuickEditData
@@ -27,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusCo
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.utils.SimpleResult
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,19 +55,20 @@ class MediaEditViewModel(
     private val settings: AnimeSettings,
 ) : ViewModel() {
 
-    val initialParams = MutableStateFlow<MediaEditState.InitialParams?>(null)
+    val state = MediaEditState()
+
     private val mediaEntryRequest = MutableStateFlow<MediaRequest?>(null)
-
-    val editData = MediaEditState()
-
     private val rawScore = MutableSharedFlow<Double?>(1, 1)
-    val scoreFormat = MutableStateFlow(ScoreFormat.POINT_100)
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             aniListApi.authedUser
                 .mapNotNull { it?.scoreFormat }
-                .collect(scoreFormat::emit)
+                .collectLatest {
+                    withContext(Dispatchers.Main) {
+                        state.scoreFormat = it
+                    }
+                }
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -91,7 +93,7 @@ class MediaEditViewModel(
                                 maxProgressVolumes = media.volumes,
                             )
                         } else {
-                            editData.error = Res.string.anime_media_edit_error_loading to
+                            state.error = Res.string.anime_media_edit_error_loading to
                                     it.exceptionOrNull()
                             mediaEntryRequest.emit(null)
                         }
@@ -100,22 +102,23 @@ class MediaEditViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            initialParams.flatMapLatest {
-                if (it?.mediaId != null) {
-                    statusController.allChanges(it.mediaId)
-                } else {
-                    emptyFlow()
+            snapshotFlow { state.initialParams }
+                .flatMapLatest {
+                    if (it?.mediaId != null) {
+                        statusController.allChanges(it.mediaId)
+                    } else {
+                        emptyFlow()
+                    }
                 }
-            }
                 .filterNotNull()
-                .collectLatest { editData.status = it.entry?.status }
+                .collectLatest { state.status = it.entry?.status }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            combine(scoreFormat, rawScore, ::Pair)
+            combine(snapshotFlow { state.scoreFormat }, rawScore, ::Pair)
                 .collectLatest { (format, score) ->
                     // TODO: Move locale to view layer
-                    editData.score = score?.let {
+                    state.score = score?.let {
                         MediaUtils.scoreFormatToText(it, format)
                     }.orEmpty()
                 }
@@ -124,7 +127,7 @@ class MediaEditViewModel(
 
     fun initialize(media: MediaNavigationData) {
         val mediaId = media.id.toString()
-        val initialParams = initialParams.value
+        val initialParams = state.initialParams
         if (initialParams?.mediaId != mediaId) {
             val title = media.title?.primaryTitle(settings.languageOptionMedia.value)
             mediaEntryRequest.tryEmit(
@@ -147,7 +150,7 @@ class MediaEditViewModel(
                 loading = true
             )
         }
-        editData.showing = true
+        state.showing = true
     }
 
     fun initialize(mediaQuickEditData: MediaQuickEditData) = initialize(
@@ -172,7 +175,7 @@ class MediaEditViewModel(
         titleEnglish: String?,
         titleNative: String?,
     ) {
-        val initialParams = initialParams.value
+        val initialParams = state.initialParams
         if (initialParams?.mediaId != mediaId) {
             val title = MediaUtils.userPreferredTitle(
                 titleRomaji = titleRomaji,
@@ -194,7 +197,7 @@ class MediaEditViewModel(
                 loading = true
             )
         }
-        editData.showing = true
+        state.showing = true
     }
 
     fun initialize(
@@ -209,7 +212,7 @@ class MediaEditViewModel(
         maxProgressVolumes: Int?,
         loading: Boolean = false,
     ) {
-        initialParams.value = MediaEditState.InitialParams(
+        state.initialParams = MediaEditState.InitialParams(
             mediaId = mediaId,
             coverImage = coverImage,
             title = title,
@@ -219,19 +222,19 @@ class MediaEditViewModel(
             maxProgressVolumes = maxProgressVolumes,
             loading = loading,
         )
-        editData.status = status
-        editData.progress = mediaListEntry?.progress.takeUnless { it == 0 }?.toString().orEmpty()
-        editData.progressVolumes =
+        state.status = status
+        state.progress = mediaListEntry?.progress.takeUnless { it == 0 }?.toString().orEmpty()
+        state.progressVolumes =
             mediaListEntry?.progressVolumes.takeUnless { it == 0 }?.toString().orEmpty()
-        editData.repeat = mediaListEntry?.repeat.takeUnless { it == 0 }?.toString().orEmpty()
-        editData.startDate = MediaUtils.parseLocalDate(mediaListEntry?.startedAt)
-        editData.endDate = MediaUtils.parseLocalDate(mediaListEntry?.completedAt)
-        editData.priority = mediaListEntry?.priority.takeUnless { it == 0 }?.toString().orEmpty()
-        editData.private = mediaListEntry?.private ?: false
-        editData.hiddenFromStatusLists = mediaListEntry?.hiddenFromStatusLists ?: false
-        editData.updatedAt = mediaListEntry?.updatedAt?.toLong()
-        editData.createdAt = mediaListEntry?.createdAt?.toLong()
-        editData.notes = mediaListEntry?.notes.orEmpty()
+        state.repeat = mediaListEntry?.repeat.takeUnless { it == 0 }?.toString().orEmpty()
+        state.startDate = MediaUtils.parseLocalDate(mediaListEntry?.startedAt)
+        state.endDate = MediaUtils.parseLocalDate(mediaListEntry?.completedAt)
+        state.priority = mediaListEntry?.priority.takeUnless { it == 0 }?.toString().orEmpty()
+        state.private = mediaListEntry?.private ?: false
+        state.hiddenFromStatusLists = mediaListEntry?.hiddenFromStatusLists ?: false
+        state.updatedAt = mediaListEntry?.updatedAt?.toLong()
+        state.createdAt = mediaListEntry?.createdAt?.toLong()
+        state.notes = mediaListEntry?.notes.orEmpty()
         rawScore.tryEmit(mediaListEntry?.score)
     }
 
@@ -253,9 +256,9 @@ class MediaEditViewModel(
         }
     }
 
-    fun hide() {
-        editData.showing = false
-        editData.error = null
+    private fun hide() {
+        state.showing = false
+        state.error = null
     }
 
     fun onEditSheetValueChange(sheetValue: SheetValue): Boolean {
@@ -273,13 +276,22 @@ class MediaEditViewModel(
     }
 
     fun attemptDismiss(): Boolean {
-        if (!editData.showing) return true
-        if (editData.isEqualTo(initialParams.value, scoreFormat.value)) return true
-        editData.showConfirmClose = true
+        if (!state.showing) return true
+        if (!state.hasChanged()) return true
+        state.showConfirmClose = true
         return false
     }
 
-    fun onDateChange(start: Boolean, selectedMillis: Long?) {
+    fun onEvent(event: AnimeMediaEditBottomSheet.Event) = when (event) {
+        is AnimeMediaEditBottomSheet.Event.DateChange ->
+            onDateChange(event.start, event.selectedMillisUtc)
+        AnimeMediaEditBottomSheet.Event.Delete -> onClickDelete()
+        AnimeMediaEditBottomSheet.Event.Hide -> hide()
+        AnimeMediaEditBottomSheet.Event.Save -> onClickSave()
+        is AnimeMediaEditBottomSheet.Event.StatusChange -> onStatusChange(event.status)
+    }
+
+    private fun onDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
             Instant.fromEpochMilliseconds(it)
@@ -288,14 +300,14 @@ class MediaEditViewModel(
         }
 
         if (start) {
-            editData.startDate = selectedDate
+            state.startDate = selectedDate
         } else {
-            editData.endDate = selectedDate
+            state.endDate = selectedDate
         }
     }
 
-    fun onStatusChange(status: MediaListStatus?) {
-        editData.status = status
+    private fun onStatusChange(status: MediaListStatus?) {
+        state.status = status
         when (status) {
             MediaListStatus.CURRENT,
             MediaListStatus.PLANNING,
@@ -304,34 +316,35 @@ class MediaEditViewModel(
             MediaListStatus.UNKNOWN__, null,
                 -> Unit
             MediaListStatus.COMPLETED -> {
-                initialParams.value?.maxProgress
-                    ?.let { editData.progress = it.toString() }
-                initialParams.value?.maxProgressVolumes
-                    ?.let { editData.progressVolumes = it.toString() }
-                editData.endDate =
+                val initialParams = state.initialParams
+                initialParams?.maxProgress
+                    ?.let { state.progress = it.toString() }
+                initialParams?.maxProgressVolumes
+                    ?.let { state.progressVolumes = it.toString() }
+                state.endDate =
                     Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             }
             MediaListStatus.DROPPED -> {
-                editData.endDate =
+                state.endDate =
                     Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             }
         }
     }
 
-    fun onClickDelete() {
-        if (editData.saving || editData.deleting) return
-        editData.deleting = true
+    private fun onClickDelete() {
+        if (state.saving || state.deleting) return
+        state.deleting = true
+        val initialParams = state.initialParams
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
-                val initialParams = initialParams.value
                 aniListApi.deleteMediaListEntry(initialParams?.id!!)
 
                 val mediaId = initialParams.mediaId!!
                 statusController.onUpdate(mediaId, null)
                 withContext(CustomDispatchers.Main) {
-                    editData.deleting = false
-                    editData.showing = false
-                    editData.showConfirmClose = false
+                    state.deleting = false
+                    state.showing = false
+                    state.showConfirmClose = false
                     initialize(
                         mediaId = mediaId,
                         coverImage = null,
@@ -345,38 +358,38 @@ class MediaEditViewModel(
                 }
             } catch (e: Exception) {
                 withContext(CustomDispatchers.Main) {
-                    editData.deleting = false
-                    editData.error = Res.string.anime_media_edit_error_deleting to e
+                    state.deleting = false
+                    state.error = Res.string.anime_media_edit_error_deleting to e
                 }
             }
         }
     }
 
-    fun onClickSave() {
-        if (editData.status == null) {
-            editData.saving = false
-            editData.error = Res.string.anime_media_edit_error_invalid_status to null
+    private fun onClickSave() {
+        if (state.status == null) {
+            state.saving = false
+            state.error = Res.string.anime_media_edit_error_invalid_status to null
             return
         }
 
-        if (editData.saving || editData.deleting) return
-        editData.saving = true
+        if (state.saving || state.deleting) return
+        state.saving = true
 
         // Read values on main thread before entering coroutine
-        val scoreRaw = editData.scoreRaw(scoreFormat.value)
-        val progress = editData.progress
-        val progressVolumes = editData.progressVolumes
-        val repeat = editData.repeat
-        val priority = editData.priority
-        val status = editData.status
-        val private = editData.private
-        val hiddenFromStatusLists = editData.hiddenFromStatusLists
-        val startDate = editData.startDate
-        val endDate = editData.endDate
-        val notes = editData.notes
+        val scoreRaw = state.scoreRaw()
+        val progress = state.progress
+        val progressVolumes = state.progressVolumes
+        val repeat = state.repeat
+        val priority = state.priority
+        val status = state.status
+        val private = state.private
+        val hiddenFromStatusLists = state.hiddenFromStatusLists
+        val startDate = state.startDate
+        val endDate = state.endDate
+        val notes = state.notes
 
+        val initialParams = state.initialParams ?: return
         viewModelScope.launch(CustomDispatchers.IO) {
-            val initialParams = initialParams.value!!
             fun validateFieldAsInt(field: String): SimpleResult<Int> {
                 if (field.isBlank()) return SimpleResult.Success(0)
                 return SimpleResult.successIfNotNull(field.toIntOrNull())
@@ -384,8 +397,8 @@ class MediaEditViewModel(
 
             if (scoreRaw is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
-                    editData.saving = false
-                    editData.error = Res.string.anime_media_edit_error_invalid_score to null
+                    state.saving = false
+                    state.error = Res.string.anime_media_edit_error_invalid_score to null
                 }
                 return@launch
             }
@@ -393,8 +406,8 @@ class MediaEditViewModel(
             val progressAsInt = validateFieldAsInt(progress)
             if (progressAsInt is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
-                    editData.saving = false
-                    editData.error = Res.string.anime_media_edit_error_invalid_progress to null
+                    state.saving = false
+                    state.error = Res.string.anime_media_edit_error_invalid_progress to null
                 }
                 return@launch
             }
@@ -403,8 +416,8 @@ class MediaEditViewModel(
                 validateFieldAsInt(progressVolumes).also {
                     if (it is SimpleResult.Failure) {
                         withContext(CustomDispatchers.Main) {
-                            editData.saving = false
-                            editData.error =
+                            state.saving = false
+                            state.error =
                                 Res.string.anime_media_edit_error_invalid_progress to null
                         }
                         return@launch
@@ -415,8 +428,8 @@ class MediaEditViewModel(
             val repeatAsInt = validateFieldAsInt(repeat)
             if (repeatAsInt is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
-                    editData.saving = false
-                    editData.error = Res.string.anime_media_edit_error_invalid_repeat to null
+                    state.saving = false
+                    state.error = Res.string.anime_media_edit_error_invalid_repeat to null
                 }
                 return@launch
             }
@@ -424,8 +437,8 @@ class MediaEditViewModel(
             val priorityAsInt = validateFieldAsInt(priority)
             if (priorityAsInt is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
-                    editData.saving = false
-                    editData.error = Res.string.anime_media_edit_error_invalid_priority to null
+                    state.saving = false
+                    state.error = Res.string.anime_media_edit_error_invalid_priority to null
                 }
                 return@launch
             }
@@ -451,9 +464,9 @@ class MediaEditViewModel(
                 statusController.onUpdate(mediaId, result)
 
                 withContext(CustomDispatchers.Main) {
-                    editData.saving = false
-                    editData.showing = false
-                    editData.showConfirmClose = false
+                    state.saving = false
+                    state.showing = false
+                    state.showConfirmClose = false
                     initialize(
                         mediaId = mediaId,
                         coverImage = initialParams.coverImage,
@@ -467,8 +480,8 @@ class MediaEditViewModel(
                 }
             } catch (e: Exception) {
                 withContext(CustomDispatchers.Main) {
-                    editData.saving = false
-                    editData.error = Res.string.anime_media_edit_error_saving to e
+                    state.saving = false
+                    state.error = Res.string.anime_media_edit_error_saving to e
                 }
             }
         }

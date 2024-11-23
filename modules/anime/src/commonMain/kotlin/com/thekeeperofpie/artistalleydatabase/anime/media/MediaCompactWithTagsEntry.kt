@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
@@ -35,4 +36,11 @@ data class MediaCompactWithTagsEntry(
     override val episodes get() = media.episodes
     override val volumes get() = media.volumes
     override val nextAiringEpisode = media.nextAiringEpisode?.toNextAiringEpisode()
+
+    object Provider : MediaEntryProvider<MediaCompactWithTags, MediaCompactWithTagsEntry> {
+        override fun mediaEntry(media: MediaCompactWithTags) = MediaCompactWithTagsEntry(media)
+        override fun mediaFilterable(entry: MediaCompactWithTagsEntry) = entry.mediaFilterable
+        override fun copyMediaEntry(entry: MediaCompactWithTagsEntry, data: MediaFilterableData) =
+            entry.copy(mediaFilterable = data)
+    }
 }

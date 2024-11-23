@@ -13,9 +13,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_reviews_error
 import com.anilist.data.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap

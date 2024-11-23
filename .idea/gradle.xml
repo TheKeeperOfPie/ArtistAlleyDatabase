@@ -29,12 +29,14 @@
             <option value="$PROJECT_DIR$/modules/anilist/data" />
             <option value="$PROJECT_DIR$/modules/anime" />
             <option value="$PROJECT_DIR$/modules/anime/data" />
+            <option value="$PROJECT_DIR$/modules/anime/favorites" />
             <option value="$PROJECT_DIR$/modules/anime/ignore" />
             <option value="$PROJECT_DIR$/modules/anime/ignore/data" />
             <option value="$PROJECT_DIR$/modules/anime/media" />
             <option value="$PROJECT_DIR$/modules/anime/media/data" />
             <option value="$PROJECT_DIR$/modules/anime/news" />
             <option value="$PROJECT_DIR$/modules/anime/recommendations" />
+            <option value="$PROJECT_DIR$/modules/anime/ui" />
             <option value="$PROJECT_DIR$/modules/anime2anime" />
             <option value="$PROJECT_DIR$/modules/animethemes" />
             <option value="$PROJECT_DIR$/modules/apollo" />

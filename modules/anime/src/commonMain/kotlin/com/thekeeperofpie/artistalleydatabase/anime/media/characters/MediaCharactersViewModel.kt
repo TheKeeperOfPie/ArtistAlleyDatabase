@@ -12,9 +12,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption

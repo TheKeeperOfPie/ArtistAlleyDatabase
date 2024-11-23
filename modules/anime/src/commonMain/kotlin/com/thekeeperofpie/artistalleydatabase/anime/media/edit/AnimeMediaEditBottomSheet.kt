@@ -45,7 +45,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -140,39 +139,26 @@ object AnimeMediaEditBottomSheet {
         modifier: Modifier = Modifier,
         onDismiss: () -> Unit,
     ) {
-        val initialParams by viewModel.initialParams.collectAsState()
-        val scoreFormat by viewModel.scoreFormat.collectAsState()
         AnimeMediaEditBottomSheet(
-            initialParams = { initialParams },
-            editData = { viewModel.editData },
+            state = { viewModel.state },
+            eventSink = viewModel::onEvent,
             onDismiss = onDismiss,
-            onClickSave = viewModel::onClickSave,
-            onClickDelete = viewModel::onClickDelete,
-            onStatusChange = viewModel::onStatusChange,
-            scoreFormat = { scoreFormat },
-            onDateChange = viewModel::onDateChange,
             modifier = modifier,
         )
     }
 
     @Composable
     operator fun invoke(
-        initialParams: () -> MediaEditState.InitialParams?,
-        editData: () -> MediaEditState,
+        state: () -> MediaEditState,
+        eventSink: (Event) -> Unit,
         onDismiss: () -> Unit,
-        onClickSave: () -> Unit,
-        onClickDelete: () -> Unit,
-        onStatusChange: (MediaListStatus?) -> Unit,
-        scoreFormat: () -> ScoreFormat,
-        onDateChange: (start: Boolean, Long?) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         var showDelete by remember { mutableStateOf(false) }
 
         HorizontalDivider()
 
-        val initialParams = initialParams()
-        val editData = editData()
+        val state = state()
         Column(modifier = modifier) {
             Column(
                 Modifier
@@ -180,7 +166,7 @@ object AnimeMediaEditBottomSheet {
                     .weight(1f, fill = false)
             ) {
                 Crossfade(
-                    targetState = initialParams?.loading,
+                    targetState = state.initialParams?.loading,
                     label = "Media edit sheet crossfade"
                 ) {
                     if (it == true) {
@@ -195,11 +181,8 @@ object AnimeMediaEditBottomSheet {
                         Column {
                             SharedTransitionKeyScope("media_edit_bottom_sheet") {
                                 Form(
-                                    initialParams = initialParams,
-                                    editData = editData,
-                                    onStatusChange = onStatusChange,
-                                    scoreFormat = scoreFormat,
-                                    onDateChange = onDateChange,
+                                    state = state,
+                                    eventSink = eventSink,
                                 )
                             }
                         }
@@ -215,10 +198,10 @@ object AnimeMediaEditBottomSheet {
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (initialParams?.id != null) {
+                if (state.initialParams?.id != null) {
                     TextButton(onClick = { showDelete = true }) {
                         Crossfade(
-                            targetState = editData.deleting,
+                            targetState = state.deleting,
                             label = "Media edit delete indicator crossfade"
                         ) {
                             if (it) {
@@ -236,9 +219,9 @@ object AnimeMediaEditBottomSheet {
                     }
                 }
 
-                TextButton(onClick = onClickSave) {
+                TextButton(onClick = { eventSink(Event.Save) }) {
                     Crossfade(
-                        targetState = editData.saving,
+                        targetState = state.saving,
                         label = "Media edit save indicator crossfade"
                     ) {
                         if (it) {
@@ -264,7 +247,7 @@ object AnimeMediaEditBottomSheet {
                 confirmButton = {
                     TextButton(onClick = {
                         showDelete = false
-                        onClickDelete()
+                        eventSink(Event.Delete)
                     }) {
                         Text(stringResource(UtilsStrings.yes))
                     }
@@ -275,23 +258,23 @@ object AnimeMediaEditBottomSheet {
                     }
                 },
             )
-        } else if (editData.showConfirmClose) {
+        } else if (state.showConfirmClose) {
             AlertDialog(
-                onDismissRequest = { editData.showConfirmClose = false },
+                onDismissRequest = { state.showConfirmClose = false },
                 title = { Text(stringResource(Res.string.anime_media_edit_confirm_close_title)) },
                 text = { Text(stringResource(Res.string.anime_media_edit_confirm_close_text)) },
                 confirmButton = {
                     TextButton(onClick = {
-                        editData.showConfirmClose = false
-                        onClickSave()
+                        state.showConfirmClose = false
+                        eventSink(Event.Save)
                     }) {
                         Text(stringResource(Res.string.anime_media_edit_confirm_delete_save_button))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = {
-                        editData.showConfirmClose = false
-                        editData.showing = false
+                        state.showConfirmClose = false
+                        state.showing = false
                         onDismiss()
                     }) {
                         Text(stringResource(Res.string.anime_media_edit_confirm_delete_exit_button))
@@ -303,16 +286,14 @@ object AnimeMediaEditBottomSheet {
 
     @Composable
     private fun ColumnScope.Form(
-        initialParams: MediaEditState.InitialParams?,
-        editData: MediaEditState,
-        onStatusChange: (MediaListStatus?) -> Unit,
-        scoreFormat: () -> ScoreFormat,
-        onDateChange: (start: Boolean, Long?) -> Unit,
+        state: MediaEditState,
+        eventSink: (Event) -> Unit,
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
+        val initialParams = state.initialParams
         val mediaId = initialParams?.mediaId
-        val coverImage = initialParams?.coverImage
-        if (mediaId != null && editData.showing) {
+        if (initialParams != null && mediaId != null && state.showing) {
+            val coverImage = initialParams.coverImage
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -371,7 +352,7 @@ object AnimeMediaEditBottomSheet {
         val isAnime = initialParams?.mediaType == MediaType.ANIME
         SectionHeader(Res.string.anime_media_edit_status_label)
         ItemDropdown(
-            value = editData.status,
+            value = state.status,
             iconContentDescription = Res.string.anime_media_edit_status_dropdown_content_description,
             values = {
                 listOf(
@@ -393,7 +374,7 @@ object AnimeMediaEditBottomSheet {
                 )
             },
             textForValue = { stringResource(it.toTextRes(isAnime)) },
-            onSelectItem = onStatusChange,
+            onSelectItem = { eventSink(Event.StatusChange(it)) },
             modifier = Modifier.padding(horizontal = 16.dp),
         )
 
@@ -402,17 +383,17 @@ object AnimeMediaEditBottomSheet {
                 labelOneRes = Res.string.anime_media_edit_volumes_label,
                 columnOneContent = {
                     ProgressSection(
-                        progress = editData.progressVolumes,
+                        progress = state.progressVolumes,
                         progressMax = initialParams.maxProgressVolumes,
-                        onProgressChange = { editData.progressVolumes = it },
+                        onProgressChange = { state.progressVolumes = it },
                     )
                 },
                 labelTwoRes = Res.string.anime_media_edit_chapters_label,
                 columnTwoContent = {
                     ProgressSection(
-                        progress = editData.progress,
+                        progress = state.progress,
                         progressMax = initialParams.maxProgress,
-                        onProgressChange = { editData.progress = it },
+                        onProgressChange = { state.progress = it },
                     )
                 },
             )
@@ -421,43 +402,57 @@ object AnimeMediaEditBottomSheet {
                 labelOneRes = Res.string.anime_media_edit_episodes_label,
                 columnOneContent = {
                     ProgressSection(
-                        progress = editData.progress,
+                        progress = state.progress,
                         progressMax = initialParams?.maxProgress,
-                        onProgressChange = { editData.progress = it },
+                        onProgressChange = { state.progress = it },
                     )
                 },
             )
         }
 
         ScoreSection(
-            format = scoreFormat,
-            score = { editData.score },
-            onScoreChange = { editData.score = it },
+            format = { state.scoreFormat },
+            score = { state.score },
+            onScoreChange = { state.score = it },
         )
 
         SectionHeader(Res.string.anime_media_edit_date_label)
         StartEndDateRow(
-            startDate = editData.startDate,
-            endDate = editData.endDate,
+            startDate = state.startDate,
+            endDate = state.endDate,
             onRequestDatePicker = { startEndDateShown = it },
-            onDateChange = onDateChange,
+            onDateChange = { start, selectedMillisUtc ->
+                eventSink(
+                    Event.DateChange(
+                        start,
+                        selectedMillisUtc
+                    )
+                )
+            },
         )
 
         if (startEndDateShown != null) {
             StartEndDateDialog(
                 shownForStartDate = startEndDateShown,
                 onShownForStartDateChange = { startEndDateShown = it },
-                onDateChange = onDateChange,
+                onDateChange = { start, selectedMillisUtc ->
+                    eventSink(
+                        Event.DateChange(
+                            start,
+                            selectedMillisUtc
+                        )
+                    )
+                },
             )
         }
 
         TwoColumn(
             labelOneRes = Res.string.anime_media_edit_priority_label,
             columnOneContent = {
-                val priority = editData.priority
+                val priority = state.priority
                 TextField(
                     value = priority,
-                    onValueChange = { editData.priority = it },
+                    onValueChange = { state.priority = it },
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -475,7 +470,7 @@ object AnimeMediaEditBottomSheet {
                             enabled = visible,
                             onClick = {
                                 priority.toIntOrNull()?.let {
-                                    editData.priority = (it - 1).toString()
+                                    state.priority = (it - 1).toString()
                                 }
                             },
                             modifier = Modifier.alpha(alpha),
@@ -492,10 +487,10 @@ object AnimeMediaEditBottomSheet {
                         IconButton(
                             onClick = {
                                 if (priority.isBlank()) {
-                                    editData.priority = "1"
+                                    state.priority = "1"
                                 } else {
                                     priority.toIntOrNull()?.let {
-                                        editData.priority = (it + 1).toString()
+                                        state.priority = (it + 1).toString()
                                     }
                                 }
                             }) {
@@ -512,10 +507,10 @@ object AnimeMediaEditBottomSheet {
             },
             labelTwoRes = Res.string.anime_media_edit_repeat_label,
             columnTwoContent = {
-                val repeat = editData.repeat
+                val repeat = state.repeat
                 TextField(
                     value = repeat,
-                    onValueChange = { editData.repeat = it },
+                    onValueChange = { state.repeat = it },
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -533,7 +528,7 @@ object AnimeMediaEditBottomSheet {
                             enabled = visible,
                             onClick = {
                                 repeat.toIntOrNull()?.let {
-                                    editData.repeat = (it - 1).toString()
+                                    state.repeat = (it - 1).toString()
                                 }
                             },
                             modifier = Modifier.alpha(alpha),
@@ -550,10 +545,10 @@ object AnimeMediaEditBottomSheet {
                         IconButton(
                             onClick = {
                                 if (repeat.isBlank()) {
-                                    editData.repeat = "1"
+                                    state.repeat = "1"
                                 } else {
                                     repeat.toIntOrNull()?.let {
-                                        editData.repeat = (it + 1).toString()
+                                        state.repeat = (it + 1).toString()
                                     }
                                 }
                             }) {
@@ -573,8 +568,8 @@ object AnimeMediaEditBottomSheet {
 
         SectionHeader(Res.string.anime_media_edit_notes_label)
         TextField(
-            value = editData.notes,
-            onValueChange = { editData.notes = it },
+            value = state.notes,
+            onValueChange = { state.notes = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
@@ -583,7 +578,7 @@ object AnimeMediaEditBottomSheet {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 val dateTimeFormatter = LocalDateTimeFormatter.current
-                val createdAt = editData.createdAt
+                val createdAt = state.createdAt
                 val createdAtShown = createdAt != null && createdAt > 0
                 if (createdAtShown) {
                     Text(
@@ -596,7 +591,7 @@ object AnimeMediaEditBottomSheet {
                     )
                 }
 
-                val updatedAt = editData.updatedAt
+                val updatedAt = state.updatedAt
                 if (updatedAt != null && updatedAt > 0) {
                     Text(
                         text = stringResource(
@@ -618,7 +613,7 @@ object AnimeMediaEditBottomSheet {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                val private = editData.private
+                val private = state.private
                 Text(
                     text = stringResource(Res.string.anime_media_edit_private_label),
                     style = MaterialTheme.typography.bodyMedium,
@@ -627,7 +622,7 @@ object AnimeMediaEditBottomSheet {
 
                 Checkbox(
                     checked = private,
-                    onCheckedChange = { editData.private = it },
+                    onCheckedChange = { state.private = it },
                 )
             }
         }
@@ -639,7 +634,7 @@ object AnimeMediaEditBottomSheet {
                 .padding(horizontal = 16.dp)
                 .align(Alignment.End)
         ) {
-            val private = editData.hiddenFromStatusLists
+            val private = state.hiddenFromStatusLists
             Text(
                 text = stringResource(Res.string.anime_media_edit_hidden_from_status_lists_label),
                 style = MaterialTheme.typography.bodyMedium,
@@ -648,7 +643,7 @@ object AnimeMediaEditBottomSheet {
 
             Checkbox(
                 checked = private,
-                onCheckedChange = { editData.hiddenFromStatusLists = it },
+                onCheckedChange = { state.hiddenFromStatusLists = it },
             )
         }
     }
@@ -971,5 +966,13 @@ object AnimeMediaEditBottomSheet {
                 bottom = 4.dp,
             )
         )
+    }
+
+    sealed interface Event {
+        data object Save : Event
+        data object Delete : Event
+        data object Hide : Event
+        data class StatusChange(val status: MediaListStatus?) : Event
+        data class DateChange(val start: Boolean, val selectedMillisUtc: Long?) : Event
     }
 }

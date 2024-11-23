@@ -26,6 +26,9 @@ kotlin {
             api(projects.modules.cds)
             api(projects.modules.monetization)
             api(projects.modules.secrets)
+            implementation(projects.modules.anime.ignore.data)
+            implementation(projects.modules.anime.media.data)
+            implementation(projects.modules.anime.news)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.kermit)

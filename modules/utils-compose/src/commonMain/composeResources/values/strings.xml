@@ -44,4 +44,6 @@
     <string name="crash_open_discord">Open Anichive Discord</string>
 
     <string name="section_expand_all_content_description">Expand/collapse all sections</string>
+
+    <string name="no_results">No results</string>
 </resources>

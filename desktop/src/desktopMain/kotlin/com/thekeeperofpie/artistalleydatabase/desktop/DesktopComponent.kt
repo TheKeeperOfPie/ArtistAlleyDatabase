@@ -10,8 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
@@ -63,6 +65,12 @@ abstract class DesktopComponent(
         @Provides get() = this
 
     val DesktopSettingsProvider.bindCropSettings: CropSettings
+        @Provides get() = this
+
+    val DesktopSettingsProvider.bindIgnoreSettings: IgnoreSettings
+        @Provides get() = this
+
+    val DesktopSettingsProvider.bindMediaDataSettings: MediaDataSettings
         @Provides get() = this
 
     val DesktopSettingsProvider.bindMonetizationSettings: MonetizationSettings

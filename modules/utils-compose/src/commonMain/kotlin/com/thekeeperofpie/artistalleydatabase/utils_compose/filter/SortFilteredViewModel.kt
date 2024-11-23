@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.utils
+package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,14 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.data.fragment.PaginationInfo
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -30,20 +25,16 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 
-@Deprecated("Use SortFilteredViewModel instead")
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryType : Any, SortType : SortOption, FilterParams : Any>(
-    protected val aniListApi: AuthedAniListApi,
+abstract class SortFilteredViewModel<EntryType, ListItemType : Any, ListEntryType : Any, FilterParams : Any>(
     private val loadingErrorTextRes: StringResource,
 ) : ViewModel() {
-
-    val viewer = aniListApi.authedUser
 
     var entry by mutableStateOf<LoadingResult<EntryType>>(LoadingResult.loading())
 
     val items = MutableStateFlow(PagingData.empty<ListEntryType>())
 
-    abstract val sortFilterController: MediaDataSettingsSortFilterController<FilterParams>
+    abstract val sortFilterController: SortFilterController<FilterParams>
 
     private val refresh = RefreshFlow()
 
@@ -61,9 +52,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
         viewModelScope.launch(CustomDispatchers.IO) {
             refresh.updates
                 .flatMapLatest { sortFilterController.filterParams }
-                .flatMapLatest { filterParams ->
-                    AniListPager { pagedRequest(it, filterParams) }
-                }
+                .flatMapLatest { request(it) }
                 .map { it.mapOnIO { makeEntry(it) } }
                 .enforceUniqueIds { entryId(it) }
                 .cachedIn(viewModelScope)
@@ -75,10 +64,9 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
 
     protected abstract suspend fun initialRequest(filterParams: FilterParams?): EntryType
 
-    protected abstract suspend fun pagedRequest(
-        page: Int,
+    protected abstract suspend fun request(
         filterParams: FilterParams?,
-    ): Pair<PaginationInfo?, List<ListItemType?>?>
+    ): Flow<PagingData<ListItemType>>
 
     protected abstract fun entryId(entry: ListEntryType): String
 
@@ -88,8 +76,4 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
             Flow<PagingData<ListEntryType>> = this
 
     fun refresh() = refresh.refresh()
-
-    fun clearError() {
-        entry = entry.copy(error = null)
-    }
 }

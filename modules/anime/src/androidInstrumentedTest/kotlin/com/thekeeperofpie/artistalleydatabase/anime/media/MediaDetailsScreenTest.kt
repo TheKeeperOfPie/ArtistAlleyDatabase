@@ -25,7 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusContr
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activity.activitiesSection
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController

@@ -23,6 +23,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -668,6 +669,7 @@ sealed class SortFilterSection(val id: String) {
 
     abstract class Custom(id: String) : SortFilterSection(id)
 
+    @Stable
     class ExpandedState {
         val expandedState = mutableStateMapOf<String, Boolean>()
     }

@@ -15,17 +15,17 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.recommendations.AnimeMediaDetailsRecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -62,8 +62,7 @@ class AnimeMediaDetailsViewModel(
     private val markdown: Markdown,
     @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-) : ViewModel(),
-    AnimeMediaDetailsRecommendationsViewModel.RecommendationsProvider<MediaPreviewEntry> {
+) : ViewModel(), MediaEntryProvider<MediaPreview, MediaPreviewEntry> {
 
     val viewer = aniListApi.authedUser
     val mediaId =
@@ -215,7 +214,7 @@ class AnimeMediaDetailsViewModel(
 
     fun refresh() = refresh.refresh()
 
-    override fun recommendations() = snapshotFlow { entry.result?.media?.recommendations }
+    fun recommendations() = snapshotFlow { entry.result?.media?.recommendations }
 
     override fun mediaEntry(media: MediaPreview) = MediaPreviewEntry(media)
 

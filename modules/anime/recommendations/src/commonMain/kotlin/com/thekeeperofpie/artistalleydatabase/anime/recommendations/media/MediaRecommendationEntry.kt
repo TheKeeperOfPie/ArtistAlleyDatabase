@@ -1,15 +1,14 @@
-package com.thekeeperofpie.artistalleydatabase.anime.recommendation.media
+package com.thekeeperofpie.artistalleydatabase.anime.recommendations.media
 
 import com.anilist.data.fragment.MediaAndRecommendationsRecommendation
 import com.anilist.data.type.RecommendationRating
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
 
-data class MediaRecommendationEntry(
+data class MediaRecommendationEntry<MediaEntry>(
     val mediaId: String,
     val recommendation: MediaAndRecommendationsRecommendation,
     val userRating: RecommendationRating? = recommendation.userRating,
-    val media: MediaPreviewEntry = MediaPreviewEntry(media = recommendation.mediaRecommendation),
+    val media: MediaEntry,
 ) {
     val recommendationData = RecommendationData(
         mediaId = mediaId,

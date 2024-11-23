@@ -136,6 +136,22 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.modules.anime)
+            implementation(projects.modules.anime2anime)
+            implementation(projects.modules.anilist)
+            implementation(projects.modules.art)
+            implementation(projects.modules.browse)
+            implementation(projects.modules.cds)
+            implementation(projects.modules.image)
+            implementation(projects.modules.data)
+            implementation(projects.modules.entry)
+            implementation(projects.modules.markdown)
+            implementation(projects.modules.media)
+            implementation(projects.modules.monetization)
+            implementation(projects.modules.utilsInject)
+            implementation(projects.modules.utilsRoom)
+            implementation(projects.modules.settings)
+
             implementation(libs.kotlin.inject.runtime.kmp)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
@@ -172,21 +188,6 @@ kotlin {
             }
         }
         androidMain.dependencies {
-
-            implementation(projects.modules.anime)
-            implementation(projects.modules.anime2anime)
-            implementation(projects.modules.anilist)
-            implementation(projects.modules.art)
-            implementation(projects.modules.browse)
-            implementation(projects.modules.cds)
-            implementation(projects.modules.image)
-            implementation(projects.modules.data)
-            implementation(projects.modules.entry)
-            implementation(projects.modules.monetization)
-            implementation(projects.modules.utilsInject)
-            implementation(projects.modules.utilsRoom)
-            implementation(projects.modules.settings)
-
             runtimeOnly(libs.kotlin.reflect)
 
             implementation(libs.kotlinx.serialization.json)

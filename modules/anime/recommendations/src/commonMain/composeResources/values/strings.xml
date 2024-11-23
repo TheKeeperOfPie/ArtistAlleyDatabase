@@ -12,6 +12,9 @@
     <string name="anime_recommendation_filter_rating_expand_content_description">Rating expand</string>
     <string name="anime_recommendation_filter_on_list_label">On list</string>
 
+    <string name="anime_media_recommendations_filter_sort_label">Sort</string>
+    <string name="anime_media_recommendations_filter_setting_title_language">Title language</string>
+
     <string name="anime_media_details_recommendations_label">Recommendations</string>
 
     <string name="anime_media_recommendation_rate_down_empty_content_description">Rate down empty</string>
@@ -22,4 +25,6 @@
     <string name="anime_recommendation_user_avatar_content_description">Recommendation author avatar</string>
 
     <string name="anime_recommendations_header">Recommendations</string>
+
+    <string name="anime_recommendations_error_loading">Error loading recommendations</string>
 </resources>

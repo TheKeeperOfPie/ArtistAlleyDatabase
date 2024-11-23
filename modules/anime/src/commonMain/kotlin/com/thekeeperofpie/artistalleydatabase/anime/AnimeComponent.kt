@@ -28,9 +28,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.AnimeMediaDetailsRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.media.MediaRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.AnimeMediaDetailsReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsViewModel
@@ -97,7 +97,7 @@ interface AnimeComponent : AnimeNewsComponent {
     val mediaCharactersViewModel: (SavedStateHandle) -> MediaCharactersViewModel
     val mediaEditViewModel: () -> MediaEditViewModel
     val mediaHistoryViewModel: (SavedStateHandle) -> MediaHistoryViewModel
-    val mediaRecommendationsViewModel: (SavedStateHandle) -> MediaRecommendationsViewModel
+    val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
     val mediaReviewsViewModel: (SavedStateHandle) -> MediaReviewsViewModel
     val notificationsViewModel: () -> NotificationsViewModel
     val recommendationsViewModelFactory: (MediaDetailsRoute) -> RecommendationsViewModel.Factory

@@ -67,7 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderVal
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel

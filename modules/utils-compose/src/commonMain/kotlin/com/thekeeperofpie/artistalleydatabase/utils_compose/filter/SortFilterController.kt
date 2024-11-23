@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import app.cash.molecule.launchMolecule
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUiDispatcher
@@ -13,8 +14,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration.Companion.seconds
 
 abstract class SortFilterController<FilterParams : Any>(scope: CoroutineScope) {
-    abstract val sections: List<SortFilterSection>
-    val state = SortFilterSection.ExpandedState()
+    protected abstract val sections: List<SortFilterSection>
+    val state = State()
 
     private val moleculeScope = CoroutineScope(scope.coroutineContext + ComposeUiDispatcher.Main)
     val filterParams by lazy(LazyThreadSafetyMode.NONE) {
@@ -54,4 +55,11 @@ abstract class SortFilterController<FilterParams : Any>(scope: CoroutineScope) {
 
     @Composable
     open fun collapseOnClose() = false
+
+    @Stable
+    inner class State internal constructor() {
+        val sections get() = this@SortFilterController.sections
+        val expanded = SortFilterSection.ExpandedState()
+        val collapseOnClose @Composable get() = this@SortFilterController.collapseOnClose()
+    }
 }

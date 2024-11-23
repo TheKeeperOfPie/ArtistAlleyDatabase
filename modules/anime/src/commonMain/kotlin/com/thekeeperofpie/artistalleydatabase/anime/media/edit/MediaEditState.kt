@@ -15,6 +15,8 @@ import org.jetbrains.compose.resources.StringResource
 
 @Stable
 class MediaEditState {
+    var initialParams by mutableStateOf<InitialParams?>(null)
+    var scoreFormat by mutableStateOf(ScoreFormat.POINT_100)
     var status by mutableStateOf<MediaListStatus?>(null)
     var score by mutableStateOf("")
     var progress by mutableStateOf("")
@@ -36,47 +38,44 @@ class MediaEditState {
 
     var showConfirmClose by mutableStateOf(false)
 
-    fun isEqualTo(other: InitialParams?, scoreFormat: ScoreFormat): Boolean {
-        return status == other?.status
-                && fieldAsInt(progress) == (other?.progress ?: 0)
-                && fieldAsInt(repeat) == (other?.repeat ?: 0)
-                && fieldAsInt(priority) == (other?.priority ?: 0)
-                && scoreRaw(scoreFormat).getOrNull() == (other?.score?.toInt() ?: 0)
-                && startDate ==
-                MediaUtils.parseLocalDate(
-                    year = other?.startedAtYear,
-                    month = other?.startedAtMonth,
-                    dayOfMonth = other?.startedAtDay
-                )
-                && endDate ==
-                MediaUtils.parseLocalDate(
-                    year = other?.completedAtYear,
-                    month = other?.completedAtMonth,
-                    dayOfMonth = other?.completedAtDay
-                )
-                && private == (other?.private ?: false)
-                && hiddenFromStatusLists == (other?.hiddenFromStatusLists ?: false)
-                && notes == (other?.notes.orEmpty())
-    }
+    fun hasChanged() = status != initialParams?.status
+            || fieldAsInt(progress) != (initialParams?.progress ?: 0)
+            || fieldAsInt(repeat) != (initialParams?.repeat ?: 0)
+            || fieldAsInt(priority) != (initialParams?.priority ?: 0)
+            || scoreRaw().getOrNull() != (initialParams?.score?.toInt() ?: 0)
+            || startDate != MediaUtils.parseLocalDate(
+        year = initialParams?.startedAtYear,
+        month = initialParams?.startedAtMonth,
+        dayOfMonth = initialParams?.startedAtDay
+    )
+            || endDate != MediaUtils.parseLocalDate(
+        year = initialParams?.completedAtYear,
+        month = initialParams?.completedAtMonth,
+        dayOfMonth = initialParams?.completedAtDay
+    )
+            || private != (initialParams?.private == true)
+            || hiddenFromStatusLists != (initialParams?.hiddenFromStatusLists == true)
+            || notes != (initialParams?.notes.orEmpty())
 
-    fun scoreRaw(scoreFormat: ScoreFormat): SimpleResult<Int> {
+    fun scoreRaw(): SimpleResult<Int> {
         val score = score
         if (score.isBlank()) return SimpleResult.Success(0)
 
-        return SimpleResult.successIfNotNull(when (scoreFormat) {
-            ScoreFormat.POINT_10_DECIMAL -> {
-                val scoreAsFloat = score.toFloatOrNull()?.let {
-                    (it * 10).takeIf { it < 101f }
+        return SimpleResult.successIfNotNull(
+            when (scoreFormat) {
+                ScoreFormat.POINT_10_DECIMAL -> {
+                    val scoreAsFloat = score.toFloatOrNull()?.let {
+                        (it * 10).takeIf { it < 101f }
+                    }
+                    scoreAsFloat?.toInt()?.coerceAtMost(100)
                 }
-                scoreAsFloat?.toInt()?.coerceAtMost(100)
+                ScoreFormat.POINT_10 -> score.toIntOrNull()?.let { it * 10 }
+                ScoreFormat.POINT_100,
+                ScoreFormat.POINT_5,
+                ScoreFormat.POINT_3,
+                ScoreFormat.UNKNOWN__,
+                    -> score.toIntOrNull()
             }
-            ScoreFormat.POINT_10 -> score.toIntOrNull()?.let { it * 10 }
-            ScoreFormat.POINT_100,
-            ScoreFormat.POINT_5,
-            ScoreFormat.POINT_3,
-            ScoreFormat.UNKNOWN__,
-            -> score.toIntOrNull()
-        }
         )
     }
 

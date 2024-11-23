@@ -562,9 +562,6 @@
     <string name="anime_media_view_option_grid">Grid</string>
     <string name="anime_media_view_option_icon_content_description">Change view type</string>
 
-    <string name="anime_media_recommendations_filter_sort_label">Sort</string>
-    <string name="anime_media_recommendations_filter_setting_title_language">Title language</string>
-
     <string name="anime_character_filter_sort_label">Sort</string>
     <string name="anime_character_filter_birthday_label">Birthday today</string>
     <string name="anime_character_filter_setting_name_language">Name language</string>
@@ -757,8 +754,6 @@
     <string name="anime_review_filter_sort_label">Sort</string>
     <string name="anime_review_filter_media_label">Media</string>
     <string name="anime_review_filter_media_expand_content_description">Media expand</string>
-
-    <string name="anime_recommendations_error_loading">Error loading recommendations</string>
 
     <string name="anime_recommendations_home_title">RECOMMENDATIONS</string>
 

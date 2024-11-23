@@ -20,7 +20,6 @@ interface AnimeSettings : MediaDataSettings, IgnoreSettings {
     val mediaHistoryEnabled: MutableStateFlow<Boolean>
     val mediaHistoryMaxEntries: MutableStateFlow<Int>
 
-    val languageOptionMedia: MutableStateFlow<AniListLanguageOption>
     val languageOptionCharacters: MutableStateFlow<AniListLanguageOption>
     val languageOptionStaff: MutableStateFlow<AniListLanguageOption>
     val languageOptionVoiceActor: MutableStateFlow<VoiceActorLanguageOption>

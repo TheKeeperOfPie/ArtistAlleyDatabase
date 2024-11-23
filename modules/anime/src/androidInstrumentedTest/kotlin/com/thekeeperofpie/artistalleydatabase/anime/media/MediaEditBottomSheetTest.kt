@@ -73,7 +73,7 @@ class MediaEditBottomSheetTest {
                 maxProgressVolumes = null,
                 loading = false,
             )
-            viewModel?.editData?.showing = true
+            viewModel?.state?.showing = true
 
             onNodeWithText("Test media title").assertIsDisplayed()
             onNodeWithTag("bottomSheetDragHandle").performTouchInput { swipeDown() }
@@ -103,7 +103,7 @@ class MediaEditBottomSheetTest {
                 maxProgressVolumes = null,
                 loading = false,
             )
-            viewModel?.editData?.showing = true
+            viewModel?.state?.showing = true
 
             onNodeWithText("Not on list").performClick()
             onNodeWithText("Completed").performClick()
@@ -135,7 +135,7 @@ class MediaEditBottomSheetTest {
                 maxProgressVolumes = null,
                 loading = false,
             )
-            viewModel?.editData?.showing = true
+            viewModel?.state?.showing = true
 
             onNodeWithText("Not on list").performClick()
             onNodeWithText("Completed").performClick()

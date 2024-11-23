@@ -126,7 +126,6 @@ import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
-import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
@@ -814,12 +813,6 @@ object MediaUtils {
         } else {
             episodes ?: nextAiringEpisode?.episode?.let { (it - 1).coerceAtLeast(1) }
         }
-
-    fun MediaType?.toFavoriteType() = if (this == MediaType.ANIME) {
-        FavoriteType.ANIME
-    } else {
-        FavoriteType.MANGA
-    }
 
     fun userPreferredTitle(
         titleRomaji: String?,

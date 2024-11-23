@@ -10,6 +10,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.modules.anilist)
             api(projects.modules.anime.data)
+            api(projects.modules.anime.favorites)
             api(projects.modules.anime.ignore.data)
             api(projects.modules.anime.ui)
             implementation(projects.modules.utils)
