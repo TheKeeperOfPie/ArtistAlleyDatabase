@@ -10,6 +10,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.filter
 import androidx.paging.map
@@ -225,3 +226,11 @@ fun <T : Any> rememberPagerState(data: List<T>?, placeholderCount: Int): PagerSt
 
 fun <T : Any> LazyPagingItems<T>.getOrNull(index: Int) =
     if (index >= itemCount) null else get(index)
+
+fun <T : Any> PagingData.Companion.loading() = PagingData.empty<T>(
+    LoadStates(
+        refresh = LoadState.Loading,
+        append = LoadState.NotLoading(false),
+        prepend = LoadState.NotLoading(true)
+    )
+)

@@ -82,6 +82,7 @@ object Versions {
     const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.15.2"
+    const val burst = "2.1.0"
     const val coil = "3.0.3"
     const val colormath = "3.6.0"
 
@@ -193,6 +194,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
             create("libs") {
                 fun plugin(id: String) = plugin(id, id)
+                plugin("app.cash.burst").version(Versions.burst)
                 plugin("com.android.application").version(Versions.android.gradle)
                 plugin("com.android.library").version(Versions.android.gradle)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
@@ -422,6 +424,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     }
                 }
 
+                library("app.cash.burst:burst-gradle-plugin:${Versions.burst}")
                 library("app.cash.turbine:turbine:${Versions.turbine}")
                 library("app.cash.molecule:molecule-runtime:${Versions.molecule}")
                 library("be.digitalia.compose.htmlconverter:htmlconverter:${Versions.htmlConverter}")

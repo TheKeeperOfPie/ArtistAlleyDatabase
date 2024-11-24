@@ -41,6 +41,9 @@ kotlin {
             implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.stately.concurrent.collections)
         }
+        commonTest.dependencies {
+            implementation(projects.modules.anime.ignore.testing)
+        }
     }
 }
 

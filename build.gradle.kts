@@ -8,11 +8,12 @@ buildscript {
     }
     dependencies {
         classpath("com.google.android.gms:oss-licenses-plugin:0.10.6")
+        classpath("app.cash.burst:burst-gradle-plugin:2.1.0")
     }
 }
 
 plugins {
-    alias(libs.plugins.com.github.ben.manes.versions)
+    alias(libs.plugins.app.cash.burst).apply(false)
     alias(libs.plugins.com.google.devtools.ksp).apply(false)
     alias(libs.plugins.com.jaredsburrows.license).apply(false)
     alias(libs.plugins.org.jetbrains.compose).apply(false)
@@ -22,6 +23,7 @@ plugins {
     id(libs.plugins.com.android.library.get().pluginId).apply(false)
     id(libs.plugins.org.jetbrains.kotlin.android.get().pluginId).apply(false)
 
+    alias(libs.plugins.com.github.ben.manes.versions)
     // Disabled due to implicit dependency issue
 //    alias(libs.plugins.dev.iurysouza.modulegraph)
 }

@@ -37,7 +37,3 @@ android {
 compose.resources {
     publicResClass = true
 }
-
-dependencies {
-    add("kspDesktopTest", kspProcessors.kotlin.inject.compiler.ksp)
-}
