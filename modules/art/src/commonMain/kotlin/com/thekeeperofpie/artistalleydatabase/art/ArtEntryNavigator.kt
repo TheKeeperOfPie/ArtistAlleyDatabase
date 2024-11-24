@@ -159,6 +159,9 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 }
             }
 
+            LaunchedEffect(Unit) {
+                viewModel.navigateUpEvents.collect { navHostController.navigateUp() }
+            }
             val imageHandler = rememberImageHandler()
             EntryDetailsScreen(
                 viewModel = viewModel,
@@ -167,11 +170,11 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 onClickOpenImage = {
                     viewModel.entryImageController.onClickOpenImage(imageHandler, it)
                 },
-                onClickSave = { viewModel.onClickSave(navHostController) },
-                onLongClickSave = { viewModel.onLongClickSave(navHostController) },
-                onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                onClickSaveTemplate = { viewModel.onClickSaveTemplate() },
-                onExitConfirm = { viewModel.onExitConfirm(navHostController) },
+                onClickSave = viewModel::onClickSave,
+                onLongClickSave = viewModel::onLongClickSave,
+                onConfirmDelete = viewModel::onConfirmDelete,
+                onClickSaveTemplate = viewModel::onClickSaveTemplate,
+                onExitConfirm = viewModel::onExitConfirm,
                 onNavigate = navHostController::navigate,
             )
         }

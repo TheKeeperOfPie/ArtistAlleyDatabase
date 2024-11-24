@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
@@ -15,7 +14,7 @@ import io.github.petertrr.diffutils.text.DiffRow
 import io.github.petertrr.diffutils.text.DiffRowGenerator
 import io.github.petertrr.diffutils.text.DiffTagGenerator
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
@@ -35,9 +34,12 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     private val json: Json,
     settings: CropSettings,
     cropControllerFunction: (CoroutineScope) -> CropController,
+    protected val customDispatchers: CustomDispatchers,
 ) : ViewModel() {
 
     val cropController = cropControllerFunction(viewModelScope)
+
+    val navigateUpEvents = MutableSharedFlow<Unit>()
 
     companion object {
 
@@ -96,7 +98,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     var entrySerializedFormDiff by mutableStateOf("" to "")
 
     init {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch(customDispatchers.main) {
             cropController.cropResults.collect {
                 entryImageController.onCropResult(it)
             }
@@ -113,13 +115,13 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         }
 
         entryImageController.initialize(entryIds)
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(customDispatchers.io) {
             val model = when (type) {
                 Type.ADD -> buildAddModel()
                 Type.SINGLE_EDIT -> buildSingleEditModel(entryIds.single())
                 Type.MULTI_EDIT -> buildMultiEditModel()
             }
-            val (initialEntry, initialImages) = withContext(CustomDispatchers.Main) {
+            val (initialEntry, initialImages) = withContext(customDispatchers.main) {
                 model?.run(::initializeForm)
                 sectionsLoading = false
                 entry() to entryImageController.images.toList()
@@ -179,18 +181,20 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         return false
     }
 
-    fun onExitConfirm(navHostController: NavHostController) {
+    fun onExitConfirm() {
         showExitPrompt = false
         initialEntryHashCode = null
         initialImagesHashCode = null
-        navHostController.navigateUp()
+        viewModelScope.launch {
+            navigateUpEvents.emit(Unit)
+        }
     }
 
     fun onExitDismiss() {
         showExitPrompt = false
     }
 
-    fun onConfirmDelete(navHostController: NavHostController) {
+    fun onConfirmDelete() {
         if (deleting || saving) return
         if (type != Type.SINGLE_EDIT) {
             // Don't delete from details page unless editing a single entry to avoid mistakes
@@ -200,43 +204,39 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
         deleting = true
 
         val entryId = entryIds.single()
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(customDispatchers.io) {
             appFileSystem.deleteRecursively(
                 EntryUtils.getEntryImageFolder(appFileSystem, entryId)
             )
             deleteEntry(entryId)
-            withContext(CustomDispatchers.Main) {
+            withContext(customDispatchers.main) {
                 initialEntryHashCode = null
                 initialImagesHashCode = null
-                navHostController.navigateUp()
+                navigateUpEvents.emit(Unit)
             }
         }
     }
 
-    fun onClickSave(navHostController: NavHostController) {
-        save(navHostController, skipIgnoreableErrors = false)
-    }
+    fun onClickSave() = save(skipIgnoreableErrors = false)
 
-    fun onLongClickSave(navHostController: NavHostController) {
-        save(navHostController, skipIgnoreableErrors = true)
-    }
+    fun onLongClickSave() = save(skipIgnoreableErrors = true)
 
     fun getImagePathForShare(image: EntryImage): Path? {
         val entryId = image.entryId ?: return null
         return EntryUtils.getImagePath(appFileSystem, entryId)
     }
 
-    private fun save(navHostController: NavHostController, skipIgnoreableErrors: Boolean) {
+    private fun save(skipIgnoreableErrors: Boolean) {
         if (saving || deleting) return
         saving = true
 
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(customDispatchers.io) {
             val success = saveEntry(skipIgnoreableErrors)
-            withContext(CustomDispatchers.Main) {
+            withContext(customDispatchers.main) {
                 if (success) {
                     initialEntryHashCode = null
                     initialImagesHashCode = null
-                    navHostController.navigateUp()
+                    navigateUpEvents.emit(Unit)
                 } else {
                     saving = false
                 }

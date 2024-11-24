@@ -2,35 +2,32 @@ package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
-import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
-import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import kotlinx.coroutines.CoroutineScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
-import java.io.File
+import me.tatarka.inject.annotations.Inject
 
+@Inject
 internal class TestViewModel(
     private val hasError: Boolean = false,
     private val cropUri: String? = null,
-    val entries: MutableMap<String, TestEntry> = mutableMapOf(),
-    private val testDirectory: File,
+    entries: Map<String, TestEntry> = mapOf(),
     json: Json,
-    cropController: (CoroutineScope) -> CropController,
+    cropController: CropController,
+    appFileSystem: AppFileSystem,
+    customDispatchers: CustomDispatchers,
 ) : EntryDetailsViewModel<TestEntry, TestModel>(
     TestEntry::class,
-    AppFileSystem(mockStrict {
-        whenever(cacheDir) {
-            testDirectory.resolve(Uuid.randomUUID().toString()).apply { mkdirs() }
-        }
-        whenever(filesDir) {
-            testDirectory.resolve(Uuid.randomUUID().toString()).apply { mkdirs() }
-        }
-    }),
+    appFileSystem,
     "test",
     json = json,
     settings = TestSettings(cropUri),
-    cropControllerFunction = cropController,
+    cropControllerFunction = { cropController },
+    customDispatchers = customDispatchers,
 ) {
+    val entries = MutableStateFlow(entries)
 
     override val sections = emptyList<EntrySection>()
 
@@ -45,10 +42,12 @@ internal class TestViewModel(
     ) = if (hasError && !skipIgnoreableErrors) false else {
         if (entryIds.isEmpty()) {
             val id = Uuid.randomUUID().toString()
-            entries[id] = TestEntry(id, model!!.data, skipIgnoreableErrors)
+            entries.update { it + (id to TestEntry(id, model!!.data, skipIgnoreableErrors)) }
         } else {
-            entryIds.forEach {
-                entries[it.valueId] = TestEntry(it.valueId, model!!.data, skipIgnoreableErrors)
+            entries.update {
+                it + entryIds.map {
+                    it.valueId to TestEntry(it.valueId, model!!.data, skipIgnoreableErrors)
+                }
             }
         }
         true
@@ -59,7 +58,7 @@ internal class TestViewModel(
     }
 
     override suspend fun buildSingleEditModel(entryId: EntryId) =
-        TestModel(entryId.valueId, entries[entryId.valueId]?.data)
+        TestModel(entryId.valueId, entries.value[entryId.valueId]?.data)
 
     override suspend fun buildMultiEditModel() = throw AssertionError("Should not be called")
 
@@ -69,11 +68,12 @@ internal class TestViewModel(
     ) = throw AssertionError("Should not be called")
 
     override suspend fun deleteEntry(entryId: EntryId) {
-        entries.remove(entryId.valueId)
+        entries.update { it - entryId.valueId }
     }
 
     fun editModel(data: String) {
         model!!.data = data
+        println("editModel $model")
     }
 
     // TODO: Add tests for unsaved changes prompt

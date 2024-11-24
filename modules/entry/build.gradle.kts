@@ -1,8 +1,12 @@
+@file:OptIn(ExperimentalComposeLibrary::class)
+
+import org.jetbrains.compose.ExperimentalComposeLibrary
+
 plugins {
     id("library-android")
     id("library-compose")
     id("library-desktop")
-    alias(libs.plugins.de.mannodermaus.android.junit5)
+    id("library-inject")
 }
 
 kotlin {
@@ -32,4 +36,8 @@ android {
 
 compose.resources {
     publicResClass = true
+}
+
+dependencies {
+    add("kspDesktopTest", kspProcessors.kotlin.inject.compiler.ksp)
 }

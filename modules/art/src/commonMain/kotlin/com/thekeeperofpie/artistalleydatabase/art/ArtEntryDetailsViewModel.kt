@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -38,8 +39,8 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class ArtEntryDetailsViewModel(
     appFileSystem: AppFileSystem,
-    protected val json: Json,
-    protected val artEntryDao: ArtEntryDetailsDao,
+    private val json: Json,
+    private val artEntryDao: ArtEntryDetailsDao,
     private val dataConverter: DataConverter,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
@@ -47,6 +48,7 @@ class ArtEntryDetailsViewModel(
     private val artSettings: ArtSettings,
     settings: CropSettings,
     cropController: (CoroutineScope) -> CropController,
+    customDispatchers: CustomDispatchers,
 ) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
     entryClass = ArtEntry::class,
     appFileSystem = appFileSystem,
@@ -54,6 +56,7 @@ class ArtEntryDetailsViewModel(
     json = json,
     settings = settings,
     cropControllerFunction = cropController,
+    customDispatchers = customDispatchers,
 ) {
     private val entrySections = ArtEntrySections()
 

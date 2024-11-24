@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
@@ -57,6 +58,7 @@ class CdEntryDetailsViewModel(
     private val dataConverter: DataConverter,
     settings: CropSettings,
     cropController: (CoroutineScope) -> CropController,
+    customDispatchers: CustomDispatchers,
 ) : EntryDetailsViewModel<CdEntry, CdEntryModel>(
     entryClass = CdEntry::class,
     appFileSystem = appFileSystem,
@@ -64,6 +66,7 @@ class CdEntryDetailsViewModel(
     json = json,
     settings = settings,
     cropControllerFunction = cropController,
+    customDispatchers = customDispatchers,
 ) {
     companion object {
         private const val TAG = "CdEntryDetailsViewModel"

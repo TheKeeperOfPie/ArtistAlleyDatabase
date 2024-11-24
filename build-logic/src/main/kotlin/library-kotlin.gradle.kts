@@ -36,8 +36,12 @@ kotlin {
             ).forEach(::implementation)
         }
         commonTest.dependencies {
+            implementation(project(":modules:test-utils"))
+            implementation(kotlin("test"))
             libs.find(
+                "libs.kotlinx.coroutines.test",
                 "libs.truth",
+                "libs.turbine",
             ).forEach(::implementation)
         }
     }

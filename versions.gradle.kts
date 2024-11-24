@@ -165,6 +165,7 @@ object Versions {
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
     const val statelyConcurrentCollections = "2.1.0"
+    const val turbine = "1.2.0"
     const val unityAds = "4.12.5"
     const val uriKmp = "0.0.18"
     const val xmlUtil = "0.90.3"
@@ -421,6 +422,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     }
                 }
 
+                library("app.cash.turbine:turbine:${Versions.turbine}")
                 library("app.cash.molecule:molecule-runtime:${Versions.molecule}")
                 library("be.digitalia.compose.htmlconverter:htmlconverter:${Versions.htmlConverter}")
                 library("co.touchlab:kermit:${Versions.kermit}")

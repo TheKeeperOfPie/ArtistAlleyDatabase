@@ -13,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -50,18 +49,28 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
     private val customSectionItem = CustomSectionItem()
 
     init {
-        options = mutableStateListOf(
-            unknownSectionItem,
-            conventionSectionItem,
-            customSectionItem,
+        options.addAll(
+            Section.entries.map {
+                when (it) {
+                    Section.UNKNOWN -> unknownSectionItem
+                    Section.CONVENTION -> conventionSectionItem
+                    Section.CUSTOM -> customSectionItem
+                }
+            }
         )
+    }
+
+    private enum class Section {
+        UNKNOWN,
+        CONVENTION,
+        CUSTOM,
     }
 
     fun initialize(entry: ArtEntryModel, lockState: LockState?) {
         when (val source = entry.source) {
             is SourceType.Convention -> {
                 conventionSectionItem.setValues(source)
-                selectedIndex = options.indexOf(conventionSectionItem)
+                selectedIndex = Section.CONVENTION.ordinal
             }
             SourceType.Different -> {
                 options += DifferentSectionItem()
@@ -69,19 +78,21 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
             }
             is SourceType.Custom -> {
                 customSectionItem.value = source.value
-                selectedIndex = options.indexOf(customSectionItem)
+                selectedIndex = Section.CUSTOM.ordinal
             }
             null,
             is SourceType.Online,
-            SourceType.Unknown -> {
-                selectedIndex = options.indexOf(unknownSectionItem)
+            SourceType.Unknown,
+                -> {
+                selectedIndex = Section.UNKNOWN.ordinal
             }
         }
         this.lockState = lockState
     }
 
     fun addDifferent() {
-        options.add(0, DifferentSectionItem())
+        options.add(DifferentSectionItem())
+        selectedIndex = options.lastIndex
     }
 
     override fun selectedItem() = super.selectedItem() as SourceItem
@@ -119,7 +130,7 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
             expectedName: String,
             expectedYear: Int,
             newHall: String,
-            newBooth: String
+            newBooth: String,
         ): Boolean {
             if (name == expectedName && year == expectedYear.toString()) {
                 when {

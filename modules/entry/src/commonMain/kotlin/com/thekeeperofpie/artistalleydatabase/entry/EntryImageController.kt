@@ -143,7 +143,7 @@ class EntryImageController(
      * @return List of files written.
      */
     suspend fun saveImages(): Map<EntryId, List<SaveResult>>? {
-        val results = withContext(CustomDispatchers.io(4)) {
+        val results = withContext(CustomDispatchers.IO.limitedParallelism(4)) {
             images.mapIndexed { index, entryImage ->
                 async {
                     // Generate a new ID for new entries

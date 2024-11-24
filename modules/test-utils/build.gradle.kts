@@ -6,6 +6,15 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.turbine)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+    }
+}
+
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.test_utils"
 }

@@ -22,6 +22,13 @@
             <trust file="jetty-.*" regex="true"/>
             <trust file="websocket-.*" regex="true"/>
             <trust file="xml-apis.*" regex="true"/>
+
+            <!-- Studio IDE dependencies -->
+            <trust file="intellij-core-.*" regex="true"/>
+            <trust file="kotlin-compiler-.*" regex="true"/>
+            <trust file="uast-.*" regex="true"/>
+            <trust file="lint-.*" regex="true"/>
+            <trust file="play-sdk-proto-.*" regex="true"/>
         </trusted-artifacts>
     </configuration>
     <components/>

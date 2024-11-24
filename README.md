@@ -367,6 +367,7 @@ graph LR
   :modules:test-utils --> :modules:utils-inject
   :modules:test-utils --> :modules:utils-network
   :modules:test-utils --> :modules:server
+  :modules:server --> :modules:test-utils
   :modules:server --> :modules:anilist:data
   :modules:utils-inject --> :modules:test-utils
   :modules:utils-inject --> :modules:utils-network
@@ -391,7 +392,9 @@ graph LR
   :modules:apollo:utils --> :modules:utils
   :modules:apollo:utils --> :modules:test-utils
   :modules:apollo:utils --> :modules:utils-network
+  :modules:apollo --> :modules:test-utils
   :modules:entry --> :modules:image
+  :modules:entry --> :modules:utils-inject
   :modules:entry --> :modules:markdown
   :modules:entry --> :modules:utils
   :modules:entry --> :modules:utils-compose
