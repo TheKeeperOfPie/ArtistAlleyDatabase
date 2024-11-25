@@ -1,6 +1,6 @@
 plugins {
     id("library-android")
-    id("library-kotlin")
+    id("library-compose")
     id("library-desktop")
     id("library-inject")
     id("com.google.devtools.ksp")
@@ -9,7 +9,9 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.modules.utilsCompose)
             implementation(libs.turbine)
+            implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kotlinx.coroutines.test)
         }
     }

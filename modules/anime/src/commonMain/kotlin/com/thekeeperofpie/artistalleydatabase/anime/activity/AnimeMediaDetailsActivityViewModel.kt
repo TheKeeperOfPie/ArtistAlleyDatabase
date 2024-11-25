@@ -39,7 +39,8 @@ class AnimeMediaDetailsActivityViewModel(
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(
                 aniListApi.authedUser,
-                snapshotFlow { mediaDetailsViewModel.entry.result }.flowOn(CustomDispatchers.Main)
+                snapshotFlow { mediaDetailsViewModel.state.mediaEntry.result }
+                    .flowOn(CustomDispatchers.Main)
                     .filterNotNull(),
             ) { viewer, entry ->
                 val result = aniListApi.mediaDetailsActivity(

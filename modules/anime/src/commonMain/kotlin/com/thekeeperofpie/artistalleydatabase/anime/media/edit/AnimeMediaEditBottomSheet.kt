@@ -101,6 +101,7 @@ import artistalleydatabase.modules.utils_compose.generated.resources.no
 import artistalleydatabase.modules.utils_compose.generated.resources.save
 import artistalleydatabase.modules.utils_compose.generated.resources.yes
 import coil3.annotation.ExperimentalCoilApi
+import com.anilist.data.fragment.MediaDetailsListEntry
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.anilist.data.type.ScoreFormat
@@ -132,20 +133,6 @@ object AnimeMediaEditBottomSheet {
 
     private val DEFAULT_IMAGE_HEIGHT = 100.dp
     private val DEFAULT_IMAGE_WIDTH = 72.dp
-
-    @Composable
-    operator fun invoke(
-        viewModel: MediaEditViewModel,
-        modifier: Modifier = Modifier,
-        onDismiss: () -> Unit,
-    ) {
-        AnimeMediaEditBottomSheet(
-            state = { viewModel.state },
-            eventSink = viewModel::onEvent,
-            onDismiss = onDismiss,
-            modifier = modifier,
-        )
-    }
 
     @Composable
     operator fun invoke(
@@ -374,7 +361,10 @@ object AnimeMediaEditBottomSheet {
                 )
             },
             textForValue = { stringResource(it.toTextRes(isAnime)) },
-            onSelectItem = { eventSink(Event.StatusChange(it)) },
+            onSelectItem = {
+                state.status = it
+                eventSink(Event.StatusChange(it))
+            },
             modifier = Modifier.padding(horizontal = 16.dp),
         )
 
@@ -974,5 +964,17 @@ object AnimeMediaEditBottomSheet {
         data object Hide : Event
         data class StatusChange(val status: MediaListStatus?) : Event
         data class DateChange(val start: Boolean, val selectedMillisUtc: Long?) : Event
+        data class Open(
+            val mediaId: String,
+            val coverImage: String?,
+            // TODO: Pass all translations so that UI can react to language changes down the line
+            val title: String?,
+            val mediaListEntry: MediaDetailsListEntry?,
+            val mediaType: MediaType?,
+            val status: MediaListStatus?,
+            val maxProgress: Int?,
+            val maxProgressVolumes: Int?,
+            val loading: Boolean = false,
+        ) : Event
     }
 }

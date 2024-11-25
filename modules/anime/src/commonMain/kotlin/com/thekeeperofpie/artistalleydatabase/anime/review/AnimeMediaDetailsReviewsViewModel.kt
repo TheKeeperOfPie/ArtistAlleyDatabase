@@ -27,7 +27,7 @@ class AnimeMediaDetailsReviewsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { mediaDetailsViewModel.entry.result?.media }
+            snapshotFlow { mediaDetailsViewModel.state.mediaEntry.result?.media }
                 .mapLatest {
                     ReviewsEntry(
                         reviews = it?.reviews?.nodes?.filterNotNull().orEmpty(),

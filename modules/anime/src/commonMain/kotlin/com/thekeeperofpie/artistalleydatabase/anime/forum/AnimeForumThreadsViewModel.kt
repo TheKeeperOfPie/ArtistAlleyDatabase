@@ -51,7 +51,7 @@ class AnimeForumThreadsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { mediaDetailsViewModel.entry.result }
+            snapshotFlow { mediaDetailsViewModel.state.mediaEntry.result }
                 .filterNotNull()
                 .take(1)
                 .flowOn(CustomDispatchers.Main)

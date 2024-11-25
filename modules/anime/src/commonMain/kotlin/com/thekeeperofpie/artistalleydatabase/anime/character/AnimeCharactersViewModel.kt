@@ -44,7 +44,7 @@ class AnimeCharactersViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { mediaDetailsViewModel.entry.result?.media?.characters }
+            snapshotFlow { mediaDetailsViewModel.state.mediaEntry.result?.media?.characters }
                 .collectLatest {
                     charactersInitial = CharacterUtils.toDetailsCharacters(
                         it?.edges?.filterNotNull().orEmpty()
@@ -55,7 +55,7 @@ class AnimeCharactersViewModel(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 mediaDetailsViewModel.refresh.updates,
-                snapshotFlow { mediaDetailsViewModel.entry.result?.media?.characters }
+                snapshotFlow { mediaDetailsViewModel.state.mediaEntry.result?.media?.characters }
                     .filterNotNull(),
                 ::Pair,
             )

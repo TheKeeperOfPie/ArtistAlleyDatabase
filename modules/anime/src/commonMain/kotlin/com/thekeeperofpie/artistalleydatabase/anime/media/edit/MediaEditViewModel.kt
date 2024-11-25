@@ -289,6 +289,20 @@ class MediaEditViewModel(
         AnimeMediaEditBottomSheet.Event.Hide -> hide()
         AnimeMediaEditBottomSheet.Event.Save -> onClickSave()
         is AnimeMediaEditBottomSheet.Event.StatusChange -> onStatusChange(event.status)
+        is AnimeMediaEditBottomSheet.Event.Open -> {
+            initialize(
+                mediaId = event.mediaId,
+                coverImage = event.coverImage,
+                title = event.title,
+                mediaListEntry = event.mediaListEntry,
+                mediaType = event.mediaType,
+                status = event.status,
+                maxProgress = event.maxProgress,
+                maxProgressVolumes = event.maxProgressVolumes,
+                loading = event.loading,
+            )
+            state.showing = true
+        }
     }
 
     private fun onDateChange(start: Boolean, selectedMillis: Long?) {
@@ -307,7 +321,6 @@ class MediaEditViewModel(
     }
 
     private fun onStatusChange(status: MediaListStatus?) {
-        state.status = status
         when (status) {
             MediaListStatus.CURRENT,
             MediaListStatus.PLANNING,

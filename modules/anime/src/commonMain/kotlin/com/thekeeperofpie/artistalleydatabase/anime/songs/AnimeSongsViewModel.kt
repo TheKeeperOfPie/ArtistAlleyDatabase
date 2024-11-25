@@ -38,7 +38,7 @@ class AnimeSongsViewModel(
     init {
         if (animeSongsProvider != null) {
             viewModelScope.launch(CustomDispatchers.IO) {
-                snapshotFlow { mediaDetailsViewModel.entry }
+                snapshotFlow { mediaDetailsViewModel.state.mediaEntry }
                     .flowOn(CustomDispatchers.Main)
                     .collectLatest {
                         val media = it.result?.media

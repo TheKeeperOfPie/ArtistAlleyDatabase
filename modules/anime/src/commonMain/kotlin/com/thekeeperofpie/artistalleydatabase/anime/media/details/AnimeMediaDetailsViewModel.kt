@@ -1,8 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -65,8 +62,6 @@ class AnimeMediaDetailsViewModel(
 ) : ViewModel(), MediaEntryProvider<MediaPreview, MediaPreviewEntry> {
 
     val viewer = aniListApi.authedUser
-    val mediaId =
-        savedStateHandle.toDestination<AnimeDestination.MediaDetails>(navigationTypeMap).mediaId
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
@@ -75,13 +70,15 @@ class AnimeMediaDetailsViewModel(
 
     val refresh = RefreshFlow()
 
-    var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
-    var listStatus by mutableStateOf(LoadingResult.loading<MediaListStatusController.Update>())
+    val state = AnimeMediaDetailsScreen.State(
+        mediaId = savedStateHandle.toDestination<AnimeDestination.MediaDetails>(navigationTypeMap)
+            .mediaId,
+    )
 
     init {
         favoritesToggleHelper.initializeTracking(
             scope = viewModelScope,
-            entry = { snapshotFlow { entry.result } },
+            entry = { snapshotFlow { state.mediaEntry.result } },
             entryToId = { it.mediaId },
             entryToType = { it.media.type.toFavoriteType() },
             entryToFavorite = { it.media.isFavourite },
@@ -89,7 +86,7 @@ class AnimeMediaDetailsViewModel(
 
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.updates
-                .mapLatest { aniListApi.mediaDetails(mediaId, skipCache = it.fromUser) }
+                .mapLatest { aniListApi.mediaDetails(state.mediaId, skipCache = it.fromUser) }
                 .mapLatest {
                     val result = it.result
                     if (result != null && result.media?.isAdult != false
@@ -134,13 +131,13 @@ class AnimeMediaDetailsViewModel(
                     if (media == null) {
                         flowOf(
                             loadingResult
-                                .transformResult<AnimeMediaDetailsScreen.Entry> { null })
+                                .transformResult<AnimeMediaDetailsScreen.MediaEntry> { null })
                     } else {
                         val relations = media.relations?.edges?.filterNotNull()
                             ?.mapNotNull {
                                 val node = it.node ?: return@mapNotNull null
                                 val relation = it.relationType ?: return@mapNotNull null
-                                AnimeMediaDetailsScreen.Entry.Relation(
+                                AnimeMediaDetailsScreen.MediaEntry.Relation(
                                     it.id.toString(),
                                     relation,
                                     MediaPreviewEntry(node)
@@ -158,8 +155,8 @@ class AnimeMediaDetailsViewModel(
                             settings.mediaFilteringData(forceShowIgnored = true),
                         ) { mediaListUpdates, _, filteringData ->
                             loadingResult.transformResult {
-                                AnimeMediaDetailsScreen.Entry(
-                                    mediaId,
+                                AnimeMediaDetailsScreen.MediaEntry(
+                                    state.mediaId,
                                     media,
                                     relations = relations.mapNotNull {
                                         applyMediaFiltering(
@@ -189,32 +186,32 @@ class AnimeMediaDetailsViewModel(
                     )
                 }
                 .flowOn(CustomDispatchers.IO)
-                .collectLatest { entry = it }
+                .collectLatest { state.mediaEntry = it }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.updates
-                .mapLatest { aniListApi.mediaDetailsUserData(mediaId) }
+                .mapLatest { aniListApi.mediaDetailsUserData(state.mediaId) }
                 .flatMapLatest { result ->
-                    mediaListStatusController.allChanges(mediaId)
+                    mediaListStatusController.allChanges(state.mediaId)
                         .mapLatest { update ->
                             result.transformResult {
                                 val mediaListEntry = it.media?.mediaListEntry
                                 MediaListStatusController.Update(
-                                    mediaId = mediaId,
+                                    mediaId = state.mediaId,
                                     entry = if (update == null) mediaListEntry else update.entry,
                                 )
                             }
                         }
                 }
                 .flowOn(CustomDispatchers.IO)
-                .collectLatest { listStatus = it }
+                .collectLatest { state.listStatus = it }
         }
     }
 
     fun refresh() = refresh.refresh()
 
-    fun recommendations() = snapshotFlow { entry.result?.media?.recommendations }
+    fun recommendations() = snapshotFlow { state.mediaEntry.result?.media?.recommendations }
 
     override fun mediaEntry(media: MediaPreview) = MediaPreviewEntry(media)
 

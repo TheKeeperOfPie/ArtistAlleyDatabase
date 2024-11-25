@@ -204,7 +204,7 @@ object AnimeNavigator {
                 viewModel { animeComponent.animeMediaDetailsViewModel(createSavedStateHandle()) }
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
-                media = { mediaDetailsViewModel.entry.result?.media },
+                media = { mediaDetailsViewModel.state.mediaEntry.result?.media },
                 favoriteUpdate = { mediaDetailsViewModel.favoritesToggleHelper.favorite },
             )
 
@@ -277,9 +277,10 @@ object AnimeNavigator {
             val navigationCallback = LocalNavigationCallback.current
 
             val sharedTransitionKey = destination.sharedTransitionKey
-            val mediaTitle = mediaDetailsViewModel.entry.result?.media?.title?.primaryTitle()
+            val mediaTitle = mediaDetailsViewModel.state.mediaEntry.result?.media?.title
+                ?.primaryTitle()
             val coverImageState = rememberCoilImageState(headerValues.coverImage)
-            val media = mediaDetailsViewModel.entry.result?.media
+            val media = mediaDetailsViewModel.state.mediaEntry.result?.media
             fun mediaHeaderParams() = MediaHeaderParams(
                 title = mediaTitle,
                 coverImage = coverImageState.toImageState(),
@@ -358,7 +359,7 @@ object AnimeNavigator {
                         onClickViewAll = {
                             navigationCallback.navigate(
                                 AnimeDestination.MediaRecommendations(
-                                    mediaId = mediaDetailsViewModel.mediaId,
+                                    mediaId = mediaDetailsViewModel.state.mediaId,
                                     headerParams = mediaHeaderParams(),
                                 )
                             )
@@ -403,7 +404,7 @@ object AnimeNavigator {
                         onClickViewAll = {
                             navigationCallback.navigate(
                                 AnimeDestination.MediaActivities(
-                                    mediaId = mediaDetailsViewModel.mediaId,
+                                    mediaId = mediaDetailsViewModel.state.mediaId,
                                     showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
                                     headerParams = mediaHeaderParams(),
                                 )
@@ -423,12 +424,12 @@ object AnimeNavigator {
                         expanded = expanded,
                         onExpandedChange = onExpandedChanged,
                         onClickViewAll = {
-                            val entry = mediaDetailsViewModel.entry.result
+                            val entry = mediaDetailsViewModel.state.mediaEntry.result
                             navigationCallback.navigate(
                                 AnimeDestination.ForumSearch(
                                     title = entry?.media?.title?.userPreferred
                                         ?.let(AnimeDestination.ForumSearch.Title::Custom),
-                                    mediaCategoryId = mediaDetailsViewModel.mediaId,
+                                    mediaCategoryId = mediaDetailsViewModel.state.mediaId,
                                 )
                             )
                         },
@@ -450,7 +451,7 @@ object AnimeNavigator {
                         onClickViewAll = {
                             navigationCallback.navigate(
                                 AnimeDestination.MediaReviews(
-                                    mediaId = mediaDetailsViewModel.mediaId,
+                                    mediaId = mediaDetailsViewModel.state.mediaId,
                                     headerParams = mediaHeaderParams()
                                 )
                             )

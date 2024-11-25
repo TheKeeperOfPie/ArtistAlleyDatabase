@@ -242,7 +242,7 @@ object AnimeHomeScreen {
             onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
             onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
             onEditSheetValueChange = editViewModel::onEditSheetValueChange,
-            onAttemptDismiss = editViewModel::attemptDismiss,
+            editOnAttemptDismiss = editViewModel::attemptDismiss,
             editState = { editViewModel.state },
             editEventSink = editViewModel::onEvent,
             onClickListEdit = editViewModel::initialize,
@@ -272,7 +272,7 @@ object AnimeHomeScreen {
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
         onEditSheetValueChange: (SheetValue) -> Boolean,
-        onAttemptDismiss: () -> Boolean,
+        editOnAttemptDismiss: () -> Boolean,
         editState: () -> MediaEditState,
         editEventSink: (AnimeMediaEditBottomSheet.Event) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -296,7 +296,7 @@ object AnimeHomeScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         MediaEditBottomSheetScaffold(
             onEditSheetValueChange = onEditSheetValueChange,
-            onAttemptDismiss = onAttemptDismiss,
+            onAttemptDismiss = editOnAttemptDismiss,
             state = editState,
             eventSink = editEventSink,
             topBar = {

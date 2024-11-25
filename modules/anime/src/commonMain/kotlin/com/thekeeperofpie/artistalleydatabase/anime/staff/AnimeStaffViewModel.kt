@@ -37,7 +37,7 @@ class AnimeStaffViewModel(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 mediaDetailsViewModel.refresh.updates,
-                snapshotFlow { mediaDetailsViewModel.entry.result }
+                snapshotFlow { mediaDetailsViewModel.state.mediaEntry.result }
                     .filterNotNull(),
             ) { it, _ -> it }
                 .flowOn(CustomDispatchers.Main)

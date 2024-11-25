@@ -1,11 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -17,8 +14,6 @@ import androidx.compose.ui.test.hasTextExactly
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runComposeUiTest
-import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import app.cash.burst.Burst
 import app.cash.burst.burstValues
@@ -41,12 +36,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
+import com.thekeeperofpie.artistalleydatabase.test_utils.ComposeTestRoot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.loading
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -226,57 +217,47 @@ class HomeScreenTest {
     ) {
         val scope = rememberCoroutineScope()
         val ignoreController = remember { fakeIgnoreController(scope) }
-        SharedTransitionLayout {
-            AnimatedVisibility(true) {
-                CompositionLocalProvider(
-                    LocalWindowConfiguration provides WindowConfiguration(100.dp, 100.dp),
-                    LocalNavHostController provides rememberNavController(),
-                    LocalSharedTransitionScope provides this@SharedTransitionLayout,
-                    LocalAnimatedVisibilityScope provides this@AnimatedVisibility,
-                    LocalIgnoreController provides ignoreController,
-                ) {
-                    val currentMediaState = remember {
-                        CurrentMediaState(
-                            result = currentMedia,
-                            headerTextRes = if (isAnime) {
-                                Res.string.anime_home_anime_current_header
-                            } else {
-                                Res.string.anime_home_manga_current_header
-                            },
-                            mediaType = if (isAnime) MediaType.ANIME else MediaType.MANGA,
-                            previousSize = 0,
-                        )
-                    }
-                    val mediaEditState = remember { MediaEditState() }
-                    AnimeHomeScreen(
-                        upIconOption = null,
-                        scrollStateSaver = ScrollStateSaver.STUB,
-                        bottomNavigationState = null,
-                        selectedIsAnime = isAnime,
-                        onSelectedIsAnimeChanged = {},
-                        onRefresh = {},
-                        activity = remember { MutableStateFlow(activities) }.collectAsLazyPagingItems(),
-                        recommendations = remember { MutableStateFlow(recommendations) }.collectAsLazyPagingItems(),
-                        reviews = remember { MutableStateFlow(reviews) }.collectAsLazyPagingItems(),
-                        news = { news },
-                        homeEntry = { homeEntry },
-                        currentMedia = { currentMedia },
-                        currentMediaState = { currentMediaState },
-                        suggestions = emptyList(),
-                        notificationsUnreadCount = { 0 },
-                        unlocked = { false },
-                        viewer = { null },
-                        onActivityStatusUpdate = {},
-                        onUserRecommendationRating = { _, _ -> },
-                        onEditSheetValueChange = { true },
-                        onAttemptDismiss = { true },
-                        editState = { mediaEditState },
-                        editEventSink = {},
-                        onClickListEdit = {},
-                        onClickIncrementProgress = {},
-                    )
-                }
+        ComposeTestRoot(LocalIgnoreController provides ignoreController) {
+            val currentMediaState = remember {
+                CurrentMediaState(
+                    result = currentMedia,
+                    headerTextRes = if (isAnime) {
+                        Res.string.anime_home_anime_current_header
+                    } else {
+                        Res.string.anime_home_manga_current_header
+                    },
+                    mediaType = if (isAnime) MediaType.ANIME else MediaType.MANGA,
+                    previousSize = 0,
+                )
             }
+            val mediaEditState = remember { MediaEditState() }
+            AnimeHomeScreen(
+                upIconOption = null,
+                scrollStateSaver = ScrollStateSaver.STUB,
+                bottomNavigationState = null,
+                selectedIsAnime = isAnime,
+                onSelectedIsAnimeChanged = {},
+                onRefresh = {},
+                activity = remember { MutableStateFlow(activities) }.collectAsLazyPagingItems(),
+                recommendations = remember { MutableStateFlow(recommendations) }.collectAsLazyPagingItems(),
+                reviews = remember { MutableStateFlow(reviews) }.collectAsLazyPagingItems(),
+                news = { news },
+                homeEntry = { homeEntry },
+                currentMedia = { currentMedia },
+                currentMediaState = { currentMediaState },
+                suggestions = emptyList(),
+                notificationsUnreadCount = { 0 },
+                unlocked = { false },
+                viewer = { null },
+                onActivityStatusUpdate = {},
+                onUserRecommendationRating = { _, _ -> },
+                onEditSheetValueChange = { true },
+                editOnAttemptDismiss = { true },
+                editState = { mediaEditState },
+                editEventSink = {},
+                onClickListEdit = {},
+                onClickIncrementProgress = {},
+            )
         }
     }
 }
