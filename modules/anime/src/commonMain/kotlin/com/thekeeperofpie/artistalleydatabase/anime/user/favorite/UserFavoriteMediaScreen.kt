@@ -10,10 +10,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -62,11 +60,6 @@ object UserFavoriteMediaScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
         val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
-        val editSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            confirmValueChange = editViewModel::onEditSheetValueChange,
-            skipHiddenState = false,
-        )
         MediaEditBottomSheetScaffold(
             modifier = Modifier
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -103,7 +96,6 @@ object UserFavoriteMediaScreen {
                     )
                 }
             },
-            sheetState = editSheetState
         ) { scaffoldPadding ->
             val media = viewModel.media.collectAsLazyPagingItems()
             val refreshing = media.loadState.refresh is LoadState.Loading

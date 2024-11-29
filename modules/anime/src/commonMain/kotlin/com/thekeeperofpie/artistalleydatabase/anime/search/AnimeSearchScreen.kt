@@ -34,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -69,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
@@ -107,15 +107,9 @@ object AnimeSearchScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
         val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
-        val editSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            confirmValueChange = editViewModel::onEditSheetValueChange,
-            skipHiddenState = false,
-        )
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
             bottomNavigationState = bottomNavigationState,
-            sheetState = editSheetState,
         ) {
             val sortFilterController = when (viewModel.selectedType) {
                 AnimeSearchViewModel.SearchType.ANIME -> viewModel.animeSortFilterController
@@ -135,8 +129,8 @@ object AnimeSearchScreen {
                         viewModel,
                         upIconOption,
                         scrollBehavior,
-                        editSheetState,
                         bottomSheetScaffoldState.bottomSheetState,
+                        editViewModel.state,
                     )
                 },
                 sheetState = bottomSheetScaffoldState.bottomSheetState,
@@ -374,8 +368,8 @@ object AnimeSearchScreen {
         viewModel: AnimeSearchViewModel,
         upIconOption: UpIconOption? = null,
         scrollBehavior: TopAppBarScrollBehavior,
-        sheetStateOne: SheetState,
-        sheetStateTwo: SheetState,
+        sheetState: SheetState,
+        mediaEditState: MediaEditState,
     ) {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
@@ -383,8 +377,8 @@ object AnimeSearchScreen {
                 isNotEmpty && !WindowInsets.isImeVisibleKmp
                         // Need to manually check sheet state because top bar
                         // takes precedence over all other handlers
-                        && sheetStateOne.targetValue != SheetValue.Expanded
-                        && sheetStateTwo.targetValue != SheetValue.Expanded
+                        && sheetState.targetValue != SheetValue.Expanded
+                        && !mediaEditState.showing
             ) {
                 viewModel.query = ""
             }

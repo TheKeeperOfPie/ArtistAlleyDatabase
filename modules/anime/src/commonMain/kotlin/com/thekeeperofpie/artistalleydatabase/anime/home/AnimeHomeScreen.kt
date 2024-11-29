@@ -47,7 +47,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -241,8 +240,6 @@ object AnimeHomeScreen {
             viewer = { viewer },
             onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
             onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
-            onEditSheetValueChange = editViewModel::onEditSheetValueChange,
-            editOnAttemptDismiss = editViewModel::attemptDismiss,
             editState = { editViewModel.state },
             editEventSink = editViewModel::onEvent,
             onClickListEdit = editViewModel::initialize,
@@ -271,8 +268,6 @@ object AnimeHomeScreen {
         viewer: () -> AniListViewer?,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
-        onEditSheetValueChange: (SheetValue) -> Boolean,
-        editOnAttemptDismiss: () -> Boolean,
         editState: () -> MediaEditState,
         editEventSink: (AnimeMediaEditBottomSheet.Event) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -295,8 +290,6 @@ object AnimeHomeScreen {
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         MediaEditBottomSheetScaffold(
-            onEditSheetValueChange = onEditSheetValueChange,
-            onAttemptDismiss = editOnAttemptDismiss,
             state = editState,
             eventSink = editEventSink,
             topBar = {

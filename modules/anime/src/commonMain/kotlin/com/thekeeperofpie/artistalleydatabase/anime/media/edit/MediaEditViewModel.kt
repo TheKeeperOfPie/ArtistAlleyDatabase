@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -149,6 +148,8 @@ class MediaEditViewModel(
                 maxProgressVolumes = null,
                 loading = true
             )
+        } else {
+            state.hasConfirmedClose = false
         }
         state.showing = true
     }
@@ -196,6 +197,8 @@ class MediaEditViewModel(
                 maxProgressVolumes = null,
                 loading = true
             )
+        } else {
+            state.hasConfirmedClose = false
         }
         state.showing = true
     }
@@ -235,6 +238,9 @@ class MediaEditViewModel(
         state.updatedAt = mediaListEntry?.updatedAt?.toLong()
         state.createdAt = mediaListEntry?.createdAt?.toLong()
         state.notes = mediaListEntry?.notes.orEmpty()
+
+        state.hasConfirmedClose = false
+
         rawScore.tryEmit(mediaListEntry?.score)
     }
 
@@ -256,37 +262,10 @@ class MediaEditViewModel(
         }
     }
 
-    private fun hide() {
-        state.showing = false
-        state.error = null
-    }
-
-    fun onEditSheetValueChange(sheetValue: SheetValue): Boolean {
-        // TODO: Due to a bug with recent Compose versions, confirmValueChange can be called with
-        //  PartiallyExpanded even if the sheet is fully expanded, which means it's not possible to
-        //  block PartiallyExpanded to show an exit dialog. Instead, this is handled in the UI
-        //  layer by observing the sheet value change. For now, no-op this method, with another
-        //  one (attemptDismiss) created to handle real dismisses.
-        return true
-//        if (!editData.showing) return true
-//        if (sheetValue == SheetValue.Expanded) return true
-//        if (editData.isEqualTo(initialParams.value, scoreFormat.value)) return true
-//        editData.showConfirmClose = true
-//        return false
-    }
-
-    fun attemptDismiss(): Boolean {
-        if (!state.showing) return true
-        if (!state.hasChanged()) return true
-        state.showConfirmClose = true
-        return false
-    }
-
     fun onEvent(event: AnimeMediaEditBottomSheet.Event) = when (event) {
         is AnimeMediaEditBottomSheet.Event.DateChange ->
             onDateChange(event.start, event.selectedMillisUtc)
         AnimeMediaEditBottomSheet.Event.Delete -> onClickDelete()
-        AnimeMediaEditBottomSheet.Event.Hide -> hide()
         AnimeMediaEditBottomSheet.Event.Save -> onClickSave()
         is AnimeMediaEditBottomSheet.Event.StatusChange -> onStatusChange(event.status)
         is AnimeMediaEditBottomSheet.Event.Open -> {
@@ -356,7 +335,6 @@ class MediaEditViewModel(
                 statusController.onUpdate(mediaId, null)
                 withContext(CustomDispatchers.Main) {
                     state.deleting = false
-                    state.showing = false
                     state.showConfirmClose = false
                     initialize(
                         mediaId = mediaId,
@@ -368,6 +346,7 @@ class MediaEditViewModel(
                         maxProgress = null,
                         maxProgressVolumes = null,
                     )
+                    state.showing = false
                 }
             } catch (e: Exception) {
                 withContext(CustomDispatchers.Main) {
@@ -478,7 +457,6 @@ class MediaEditViewModel(
 
                 withContext(CustomDispatchers.Main) {
                     state.saving = false
-                    state.showing = false
                     state.showConfirmClose = false
                     initialize(
                         mediaId = mediaId,
@@ -490,6 +468,7 @@ class MediaEditViewModel(
                         maxProgress = initialParams.maxProgress,
                         maxProgressVolumes = initialParams.maxProgressVolumes,
                     )
+                    state.showing = false
                 }
             } catch (e: Exception) {
                 withContext(CustomDispatchers.Main) {

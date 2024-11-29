@@ -27,6 +27,7 @@ object MediaRecommendationsScreen {
         items: LazyPagingItems<MediaRecommendationEntry<MediaEntry>>,
         mediaHeader: @Composable (progress: Float) -> Unit,
         mediaRow: @Composable (MediaRecommendationEntry<MediaEntry>?, Modifier) -> Unit,
+        modifier: Modifier,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -40,7 +41,8 @@ object MediaRecommendationsScreen {
                 ) {
                     mediaHeader(it)
                 }
-            }
+            },
+            modifier = modifier
         ) {
             VerticalList(
                 gridState = gridState,

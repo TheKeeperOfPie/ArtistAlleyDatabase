@@ -251,8 +251,6 @@ class HomeScreenTest {
                 viewer = { null },
                 onActivityStatusUpdate = {},
                 onUserRecommendationRating = { _, _ -> },
-                onEditSheetValueChange = { true },
-                editOnAttemptDismiss = { true },
                 editState = { mediaEditState },
                 editEventSink = {},
                 onClickListEdit = {},

@@ -48,7 +48,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
@@ -334,8 +333,6 @@ object AnimeMediaDetailsScreen {
             forumThreadsSection = forumThreadsSection,
             reviewsSectionMetadata = reviewsSectionMetadata,
             reviewsSection = reviewsSection,
-            onEditSheetValueChange = editViewModel::onEditSheetValueChange,
-            editOnAttemptDismiss = editViewModel::attemptDismiss,
             editState = { editViewModel.state },
             editEventSink = editViewModel::onEvent,
             onClickListEdit = editViewModel::initialize,
@@ -392,8 +389,6 @@ object AnimeMediaDetailsScreen {
             expanded: () -> Boolean,
             onExpandedChange: (Boolean) -> Unit,
         ) -> Unit,
-        onEditSheetValueChange: (SheetValue) -> Boolean,
-        editOnAttemptDismiss: () -> Boolean,
         editState: () -> MediaEditState,
         editEventSink: (AnimeMediaEditBottomSheet.Event) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -441,8 +436,6 @@ object AnimeMediaDetailsScreen {
         ) {
             // TODO: Pass media type if known so that open external works even if entry can't be loaded?
             MediaEditBottomSheetScaffold(
-                onEditSheetValueChange = onEditSheetValueChange,
-                onAttemptDismiss = editOnAttemptDismiss,
                 state = editState,
                 eventSink = editEventSink,
                 topBar = {
@@ -662,6 +655,7 @@ object AnimeMediaDetailsScreen {
                         }
                     },
                     modifier = Modifier
+                        .padding(it)
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
                         .fillMaxSize()
                 ) { scaffoldPadding ->

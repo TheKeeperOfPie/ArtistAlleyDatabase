@@ -31,12 +31,14 @@ class MediaEditState {
     var createdAt by mutableStateOf<Long?>(null)
     var notes by mutableStateOf("")
 
-    var showing by mutableStateOf(false)
     var deleting by mutableStateOf(false)
     var saving by mutableStateOf(false)
     var error by mutableStateOf<Pair<StringResource, Throwable?>?>(null)
 
     var showConfirmClose by mutableStateOf(false)
+    var hasConfirmedClose by mutableStateOf(false)
+
+    var showing by mutableStateOf(false)
 
     fun hasChanged() = status != initialParams?.status
             || fieldAsInt(progress) != (initialParams?.progress ?: 0)

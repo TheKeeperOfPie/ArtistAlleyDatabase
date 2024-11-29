@@ -48,6 +48,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -138,7 +139,7 @@ object AnimeMediaEditBottomSheet {
     operator fun invoke(
         state: () -> MediaEditState,
         eventSink: (Event) -> Unit,
-        onDismiss: () -> Unit,
+        onConfirmExit: () -> Unit,
         modifier: Modifier = Modifier,
     ) {
         var showDelete by remember { mutableStateOf(false) }
@@ -227,6 +228,8 @@ object AnimeMediaEditBottomSheet {
             }
         }
 
+        val scope = rememberCoroutineScope()
+
         if (showDelete) {
             AlertDialog(
                 onDismissRequest = { showDelete = false },
@@ -252,6 +255,7 @@ object AnimeMediaEditBottomSheet {
                 text = { Text(stringResource(Res.string.anime_media_edit_confirm_close_text)) },
                 confirmButton = {
                     TextButton(onClick = {
+                        println("confirmButton")
                         state.showConfirmClose = false
                         eventSink(Event.Save)
                     }) {
@@ -260,9 +264,9 @@ object AnimeMediaEditBottomSheet {
                 },
                 dismissButton = {
                     TextButton(onClick = {
+                        state.hasConfirmedClose = true
                         state.showConfirmClose = false
-                        state.showing = false
-                        onDismiss()
+                        onConfirmExit()
                     }) {
                         Text(stringResource(Res.string.anime_media_edit_confirm_delete_exit_button))
                     }
@@ -279,7 +283,7 @@ object AnimeMediaEditBottomSheet {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
         val initialParams = state.initialParams
         val mediaId = initialParams?.mediaId
-        if (initialParams != null && mediaId != null && state.showing) {
+        if (initialParams != null && mediaId != null) {
             val coverImage = initialParams.coverImage
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -961,7 +965,6 @@ object AnimeMediaEditBottomSheet {
     sealed interface Event {
         data object Save : Event
         data object Delete : Event
-        data object Hide : Event
         data class StatusChange(val status: MediaListStatus?) : Event
         data class DateChange(val start: Boolean, val selectedMillisUtc: Long?) : Event
         data class Open(

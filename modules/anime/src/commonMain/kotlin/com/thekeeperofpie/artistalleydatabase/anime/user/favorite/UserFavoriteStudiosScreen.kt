@@ -9,10 +9,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -56,11 +54,6 @@ object UserFavoriteStudiosScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
         val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
-        val editSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            confirmValueChange = editViewModel::onEditSheetValueChange,
-            skipHiddenState = false,
-        )
         MediaEditBottomSheetScaffold(
             modifier = Modifier
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -82,7 +75,6 @@ object UserFavoriteStudiosScreen {
                     )
                 }
             },
-            sheetState = editSheetState
         ) { scaffoldPadding ->
             val studios = viewModel.studios.collectAsLazyPagingItems()
             val refreshing = studios.loadState.refresh is LoadState.Loading

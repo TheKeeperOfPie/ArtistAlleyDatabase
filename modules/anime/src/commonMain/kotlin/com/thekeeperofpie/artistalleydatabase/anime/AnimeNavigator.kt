@@ -730,8 +730,6 @@ object AnimeNavigator {
             MediaEditBottomSheetScaffold(
                 state = { editViewModel.state },
                 eventSink = editViewModel::onEvent,
-                onEditSheetValueChange = editViewModel::onEditSheetValueChange,
-                onAttemptDismiss = editViewModel::attemptDismiss,
             ) {
                 SortFilterBottomScaffold(state = { viewModel.sortFilterController.state }) {
                     val gridState = rememberLazyGridState()
@@ -776,6 +774,7 @@ object AnimeNavigator {
                                     viewModel.recommendationToggleHelper::toggle,
                             )
                         },
+                        modifier = Modifier.padding(it)
                     )
                 }
             }

@@ -72,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -115,15 +116,9 @@ object AnimeUserListScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
-        val editSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            confirmValueChange = editViewModel::onEditSheetValueChange,
-            skipHiddenState = false,
-        )
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
             bottomNavigationState = bottomNavigationState,
-            sheetState = editSheetState,
             snackbarHostState = snackbarHostState,
         ) {
             val entry = viewModel.entry
@@ -141,8 +136,8 @@ object AnimeUserListScreen {
                         viewModel,
                         upIconOption,
                         scrollBehavior,
-                        editSheetState,
                         sortSheetState,
+                        editViewModel.state,
                         pagerState,
                     )
                 },
@@ -264,8 +259,8 @@ object AnimeUserListScreen {
         viewModel: AnimeUserListViewModel,
         upIconOption: UpIconOption? = null,
         scrollBehavior: TopAppBarScrollBehavior,
-        sheetStateOne: SheetState,
-        sheetStateTwo: SheetState,
+        sheetState: SheetState,
+        mediaEditState: MediaEditState,
         pagerState: PagerState,
     ) {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -274,8 +269,8 @@ object AnimeUserListScreen {
                 isNotEmpty && !WindowInsets.isImeVisibleKmp
                         // Need to manually check sheet state because top bar
                         // takes precedence over all other handlers
-                        && sheetStateOne.targetValue != SheetValue.Expanded
-                        && sheetStateTwo.targetValue != SheetValue.Expanded
+                        && sheetState.targetValue != SheetValue.Expanded
+                        && !mediaEditState.showing
             ) {
                 viewModel.query = ""
             }
