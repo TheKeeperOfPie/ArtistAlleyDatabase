@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 
-package com.thekeeperofpie.artistalleydatabase.anime.writing
+package com.thekeeperofpie.artistalleydatabase.anime.ui
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -43,10 +43,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_writing_replying_to
-import artistalleydatabase.modules.anime.generated.resources.anime_writing_replying_to_op
-import artistalleydatabase.modules.anime.generated.resources.anime_writing_send_button
+import artistalleydatabase.modules.anime.ui.generated.resources.Res
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_writing_replying_to
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_writing_replying_to_op
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_writing_send_button
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler

@@ -108,6 +108,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
@@ -529,7 +530,7 @@ object AnimeHomeScreen {
     ) {
         HorizontalPagerItemsRow(
             title = Res.string.anime_home_activity_label,
-            viewAllRoute = AnimeDestination.Activity,
+            viewAllRoute = ActivityDestinations.Activity,
             viewAllContentDescription = Res.string.anime_home_row_view_all_content_description,
             items = activities,
         ) {

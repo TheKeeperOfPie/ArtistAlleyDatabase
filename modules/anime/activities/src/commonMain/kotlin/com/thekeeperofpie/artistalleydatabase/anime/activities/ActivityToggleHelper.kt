@@ -30,7 +30,7 @@ class ActivityToggleHelper(
         )
         statusController.onUpdate(statusUpdate)
         val job = jobs[activityId]
-        jobs[activityId] = scope.launch(CustomDispatchers.Companion.IO) {
+        jobs[activityId] = scope.launch(CustomDispatchers.IO) {
             job?.cancelAndJoin()
             when (update) {
                 is ActivityToggleUpdate.Liked -> {

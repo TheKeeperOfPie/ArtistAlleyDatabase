@@ -111,7 +111,7 @@ class AnimeActivityViewModel<MediaEntry>(
         target: MutableStateFlow<PagingData<ActivityEntry<MediaEntry>>>,
         following: Boolean,
         filterToViewer: Boolean = false,
-    ) = viewModelScope.launch(CustomDispatchers.Companion.IO) {
+    ) = viewModelScope.launch(CustomDispatchers.IO) {
         aniListApi.authedUser.flatMapLatest { viewer ->
             combine(
                 sortFilterController.filterParams,

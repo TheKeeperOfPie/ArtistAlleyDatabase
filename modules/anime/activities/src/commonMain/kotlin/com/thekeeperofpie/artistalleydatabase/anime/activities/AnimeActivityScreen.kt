@@ -131,7 +131,7 @@ object AnimeActivityScreen {
                         }
                     }
                 },
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .padding(padding)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {

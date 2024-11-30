@@ -1,31 +1,26 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity.details
+package com.thekeeperofpie.artistalleydatabase.anime.activities.details
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_details_error_loading
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_error_deleting
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_error_replying
+import artistalleydatabase.modules.anime.activities.generated.resources.Res
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_details_error_loading
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_error_deleting
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_error_replying
 import com.anilist.data.ActivityDetailsQuery
-import com.anilist.data.ActivityDetailsRepliesQuery
+import com.anilist.data.fragment.MediaCompactWithTags
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityReplyStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityReplyToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
@@ -39,7 +34,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestina
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -51,19 +45,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
-import org.jetbrains.compose.resources.StringResource
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class ActivityDetailsViewModel(
+class ActivityDetailsViewModel<MediaEntry>(
     private val aniListApi: AuthedAniListApi,
     private val statusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
     private val replyStatusController: ActivityReplyStatusController,
     private val ignoreController: IgnoreController,
-    private val settings: AnimeSettings,
-    @Assisted savedStateHandle: SavedStateHandle,
+    private val settings: MediaDataSettings,
     navigationTypeMap: NavigationTypeMap,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
 ) : ViewModel() {
 
     private val destination =
@@ -72,12 +66,7 @@ class ActivityDetailsViewModel(
 
     val viewer = aniListApi.authedUser
     val refresh = RefreshFlow()
-    var entry by mutableStateOf<LoadingResult<Entry>>(LoadingResult.loading())
-    var replies = MutableStateFlow(PagingData.empty<Entry.ReplyEntry>())
-
-    var replying by mutableStateOf(false)
-    var deleting by mutableStateOf(false)
-    var error by mutableStateOf<Pair<StringResource, Throwable?>?>(null)
+    val state = ActivityDetailsScreen.State<MediaEntry>((activityId))
 
     val toggleHelper = ActivityToggleHelper(aniListApi, statusController, viewModelScope)
     val replyToggleHelper =
@@ -85,7 +74,10 @@ class ActivityDetailsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            flowForRefreshableContent(refresh.updates, Res.string.anime_activity_details_error_loading) {
+            flowForRefreshableContent(
+                refresh.updates,
+                Res.string.anime_activity_details_error_loading
+            ) {
                 flowFromSuspend {
                     aniListApi.activityDetails(activityId).activity
                 }
@@ -106,13 +98,13 @@ class ActivityDetailsViewModel(
                                     is ActivityDetailsQuery.Data.TextActivityActivity -> it.isSubscribed
                                     is ActivityDetailsQuery.Data.OtherActivity -> false
                                 } ?: false
-                                Entry(
+                                ActivityDetailsScreen.Entry(
                                     activity = it,
                                     liked = liked,
                                     subscribed = subscribed,
-                                    mediaEntry = (it as? ActivityDetailsQuery.Data.ListActivityActivity)?.media?.let {
-                                        MediaCompactWithTagsEntry(media = it)
-                                    }
+                                    mediaEntry = (it as? ActivityDetailsQuery.Data.ListActivityActivity)
+                                        ?.media
+                                        ?.let(mediaEntryProvider::mediaEntry)
                                 )
                             }
                         }
@@ -128,9 +120,11 @@ class ActivityDetailsViewModel(
                             ) { statuses, _, filteringData ->
                                 result.transformResult {
                                     if (it.mediaEntry == null) return@transformResult it
-                                    val mediaId = it.mediaEntry.media?.id?.toString()
+                                    val filterableData =
+                                        mediaEntryProvider.mediaFilterable(it.mediaEntry)
+                                    val mediaId = filterableData.mediaId
                                     applyMediaFiltering(
-                                        statuses = if (mediaId == null || statuses == null) {
+                                        statuses = if (statuses == null) {
                                             emptyMap()
                                         } else {
                                             mapOf(mediaId to statuses)
@@ -138,8 +132,15 @@ class ActivityDetailsViewModel(
                                         ignoreController = ignoreController,
                                         filteringData = filteringData,
                                         entry = it,
-                                        filterableData = it.mediaEntry.mediaFilterable,
-                                        copy = { copy(mediaEntry = mediaEntry?.copy(mediaFilterable = it)) },
+                                        filterableData = filterableData,
+                                        copy = { newFilterableData ->
+                                            copy(
+                                                mediaEntry = mediaEntry?.let {
+                                                    mediaEntryProvider
+                                                        .copyMediaEntry(it, newFilterableData)
+                                                }
+                                            )
+                                        },
                                     )
                                 }
                             }
@@ -147,25 +148,25 @@ class ActivityDetailsViewModel(
                 }
                 .catch {
                     emit(
-                        LoadingResult.error(
+                        LoadingResult.Companion.error(
                             Res.string.anime_activity_details_error_loading,
                             it
                         )
                     )
                 }
                 .flowOn(CustomDispatchers.IO)
-                .collectLatest { entry = it }
+                .collectLatest { state.entry = it }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
             refresh.updates
                 .flatMapLatest {
-                AniListPager {
-                    val result = aniListApi.activityReplies(id = activityId, page = it)
-                    result.page?.pageInfo to result.page?.activityReplies?.filterNotNull()
-                        .orEmpty()
+                    AniListPager {
+                        val result = aniListApi.activityReplies(id = activityId, page = it)
+                        result.page?.pageInfo to result.page?.activityReplies?.filterNotNull()
+                            .orEmpty()
+                    }
                 }
-            }
                 .enforceUniqueIntIds { it.id }
                 .cachedIn(viewModelScope)
                 .flatMapLatest { pagingData ->
@@ -173,20 +174,27 @@ class ActivityDetailsViewModel(
                         .mapLatest { updates ->
                             pagingData.mapOnIO {
                                 val liked = updates[it.id.toString()]?.liked ?: it.isLiked ?: false
-                                Entry.ReplyEntry(reply = it, liked = liked)
+                                ActivityDetailsScreen.ReplyEntry(reply = it, liked = liked)
                             }
                         }
                 }
                 .cachedIn(viewModelScope)
-                .collect(replies::emit)
+                .collect(state.replies::emit)
         }
     }
 
-    fun refresh() = refresh.refresh()
+    fun onEvent(event: ActivityDetailsScreen.Event) = when (event) {
+        is ActivityDetailsScreen.Event.ActivityStatusChange -> toggleHelper.toggle(event.update)
+        is ActivityDetailsScreen.Event.Delete -> delete(event.promptData)
+        ActivityDetailsScreen.Event.Refresh -> refresh.refresh()
+        is ActivityDetailsScreen.Event.ReplyStatusUpdate ->
+            replyToggleHelper.toggleLike(event.activityReplyId, event.liked)
+        is ActivityDetailsScreen.Event.SendReply -> sendReply(event.reply)
+    }
 
-    fun delete(deletePromptData: Either<Unit, Entry.ReplyEntry>) {
-        if (deleting) return
-        deleting = true
+    fun delete(deletePromptData: Either<Unit, ActivityDetailsScreen.ReplyEntry>) {
+        if (state.deleting) return
+        state.deleting = true
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
                 if (deletePromptData is Either.Right) {
@@ -196,46 +204,58 @@ class ActivityDetailsViewModel(
                 }
                 withContext(CustomDispatchers.Main) {
                     refresh.refresh()
-                    deleting = false
+                    state.deleting = false
                 }
             } catch (t: Throwable) {
                 withContext(CustomDispatchers.Main) {
-                    error = Res.string.anime_activity_error_deleting to t
-                    deleting = false
+                    state.error = Res.string.anime_activity_error_deleting to t
+                    state.deleting = false
                 }
             }
         }
     }
 
     fun sendReply(reply: String) {
-        if (replying) return
-        replying = true
+        if (state.replying) return
+        state.replying = true
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
                 aniListApi.saveActivityReply(activityId = activityId, replyId = null, text = reply)
                 withContext(CustomDispatchers.Main) {
                     refresh.refresh()
-                    replying = false
+                    state.replying = false
                 }
             } catch (t: Throwable) {
                 withContext(CustomDispatchers.Main) {
-                    error = Res.string.anime_activity_error_replying to t
-                    replying = false
+                    state.error = Res.string.anime_activity_error_replying to t
+                    state.replying = false
                 }
             }
         }
     }
 
-    data class Entry(
-        val activity: ActivityDetailsQuery.Data.Activity,
-        val mediaEntry: MediaCompactWithTagsEntry?,
-        override val liked: Boolean,
-        override val subscribed: Boolean,
-    ) : ActivityStatusAware {
-
-        data class ReplyEntry(
-            val reply: ActivityDetailsRepliesQuery.Data.Page.ActivityReply,
-            val liked: Boolean,
-        )
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val statusController: ActivityStatusController,
+        private val mediaListStatusController: MediaListStatusController,
+        private val replyStatusController: ActivityReplyStatusController,
+        private val ignoreController: IgnoreController,
+        private val settings: MediaDataSettings,
+        private val navigationTypeMap: NavigationTypeMap,
+        @Assisted private val savedStateHandle: SavedStateHandle,
+    ) : ViewModel() {
+        fun <MediaEntry> create(mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>) =
+            ActivityDetailsViewModel(
+                aniListApi = aniListApi,
+                statusController = statusController,
+                mediaListStatusController = mediaListStatusController,
+                replyStatusController = replyStatusController,
+                ignoreController = ignoreController,
+                settings = settings,
+                navigationTypeMap = navigationTypeMap,
+                savedStateHandle = savedStateHandle,
+                mediaEntryProvider = mediaEntryProvider,
+            )
     }
 }

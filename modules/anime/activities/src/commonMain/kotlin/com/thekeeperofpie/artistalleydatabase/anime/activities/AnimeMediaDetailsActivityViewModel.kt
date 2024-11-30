@@ -32,7 +32,7 @@ class AnimeMediaDetailsActivityViewModel(
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.Main) {
+        viewModelScope.launch(CustomDispatchers.Main) {
             aniListApi.authedUser
                 .mapLatest { viewer ->
                     val result = aniListApi.mediaDetailsActivity(
@@ -76,7 +76,7 @@ class AnimeMediaDetailsActivityViewModel(
                         }
                 }
                 .catch {}
-                .flowOn(CustomDispatchers.Companion.IO)
+                .flowOn(CustomDispatchers.IO)
                 .collectLatest { activities = it }
         }
     }

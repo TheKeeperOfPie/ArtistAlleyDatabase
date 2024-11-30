@@ -48,11 +48,10 @@ import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityTab
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityComposables
-import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activities.activitiesSection
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
@@ -602,35 +601,6 @@ object AnimeNavigator {
             SeasonalScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.Activity>(navigationTypeMap) {
-            val viewModel = viewModel {
-                component.animeActivityViewModelFactory()
-                    .create(MediaCompactWithTagsEntry.Provider, AnimeDestination::MediaDetails)
-            }
-            val viewer by viewModel.viewer.collectAsState()
-            AnimeActivityScreen(
-                viewer = { viewer },
-                userRoute = AnimeDestination.User.route,
-                mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
-                sortFilterState = { viewModel.sortFilterController.state },
-                mediaTitle = {
-                    viewModel.sortFilterController.selectedMedia()?.title?.primaryTitle()
-                },
-                ownActivity = { viewModel.ownActivity().collectAsLazyPagingItems() },
-                globalActivity = { viewModel.globalActivity().collectAsLazyPagingItems() },
-                followingActivity = { viewModel.followingActivity().collectAsLazyPagingItems() },
-                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                mediaRow = { entry, onClickListEdit, modifier ->
-                    AnimeMediaCompactListRow(
-                        viewer = viewer,
-                        entry = entry,
-                        modifier = modifier,
-                        onClickListEdit = onClickListEdit
-                    )
-                },
-            )
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.Notifications>(navigationTypeMap) {
             NotificationsScreen(upIconOption = UpIconOption.Back(navHostController))
         }
@@ -1099,6 +1069,7 @@ object AnimeNavigator {
             navigationTypeMap,
             component,
             userRoute = AnimeDestination.User.route,
+            mediaDetailsRoute = AnimeDestination::MediaDetails,
             mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
             mediaRow = { entry, viewer, onClickListEdit, modifier ->
                 AnimeMediaCompactListRow(
@@ -1107,7 +1078,8 @@ object AnimeNavigator {
                     onClickListEdit = onClickListEdit,
                     modifier = modifier,
                 )
-            }
+            },
+            mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
         )
     }
 

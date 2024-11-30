@@ -28,7 +28,7 @@ class ActivityReplyToggleHelper(
         )
         statusController.onUpdate(statusUpdate)
         val job = jobs[activityReplyId]
-        jobs[activityReplyId] = scope.launch(CustomDispatchers.Companion.IO) {
+        jobs[activityReplyId] = scope.launch(CustomDispatchers.IO) {
             job?.cancelAndJoin()
             try {
                 statusController.onUpdate(

@@ -51,7 +51,7 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_search_error_loading
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_default_title
 import artistalleydatabase.modules.anime.generated.resources.anime_forum_thread_no_comments
-import artistalleydatabase.modules.anime.generated.resources.anime_writing_reply_fab_content_description
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_writing_reply_fab_content_description
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadComment
@@ -61,7 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadPageIndicator
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
-import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.ui.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -167,7 +167,8 @@ object ForumThreadScreen {
                                 Icon(
                                     Icons.AutoMirrored.Filled.Reply,
                                     contentDescription = stringResource(
-                                        Res.string.anime_writing_reply_fab_content_description
+                                        artistalleydatabase.modules.anime.ui.generated.resources
+                                            .Res.string.anime_writing_reply_fab_content_description
                                     ),
                                 )
                             }

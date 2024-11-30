@@ -1093,17 +1093,19 @@ fun LazyGridScope.activitiesSection(
         onExpandedChange = onExpandedChange,
         onClickViewAll = onClickViewAll,
     ) { item, paddingBottom ->
-        ListActivitySmallCard(
-            viewer = viewer,
-            activity = item.activity,
-            entry = item,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            clickable = true,
-            userRoute = userRoute,
-            modifier = Modifier
-                .animateItem()
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-        )
+        SharedTransitionKeyScope("anime_activity_card_${item.activityId}") {
+            ListActivitySmallCard(
+                viewer = viewer,
+                activity = item.activity,
+                entry = item,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+                clickable = true,
+                userRoute = userRoute,
+                modifier = Modifier
+                    .animateItem()
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+            )
+        }
     }
 }

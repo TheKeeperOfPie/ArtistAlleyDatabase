@@ -5,9 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavType
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeMediaDetailsActivityViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivitiesComponent
 import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasViewModel
@@ -64,7 +63,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent {
 
     val airingScheduleViewModel: () -> AiringScheduleViewModel
     val aniListUserViewModel: (SavedStateHandle, MediaDetailsRoute) -> AniListUserViewModel
-    val animeActivityViewModelFactory: () -> AnimeActivityViewModel.Factory
     val animeCharacterDetailsViewModel: (SavedStateHandle) -> AnimeCharacterDetailsViewModel
     val animeCharactersViewModel: (SavedStateHandle, AnimeMediaDetailsViewModel) -> AnimeCharactersViewModel
     val animeForumThreadsViewModel: (SavedStateHandle, AnimeMediaDetailsViewModel) -> AnimeForumThreadsViewModel

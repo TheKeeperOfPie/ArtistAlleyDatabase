@@ -53,11 +53,11 @@ object MediaRecommendationsScreen {
                 item = {
                     mediaRow(
                         it,
-                        Modifier.Companion.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                        Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                     )
                 },
                 nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                modifier = Modifier.Companion.padding(it)
+                modifier = Modifier.padding(it)
             )
         }
     }

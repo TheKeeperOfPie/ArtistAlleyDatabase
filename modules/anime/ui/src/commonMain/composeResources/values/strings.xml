@@ -13,4 +13,9 @@
     <string name="anime_media_edit_date_today_content_description">Set to today</string>
     <string name="anime_media_edit_date_start_date_label">Start</string>
     <string name="anime_media_edit_date_end_date_label">End</string>
+
+    <string name="anime_writing_replying_to_op">Replying to OP</string>
+    <string name="anime_writing_replying_to">Replying to</string>
+    <string name="anime_writing_send_button">Send</string>
+    <string name="anime_writing_reply_fab_content_description">Reply</string>
 </resources>
