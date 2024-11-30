@@ -13,7 +13,6 @@ kotlin {
             api(libs.apollo.runtime)
             api(libs.ktor.client.core)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.kermit)
             implementation(libs.okhttp3.logging.interceptor)
             implementation(libs.skrapeit)
         }

@@ -31,6 +31,7 @@ kotlin {
 
             libs.find(
                 "libs.androidx.annotation",
+                "libs.kermit",
                 "libs.kotlinx.coroutines.core",
                 "libs.kotlinx.datetime",
                 "libs.kotlinx.serialization.json",

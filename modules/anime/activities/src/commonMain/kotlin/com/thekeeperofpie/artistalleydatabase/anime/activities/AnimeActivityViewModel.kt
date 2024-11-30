@@ -1,17 +1,17 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.data.UserSocialActivityQuery.Data.Page.ListActivityActivity
-import com.anilist.data.UserSocialActivityQuery.Data.Page.MessageActivityActivity
-import com.anilist.data.UserSocialActivityQuery.Data.Page.OtherActivity
-import com.anilist.data.UserSocialActivityQuery.Data.Page.TextActivityActivity
+import com.anilist.data.UserSocialActivityQuery
+import com.anilist.data.fragment.MediaCompactWithTags
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -35,17 +35,20 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
+import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class AnimeActivityViewModel(
+class AnimeActivityViewModel<MediaEntry>(
     private val aniListApi: AuthedAniListApi,
-    private val settings: AnimeSettings,
+    private val settings: MediaDataSettings,
     private val activityStatusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
     featureOverrideProvider: FeatureOverrideProvider,
+    @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
+    @Assisted mediaDetailsRoute: MediaDetailsRoute,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -58,26 +61,27 @@ class AnimeActivityViewModel(
         aniListApi = aniListApi,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
+        mediaDetailsRoute = mediaDetailsRoute,
     )
 
     private val refresh = RefreshFlow()
 
     private val globalActivity =
-        MutableStateFlow(PagingData.empty<ActivityEntry>())
+        MutableStateFlow(PagingData.Companion.empty<ActivityEntry<MediaEntry>>())
     private var globalActivityJob: Job? = null
 
     private val followingActivity =
-        MutableStateFlow(PagingData.empty<ActivityEntry>())
+        MutableStateFlow(PagingData.Companion.empty<ActivityEntry<MediaEntry>>())
     private var followingActivityJob: Job? = null
 
     private val ownActivity =
-        MutableStateFlow(PagingData.empty<ActivityEntry>())
+        MutableStateFlow(PagingData.Companion.empty<ActivityEntry<MediaEntry>>())
     private var ownActivityJob: Job? = null
 
     // TODO: Should this be accessed from inside a composable?
-    private val timeZone = TimeZone.currentSystemDefault()
+    private val timeZone = TimeZone.Companion.currentSystemDefault()
 
-    fun ownActivity(): StateFlow<PagingData<ActivityEntry>> {
+    fun ownActivity(): StateFlow<PagingData<ActivityEntry<MediaEntry>>> {
         if (ownActivityJob == null) {
             // TODO: React to user changes?
             ownActivityJob = activity(ownActivity, following = false, filterToViewer = true)
@@ -86,7 +90,7 @@ class AnimeActivityViewModel(
         return ownActivity
     }
 
-    fun followingActivity(): StateFlow<PagingData<ActivityEntry>> {
+    fun followingActivity(): StateFlow<PagingData<ActivityEntry<MediaEntry>>> {
         if (followingActivityJob == null) {
             // TODO: React to user changes?
             followingActivityJob = activity(followingActivity, following = true)
@@ -95,7 +99,7 @@ class AnimeActivityViewModel(
         return followingActivity
     }
 
-    fun globalActivity(): StateFlow<PagingData<ActivityEntry>> {
+    fun globalActivity(): StateFlow<PagingData<ActivityEntry<MediaEntry>>> {
         if (globalActivityJob == null) {
             globalActivityJob = activity(globalActivity, following = false)
         }
@@ -104,10 +108,10 @@ class AnimeActivityViewModel(
     }
 
     fun activity(
-        target: MutableStateFlow<PagingData<ActivityEntry>>,
+        target: MutableStateFlow<PagingData<ActivityEntry<MediaEntry>>>,
         following: Boolean,
         filterToViewer: Boolean = false,
-    ) = viewModelScope.launch(CustomDispatchers.IO) {
+    ) = viewModelScope.launch(CustomDispatchers.Companion.IO) {
         aniListApi.authedUser.flatMapLatest { viewer ->
             combine(
                 sortFilterController.filterParams,
@@ -137,7 +141,7 @@ class AnimeActivityViewModel(
                             ?.epochSeconds
                             ?.toInt(),
                         createdAtLesser = filterParams.date.endDate
-                            ?.plus(1, DateTimeUnit.DAY)
+                            ?.plus(1, DateTimeUnit.Companion.DAY)
                             ?.atStartOfDayIn(timeZone)
                             ?.epochSeconds
                             ?.toInt(),
@@ -150,13 +154,17 @@ class AnimeActivityViewModel(
         }
             .enforceUniqueIntIds {
                 when (it) {
-                    is ListActivityActivity -> it.id
-                    is MessageActivityActivity -> it.id
-                    is TextActivityActivity -> it.id
-                    is OtherActivity -> null
+                    is UserSocialActivityQuery.Data.Page.ListActivityActivity -> it.id
+                    is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> it.id
+                    is UserSocialActivityQuery.Data.Page.TextActivityActivity -> it.id
+                    is UserSocialActivityQuery.Data.Page.OtherActivity -> null
                 }
             }
-            .mapLatest { it.mapOnIO(::ActivityEntry) }
+            .mapLatest {
+                it.mapOnIO {
+                    ActivityEntry(it, mediaEntryProvider)
+                }
+            }
             .cachedIn(viewModelScope)
             .flatMapLatest { pagingData ->
                 combine(
@@ -174,13 +182,13 @@ class AnimeActivityViewModel(
                             entry = it,
                             activityId = it.activityId.valueId,
                             activityStatusAware = it,
-                            media = (it.activity as? ListActivityActivity)?.media,
-                            mediaFilterable = it.media?.mediaFilterable,
-                            copyMedia = {
+                            media = (it.activity as? UserSocialActivityQuery.Data.Page.ListActivityActivity)?.media,
+                            mediaFilterable = it.media?.let(mediaEntryProvider::mediaFilterable),
+                            copyMedia = { filterableData ->
                                 copy(
-                                    media = media?.copy(
-                                        mediaFilterable = it
-                                    )
+                                    media = media?.let {
+                                        mediaEntryProvider.copyMediaEntry(it, filterableData)
+                                    }
                                 )
                             },
                             copyActivity = { liked, subscribed ->
@@ -194,4 +202,27 @@ class AnimeActivityViewModel(
             .collectLatest(target::emit)
     }
 
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val settings: MediaDataSettings,
+        private val activityStatusController: ActivityStatusController,
+        private val mediaListStatusController: MediaListStatusController,
+        private val ignoreController: IgnoreController,
+        private val featureOverrideProvider: FeatureOverrideProvider,
+    ) : ViewModel() {
+        fun <MediaEntry> create(
+            mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
+            mediaDetailsRoute: MediaDetailsRoute,
+        ) = AnimeActivityViewModel(
+            aniListApi = aniListApi,
+            settings = settings,
+            activityStatusController = activityStatusController,
+            mediaListStatusController = mediaListStatusController,
+            ignoreController = ignoreController,
+            featureOverrideProvider = featureOverrideProvider,
+            mediaEntryProvider = mediaEntryProvider,
+            mediaDetailsRoute = mediaDetailsRoute,
+        )
+    }
 }

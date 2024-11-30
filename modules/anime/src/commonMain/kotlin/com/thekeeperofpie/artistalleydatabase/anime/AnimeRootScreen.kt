@@ -34,6 +34,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_ign
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification_button
 import com.anilist.data.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anime.activities.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
@@ -56,6 +57,7 @@ object AnimeRootScreen {
         onSubmitAuthToken: (String) -> Unit,
         onClickSettings: () -> Unit,
         onClickShowLastCrash: () -> Unit,
+        userRoute: UserRoute,
     ) {
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
         val bottomNavigationState = BottomNavigationState(scrollBehavior)
@@ -217,6 +219,7 @@ object AnimeRootScreen {
                                 scrollPositions
                             ),
                             bottomNavigationState = bottomNavigationState,
+                            userRoute = userRoute,
                         )
                         AnimeRootNavDestination.ANIME -> AnimeNavigator.UserMediaListScreen(
                             userId = null,

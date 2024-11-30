@@ -26,8 +26,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_recommendatio
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_home_title
 import com.anilist.data.type.MediaType
 import com.google.common.truth.Truth.assertThat
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
+import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen.invoke
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.fakeIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry

@@ -15,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
@@ -60,127 +59,137 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColo
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 
 
-fun main() = application {
-    val scope = rememberCoroutineScope { Dispatchers.Main }
-    val desktopComponent = DesktopComponent::class.create(scope)
-    val settings = desktopComponent.settingsProvider
-    LaunchedEffect(Unit) {
-        val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            Logger.e("AnichiveDesktop", throwable) { "Crash detected" }
-            try {
-                // TODO
+fun main() {
+    val exitEvents = MutableStateFlow(false)
+    val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+    Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+        Logger.e("AnichiveDesktop", throwable) { "Crash detected" }
+        try {
+            // TODO
 //            settings.writeLastCrash(throwable)
-            } catch (t: Throwable) {
-                if (BuildVariant.isDebug()) {
-                    Logger.e("AnichiveDesktop", t) { "Error writing last crash" }
-                }
-            } finally {
-                existingExceptionHandler?.uncaughtException(thread, throwable)
+        } catch (t: Throwable) {
+            if (BuildVariant.isDebug()) {
+                Logger.e("AnichiveDesktop", t) { "Error writing last crash" }
+            }
+        } finally {
+            existingExceptionHandler?.uncaughtException(thread, throwable)
+            exitEvents.value = true
+        }
+    }
+    application {
+        val exitEvent by exitEvents.collectAsState()
+        LaunchedEffect(exitEvent) {
+            if (exitEvent) {
                 exitApplication()
             }
         }
-    }
+        val scope = rememberCoroutineScope { Dispatchers.Main }
+        val desktopComponent = DesktopComponent::class.create(scope)
+        val settings = desktopComponent.settingsProvider
 
-    SingletonImageLoader.setSafe { context ->
-        ImageLoader.Builder(context)
-            .components {
-                add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ -> data.toString().toUri() })
-                add(KtorNetworkFetcherFactory(desktopComponent.httpClient))
-            }
-            .memoryCache {
-                MemoryCache.Builder()
-                    .maxSizeBytes(1024 * 1024)
-                    .build()
-            }
-            .diskCache(null) // TODO
-            .crossfade(true)
-            .build()
-    }
-    val navigationTypeMap = desktopComponent.navigationTypeMap
+        SingletonImageLoader.setSafe { context ->
+            ImageLoader.Builder(context)
+                .components {
+                    add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
+                        data.toString().toUri()
+                    })
+                    add(KtorNetworkFetcherFactory(desktopComponent.httpClient))
+                }
+                .memoryCache {
+                    MemoryCache.Builder()
+                        .maxSizeBytes(1024 * 1024)
+                        .build()
+                }
+                .diskCache(null) // TODO
+                .crossfade(true)
+                .build()
+        }
+        val navigationTypeMap = desktopComponent.navigationTypeMap
 
-    ThemeAndSingletons(desktopComponent) {
-        val windowState = rememberWindowState(width = Dp.Unspecified, height = Dp.Unspecified)
-        Window(
-            onCloseRequest = ::exitApplication,
-            title = runBlocking { getString(UtilsStrings.app_name) },
-            state = windowState,
-        ) {
-            val windowSize = windowState.size
-            val windowConfiguration = remember(windowSize) {
-                WindowConfiguration(
-                    screenWidthDp = windowSize.width.takeOrElse { 600.dp },
-                    screenHeightDp = windowSize.height.takeOrElse { 800.dp },
-                )
-            }
-
-            val cdEntryNavigator = desktopComponent.cdEntryNavigator
-            val fullScreenImageHandler = remember { FullscreenImageHandler() }
-            val navHostController = rememberNavController()
-            val navigationCallback = remember(navHostController, cdEntryNavigator) {
-                AnimeNavigator.NavigationCallback(
-                    navHostController = navHostController,
-                    cdEntryNavigator = cdEntryNavigator,
-                )
-            }
-
-            CompositionLocalProvider(
-                LocalWindowConfiguration provides windowConfiguration,
-                LocalNavHostController provides navHostController,
-                LocalNavigationCallback provides navigationCallback,
-                LocalFullscreenImageHandler provides fullScreenImageHandler,
+        ThemeAndSingletons(desktopComponent) {
+            val windowState = rememberWindowState()
+            Window(
+                onCloseRequest = ::exitApplication,
+                title = runBlocking { getString(UtilsStrings.app_name) },
+                state = windowState,
             ) {
-                Surface(modifier = Modifier.safeDrawingPadding()) {
-                    SharedTransitionLayout {
-                        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                            NavHost(
-                                navController = navHostController,
-                                startDestination = AnimeNavDestinations.HOME.id,
-                            ) {
-                                desktopComponent.navDestinationProviders.forEach {
-                                    it.composable(this, navigationTypeMap)
-                                }
+                val windowSize = windowState.size
+                val windowConfiguration = remember(windowSize) {
+                    WindowConfiguration(
+                        screenWidthDp = windowSize.width.takeOrElse { 600.dp },
+                        screenHeightDp = windowSize.height.takeOrElse { 800.dp },
+                    )
+                }
 
-                                AnimeNavigator.initialize(
-                                    navHostController = navHostController,
-                                    navGraphBuilder = this,
-                                    upIconOption = null,
-                                    navigationTypeMap = navigationTypeMap,
-                                    onClickAuth = { TODO() },
-                                    onClickSettings = { TODO() },
-                                    onClickShowLastCrash = {
-                                        navHostController.navigate(NavDestinations.CRASH.name)
-                                    },
-                                    animeComponent = desktopComponent,
-                                    cdEntryComponent = desktopComponent,
-                                )
+                val cdEntryNavigator = desktopComponent.cdEntryNavigator
+                val fullScreenImageHandler = remember { FullscreenImageHandler() }
+                val navHostController = rememberNavController()
+                val navigationCallback = remember(navHostController, cdEntryNavigator) {
+                    AnimeNavigator.NavigationCallback(
+                        navHostController = navHostController,
+                        cdEntryNavigator = cdEntryNavigator,
+                    )
+                }
 
-                                cdEntryNavigator.initialize(
-                                    onClickNav = { TODO() },
-                                    navHostController = navHostController,
-                                    navGraphBuilder = this,
-                                    cdEntryComponent = desktopComponent,
-                                )
+                CompositionLocalProvider(
+                    LocalWindowConfiguration provides windowConfiguration,
+                    LocalNavHostController provides navHostController,
+                    LocalNavigationCallback provides navigationCallback,
+                    LocalFullscreenImageHandler provides fullScreenImageHandler,
+                ) {
+                    Surface(modifier = Modifier.safeDrawingPadding()) {
+                        SharedTransitionLayout {
+                            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                                NavHost(
+                                    navController = navHostController,
+                                    startDestination = AnimeNavDestinations.HOME.id,
+                                ) {
+                                    desktopComponent.navDestinationProviders.forEach {
+                                        it.composable(this, navigationTypeMap)
+                                    }
 
-                                sharedElementComposable(route = NavDestinations.CRASH.name) {
-                                    SideEffect { settings.lastCrashShown.value = true }
-                                    CrashScreen(
-                                        crash = { settings.lastCrash.collectAsState().value },
-                                        onClickBack = { navHostController.navigateUp() },
-                                        onClickShare = { TODO() }
+                                    AnimeNavigator.initialize(
+                                        navHostController = navHostController,
+                                        navGraphBuilder = this,
+                                        upIconOption = null,
+                                        navigationTypeMap = navigationTypeMap,
+                                        onClickAuth = { TODO() },
+                                        onClickSettings = { TODO() },
+                                        onClickShowLastCrash = {
+                                            navHostController.navigate(NavDestinations.CRASH.name)
+                                        },
+                                        component = desktopComponent,
+                                        cdEntryComponent = desktopComponent,
                                     )
+
+                                    cdEntryNavigator.initialize(
+                                        onClickNav = { TODO() },
+                                        navHostController = navHostController,
+                                        navGraphBuilder = this,
+                                        cdEntryComponent = desktopComponent,
+                                    )
+
+                                    sharedElementComposable(route = NavDestinations.CRASH.name) {
+                                        SideEffect { settings.lastCrashShown.value = true }
+                                        CrashScreen(
+                                            crash = { settings.lastCrash.collectAsState().value },
+                                            onClickBack = { navHostController.navigateUp() },
+                                            onClickShare = { TODO() }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            LongClickDialogs(desktopComponent, fullScreenImageHandler)
+                LongClickDialogs(desktopComponent, fullScreenImageHandler)
+            }
         }
     }
 }

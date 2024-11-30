@@ -1,7 +1,8 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
 import com.anilist.data.fragment.MediaWithListStatus
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilteringData
@@ -66,7 +67,7 @@ suspend fun <ActivityEntry> applyActivityFiltering(
         val ignored = ignoreController.isIgnored(media.id.toString())
         if (!filteringData.showIgnored && ignored) return null
 
-        val status: com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus?
+        val status: MediaListStatus?
         val progress: Int?
         val progressVolumes: Int?
         val mediaId = media.id.toString()

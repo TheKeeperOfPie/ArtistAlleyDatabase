@@ -32,6 +32,7 @@ abstract class SortFilterController<FilterParams : Any>(scope: CoroutineScope) {
     open fun PromptDialog() {
     }
 
+    @Deprecated("Use method inside State")
     @Composable
     fun ImmediateScrollResetEffect(lazyGridState: LazyGridState) {
         OnChangeEffect(currentValue = filterParams.collectAsState().value) {
@@ -39,6 +40,7 @@ abstract class SortFilterController<FilterParams : Any>(scope: CoroutineScope) {
         }
     }
 
+    @Deprecated("Use method inside State")
     @Composable
     fun ImmediateScrollResetEffect(lazyStaggeredGridState: LazyStaggeredGridState) {
         OnChangeEffect(currentValue = filterParams.collectAsState().value) {
@@ -46,6 +48,7 @@ abstract class SortFilterController<FilterParams : Any>(scope: CoroutineScope) {
         }
     }
 
+    @Deprecated("Use method inside State")
     @Composable
     fun ImmediateScrollResetEffect(lazyListState: LazyListState) {
         OnChangeEffect(currentValue = filterParams.collectAsState().value) {
@@ -61,5 +64,12 @@ abstract class SortFilterController<FilterParams : Any>(scope: CoroutineScope) {
         val sections get() = this@SortFilterController.sections
         val expanded = SortFilterSection.ExpandedState()
         val collapseOnClose @Composable get() = this@SortFilterController.collapseOnClose()
+
+        @Composable
+        fun ImmediateScrollResetEffect(lazyGridState: LazyGridState) {
+            OnChangeEffect(currentValue = filterParams.collectAsState().value) {
+                lazyGridState.scrollToItem(0)
+            }
+        }
     }
 }

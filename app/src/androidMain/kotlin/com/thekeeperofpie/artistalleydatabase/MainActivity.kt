@@ -425,7 +425,7 @@ class MainActivity : ComponentActivity() {
                                 onClickShowLastCrash = {
                                     navHostController.navigate(AppNavDestinations.CRASH.id)
                                 },
-                                animeComponent = applicationComponent,
+                                component = applicationComponent,
                                 cdEntryComponent = applicationComponent,
                             )
 

@@ -53,7 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController

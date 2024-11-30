@@ -10,7 +10,6 @@ kotlin {
             api(libs.apollo.runtime)
             implementation(projects.modules.utils)
             implementation(libs.apollo.normalized.cache)
-            implementation(libs.kermit)
             implementation(libs.kotlinx.serialization.json.io)
         }
     }

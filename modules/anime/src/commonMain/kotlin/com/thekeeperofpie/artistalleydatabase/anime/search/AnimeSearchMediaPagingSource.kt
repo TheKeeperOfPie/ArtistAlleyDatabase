@@ -8,7 +8,7 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.toAniListFuzzyDateInt
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -8,25 +8,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_filter_date
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_filter_has_replies_label
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_filter_media_expand_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_filter_media_label
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_filter_type_dropdown_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_filter_type_include_exclude_icon_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_filter_type_label
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_sort_label
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_release_date_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.Res
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_filter_date
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_filter_date_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_filter_has_replies_label
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_filter_media_expand_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_filter_media_label
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_filter_type_dropdown_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_filter_type_include_exclude_icon_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_filter_type_label
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_sort_label
 import com.anilist.data.type.ActivityType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDateAdvancedSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDateAdvancedSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
@@ -42,9 +42,10 @@ import org.jetbrains.compose.resources.stringResource
 class ActivitySortFilterController(
     scope: CoroutineScope,
     aniListApi: AuthedAniListApi,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     mediaSharedElement: Boolean = true,
+    mediaDetailsRoute: MediaDetailsRoute,
 ) : MediaDataSettingsSortFilterController<ActivitySortFilterController.FilterParams>(
     scope = scope,
     settings = settings,
@@ -93,7 +94,7 @@ class ActivitySortFilterController(
                 expanded = expanded,
                 onExpandedChange = { state.expandedState[id] = it },
                 titleRes = Res.string.anime_activity_filter_date,
-                titleDropdownContentDescriptionRes = Res.string.anime_media_filter_release_date_content_description,
+                titleDropdownContentDescriptionRes = Res.string.anime_activity_filter_date_content_description,
                 summaryText = { date.summaryText() },
                 onSummaryClick = {
                     onReleaseDateChange(true, null)
@@ -124,14 +125,14 @@ class ActivitySortFilterController(
         settings = settings,
         mediaType = null,
         mediaSharedElement = mediaSharedElement,
-        mediaDetailsRoute = AnimeDestination::MediaDetails,
+        mediaDetailsRoute = mediaDetailsRoute,
     )
 
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
-            Instant.fromEpochMilliseconds(it)
-                .toLocalDateTime(TimeZone.UTC)
+            Instant.Companion.fromEpochMilliseconds(it)
+                .toLocalDateTime(TimeZone.Companion.UTC)
                 .date
         }
 

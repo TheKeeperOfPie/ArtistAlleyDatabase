@@ -14,4 +14,26 @@
     <string name="anime_media_filter_search_media_placeholder_media">Search media…</string>
 
     <string name="anime_media_filter_clear_media">Clear media</string>
+
+    <string name="anime_media_filter_airing_date_season_default">Unknown</string>
+    <string name="anime_media_filter_airing_date_season_winter">Winter</string>
+    <string name="anime_media_filter_airing_date_season_spring">Spring</string>
+    <string name="anime_media_filter_airing_date_season_summer">Summer</string>
+    <string name="anime_media_filter_airing_date_season_fall">Fall</string>
+    <string name="anime_media_filter_airing_date_season_previous">Previous (%1$s)</string>
+    <string name="anime_media_filter_airing_date_season_current">Current (%1$s)</string>
+    <string name="anime_media_filter_airing_date_season_next">Next (%1$s)</string>
+    <string name="anime_media_filter_airing_date">Airing date</string>
+    <string name="anime_media_filter_airing_date_content_description">Airing date expand</string>
+    <string name="anime_media_filter_airing_date_season">Season</string>
+    <string name="anime_media_filter_airing_date_season_dropdown_content_description">Season dropdown</string>
+    <string name="anime_media_filter_airing_date_season_year">Year</string>
+    <string name="anime_media_filter_airing_date_season_decrement_content_description">Decrement season</string>
+    <string name="anime_media_filter_airing_date_season_increment_content_description">Increment season</string>
+    <string name="anime_media_filter_airing_date_season_year_decrement_content_description">Decrement year</string>
+    <string name="anime_media_filter_airing_date_season_year_increment_content_description">Increment year</string>
+    <string name="anime_media_filter_airing_date_season_year_clear_content_description">Clear year</string>
+    <string name="anime_media_filter_airing_date_season_year_today_content_description">Set to current year</string>
+    <string name="anime_media_filter_airing_date_season_basic">Basic</string>
+    <string name="anime_media_filter_airing_date_season_advanced">Advanced</string>
 </resources>

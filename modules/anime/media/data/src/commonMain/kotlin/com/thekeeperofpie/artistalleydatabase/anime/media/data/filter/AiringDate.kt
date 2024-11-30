@@ -1,17 +1,17 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media.filter
+package com.thekeeperofpie.artistalleydatabase.anime.media.data.filter
 
 import androidx.compose.runtime.Composable
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_current
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_fall
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_next
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_previous
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_spring
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_summer
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_winter
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_current
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_fall
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_next
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_previous
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_spring
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_summer
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_winter
 import com.anilist.data.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
@@ -31,7 +31,7 @@ sealed interface AiringDate {
                     ?: currentSeasonYear.first) to (seasonYear.toIntOrNull()
                     ?: currentSeasonYear.second)
             )
-            return AiringDate.SeasonOption.fromAniListSeason(previousSeason, previousSeasonYear) to
+            return SeasonOption.fromAniListSeason(previousSeason, previousSeasonYear) to
                     previousSeasonYear
         }
 
@@ -42,7 +42,7 @@ sealed interface AiringDate {
                     ?: currentSeasonYear.first) to (seasonYear.toIntOrNull()
                     ?: currentSeasonYear.second)
             )
-            return AiringDate.SeasonOption.fromAniListSeason(nextSeason, nextSeasonYear) to
+            return SeasonOption.fromAniListSeason(nextSeason, nextSeasonYear) to
                     nextSeasonYear
         }
     }

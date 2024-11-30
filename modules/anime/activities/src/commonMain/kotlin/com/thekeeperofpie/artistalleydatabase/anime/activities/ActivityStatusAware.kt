@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
 interface ActivityStatusAware {
     val liked: Boolean

@@ -1,12 +1,11 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,9 +13,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
@@ -46,20 +44,19 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.paging.LoadState
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_delete_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_like_icon_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_message_arrow_recipient_icon_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_open_in_browser_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_replies_icon_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_status_with_timestamp
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_subscribe_icon_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_activities_label
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_activities_no_results
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_activity_following
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_activity_global
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_view_all_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.Res
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_delete_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_like_icon_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_message_arrow_recipient_icon_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_open_in_browser_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_replies_icon_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_status_with_timestamp
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_subscribe_icon_content_description
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_media_details_activities_label
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_media_details_activities_no_results
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_media_details_activity_following
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_media_details_activity_global
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_generic_view_all_content_description
 import com.anilist.data.UserSocialActivityQuery
 import com.anilist.data.fragment.ActivityItem
 import com.anilist.data.fragment.ListActivityActivityItem
@@ -75,14 +72,8 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
@@ -92,144 +83,122 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import kotlinx.datetime.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 object AnimeActivityComposables {
     const val ACTIVITIES_ABOVE_FOLD = 3
 }
 
+typealias UserRoute = (
+    id: String,
+    SharedTransitionKey?,
+    name: String,
+    ImageState?,
+) -> NavDestination
+
+typealias MediaRow<MediaEntry> = @Composable (MediaEntry?, Modifier) -> Unit
+
 @Composable
-fun ActivityList(
-    editViewModel: MediaEditViewModel,
+fun <MediaEntry> ActivityList(
     viewer: AniListViewer?,
-    activities: LazyPagingItems<ActivityEntry>,
+    activities: LazyPagingItems<ActivityEntry<MediaEntry>>,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     showMedia: Boolean,
     allowUserClick: Boolean = true,
-    sortFilterController: ActivitySortFilterController,
+    sortFilterState: () -> SortFilterController<*>.State?,
+    userRoute: UserRoute,
+    mediaRow: @Composable (
+        MediaEntry?,
+        onClickListEdit: (MediaNavigationData) -> Unit,
+        Modifier,
+    ) -> Unit,
+    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    when (val refreshState = activities.loadState.refresh) {
-        is LoadState.Error -> AnimeMediaListScreen.Error(
-            exception = refreshState.error,
-        )
-        else -> {
-            if (activities.itemCount == 0
-                && activities.loadState.refresh is LoadState.NotLoading
-            ) {
-                AnimeMediaListScreen.NoResults()
-            } else {
-                // TODO: Move this up a level
-                val refreshing = activities.loadState.refresh is LoadState.Loading
-                val pullRefreshState = rememberPullRefreshState(
-                    refreshing = refreshing,
-                    onRefresh = { activities.refresh() },
-                )
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    val listState = rememberLazyListState()
-                    sortFilterController.ImmediateScrollResetEffect(listState)
-                    LazyColumn(
-                        state = listState,
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 16.dp,
-                            bottom = 72.dp,
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.pullRefresh(state = pullRefreshState)
-                    ) {
-                        items(
-                            count = activities.itemCount,
-                            key = activities.itemKey { it.activityId.scopedId },
-                            contentType = activities.itemContentType { it.activityId.type }
-                        ) {
-                            val entry = activities[it]
-                            SharedTransitionKeyScope("anime_user_activity_card_${entry?.activityId?.valueId}") {
-                                when (val activity = entry?.activity) {
-                                    is UserSocialActivityQuery.Data.Page.TextActivityActivity -> TextActivitySmallCard(
-                                        viewer = viewer,
-                                        activity = activity,
-                                        entry = entry,
-                                        onActivityStatusUpdate = onActivityStatusUpdate,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        allowUserClick = allowUserClick,
-                                        clickable = true
-                                    )
-                                    is UserSocialActivityQuery.Data.Page.ListActivityActivity -> ListActivitySmallCard(
-                                        viewer = viewer,
-                                        activity = activity,
-                                        mediaEntry = entry.media,
-                                        entry = entry,
-                                        onActivityStatusUpdate = onActivityStatusUpdate,
-                                        onClickListEdit = editViewModel::initialize,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        allowUserClick = allowUserClick,
-                                        clickable = true,
-                                        showMedia = showMedia
-                                    )
-                                    is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> MessageActivitySmallCard(
-                                        viewer = viewer,
-                                        activity = activity,
-                                        entry = entry,
-                                        onActivityStatusUpdate = onActivityStatusUpdate,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        allowUserClick = allowUserClick,
-                                        clickable = true
-                                    )
-                                    is UserSocialActivityQuery.Data.Page.OtherActivity,
-                                    null,
-                                        -> TextActivitySmallCard(
-                                        viewer = viewer,
-                                        activity = null,
-                                        entry = null,
-                                        onActivityStatusUpdate = onActivityStatusUpdate,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                            }
-                        }
-
-                        when (activities.loadState.append) {
-                            is LoadState.Loading -> item("load_more_append") {
-                                AnimeMediaListScreen.LoadingMore()
-                            }
-                            is LoadState.Error -> item("load_more_error") {
-                                AnimeMediaListScreen.AppendError { activities.retry() }
-                            }
-                            is LoadState.NotLoading -> Unit
-                        }
-                    }
-
-                    PullRefreshIndicator(
-                        refreshing = refreshing,
-                        state = pullRefreshState,
-                        modifier = Modifier.align(Alignment.TopCenter)
+    val gridState = rememberLazyGridState()
+    sortFilterState()?.ImmediateScrollResetEffect(gridState)
+    VerticalList(
+        gridState = gridState,
+        onRefresh = activities::refresh,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 72.dp),
+        itemHeaderText = null,
+        itemKey = { it.activityId.scopedId },
+        itemContentType = { it.activityId.type },
+        items = activities,
+        item = { entry ->
+            SharedTransitionKeyScope("anime_user_activity_card_${entry?.activityId?.valueId}") {
+                when (val activity = entry?.activity) {
+                    is UserSocialActivityQuery.Data.Page.TextActivityActivity -> TextActivitySmallCard(
+                        viewer = viewer,
+                        activity = activity,
+                        entry = entry,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
+                        modifier = Modifier.fillMaxWidth(),
+                        allowUserClick = allowUserClick,
+                        clickable = true,
+                        userRoute = userRoute,
+                    )
+                    is UserSocialActivityQuery.Data.Page.ListActivityActivity -> ListActivitySmallCard<MediaEntry>(
+                        viewer = viewer,
+                        activity = activity,
+                        mediaEntry = entry.media,
+                        mediaRow = { entry, modifier -> mediaRow(entry, onClickListEdit, modifier) },
+                        entry = entry,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
+                        modifier = Modifier.fillMaxWidth(),
+                        allowUserClick = allowUserClick,
+                        clickable = true,
+                        showMedia = showMedia,
+                        userRoute = userRoute,
+                    )
+                    is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> MessageActivitySmallCard(
+                        viewer = viewer,
+                        activity = activity,
+                        entry = entry,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
+                        modifier = Modifier.fillMaxWidth(),
+                        allowUserClick = allowUserClick,
+                        userRoute = userRoute,
+                        clickable = true
+                    )
+                    is UserSocialActivityQuery.Data.Page.OtherActivity,
+                    null,
+                        -> TextActivitySmallCard(
+                        viewer = viewer,
+                        activity = null,
+                        entry = null,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
+                        userRoute = userRoute,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
         }
-    }
+    )
 }
 
 @Composable
-fun ActivitySmallCard(
+fun <MediaEntry> ActivitySmallCard(
     viewer: AniListViewer?,
     activity: ActivityItem?,
     entry: ActivityStatusAware?,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
+    mediaEntry: MediaEntry?,
+    mediaRow: MediaRow<MediaEntry>,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    userRoute: UserRoute,
 ) {
     val modifier = Modifier
         .fillMaxWidth()
@@ -242,6 +211,7 @@ fun ActivitySmallCard(
                 entry = entry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 clickable = true,
+                userRoute = userRoute,
                 modifier = modifier,
             )
         is ListActivityActivityItem ->
@@ -249,10 +219,11 @@ fun ActivitySmallCard(
                 viewer = viewer,
                 activity = activity,
                 mediaEntry = mediaEntry,
+                mediaRow = mediaRow,
                 entry = entry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
-                onClickListEdit = onClickListEdit,
                 clickable = true,
+                userRoute = userRoute,
                 modifier = modifier,
             )
         is MessageActivityActivityItem ->
@@ -262,16 +233,18 @@ fun ActivitySmallCard(
                 entry = entry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 clickable = true,
+                userRoute = userRoute,
                 modifier = modifier,
             )
         else -> ListActivitySmallCard(
             viewer = viewer,
             activity = null,
             mediaEntry = null,
+            mediaRow = mediaRow,
             entry = null,
             onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
             clickable = false,
+            userRoute = userRoute,
             modifier = modifier,
         )
     }
@@ -288,9 +261,8 @@ fun TextActivitySmallCard(
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
+    userRoute: UserRoute,
 ) {
-    // TODO: Unused?
-    val sharedTransitionKey = activity?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     val content: @Composable ColumnScope.() -> Unit = {
         TextActivityCardContent(
             viewer = viewer,
@@ -302,16 +274,17 @@ fun TextActivitySmallCard(
             clickable = clickable,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
+            userRoute = userRoute,
         )
     }
 
     if (clickable && activity != null) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navHostController = LocalNavHostController.current
         val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ElevatedCard(
             onClick = {
-                navigationCallback.navigate(
-                    AnimeDestination.ActivityDetails(
+                navHostController.navigate(
+                    ActivityDestinations.ActivityDetails(
                         activityId = activity.id.toString(),
                         sharedTransitionScopeKey = sharedTransitionScopeKey,
                     )
@@ -340,6 +313,7 @@ fun ColumnScope.TextActivityCardContent(
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
+    userRoute: UserRoute,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -351,6 +325,7 @@ fun ColumnScope.TextActivityCardContent(
                 loading = activity == null,
                 user = user,
                 clickable = allowUserClick,
+                userRoute = userRoute,
             )
         }
 
@@ -367,7 +342,7 @@ fun ColumnScope.TextActivityCardContent(
 
             val timestamp = remember(activity) {
                 activity?.let {
-                    HumanReadable.timeAgo(kotlinx.datetime.Instant.fromEpochSeconds(it.createdAt.toLong()))
+                    HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
                 }
             }
 
@@ -388,14 +363,14 @@ fun ColumnScope.TextActivityCardContent(
             replies = activity?.replyCount,
             likes = activity?.likeCount,
             viewer = viewer,
-            liked = entry?.liked ?: false,
-            subscribed = entry?.subscribed ?: false,
+            liked = entry?.liked == true,
+            subscribed = entry?.subscribed == true,
             onActivityStatusUpdate = onActivityStatusUpdate,
         )
     }
 
     if (activity == null || activity.text != null) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navHostController = LocalNavHostController.current
         val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ImageHtmlText(
             text = activity?.text ?: "Placeholder text",
@@ -403,8 +378,8 @@ fun ColumnScope.TextActivityCardContent(
                 .takeOrElse { LocalContentColor.current },
             onClickFallback = {
                 if (activity != null && clickable) {
-                    navigationCallback.navigate(
-                        AnimeDestination.ActivityDetails(
+                    navHostController.navigate(
+                        ActivityDestinations.ActivityDetails(
                             activityId = activity.id.toString(),
                             sharedTransitionScopeKey = sharedTransitionScopeKey,
                         )
@@ -440,31 +415,31 @@ fun MessageActivitySmallCard(
     allowUserClick: Boolean = true,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
+    userRoute: UserRoute,
     onClickDelete: (String) -> Unit = {},
 ) {
-    val sharedTransitionKey = activity?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     val content: @Composable ColumnScope.() -> Unit = {
         MessageActivityCardContent(
             viewer = viewer,
             activity = activity,
-            sharedTransitionKey = sharedTransitionKey,
             messenger = activity?.messenger,
             entry = entry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             allowUserClick = allowUserClick,
             clickable = clickable,
             showActionsRow = showActionsRow,
+            userRoute = userRoute,
             onClickDelete = onClickDelete,
         )
     }
 
     if (clickable && activity != null) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navHostController = LocalNavHostController.current
         val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ElevatedCard(
             onClick = {
-                navigationCallback.navigate(
-                    AnimeDestination.ActivityDetails(
+                navHostController.navigate(
+                    ActivityDestinations.ActivityDetails(
                         activityId = activity.id.toString(),
                         sharedTransitionScopeKey = sharedTransitionScopeKey,
                     )
@@ -485,13 +460,13 @@ fun MessageActivitySmallCard(
 fun ColumnScope.MessageActivityCardContent(
     viewer: AniListViewer?,
     activity: MessageActivityFragment?,
-    sharedTransitionKey: SharedTransitionKey?,
     messenger: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     allowUserClick: Boolean = false,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
+    userRoute: UserRoute,
     onClickDelete: (String) -> Unit = {},
 ) {
     Row(
@@ -504,6 +479,7 @@ fun ColumnScope.MessageActivityCardContent(
                 loading = activity == null,
                 user = messenger,
                 clickable = allowUserClick,
+                userRoute = userRoute,
             )
         }
 
@@ -545,13 +521,13 @@ fun ColumnScope.MessageActivityCardContent(
             replies = activity?.replyCount,
             likes = activity?.likeCount,
             viewer = viewer,
-            liked = entry?.liked ?: false,
-            subscribed = entry?.subscribed ?: false,
+            liked = entry?.liked == true,
+            subscribed = entry?.subscribed == true,
             onActivityStatusUpdate = onActivityStatusUpdate,
         )
     }
 
-    val navigationCallback = LocalNavigationCallback.current
+    val navHostController = LocalNavHostController.current
     val userImage = activity?.recipient?.avatar?.large
     val userImageState = rememberCoilImageState(userImage)
     val userSharedTransitionKey = activity?.recipient?.id?.toString()
@@ -564,15 +540,12 @@ fun ColumnScope.MessageActivityCardContent(
             .align(Alignment.End)
             .clickable {
                 activity?.recipient?.let {
-                    navigationCallback.navigate(
-                        AnimeDestination.User(
-                            userId = it.id.toString(),
-                            sharedTransitionKey = userSharedTransitionKey,
-                            headerParams = UserHeaderParams(
-                                name = it.name,
-                                bannerImage = null,
-                                coverImage = userImageState.toImageState(),
-                            )
+                    navHostController.navigate(
+                        userRoute(
+                            it.id.toString(),
+                            userSharedTransitionKey,
+                            it.name,
+                            userImageState.toImageState()
                         )
                     )
                 }
@@ -619,8 +592,8 @@ fun ColumnScope.MessageActivityCardContent(
                 .takeOrElse { LocalContentColor.current },
             onClickFallback = {
                 if (activity != null && clickable) {
-                    navigationCallback.navigate(
-                        AnimeDestination.ActivityDetails(
+                    navHostController.navigate(
+                        ActivityDestinations.ActivityDetails(
                             activityId = activity.id.toString(),
                             sharedTransitionScopeKey = sharedTransitionScopeKey,
                         )
@@ -652,7 +625,7 @@ fun ListActivitySmallCard(
     activity: ListActivityWithoutMedia?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    userRoute: UserRoute,
     modifier: Modifier = Modifier,
     allowUserClick: Boolean = true,
     clickable: Boolean = false,
@@ -664,26 +637,28 @@ fun ListActivitySmallCard(
         activity = activity,
         showMedia = false,
         entry = null,
-        liked = entry?.liked ?: false,
-        subscribed = entry?.subscribed ?: false,
+        mediaRow = { _, _ -> },
+        liked = entry?.liked == true,
+        subscribed = entry?.subscribed == true,
         onActivityStatusUpdate = onActivityStatusUpdate,
-        onClickListEdit = onClickListEdit,
         allowUserClick = allowUserClick,
         clickable = clickable,
         showActionsRow = showActionsRow,
         onClickDelete = onClickDelete,
+        userRoute = userRoute,
         modifier = modifier,
     )
 }
 
 @Composable
-fun ListActivitySmallCard(
+fun <MediaEntry >ListActivitySmallCard(
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
+    mediaEntry: MediaEntry?,
+    mediaRow: MediaRow<MediaEntry>,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    userRoute: UserRoute,
     modifier: Modifier = Modifier,
     allowUserClick: Boolean = true,
     clickable: Boolean = false,
@@ -696,32 +671,34 @@ fun ListActivitySmallCard(
         activity = activity,
         showMedia = showMedia,
         entry = mediaEntry,
-        liked = entry?.liked ?: false,
-        subscribed = entry?.subscribed ?: false,
+        mediaRow = mediaRow,
+        liked = entry?.liked == true,
+        subscribed = entry?.subscribed == true,
         onActivityStatusUpdate = onActivityStatusUpdate,
-        onClickListEdit = onClickListEdit,
         allowUserClick = allowUserClick,
         clickable = clickable,
         showActionsRow = showActionsRow,
         onClickDelete = onClickDelete,
+        userRoute = userRoute,
         modifier = modifier,
     )
 }
 
 @Composable
-private fun ListActivitySmallCard(
+private fun <MediaEntry> ListActivitySmallCard(
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     showMedia: Boolean,
-    entry: AnimeMediaCompactListRow.Entry?,
+    entry: MediaEntry?,
+    mediaRow: MediaRow<MediaEntry>,
     liked: Boolean,
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
     allowUserClick: Boolean,
     clickable: Boolean,
     showActionsRow: Boolean,
     onClickDelete: ((String) -> Unit)?,
+    userRoute: UserRoute,
     modifier: Modifier = Modifier,
 ) {
     val sharedTransitionKey = activity?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -732,22 +709,23 @@ private fun ListActivitySmallCard(
             activity = activity,
             user = activity?.user,
             entry = entry,
+            mediaRow = mediaRow,
             liked = liked,
             subscribed = subscribed,
             onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
             showMedia = showMedia,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
             allowUserClick = allowUserClick,
+            userRoute = userRoute,
         )
     }
     if (clickable && activity != null) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navHostController = LocalNavHostController.current
         ElevatedCard(
             onClick = {
-                navigationCallback.navigate(
-                    AnimeDestination.ActivityDetails(
+                navHostController.navigate(
+                    ActivityDestinations.ActivityDetails(
                         activityId = activity.id.toString(),
                         sharedTransitionScopeKey = sharedTransitionScopeKey,
                     )
@@ -766,20 +744,21 @@ private fun ListActivitySmallCard(
 
 @Suppress("UnusedReceiverParameter")
 @Composable
-fun ColumnScope.ListActivityCardContent(
+fun <MediaEntry> ColumnScope.ListActivityCardContent(
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     user: UserNavigationData?,
-    entry: AnimeMediaCompactListRow.Entry?,
+    entry: MediaEntry?,
+    mediaRow: MediaRow<MediaEntry>,
     liked: Boolean,
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
     showMedia: Boolean = entry != null,
     showUser: Boolean = true,
     showActionsRow: Boolean = false,
     onClickDelete: ((String) -> Unit)? = null,
     allowUserClick: Boolean = true,
+    userRoute: UserRoute,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -791,6 +770,7 @@ fun ColumnScope.ListActivityCardContent(
                 loading = activity == null,
                 user = user,
                 clickable = allowUserClick,
+                userRoute = userRoute,
             )
         }
 
@@ -852,12 +832,7 @@ fun ColumnScope.ListActivityCardContent(
     }
 
     if (showMedia) {
-        AnimeMediaCompactListRow(
-            viewer = viewer,
-            entry = entry,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-            onClickListEdit = onClickListEdit
-        )
+        mediaRow(entry, Modifier.padding(horizontal = 8.dp, vertical = 8.dp))
     }
 
     if (showActionsRow) {
@@ -1021,9 +996,10 @@ private fun UserImage(
     loading: Boolean,
     user: UserNavigationData?,
     clickable: Boolean = true,
+    userRoute: UserRoute,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    val navigationCallback = LocalNavigationCallback.current
+    val navHostController = LocalNavHostController.current
     val imageState = rememberCoilImageState(user?.avatar?.large)
     val sharedTransitionKey = user?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     UserAvatarImage(
@@ -1036,15 +1012,12 @@ private fun UserImage(
             .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
             .clickable(enabled = clickable) {
                 if (user != null) {
-                    navigationCallback.navigate(
-                        AnimeDestination.User(
-                            userId = user.id.toString(),
-                            sharedTransitionKey = sharedTransitionKey,
-                            headerParams = UserHeaderParams(
-                                name = user.name,
-                                bannerImage = null,
-                                coverImage = imageState.toImageState(),
-                            )
+                    navHostController.navigate(
+                        userRoute(
+                            user.id.toString(),
+                            sharedTransitionKey,
+                            user.name,
+                            imageState.toImageState(),
                         )
                     )
                 }
@@ -1058,25 +1031,24 @@ private fun UserImage(
 
 fun LazyGridScope.activitiesSection(
     viewer: AniListViewer?,
-    activityTab: AnimeMediaDetailsActivityViewModel.ActivityTab,
-    activities: List<AnimeMediaDetailsActivityViewModel.ActivityEntry>?,
-    onActivityTabChange: (AnimeMediaDetailsActivityViewModel.ActivityTab) -> Unit,
+    activityTab: ActivityTab,
+    activities: List<MediaActivityEntry>?,
+    onActivityTabChange: (ActivityTab) -> Unit,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onClickViewAll: () -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    userRoute: UserRoute,
 ) {
     item(
         key = "activitiesHeader",
         span = GridUtils.maxSpanFunction,
         contentType = "activitiesHeader",
     ) {
-        val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             text = stringResource(Res.string.anime_media_details_activities_label),
             onClickViewAll = onClickViewAll,
-            viewAllContentDescriptionTextRes = Res.string.anime_media_details_view_all_content_description
+            viewAllContentDescriptionTextRes = UiRes.string.anime_generic_view_all_content_description
         )
     }
 
@@ -1087,21 +1059,21 @@ fun LazyGridScope.activitiesSection(
             contentType = "activitiesTabHeader",
         ) {
             TabRow(
-                selectedTabIndex = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) 0 else 1,
+                selectedTabIndex = if (activityTab == ActivityTab.FOLLOWING) 0 else 1,
                 modifier = Modifier
                     .padding(bottom = if (activities.isNullOrEmpty()) 0.dp else 16.dp)
                     .fillMaxWidth()
             ) {
                 Tab(
-                    selected = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
-                    onClick = { onActivityTabChange(AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) },
+                    selected = activityTab == ActivityTab.FOLLOWING,
+                    onClick = { onActivityTabChange(ActivityTab.FOLLOWING) },
                     text = {
                         Text(stringResource(Res.string.anime_media_details_activity_following))
                     },
                 )
                 Tab(
-                    selected = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.GLOBAL,
-                    onClick = { onActivityTabChange(AnimeMediaDetailsActivityViewModel.ActivityTab.GLOBAL) },
+                    selected = activityTab == ActivityTab.GLOBAL,
+                    onClick = { onActivityTabChange(ActivityTab.GLOBAL) },
                     text = {
                         Text(stringResource(Res.string.anime_media_details_activity_global))
                     },
@@ -1126,12 +1098,12 @@ fun LazyGridScope.activitiesSection(
             activity = item.activity,
             entry = item,
             onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
+            clickable = true,
+            userRoute = userRoute,
             modifier = Modifier
                 .animateItem()
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom),
-            clickable = true
+                .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
         )
     }
 }

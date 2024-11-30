@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
 import co.touchlab.kermit.Logger
 import co.touchlab.stately.collections.ConcurrentMutableMap
@@ -30,7 +30,7 @@ class ActivityToggleHelper(
         )
         statusController.onUpdate(statusUpdate)
         val job = jobs[activityId]
-        jobs[activityId] = scope.launch(CustomDispatchers.IO) {
+        jobs[activityId] = scope.launch(CustomDispatchers.Companion.IO) {
             job?.cancelAndJoin()
             when (update) {
                 is ActivityToggleUpdate.Liked -> {
@@ -42,7 +42,7 @@ class ActivityToggleHelper(
                             )
                         )
                     } catch (e: Throwable) {
-                        Logger.e(TAG, e) { "Error toggling activity like" }
+                        Logger.Companion.e(TAG, e) { "Error toggling activity like" }
                         statusController.onUpdate(
                             statusUpdate.copy(liked = !update.liked, pending = false, error = e)
                         )
@@ -60,7 +60,7 @@ class ActivityToggleHelper(
                             )
                         )
                     } catch (e: Throwable) {
-                        Logger.e(TAG, e) { "Error toggling activity subscribe" }
+                        Logger.Companion.e(TAG, e) { "Error toggling activity subscribe" }
                         statusController.onUpdate(
                             statusUpdate.copy(
                                 subscribed = !update.subscribed,

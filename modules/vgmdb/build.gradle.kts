@@ -15,7 +15,6 @@ kotlin {
             api(projects.modules.utilsCompose)
             api(projects.modules.utilsNetwork)
 
-            implementation(libs.kermit)
             implementation(libs.ksoup)
             implementation(libs.ktor.client.core)
             implementation(libs.okhttp)

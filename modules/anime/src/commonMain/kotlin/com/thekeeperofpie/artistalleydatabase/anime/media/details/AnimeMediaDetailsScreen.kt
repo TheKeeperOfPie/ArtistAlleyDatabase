@@ -77,8 +77,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_media_details_activities_label
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_activities_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_average_score_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_cds_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_chapters_label
@@ -1832,7 +1832,8 @@ object AnimeMediaDetailsScreen {
             LINKS(Res.string.anime_media_details_links_label),
             RECOMMENDATIONS(RecommendationsRes.string.anime_media_details_recommendations_label),
             REVIEWS(Res.string.anime_media_details_reviews_label),
-            ACTIVITIES(Res.string.anime_media_details_activities_label),
+            ACTIVITIES(artistalleydatabase.modules.anime.activities.generated.resources.Res.string
+                .anime_media_details_activities_label),
             FORUM_THREADS(Res.string.anime_media_details_forum_threads_label),
         }
 

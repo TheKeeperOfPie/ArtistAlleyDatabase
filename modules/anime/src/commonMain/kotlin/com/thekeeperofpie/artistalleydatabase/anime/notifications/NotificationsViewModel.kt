@@ -10,10 +10,10 @@ import com.anilist.data.fragment.ActivityItem.Companion.asListActivity
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activity.applyActivityFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry

@@ -18,7 +18,6 @@ kotlin {
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
             implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.kermit)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.lifecycle.viewmodel.savedstate)
             implementation(libs.stately.concurrent.collections)

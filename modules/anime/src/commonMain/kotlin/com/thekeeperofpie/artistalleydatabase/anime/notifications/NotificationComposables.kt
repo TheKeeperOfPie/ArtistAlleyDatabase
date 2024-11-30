@@ -45,10 +45,11 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivityCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivityCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivityCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivityCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivityCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCommentContent
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
@@ -136,7 +137,7 @@ fun ActivityMentionNotificationCard(
     ElevatedCard(onClick = {
         activityEntry?.id?.let {
             navigationCallback.navigate(
-                AnimeDestination.ActivityDetails(
+                ActivityDestinations.ActivityDetails(
                     activityId = it,
                     sharedTransitionScopeKey = sharedTransitionScopeKey,
                 )
@@ -180,7 +181,7 @@ fun ActivityMessageNotificationCard(
     ElevatedCard(onClick = {
         activityEntry?.id?.let {
             navigationCallback.navigate(
-                AnimeDestination.ActivityDetails(
+                ActivityDestinations.ActivityDetails(
                     activityId = it,
                     sharedTransitionScopeKey = sharedTransitionScopeKey,
                 )
@@ -225,7 +226,7 @@ fun ActivityReplyNotificationCard(
     ElevatedCard(onClick = {
         notification.activityId.toString().let {
             navigationCallback.navigate(
-                AnimeDestination.ActivityDetails(
+                ActivityDestinations.ActivityDetails(
                     activityId = it,
                     sharedTransitionScopeKey = sharedTransitionScopeKey,
                 )
@@ -269,7 +270,7 @@ fun ActivityReplySubscribedNotificationCard(
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         navigationCallback.navigate(
-            AnimeDestination.ActivityDetails(
+            ActivityDestinations.ActivityDetails(
                 activityId = notification.activityId.toString(),
                 sharedTransitionScopeKey = sharedTransitionScopeKey,
             )
@@ -312,7 +313,7 @@ fun ActivityLikedNotificationCard(
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         navigationCallback.navigate(
-            AnimeDestination.ActivityDetails(
+            ActivityDestinations.ActivityDetails(
                 activityId = notification.activityId.toString(),
                 sharedTransitionScopeKey = sharedTransitionScopeKey,
             )
@@ -355,7 +356,7 @@ fun ActivityReplyLikedNotificationCard(
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         navigationCallback.navigate(
-            AnimeDestination.ActivityDetails(
+            ActivityDestinations.ActivityDetails(
                 activityId = notification.activityId.toString(),
                 sharedTransitionScopeKey = sharedTransitionScopeKey,
             )
@@ -921,7 +922,7 @@ private fun ActivityCard(
     OutlinedCard(
         onClick = {
             navigationCallback.navigate(
-                AnimeDestination.ActivityDetails(
+                ActivityDestinations.ActivityDetails(
                     activityId = activityEntry.id,
                     sharedTransitionScopeKey = sharedTransitionScopeKey,
                 )
@@ -937,19 +938,27 @@ private fun ActivityCard(
                 activity = activity,
                 user = activity.user,
                 entry = mediaEntry,
+                mediaRow = { entry, modifier ->
+                    AnimeMediaCompactListRow(
+                        viewer = viewer,
+                        entry = entry,
+                        onClickListEdit = onClickListEdit,
+                        modifier = modifier,
+                    )
+                },
                 liked = activityEntry.liked,
                 subscribed = activityEntry.subscribed,
                 onActivityStatusUpdate = onActivityStatusUpdate,
-                onClickListEdit = onClickListEdit,
+                userRoute = AnimeDestination.User.route,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> MessageActivityCardContent(
                 viewer = viewer,
                 activity = activity,
-                sharedTransitionKey = sharedTransitionKey,
                 messenger = activity.messenger,
                 entry = activityEntry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 clickable = true,
+                userRoute = AnimeDestination.User.route,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> TextActivityCardContent(
                 viewer = viewer,
@@ -957,6 +966,7 @@ private fun ActivityCard(
                 user = activity.user,
                 entry = activityEntry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
+                userRoute = AnimeDestination.User.route,
                 clickable = true,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
@@ -966,6 +976,7 @@ private fun ActivityCard(
                 user = null,
                 entry = null,
                 onActivityStatusUpdate = onActivityStatusUpdate,
+                userRoute = AnimeDestination.User.route,
             )
         }
     }

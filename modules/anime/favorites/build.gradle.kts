@@ -10,7 +10,6 @@ kotlin {
         commonMain.dependencies {
             api(projects.modules.anilist)
             implementation(projects.modules.utils)
-            implementation(libs.kermit)
             implementation(libs.stately.concurrent.collections)
         }
     }

@@ -1,9 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_sort_newest
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_sort_oldest
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_sort_pinned
+import artistalleydatabase.modules.anime.activities.generated.resources.Res
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_sort_newest
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_sort_oldest
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_sort_pinned
 import com.anilist.data.type.ActivitySort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource

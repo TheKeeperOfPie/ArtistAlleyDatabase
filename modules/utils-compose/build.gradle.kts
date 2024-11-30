@@ -19,7 +19,6 @@ kotlin {
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)
             implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.kermit)
             implementation(libs.molecule.runtime)
             implementation(libs.paging.common)
         }

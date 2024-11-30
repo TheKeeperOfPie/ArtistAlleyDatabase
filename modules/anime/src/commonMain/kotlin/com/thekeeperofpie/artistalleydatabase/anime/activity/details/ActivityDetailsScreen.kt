@@ -69,18 +69,20 @@ import artistalleydatabase.modules.anime.generated.resources.anime_writing_reply
 import artistalleydatabase.modules.utils_compose.generated.resources.cancel
 import artistalleydatabase.modules.utils_compose.generated.resources.delete
 import com.anilist.data.ActivityDetailsQuery
+import com.anilist.data.fragment.MediaNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.activities.UserRoute
+import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivitiesComponent
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
@@ -111,40 +113,42 @@ object ActivityDetailsScreen {
 
     @Composable
     operator fun invoke(
-        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        component: AnimeActivitiesComponent,
         viewModel: ActivityDetailsViewModel = viewModel {
-            animeComponent.activityDetailsViewModel(createSavedStateHandle())
+            component.activityDetailsViewModel(createSavedStateHandle())
         },
         upIconOption: UpIconOption.Back,
+        userRoute: UserRoute,
+        mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
+        mediaRow: @Composable (
+            AnimeMediaCompactListRow.Entry?,
+            onClickListEdit: (MediaNavigationData) -> Unit,
+            Modifier,
+        ) -> Unit,
     ) {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-
-        val snackbarHostState = remember { SnackbarHostState() }
-        val entry = viewModel.entry
-        val errorText = entry.error?.message()
-            ?: viewModel.error?.first?.let { stringResource(it) }
-        LaunchedEffect(errorText) {
-            if (errorText != null) {
-                snackbarHostState.showSnackbar(
-                    message = errorText,
-                    withDismissAction = true,
-                    duration = SnackbarDuration.Long,
-                )
-                // TODO: Unified error handling
-                viewModel.entry = viewModel.entry.copy(error = null)
-                viewModel.error = null
-            }
-        }
-
-        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
-        MediaEditBottomSheetScaffold(
-            viewModel = editViewModel,
-        ) {
+        mediaEditBottomSheetScaffold { padding, onClickListEdit ->
+            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             val refresh by viewModel.refresh.updates.collectAsState()
             val sheetState = rememberStandardBottomSheetState(
                 initialValue = SheetValue.Hidden,
                 skipHiddenState = false
             )
+            val snackbarHostState = remember { SnackbarHostState() }
+            val entry = viewModel.entry
+            val errorText = entry.error?.message()
+                ?: viewModel.error?.first?.let { stringResource(it) }
+            LaunchedEffect(errorText) {
+                if (errorText != null) {
+                    snackbarHostState.showSnackbar(
+                        message = errorText,
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Long,
+                    )
+                    // TODO: Unified error handling
+                    viewModel.entry = viewModel.entry.copy(error = null)
+                    viewModel.error = null
+                }
+            }
             WritingReplyPanelScaffold(
                 sheetState = sheetState,
                 snackbarHostState = snackbarHostState,
@@ -158,7 +162,9 @@ object ActivityDetailsScreen {
                         scrollBehavior = scrollBehavior,
                     )
                 },
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                modifier = Modifier
+                    .padding(padding)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 val scope = rememberCoroutineScope()
                 Scaffold(
@@ -198,17 +204,20 @@ object ActivityDetailsScreen {
                                 val result = entry.result
                                 when (val activity = result?.activity) {
                                     is ActivityDetailsQuery.Data.ListActivityActivity -> {
-                                        ListActivitySmallCard(
+                                        ListActivitySmallCard<AnimeMediaCompactListRow.Entry>(
                                             viewer = viewer,
                                             activity = activity,
                                             mediaEntry = result.mediaEntry,
+                                            mediaRow = { entry, modifier ->
+                                                mediaRow(entry, onClickListEdit, modifier)
+                                            },
                                             entry = result,
                                             onActivityStatusUpdate = viewModel.toggleHelper::toggle,
-                                            onClickListEdit = editViewModel::initialize,
                                             showActionsRow = true,
                                             onClickDelete = {
                                                 deletePromptData = Either.Left(Unit)
                                             },
+                                            userRoute = userRoute,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.TextActivityActivity -> {
@@ -221,6 +230,7 @@ object ActivityDetailsScreen {
                                             onClickDelete = {
                                                 deletePromptData = Either.Left(Unit)
                                             },
+                                            userRoute = userRoute,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.MessageActivityActivity -> {
@@ -233,6 +243,7 @@ object ActivityDetailsScreen {
                                             onClickDelete = {
                                                 deletePromptData = Either.Left(Unit)
                                             },
+                                            userRoute = userRoute,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.OtherActivity,
@@ -243,6 +254,7 @@ object ActivityDetailsScreen {
                                             activity = null,
                                             entry = result,
                                             onActivityStatusUpdate = viewModel.toggleHelper::toggle,
+                                            userRoute = userRoute,
                                         )
                                     }
                                 }

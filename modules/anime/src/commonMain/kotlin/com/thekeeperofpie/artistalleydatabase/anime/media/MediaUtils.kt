@@ -38,11 +38,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_fab_user_status_repeating_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_fab_user_status_unknown
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_ranking_unknown
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_default
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_fall
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_spring
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_summer
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_airing_date_season_winter
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_anime
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_comic
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_doujinshi
@@ -127,7 +122,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
@@ -375,14 +371,6 @@ object MediaUtils {
         MediaFormat.NOVEL -> Color(0xFFFFE4C4)
         MediaFormat.ONE_SHOT -> Color(0xFF778899)
         MediaFormat.UNKNOWN__, null -> Color.White
-    }
-
-    fun MediaSeason.toTextRes() = when (this) {
-        MediaSeason.UNKNOWN__ -> Res.string.anime_media_filter_airing_date_season_default
-        MediaSeason.WINTER -> Res.string.anime_media_filter_airing_date_season_winter
-        MediaSeason.SPRING -> Res.string.anime_media_filter_airing_date_season_spring
-        MediaSeason.SUMMER -> Res.string.anime_media_filter_airing_date_season_summer
-        MediaSeason.FALL -> Res.string.anime_media_filter_airing_date_season_fall
     }
 
     fun MediaSource?.toTextRes() = when (this) {

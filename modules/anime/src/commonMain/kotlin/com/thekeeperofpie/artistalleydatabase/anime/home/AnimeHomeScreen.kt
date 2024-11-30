@@ -108,9 +108,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
+import com.thekeeperofpie.artistalleydatabase.anime.activities.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
@@ -207,6 +208,7 @@ object AnimeHomeScreen {
                 viewModel { animeComponent.animeHomeMediaViewModelManga() }
             }
         },
+        userRoute: UserRoute,
     ) {
         var selectedIsAnime by rememberSaveable {
             mutableStateOf(viewModel.preferredMediaType == MediaType.ANIME)
@@ -244,6 +246,7 @@ object AnimeHomeScreen {
             editEventSink = editViewModel::onEvent,
             onClickListEdit = editViewModel::initialize,
             onClickIncrementProgress = editViewModel::incrementProgress,
+            userRoute = userRoute,
         )
     }
 
@@ -255,7 +258,7 @@ object AnimeHomeScreen {
         selectedIsAnime: Boolean,
         onSelectedIsAnimeChanged: (Boolean) -> Unit,
         onRefresh: () -> Unit,
-        activity: LazyPagingItems<ActivityEntry>,
+        activity: LazyPagingItems<ActivityEntry<MediaCompactWithTagsEntry>>,
         recommendations: LazyPagingItems<RecommendationEntry<MediaCompactWithTagsEntry>>,
         reviews: LazyPagingItems<ReviewEntry>,
         news: () -> LoadingResult<List<AnimeNewsEntry<*>>>,
@@ -272,6 +275,7 @@ object AnimeHomeScreen {
         editEventSink: (AnimeMediaEditBottomSheet.Event) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
+        userRoute: UserRoute,
     ) {
         val refreshing by remember {
             derivedStateOf {
@@ -330,6 +334,7 @@ object AnimeHomeScreen {
                     activities = activity,
                     onActivityStatusUpdate = onActivityStatusUpdate,
                     onUserRecommendationRating = onUserRecommendationRating,
+                    userRoute = userRoute,
                 )
 
                 PullRefreshIndicator(
@@ -451,7 +456,7 @@ object AnimeHomeScreen {
         viewer: () -> AniListViewer?,
         news: () -> LoadingResult<List<AnimeNewsEntry<*>>>,
         homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
-        activities: LazyPagingItems<ActivityEntry>,
+        activities: LazyPagingItems<ActivityEntry<MediaCompactWithTagsEntry>>,
         currentMediaState: () -> CurrentMediaState,
         suggestions: List<Pair<StringResource, AnimeDestination>>,
         onClickListEdit: (MediaNavigationData) -> Unit,
@@ -460,6 +465,7 @@ object AnimeHomeScreen {
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
         reviews: LazyPagingItems<ReviewEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+        userRoute: UserRoute,
     ) {
         Column(
             modifier = Modifier
@@ -479,6 +485,7 @@ object AnimeHomeScreen {
                 activities = activities,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 onClickListEdit = onClickListEdit,
+                userRoute = userRoute,
             )
 
             CurrentMediaRow(
@@ -515,9 +522,10 @@ object AnimeHomeScreen {
     @Composable
     private fun Activities(
         viewer: () -> AniListViewer?,
-        activities: LazyPagingItems<ActivityEntry>,
+        activities: LazyPagingItems<ActivityEntry<MediaCompactWithTagsEntry>>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         onClickListEdit: (MediaNavigationData) -> Unit,
+        userRoute: UserRoute,
     ) {
         HorizontalPagerItemsRow(
             title = Res.string.anime_home_activity_label,
@@ -530,9 +538,17 @@ object AnimeHomeScreen {
                     viewer = viewer(),
                     activity = it?.activity,
                     mediaEntry = it?.media,
+                    mediaRow = { entry, modifier ->
+                        AnimeMediaCompactListRow(
+                            viewer = viewer(),
+                            entry = entry,
+                            onClickListEdit = onClickListEdit,
+                            modifier = modifier,
+                        )
+                    },
                     entry = it,
                     onActivityStatusUpdate = onActivityStatusUpdate,
-                    onClickListEdit = onClickListEdit,
+                    userRoute = userRoute,
                 )
             }
         }

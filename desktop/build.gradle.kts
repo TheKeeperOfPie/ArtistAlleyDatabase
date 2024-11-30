@@ -20,7 +20,6 @@ kotlin {
                 implementation(projects.modules.utilsNetwork)
                 implementation(projects.modules.utilsRoom)
                 implementation(libs.jetBrainsCompose.navigation.compose)
-                implementation(libs.kermit)
                 implementation(libs.lifecycle.viewmodel.compose)
 
                 implementation(libs.room.ktx)

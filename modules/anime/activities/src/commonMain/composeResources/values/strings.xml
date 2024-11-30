@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_activity_type_text">Text</string>
+    <string name="anime_activity_type_anime_list">Anime</string>
+    <string name="anime_activity_type_manga_list">Manga</string>
+    <string name="anime_activity_type_message">Message</string>
+    <string name="anime_activity_type_media_list">Anime/Manga</string>
+    <string name="anime_activity_type_unknown">Unknown</string>
+
+    <string name="anime_activity_sort_newest">Newest</string>
+    <string name="anime_activity_sort_oldest">Oldest</string>
+    <string name="anime_activity_sort_pinned">Pinned</string>
+
+    <string name="anime_activity_delete_content_description">Delete activity</string>
+    <string name="anime_activity_like_icon_content_description">Activity liked</string>
+    <string name="anime_activity_message_arrow_recipient_icon_content_description">Sent to recipient</string>
+    <string name="anime_activity_open_in_browser_content_description">Open in browser</string>
+    <string name="anime_activity_replies_icon_content_description">Activity replies</string>
+    <string name="anime_activity_status_with_timestamp">%1$s • %2$s</string>
+    <string name="anime_activity_subscribe_icon_content_description">Activity subscribed</string>
+
+    <string name="anime_media_details_activities_label">Activity</string>
+    <string name="anime_media_details_activities_no_results">No activity</string>
+    <string name="anime_media_details_activity_following">Following</string>
+    <string name="anime_media_details_activity_global">Global</string>
+
+    <string name="anime_activity_title">Activity</string>
+    <string name="anime_activity_title_with_media">Activity for %1$s</string>
+
+    <string name="anime_activity_tab_own">Me</string>
+    <string name="anime_activity_tab_following">Following</string>
+    <string name="anime_activity_tab_global">Global</string>
+
+    <string name="anime_activity_sort_label">Sort</string>
+    <string name="anime_activity_filter_type_dropdown_content_description">Type dropdown expand</string>
+    <string name="anime_activity_filter_type_include_exclude_icon_content_description">Include/exclude type</string>
+    <string name="anime_activity_filter_type_label">Type</string>
+    <string name="anime_activity_filter_has_replies_label">Has replies</string>
+    <string name="anime_activity_filter_date">Date</string>
+    <string name="anime_activity_filter_date_content_description">Date expand</string>
+    <string name="anime_activity_filter_media_label">Media</string>
+    <string name="anime_activity_filter_media_expand_content_description">Media expand</string>
+</resources>

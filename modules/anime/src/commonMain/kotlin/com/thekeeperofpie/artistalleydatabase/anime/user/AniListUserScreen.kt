@@ -42,6 +42,7 @@ import artistalleydatabase.modules.entry.generated.resources.log_out
 import artistalleydatabase.modules.entry.generated.resources.more_actions_content_description
 import com.anilist.data.UserByIdQuery.Data.User
 import com.anilist.data.fragment.UserMediaStatistics
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -218,6 +219,7 @@ object AniListUserScreen {
                                     viewModel = viewModel,
                                     editViewModel = editViewModel,
                                     viewer = viewer,
+                                    userRoute = AnimeDestination.User.route,
                                 )
                                 UserTab.ANIME_STATS -> UserMediaScreen(
                                     user = { user },

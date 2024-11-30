@@ -31,7 +31,6 @@ kotlin {
             implementation(projects.modules.anime.news)
 
             implementation(libs.coil3.coil.compose)
-            implementation(libs.kermit)
             implementation(libs.lifecycle.viewmodel.compose)
         }
     }

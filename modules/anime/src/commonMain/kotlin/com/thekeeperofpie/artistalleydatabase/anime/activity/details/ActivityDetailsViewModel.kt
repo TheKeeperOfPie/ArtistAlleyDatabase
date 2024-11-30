@@ -17,13 +17,13 @@ import com.anilist.data.ActivityDetailsRepliesQuery
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityReplyStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityReplyToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
@@ -67,7 +67,7 @@ class ActivityDetailsViewModel(
 ) : ViewModel() {
 
     private val destination =
-        savedStateHandle.toDestination<AnimeDestination.ActivityDetails>(navigationTypeMap)
+        savedStateHandle.toDestination<ActivityDestinations.ActivityDetails>(navigationTypeMap)
     val activityId = destination.activityId
 
     val viewer = aniListApi.authedUser

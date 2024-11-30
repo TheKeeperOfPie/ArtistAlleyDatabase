@@ -16,13 +16,14 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortOption
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySortOption
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -55,8 +56,9 @@ class MediaActivitiesViewModel(
     private val activityStatusController: ActivityStatusController,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaDetailsRoute: MediaDetailsRoute,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -69,6 +71,7 @@ class MediaActivitiesViewModel(
         aniListApi = aniListApi,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
+        mediaDetailsRoute = mediaDetailsRoute,
     )
 
     private val destination =

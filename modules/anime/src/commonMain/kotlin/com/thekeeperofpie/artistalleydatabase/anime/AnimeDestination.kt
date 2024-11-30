@@ -16,6 +16,7 @@ import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anime.activities.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
@@ -55,12 +56,6 @@ sealed interface AnimeDestination : NavDestination {
 
     @Serializable
     data object Activity : AnimeDestination
-
-    @Serializable
-    data class ActivityDetails(
-        val activityId: String,
-        val sharedTransitionScopeKey: String?,
-    ) : AnimeDestination
 
     @Serializable
     data object AiringSchedule : AnimeDestination
@@ -310,7 +305,21 @@ sealed interface AnimeDestination : NavDestination {
         val userId: String? = null,
         val sharedTransitionKey: SharedTransitionKey? = null,
         val headerParams: UserHeaderParams? = null,
-    ) : AnimeDestination
+    ) : AnimeDestination {
+        companion object {
+            val route: UserRoute = { id, userSharedTransitionKey, name, imageState ->
+                AnimeDestination.User(
+                    userId = id,
+                    sharedTransitionKey = userSharedTransitionKey,
+                    headerParams = UserHeaderParams(
+                        name = name,
+                        bannerImage = null,
+                        coverImage = imageState,
+                    )
+                )
+            }
+        }
+    }
 
     @Serializable
     data class UserFavoriteCharacters(

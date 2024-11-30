@@ -27,7 +27,6 @@ kotlin {
             implementation(libs.apollo.normalized.cache)
             implementation(libs.apollo.normalized.cache.sqlite)
 
-            implementation(libs.kermit)
             implementation(libs.ktor.client.core)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.uri.kmp)

@@ -14,6 +14,7 @@ kotlin {
             implementation(libs.junit5.android.test.compose)
         }
         commonMain.dependencies {
+            api(projects.modules.anime.activities)
             api(projects.modules.anime.favorites)
             api(projects.modules.anime.ignore.data)
             api(projects.modules.anime.media.data)
@@ -37,7 +38,6 @@ kotlin {
             implementation(libs.htmlconverter)
             implementation(libs.human.readable)
             implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.kermit)
             implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.stately.concurrent.collections)
         }

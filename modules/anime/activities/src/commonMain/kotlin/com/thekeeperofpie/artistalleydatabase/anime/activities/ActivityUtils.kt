@@ -1,12 +1,12 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_anime_list
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_manga_list
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_media_list
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_message
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_text
-import artistalleydatabase.modules.anime.generated.resources.anime_activity_type_unknown
+import artistalleydatabase.modules.anime.activities.generated.resources.Res
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_type_anime_list
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_type_manga_list
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_type_media_list
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_type_message
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_type_text
+import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_type_unknown
 import com.anilist.data.UserSocialActivityQuery
 import com.anilist.data.type.ActivityType
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -22,10 +22,22 @@ object ActivityUtils {
 
     val UserSocialActivityQuery.Data.Page.Activity.entryId: EntryId
         get() = when (this) {
-            is UserSocialActivityQuery.Data.Page.ListActivityActivity -> EntryId("list", this.id.toString())
-            is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> EntryId("message", this.id.toString())
-            is UserSocialActivityQuery.Data.Page.TextActivityActivity -> EntryId("text", this.id.toString())
-            is UserSocialActivityQuery.Data.Page.OtherActivity -> EntryId("other", System.identityHashCode(this).toString())
+            is UserSocialActivityQuery.Data.Page.ListActivityActivity -> EntryId(
+                "list",
+                this.id.toString()
+            )
+            is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> EntryId(
+                "message",
+                this.id.toString()
+            )
+            is UserSocialActivityQuery.Data.Page.TextActivityActivity -> EntryId(
+                "text",
+                this.id.toString()
+            )
+            is UserSocialActivityQuery.Data.Page.OtherActivity -> EntryId(
+                "other",
+                System.identityHashCode(this).toString()
+            )
         }
 
     val UserSocialActivityQuery.Data.Page.Activity.liked: Boolean

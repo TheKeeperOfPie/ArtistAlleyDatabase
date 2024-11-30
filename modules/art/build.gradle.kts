@@ -17,7 +17,6 @@ kotlin {
             implementation(projects.modules.utilsRoom)
 
             implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.kermit)
             implementation(libs.coil3.coil.compose)
         }
     }

@@ -34,8 +34,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_activit
 import artistalleydatabase.modules.anime.generated.resources.anime_media_activities_tab_following
 import artistalleydatabase.modules.anime.generated.resources.anime_media_activities_tab_global
 import com.anilist.data.MediaActivityQuery
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
@@ -199,7 +200,7 @@ object MediaActivitiesScreen {
                                             activity = item?.activity,
                                             entry = item,
                                             onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                            onClickListEdit = editViewModel::initialize,
+                                            userRoute = AnimeDestination.User.route,
                                             clickable = true,
                                         )
                                     }

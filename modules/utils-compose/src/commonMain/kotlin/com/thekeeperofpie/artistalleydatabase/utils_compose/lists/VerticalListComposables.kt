@@ -3,6 +3,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.lists
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,11 +46,15 @@ fun <Item : Any> VerticalList(
     itemHeaderText: StringResource?,
     items: LazyPagingItems<Item>,
     itemKey: (Item) -> Any,
+    itemContentType: ((Item) -> Any)? = null,
     item: @Composable LazyGridItemScope.(Item?) -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     gridState: LazyGridState = rememberLazyGridState(),
     nestedScrollConnection: NestedScrollConnection? = null,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    contentPadding: PaddingValues = PaddingValues(bottom = 32.dp),
 ) {
     val refreshState = items.loadState.refresh
     val refreshing = refreshState is LoadState.Loading
@@ -62,7 +67,9 @@ fun <Item : Any> VerticalList(
         LazyVerticalGrid(
             state = gridState,
             columns = GridCells.Adaptive(450.dp),
-            contentPadding = PaddingValues(bottom = 32.dp),
+            contentPadding = contentPadding,
+            verticalArrangement = verticalArrangement,
+            horizontalArrangement = horizontalArrangement,
             modifier = Modifier
                 .conditionallyNonNull(nestedScrollConnection) { nestedScroll(it) }
         ) {
@@ -103,7 +110,7 @@ fun <Item : Any> VerticalList(
                     items(
                         count = items.itemCount,
                         key = items.itemKey { itemKey(it) },
-                        contentType = items.itemContentType { "item" },
+                        contentType = items.itemContentType { itemContentType?.invoke(it) },
                     ) {
                         item(items[it])
                     }

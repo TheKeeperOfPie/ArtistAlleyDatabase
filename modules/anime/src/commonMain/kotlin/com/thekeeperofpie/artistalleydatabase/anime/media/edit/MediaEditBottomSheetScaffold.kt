@@ -18,6 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
@@ -27,6 +30,18 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object MediaEditBottomSheetScaffold {
+
+    fun fromComponent(
+        component: AnimeComponent,
+    ): MediaEditBottomSheetScaffoldComposable = { content ->
+        val editViewModel = viewModel { component.mediaEditViewModel() }
+        MediaEditBottomSheetScaffold(
+            state = { editViewModel.state },
+            eventSink = editViewModel::onEvent,
+        ) {
+            content(it, editViewModel::initialize)
+        }
+    }
 
     @Deprecated("Use state variant instead")
     @Composable

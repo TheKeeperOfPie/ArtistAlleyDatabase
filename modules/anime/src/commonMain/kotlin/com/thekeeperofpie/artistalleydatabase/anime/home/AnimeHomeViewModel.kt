@@ -11,12 +11,12 @@ import com.anilist.data.type.RecommendationRating
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entryId
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityUtils.entryId
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityUtils.liked
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
@@ -65,7 +65,7 @@ class AnimeHomeViewModel(
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
     private val refresh = RefreshFlow()
-    val activity = MutableStateFlow(PagingData.empty<ActivityEntry>())
+    val activity = MutableStateFlow(PagingData.empty<ActivityEntry<MediaCompactWithTagsEntry>>())
     val recommendations = MutableStateFlow(PagingData.empty<RecommendationEntry<MediaCompactWithTagsEntry>>())
 
     val recommendationToggleHelper =

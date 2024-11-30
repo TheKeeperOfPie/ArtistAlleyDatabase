@@ -15,7 +15,6 @@ kotlin{
             api(projects.modules.anilist)
             api(projects.modules.entry)
             api(projects.modules.utils)
-            implementation(libs.kermit)
         }
     }
 }

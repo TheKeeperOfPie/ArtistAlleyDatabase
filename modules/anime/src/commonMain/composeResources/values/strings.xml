@@ -173,29 +173,6 @@
     <string name="anime_media_season_summer_content_description">Summer season indicator</string>
     <string name="anime_media_season_fall_content_description">Fall season indicator</string>
 
-    <string name="anime_media_filter_airing_date">Airing date</string>
-    <string name="anime_media_filter_airing_date_content_description">Airing date expand</string>
-    <string name="anime_media_filter_airing_date_season">Season</string>
-    <string name="anime_media_filter_airing_date_season_dropdown_content_description">Season dropdown</string>
-    <string name="anime_media_filter_airing_date_season_default">Unknown</string>
-    <string name="anime_media_filter_airing_date_season_winter">Winter</string>
-    <string name="anime_media_filter_airing_date_season_spring">Spring</string>
-    <string name="anime_media_filter_airing_date_season_summer">Summer</string>
-    <string name="anime_media_filter_airing_date_season_fall">Fall</string>
-    <string name="anime_media_filter_airing_date_season_previous">Previous (%1$s)</string>
-    <string name="anime_media_filter_airing_date_season_current">Current (%1$s)</string>
-    <string name="anime_media_filter_airing_date_season_next">Next (%1$s)</string>
-
-    <string name="anime_media_filter_airing_date_season_year">Year</string>
-    <string name="anime_media_filter_airing_date_season_decrement_content_description">Decrement season</string>
-    <string name="anime_media_filter_airing_date_season_increment_content_description">Increment season</string>
-    <string name="anime_media_filter_airing_date_season_year_decrement_content_description">Decrement year</string>
-    <string name="anime_media_filter_airing_date_season_year_increment_content_description">Increment year</string>
-    <string name="anime_media_filter_airing_date_season_year_clear_content_description">Clear year</string>
-    <string name="anime_media_filter_airing_date_season_year_today_content_description">Set to current year</string>
-    <string name="anime_media_filter_airing_date_season_basic">Basic</string>
-    <string name="anime_media_filter_airing_date_season_advanced">Advanced</string>
-
     <string name="anime_media_filter_release_date">Release date</string>
     <string name="anime_media_filter_release_date_content_description">Release date expand</string>
 
@@ -375,9 +352,6 @@
     <string name="anime_media_details_fab_user_status_repeating_icon_content_description">Repeating icon</string>
     <string name="anime_media_details_fab_user_status_edit_icon_content_description">Edit entry icon</string>
 
-    <string name="anime_media_details_activities_label">Activity</string>
-    <string name="anime_media_details_activities_no_results">No activity</string>
-
     <string name="anime_media_details_forum_threads_label">Forum threads</string>
     <string name="anime_media_details_forum_threads_error_loading">Error loading threads</string>
 
@@ -398,9 +372,6 @@
     <string name="anime_media_details_error_loading">Error loading media</string>
     <string name="anime_media_details_error_loading_secondary_data">Error loading additional data</string>
     <string name="anime_media_details_error_loading_secondary_data_retry_button">Retry</string>
-
-    <string name="anime_media_details_activity_following">Following</string>
-    <string name="anime_media_details_activity_global">Global</string>
 
     <string name="anime_media_edit_date_clear_content_description">Clear date</string>
     <string name="anime_media_edit_status_label">Status</string>
@@ -688,42 +659,10 @@
 
     <string name="anime_news_home_title">NEWS</string>
 
-    <string name="anime_activity_tab_own">Me</string>
-    <string name="anime_activity_tab_following">Following</string>
-    <string name="anime_activity_tab_global">Global</string>
-    <string name="anime_activity_title">Activity</string>
-    <string name="anime_activity_title_with_media">Activity for %1$s</string>
-    <string name="anime_activity_sort_newest">Newest</string>
-    <string name="anime_activity_sort_oldest">Oldest</string>
-    <string name="anime_activity_sort_pinned">Pinned</string>
-    <string name="anime_activity_replies_icon_content_description">Activity replies</string>
-    <string name="anime_activity_like_icon_content_description">Activity liked</string>
-    <string name="anime_activity_subscribe_icon_content_description">Activity subscribed</string>
-    <string name="anime_activity_status_with_timestamp">%1$s • %2$s</string>
-    <string name="anime_activity_sort_label">Sort</string>
-    <string name="anime_activity_filter_type_dropdown_content_description">Type dropdown expand</string>
-    <string name="anime_activity_filter_type_include_exclude_icon_content_description">Include/exclude type</string>
-    <string name="anime_activity_filter_type_label">Type</string>
-    <string name="anime_activity_filter_has_replies_label">Has replies</string>
-    <string name="anime_activity_filter_date">Date</string>
-    <string name="anime_activity_filter_date_content_description">Date expand</string>
-    <string name="anime_activity_filter_media_label">Media</string>
-    <string name="anime_activity_filter_media_expand_content_description">Media expand</string>
-
-    <string name="anime_activity_type_text">Text</string>
-    <string name="anime_activity_type_anime_list">Anime</string>
-    <string name="anime_activity_type_manga_list">Manga</string>
-    <string name="anime_activity_type_message">Message</string>
-    <string name="anime_activity_type_media_list">Anime/Manga</string>
-    <string name="anime_activity_type_unknown">Unknown</string>
-
     <string name="anime_activity_details_error_loading">Error loading activity</string>
     <string name="anime_activity_details_title">Activity details</string>
     <string name="anime_activity_details_error_loading_replies">Error loading replies</string>
     <string name="anime_activity_details_no_replies">No replies</string>
-    <string name="anime_activity_message_arrow_recipient_icon_content_description">Sent to recipient</string>
-    <string name="anime_activity_delete_content_description">Delete activity</string>
-    <string name="anime_activity_open_in_browser_content_description">Open in browser</string>
     <string name="anime_activity_delete_confirmation">Delete activity?</string>
 
     <string name="anime_activity_reply_like_icon_content_description">Reply liked</string>

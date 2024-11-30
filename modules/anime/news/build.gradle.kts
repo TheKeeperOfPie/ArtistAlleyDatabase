@@ -20,7 +20,6 @@ kotlin {
             implementation(libs.compose.placeholder.material3)
             implementation(libs.human.readable)
             implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.kermit)
             implementation(libs.ktor.client.core)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.xmlutil.serialization)

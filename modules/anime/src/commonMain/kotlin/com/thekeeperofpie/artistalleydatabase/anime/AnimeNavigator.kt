@@ -48,11 +48,11 @@ import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityComposables
-import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
-import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeMediaDetailsActivityViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.activity.activitiesSection
-import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityTab
+import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityComposables
+import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityScreen
+import com.thekeeperofpie.artistalleydatabase.anime.activities.activitiesSection
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
@@ -135,14 +135,14 @@ object AnimeNavigator {
         onClickAuth: () -> Unit,
         onClickSettings: () -> Unit,
         onClickShowLastCrash: () -> Unit,
-        animeComponent: AnimeComponent,
+        component: AnimeComponent,
         cdEntryComponent: CdEntryComponent,
     ) {
         navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.HOME.id,
             deepLinks = listOf(navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/" }),
         ) {
-            val viewModel = viewModel { animeComponent.animeRootViewModel() }
+            val viewModel = viewModel { component.animeRootViewModel() }
             AnimeRootScreen(
                 upIconOption = upIconOption,
                 viewModel = viewModel,
@@ -150,6 +150,7 @@ object AnimeNavigator {
                 onSubmitAuthToken = viewModel::onSubmitAuthToken,
                 onClickSettings = onClickSettings,
                 onClickShowLastCrash = onClickShowLastCrash,
+                userRoute = AnimeDestination.User.route,
             )
         }
 
@@ -201,7 +202,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.MediaDetails>()
             val mediaDetailsViewModel =
-                viewModel { animeComponent.animeMediaDetailsViewModel(createSavedStateHandle()) }
+                viewModel { component.animeMediaDetailsViewModel(createSavedStateHandle()) }
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
                 media = { mediaDetailsViewModel.state.mediaEntry.result?.media },
@@ -209,7 +210,7 @@ object AnimeNavigator {
             )
 
             val charactersViewModel = viewModel {
-                animeComponent.animeCharactersViewModel(
+                component.animeCharactersViewModel(
                     createSavedStateHandle(),
                     mediaDetailsViewModel,
                 )
@@ -218,7 +219,7 @@ object AnimeNavigator {
                 charactersViewModel.charactersDeferred.collectAsLazyPagingItems()
 
             val staffViewModel = viewModel {
-                animeComponent.animeStaffViewModel(
+                component.animeStaffViewModel(
                     createSavedStateHandle(),
                     mediaDetailsViewModel,
                 )
@@ -226,7 +227,7 @@ object AnimeNavigator {
             val staff = staffViewModel.staff.collectAsLazyPagingItems()
 
             val songsViewModel =
-                viewModel { animeComponent.animeSongsViewModel(mediaDetailsViewModel) }
+                viewModel { component.animeSongsViewModel(mediaDetailsViewModel) }
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
                 lifecycleOwner.lifecycle.addObserver(songsViewModel)
@@ -244,34 +245,34 @@ object AnimeNavigator {
 
             @Suppress("UNCHECKED_CAST")
             val recommendationsViewModel = viewModel {
-                animeComponent
+                component
                     .animeMediaDetailsRecommendationsViewModelFactory(createSavedStateHandle())
                     .create(mediaDetailsViewModel.recommendations(), mediaDetailsViewModel)
             }
 
             val activitiesViewModel = viewModel {
-                animeComponent.animeMediaDetailsActivityViewModel(mediaDetailsViewModel)
+                component.animeMediaDetailsActivityViewModel(mediaDetailsViewModel.state.mediaId)
             }
             val activities = activitiesViewModel.activities
             val (activityTab, onActivityTabChange) = rememberSaveable(viewer, activities) {
                 mutableStateOf(
                     if (activities?.following.isNullOrEmpty()) {
-                        AnimeMediaDetailsActivityViewModel.ActivityTab.GLOBAL
+                        ActivityTab.GLOBAL
                     } else {
-                        AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING
+                        ActivityTab.FOLLOWING
                     }
                 )
             }
 
             val forumThreadsViewModel = viewModel {
-                animeComponent.animeForumThreadsViewModel(
+                component.animeForumThreadsViewModel(
                     createSavedStateHandle(),
                     mediaDetailsViewModel,
                 )
             }
 
             val reviewsViewModel = viewModel {
-                animeComponent.animeMediaDetailsReviewsViewModel(mediaDetailsViewModel)
+                component.animeMediaDetailsReviewsViewModel(mediaDetailsViewModel)
             }
 
             val navigationCallback = LocalNavigationCallback.current
@@ -378,7 +379,7 @@ object AnimeNavigator {
                     )
                 },
                 activitiesSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
-                    items = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
+                    items = if (activityTab == ActivityTab.FOLLOWING) {
                         activities?.following
                     } else {
                         activities?.global
@@ -392,7 +393,7 @@ object AnimeNavigator {
                         viewer = viewer,
                         onActivityStatusUpdate = activitiesViewModel.activityToggleHelper::toggle,
                         activityTab = activityTab,
-                        activities = if (activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING) {
+                        activities = if (activityTab == ActivityTab.FOLLOWING) {
                             activities?.following
                         } else {
                             activities?.global
@@ -400,12 +401,12 @@ object AnimeNavigator {
                         onActivityTabChange = onActivityTabChange,
                         expanded = expanded,
                         onExpandedChange = onExpandedChanged,
-                        onClickListEdit = onClickListEdit,
+                        userRoute = AnimeDestination.User.route,
                         onClickViewAll = {
                             navigationCallback.navigate(
                                 AnimeDestination.MediaActivities(
                                     mediaId = mediaDetailsViewModel.state.mediaId,
-                                    showFollowing = activityTab == AnimeMediaDetailsActivityViewModel.ActivityTab.FOLLOWING,
+                                    showFollowing = activityTab == ActivityTab.FOLLOWING,
                                     headerParams = mediaHeaderParams(),
                                 )
                             )
@@ -481,7 +482,7 @@ object AnimeNavigator {
             ),
         ) {
             val viewModel =
-                viewModel { animeComponent.animeCharacterDetailsViewModel(createSavedStateHandle()) }
+                viewModel { component.animeCharacterDetailsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.CharacterDetails>()
             val headerValues = CharacterHeaderValues(
                 params = destination.headerParams,
@@ -503,7 +504,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.CharacterMedias>()
             val viewModel =
-                viewModel { animeComponent.characterMediasViewModel(createSavedStateHandle()) }
+                viewModel { component.characterMediasViewModel(createSavedStateHandle()) }
             val headerValues = CharacterHeaderValues(
                 params = destination.headerParams,
                 character = { viewModel.entry.result?.character },
@@ -526,7 +527,7 @@ object AnimeNavigator {
             ),
         ) {
             val viewModel =
-                viewModel { animeComponent.staffDetailsViewModel(createSavedStateHandle()) }
+                viewModel { component.staffDetailsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.StaffDetails>()
             val headerValues = StaffHeaderValues(
                 params = destination.headerParams,
@@ -546,7 +547,7 @@ object AnimeNavigator {
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel =
-                viewModel { animeComponent.staffCharactersViewModel(createSavedStateHandle()) }
+                viewModel { component.staffCharactersViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.StaffCharacters>()
             val headerValues = StaffHeaderValues(
                 params = destination.headerParams,
@@ -569,8 +570,12 @@ object AnimeNavigator {
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
             ),
         ) {
-            val viewModel =
-                viewModel { animeComponent.aniListUserViewModel(createSavedStateHandle()) }
+            val viewModel = viewModel {
+                component.aniListUserViewModel(
+                    createSavedStateHandle(),
+                    AnimeDestination::MediaDetails,
+                )
+            }
             val destination = it.toRoute<AnimeDestination.User>()
             val headerValues = UserHeaderValues(
                 params = destination.headerParams,
@@ -598,7 +603,32 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Activity>(navigationTypeMap) {
-            AnimeActivityScreen(animeComponent = animeComponent)
+            val viewModel = viewModel {
+                component.animeActivityViewModelFactory()
+                    .create(MediaCompactWithTagsEntry.Provider, AnimeDestination::MediaDetails)
+            }
+            val viewer by viewModel.viewer.collectAsState()
+            AnimeActivityScreen(
+                viewer = { viewer },
+                userRoute = AnimeDestination.User.route,
+                mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+                sortFilterState = { viewModel.sortFilterController.state },
+                mediaTitle = {
+                    viewModel.sortFilterController.selectedMedia()?.title?.primaryTitle()
+                },
+                ownActivity = { viewModel.ownActivity().collectAsLazyPagingItems() },
+                globalActivity = { viewModel.globalActivity().collectAsLazyPagingItems() },
+                followingActivity = { viewModel.followingActivity().collectAsLazyPagingItems() },
+                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                mediaRow = { entry, onClickListEdit, modifier ->
+                    AnimeMediaCompactListRow(
+                        viewer = viewer,
+                        entry = entry,
+                        modifier = modifier,
+                        onClickListEdit = onClickListEdit
+                    )
+                },
+            )
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Notifications>(navigationTypeMap) {
@@ -609,7 +639,7 @@ object AnimeNavigator {
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel =
-                viewModel { animeComponent.mediaCharactersViewModel(createSavedStateHandle()) }
+                viewModel { component.mediaCharactersViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.MediaCharacters>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -628,7 +658,7 @@ object AnimeNavigator {
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel =
-                viewModel { animeComponent.mediaReviewsViewModel(createSavedStateHandle()) }
+                viewModel { component.mediaReviewsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.MediaReviews>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -651,10 +681,10 @@ object AnimeNavigator {
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Recommendations>(navigationTypeMap) {
             val viewModel = viewModel {
-                animeComponent.recommendationsViewModelFactory(AnimeDestination::MediaDetails)
+                component.recommendationsViewModelFactory(AnimeDestination::MediaDetails)
                     .create(MediaCompactWithTagsEntry.Provider)
             }
-            val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
+            val editViewModel = viewModel { component.mediaEditViewModel() }
             MediaEditBottomSheetScaffold(viewModel = editViewModel) {
                 RecommendationsScreen(
                     upIconOption = UpIconOption.Back(navHostController),
@@ -712,7 +742,7 @@ object AnimeNavigator {
             navigationTypeMap = navigationTypeMap,
         ) {
             val viewModel = viewModel {
-                animeComponent.mediaRecommendationsViewModelFactory(
+                component.mediaRecommendationsViewModelFactory(
                     createSavedStateHandle()
                         .toDestination<AnimeDestination.MediaRecommendations>(navigationTypeMap)
                         .mediaId
@@ -726,7 +756,7 @@ object AnimeNavigator {
             )
 
             val viewer by viewModel.viewer.collectAsState()
-            val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
+            val editViewModel = viewModel { component.mediaEditViewModel() }
             MediaEditBottomSheetScaffold(
                 state = { editViewModel.state },
                 eventSink = editViewModel::onEvent,
@@ -783,8 +813,12 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaActivities>(
             navigationTypeMap = navigationTypeMap,
         ) {
-            val viewModel =
-                viewModel { animeComponent.mediaActivitiesViewModel(createSavedStateHandle()) }
+            val viewModel = viewModel {
+                component.mediaActivitiesViewModel(
+                    createSavedStateHandle(),
+                    AnimeDestination::MediaDetails,
+                )
+            }
             val destination = it.toRoute<AnimeDestination.MediaActivities>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -809,7 +843,7 @@ object AnimeNavigator {
             ),
         ) {
             val viewModel =
-                viewModel { animeComponent.reviewDetailsViewModel(createSavedStateHandle()) }
+                viewModel { component.reviewDetailsViewModel(createSavedStateHandle()) }
             val destination = it.toRoute<AnimeDestination.ReviewDetails>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -837,7 +871,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.StudioMedias>()
             val viewModel =
-                viewModel { animeComponent.studioMediasViewModel(createSavedStateHandle()) }
+                viewModel { component.studioMediasViewModel(createSavedStateHandle()) }
 
             StudioMediasScreen(
                 upIconOption = UpIconOption.Back(navHostController),
@@ -851,38 +885,17 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.ActivityDetails>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}"
-                },
-                navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}/.*"
-                },
-            ),
-        ) {
-            val destination = it.toRoute<AnimeDestination.ActivityDetails>()
-            // TODO: Shared element doesn't actually work
-            SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
-                ActivityDetailsScreen(
-                    animeComponent = animeComponent,
-                    upIconOption = UpIconOption.Back(navHostController),
-                )
-            }
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.FeatureTiers>(navigationTypeMap) {
             UnlockScreen(
                 upIconOption = UpIconOption.Back(navHostController),
-                viewModel = viewModel { animeComponent.unlockScreenViewModel() },
+                viewModel = viewModel { component.unlockScreenViewModel() },
                 onClickSettings = null,
             )
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Forum>(navigationTypeMap) {
             ForumRootScreen(
-                viewModel = viewModel { animeComponent.forumRootScreenViewModel() },
+                viewModel = viewModel { component.forumRootScreenViewModel() },
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }
@@ -902,7 +915,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.ForumSearch>()
             ForumSearchScreen(
-                viewModel = viewModel { animeComponent.forumSearchViewModel(createSavedStateHandle()) },
+                viewModel = viewModel { component.forumSearchViewModel(createSavedStateHandle()) },
                 upIconOption = UpIconOption.Back(navHostController),
                 title = destination.title,
             )
@@ -954,7 +967,7 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.UserFollowing>(navigationTypeMap) {
             val destination = it.toRoute<AnimeDestination.UserFollowing>()
             val viewModel =
-                viewModel { animeComponent.userListViewModelFollowing(createSavedStateHandle()) }
+                viewModel { component.userListViewModelFollowing(createSavedStateHandle()) }
             UserListScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
@@ -974,7 +987,7 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.UserFollowers>(navigationTypeMap) {
             val destination = it.toRoute<AnimeDestination.UserFollowers>()
             val viewModel =
-                viewModel { animeComponent.userListViewModelFollowers(createSavedStateHandle()) }
+                viewModel { component.userListViewModelFollowers(createSavedStateHandle()) }
             UserListScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
@@ -996,7 +1009,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.UserFavoriteMedia>()
             val viewModel =
-                viewModel { animeComponent.userFavoriteMediaViewModel(createSavedStateHandle()) }
+                viewModel { component.userFavoriteMediaViewModel(createSavedStateHandle()) }
             UserFavoriteMediaScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
@@ -1080,6 +1093,22 @@ object AnimeNavigator {
                 },
             )
         }
+
+        ActivityDestinations.addToGraph(
+            navGraphBuilder,
+            navigationTypeMap,
+            component,
+            userRoute = AnimeDestination.User.route,
+            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaRow = { entry, viewer, onClickListEdit, modifier ->
+                AnimeMediaCompactListRow(
+                    viewer = viewer,
+                    entry = entry,
+                    onClickListEdit = onClickListEdit,
+                    modifier = modifier,
+                )
+            }
+        )
     }
 
     @Composable

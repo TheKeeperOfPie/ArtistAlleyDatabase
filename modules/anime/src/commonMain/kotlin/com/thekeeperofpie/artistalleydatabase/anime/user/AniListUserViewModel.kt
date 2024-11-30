@@ -24,17 +24,19 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityEntry
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortOption
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activity.applyActivityFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySortOption
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
@@ -92,8 +94,9 @@ class AniListUserViewModel(
     private val settings: AnimeSettings,
     private val markdown: Markdown,
     featureOverrideProvider: FeatureOverrideProvider,
-    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaDetailsRoute: MediaDetailsRoute,
 ) : ViewModel() {
 
     private val destination =
@@ -111,7 +114,7 @@ class AniListUserViewModel(
     var studios by mutableStateOf(StudiosEntry())
         private set
 
-    val activities = MutableStateFlow(PagingData.empty<ActivityEntry>())
+    val activities = MutableStateFlow(PagingData.empty<ActivityEntry<MediaCompactWithTagsEntry>>())
 
     val animeStats = States.Anime(viewModelScope, aniListApi)
     val mangaStats = States.Manga(viewModelScope, aniListApi)
@@ -123,6 +126,7 @@ class AniListUserViewModel(
         featureOverrideProvider = featureOverrideProvider,
         // Disable shared element otherwise the tab view will animate into the sort list
         mediaSharedElement = false,
+        mediaDetailsRoute = mediaDetailsRoute,
     )
 
     val activityToggleHelper =
@@ -358,7 +362,11 @@ class AniListUserViewModel(
                         is UserSocialActivityQuery.Data.Page.OtherActivity -> null
                     }
                 }
-                .mapLatest { it.mapOnIO(::ActivityEntry) }
+                .mapLatest {
+                    it.mapOnIO {
+                        ActivityEntry(it, MediaCompactWithTagsEntry.Provider)
+                    }
+                }
                 .cachedIn(viewModelScope)
                 .flatMapLatest { pagingData ->
                     combine(

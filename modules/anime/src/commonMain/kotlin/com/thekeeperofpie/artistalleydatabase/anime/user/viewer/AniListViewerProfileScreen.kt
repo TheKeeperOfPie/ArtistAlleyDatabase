@@ -41,6 +41,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_auth_prompt_p
 import artistalleydatabase.modules.anime.generated.resources.anime_auth_prompt_text
 import artistalleydatabase.modules.anime.generated.resources.anime_settings_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.confirm
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
@@ -70,8 +71,12 @@ object AniListViewerProfileScreen {
             )
         } else {
             val animeComponent = LocalAnimeComponent.current
-            val viewModel =
-                viewModel { animeComponent.aniListUserViewModel(createSavedStateHandle()) }
+            val viewModel = viewModel {
+                animeComponent.aniListUserViewModel(
+                    createSavedStateHandle(),
+                    AnimeDestination::MediaDetails,
+                )
+            }
             val headerValues = UserHeaderValues(null) { viewModel.entry?.user }
             AniListUserScreen(
                 viewModel = viewModel,

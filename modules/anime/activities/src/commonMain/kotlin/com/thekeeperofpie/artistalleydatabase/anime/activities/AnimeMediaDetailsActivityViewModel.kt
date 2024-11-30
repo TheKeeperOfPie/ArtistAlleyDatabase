@@ -1,20 +1,16 @@
-package com.thekeeperofpie.artistalleydatabase.anime.activity
+package com.thekeeperofpie.artistalleydatabase.anime.activities
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.data.fragment.ListActivityMediaListActivityItem
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
@@ -27,37 +23,33 @@ import me.tatarka.inject.annotations.Inject
 class AnimeMediaDetailsActivityViewModel(
     private val aniListApi: AuthedAniListApi,
     private val activityStatusController: ActivityStatusController,
-    @Assisted mediaDetailsViewModel: AnimeMediaDetailsViewModel,
+    @Assisted mediaId: String,
 ) : ViewModel() {
 
-    var activities by mutableStateOf<ActivitiesEntry?>(null)
+    var activities by mutableStateOf<MediaActivitiesEntry?>(null)
 
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
     init {
-        viewModelScope.launch(CustomDispatchers.Main) {
-            combine(
-                aniListApi.authedUser,
-                snapshotFlow { mediaDetailsViewModel.state.mediaEntry.result }
-                    .flowOn(CustomDispatchers.Main)
-                    .filterNotNull(),
-            ) { viewer, entry ->
-                val result = aniListApi.mediaDetailsActivity(
-                    mediaId = entry.mediaId,
-                    includeFollowing = viewer != null,
-                )
-                ActivitiesEntry(
-                    following = result.following?.activities
-                        ?.filterIsInstance<ListActivityMediaListActivityItem>()
-                        .orEmpty()
-                        .map(::ActivityEntry),
-                    global = result.global?.activities
-                        ?.filterIsInstance<ListActivityMediaListActivityItem>()
-                        .orEmpty()
-                        .map(::ActivityEntry),
-                )
-            }
+        viewModelScope.launch(CustomDispatchers.Companion.Main) {
+            aniListApi.authedUser
+                .mapLatest { viewer ->
+                    val result = aniListApi.mediaDetailsActivity(
+                        mediaId = mediaId,
+                        includeFollowing = viewer != null,
+                    )
+                    MediaActivitiesEntry(
+                        following = result.following?.activities
+                            ?.filterIsInstance<ListActivityMediaListActivityItem>()
+                            .orEmpty()
+                            .map(::MediaActivityEntry),
+                        global = result.global?.activities
+                            ?.filterIsInstance<ListActivityMediaListActivityItem>()
+                            .orEmpty()
+                            .map(::MediaActivityEntry),
+                    )
+                }
                 .flatMapLatest { activities ->
                     activityStatusController.allChanges(
                         (activities.following.map { it.activityId }
@@ -84,24 +76,8 @@ class AnimeMediaDetailsActivityViewModel(
                         }
                 }
                 .catch {}
-                .flowOn(CustomDispatchers.IO)
+                .flowOn(CustomDispatchers.Companion.IO)
                 .collectLatest { activities = it }
         }
     }
-
-    enum class ActivityTab {
-        FOLLOWING, GLOBAL
-    }
-
-    data class ActivitiesEntry(
-        val following: List<ActivityEntry>,
-        val global: List<ActivityEntry>,
-    )
-
-    data class ActivityEntry(
-        val activity: ListActivityMediaListActivityItem,
-        val activityId: String = activity.id.toString(),
-        override val liked: Boolean = activity.isLiked ?: false,
-        override val subscribed: Boolean = activity.isSubscribed ?: false,
-    ) : ActivityStatusAware
 }
