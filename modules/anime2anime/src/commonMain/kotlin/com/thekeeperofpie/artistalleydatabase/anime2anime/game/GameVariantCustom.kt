@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime2anime.game
 
-import android.os.SystemClock
 import androidx.compose.runtime.snapshotFlow
 import com.anilist.data.Anime2AnimeCountQuery
 import com.anilist.data.type.MediaType
@@ -22,6 +21,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -73,7 +73,7 @@ class GameVariantCustom(
     private fun subscribeMediaState(mediaState: GameState.MediaState, refresh: MutableStateFlow<Long>) {
         scope.launch(CustomDispatchers.Main) {
             mediaState.customMediaId
-                .collectLatest { refresh.emit(SystemClock.uptimeMillis()) }
+                .collectLatest { refresh.emit(Clock.System.now().toEpochMilliseconds()) }
         }
         scope.launch(CustomDispatchers.Main) {
             snapshotFlow { mediaState.customText }

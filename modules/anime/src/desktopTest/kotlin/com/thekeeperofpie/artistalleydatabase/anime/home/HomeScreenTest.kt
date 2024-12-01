@@ -26,9 +26,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_recommendatio
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_home_title
 import com.anilist.data.type.MediaType
 import com.google.common.truth.Truth.assertThat
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
-import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen.invoke
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.fakeIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
@@ -51,6 +51,7 @@ import kotlinx.coroutines.test.setMain
 import org.jetbrains.compose.resources.getString
 import kotlin.test.Test
 
+@Suppress("JUnitMalformedDeclaration")
 @OptIn(
     ExperimentalTestApi::class, ExperimentalMaterial3Api::class,
     ExperimentalSharedTransitionApi::class, ExperimentalCoroutinesApi::class
@@ -58,11 +59,7 @@ import kotlin.test.Test
 @Burst
 class HomeScreenTest {
 
-    // TODO: Replace with Burst: https://github.com/cashapp/burst/issues/72
     @Test
-    fun anySectionLoading_showsRootLoading() = listOf(0, 1, 2, 3, 4, 5)
-        .forEach(::anySectionLoading_showsRootLoading)
-
     fun anySectionLoading_showsRootLoading(index: Int = burstValues(0, 1, 2, 3, 4, 5)) =
         runComposeUiTest {
             Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -137,12 +134,7 @@ class HomeScreenTest {
     }
 
     @Test
-    fun nonEmptyCurrent_showsHeader_anime() = nonEmptyCurrent_showsHeader(true)
-
-    @Test
-    fun nonEmptyCurrent_showsHeader_manga() = nonEmptyCurrent_showsHeader(false)
-
-    fun nonEmptyCurrent_showsHeader(isAnime: Boolean) = runComposeUiTest {
+    fun nonEmptyCurrent_showsHeader_isAnime(isAnime: Boolean) = runComposeUiTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         setContent {
             HomeScreen(
@@ -175,12 +167,7 @@ class HomeScreenTest {
     }
 
     @Test
-    fun emptyCurrent_hidesHeader_anime() = emptyCurrent_hidesHeader(true)
-
-    @Test
-    fun emptyCurrent_hidesHeader_manga() = emptyCurrent_hidesHeader(false)
-
-    fun emptyCurrent_hidesHeader(isAnime: Boolean) = runComposeUiTest {
+    fun emptyCurrent_hidesHeader_isAnime(isAnime: Boolean) = runComposeUiTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         setContent {
             HomeScreen(
@@ -208,7 +195,7 @@ class HomeScreenTest {
 
     @Composable
     private fun HomeScreen(
-        activities: PagingData<ActivityEntry>,
+        activities: PagingData<ActivityEntry<MediaCompactWithTagsEntry>>,
         recommendations: PagingData<RecommendationEntry<MediaCompactWithTagsEntry>>,
         reviews: PagingData<ReviewEntry>,
         news: LoadingResult<List<AnimeNewsEntry<*>>>,
@@ -256,6 +243,7 @@ class HomeScreenTest {
                 editEventSink = {},
                 onClickListEdit = {},
                 onClickIncrementProgress = {},
+                userRoute = AnimeDestination.User.route,
             )
         }
     }

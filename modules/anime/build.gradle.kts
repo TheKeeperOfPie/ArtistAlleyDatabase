@@ -4,15 +4,10 @@ plugins {
     id("library-desktop")
     id("library-inject")
     id("library-room")
-    alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
 kotlin {
     sourceSets {
-        androidInstrumentedTest.dependencies {
-            implementation(libs.junit.jupiter.params)
-            implementation(libs.junit5.android.test.compose)
-        }
         commonMain.dependencies {
             api(projects.modules.anime.activities)
             api(projects.modules.anime.favorites)

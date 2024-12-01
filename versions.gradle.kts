@@ -55,7 +55,7 @@ object Versions {
         const val browser = "1.8.0"
         const val core = "1.15.0"
         const val lifecycle = "2.9.0-alpha07"
-        const val media3 = "1.5.0-rc02"
+        const val media3 = "1.5.0"
         const val navigation = "2.8.1"
         const val paging = "3.3.4"
         const val palette = "1.0.0"
@@ -82,8 +82,8 @@ object Versions {
     const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.15.2"
-    const val burst = "2.1.0"
-    const val coil = "3.0.3"
+    const val burst = "2.2.0"
+    const val coil = "3.0.4"
     const val colormath = "3.6.0"
 
     object compose {
@@ -122,11 +122,11 @@ object Versions {
     const val htmlConverter = "1.0.2"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.10.0"
-    const val jackson = "2.18.1"
+    const val jackson = "2.18.2"
     const val jaredsBurrowsLicense = "0.9.8"
     const val javaPoet = "1.13.0"
     const val jimfs = "1.3.0"
-    const val jsonTree = "2.3.0"
+    const val jsonTree = "2.4.0"
 
     object junit {
         const val four = "4.13.2"
@@ -138,18 +138,18 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.1.0-RC2"
+        const val core = "2.1.0"
         const val coroutines = "1.9.0"
         const val datetime = "0.6.1"
         const val io = "0.6.0"
-        const val ksp = "2.1.0-RC2-1.0.28"
+        const val ksp = "2.1.0-1.0.29"
         const val serialization = "1.7.3"
     }
 
     const val kotlinInject = "0.7.2"
     const val kotlinPoet = "1.15.3"
     const val ktor = "3.0.1"
-    const val ksoup = "0.2.0"
+    const val ksoup = "0.2.1"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.42"
     const val markwon = "4.6.2"

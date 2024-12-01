@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime2anime.game
 
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -206,11 +205,11 @@ abstract class GameVariant<Options>(
     }
 
     fun refreshStart() {
-        refreshStart.value = SystemClock.uptimeMillis()
+        refreshStart.value = Clock.System.now().toEpochMilliseconds()
     }
 
     fun refreshTarget() {
-        refreshTarget.value = SystemClock.uptimeMillis()
+        refreshTarget.value = Clock.System.now().toEpochMilliseconds()
     }
 
     fun restart() {

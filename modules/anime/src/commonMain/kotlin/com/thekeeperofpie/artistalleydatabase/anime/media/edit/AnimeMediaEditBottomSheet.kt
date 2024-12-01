@@ -255,7 +255,6 @@ object AnimeMediaEditBottomSheet {
                 text = { Text(stringResource(Res.string.anime_media_edit_confirm_close_text)) },
                 confirmButton = {
                     TextButton(onClick = {
-                        println("confirmButton")
                         state.showConfirmClose = false
                         eventSink(Event.Save)
                     }) {

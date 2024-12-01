@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath("com.google.android.gms:oss-licenses-plugin:0.10.6")
-        classpath("app.cash.burst:burst-gradle-plugin:2.1.0")
+        classpath("app.cash.burst:burst-gradle-plugin:2.2.0")
     }
 }
 

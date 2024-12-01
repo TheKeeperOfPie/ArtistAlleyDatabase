@@ -1,9 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import com.fleeksoft.ksoup.Ksoup
-import com.fleeksoft.ksoup.io.SourceReader
 import com.fleeksoft.ksoup.nodes.Element
-import com.fleeksoft.ksoup.ported.openSourceReader
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_network.WebScraper
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
@@ -63,7 +61,7 @@ class VgmdbParser(
     fun search(finalPath: String, response: String) =
         if (finalPath.startsWith("/album") || response.contains("albumtools")) {
             val id = finalPath.substringAfter("/album/").substringBefore("/")
-            parseAlbumHtml(id, response.openSourceReader())?.let {
+            parseAlbumHtml(id, response)?.let {
                 SearchResults(
                     albums = listOf(
                         SearchResults.AlbumResult(
@@ -75,10 +73,10 @@ class VgmdbParser(
                 )
             }
         } else if (finalPath.startsWith("/search")) {
-            parseSearchHtml(response.openSourceReader())
+            parseSearchHtml(response)
         } else null
 
-    private fun parseSearchHtml(input: SourceReader): SearchResults? {
+    private fun parseSearchHtml(input: String): SearchResults? {
         val document = Ksoup.parse(input, BASE_URL)
         val innerMain = document.getElementById("innermain") ?: return null
         val albums = mutableListOf<SearchResults.AlbumResult>()
@@ -134,12 +132,12 @@ class VgmdbParser(
 
     suspend fun parseAlbum(id: String) = withContext(Dispatchers.IO) {
         val response = httpClient.get("$BASE_URL/album/$id").bodyAsText()
-        parseAlbumHtml(id, response.openSourceReader())
+        parseAlbumHtml(id, response)
     }
 
     private fun parseAlbumHtml(
         id: String,
-        input: SourceReader,
+        input: String,
     ): AlbumEntry? {
         val document = Ksoup.parse(input, BASE_URL)
         val innerMain = document.getElementById("innermain") ?: return null
@@ -388,12 +386,12 @@ class VgmdbParser(
 
     suspend fun parseArtist(id: String) = withContext(Dispatchers.IO) {
         val response = httpClient.get("$BASE_URL/artist/$id").bodyAsText()
-        parseArtistHtml(id, response.openSourceReader())
+        parseArtistHtml(id, response)
     }
 
     private fun parseArtistHtml(
         id: String,
-        input: SourceReader,
+        input: String,
     ): VgmdbArtist? {
         val document = Ksoup.parse(input, BASE_URL)
         val innerMain = document.getElementById("innermain") ?: return null

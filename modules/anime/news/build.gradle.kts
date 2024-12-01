@@ -24,9 +24,6 @@ kotlin {
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.xmlutil.serialization)
         }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
     }
 }
 
