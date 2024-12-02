@@ -22,14 +22,9 @@ android {
     defaultConfig {
         minSdk = 28
 
-        testInstrumentationRunner =
-            "com.thekeeperofpie.artistalleydatabase.test_utils.CustomAndroidJUnitRunner"
         project.file("consumer-rules.pro")
             .takeIf(File::exists)
             ?.let { consumerProguardFiles(it) }
-
-        testInstrumentationRunnerArguments["runnerBuilder"] =
-            "com.thekeeperofpie.artistalleydatabase.test_utils.AndroidJUnitBuilder"
     }
 
     packaging {
@@ -67,18 +62,8 @@ kotlin {
             implementation(project(":modules:utils-network"))
 
             libs.find(
-                "libs.androidx.junit.test",
-                "libs.androidx.test.runner",
-                "libs.dexmaker.mockito.inline.extended",
-                "libs.junit.jupiter.api",
-                "libs.junit5.android.test.core",
                 "libs.kotlinx.coroutines.test",
             ).forEach(::implementation)
-
-            libs.find(
-                "libs.junit.jupiter.engine",
-                "libs.junit5.android.test.runner",
-            ).forEach(::runtimeOnly)
         }
     }
 }

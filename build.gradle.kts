@@ -7,7 +7,6 @@ buildscript {
         google()
     }
     dependencies {
-        classpath("com.google.android.gms:oss-licenses-plugin:0.10.6")
         classpath("app.cash.burst:burst-gradle-plugin:2.2.0")
     }
 }
@@ -15,7 +14,6 @@ buildscript {
 plugins {
     alias(libs.plugins.app.cash.burst).apply(false)
     alias(libs.plugins.com.google.devtools.ksp).apply(false)
-    alias(libs.plugins.com.jaredsburrows.license).apply(false)
     alias(libs.plugins.org.jetbrains.compose).apply(false)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.compose).apply(false)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization).apply(false)
@@ -53,8 +51,6 @@ tasks.register("recopyVerificationMetadata") {
 tasks.register("generateVerificationMetadata") {
     dependsOn("recopyVerificationMetadata")
     dependsOn("help")
-    dependsOn(":app:internalOssLicensesTask")
-    dependsOn(":app:releaseOssLicensesTask")
     dependsOn("dependencyUpdates")
 //    dependsOn("createModuleGraph")
     // https://github.com/autonomousapps/dependency-analysis-gradle-plugin/issues/1185

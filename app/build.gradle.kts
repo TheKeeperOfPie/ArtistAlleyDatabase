@@ -6,12 +6,6 @@ plugins {
     id("app-android")
 }
 
-licenseReport {
-    // TODO: Not yet supported in latest stable plugin version
-    copyHtmlReportToAssets = false
-//    useVariantSpecificAssetDirs = false
-}
-
 android {
     namespace = "com.thekeeperofpie.anichive"
     compileSdk = 35
@@ -23,8 +17,6 @@ android {
         versionCode = 15
         versionName = "0.50"
 
-        testInstrumentationRunner =
-            "com.thekeeperofpie.artistalleydatabase.test_utils.CustomAndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -218,8 +210,6 @@ kotlin {
             implementation(libs.commons.compress)
             implementation(libs.coil3.coil.compose)
             implementation(libs.coil3.coil.network.okhttp)
-
-            implementation(libs.play.services.oss.licenses)
         }
     }
 }

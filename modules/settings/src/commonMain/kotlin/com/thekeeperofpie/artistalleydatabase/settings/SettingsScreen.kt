@@ -41,7 +41,6 @@ import artistalleydatabase.modules.settings.generated.resources.settings_media_h
 import artistalleydatabase.modules.settings.generated.resources.settings_media_view_ignored
 import artistalleydatabase.modules.settings.generated.resources.settings_nav_drawer
 import artistalleydatabase.modules.settings.generated.resources.settings_show_last_crash
-import artistalleydatabase.modules.settings.generated.resources.settings_show_licenses
 import artistalleydatabase.modules.settings.generated.resources.settings_subsection_feature_tiers
 import artistalleydatabase.modules.utils_compose.generated.resources.open
 import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_albums
@@ -67,7 +66,6 @@ object SettingsScreen {
         appMetadataProvider: AppMetadataProvider,
         upIconOption: UpIconOption?,
         onClickShowLastCrash: () -> Unit,
-        onClickShowLicenses: () -> Unit,
         onClickFeatureTiers: () -> Unit,
         onClickViewMediaHistory: () -> Unit,
         onClickViewMediaIgnore: () -> Unit,
@@ -111,11 +109,11 @@ object SettingsScreen {
                                 buttonTextRes = UtilsStrings.open,
                                 onClick = onClickShowLastCrash,
                             )
-                            "showLicenses" -> ButtonRow(
-                                labelTextRes = Res.string.settings_show_licenses,
-                                buttonTextRes = UtilsStrings.open,
-                                onClick = onClickShowLicenses,
-                            )
+//                            "showLicenses" -> ButtonRow(
+//                                labelTextRes = Res.string.settings_show_licenses,
+//                                buttonTextRes = UtilsStrings.open,
+//                                onClick = onClickShowLicenses,
+//                            )
                             "viewMediaHistory" -> ButtonRow(
                                 labelTextRes = Res.string.settings_media_history_view,
                                 buttonTextRes = UtilsStrings.open,

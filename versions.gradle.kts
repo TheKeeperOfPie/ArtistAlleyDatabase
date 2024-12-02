@@ -11,8 +11,6 @@ import Versions_gradle.Versions.androidx.palette
 import Versions_gradle.Versions.androidx.room
 import Versions_gradle.Versions.androidx.securityCrypto
 import Versions_gradle.Versions.androidx.sqlite
-import Versions_gradle.Versions.androidx.testExt
-import Versions_gradle.Versions.androidx.testRunner
 import Versions_gradle.Versions.androidx.tracing
 import Versions_gradle.Versions.androidx.work
 import Versions_gradle.Versions.apache.commonsCompress
@@ -21,15 +19,10 @@ import Versions_gradle.Versions.composeMultiplatform.runtime
 import Versions_gradle.Versions.google.appUpdate
 import Versions_gradle.Versions.google.billing
 import Versions_gradle.Versions.google.cronetOkHttp
-import Versions_gradle.Versions.google.ossLicensesPlugin
 import Versions_gradle.Versions.google.playServicesAds
 import Versions_gradle.Versions.google.playServicesCronet
-import Versions_gradle.Versions.google.playServicesOssLicenses
 import Versions_gradle.Versions.google.truth
 import Versions_gradle.Versions.google.userMessagingPlatform
-import Versions_gradle.Versions.junit.four
-import Versions_gradle.Versions.junit.jupiter
-import Versions_gradle.Versions.junit.jupiterAndroid
 import Versions_gradle.Versions.kotlin.coroutines
 import Versions_gradle.Versions.kotlin.datetime
 import Versions_gradle.Versions.kotlin.io
@@ -46,8 +39,6 @@ object Versions {
     object android {
         const val gradle = "8.9.0-alpha03"
     }
-
-    const val androidJunit5 = "1.11.2.0"
 
     object androidx {
         const val activity = "1.10.0-beta01"
@@ -110,10 +101,8 @@ object Versions {
         const val appUpdate = "2.1.0"
         const val billing = "7.1.1"
         const val cronetOkHttp = "0.1.0"
-        const val ossLicensesPlugin = "0.10.6"
         const val playServicesAds = "23.3.0"
         const val playServicesCronet = "18.1.0"
-        const val playServicesOssLicenses = "17.1.0"
         const val truth = "1.4.4"
         const val userMessagingPlatform = "3.0.0"
     }
@@ -123,16 +112,9 @@ object Versions {
     const val htmlText = "1.6.0"
     const val humanReadable = "1.10.0"
     const val jackson = "2.18.2"
-    const val jaredsBurrowsLicense = "0.9.8"
     const val javaPoet = "1.13.0"
     const val jimfs = "1.3.0"
     const val jsonTree = "2.4.0"
-
-    object junit {
-        const val four = "4.13.2"
-        const val jupiter = "5.11.3"
-        const val jupiterAndroid = "1.6.0"
-    }
 
     const val kermit = "2.0.5"
     const val kmpalette = "3.1.0"
@@ -201,9 +183,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.codingfeline.buildkonfig").version(Versions.buildKonfig)
                 plugin("com.github.ben-manes.versions").version(Versions.benManesVersions)
                 plugin("com.google.devtools.ksp").version(Versions.kotlin.ksp)
-                plugin("com.jaredsburrows.license").version(Versions.jaredsBurrowsLicense)
                 plugin("com.netflix.dgs.codegen").version(Versions.netflixDgsCodegen)
-                plugin("de.mannodermaus.android-junit5").version(Versions.androidJunit5)
                 plugin("dev.iurysouza.modulegraph").version(Versions.moduleGraph)
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.jetbrains.compose").version(Versions.composeMultiplatform.plugin)
@@ -273,9 +253,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("androidx.work:work-runtime-ktx")
                         library("androidx.work:work-runtime")
                     }
-
-                    library("androidx.test.ext:junit:$testExt", alias = "androidx.junit.test")
-                    library("androidx.test:runner:$testRunner", alias = "androidx.test.runner")
                 }
 
                 withVersion(Versions.material3) {
@@ -302,13 +279,11 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.android.billingclient:billing-ktx:$billing")
                     library("com.google.net.cronet:cronet-okhttp:$cronetOkHttp")
 
-                    library("com.google.android.gms:oss-licenses-plugin:$ossLicensesPlugin")
                     library("com.google.android.gms:play-services-ads:$playServicesAds")
                     library(
                         "com.google.android.gms:play-services-cronet:$playServicesCronet",
                         alias = "cronet.play",
                     )
-                    library("com.google.android.gms:play-services-oss-licenses:$playServicesOssLicenses")
                     library("com.google.truth:truth:$truth")
                     library("com.google.android.ump:user-messaging-platform:$userMessagingPlatform")
                 }
@@ -365,22 +340,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.jetbrains.kotlinx:kotlinx-serialization-json-io:$serialization")
                 }
 
-                with(Versions.junit) {
-                    withVersion(jupiter) {
-                        library("org.junit.jupiter:junit-jupiter-api")
-                        library("org.junit.jupiter:junit-jupiter-engine")
-                        library("org.junit.jupiter:junit-jupiter-params")
-                    }
-                    library("junit:junit:$four")
-
-                    prefix("junit5") {
-                        withVersion(jupiterAndroid) {
-                            library("de.mannodermaus.junit5:android-test-core")
-                            library("de.mannodermaus.junit5:android-test-runner")
-                            library("de.mannodermaus.junit5:android-test-compose")
-                        }
-                    }
-                }
 
                 withVersion(Versions.mockito) {
                     library("org.mockito:mockito-android")
@@ -440,7 +399,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.google.jimfs:jimfs:${Versions.jimfs}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
-                library("com.jaredsburrows:gradle-license-plugin:${Versions.jaredsBurrowsLicense}")
                 library("com.kmpalette:kmpalette-core:${Versions.kmpalette}")
                 library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")

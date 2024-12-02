@@ -20,7 +20,6 @@ kotlin {
             implementation(libs.okhttp)
         }
         commonTest.dependencies {
-            implementation(libs.junit)
             implementation(libs.ktor.client.mock)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.skrapeit)

@@ -307,7 +307,8 @@ class SettingsViewModel(
                     )
                 }
             },
-            SettingsSection.Placeholder(id = "showLicenses"),
+            // TODO: Re-add licenses
+//            SettingsSection.Placeholder(id = "showLicenses"),
             SettingsSection.Placeholder(id = "openLastCrash"),
         )
     )

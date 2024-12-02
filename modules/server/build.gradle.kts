@@ -9,18 +9,14 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.ktor.server.core.jvm)
-
 //            implementation(platform(libs.graphql.dgs.platform.dependencies))
             implementation(libs.jackson.databind)
-
             implementation(libs.manifold.graphql.rt)
         }
         commonTest.dependencies {
             implementation(projects.modules.anilist.data)
-            implementation(libs.junit.jupiter.api)
             implementation(libs.ktor.server.test.host)
             implementation(libs.truth)
-            runtimeOnly(libs.junit.jupiter.engine)
         }
     }
 }

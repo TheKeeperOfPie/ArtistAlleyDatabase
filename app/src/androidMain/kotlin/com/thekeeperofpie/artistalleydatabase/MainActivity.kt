@@ -70,7 +70,6 @@ import artistalleydatabase.app.generated.resources.Res
 import artistalleydatabase.app.generated.resources.crash_share_chooser_title
 import artistalleydatabase.app.generated.resources.nav_drawer_manga
 import com.anilist.data.type.MediaType
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
@@ -509,18 +508,6 @@ class MainActivity : ComponentActivity() {
                                         ?: UpIconOption.Back(navHostController),
                                     onClickShowLastCrash = {
                                         navHostController.navigate(AppNavDestinations.CRASH.id)
-                                    },
-                                    onClickShowLicenses = {
-                                        // TODO: Better UI for licenses
-                                        startActivity(
-                                            Intent(
-                                                this@MainActivity,
-                                                OssLicensesMenuActivity::class.java,
-                                            ).setClassName(
-                                                this@MainActivity,
-                                                OssLicensesMenuActivity::class.java.canonicalName!!,
-                                            )
-                                        )
                                     },
                                     onClickFeatureTiers = {
                                         navigationCallback.navigate(AnimeDestination.FeatureTiers)
