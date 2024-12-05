@@ -8,7 +8,7 @@ import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
@@ -41,7 +41,8 @@ class UserFavoriteCharactersViewModel(
 
     val userId = savedStateHandle.get<String?>("userId")
     val viewer = aniListApi.authedUser
-    val characters = MutableStateFlow(PagingData.empty<CharacterListRow.Entry>())
+    val characters =
+        MutableStateFlow(PagingData.empty<CharacterListRow.Entry<MediaWithListStatusEntry>>())
 
     private val refresh = RefreshFlow()
 

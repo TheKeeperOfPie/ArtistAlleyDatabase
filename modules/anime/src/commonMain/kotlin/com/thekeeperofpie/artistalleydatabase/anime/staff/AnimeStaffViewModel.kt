@@ -9,6 +9,7 @@ import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager2
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +30,7 @@ class AnimeStaffViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
     @Assisted mediaDetailsViewModel: AnimeMediaDetailsViewModel,
 ) : ViewModel() {
-    val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
+    val staff = MutableStateFlow(PagingData.empty<StaffDetails>())
 
     private val mediaId = savedStateHandle.get<String>("mediaId")!!
 
@@ -56,7 +57,7 @@ class AnimeStaffViewModel(
                                 skipCache
                             ).staff
                         result.pageInfo to result.edges.filterNotNull().map {
-                            DetailsStaff(
+                            StaffDetails(
                                 id = it.node.id.toString(),
                                 name = it.node.name,
                                 image = it.node.image?.large,

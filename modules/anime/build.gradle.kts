@@ -10,11 +10,13 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.anime.activities)
+            api(projects.modules.anime.characters)
             api(projects.modules.anime.favorites)
             api(projects.modules.anime.ignore.data)
             api(projects.modules.anime.media.data)
             api(projects.modules.anime.news)
             api(projects.modules.anime.recommendations)
+            api(projects.modules.anime.staff.data)
 
             implementation(projects.modules.anilist)
             implementation(projects.modules.anime.data)

@@ -28,9 +28,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_staff_details
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_years_active_beginning_and_end
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_years_active_label
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
@@ -75,21 +75,20 @@ object StaffOverviewScreen {
             charactersSection(
                 titleRes = Res.string.anime_staff_details_characters_label,
                 characters = characters,
-                onClickViewAll = {
-                    it.navigate(
-                        AnimeDestination.StaffCharacters(
-                            staffId = entry.staff.id.toString(),
-                            sharedTransitionKey = null,
-                            headerParams = StaffHeaderParams(
-                                name = staffName,
-                                subtitle = staffSubtitle,
-                                coverImage = coverImageState.toImageState(),
-                                favorite = viewModel.favoritesToggleHelper.favorite,
-                            )
+                viewAllRoute = {
+                    AnimeDestination.StaffCharacters(
+                        staffId = entry.staff.id.toString(),
+                        sharedTransitionKey = null,
+                        headerParams = StaffHeaderParams(
+                            name = staffName,
+                            subtitle = staffSubtitle,
+                            coverImage = coverImageState.toImageState(),
+                            favorite = viewModel.favoritesToggleHelper.favorite,
                         )
                     )
                 },
                 viewAllContentDescriptionTextRes = Res.string.anime_staff_details_view_all_content_description,
+                staffDetailsRoute = AnimeDestination.StaffDetails.route,
             )
 
             infoSection(entry = entry)

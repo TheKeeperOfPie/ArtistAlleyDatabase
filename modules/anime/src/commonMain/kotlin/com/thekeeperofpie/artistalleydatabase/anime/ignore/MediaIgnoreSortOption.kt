@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_sort_id
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_sort_id
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
 

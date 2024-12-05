@@ -52,15 +52,16 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
@@ -260,7 +261,7 @@ object StaffListRow {
                     contentDescriptionTextRes = UiRes.string.anime_character_image_content_description,
                     onClick = {
                         navigationCallback.navigate(
-                            AnimeDestination.CharacterDetails(
+                            CharacterDestinations.CharacterDetails(
                                 characterId = it.id.toString(),
                                 sharedTransitionScopeKey = sharedTransitionScopeKey,
                                 headerParams = CharacterHeaderParams(

@@ -19,7 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
@@ -76,7 +76,7 @@ class StaffDetailsViewModel(
     var error by mutableStateOf<Pair<StringResource, Exception?>?>(null)
     val showAdult get() = settings.showAdult
 
-    val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
+    val characters = MutableStateFlow(PagingData.empty<CharacterDetails>())
 
     val mediaTimeline = MutableStateFlow(MediaTimeline())
     private val mediaTimelineLastRequestedYear = MutableStateFlow<Int?>(null)
@@ -132,7 +132,7 @@ class StaffDetailsViewModel(
                 }
                 .mapLatest {
                     it.mapOnIO {
-                        DetailsCharacter(
+                        CharacterDetails(
                             id = it.id.toString(),
                             name = it.name,
                             image = it.image?.large,

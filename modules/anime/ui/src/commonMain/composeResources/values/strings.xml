@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="anime_media_cover_image_content_description">Media cover image</string>
-    <string name="anime_character_image_content_description">Character image</string>
     <string name="anime_staff_image">Staff image</string>
     <string name="anime_user_image">User image</string>
 
@@ -18,4 +17,13 @@
     <string name="anime_writing_replying_to">Replying to</string>
     <string name="anime_writing_send_button">Send</string>
     <string name="anime_writing_reply_fab_content_description">Reply</string>
+
+    <string name="anime_unfold_more_text">Expand</string>
+    <string name="anime_unfold_less_text">Collapse</string>
+    <string name="anime_cover_image_long_press_preview">Preview cover image</string>
+    <string name="anime_banner_image_content_description">Banner image</string>
+    <string name="anime_voice_actor_image">Voice actor image</string>
+
+    <string name="anime_character_image_content_description">Character image</string>
+    <string name="anime_staff_image_content_description">Staff image</string>
 </resources>

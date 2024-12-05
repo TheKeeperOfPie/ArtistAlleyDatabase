@@ -29,7 +29,8 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterCard
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
@@ -152,6 +153,7 @@ object MediaCharactersScreen {
                     minHeight = MIN_IMAGE_HEIGHT,
                     character = it,
                     voiceActorLanguage = voiceActorLanguage,
+                    staffDetailsRoute = AnimeDestination.StaffDetails.route,
                 )
             },
         )

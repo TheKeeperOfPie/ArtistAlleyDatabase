@@ -30,8 +30,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySortOptio
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activities.applyActivityFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
-import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDetails
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
@@ -43,7 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusC
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
-import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -109,8 +109,8 @@ class AniListUserViewModel(
 
     val anime = MutableStateFlow(PagingData.empty<MediaEntry>())
     val manga = MutableStateFlow(PagingData.empty<MediaEntry>())
-    val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
-    val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
+    val characters = MutableStateFlow(PagingData.empty<CharacterDetails>())
+    val staff = MutableStateFlow(PagingData.empty<StaffDetails>())
     var studios by mutableStateOf(StudiosEntry())
         private set
 
@@ -262,7 +262,7 @@ class AniListUserViewModel(
                 }
             },
             map = { (staff, primaryOccupations) ->
-                DetailsStaff(
+                StaffDetails(
                     id = staff.id.toString(),
                     name = staff.name,
                     image = staff.image?.large,

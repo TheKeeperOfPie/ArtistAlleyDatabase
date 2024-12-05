@@ -21,6 +21,7 @@ import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
+// TODO: Replace with custom variant enforcing use of a NavDestination
 val LocalNavHostController = staticCompositionLocalOf<NavHostController> { throw IllegalStateException("No NavHostController provided")}
 
 class NavigationTypeMap(val typeMap: Map<KType, NavType<*>>)

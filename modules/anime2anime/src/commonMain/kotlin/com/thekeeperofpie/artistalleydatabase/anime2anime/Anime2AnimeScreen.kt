@@ -65,7 +65,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.lifecycle.viewmodel.compose.viewModel
-import artistalleydatabase.modules.anime.generated.resources.anime_character_image_long_press_preview
+import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_image_long_press_preview
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
 import artistalleydatabase.modules.anime2anime.generated.resources.Res
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_app_bar_title
@@ -99,17 +99,18 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeStrings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.subtitleName
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.subtitleName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameContinuation
@@ -562,7 +563,7 @@ object Anime2AnimeScreen {
                 .combinedClickable(
                     onClick = {
                         navigationCallback.navigate(
-                            AnimeDestination.CharacterDetails(
+                            CharacterDestinations.CharacterDetails(
                                 characterId = character.id.toString(),
                                 sharedTransitionScopeKey = sharedTransitionScopeKey,
                                 headerParams = CharacterHeaderParams(
@@ -578,7 +579,8 @@ object Anime2AnimeScreen {
                         character.image?.large?.let(fullscreenImageHandler::openImage)
                     },
                     onLongClickLabel = stringResource(
-                        AnimeStrings.anime_character_image_long_press_preview
+                        artistalleydatabase.modules.anime.characters.generated.resources.Res.string
+                            .anime_character_image_long_press_preview
                     ),
                 ),
             contentScale = ContentScale.Crop
@@ -840,6 +842,7 @@ object Anime2AnimeScreen {
                         charactersDeferred = { continuation.characters.collectAsLazyPagingItems() },
                         contentPadding = PaddingValues(0.dp),
                         showVoiceActorAsMain = true,
+                        staffDetailsRoute = AnimeDestination.StaffDetails.route,
                         // TODO: View all characters
                     )
                 }

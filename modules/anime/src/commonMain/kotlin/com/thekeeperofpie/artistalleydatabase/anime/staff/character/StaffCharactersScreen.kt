@@ -11,10 +11,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_characters_header
 import com.anilist.data.StaffAndCharactersQuery
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeader
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
@@ -56,11 +58,17 @@ object StaffCharactersScreen {
                 itemKey = { it.character.id },
                 item = {
                     CharacterListRow(
-                        viewer = viewer,
                         entry = it,
-                        onClickListEdit = editViewModel::initialize,
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                        showRole = true
+                        showRole = true,
+                        staffDetailsRoute = AnimeDestination.StaffDetails.route,
+                        mediaItems = {
+                            characterMediaItems(
+                                media = it,
+                                viewer = { viewer },
+                                onClickListEdit = editViewModel::initialize,
+                            )
+                        },
                     )
                 },
                 modifier = Modifier.padding(it)

@@ -36,4 +36,25 @@
     <string name="anime_media_filter_airing_date_season_year_today_content_description">Set to current year</string>
     <string name="anime_media_filter_airing_date_season_basic">Basic</string>
     <string name="anime_media_filter_airing_date_season_advanced">Advanced</string>
+
+    <string name="anime_media_sort_default">Default</string>
+    <string name="anime_media_sort_id">Last added</string>
+    <string name="anime_media_sort_search_match">Search match</string>
+    <string name="anime_media_sort_title_romaji">Title (Romaji)</string>
+    <string name="anime_media_sort_title_english">Title (English)</string>
+    <string name="anime_media_sort_title_native">Title (native)</string>
+    <string name="anime_media_sort_type">Type</string>
+    <string name="anime_media_sort_format">Format</string>
+    <string name="anime_media_sort_start_date">Start date</string>
+    <string name="anime_media_sort_end_date">Finish date</string>
+    <string name="anime_media_sort_score">Score</string>
+    <string name="anime_media_sort_popularity">Popularity</string>
+    <string name="anime_media_sort_trending">Trending</string>
+    <string name="anime_media_sort_episodes">Episodes</string>
+    <string name="anime_media_sort_volumes">Volumes</string>
+    <string name="anime_media_sort_chapters">Chapters</string>
+    <string name="anime_media_sort_duration">Duration</string>
+    <string name="anime_media_sort_status">Status</string>
+    <string name="anime_media_sort_updated_at">Last updated</string>
+    <string name="anime_media_sort_favourites">Favorites</string>
 </resources>

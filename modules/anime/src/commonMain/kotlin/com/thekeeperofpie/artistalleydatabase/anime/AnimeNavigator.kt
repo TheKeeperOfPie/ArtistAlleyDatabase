@@ -52,10 +52,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinati
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityTab
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activities.activitiesSection
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
-import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
-import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasScreen
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumComposables
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchScreen
@@ -211,7 +209,7 @@ object AnimeNavigator {
             val charactersViewModel = viewModel {
                 component.animeCharactersViewModel(
                     createSavedStateHandle(),
-                    mediaDetailsViewModel,
+                    mediaDetailsViewModel.characters(),
                 )
             }
             val charactersDeferred =
@@ -305,9 +303,14 @@ object AnimeNavigator {
                         titleRes = Res.string.anime_media_details_characters_label,
                         charactersInitial = charactersViewModel.charactersInitial,
                         charactersDeferred = { charactersDeferred },
-                        mediaId = entry.mediaId,
-                        mediaHeaderParams = mediaHeaderParams(),
+                        viewAllRoute = {
+                            AnimeDestination.MediaCharacters(
+                                mediaId = entry.mediaId,
+                                headerParams = mediaHeaderParams(),
+                            )
+                        },
                         viewAllContentDescriptionTextRes = Res.string.anime_media_details_view_all_content_description,
+                        staffDetailsRoute = AnimeDestination.StaffDetails.route,
                     )
                 },
                 staffCount = { staff.itemCount },
@@ -466,55 +469,6 @@ object AnimeNavigator {
                         },
                     )
                 },
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.CharacterDetails>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}"
-                },
-                navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}/.*"
-                },
-            ),
-        ) {
-            val viewModel =
-                viewModel { component.animeCharacterDetailsViewModel(createSavedStateHandle()) }
-            val destination = it.toRoute<AnimeDestination.CharacterDetails>()
-            val headerValues = CharacterHeaderValues(
-                params = destination.headerParams,
-                character = { viewModel.entry.result?.character },
-                favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
-            )
-
-            SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
-                CharacterDetailsScreen(
-                    viewModel = viewModel,
-                    upIconOption = UpIconOption.Back(navHostController),
-                    headerValues = headerValues,
-                )
-            }
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.CharacterMedias>(
-            navigationTypeMap = navigationTypeMap
-        ) {
-            val destination = it.toRoute<AnimeDestination.CharacterMedias>()
-            val viewModel =
-                viewModel { component.characterMediasViewModel(createSavedStateHandle()) }
-            val headerValues = CharacterHeaderValues(
-                params = destination.headerParams,
-                character = { viewModel.entry.result?.character },
-                favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
-            )
-
-            CharacterMediasScreen(
-                viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
-                headerValues = headerValues,
-                sharedTransitionKey = destination.sharedTransitionKey,
             )
         }
 
@@ -1065,9 +1019,9 @@ object AnimeNavigator {
         }
 
         ActivityDestinations.addToGraph(
-            navGraphBuilder,
-            navigationTypeMap,
-            component,
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
             userRoute = AnimeDestination.User.route,
             mediaDetailsRoute = AnimeDestination::MediaDetails,
             mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
@@ -1080,6 +1034,30 @@ object AnimeNavigator {
                 )
             },
             mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+        )
+
+        CharacterDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaRow = { entry, viewer, label, onClickListEdit, modifier ->
+                AnimeMediaListRow(
+                    entry = entry,
+                    viewer = viewer,
+                    label = label,
+                    onClickListEdit = onClickListEdit,
+                    modifier = modifier
+                )
+            },
+            staffSection = { titleRes, staff, roleLines ->
+                staffSection(
+                    titleRes = titleRes,
+                    staffList = staff,
+                    roleLines = roleLines
+                )
+            },
+            mediaEntryProvider = MediaPreviewEntry.Provider,
         )
     }
 

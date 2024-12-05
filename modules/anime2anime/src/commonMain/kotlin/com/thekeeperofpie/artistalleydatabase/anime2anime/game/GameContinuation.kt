@@ -11,9 +11,9 @@ import com.anilist.data.fragment.CharacterNavigationData
 import com.anilist.data.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
-import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import kotlinx.coroutines.CoroutineScope
 
@@ -59,7 +59,7 @@ data class GameContinuation(
                 ?.staff
                 .let {
                     it?.pageInfo to it?.edges?.filterNotNull().orEmpty().map {
-                        DetailsStaff(
+                        StaffDetails(
                             id = it.node.id.toString(),
                             name = it.node.name,
                             image = it.node.image?.large,

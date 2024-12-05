@@ -7,12 +7,10 @@
     <string name="anime_auth_button_why">Why?</string>
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_banner_image_content_description">Media banner image</string>
-    <string name="anime_staff_image_content_description">Staff image</string>
     <string name="anime_media_artist_image">Artist image</string>
     <string name="anime_media_artist_no_image">No artist image</string>
     <string name="anime_media_voice_actor_image">Voice actor image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
-    <string name="anime_character_error_loading">Error loading character</string>
     <string name="anime_staff_error_loading">Error loading staff</string>
     <string name="anime_media_list_no_results">No results</string>
     <string name="anime_screen_home">Home</string>
@@ -22,27 +20,6 @@
     <string name="anime_screen_profile">Profile</string>
     <string name="anime_screen_unlock">Unlock</string>
     <string name="anime_description_spoiler">[Spoiler]</string>
-
-    <string name="anime_media_sort_default">Default</string>
-    <string name="anime_media_sort_id">Last added</string>
-    <string name="anime_media_sort_search_match">Search match</string>
-    <string name="anime_media_sort_title_romaji">Title (Romaji)</string>
-    <string name="anime_media_sort_title_english">Title (English)</string>
-    <string name="anime_media_sort_title_native">Title (native)</string>
-    <string name="anime_media_sort_type">Type</string>
-    <string name="anime_media_sort_format">Format</string>
-    <string name="anime_media_sort_start_date">Start date</string>
-    <string name="anime_media_sort_end_date">Finish date</string>
-    <string name="anime_media_sort_score">Score</string>
-    <string name="anime_media_sort_popularity">Popularity</string>
-    <string name="anime_media_sort_trending">Trending</string>
-    <string name="anime_media_sort_episodes">Episodes</string>
-    <string name="anime_media_sort_volumes">Volumes</string>
-    <string name="anime_media_sort_chapters">Chapters</string>
-    <string name="anime_media_sort_duration">Duration</string>
-    <string name="anime_media_sort_status">Status</string>
-    <string name="anime_media_sort_updated_at">Last updated</string>
-    <string name="anime_media_sort_favourites">Favorites</string>
 
     <string name="anime_media_list_sort_default">Default</string>
     <string name="anime_media_list_sort_average_score">Average score</string>
@@ -533,40 +510,7 @@
     <string name="anime_media_view_option_grid">Grid</string>
     <string name="anime_media_view_option_icon_content_description">Change view type</string>
 
-    <string name="anime_character_filter_sort_label">Sort</string>
-    <string name="anime_character_filter_birthday_label">Birthday today</string>
-    <string name="anime_character_filter_setting_name_language">Name language</string>
-
-    <string name="anime_character_details_voice_actors_label">Voice actors</string>
-    <string name="anime_character_details_media_label">Media</string>
-    <string name="anime_character_details_age_label">Age</string>
-    <string name="anime_character_details_date_of_birth_label">Date of birth</string>
-    <string name="anime_character_details_gender_label">Gender</string>
-    <string name="anime_character_details_blood_type_label">Blood type</string>
-    <string name="anime_character_details_favorites_label">Favorites</string>
-    <string name="anime_character_details_alternative_names_label">Alternative names</string>
-    <string name="anime_character_details_alternative_names_expand_content_description">Alternative names expand</string>
-    <string name="anime_character_details_alternative_names_spoiler_expand_content_description">Alternative names spoiler expand</string>
-    <string name="anime_character_details_alternative_names_spoiler_warning">Spoiler</string>
-    <string name="anime_character_details_alternative_names_spoiler_warning_content_description">Character alternative name spoiler warning icon</string>
-    <string name="anime_character_details_view_all_content_description">View all</string>
-    <string name="anime_character_details_more_actions_content_description">More actions</string>
-    <string name="anime_character_details_open_external">Open in external</string>
-    <string name="anime_character_details_open_external_icon_content_description">Open in external</string>
-
-    <string name="anime_character_role_main">Main</string>
-    <string name="anime_character_role_supporting">Supporting</string>
-    <string name="anime_character_role_background">Background</string>
-    <string name="anime_character_role_unknown">Unknown</string>
-
-    <string name="anime_character_sort_id">Last added</string>
-    <string name="anime_character_sort_role">Role</string>
-    <string name="anime_character_sort_search_match">Search match</string>
-    <string name="anime_character_sort_favorites">Favorites</string>
-    <string name="anime_character_sort_relevance">Relevance</string>
     <string name="anime_character_image">Character image</string>
-    <string name="anime_character_image_long_press_preview">Preview character image</string>
-    <string name="anime_character_favorites_icon_content_description">Favorites</string>
 
     <string name="anime_characters_error_loading">Error loading characters</string>
     <string name="anime_characters_header">Characters</string>
@@ -682,12 +626,6 @@
     <string name="anime_review_filter_media_expand_content_description">Media expand</string>
 
     <string name="anime_recommendations_home_title">RECOMMENDATIONS</string>
-
-    <string name="anime_character_medias_error_loading">Error loading media</string>
-    <string name="anime_character_medias_header">Media</string>
-    <string name="anime_character_media_filter_sort_label">Sort</string>
-    <string name="anime_character_media_filter_on_list_label">On list</string>
-    <string name="anime_character_media_filter_setting_title_language">Title language</string>
 
     <string name="anime_staff_characters_error_loading">Error loading characters</string>
     <string name="anime_staff_characters_header">Characters</string>
@@ -837,7 +775,4 @@
     <!-- TODO: Move this elsewhere -->
     <string name="last_crash_notification">App crash detected</string>
     <string name="last_crash_notification_button">Show</string>
-
-    <string name="anime_unfold_more_text">Expand</string>
-    <string name="anime_unfold_less_text">Collapse</string>
 </resources>

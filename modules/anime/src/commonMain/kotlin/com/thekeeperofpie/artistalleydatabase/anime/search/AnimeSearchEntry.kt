@@ -1,9 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import com.anilist.data.fragment.MediaPreviewWithDescription
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -50,7 +51,7 @@ sealed interface AnimeSearchEntry {
     }
 
     data class Character(
-        val entry: CharacterListRow.Entry,
+        val entry: CharacterListRow.Entry<MediaWithListStatusEntry>,
     ) : AnimeSearchEntry {
         override val entryId = EntryId("character", entry.character.id.toString())
     }

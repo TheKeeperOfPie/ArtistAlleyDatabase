@@ -7,9 +7,7 @@ import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeMediaDetailsActivityViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharactersViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersComponent
 import com.thekeeperofpie.artistalleydatabase.anime.forum.AnimeForumThreadsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreenViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchViewModel
@@ -59,12 +57,10 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
     throw IllegalArgumentException("No AnimeComponent provided")
 }
 
-interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent {
+interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent {
 
     val airingScheduleViewModel: () -> AiringScheduleViewModel
     val aniListUserViewModel: (SavedStateHandle, MediaDetailsRoute) -> AniListUserViewModel
-    val animeCharacterDetailsViewModel: (SavedStateHandle) -> AnimeCharacterDetailsViewModel
-    val animeCharactersViewModel: (SavedStateHandle, AnimeMediaDetailsViewModel) -> AnimeCharactersViewModel
     val animeForumThreadsViewModel: (SavedStateHandle, AnimeMediaDetailsViewModel) -> AnimeForumThreadsViewModel
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
@@ -85,7 +81,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent {
         mediaType: MediaType,
         status: MediaListStatus?,
     ) -> AnimeUserListViewModel
-    val characterMediasViewModel: (SavedStateHandle) -> CharacterMediasViewModel
     val forumRootScreenViewModel: () -> ForumRootScreenViewModel
     val forumSearchViewModel: (SavedStateHandle) -> ForumSearchViewModel
     val forumThreadCommentTreeViewModel: (SavedStateHandle) -> ForumThreadCommentTreeViewModel

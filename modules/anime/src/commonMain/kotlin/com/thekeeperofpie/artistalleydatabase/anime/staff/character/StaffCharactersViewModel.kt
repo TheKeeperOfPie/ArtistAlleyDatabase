@@ -10,8 +10,8 @@ import com.anilist.data.fragment.CharacterWithRoleAndFavorites
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
@@ -44,7 +44,7 @@ class StaffCharactersViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-) : HeaderAndListViewModel<StaffCharactersScreen.Entry, CharacterWithRoleAndFavorites, CharacterListRow.Entry, CharacterSortOption, StaffCharactersSortFilterController.FilterParams>(
+) : HeaderAndListViewModel<StaffCharactersScreen.Entry, CharacterWithRoleAndFavorites, CharacterListRow.Entry<MediaWithListStatusEntry>, CharacterSortOption, StaffCharactersSortFilterController.FilterParams>(
     aniListApi = aniListApi,
     loadingErrorTextRes = Res.string.anime_staff_characters_error_loading,
 ) {
@@ -73,7 +73,7 @@ class StaffCharactersViewModel(
             .map(::MediaWithListStatusEntry),
     )
 
-    override fun entryId(entry: CharacterListRow.Entry) = entry.character.id.toString()
+    override fun entryId(entry: CharacterListRow.Entry<MediaWithListStatusEntry>) = entry.character.id.toString()
 
     override suspend fun initialRequest(
         filterParams: StaffCharactersSortFilterController.FilterParams?,
@@ -89,7 +89,7 @@ class StaffCharactersViewModel(
         page = page,
     ).staff.characters.run { pageInfo to edges }
 
-    override fun Flow<PagingData<CharacterListRow.Entry>>.transformFlow() =
+    override fun Flow<PagingData<CharacterListRow.Entry<MediaWithListStatusEntry>>>.transformFlow() =
         flatMapLatest {
             combine(
                 mediaListStatusController.allChanges(),

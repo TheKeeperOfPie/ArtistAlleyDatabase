@@ -52,7 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
@@ -158,15 +158,14 @@ object UserOverviewScreen {
             charactersSection(
                 titleRes = Res.string.anime_user_favorite_characters_label,
                 characters = characters,
-                onClickViewAll = {
-                    it.navigate(
-                        AnimeDestination.UserFavoriteCharacters(
-                            userId = userId,
-                            userName = user.name,
-                        )
+                viewAllRoute = {
+                    AnimeDestination.UserFavoriteCharacters(
+                        userId = userId,
+                        userName = user.name,
                     )
                 },
                 viewAllContentDescriptionTextRes = Res.string.anime_user_favorite_media_view_all_character_content_description,
+                staffDetailsRoute = AnimeDestination.StaffDetails.route,
             )
 
             staffSection(

@@ -6,6 +6,7 @@ import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaSource
 import com.anilist.data.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 

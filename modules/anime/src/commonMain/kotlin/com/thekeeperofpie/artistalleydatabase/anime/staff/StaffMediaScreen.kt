@@ -25,11 +25,12 @@ import artistalleydatabase.modules.anime.generated.resources.anime_staff_media_y
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.anime.character.rememberImageStateBelowInnerImage
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.characters.rememberImageStateBelowInnerImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -94,7 +95,7 @@ object StaffMediaScreen {
                                     innerImageState = innerImageState,
                                     onClick = {
                                         navigationCallback.navigate(
-                                            AnimeDestination.CharacterDetails(
+                                            CharacterDestinations.CharacterDetails(
                                                 characterId = it.character.id.toString(),
                                                 sharedTransitionScopeKey = sharedTransitionScopeKey,
                                                 headerParams = CharacterHeaderParams(

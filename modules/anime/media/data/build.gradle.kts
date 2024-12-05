@@ -23,3 +23,7 @@ kotlin {
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.anime.media.data"
 }
+
+compose.resources {
+    publicResClass = true
+}

@@ -41,7 +41,7 @@ suspend fun <T> FlowCollector<T>.emitNotNull(value: T?) {
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <Input, Output> suspend1(
-    noinline block: suspend (Input) -> Output
+    noinline block: suspend (Input) -> Output,
 ): suspend (Input) -> Output = block
 
 infix fun <A, B, C> Pair<A, B>.to(third: C): Triple<A, B, C> = Triple(first, second, third)
@@ -86,7 +86,7 @@ fun <T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, R> combine(
     flow10: Flow<T10>,
     flow11: Flow<T11>,
     flow12: Flow<T12>,
-    transform: suspend (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12) -> R
+    transform: suspend (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12) -> R,
 ): Flow<R> = kotlinx.coroutines.flow.combine(
     flow0,
     flow1,
@@ -135,7 +135,7 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, R> combine(
     flow12: Flow<T12>,
     flow13: Flow<T13>,
     flow14: Flow<T14>,
-    transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) -> R
+    transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) -> R,
 ): Flow<R> = kotlinx.coroutines.flow.combine(
     flow,
     flow2,
@@ -187,7 +187,7 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R> combin
     flow13: Flow<T13>,
     flow14: Flow<T14>,
     flow15: Flow<T15>,
-    transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15) -> R
+    transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15) -> R,
 ): Flow<R> = kotlinx.coroutines.flow.combine(
     flow,
     flow2,

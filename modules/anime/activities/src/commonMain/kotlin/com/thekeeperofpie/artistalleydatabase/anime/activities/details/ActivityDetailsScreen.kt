@@ -80,9 +80,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpd
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.activities.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow

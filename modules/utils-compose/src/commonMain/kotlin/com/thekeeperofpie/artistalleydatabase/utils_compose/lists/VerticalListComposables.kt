@@ -41,150 +41,153 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.remember
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-@Composable
-fun <Item : Any> VerticalList(
-    itemHeaderText: StringResource?,
-    items: LazyPagingItems<Item>,
-    itemKey: (Item) -> Any,
-    itemContentType: ((Item) -> Any)? = null,
-    item: @Composable LazyGridItemScope.(Item?) -> Unit,
-    onRefresh: () -> Unit,
-    modifier: Modifier = Modifier,
-    gridState: LazyGridState = rememberLazyGridState(),
-    nestedScrollConnection: NestedScrollConnection? = null,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    contentPadding: PaddingValues = PaddingValues(bottom = 32.dp),
-) {
-    val refreshState = items.loadState.refresh
-    val refreshing = refreshState is LoadState.Loading
-    val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh)
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
+object VerticalList {
+
+    @Composable
+    operator fun <Item : Any> invoke(
+        itemHeaderText: StringResource?,
+        items: LazyPagingItems<Item>,
+        itemKey: (Item) -> Any,
+        itemContentType: ((Item) -> Any)? = null,
+        item: @Composable LazyGridItemScope.(Item?) -> Unit,
+        onRefresh: () -> Unit,
+        modifier: Modifier = Modifier,
+        gridState: LazyGridState = rememberLazyGridState(),
+        nestedScrollConnection: NestedScrollConnection? = null,
+        verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+        horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+        contentPadding: PaddingValues = PaddingValues(bottom = 32.dp),
     ) {
-        LazyVerticalGrid(
-            state = gridState,
-            columns = GridCells.Adaptive(450.dp),
-            contentPadding = contentPadding,
-            verticalArrangement = verticalArrangement,
-            horizontalArrangement = horizontalArrangement,
-            modifier = Modifier
-                .conditionallyNonNull(nestedScrollConnection) { nestedScroll(it) }
+        val refreshState = items.loadState.refresh
+        val refreshing = refreshState is LoadState.Loading
+        val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh)
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .pullRefresh(pullRefreshState)
         ) {
-            if (itemHeaderText != null) {
-                item(
-                    key = "header",
-                    span = GridUtils.maxSpanFunction,
-                    contentType = "detailsSectionHeader",
-                ) {
-                    DetailsSectionHeader(text = stringResource(itemHeaderText))
-                }
-            }
-            when {
-                refreshState is LoadState.Error && items.itemCount == 0 ->
-                    item(key = "errorLoading", span = GridUtils.maxSpanFunction) {
-                        ErrorContent(
-                            errorText = stringResource(Res.string.error_loading),
-                            exception = refreshState.error,
-                        )
+            LazyVerticalGrid(
+                state = gridState,
+                columns = GridCells.Adaptive(450.dp),
+                contentPadding = contentPadding,
+                verticalArrangement = verticalArrangement,
+                horizontalArrangement = horizontalArrangement,
+                modifier = Modifier
+                    .conditionallyNonNull(nestedScrollConnection) { nestedScroll(it) }
+            ) {
+                if (itemHeaderText != null) {
+                    item(
+                        key = "header",
+                        span = GridUtils.maxSpanFunction,
+                        contentType = "detailsSectionHeader",
+                    ) {
+                        DetailsSectionHeader(text = stringResource(itemHeaderText))
                     }
-                refreshState is LoadState.NotLoading && items.itemCount == 0 ->
-                    item(key = "errorNoResults", span = GridUtils.maxSpanFunction) {
-                        Box(
-                            contentAlignment = Alignment.TopCenter,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                stringResource(Res.string.no_results),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(
-                                    horizontal = 16.dp,
-                                    vertical = 10.dp
-                                ),
+                }
+                when {
+                    refreshState is LoadState.Error && items.itemCount == 0 ->
+                        item(key = "errorLoading", span = GridUtils.maxSpanFunction) {
+                            ErrorContent(
+                                errorText = stringResource(Res.string.error_loading),
+                                exception = refreshState.error,
                             )
                         }
-                    }
-                else -> {
-                    items(
-                        count = items.itemCount,
-                        key = items.itemKey { itemKey(it) },
-                        contentType = items.itemContentType { itemContentType?.invoke(it) },
-                    ) {
-                        item(items[it])
-                    }
+                    refreshState is LoadState.NotLoading && items.itemCount == 0 ->
+                        item(key = "errorNoResults", span = GridUtils.maxSpanFunction) {
+                            Box(
+                                contentAlignment = Alignment.TopCenter,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    stringResource(Res.string.no_results),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(
+                                        horizontal = 16.dp,
+                                        vertical = 10.dp
+                                    ),
+                                )
+                            }
+                        }
+                    else -> {
+                        items(
+                            count = items.itemCount,
+                            key = items.itemKey { itemKey(it) },
+                            contentType = items.itemContentType { itemContentType?.invoke(it) },
+                        ) {
+                            item(items[it])
+                        }
 
-                    when (items.loadState.append) {
-                        is LoadState.Loading -> item(
-                            key = "load_more_append",
-                            span = GridUtils.maxSpanFunction
-                        ) {
-                            LoadingMore()
+                        when (items.loadState.append) {
+                            is LoadState.Loading -> item(
+                                key = "load_more_append",
+                                span = GridUtils.maxSpanFunction
+                            ) {
+                                LoadingMore()
+                            }
+                            is LoadState.Error -> item(
+                                key = "load_more_error",
+                                span = GridUtils.maxSpanFunction
+                            ) {
+                                ErrorAppend { items.retry() }
+                            }
+                            is LoadState.NotLoading -> Unit
                         }
-                        is LoadState.Error -> item(
-                            key = "load_more_error",
-                            span = GridUtils.maxSpanFunction
-                        ) {
-                            ErrorAppend { items.retry() }
-                        }
-                        is LoadState.NotLoading -> Unit
                     }
                 }
             }
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
-        PullRefreshIndicator(
-            refreshing = refreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
     }
-}
 
-@Composable
-private fun LoadingMore() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-    ) {
-        CircularProgressIndicator()
+    @Composable
+    private fun LoadingMore() {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+        ) {
+            CircularProgressIndicator()
+        }
     }
-}
 
-@Composable
-fun ErrorContent(
-    errorText: String,
-    exception: Throwable? = null,
-) {
-    Text(
-        text = errorText,
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-    )
-
-    if (exception != null) {
-        Text(
-            text = exception.stackTraceToString(),
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-        )
-    }
-}
-
-@Composable
-private fun ErrorAppend(onRetry: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onRetry),
+    @Composable
+    fun ErrorContent(
+        errorText: String,
+        exception: Throwable? = null,
     ) {
         Text(
-            stringResource(Res.string.error_loading),
+            text = errorText,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
         )
+
+        if (exception != null) {
+            Text(
+                text = exception.stackTraceToString(),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            )
+        }
+    }
+
+    @Composable
+    private fun ErrorAppend(onRetry: () -> Unit) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onRetry),
+        ) {
+            Text(
+                stringResource(Res.string.error_loading),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            )
+        }
     }
 }

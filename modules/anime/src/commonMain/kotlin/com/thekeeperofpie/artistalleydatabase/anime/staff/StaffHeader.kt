@@ -30,8 +30,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_staff_details
 import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_open_external_icon_content_description
 import com.anilist.data.fragment.StaffHeaderData
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton

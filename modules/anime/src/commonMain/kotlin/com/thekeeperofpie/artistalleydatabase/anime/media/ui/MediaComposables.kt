@@ -1,11 +1,13 @@
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,9 +18,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -42,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -53,6 +58,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_genre_d
 import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_population_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_no_description_error
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaFormat
@@ -61,7 +67,9 @@ import com.anilist.data.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
@@ -69,22 +77,31 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescri
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 fun <T> LazyGridScope.mediaListSection(
     onClickListEdit: (MediaNavigationData) -> Unit,
@@ -614,5 +631,65 @@ fun MediaViewOptionRow(
             forceListEditIcon = forceListEditIcon,
             showQuickEdit = showQuickEdit,
         )
+    }
+}
+
+
+fun LazyListScope.characterMediaItems(
+    media: List<MediaWithListStatusEntry?>,
+    viewer: () -> AniListViewer?,
+    onClickListEdit: (MediaNavigationData) -> Unit,
+) {
+    itemsIndexed(
+        media,
+        key = { index, item -> item?.media?.id ?: "placeholder_$index" },
+    ) { index, item ->
+        Box {
+            val languageOptionMedia = LocalLanguageOptionMedia.current
+            val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
+            val sharedTransitionKey = item?.media?.id?.toString()
+                ?.let { SharedTransitionKey.makeKeyForId(it) }
+            val sharedContentState =
+                rememberSharedContentState(sharedTransitionKey, "media_image")
+            val navHostController = LocalNavHostController.current
+            val density = LocalDensity.current
+            ListRowSmallImage(
+                density = density,
+                ignored = item?.mediaFilterable?.ignored ?: false,
+                imageState = imageState,
+                contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
+                onClick = {
+                    if (item != null) {
+                        navHostController.navigate(
+                            AnimeDestination.MediaDetails(
+                                mediaNavigationData = item.media,
+                                coverImage = imageState.toImageState(),
+                                languageOptionMedia = languageOptionMedia,
+                                sharedTransitionKey = sharedTransitionKey,
+                            )
+                        )
+                    }
+                },
+                width = 80.dp,
+                height = 120.dp,
+                modifier = Modifier.sharedElement(sharedContentState)
+            )
+
+            val viewer = viewer()
+            if (viewer != null && item != null) {
+                MediaListQuickEditIconButton(
+                    viewer = viewer,
+                    mediaType = item.media.type,
+                    media = item.mediaFilterable,
+                    maxProgress = MediaUtils.maxProgress(item.media),
+                    maxProgressVolumes = item.media.volumes,
+                    onClick = { onClickListEdit(item.media) },
+                    padding = 6.dp,
+                    modifier = Modifier
+                        .animateSharedTransitionWithOtherState(sharedContentState)
+                        .align(Alignment.BottomStart)
+                )
+            }
+        }
     }
 }

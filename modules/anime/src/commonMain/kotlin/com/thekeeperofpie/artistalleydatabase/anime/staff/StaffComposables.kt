@@ -29,8 +29,9 @@ import coil3.request.crossfade
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
@@ -50,7 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 
 fun LazyGridScope.staffSection(
     titleRes: StringResource?,
-    staffList: LazyPagingItems<DetailsStaff>,
+    staffList: LazyPagingItems<StaffDetails>,
     roleLines: Int = 1,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     viewAllContentDescriptionTextRes: StringResource? = null,
@@ -82,7 +83,7 @@ fun LazyGridScope.staffSection(
 
 @Composable
 fun StaffListRow(
-    staffList: @Composable () -> LazyPagingItems<DetailsStaff>,
+    staffList: @Composable () -> LazyPagingItems<StaffDetails>,
     roleLines: Int = 1,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
 ) {

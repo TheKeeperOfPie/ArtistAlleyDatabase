@@ -213,7 +213,7 @@ class AnimeMediaDetailsViewModel(
 
     fun recommendations() = snapshotFlow { state.mediaEntry.result?.media?.recommendations }
 
-    fun mediaEntryFlow() = snapshotFlow { state.mediaEntry.result }.filterNotNull()
+    fun characters() = snapshotFlow { state.mediaEntry.result?.media?.characters }
 
     override fun mediaEntry(media: MediaPreview) = MediaPreviewEntry(media)
 

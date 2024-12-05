@@ -9,9 +9,9 @@ import com.anilist.data.fragment.CharacterWithRole
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
-import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDetails
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
@@ -31,7 +31,7 @@ class MediaCharactersViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-) : HeaderAndListViewModel<MediaCharactersScreen.Entry, CharacterWithRole, DetailsCharacter, CharacterSortOption, MediaCharactersSortFilterController.FilterParams>(
+) : HeaderAndListViewModel<MediaCharactersScreen.Entry, CharacterWithRole, CharacterDetails, CharacterSortOption, MediaCharactersSortFilterController.FilterParams>(
     aniListApi = aniListApi,
     loadingErrorTextRes = Res.string.anime_characters_error_loading,
 ) {
@@ -57,7 +57,7 @@ class MediaCharactersViewModel(
     override fun makeEntry(item: CharacterWithRole) =
         CharacterUtils.toDetailsCharacter(item) { item.role }
 
-    override fun entryId(entry: DetailsCharacter) = entry.id
+    override fun entryId(entry: CharacterDetails) = entry.id
 
     override suspend fun initialRequest(
         filterParams: MediaCharactersSortFilterController.FilterParams?,

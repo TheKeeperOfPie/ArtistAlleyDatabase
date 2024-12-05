@@ -34,9 +34,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_ign
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification_button
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anime.activities.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState

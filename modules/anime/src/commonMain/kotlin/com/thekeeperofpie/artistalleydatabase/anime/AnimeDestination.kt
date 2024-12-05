@@ -16,13 +16,14 @@ import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.activities.UserRoute
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.characters.StaffDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
@@ -56,20 +57,6 @@ sealed interface AnimeDestination : NavDestination {
 
     @Serializable
     data object AiringSchedule : AnimeDestination
-
-    @Serializable
-    data class CharacterDetails(
-        val characterId: String,
-        val sharedTransitionScopeKey: String? = null,
-        val headerParams: CharacterHeaderParams? = null,
-    ) : AnimeDestination
-
-    @Serializable
-    data class CharacterMedias(
-        val characterId: String,
-        val sharedTransitionKey: SharedTransitionKey? = null,
-        val headerParams: CharacterHeaderParams? = null,
-    ) : AnimeDestination
 
     @Serializable
     data object FeatureTiers : AnimeDestination
@@ -287,7 +274,23 @@ sealed interface AnimeDestination : NavDestination {
         val staffId: String,
         val sharedTransitionKey: SharedTransitionKey? = null,
         val headerParams: StaffHeaderParams? = null,
-    ) : AnimeDestination
+    ) : AnimeDestination {
+        companion object {
+            val route: StaffDetailsRoute =
+                { id, sharedTransitionKey, name, subtitle, image, favorite ->
+                    AnimeDestination.StaffDetails(
+                        staffId = id,
+                        sharedTransitionKey = sharedTransitionKey,
+                        headerParams = StaffHeaderParams(
+                            name = name,
+                            subtitle = subtitle,
+                            coverImage = image,
+                            favorite = favorite,
+                        )
+                    )
+                }
+        }
+    }
 
     @Serializable
     data class StudioMedias(
