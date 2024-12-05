@@ -74,7 +74,7 @@ object AniListViewerProfileScreen {
             val viewModel = viewModel {
                 animeComponent.aniListUserViewModel(
                     createSavedStateHandle(),
-                    AnimeDestination::MediaDetails,
+                    AnimeDestination.MediaDetails.route,
                 )
             }
             val headerValues = UserHeaderValues(null) { viewModel.entry?.user }

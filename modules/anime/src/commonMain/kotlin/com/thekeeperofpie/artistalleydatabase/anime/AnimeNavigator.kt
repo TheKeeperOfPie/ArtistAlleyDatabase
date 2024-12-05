@@ -78,7 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactLi
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationComposables
-import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.media.MediaRecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.recommendationsSection
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewComposables
@@ -96,7 +96,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharact
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaScreen
@@ -244,7 +243,7 @@ object AnimeNavigator {
             val recommendationsViewModel = viewModel {
                 component
                     .animeMediaDetailsRecommendationsViewModelFactory(createSavedStateHandle())
-                    .create(mediaDetailsViewModel.recommendations(), mediaDetailsViewModel)
+                    .create(mediaDetailsViewModel.recommendations(), MediaPreviewEntry.Provider)
             }
 
             val activitiesViewModel = viewModel {
@@ -526,7 +525,7 @@ object AnimeNavigator {
             val viewModel = viewModel {
                 component.aniListUserViewModel(
                     createSavedStateHandle(),
-                    AnimeDestination::MediaDetails,
+                    AnimeDestination.MediaDetails.route,
                 )
             }
             val destination = it.toRoute<AnimeDestination.User>()
@@ -601,65 +600,6 @@ object AnimeNavigator {
             ReviewsScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.Recommendations>(navigationTypeMap) {
-            val viewModel = viewModel {
-                component.recommendationsViewModelFactory(AnimeDestination::MediaDetails)
-                    .create(MediaCompactWithTagsEntry.Provider)
-            }
-            val editViewModel = viewModel { component.mediaEditViewModel() }
-            MediaEditBottomSheetScaffold(viewModel = editViewModel) {
-                RecommendationsScreen(
-                    upIconOption = UpIconOption.Back(navHostController),
-                    viewModel = viewModel,
-                    mediaRows = { media, mediaRecommendation ->
-                        SharedTransitionKeyScope(
-                            "recommendation",
-                            media?.media?.id.toString(),
-                            mediaRecommendation?.media?.id.toString(),
-                        ) {
-                            AnimeMediaCompactListRow(
-                                viewer = viewModel.viewer.collectAsState().value,
-                                entry = media,
-                                modifier = Modifier.padding(
-                                    start = 8.dp,
-                                    end = 8.dp,
-                                    bottom = 8.dp
-                                ),
-                                onClickListEdit = {
-                                    if (media != null) {
-                                        editViewModel.initialize(media.media)
-                                    }
-                                },
-                            )
-
-                            AnimeMediaCompactListRow(
-                                viewer = viewModel.viewer.collectAsState().value,
-                                entry = mediaRecommendation,
-                                modifier = Modifier.padding(horizontal = 8.dp),
-                                onClickListEdit = {
-                                    if (mediaRecommendation != null) {
-                                        editViewModel.initialize(mediaRecommendation.media)
-                                    }
-                                },
-                            )
-                        }
-                    },
-                    userRoute = { userId, userName, imageState, sharedTransitionKey ->
-                        AnimeDestination.User(
-                            userId = userId,
-                            sharedTransitionKey = sharedTransitionKey,
-                            headerParams = UserHeaderParams(
-                                name = userName,
-                                bannerImage = null,
-                                coverImage = imageState,
-                            )
-                        )
-                    },
-                    modifier = Modifier.padding(it)
-                )
-            }
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaRecommendations>(
@@ -740,7 +680,7 @@ object AnimeNavigator {
             val viewModel = viewModel {
                 component.mediaActivitiesViewModel(
                     createSavedStateHandle(),
-                    AnimeDestination::MediaDetails,
+                    AnimeDestination.MediaDetails.route,
                 )
             }
             val destination = it.toRoute<AnimeDestination.MediaActivities>()
@@ -1023,7 +963,7 @@ object AnimeNavigator {
             navigationTypeMap = navigationTypeMap,
             component = component,
             userRoute = AnimeDestination.User.route,
-            mediaDetailsRoute = AnimeDestination::MediaDetails,
+            mediaDetailsRoute = AnimeDestination.MediaDetails.route,
             mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
             mediaRow = { entry, viewer, onClickListEdit, modifier ->
                 AnimeMediaCompactListRow(
@@ -1058,6 +998,24 @@ object AnimeNavigator {
                 )
             },
             mediaEntryProvider = MediaPreviewEntry.Provider,
+        )
+
+        RecommendationDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaDetailsRoute = AnimeDestination.MediaDetails.route,
+            userRoute = AnimeDestination.User.route,
+            mediaRow = { entry, viewer, onClickListEdit, modifier ->
+                AnimeMediaCompactListRow(
+                    entry = entry,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    modifier = modifier
+                )
+            },
+            mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
         )
     }
 
@@ -1105,8 +1063,6 @@ object AnimeNavigator {
         inline fun <reified T : Any> navigate(route: T) = navigateInternal(route)
 
         fun <T : Any> navigateInternal(route: T) = navHostController?.navigate<T>(route)
-
-        fun navigateUp() = navHostController?.navigateUp()
     }
 }
 

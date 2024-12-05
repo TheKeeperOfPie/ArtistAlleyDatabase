@@ -45,14 +45,13 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.AnimeMediaDetailsRecommendationsViewModel.Recommendation
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
@@ -72,12 +71,7 @@ fun <MediaEntry> RecommendationCard(
         newRating: RecommendationRating,
     ) -> Unit = { _, _ -> },
     mediaRows: @Composable () -> Unit,
-    userRoute: (
-        userId: String,
-        userName: String,
-        coverImageState: ImageState?,
-        sharedTransitionKey: SharedTransitionKey?,
-    ) -> NavDestination,
+    userRoute: UserRoute,
 ) {
     ElevatedCard(modifier = Modifier.recomposeHighlighter()) {
         if (user != null || media == null) {
@@ -103,9 +97,9 @@ fun <MediaEntry> RecommendationCard(
                                 navHostController.navigate(
                                     userRoute(
                                         user.id.toString(),
+                                        sharedTransitionKey,
                                         user.name,
                                         imageState.toImageState(),
-                                        sharedTransitionKey,
                                     )
                                 )
                             }

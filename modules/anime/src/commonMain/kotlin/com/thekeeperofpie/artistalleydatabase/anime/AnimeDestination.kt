@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderPa
 import com.thekeeperofpie.artistalleydatabase.anime.characters.StaffDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
@@ -158,6 +159,21 @@ sealed interface AnimeDestination : NavDestination {
         val headerParams: MediaHeaderParams? = null,
         val sharedTransitionKey: SharedTransitionKey? = null,
     ) : AnimeDestination {
+        companion object {
+            val route: MediaDetailsRoute =
+                { mediaNavigationData, coverImage, languageOptionMedia, sharedTransitionKey ->
+                    MediaDetails(
+                        mediaId = mediaNavigationData.id.toString(),
+                        title = mediaNavigationData.title?.primaryTitle(languageOptionMedia),
+                        coverImage = coverImage,
+                        sharedTransitionKey = sharedTransitionKey,
+                        headerParams = MediaHeaderParams(
+                            title = mediaNavigationData.title?.primaryTitle(languageOptionMedia),
+                            coverImage = coverImage,
+                        ),
+                    )
+                }
+        }
         constructor(
             mediaNavigationData: MediaNavigationData,
             coverImage: ImageState?,
@@ -182,9 +198,6 @@ sealed interface AnimeDestination : NavDestination {
 
     @Serializable
     data object Notifications : AnimeDestination
-
-    @Serializable
-    data object Recommendations : AnimeDestination
 
     @Serializable
     data class ReviewDetails(

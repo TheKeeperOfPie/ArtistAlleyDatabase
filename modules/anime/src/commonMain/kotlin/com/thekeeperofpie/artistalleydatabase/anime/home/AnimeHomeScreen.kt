@@ -129,13 +129,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsRow
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
@@ -1048,7 +1048,7 @@ object AnimeHomeScreen {
     ) {
         HorizontalPagerItemsRow(
             title = Res.string.anime_recommendations_home_title,
-            viewAllRoute = AnimeDestination.Recommendations,
+            viewAllRoute = RecommendationDestinations.Recommendations,
             viewAllContentDescription = Res.string.anime_home_row_view_all_content_description,
             items = recommendations,
         ) {
@@ -1080,17 +1080,7 @@ object AnimeHomeScreen {
                             )
                         }
                     },
-                    userRoute = { userId, userName, imageState, sharedTransitionKey ->
-                        AnimeDestination.User(
-                            userId = userId,
-                            sharedTransitionKey = sharedTransitionKey,
-                            headerParams = UserHeaderParams(
-                                name = userName,
-                                bannerImage = null,
-                                coverImage = imageState,
-                            )
-                        )
-                    },
+                    userRoute = AnimeDestination.User.route,
                 )
             }
         }

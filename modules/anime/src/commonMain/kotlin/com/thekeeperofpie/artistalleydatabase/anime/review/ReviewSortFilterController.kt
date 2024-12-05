@@ -47,7 +47,7 @@ class ReviewSortFilterController(
         aniListApi = aniListApi,
         settings = settings,
         mediaType = mediaType,
-        mediaDetailsRoute = AnimeDestination::MediaDetails,
+        mediaDetailsRoute = AnimeDestination.MediaDetails.route,
     )
 
     override var sections = listOf(

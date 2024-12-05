@@ -64,7 +64,7 @@ class ForumSubsectionSortFilterController(
         aniListApi = aniListApi,
         settings = settings,
         mediaType = null,
-        mediaDetailsRoute = AnimeDestination::MediaDetails,
+        mediaDetailsRoute = AnimeDestination.MediaDetails.route,
     )
 
     override var sections by mutableStateOf(emptyList<SortFilterSection>())

@@ -25,8 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.recommendations.AnimeMediaDetailsRecommendationsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.media.MediaRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.AnimeMediaDetailsReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsViewModel
@@ -57,7 +56,8 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
     throw IllegalArgumentException("No AnimeComponent provided")
 }
 
-interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent {
+interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
+    RecommendationsComponent {
 
     val airingScheduleViewModel: () -> AiringScheduleViewModel
     val aniListUserViewModel: (SavedStateHandle, MediaDetailsRoute) -> AniListUserViewModel
@@ -66,7 +66,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
     val animeHomeViewModel: () -> AnimeHomeViewModel
     val animeMediaDetailsActivityViewModel: (mediaId: String) -> AnimeMediaDetailsActivityViewModel
-    val animeMediaDetailsRecommendationsViewModelFactory: (SavedStateHandle) -> AnimeMediaDetailsRecommendationsViewModel.Factory
     val animeMediaDetailsReviewsViewModel: (AnimeMediaDetailsViewModel) -> AnimeMediaDetailsReviewsViewModel
     val animeMediaDetailsViewModel: (SavedStateHandle) -> AnimeMediaDetailsViewModel
     val animeMediaIgnoreViewModel: (SavedStateHandle) -> AnimeMediaIgnoreViewModel
@@ -92,7 +91,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
     val mediaReviewsViewModel: (SavedStateHandle) -> MediaReviewsViewModel
     val notificationsViewModel: () -> NotificationsViewModel
-    val recommendationsViewModelFactory: (MediaDetailsRoute) -> RecommendationsViewModel.Factory
     val reviewDetailsViewModel: (SavedStateHandle) -> ReviewDetailsViewModel
     val reviewsViewModel: () -> ReviewsViewModel
     val seasonalViewModel: (SavedStateHandle) -> SeasonalViewModel
