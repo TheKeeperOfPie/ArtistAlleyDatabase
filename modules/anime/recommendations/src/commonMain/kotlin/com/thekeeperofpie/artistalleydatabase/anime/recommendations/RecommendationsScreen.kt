@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendations
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -74,6 +76,13 @@ object RecommendationsScreen {
                     items = recommendations,
                     itemKey = { it.id },
                     onRefresh = {},
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 72.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     item = {
                         RecommendationCard(
                             viewer = viewer(),

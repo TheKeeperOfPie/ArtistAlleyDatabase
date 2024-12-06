@@ -115,7 +115,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_rankings_expand_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_rankings_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_relations_label
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_score_distribution_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_season_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_share
@@ -154,6 +153,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_volumes_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_long_click_content_description
 import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_details_recommendations_label
+import artistalleydatabase.modules.anime.reviews.generated.resources.anime_media_details_reviews_label
 import artistalleydatabase.modules.utils_compose.generated.resources.no
 import artistalleydatabase.modules.utils_compose.generated.resources.yes
 import coil3.compose.AsyncImage
@@ -175,16 +175,18 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
@@ -233,6 +235,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 import artistalleydatabase.modules.anime.recommendations.generated.resources.Res as RecommendationsRes
+import artistalleydatabase.modules.anime.reviews.generated.resources.Res as ReviewsRes
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
@@ -909,7 +912,7 @@ object AnimeMediaDetailsScreen {
                     labelOne = stringResource(Res.string.anime_media_details_source_label),
                     bodyOne = stringResource(media.source.toTextRes()),
                     labelTwo = stringResource(Res.string.anime_media_details_season_label),
-                    bodyTwo = MediaUtils.formatSeasonYear(media.season, media.seasonYear),
+                    bodyTwo = MediaDataUtils.formatSeasonYear(media.season, media.seasonYear),
                 )
 
                 val dateTimeFormatter = LocalDateTimeFormatter.current
@@ -1831,7 +1834,7 @@ object AnimeMediaDetailsScreen {
             EPISODES(Res.string.anime_media_details_episodes_label),
             LINKS(Res.string.anime_media_details_links_label),
             RECOMMENDATIONS(RecommendationsRes.string.anime_media_details_recommendations_label),
-            REVIEWS(Res.string.anime_media_details_reviews_label),
+            REVIEWS(ReviewsRes.string.anime_media_details_reviews_label),
             ACTIVITIES(artistalleydatabase.modules.anime.activities.generated.resources.Res.string
                 .anime_media_details_activities_label),
             FORUM_THREADS(Res.string.anime_media_details_forum_threads_label),

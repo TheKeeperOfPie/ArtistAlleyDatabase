@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSettings
@@ -14,7 +13,6 @@ interface AnimeSettings : CharacterSettings, MediaDataSettings, IgnoreSettings {
 
     val savedAnimeFilters: MutableStateFlow<Map<String, FilterData>>
 
-    val preferredMediaType: MutableStateFlow<MediaType>
     val mediaViewOption: MutableStateFlow<MediaViewOption>
     val rootNavDestination: MutableStateFlow<AnimeRootNavDestination>
 

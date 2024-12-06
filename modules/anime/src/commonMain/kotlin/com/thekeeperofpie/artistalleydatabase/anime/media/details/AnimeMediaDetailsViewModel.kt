@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_error_loading
 import com.anilist.data.MediaDetailsQuery
-import com.anilist.data.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -17,8 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHel
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
@@ -59,7 +56,7 @@ class AnimeMediaDetailsViewModel(
     private val markdown: Markdown,
     @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-) : ViewModel(), MediaEntryProvider<MediaPreview, MediaPreviewEntry> {
+) : ViewModel() {
 
     val viewer = aniListApi.authedUser
 
@@ -215,12 +212,5 @@ class AnimeMediaDetailsViewModel(
 
     fun characters() = snapshotFlow { state.mediaEntry.result?.media?.characters }
 
-    override fun mediaEntry(media: MediaPreview) = MediaPreviewEntry(media)
-
-    override fun mediaFilterable(entry: MediaPreviewEntry) = entry.mediaFilterable
-
-    override fun copyMediaEntry(
-        entry: MediaPreviewEntry,
-        data: MediaFilterableData,
-    ) = entry.copy(mediaFilterable = data)
+    fun reviews() = snapshotFlow { state.mediaEntry.result?.media?.reviews }
 }

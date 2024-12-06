@@ -39,6 +39,7 @@
             <option value="$PROJECT_DIR$/modules/anime/media/data" />
             <option value="$PROJECT_DIR$/modules/anime/news" />
             <option value="$PROJECT_DIR$/modules/anime/recommendations" />
+            <option value="$PROJECT_DIR$/modules/anime/reviews" />
             <option value="$PROJECT_DIR$/modules/anime/staff" />
             <option value="$PROJECT_DIR$/modules/anime/staff/data" />
             <option value="$PROJECT_DIR$/modules/anime/ui" />

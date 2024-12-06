@@ -1,18 +1,17 @@
-package com.thekeeperofpie.artistalleydatabase.anime.review
+package com.thekeeperofpie.artistalleydatabase.anime.reviews
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
@@ -29,45 +28,49 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class ReviewsViewModel(
+class ReviewsViewModel<MediaEntry>(
     private val aniListApi: AuthedAniListApi,
-    private val settings: AnimeSettings,
+    private val settings: MediaDataSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     private val mediaListStatusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
+    @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
+    @Assisted private val mediaDetailsRoute: MediaDetailsRoute,
 ) : ViewModel() {
+
+    val preferredMediaType get() = settings.preferredMediaType.value
 
     val viewer = aniListApi.authedUser
 
-    // TODO: Audit do not load other tabs initially
-    var selectedType by mutableStateOf(settings.preferredMediaType.value)
-
-    val anime = MutableStateFlow(PagingData.empty<ReviewEntry>())
-    val manga = MutableStateFlow(PagingData.empty<ReviewEntry>())
+    val anime = MutableStateFlow(PagingData.Companion.empty<ReviewEntry<MediaEntry>>())
+    val manga = MutableStateFlow(PagingData.Companion.empty<ReviewEntry<MediaEntry>>())
 
     // Shares the sort option between the tabs
     val sortSection = ReviewSortFilterController.sortSection()
 
-    private val sortFilterControllerAnime = ReviewSortFilterController(
+    val sortFilterControllerAnime = ReviewSortFilterController(
         scope = viewModelScope,
         aniListApi = aniListApi,
         settings,
         featureOverrideProvider,
         mediaType = MediaType.ANIME,
         sortSection = sortSection,
+        mediaDetailsRoute = mediaDetailsRoute,
     )
 
-    private val sortFilterControllerManga = ReviewSortFilterController(
+    val sortFilterControllerManga = ReviewSortFilterController(
         scope = viewModelScope,
         aniListApi = aniListApi,
         settings,
         featureOverrideProvider,
         mediaType = MediaType.MANGA,
         sortSection = sortSection,
+        mediaDetailsRoute = mediaDetailsRoute,
     )
 
     init {
@@ -75,18 +78,12 @@ class ReviewsViewModel(
         collectReviews(MediaType.MANGA, manga, sortFilterControllerManga)
     }
 
-    fun sortFilterController() = if (selectedType == MediaType.ANIME) {
-        sortFilterControllerAnime
-    } else {
-        sortFilterControllerManga
-    }
-
     private fun collectReviews(
         type: MediaType,
-        reviews: MutableStateFlow<PagingData<ReviewEntry>>,
+        reviews: MutableStateFlow<PagingData<ReviewEntry<MediaEntry>>>,
         sortFilterController: ReviewSortFilterController,
     ) {
-        viewModelScope.launch(CustomDispatchers.Main) {
+        viewModelScope.launch(CustomDispatchers.Companion.Main) {
             sortFilterController.filterParams
                 .flatMapLatest { filterParams ->
                     AniListPager {
@@ -104,7 +101,7 @@ class ReviewsViewModel(
                 }
                 .mapLatest {
                     it.mapOnIO {
-                        ReviewEntry(it, MediaCompactWithTagsEntry(it.media))
+                        ReviewEntry(it, mediaEntryProvider.mediaEntry(it.media))
                     }
                 }
                 .cachedIn(viewModelScope)
@@ -121,16 +118,38 @@ class ReviewsViewModel(
                                     ignoreController = ignoreController,
                                     filteringData = filteringData,
                                     entry = it.media,
-                                    filterableData = it.media.mediaFilterable,
-                                    copy = { copy(mediaFilterable = it) },
+                                    filterableData = mediaEntryProvider.mediaFilterable(it.media),
+                                    copy = { mediaEntryProvider.copyMediaEntry(this, it) },
                                 ) ?: return@mapNotNull null
                             )
                         }
                     }
                 }
                 .cachedIn(viewModelScope)
-                .flowOn(CustomDispatchers.IO)
+                .flowOn(CustomDispatchers.Companion.IO)
                 .collectLatest(reviews::emit)
         }
+    }
+
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val settings: MediaDataSettings,
+        private val featureOverrideProvider: FeatureOverrideProvider,
+        private val mediaListStatusController: MediaListStatusController,
+        private val ignoreController: IgnoreController,
+    ) {
+        fun <MediaEntry> create(
+            mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
+            mediaDetailsRoute: MediaDetailsRoute,
+        ) = ReviewsViewModel(
+            aniListApi = aniListApi,
+            settings = settings,
+            featureOverrideProvider = featureOverrideProvider,
+            mediaListStatusController = mediaListStatusController,
+            ignoreController = ignoreController,
+            mediaEntryProvider = mediaEntryProvider,
+            mediaDetailsRoute = mediaDetailsRoute,
+        )
     }
 }

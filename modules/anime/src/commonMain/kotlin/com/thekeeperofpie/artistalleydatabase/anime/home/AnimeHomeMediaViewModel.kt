@@ -37,7 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusCo
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -77,7 +77,7 @@ abstract class AnimeHomeMediaViewModel(
         LoadingResult.loading<List<UserMediaListController.MediaEntry>>()
             .copy(result = if (currentMediaPreviousSize.value == 0) emptyList() else null)
     )
-    val reviews = MutableStateFlow(PagingData.empty<ReviewEntry>())
+    val reviews = MutableStateFlow(PagingData.empty<ReviewEntry<MediaCompactWithTagsEntry>>())
 
     private val refresh = RefreshFlow()
 

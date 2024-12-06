@@ -1,40 +1,44 @@
-package com.thekeeperofpie.artistalleydatabase.anime.review.media
+package com.thekeeperofpie.artistalleydatabase.anime.reviews.media
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_reviews_error_loading
+import androidx.paging.PagingData
+import artistalleydatabase.modules.anime.reviews.generated.resources.Res
+import artistalleydatabase.modules.anime.reviews.generated.resources.anime_reviews_error_loading
 import com.anilist.data.fragment.MediaAndReviewsReview
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import kotlinx.coroutines.flow.Flow
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @Inject
 class MediaReviewsViewModel(
-    aniListApi: AuthedAniListApi,
+    private val aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-) : HeaderAndListViewModel<MediaReviewsScreen.Entry, MediaAndReviewsReview, MediaAndReviewsReview, ReviewSortOption, MediaReviewsSortFilterController.FilterParams>(
-    aniListApi = aniListApi,
+) : SortFilteredViewModel<MediaReviewsScreen.Entry, MediaAndReviewsReview, MediaAndReviewsReview, MediaReviewsSortFilterController.FilterParams>(
     loadingErrorTextRes = Res.string.anime_reviews_error_loading,
 ) {
-    private val destination = savedStateHandle.toDestination<AnimeDestination.MediaCharacters>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<ReviewDestinations.MediaReviews>(navigationTypeMap)
     val mediaId = destination.mediaId
+    val viewer = aniListApi.authedUser
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
@@ -59,13 +63,14 @@ class MediaReviewsViewModel(
         filterParams: MediaReviewsSortFilterController.FilterParams?,
     ) = MediaReviewsScreen.Entry(aniListApi.mediaAndReviews(mediaId = mediaId))
 
-    override suspend fun pagedRequest(
-        page: Int,
+    override suspend fun request(
         filterParams: MediaReviewsSortFilterController.FilterParams?,
-    ) = aniListApi.mediaAndReviewsPage(
-        mediaId = mediaId,
-        sort = filterParams!!.sort.selectedOption(ReviewSortOption.RATING)
-            .toApiValue(filterParams.sortAscending),
-        page = page,
-    ).media.reviews.run { pageInfo to nodes }
+    ): Flow<PagingData<MediaAndReviewsReview>> = AniListPager { page ->
+        aniListApi.mediaAndReviewsPage(
+            mediaId = mediaId,
+            sort = filterParams!!.sort.selectedOption(ReviewSortOption.RATING)
+                .toApiValue(filterParams.sortAscending),
+            page = page,
+        ).media.reviews.run { pageInfo to nodes }
+    }
 }

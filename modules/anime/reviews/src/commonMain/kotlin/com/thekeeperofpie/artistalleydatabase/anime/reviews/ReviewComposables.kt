@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.review
+package com.thekeeperofpie.artistalleydatabase.anime.reviews
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,38 +33,34 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_label
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_rating_amount_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_rating_downvote_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_rating_upvote_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_reviews_user_avatar_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_view_all_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_icon_content_description
+import artistalleydatabase.modules.anime.reviews.generated.resources.Res
+import artistalleydatabase.modules.anime.reviews.generated.resources.anime_media_details_reviews_label
+import artistalleydatabase.modules.anime.reviews.generated.resources.anime_media_details_reviews_rating_amount_content_description
+import artistalleydatabase.modules.anime.reviews.generated.resources.anime_media_details_reviews_rating_downvote_content_description
+import artistalleydatabase.modules.anime.reviews.generated.resources.anime_media_details_reviews_rating_upvote_content_description
+import artistalleydatabase.modules.anime.reviews.generated.resources.anime_media_details_reviews_user_avatar_content_description
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_generic_view_all_content_description
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_rating_icon_content_description
 import com.anilist.data.MediaDetailsQuery
 import com.anilist.data.fragment.MediaAndReviewsReview
-import com.anilist.data.fragment.MediaNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import kotlinx.datetime.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 object ReviewComposables {
     const val REVIEWS_ABOVE_FOLD = 3
@@ -73,30 +69,33 @@ object ReviewComposables {
 @Composable
 fun ReviewSmallCard(
     review: MediaAndReviewsReview?,
-    onClick: (AnimeNavigator.NavigationCallback) -> Unit,
+    userRoute: UserRoute,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(
         modifier = modifier
             .clickable(
                 enabled = review?.id != null,
-                onClick = { onClick(navigationCallback) },
+                onClick = onClick,
             ),
     ) {
-        ReviewSmallCardContent(review)
+        ReviewSmallCardContent(review, userRoute)
     }
 }
 
 @Suppress("UnusedReceiverParameter")
 @Composable
-private fun ColumnScope.ReviewSmallCardContent(review: MediaAndReviewsReview?) {
+private fun ColumnScope.ReviewSmallCardContent(
+    review: MediaAndReviewsReview?,
+    userRoute: UserRoute,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         val shape = RoundedCornerShape(12.dp)
-        val navigationCallback = LocalNavigationCallback.current
+        val navHostController = LocalNavHostController.current
         val imageState = rememberCoilImageState(review?.user?.avatar?.large)
         val sharedTransitionKey = review?.user?.id?.toString()
             ?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -110,15 +109,12 @@ private fun ColumnScope.ReviewSmallCardContent(review: MediaAndReviewsReview?) {
                 .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                 .clickable {
                     review?.user?.let {
-                        navigationCallback.navigate(
-                            AnimeDestination.User(
-                                userId = it.id.toString(),
-                                sharedTransitionKey = sharedTransitionKey,
-                                headerParams = UserHeaderParams(
-                                    name = it.name,
-                                    bannerImage = null,
-                                    coverImage = imageState.toImageState(),
-                                )
+                        navHostController.navigate(
+                            userRoute(
+                                it.id.toString(),
+                                sharedTransitionKey,
+                                it.name,
+                                imageState.toImageState(),
                             )
                         )
                     }
@@ -180,35 +176,37 @@ private fun ColumnScope.ReviewSmallCardContent(review: MediaAndReviewsReview?) {
 }
 
 @Composable
-fun ReviewCard(
-    viewer: AniListViewer?,
+fun <MediaEntry> ReviewCard(
     review: MediaAndReviewsReview?,
-    media: AnimeMediaCompactListRow.Entry?,
-    onClick: (AnimeNavigator.NavigationCallback, CoilImageState) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    media: MediaEntry?,
+    mediaImageUri: (MediaEntry?) -> String?,
+    mediaRow: @Composable (
+        MediaEntry?,
+        coverImageState: CoilImageState,
+        Modifier,
+    ) -> Unit,
+    userRoute: UserRoute,
+    onClick: (CoilImageState) -> Unit,
     modifier: Modifier = Modifier,
     showMedia: Boolean = true,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
-    val coverImageState = rememberCoilImageState(media?.media?.coverImage?.extraLarge)
+    val coverImageState = rememberCoilImageState(mediaImageUri(media))
     ElevatedCard(
         modifier = modifier
             .clickable(
                 enabled = review?.id != null,
-                onClick = { onClick(navigationCallback, coverImageState) },
+                onClick = { onClick(coverImageState) },
             )
             .recomposeHighlighter()
     ) {
-        ReviewSmallCardContent(review)
+        ReviewSmallCardContent(review, userRoute)
 
         if (showMedia) {
             SharedTransitionKeyScope("anime_home_review", review?.id.toString()) {
-                AnimeMediaCompactListRow(
-                    viewer = viewer,
-                    entry = media,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-                    onClickListEdit = onClickListEdit,
-                    coverImageState = coverImageState,
+                mediaRow(
+                    media,
+                    coverImageState,
+                    Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
                 )
             }
         }
@@ -250,7 +248,7 @@ fun ReviewRatingIconsSection(
                 Icon(
                     imageVector = Icons.Filled.BarChart,
                     contentDescription = stringResource(
-                        Res.string.anime_media_rating_icon_content_description
+                        UiRes.string.anime_media_rating_icon_content_description
                     ),
                     tint = iconTint,
                     modifier = Modifier.size(20.dp)
@@ -325,11 +323,12 @@ fun ReviewRatingIconsSection(
 }
 
 fun LazyGridScope.reviewsSection(
-    entry: AnimeMediaDetailsReviewsViewModel.ReviewsEntry?,
+    entry: ReviewsEntry?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onClickViewAll: (() -> Unit)? = null,
-    onReviewClick: (AnimeNavigator.NavigationCallback, MediaDetailsQuery.Data.Media.Reviews.Node) -> Unit,
+    onReviewClick: (MediaDetailsQuery.Data.Media.Reviews.Node) -> Unit,
+    userRoute: UserRoute,
 ) {
     if (entry != null && entry.reviews.isEmpty()) return
     listSection(
@@ -337,15 +336,16 @@ fun LazyGridScope.reviewsSection(
         values = entry?.reviews,
         valueToId = { it.id.toString() },
         aboveFold = ReviewComposables.REVIEWS_ABOVE_FOLD,
-        hasMoreValues = entry?.hasMore ?: false,
+        hasMoreValues = entry?.hasMore == true,
         expanded = expanded,
         onExpandedChange = onExpandedChange,
         onClickViewAll = onClickViewAll,
-        viewAllContentDescriptionTextRes = Res.string.anime_media_details_view_all_content_description,
+        viewAllContentDescriptionTextRes = UiRes.string.anime_generic_view_all_content_description
     ) { item, paddingBottom ->
         ReviewSmallCard(
             review = item,
-            onClick = { onReviewClick(it, item) },
+            userRoute = userRoute,
+            onClick = { onReviewClick(item) },
             modifier = Modifier
                 .animateItem()
                 .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)

@@ -99,13 +99,6 @@
     <string name="anime_media_filter_licensed_by_content_description">Licensed by filter expand</string>
     <string name="anime_media_filter_licensed_by_chip_icon_content_description">Licensed by icon</string>
 
-    <string name="anime_media_status_finished">Finished</string>
-    <string name="anime_media_status_releasing">Releasing</string>
-    <string name="anime_media_status_not_yet_released">Not yet released</string>
-    <string name="anime_media_status_cancelled">Cancelled</string>
-    <string name="anime_media_status_hiatus">Hiatus</string>
-    <string name="anime_media_status_unknown">Unknown</string>
-
     <string name="anime_media_list_status_current_anime">Watching</string>
     <string name="anime_media_list_status_current_not_anime">Reading</string>
     <string name="anime_media_list_status_planning">Planning</string>
@@ -116,17 +109,6 @@
     <string name="anime_media_list_status_unknown">Unknown</string>
     <string name="anime_media_list_status_none">Not on list</string>
 
-    <string name="anime_media_format_tv">TV</string>
-    <string name="anime_media_format_tv_short">TV short</string>
-    <string name="anime_media_format_movie">Movie</string>
-    <string name="anime_media_format_special">Special</string>
-    <string name="anime_media_format_ova">OVA</string>
-    <string name="anime_media_format_ona">ONA</string>
-    <string name="anime_media_format_music">Music</string>
-    <string name="anime_media_format_manga">Manga</string>
-    <string name="anime_media_format_novel">Novel</string>
-    <string name="anime_media_format_one_shot">One shot</string>
-    <string name="anime_media_format_unknown">Unknown</string>
     <string name="anime_media_filter_format_label">Format</string>
 
     <!-- TODO: Insert the actual values into the content descriptions -->
@@ -142,7 +124,6 @@
     <string name="anime_media_next_airing_episode_without_episode_with_relative">%1$s (%2$s)</string>
     <string name="anime_media_next_airing_episode_with_episode">Ep. %1$s: %2$s</string>
     <string name="anime_media_next_airing_episode_with_episode_with_relative">Ep. %1$s: %2$s (%3$s)</string>
-    <string name="anime_media_rating_icon_content_description">Rating</string>
     <string name="anime_media_rating_population_icon_content_description">Users</string>
 
     <string name="anime_media_season_winter_content_description">Winter season indicator</string>
@@ -331,12 +312,6 @@
 
     <string name="anime_media_details_forum_threads_label">Forum threads</string>
     <string name="anime_media_details_forum_threads_error_loading">Error loading threads</string>
-
-    <string name="anime_media_details_reviews_label">Reviews</string>
-    <string name="anime_media_details_reviews_user_avatar_content_description">Review author avatar</string>
-    <string name="anime_media_details_reviews_rating_upvote_content_description">Review rating upvotes</string>
-    <string name="anime_media_details_reviews_rating_downvote_content_description">Review rating downvotes</string>
-    <string name="anime_media_details_reviews_rating_amount_content_description">Review rating population indicator</string>
 
     <string name="anime_media_details_view_all_content_description">View all</string>
     <string name="anime_media_details_more_actions_content_description">More actions</string>
@@ -603,27 +578,7 @@
 
     <string name="anime_news_home_title">NEWS</string>
 
-    <string name="anime_reviews_sort_id">Last added</string>
-    <string name="anime_reviews_sort_score">Score</string>
-    <string name="anime_reviews_sort_rating">Rating</string>
-    <string name="anime_reviews_sort_created_at">Created date</string>
-    <string name="anime_reviews_sort_updated_at">Last updated</string>
-    <string name="anime_reviews_error_loading">Error loading reviews</string>
-    <string name="anime_reviews_error_loading_details">Error loading review</string>
-    <string name="anime_reviews_header">Reviews</string>
-    <string name="anime_reviews_header_with_media">Reviews for %1$s</string>
-    <string name="anime_review_details_upvote_content_description">Upvote review</string>
-    <string name="anime_review_details_downvote_content_description">Downvote review</string>
-    <string name="anime_review_details_score">Score: %1$s/100</string>
-    <string name="anime_review_details_error_rating">Failed to rate review</string>
-
     <string name="anime_reviews_home_title">REVIEWS</string>
-    <string name="anime_reviews_tab_anime">Anime</string>
-    <string name="anime_reviews_tab_manga">Manga</string>
-
-    <string name="anime_review_filter_sort_label">Sort</string>
-    <string name="anime_review_filter_media_label">Media</string>
-    <string name="anime_review_filter_media_expand_content_description">Media expand</string>
 
     <string name="anime_recommendations_home_title">RECOMMENDATIONS</string>
 
@@ -769,8 +724,6 @@
     <string name="anime_media_characters_filter_role_dropdown_content_description">Role dropdown expand</string>
     <string name="anime_media_characters_filter_role_include_exclude_icon_content_description">Include/exclude role</string>
     <string name="anime_media_characters_filter_setting_name_language">Name language</string>
-
-    <string name="anime_media_reviews_filter_sort_label">Sort</string>
 
     <!-- TODO: Move this elsewhere -->
     <string name="last_crash_notification">App crash detected</string>

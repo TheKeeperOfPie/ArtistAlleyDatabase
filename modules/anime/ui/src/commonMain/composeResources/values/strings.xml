@@ -26,4 +26,6 @@
 
     <string name="anime_character_image_content_description">Character image</string>
     <string name="anime_staff_image_content_description">Staff image</string>
+
+    <string name="anime_media_rating_icon_content_description">Rating</string>
 </resources>

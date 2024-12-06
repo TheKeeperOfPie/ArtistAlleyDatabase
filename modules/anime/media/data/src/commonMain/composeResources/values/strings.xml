@@ -57,4 +57,23 @@
     <string name="anime_media_sort_status">Status</string>
     <string name="anime_media_sort_updated_at">Last updated</string>
     <string name="anime_media_sort_favourites">Favorites</string>
+
+    <string name="anime_media_format_tv">TV</string>
+    <string name="anime_media_format_tv_short">TV short</string>
+    <string name="anime_media_format_movie">Movie</string>
+    <string name="anime_media_format_special">Special</string>
+    <string name="anime_media_format_ova">OVA</string>
+    <string name="anime_media_format_ona">ONA</string>
+    <string name="anime_media_format_music">Music</string>
+    <string name="anime_media_format_manga">Manga</string>
+    <string name="anime_media_format_novel">Novel</string>
+    <string name="anime_media_format_one_shot">One shot</string>
+    <string name="anime_media_format_unknown">Unknown</string>
+
+    <string name="anime_media_status_finished">Finished</string>
+    <string name="anime_media_status_releasing">Releasing</string>
+    <string name="anime_media_status_not_yet_released">Not yet released</string>
+    <string name="anime_media_status_cancelled">Cancelled</string>
+    <string name="anime_media_status_hiatus">Hiatus</string>
+    <string name="anime_media_status_unknown">Unknown</string>
 </resources>

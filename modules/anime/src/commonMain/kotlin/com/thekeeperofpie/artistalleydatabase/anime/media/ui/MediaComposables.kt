@@ -55,10 +55,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_current
 import artistalleydatabase.modules.anime.generated.resources.anime_media_current_progress_unknown_max
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_fab_user_status_edit_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_genre_description_attribution
-import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_population_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_no_description_error
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
+import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_rating_icon_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.close
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaFormat
@@ -78,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -221,11 +222,13 @@ fun MediaRatingIconsSection(
                     modifier = Modifier.padding(top = 4.dp)
                 )
 
-                val iconTint = remember(ratingOrDefault) { MediaUtils.ratingColor(ratingOrDefault) }
+                val iconTint = remember(ratingOrDefault) {
+                    MediaDataUtils.ratingColor(ratingOrDefault)
+                }
                 Icon(
                     imageVector = Icons.Filled.BarChart,
                     contentDescription = stringResource(
-                        Res.string.anime_media_rating_icon_content_description
+                        UiRes.string.anime_media_rating_icon_content_description
                     ),
                     tint = iconTint,
                     modifier = Modifier.size(20.dp)

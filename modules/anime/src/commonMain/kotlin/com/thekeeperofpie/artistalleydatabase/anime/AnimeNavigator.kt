@@ -65,11 +65,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
@@ -81,11 +81,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.recommendations.Recommendati
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.media.MediaRecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.recommendationsSection
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewComposables
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.review.reviewsSection
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewComposables
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.reviewsSection
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
@@ -109,10 +107,11 @@ import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -268,7 +267,7 @@ object AnimeNavigator {
             }
 
             val reviewsViewModel = viewModel {
-                component.animeMediaDetailsReviewsViewModel(mediaDetailsViewModel)
+                component.animeMediaDetailsReviewsViewModel(mediaDetailsViewModel.reviews())
             }
 
             val navigationCallback = LocalNavigationCallback.current
@@ -287,6 +286,7 @@ object AnimeNavigator {
             )
 
             val recommendations by recommendationsViewModel.recommendations.collectAsState()
+            val reviewsEntry by reviewsViewModel.reviewsEntry.collectAsState()
             AnimeMediaDetailsScreen(
                 viewModel = mediaDetailsViewModel,
                 upIconOption = UpIconOption.Back(navHostController),
@@ -441,26 +441,27 @@ object AnimeNavigator {
                     )
                 },
                 reviewsSectionMetadata = AnimeMediaDetailsScreen.SectionIndexInfo.SectionMetadata.ListSection(
-                    items = reviewsViewModel.reviews?.reviews,
+                    items = reviewsEntry?.reviews,
                     aboveFold = ReviewComposables.REVIEWS_ABOVE_FOLD,
-                    hasMore = reviewsViewModel.reviews?.hasMore ?: false,
+                    hasMore = reviewsEntry?.hasMore == true,
                 ),
                 reviewsSection = { expanded, onExpandedChange ->
                     reviewsSection(
-                        entry = reviewsViewModel.reviews,
+                        entry = reviewsEntry,
                         expanded = expanded,
                         onExpandedChange = onExpandedChange,
+                        userRoute = AnimeDestination.User.route,
                         onClickViewAll = {
                             navigationCallback.navigate(
-                                AnimeDestination.MediaReviews(
+                                ReviewDestinations.MediaReviews(
                                     mediaId = mediaDetailsViewModel.state.mediaId,
                                     headerParams = mediaHeaderParams()
                                 )
                             )
                         },
-                        onReviewClick = { navigationCallback, item ->
+                        onReviewClick = { item ->
                             navigationCallback.navigate(
-                                AnimeDestination.ReviewDetails(
+                                ReviewDestinations.ReviewDetails(
                                     reviewId = item.id.toString(),
                                     headerParams = mediaHeaderParams(),
                                 )
@@ -577,31 +578,6 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.MediaReviews>(
-            navigationTypeMap = navigationTypeMap,
-        ) {
-            val viewModel =
-                viewModel { component.mediaReviewsViewModel(createSavedStateHandle()) }
-            val destination = it.toRoute<AnimeDestination.MediaReviews>()
-            val headerValues = MediaHeaderValues(
-                params = destination.headerParams,
-                media = { viewModel.entry.result?.media },
-                favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
-            )
-
-            MediaReviewsScreen(
-                viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
-                headerValues = headerValues,
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.Reviews>(navigationTypeMap) {
-            ReviewsScreen(
-                upIconOption = UpIconOption.Back(navHostController),
-            )
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaRecommendations>(
             navigationTypeMap = navigationTypeMap,
         ) {
@@ -695,33 +671,6 @@ object AnimeNavigator {
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
             )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.ReviewDetails>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}" },
-                navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}/.*"
-                },
-            ),
-        ) {
-            val viewModel =
-                viewModel { component.reviewDetailsViewModel(createSavedStateHandle()) }
-            val destination = it.toRoute<AnimeDestination.ReviewDetails>()
-            val headerValues = MediaHeaderValues(
-                params = destination.headerParams,
-                media = { viewModel.entry?.review?.media },
-                favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
-            )
-
-            SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
-                ReviewDetailsScreen(
-                    viewModel = viewModel,
-                    upIconOption = UpIconOption.Back(navHostController),
-                    headerValues = headerValues,
-                )
-            }
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.StudioMedias>(
@@ -1016,6 +965,76 @@ object AnimeNavigator {
                 )
             },
             mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+        )
+
+        ReviewDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaDetailsRoute = AnimeDestination.MediaDetails.route,
+            userRoute = AnimeDestination.User.route,
+            mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+            mediaTitle = { it.media.title?.primaryTitle() },
+            mediaHeaderParams = { entry, title, imageState ->
+                MediaHeaderParams(
+                    title = title,
+                    coverImage = imageState,
+                    mediaCompactWithTags = entry.media,
+                    favorite = null,
+                )
+            },
+            mediaImageUri = { it?.media?.coverImage?.extraLarge },
+            mediaRow = { entry, viewer, coverImageState, onClickListEdit, modifier ->
+                AnimeMediaCompactListRow(
+                    viewer = viewer,
+                    entry = entry,
+                    modifier = modifier,
+                    onClickListEdit = onClickListEdit,
+                    coverImageState = coverImageState,
+                )
+            },
+            mediaHeader = { progress, viewer, media, headerValues, titlesUnique, onFavoriteChanged ->
+                val navHostController = LocalNavHostController.current
+                val coverImageState = rememberCoilImageState(media?.coverImage?.extraLarge)
+                val title = media?.title?.primaryTitle()
+                val mediaSharedTransitionKey = media?.id?.toString()
+                    ?.let { SharedTransitionKey.makeKeyForId(it) }
+                MediaHeader(
+                    viewer = viewer,
+                    upIconOption = UpIconOption.Back(navHostController),
+                    mediaId = media?.id?.toString(),
+                    mediaType = media?.type,
+                    titles = titlesUnique,
+                    episodes = media?.episodes,
+                    format = media?.format,
+                    averageScore = media?.averageScore,
+                    popularity = media?.popularity,
+                    progress = progress,
+                    headerValues = headerValues,
+                    onFavoriteChanged = onFavoriteChanged,
+                    coverImageState = coverImageState,
+                    enableCoverImageSharedElement = false,
+                    onCoverImageClick = {
+                        if (media != null) {
+                            val imageState = coverImageState.toImageState()
+                            navHostController.navigate(
+                                AnimeDestination.MediaDetails(
+                                    mediaId = media.id.toString(),
+                                    title = title,
+                                    coverImage = imageState,
+                                    sharedTransitionKey = mediaSharedTransitionKey,
+                                    headerParams = MediaHeaderParams(
+                                        title = title,
+                                        coverImage = imageState,
+                                        media = media,
+                                    )
+                                )
+                            )
+                        }
+                    }
+                )
+            }
         )
     }
 

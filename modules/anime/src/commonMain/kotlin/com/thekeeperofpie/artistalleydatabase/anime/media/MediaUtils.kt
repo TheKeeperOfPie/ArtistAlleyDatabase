@@ -1,11 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.Repeat
@@ -54,17 +54,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_video_game
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_visual_novel
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_web_novel
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_manga
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_movie
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_music
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_novel
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_ona
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_one_shot
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_ova
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_special
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_tv
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_tv_short
-import artistalleydatabase.modules.anime.generated.resources.anime_media_format_unknown
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_completed
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_current_anime
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_current_not_anime
@@ -92,17 +81,10 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_relatio
 import artistalleydatabase.modules.anime.generated.resources.anime_media_relation_spin_off
 import artistalleydatabase.modules.anime.generated.resources.anime_media_relation_summary
 import artistalleydatabase.modules.anime.generated.resources.anime_media_relation_unknown
-import artistalleydatabase.modules.anime.generated.resources.anime_media_status_cancelled
-import artistalleydatabase.modules.anime.generated.resources.anime_media_status_finished
-import artistalleydatabase.modules.anime.generated.resources.anime_media_status_hiatus
-import artistalleydatabase.modules.anime.generated.resources.anime_media_status_not_yet_released
-import artistalleydatabase.modules.anime.generated.resources.anime_media_status_releasing
-import artistalleydatabase.modules.anime.generated.resources.anime_media_status_unknown
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_is_adult
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_is_spoiler
 import com.anilist.data.MediaDetailsQuery
 import com.anilist.data.MediaListEntryQuery
-import com.anilist.data.fragment.AniListDate
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaDetailsListEntry
 import com.anilist.data.fragment.MediaPreview
@@ -110,9 +92,7 @@ import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.type.MediaFormat
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaRelation
-import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaSource
-import com.anilist.data.type.MediaStatus
 import com.anilist.data.type.MediaType
 import com.anilist.data.type.ScoreFormat
 import com.anilist.data.type.UserTitleLanguage
@@ -139,7 +119,6 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
-@Suppress("DEPRECATION")
 object MediaUtils {
 
     val scoreDistributionColors = listOf(
@@ -187,15 +166,6 @@ object MediaUtils {
         (isGeneralSpoiler ?: false) || (isMediaSpoiler
             ?: false) -> Res.string.anime_media_tag_is_spoiler
         else -> null
-    }
-
-    fun MediaStatus?.toTextRes() = when (this) {
-        MediaStatus.FINISHED -> Res.string.anime_media_status_finished
-        MediaStatus.RELEASING -> Res.string.anime_media_status_releasing
-        MediaStatus.NOT_YET_RELEASED -> Res.string.anime_media_status_not_yet_released
-        MediaStatus.CANCELLED -> Res.string.anime_media_status_cancelled
-        MediaStatus.HIATUS -> Res.string.anime_media_status_hiatus
-        else -> Res.string.anime_media_status_unknown
     }
 
     fun MediaListStatus?.toTextRes(mediaType: MediaType?) = toTextRes(mediaType != MediaType.MANGA)
@@ -314,7 +284,7 @@ object MediaUtils {
         MediaListStatus.CURRENT -> if (mediaType == MediaType.ANIME) {
             Icons.Filled.Monitor to Res.string.anime_media_details_fab_user_status_current_anime_icon_content_description
         } else {
-            Icons.Filled.MenuBook to Res.string.anime_media_details_fab_user_status_current_not_anime_icon_content_description
+            Icons.AutoMirrored.Filled.MenuBook to Res.string.anime_media_details_fab_user_status_current_not_anime_icon_content_description
         }
         MediaListStatus.PLANNING -> if (mediaType == MediaType.ANIME) {
             Icons.Filled.WatchLater
@@ -341,22 +311,6 @@ object MediaUtils {
         MediaListStatus.PAUSED -> Color(247, 121, 164)
         MediaListStatus.REPEATING -> Color(0xFFFF9000)
         MediaListStatus.UNKNOWN__, null -> Color.White
-    }
-
-    fun MediaFormat?.toTextRes() = when (this) {
-        MediaFormat.TV -> Res.string.anime_media_format_tv
-        MediaFormat.TV_SHORT -> Res.string.anime_media_format_tv_short
-        MediaFormat.MOVIE -> Res.string.anime_media_format_movie
-        MediaFormat.SPECIAL -> Res.string.anime_media_format_special
-        MediaFormat.OVA -> Res.string.anime_media_format_ova
-        MediaFormat.ONA -> Res.string.anime_media_format_ona
-        MediaFormat.MUSIC -> Res.string.anime_media_format_music
-        MediaFormat.MANGA -> Res.string.anime_media_format_manga
-        MediaFormat.NOVEL -> Res.string.anime_media_format_novel
-        MediaFormat.ONE_SHOT -> Res.string.anime_media_format_one_shot
-        MediaFormat.UNKNOWN__,
-        null,
-            -> Res.string.anime_media_format_unknown
     }
 
     fun MediaFormat?.toColor() = when (this) {
@@ -413,22 +367,6 @@ object MediaUtils {
             -> Res.string.anime_media_relation_unknown
     }
 
-    @Composable
-    fun formatSeasonYear(season: MediaSeason?, seasonYear: Int?, withSeparator: Boolean = false) =
-        when {
-            season != null && seasonYear != null -> {
-                val seasonText = stringResource(season.toTextRes())
-                if (withSeparator) {
-                    "$seasonText - $seasonYear"
-                } else {
-                    "$seasonText $seasonYear"
-                }
-            }
-            season != null -> stringResource(season.toTextRes())
-            seasonYear != null -> seasonYear.toString()
-            else -> null
-        }
-
     fun twitterHashtagsLink(hashtags: List<String>) =
         "https://twitter.com/search?q=${hashtags.joinToString(separator = "+OR ")}&src=typd"
 
@@ -473,37 +411,6 @@ object MediaUtils {
         return if (year != null && month != null && dayOfMonth != null) {
             LocalDate(year, month, dayOfMonth)
         } else null
-    }
-
-    @Composable
-    fun formatSubtitle(
-        format: MediaFormat?,
-        status: MediaStatus?,
-        season: MediaSeason?,
-        seasonYear: Int?,
-        startDate: AniListDate?,
-    ): String? {
-        format ?: status ?: season ?: seasonYear ?: return null
-        return listOfNotNull(
-            format?.toTextRes()?.let { stringResource(it) },
-            status?.toTextRes()?.let { stringResource(it) },
-            formatSeasonYear(season, seasonYear, withSeparator = true)
-                ?: startDate?.let { formatMonthYearStartDate(it) },
-        ).joinToString(separator = " - ")
-    }
-
-    @Composable
-    fun formatMonthYearStartDate(startDate: AniListDate) =
-        LocalDateTimeFormatter.current.formatSubtitleMonthYear(
-            year = startDate.year,
-            month = startDate.month,
-        )
-
-    fun ratingColor(rating: Int) = when {
-        rating > 80 -> Color.Green
-        rating > 70 -> Color.Yellow
-        rating > 50 -> Color(0xFFFF9000) // Orange
-        else -> Color.Red
     }
 
     fun <SortType : SortOption, MediaEntryType> filterEntries(

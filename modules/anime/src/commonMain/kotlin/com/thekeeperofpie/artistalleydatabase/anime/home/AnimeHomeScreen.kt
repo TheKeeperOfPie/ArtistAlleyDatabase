@@ -114,10 +114,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -131,8 +131,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.recommendations.Recommendati
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationEntry
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewCard
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
@@ -160,6 +161,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreens
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.HorizontalPagerItemsRow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
@@ -261,7 +263,7 @@ object AnimeHomeScreen {
         onRefresh: () -> Unit,
         activity: LazyPagingItems<ActivityEntry<MediaCompactWithTagsEntry>>,
         recommendations: LazyPagingItems<RecommendationEntry<MediaCompactWithTagsEntry>>,
-        reviews: LazyPagingItems<ReviewEntry>,
+        reviews: LazyPagingItems<ReviewEntry<MediaCompactWithTagsEntry>>,
         news: () -> LoadingResult<List<AnimeNewsEntry<*>>>,
         homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
         currentMedia: () -> LoadingResult<List<UserMediaListController.MediaEntry>>,
@@ -464,7 +466,7 @@ object AnimeHomeScreen {
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         recommendations: LazyPagingItems<RecommendationEntry<MediaCompactWithTagsEntry>>,
         onUserRecommendationRating: (recommendation: RecommendationData, newRating: RecommendationRating) -> Unit = { _, _ -> },
-        reviews: LazyPagingItems<ReviewEntry>,
+        reviews: LazyPagingItems<ReviewEntry<MediaCompactWithTagsEntry>>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         userRoute: UserRoute,
     ) {
@@ -1120,26 +1122,27 @@ object AnimeHomeScreen {
     @Composable
     private fun Reviews(
         viewer: () -> AniListViewer?,
-        reviews: LazyPagingItems<ReviewEntry>,
+        reviews: LazyPagingItems<ReviewEntry<MediaCompactWithTagsEntry>>,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         HorizontalPagerItemsRow(
             title = Res.string.anime_reviews_home_title,
-            viewAllRoute = AnimeDestination.Reviews,
+            viewAllRoute = ReviewDestinations.Reviews,
             viewAllContentDescription = Res.string.anime_home_row_view_all_content_description,
             items = reviews,
         ) {
             val mediaTitle = it?.media?.media?.title?.primaryTitle()
             SharedTransitionKeyScope("anime_home_review_${it?.review?.id}") {
                 val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
+                val navHostController = LocalNavHostController.current
                 ReviewCard(
-                    viewer = viewer(),
                     review = it?.review,
                     media = it?.media,
-                    onClick = { navigationCallback, coverImageState ->
+                    userRoute = AnimeDestination.User.route,
+                    onClick = { coverImageState ->
                         if (it != null) {
-                            navigationCallback.navigate(
-                                AnimeDestination.ReviewDetails(
+                            navHostController.navigate(
+                                ReviewDestinations.ReviewDetails(
                                     reviewId = it.review.id.toString(),
                                     sharedTransitionScopeKey = sharedTransitionScopeKey,
                                     headerParams = MediaHeaderParams(
@@ -1152,7 +1155,16 @@ object AnimeHomeScreen {
                             )
                         }
                     },
-                    onClickListEdit = onClickListEdit,
+                    mediaImageUri = { it?.media?.coverImage?.extraLarge },
+                    mediaRow =  { entry, coverImageState, modifier ->
+                        AnimeMediaCompactListRow(
+                            viewer = viewer(),
+                            entry = entry,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                            onClickListEdit = onClickListEdit,
+                            coverImageState = coverImageState,
+                        )
+                    },
                 )
             }
         }

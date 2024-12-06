@@ -1,12 +1,12 @@
-package com.thekeeperofpie.artistalleydatabase.anime.review.media
+package com.thekeeperofpie.artistalleydatabase.anime.reviews.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_reviews_filter_sort_label
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import artistalleydatabase.modules.anime.reviews.generated.resources.Res
+import artistalleydatabase.modules.anime.reviews.generated.resources.anime_media_reviews_filter_sort_label
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 
 class MediaReviewsSortFilterController(
     scope: CoroutineScope,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : MediaDataSettingsSortFilterController<MediaReviewsSortFilterController.FilterParams>(
     scope = scope,

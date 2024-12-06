@@ -63,8 +63,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.data.Title
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
@@ -310,7 +310,7 @@ object AnimeMediaLargeCard {
             text = if (entry == null) {
                 "Placeholder subtitle text..."
             } else {
-                MediaUtils.formatSubtitle(
+                MediaDataUtils.formatSubtitle(
                     format = entry.format,
                     status = entry.status,
                     season = entry.season,

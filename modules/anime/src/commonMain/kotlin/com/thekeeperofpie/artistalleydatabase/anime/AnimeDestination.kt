@@ -19,8 +19,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.characters.StaffDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
@@ -129,13 +129,6 @@ sealed interface AnimeDestination : NavDestination {
     ) : AnimeDestination
 
     @Serializable
-    data class MediaReviews(
-        val mediaId: String,
-        val sharedElementKey: String? = null,
-        val headerParams: MediaHeaderParams? = null,
-    ) : AnimeDestination
-
-    @Serializable
     data class MediaRecommendations(
         val mediaId: String,
         val sharedElementKey: String? = null,
@@ -198,16 +191,6 @@ sealed interface AnimeDestination : NavDestination {
 
     @Serializable
     data object Notifications : AnimeDestination
-
-    @Serializable
-    data class ReviewDetails(
-        val reviewId: String,
-        val sharedTransitionScopeKey: String? = null,
-        val headerParams: MediaHeaderParams? = null,
-    ) : AnimeDestination
-
-    @Serializable
-    data object Reviews : AnimeDestination
 
     @Serializable
     data class SearchMedia(

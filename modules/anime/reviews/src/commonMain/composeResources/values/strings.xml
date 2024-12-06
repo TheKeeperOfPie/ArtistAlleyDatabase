@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_reviews_sort_id">Last added</string>
+    <string name="anime_reviews_sort_score">Score</string>
+    <string name="anime_reviews_sort_rating">Rating</string>
+    <string name="anime_reviews_sort_created_at">Created date</string>
+    <string name="anime_reviews_sort_updated_at">Last updated</string>
+
+    <string name="anime_review_filter_sort_label">Sort</string>
+    <string name="anime_review_filter_media_label">Media</string>
+    <string name="anime_review_filter_media_expand_content_description">Media expand</string>
+
+    <string name="anime_media_details_reviews_label">Reviews</string>
+    <string name="anime_media_details_reviews_user_avatar_content_description">Review author avatar</string>
+    <string name="anime_media_details_reviews_rating_upvote_content_description">Review rating upvotes</string>
+    <string name="anime_media_details_reviews_rating_downvote_content_description">Review rating downvotes</string>
+    <string name="anime_media_details_reviews_rating_amount_content_description">Review rating population indicator</string>
+    <string name="anime_review_details_score">Score: %1$s/100</string>
+
+    <string name="anime_reviews_header">Reviews</string>
+    <string name="anime_reviews_header_with_media">Reviews for %1$s</string>
+    <string name="anime_reviews_tab_anime">Anime</string>
+    <string name="anime_reviews_tab_manga">Manga</string>
+
+    <string name="anime_reviews_error_loading">Error loading reviews</string>
+    <string name="anime_media_reviews_filter_sort_label">Sort</string>
+
+    <string name="anime_reviews_error_loading_details">Error loading review</string>
+    <string name="anime_review_details_upvote_content_description">Upvote review</string>
+    <string name="anime_review_details_downvote_content_description">Downvote review</string>
+    <string name="anime_review_details_error_rating">Failed to rate review</string>
+</resources>

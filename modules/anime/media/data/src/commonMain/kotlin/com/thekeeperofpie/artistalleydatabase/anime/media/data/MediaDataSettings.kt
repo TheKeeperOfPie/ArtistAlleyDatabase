@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.data
 
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,4 +17,5 @@ interface MediaDataSettings {
     val mediaIgnoreHide: MutableStateFlow<Boolean>
     val collapseAnimeFiltersOnClose: MutableStateFlow<Boolean>
     val languageOptionMedia: MutableStateFlow<AniListLanguageOption>
+    val preferredMediaType: MutableStateFlow<MediaType>
 }
