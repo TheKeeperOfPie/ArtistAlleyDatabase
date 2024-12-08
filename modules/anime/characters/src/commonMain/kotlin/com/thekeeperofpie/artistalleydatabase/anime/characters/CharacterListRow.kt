@@ -87,6 +87,7 @@ object CharacterListRow {
         modifier: Modifier = Modifier,
         showRole: Boolean = false,
         mediaItems: LazyListScope.(List<MediaEntry?>) -> Unit,
+        showStaff: Boolean = true,
     ) {
         val coverImageState = rememberCoilImageState(entry?.character?.image?.large)
         val navHostController = LocalNavHostController.current
@@ -161,6 +162,7 @@ object CharacterListRow {
                         entry = entry,
                         staffDetailsRoute = staffDetailsRoute,
                         mediaItems = mediaItems,
+                        showStaff = showStaff,
                     )
                 }
             }
@@ -283,6 +285,7 @@ object CharacterListRow {
         entry: Entry<MediaEntry>?,
         staffDetailsRoute: StaffDetailsRoute,
         mediaItems: LazyListScope.(List<MediaEntry?>) -> Unit,
+        showStaff: Boolean,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
@@ -296,7 +299,7 @@ object CharacterListRow {
                 // The parent will clamp the actual width so all content still fits on screen.
                 .size(width = LocalWindowConfiguration.current.screenWidthDp, height = 120.dp)
         ) {
-            if (voiceActor?.image?.large != null) {
+            if (showStaff && voiceActor?.image?.large != null) {
                 val staffId = voiceActor.id
                 item(staffId) {
                     val voiceActorName = voiceActor.name?.primaryName()

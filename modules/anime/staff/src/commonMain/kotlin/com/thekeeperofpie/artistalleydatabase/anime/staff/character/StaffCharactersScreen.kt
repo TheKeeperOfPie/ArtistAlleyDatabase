@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
@@ -31,7 +32,7 @@ object StaffCharactersScreen {
         sortFilterState: () -> SortFilterController<*>.State,
         onRefresh: () -> Unit,
         characters: LazyPagingItems<CharacterEntry>,
-        characterItemKey: (CharacterEntry) -> Any,
+        characterItemKey: (CharacterEntry) -> String,
         characterRow: @Composable (
             CharacterEntry?,
             onClickListEdit: (MediaNavigationData) -> Unit,
@@ -62,7 +63,7 @@ object StaffCharactersScreen {
                         )
                     }
                 },
-                modifier = Modifier.Companion.padding(padding)
+                modifier = Modifier.padding(padding)
             ) {
                 val gridState = rememberLazyGridState()
                 sortFilterState().ImmediateScrollResetEffect(gridState)
@@ -72,7 +73,15 @@ object StaffCharactersScreen {
                     itemHeaderText = Res.string.anime_staff_characters_header,
                     itemKey = characterItemKey,
                     items = characters,
-                    item = { characterRow(it, onClickListEdit) },
+                    item = {
+                        SharedTransitionKeyScope(
+                            "anime_staff_character_media_card",
+                            it?.let(characterItemKey),
+                        ) {
+                            characterRow(it, onClickListEdit)
+                        }
+                    },
+                    nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                     modifier = Modifier.Companion.padding(it)
                 )
             }

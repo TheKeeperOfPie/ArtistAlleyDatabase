@@ -1025,6 +1025,7 @@ object AnimeNavigator {
                             onClickListEdit = onClickListEdit,
                         )
                     },
+                    showStaff = false,
                 )
             },
             charactersSection = { titleRes, viewAllRoute, viewAllContentDescriptionTextRes, characters ->
