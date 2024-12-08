@@ -78,6 +78,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.activities.generated.resources.anime_media_details_activities_label
+import artistalleydatabase.modules.anime.forums.generated.resources.anime_media_details_forum_threads_label
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_average_score_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_cds_label
@@ -93,7 +94,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_fab_user_status_failed_to_load_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_favorites_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_format_label
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_forum_threads_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_hashtags_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_information_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_licensed_label
@@ -234,6 +234,8 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
+import artistalleydatabase.modules.anime.activities.generated.resources.Res as ActivitiesRes
+import artistalleydatabase.modules.anime.forums.generated.resources.Res as ForumsRes
 import artistalleydatabase.modules.anime.recommendations.generated.resources.Res as RecommendationsRes
 import artistalleydatabase.modules.anime.reviews.generated.resources.Res as ReviewsRes
 
@@ -1835,9 +1837,8 @@ object AnimeMediaDetailsScreen {
             LINKS(Res.string.anime_media_details_links_label),
             RECOMMENDATIONS(RecommendationsRes.string.anime_media_details_recommendations_label),
             REVIEWS(ReviewsRes.string.anime_media_details_reviews_label),
-            ACTIVITIES(artistalleydatabase.modules.anime.activities.generated.resources.Res.string
-                .anime_media_details_activities_label),
-            FORUM_THREADS(Res.string.anime_media_details_forum_threads_label),
+            ACTIVITIES(ActivitiesRes.string.anime_media_details_activities_label),
+            FORUM_THREADS(ForumsRes.string.anime_media_details_forum_threads_label),
         }
 
         interface SectionMetadata {

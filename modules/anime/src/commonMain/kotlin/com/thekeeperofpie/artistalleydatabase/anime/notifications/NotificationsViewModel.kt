@@ -14,9 +14,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusAwa
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activities.applyActivityFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
+import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentEntry
+import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController

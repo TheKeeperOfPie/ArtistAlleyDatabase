@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_forum_category_general">General</string>
+    <string name="anime_forum_category_anime">Anime</string>
+    <string name="anime_forum_category_manga">Manga</string>
+    <string name="anime_forum_category_release_discussions">Release discussions</string>
+    <string name="anime_forum_category_announcements">Announcements</string>
+    <string name="anime_forum_category_news">News</string>
+    <string name="anime_forum_category_music">Music</string>
+    <string name="anime_forum_category_gaming">Gaming</string>
+    <string name="anime_forum_category_visual_novels">Visual novels</string>
+    <string name="anime_forum_category_light_novels">Light novels</string>
+    <string name="anime_forum_category_forum_games">Forum games</string>
+    <string name="anime_forum_category_recommendations">Recommendations</string>
+    <string name="anime_forum_category_site_feedback">Site feedback</string>
+    <string name="anime_forum_category_site_bug_reports">Site bug reports</string>
+    <string name="anime_forum_category_site_aniList_apps">AniList Apps</string>
+    <string name="anime_forum_category_site_miscellaneous">Miscellaneous</string>
+
+    <string name="anime_forum_thread_sort_search_match">Search match</string>
+    <string name="anime_forum_thread_sort_title">Title</string>
+    <string name="anime_forum_thread_sort_created_at">New</string>
+    <string name="anime_forum_thread_sort_updated_at">Last updated</string>
+    <string name="anime_forum_thread_sort_view_count">View count</string>
+    <string name="anime_forum_thread_sort_replied_at">Last replied</string>
+    <string name="anime_forum_thread_sort_reply_count">Reply count</string>
+
+    <string name="anime_forum_root_active_header">ACTIVE</string>
+    <string name="anime_forum_root_active_title">Active</string>
+    <string name="anime_forum_root_new_header">NEW</string>
+    <string name="anime_forum_root_new_title">New</string>
+    <string name="anime_forum_root_releases_header">RELEASES</string>
+    <string name="anime_forum_root_releases_title">Releases</string>
+
+    <string name="anime_forum_root_error_loading">Error loading forum</string>
+
+    <string name="anime_forum_header">Forum</string>
+    <string name="anime_forum_search_icon_content_description">Forum search</string>
+    <string name="anime_forum_stickied_header">STICKIED</string>
+    <string name="anime_forum_stickied_header_expand_icon_content_description">Stickied expand/collapse</string>
+
+    <string name="anime_forum_reply_count_icon_content_description">Reply count</string>
+    <string name="anime_forum_thread_author_and_timestamp">%1$s • %2$s</string>
+    <string name="anime_forum_thread_comment_cancel">Cancel</string>
+    <string name="anime_forum_thread_comment_delete">Delete</string>
+    <string name="anime_forum_thread_comment_delete_confirmation">Delete comment?</string>
+    <string name="anime_forum_thread_comment_delete_icon_content_description">Delete comment</string>
+    <string name="anime_forum_thread_comment_like_icon_content_description">Comment liked</string>
+    <string name="anime_forum_thread_comment_reply">Reply</string>
+    <string name="anime_forum_thread_comment_reply_content_description">Reply</string>
+    <string name="anime_forum_thread_delete_content_description">Delete thread</string>
+    <string name="anime_forum_thread_like_icon_content_description">Thread liked</string>
+    <string name="anime_forum_thread_more_actions_content_description">More actions</string>
+    <string name="anime_forum_thread_open_in_browser">Open in browser</string>
+    <string name="anime_forum_thread_open_in_browser_content_description">Open in browser</string>
+    <string name="anime_forum_thread_subscribe_icon_content_description">Thread subscribed</string>
+    <string name="anime_forum_thread_show_body_spoilers">Show body (may contain spoilers)</string>
+    <string name="anime_forum_view_count_content_description">View count</string>
+
+    <string name="anime_forum_thread_comments_page_back_content_description">Previous page</string>
+    <string name="anime_forum_thread_comments_page_first_content_description">First page</string>
+    <string name="anime_forum_thread_comments_page_forward_content_description">Next page</string>
+    <string name="anime_forum_thread_comments_page_last_content_description">Last page</string>
+
+    <string name="anime_media_details_forum_threads_label">Forum threads</string>
+
+    <string name="anime_forum_sort_label">Sort</string>
+    <string name="anime_forum_filter_subscribed_label">Subscribed</string>
+    <string name="anime_forum_filter_category_label">Category</string>
+    <string name="anime_forum_filter_category_dropdown_content_description">Category section expand</string>
+    <string name="anime_forum_filter_category_chip_state_content_description">Category chip state</string>
+    <string name="anime_forum_filter_media_label">Media</string>
+    <string name="anime_forum_filter_media_expand_content_description">Media expand</string>
+
+    <string name="anime_forum_search">Search forums…</string>
+    <string name="anime_forum_search_error_loading">Error loading</string>
+    <string name="anime_forum_search_clear">Clear</string>
+
+    <string name="anime_forum_thread_default_title">Forum thread</string>
+    <string name="anime_forum_thread_no_comments">No comments</string>
+
+    <string name="anime_forum_thread_error_loading">Error loading thread</string>
+    <string name="anime_forum_thread_last_reply_icon_content_description">Last reply</string>
+
+    <string name="anime_forum_thread_error_replying">Error saving comment</string>
+    <string name="anime_forum_thread_error_deleting">Error deleting comment</string>
+    <string name="anime_forum_thread_viewing_comment_tree">Viewing single comment tree</string>
+
+    <string name="anime_forum_icon_content_description">Forum</string>
+    <string name="anime_forum_view_all_content_description">View all</string>
+    <string name="anime_forum_thread_comment_tree_view_parent_button">Open parent</string>
+
+    <string name="anime_media_details_forum_threads_error_loading">Error loading threads</string>
+</resources>

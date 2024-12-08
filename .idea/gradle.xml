@@ -33,6 +33,7 @@
             <option value="$PROJECT_DIR$/modules/anime/characters/data" />
             <option value="$PROJECT_DIR$/modules/anime/data" />
             <option value="$PROJECT_DIR$/modules/anime/favorites" />
+            <option value="$PROJECT_DIR$/modules/anime/forums" />
             <option value="$PROJECT_DIR$/modules/anime/ignore" />
             <option value="$PROJECT_DIR$/modules/anime/ignore/data" />
             <option value="$PROJECT_DIR$/modules/anime/ignore/testing" />

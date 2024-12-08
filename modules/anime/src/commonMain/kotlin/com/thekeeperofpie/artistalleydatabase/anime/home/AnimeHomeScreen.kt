@@ -80,9 +80,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
+import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedule_icon_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_forum_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_home_activity_label
 import artistalleydatabase.modules.anime.generated.resources.anime_home_label_anime
 import artistalleydatabase.modules.anime.generated.resources.anime_home_label_manga
@@ -112,6 +112,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinati
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -175,6 +176,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.forums.generated.resources.Res as ForumsRes
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @Suppress("NAME_SHADOWING")
@@ -397,12 +399,12 @@ object AnimeHomeScreen {
 
                     if (unlocked()) {
                         IconButton(onClick = {
-                            navigationCallback.navigate(AnimeDestination.Forum)
+                            navigationCallback.navigate(ForumDestinations.Forum)
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Forum,
                                 contentDescription = stringResource(
-                                    Res.string.anime_forum_icon_content_description
+                                    ForumsRes.string.anime_forum_icon_content_description
                                 ),
                             )
                         }

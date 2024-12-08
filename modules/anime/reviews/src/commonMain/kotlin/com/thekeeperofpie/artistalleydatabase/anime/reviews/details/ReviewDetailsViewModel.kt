@@ -82,7 +82,7 @@ class ReviewDetailsViewModel(
         }
     }
         .catch { emit(LoadingResult.Companion.error(Res.string.anime_review_details_error_rating, it)) }
-        .foldPreviousResult(LoadingResult.Companion.loading())
+        .foldPreviousResult()
         .stateIn(viewModelScope, SharingStarted.Companion.Eagerly, LoadingResult.Companion.loading())
 
     val favoritesToggleHelper =

@@ -2,9 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.compose.runtime.Composable
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_forum_root_active_title
-import artistalleydatabase.modules.anime.generated.resources.anime_forum_root_new_title
-import artistalleydatabase.modules.anime.generated.resources.anime_forum_root_releases_title
 import artistalleydatabase.modules.anime.generated.resources.anime_home_last_added_screen_title
 import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_popular_all_time
 import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_top
@@ -17,7 +14,8 @@ import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumThreadSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
@@ -50,7 +48,7 @@ sealed interface AnimeDestination : NavDestination {
             typeOf<Seasonal.Type>() to CustomNavTypes.NullableEnumType(Seasonal.Type::valueOf),
             typeOf<StaffHeaderParams?>() to CustomNavTypes.SerializableType<StaffHeaderParams>(),
             typeOf<UserHeaderParams?>() to CustomNavTypes.SerializableType<UserHeaderParams>(),
-            typeOf<ForumSearch.Title?>() to CustomNavTypes.SerializableType<ForumSearch.Title>(),
+            typeOf<ForumDestinations.ForumSearch.Title?>() to CustomNavTypes.SerializableType<ForumDestinations.ForumSearch.Title>(),
             typeOf<SearchMedia.Title?>() to CustomNavTypes.SerializableType<SearchMedia.Title>(),
         )
     }
@@ -60,60 +58,6 @@ sealed interface AnimeDestination : NavDestination {
 
     @Serializable
     data object FeatureTiers : AnimeDestination
-
-    @Serializable
-    data object Forum : AnimeDestination
-
-    @Serializable
-    data class ForumSearch(
-        val title: Title? = null,
-        val sort: ForumThreadSortOption? = null,
-        val categoryId: String? = null,
-        val mediaCategoryId: String? = null,
-    ) : AnimeDestination {
-        @Serializable
-        sealed interface Title {
-            @Composable
-            fun text(): String
-
-            @Serializable
-            data object Active : Title {
-                @Composable
-                override fun text() = stringResource(Res.string.anime_forum_root_active_title)
-            }
-
-            @Serializable
-            data object New : Title {
-                @Composable
-                override fun text() = stringResource(Res.string.anime_forum_root_new_title)
-            }
-
-            @Serializable
-            data object Releases : Title {
-                @Composable
-                override fun text() = stringResource(Res.string.anime_forum_root_releases_title)
-            }
-
-            @Serializable
-            data class Custom(val title: String) : Title {
-                @Composable
-                override fun text() = title
-            }
-        }
-    }
-
-    @Serializable
-    data class ForumThread(
-        val threadId: String,
-        val title: String? = null,
-    ) : AnimeDestination
-
-    @Serializable
-    data class ForumThreadComment(
-        val threadId: String,
-        val commentId: String,
-        val title: String? = null,
-    ) : AnimeDestination
 
     @Serializable
     data class Ignored(

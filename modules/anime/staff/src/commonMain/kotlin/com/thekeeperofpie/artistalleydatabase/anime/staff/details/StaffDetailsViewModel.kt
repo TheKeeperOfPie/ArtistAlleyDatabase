@@ -79,7 +79,7 @@ class StaffDetailsViewModel<MediaEntry>(
                 StaffDetailsScreen.Entry(staff, description)
             }
         }
-    }.foldPreviousResult(LoadingResult.loading())
+    }.foldPreviousResult()
         .stateIn(viewModelScope, SharingStarted.Eagerly, LoadingResult.loading())
 
     val characters = MutableStateFlow(PagingData.empty<CharacterDetails>())

@@ -50,9 +50,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpd
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivityCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCommentContent
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCommentContent
+import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
@@ -737,7 +738,7 @@ private fun ThreadAndCommentNotificationCard(
         val commentId = entry?.comment?.id?.toString()
         if (threadId != null && commentId != null) {
             navigationCallback.navigate(
-                AnimeDestination.ForumThreadComment(
+                ForumDestinations.ForumThreadComment(
                     threadId = threadId,
                     commentId = commentId,
                     title = thread.title,
@@ -760,10 +761,11 @@ private fun ThreadAndCommentNotificationCard(
         ) {
             ThreadCardContent(
                 thread = thread,
+                userRoute = AnimeDestination.User.route,
                 modifier = Modifier.clickable {
                     if (threadId != null) {
                         navigationCallback.navigate(
-                            AnimeDestination.ForumThread(
+                            ForumDestinations.ForumThread(
                                 threadId = threadId,
                                 title = thread.title,
                             )
@@ -782,7 +784,7 @@ private fun ThreadAndCommentNotificationCard(
                         .verticalScroll(rememberScrollState())
                         .clickable {
                             navigationCallback.navigate(
-                                AnimeDestination.ForumThreadComment(
+                                ForumDestinations.ForumThreadComment(
                                     threadId = threadId,
                                     commentId = comment.id.toString(),
                                     title = thread.title,
@@ -800,6 +802,7 @@ private fun ThreadAndCommentNotificationCard(
                         liked = entry.liked,
                         likeCount = comment.likeCount,
                         user = entry.user,
+                        userRoute = AnimeDestination.User.route,
                         onStatusUpdate = onStatusUpdate,
                     )
                 }
@@ -820,7 +823,7 @@ fun ThreadLikeNotificationCard(
     ElevatedCard(onClick = {
         if (thread != null) {
             navigationCallback.navigate(
-                AnimeDestination.ForumThread(
+                ForumDestinations.ForumThread(
                     threadId = thread.id.toString(),
                     title = thread.title,
                 )
@@ -841,7 +844,7 @@ fun ThreadLikeNotificationCard(
                     .height(IntrinsicSize.Min)
                     .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
             ) {
-                ThreadCardContent(thread = thread)
+                ThreadCardContent(thread = thread, userRoute = AnimeDestination.User.route)
             }
         }
     }

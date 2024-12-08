@@ -56,6 +56,7 @@ fun LazyGridState.showFloatingActionButtonOnVerticalScroll(firstIndexToHide: Int
     }.value
 }
 
+// TODO: Unify usages
 @Composable
 fun LoadingResult<*>.ErrorSnackbar(snackbarHostState: SnackbarHostState) {
     val errorMessage = error?.message()

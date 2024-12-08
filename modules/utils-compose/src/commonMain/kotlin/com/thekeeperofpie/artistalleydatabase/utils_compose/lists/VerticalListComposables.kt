@@ -95,19 +95,7 @@ object VerticalList {
                         }
                     refreshState is LoadState.NotLoading && items.itemCount == 0 ->
                         item(key = "errorNoResults", span = GridUtils.maxSpanFunction) {
-                            Box(
-                                contentAlignment = Alignment.TopCenter,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    stringResource(Res.string.no_results),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(
-                                        horizontal = 16.dp,
-                                        vertical = 10.dp
-                                    ),
-                                )
-                            }
+                            NoResults()
                         }
                     else -> {
                         items(
@@ -153,6 +141,23 @@ object VerticalList {
                 .padding(horizontal = 16.dp, vertical = 10.dp),
         ) {
             CircularProgressIndicator()
+        }
+    }
+
+    @Composable
+    fun NoResults() {
+        Box(
+            contentAlignment = Alignment.TopCenter,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                stringResource(Res.string.no_results),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(
+                    horizontal = 16.dp,
+                    vertical = 10.dp
+                ),
+            )
         }
     }
 

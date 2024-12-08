@@ -65,12 +65,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.pr
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.characters.rememberImageStateBelowInnerImage
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumComposables
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchScreen
-import com.thekeeperofpie.artistalleydatabase.anime.forum.forumThreadsSection
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadScreen
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumThreadCommentTreeScreen
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumComposables
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.forums.forumThreadsSection
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
@@ -274,9 +271,9 @@ object AnimeNavigator {
             }
 
             val forumThreadsViewModel = viewModel {
-                component.animeForumThreadsViewModel(
+                component.animeMediaDetailsForumThreadsViewModel(
                     createSavedStateHandle(),
-                    mediaDetailsViewModel,
+                    mediaDetailsViewModel.media(),
                 )
             }
 
@@ -442,9 +439,9 @@ object AnimeNavigator {
                         onClickViewAll = {
                             val entry = mediaDetailsViewModel.state.mediaEntry.result
                             navigationCallback.navigate(
-                                AnimeDestination.ForumSearch(
+                                ForumDestinations.ForumSearch(
                                     title = entry?.media?.title?.userPreferred
-                                        ?.let(AnimeDestination.ForumSearch.Title::Custom),
+                                        ?.let(ForumDestinations.ForumSearch.Title::Custom),
                                     mediaCategoryId = mediaDetailsViewModel.state.mediaId,
                                 )
                             )
@@ -651,71 +648,6 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.Forum>(navigationTypeMap) {
-            ForumRootScreen(
-                viewModel = viewModel { component.forumRootScreenViewModel() },
-                upIconOption = UpIconOption.Back(navHostController),
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.ForumSearch>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        "${AniListUtils.ANILIST_BASE_URL}/forum/recent?category={categoryId}"
-                },
-                navDeepLink {
-                    uriPattern =
-                        "${AniListUtils.ANILIST_BASE_URL}/forum/recent?media={mediaCategoryId}"
-                },
-            ),
-        ) {
-            val destination = it.toRoute<AnimeDestination.ForumSearch>()
-            ForumSearchScreen(
-                viewModel = viewModel { component.forumSearchViewModel(createSavedStateHandle()) },
-                upIconOption = UpIconOption.Back(navHostController),
-                title = destination.title,
-            )
-        }
-
-        // TODO: Forum deep links
-        navGraphBuilder.sharedElementComposable<AnimeDestination.ForumThread>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}"
-                },
-                navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/.*"
-                },
-            ),
-        ) {
-            ForumThreadScreen(
-                upIconOption = UpIconOption.Back(navHostController),
-                title = it.arguments?.getString("title"),
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.ForumThreadComment>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}"
-                },
-                navDeepLink {
-                    uriPattern =
-                        "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}/.*"
-                },
-            ),
-        ) {
-            ForumThreadCommentTreeScreen(
-                upIconOption = UpIconOption.Back(navHostController),
-                title = it.arguments?.getString("title"),
-            )
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaHistory>(navigationTypeMap) {
             MediaHistoryScreen(
                 upIconOption = UpIconOption.Back(navHostController),
@@ -852,13 +784,14 @@ object AnimeNavigator {
             )
         }
 
+        val mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component)
         ActivityDestinations.addToGraph(
             navGraphBuilder = navGraphBuilder,
             navigationTypeMap = navigationTypeMap,
             component = component,
             userRoute = AnimeDestination.User.route,
             mediaDetailsRoute = AnimeDestination.MediaDetails.route,
-            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
             mediaRow = { entry, viewer, onClickListEdit, modifier ->
                 AnimeMediaCompactListRow(
                     viewer = viewer,
@@ -874,7 +807,7 @@ object AnimeNavigator {
             navGraphBuilder = navGraphBuilder,
             navigationTypeMap = navigationTypeMap,
             component = component,
-            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
             mediaRow = { entry, viewer, label, onClickListEdit, modifier ->
                 AnimeMediaListRow(
                     entry = entry,
@@ -894,11 +827,29 @@ object AnimeNavigator {
             mediaEntryProvider = MediaPreviewEntry.Provider,
         )
 
+        ForumDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+            mediaDetailsRoute = AnimeDestination.MediaDetails.route,
+            userRoute = AnimeDestination.User.route,
+            mediaRow = { entry, viewer, onClickListEdit, modifier ->
+                AnimeMediaCompactListRow(
+                    viewer = viewer,
+                    entry = entry,
+                    onClickListEdit = onClickListEdit,
+                    modifier = modifier,
+                )
+            },
+            mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+        )
+
         RecommendationDestinations.addToGraph(
             navGraphBuilder = navGraphBuilder,
             navigationTypeMap = navigationTypeMap,
             component = component,
-            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
             mediaDetailsRoute = AnimeDestination.MediaDetails.route,
             userRoute = AnimeDestination.User.route,
             mediaRow = { entry, viewer, onClickListEdit, modifier ->
@@ -916,7 +867,7 @@ object AnimeNavigator {
             navGraphBuilder = navGraphBuilder,
             navigationTypeMap = navigationTypeMap,
             component = component,
-            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
             mediaDetailsRoute = AnimeDestination.MediaDetails.route,
             userRoute = AnimeDestination.User.route,
             mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
@@ -986,7 +937,7 @@ object AnimeNavigator {
             navGraphBuilder = navGraphBuilder,
             navigationTypeMap = navigationTypeMap,
             component = component,
-            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
             characterRow = { entry, viewer, onClickListEdit ->
                 CharacterListRow(
                     entry = entry,
@@ -1125,7 +1076,7 @@ object AnimeNavigator {
             navGraphBuilder = navGraphBuilder,
             navigationTypeMap = navigationTypeMap,
             component = component,
-            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
             mediaEntryProvider = MediaPreviewEntry.Provider,
             mediaRow = { entry, viewer, onClickListEdit, modifier ->
                 AnimeMediaListRow(

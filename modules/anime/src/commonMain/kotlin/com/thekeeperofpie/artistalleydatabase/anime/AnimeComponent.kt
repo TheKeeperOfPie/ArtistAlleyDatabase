@@ -8,11 +8,7 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeMediaDetailsActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersComponent
-import com.thekeeperofpie.artistalleydatabase.anime.forum.AnimeForumThreadsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreenViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumThreadCommentTreeViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeViewModel
@@ -52,11 +48,10 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
 }
 
 interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
-    RecommendationsComponent, ReviewsComponent, StaffComponent, StudiosComponent {
+    ForumsComponent, RecommendationsComponent, ReviewsComponent, StaffComponent, StudiosComponent {
 
     val airingScheduleViewModel: () -> AiringScheduleViewModel
     val aniListUserViewModel: (SavedStateHandle, MediaDetailsRoute) -> AniListUserViewModel
-    val animeForumThreadsViewModel: (SavedStateHandle, AnimeMediaDetailsViewModel) -> AnimeForumThreadsViewModel
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
     val animeHomeViewModel: () -> AnimeHomeViewModel
@@ -73,10 +68,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
         mediaType: MediaType,
         status: MediaListStatus?,
     ) -> AnimeUserListViewModel
-    val forumRootScreenViewModel: () -> ForumRootScreenViewModel
-    val forumSearchViewModel: (SavedStateHandle) -> ForumSearchViewModel
-    val forumThreadCommentTreeViewModel: (SavedStateHandle) -> ForumThreadCommentTreeViewModel
-    val forumThreadViewModel: (SavedStateHandle) -> ForumThreadViewModel
     val mediaActivitiesViewModel: (SavedStateHandle, MediaDetailsRoute) -> MediaActivitiesViewModel
     val mediaCharactersViewModel: (SavedStateHandle) -> MediaCharactersViewModel
     val mediaEditViewModel: () -> MediaEditViewModel
