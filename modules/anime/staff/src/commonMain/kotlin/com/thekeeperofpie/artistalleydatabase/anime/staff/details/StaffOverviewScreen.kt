@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.staff
+package com.thekeeperofpie.artistalleydatabase.anime.staff.details
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,46 +11,53 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_age_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_blood_type_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_characters_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_date_of_birth_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_date_of_death_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_favorites_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_gender_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_home_town_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_information_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_primary_occupations_expand_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_primary_occupations_label
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_view_all_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_years_active_beginning
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_years_active_beginning_and_end
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_details_years_active_label
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
+import artistalleydatabase.modules.anime.staff.generated.resources.Res
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_age_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_blood_type_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_characters_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_date_of_birth_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_date_of_death_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_favorites_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_gender_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_home_town_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_information_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_primary_occupations_expand_content_description
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_primary_occupations_label
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_view_all_content_description
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_years_active_beginning
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_years_active_beginning_and_end
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_details_years_active_label
+import com.anilist.data.StaffDetailsQuery
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 object StaffOverviewScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: StaffDetailsViewModel,
-        entry: StaffDetailsScreen.Entry,
+        entry: Entry,
         coverImageState: CoilImageState,
-        expandedState: StaffDetailsScreen.ExpandedState,
+        expandedState: StaffExpandedState,
+        favorite: () -> Boolean?,
+        charactersSection: LazyGridScope.(
+            titleRes: StringResource,
+            viewAllRoute: () -> NavDestination,
+            viewAllContentDescriptionTextRes: StringResource,
+        ) -> Unit,
     ) {
-        val characters = viewModel.characters.collectAsLazyPagingItems()
         val staffName = entry.staff.name?.primaryName()
         val staffSubtitle = entry.staff.name?.subtitleName()
         LazyVerticalGrid(
@@ -73,29 +80,27 @@ object StaffOverviewScreen {
             }
 
             charactersSection(
-                titleRes = Res.string.anime_staff_details_characters_label,
-                characters = characters,
-                viewAllRoute = {
-                    AnimeDestination.StaffCharacters(
+                Res.string.anime_staff_details_characters_label,
+                {
+                    StaffDestinations.StaffCharacters(
                         staffId = entry.staff.id.toString(),
                         sharedTransitionKey = null,
                         headerParams = StaffHeaderParams(
                             name = staffName,
                             subtitle = staffSubtitle,
                             coverImage = coverImageState.toImageState(),
-                            favorite = viewModel.favoritesToggleHelper.favorite,
+                            favorite = favorite(),
                         )
                     )
                 },
-                viewAllContentDescriptionTextRes = Res.string.anime_staff_details_view_all_content_description,
-                staffDetailsRoute = AnimeDestination.StaffDetails.route,
+                Res.string.anime_staff_details_view_all_content_description,
             )
 
             infoSection(entry = entry)
         }
     }
 
-    private fun LazyGridScope.infoSection(entry: StaffDetailsScreen.Entry) {
+    private fun LazyGridScope.infoSection(entry: Entry) {
         item(
             key = "infoHeader",
             span = GridUtils.maxSpanFunction,
@@ -170,5 +175,10 @@ object StaffOverviewScreen {
                 )
             }
         }
+    }
+
+    interface Entry {
+        val staff: StaffDetailsQuery.Data.Staff
+        val description: MarkdownText?
     }
 }

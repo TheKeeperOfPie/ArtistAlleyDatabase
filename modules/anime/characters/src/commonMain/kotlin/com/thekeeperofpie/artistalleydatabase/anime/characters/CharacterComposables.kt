@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.items
@@ -51,6 +52,7 @@ import artistalleydatabase.modules.anime.ui.generated.resources.anime_character_
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_voice_actor_image
 import coil3.request.crossfade
 import coil3.size.Dimension
+import com.anilist.data.fragment.CharacterNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
@@ -58,21 +60,24 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UpperHalfBiasAlignment
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.allowHardware
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.colorsOrDefault
@@ -89,15 +94,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
-
-typealias StaffDetailsRoute = (
-    staffId: String,
-    SharedTransitionKey?,
-    staffName: String?,
-    staffSubtitle: String?,
-    ImageState?,
-    favorite: Boolean?,
-) -> NavDestination
 
 @Composable
 fun CharacterSmallCard(
@@ -714,3 +710,35 @@ fun rememberImageStateBelowInnerImage(
     selectMaxPopulation = true,
     requestColors = true,
 )
+
+fun LazyListScope.horizontalCharactersRow(characters: List<CharacterNavigationData>) {
+    items(characters, key = { it.id }) {
+        val navHostController = LocalNavHostController.current
+        val characterName = it.name?.primaryName()
+        val imageState = rememberCoilImageState(it.image?.large)
+        val sharedTransitionKey = SharedTransitionKey.makeKeyForId(it.id.toString())
+        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
+        ListRowSmallImage(
+            ignored = false,
+            imageState = imageState,
+            contentDescriptionTextRes = UiRes.string.anime_character_image_content_description,
+            onClick = {
+                navHostController.navigate(
+                    CharacterDestinations.CharacterDetails(
+                        characterId = it.id.toString(),
+                        sharedTransitionScopeKey = sharedTransitionScopeKey,
+                        headerParams = CharacterHeaderParams(
+                            name = characterName,
+                            subtitle = null,
+                            favorite = null,
+                            coverImage = imageState.toImageState(),
+                        )
+                    )
+                )
+            },
+            width = 80.dp,
+            height = 120.dp,
+            modifier = Modifier.sharedElement(sharedTransitionKey, "character_image")
+        )
+    }
+}

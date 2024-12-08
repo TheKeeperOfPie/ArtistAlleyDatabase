@@ -1,88 +1,94 @@
-package com.thekeeperofpie.artistalleydatabase.anime.staff
+package com.thekeeperofpie.artistalleydatabase.anime.staff.details
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_error_loading
+import artistalleydatabase.modules.anime.staff.generated.resources.Res
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_error_loading
+import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.fragment.StaffDetailsCharacterMediaPage
 import com.anilist.data.fragment.StaffDetailsStaffMediaPage
-import com.anilist.data.type.CharacterRole
+import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDetails
-import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSettings
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
+import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
-import org.jetbrains.compose.resources.StringResource
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class StaffDetailsViewModel(
+class StaffDetailsViewModel<MediaEntry>(
     private val aniListApi: AuthedAniListApi,
-    private val settings: AnimeSettings,
+    private val settings: StaffSettings,
     favoritesController: FavoritesController,
     private val mediaListStatusController: MediaListStatusController,
     val ignoreController: IgnoreController,
     private val markdown: Markdown,
-    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
 ) : ViewModel() {
-    private val destination = savedStateHandle.toDestination<AnimeDestination.StaffDetails>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<StaffDestinations.StaffDetails>(navigationTypeMap)
     val staffId = destination.staffId
 
     val viewer = aniListApi.authedUser
 
-    var entry by mutableStateOf<StaffDetailsScreen.Entry?>(null)
-    var loading by mutableStateOf(true)
-    var error by mutableStateOf<Pair<StringResource, Exception?>?>(null)
-    val showAdult get() = settings.showAdult
+    private val refresh = RefreshFlow()
+    var entry = flowForRefreshableContent(refresh, Res.string.anime_staff_error_loading) {
+        flowFromSuspend {
+            withContext(CustomDispatchers.IO) {
+                val staff = aniListApi.staffDetails(staffId)
+                val description = staff.description?.let(markdown::convertMarkdownText)
+                StaffDetailsScreen.Entry(staff, description)
+            }
+        }
+    }.foldPreviousResult(LoadingResult.loading())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, LoadingResult.loading())
 
     val characters = MutableStateFlow(PagingData.empty<CharacterDetails>())
 
-    val mediaTimeline = MutableStateFlow(MediaTimeline())
+    val mediaTimeline = MutableStateFlow(StaffMediaTimeline())
     private val mediaTimelineLastRequestedYear = MutableStateFlow<Int?>(null)
     private var mediaTimelineResults = MutableStateFlow(emptyList<StaffDetailsCharacterMediaPage>())
 
-    val staffTimeline = MutableStateFlow(StaffTimeline())
+    val staffTimeline = MutableStateFlow(StaffTimeline<MediaEntry>())
     private val staffTimelineLastRequestedYear = MutableStateFlow<Int?>(null)
     private val staffTimelineResults = MutableStateFlow(emptyList<StaffDetailsStaffMediaPage>())
     private val mediaListStatusUpdates =
@@ -93,28 +99,7 @@ class StaffDetailsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            try {
-                val staff = aniListApi.staffDetails(staffId)
-                val description = staff.description?.let(markdown::convertMarkdownText)
-                val entry = StaffDetailsScreen.Entry(staff, description)
-                withContext(CustomDispatchers.Main) {
-                    this@StaffDetailsViewModel.entry = entry
-                }
-            } catch (exception: Exception) {
-                withContext(CustomDispatchers.Main) {
-                    error = Res.string.anime_staff_error_loading to exception
-                }
-            } finally {
-                withContext(CustomDispatchers.Main) {
-                    loading = false
-                }
-            }
-        }
-
-        viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { entry }
-                .filterNotNull()
-                .flowOn(CustomDispatchers.Main)
+            entry.mapNotNull { it.result }
                 .flatMapLatest { entry ->
                     AniListPager {
                         if (it == 1) {
@@ -155,7 +140,7 @@ class StaffDetailsViewModel(
                 settings.showAdult,
                 ::MediaTimelineRefreshParams
             )
-                .filter { (timeline) -> timeline.loadMoreState == MediaTimeline.LoadMoreState.None }
+                .filter { (timeline) -> timeline.loadMoreState == StaffMediaTimeline.LoadMoreState.None }
                 .filter { (_, _, existingResults) ->
                     existingResults.isEmpty() || existingResults.last().pageInfo?.hasNextPage == true
                 }
@@ -167,7 +152,7 @@ class StaffDetailsViewModel(
                 .onEach { (timeline) ->
                     withContext(CustomDispatchers.Main) {
                         mediaTimeline.value = timeline.copy(
-                            loadMoreState = MediaTimeline.LoadMoreState.Loading
+                            loadMoreState = StaffMediaTimeline.LoadMoreState.Loading
                         )
                     }
                 }
@@ -179,11 +164,11 @@ class StaffDetailsViewModel(
                         val newResults = existingResults + result
                         timeline.copy(
                             yearsToCharacters = calculateMediaTimeline(showAdult, newResults),
-                            loadMoreState = MediaTimeline.LoadMoreState.None
+                            loadMoreState = StaffMediaTimeline.LoadMoreState.None
                         ) to newResults
                     } catch (throwable: Throwable) {
                         timeline.copy(
-                            loadMoreState = MediaTimeline.LoadMoreState.Error(
+                            loadMoreState = StaffMediaTimeline.LoadMoreState.Error(
                                 throwable
                             )
                         ) to existingResults
@@ -261,8 +246,13 @@ class StaffDetailsViewModel(
                                         ignoreController = ignoreController,
                                         filteringData = filteringData,
                                         entry = it,
-                                        filterableData = it.mediaFilterable,
-                                        copy = { copy(mediaFilterable = it) },
+                                        filterableData = mediaEntryProvider.mediaFilterable(it.mediaEntry),
+                                        copy = {
+                                            copy(
+                                                mediaEntry = mediaEntryProvider
+                                                    .copyMediaEntry(mediaEntry, it)
+                                            )
+                                        },
                                     )
                                 }
                             }
@@ -279,12 +269,14 @@ class StaffDetailsViewModel(
 
         favoritesToggleHelper.initializeTracking(
             scope = viewModelScope,
-            entry = { snapshotFlow { entry } },
+            entry = { entry.map { it.result } },
             entryToId = { it.staff.id.toString() },
             entryToType = { FavoriteType.STAFF },
             entryToFavorite = { it.staff.isFavourite },
         )
     }
+
+    fun refresh() = refresh.refresh(fromUser = true)
 
     fun onRequestMediaYear(year: Int?) {
         val existingValue = mediaTimelineLastRequestedYear.value
@@ -319,7 +311,7 @@ class StaffDetailsViewModel(
                 .flatMap { edge ->
                     edge.characters?.filterNotNull().orEmpty()
                         .map {
-                            MediaTimeline.Character(
+                            StaffMediaTimeline.Character(
                                 id = "${edge.node?.id}_${it.id}",
                                 character = it,
                                 role = edge.characterRole,
@@ -350,9 +342,9 @@ class StaffDetailsViewModel(
                 .filter { if (showAdult) true else it.node?.isAdult == false }
                 .mapNotNull { edge ->
                     val node = edge.node ?: return@mapNotNull null
-                    StaffTimeline.Media(
+                    StaffTimeline.MediaWithRole<MediaEntry>(
                         id = "${edge.id}_${node.id}",
-                        media = node,
+                        mediaEntry = mediaEntryProvider.mediaEntry(node),
                         role = edge.staffRole,
                     )
                 }
@@ -363,85 +355,42 @@ class StaffDetailsViewModel(
         .map { it.toPair() }
 
     data class MediaTimelineRefreshParams(
-        val timeline: MediaTimeline,
+        val timeline: StaffMediaTimeline,
         val requestedYear: Int?,
         val existingResults: List<StaffDetailsCharacterMediaPage>,
         val showAdult: Boolean,
     )
 
-    data class MediaTimeline(
-        val yearsToCharacters: List<Pair<Int?, List<Character>>> = emptyList(),
-        val loadMoreState: LoadMoreState = LoadMoreState.None,
-    ) {
-        data class Character(
-            val id: String,
-            val character: StaffDetailsCharacterMediaPage.Edge.Character,
-            val role: CharacterRole?,
-            val media: StaffDetailsCharacterMediaPage.Edge.Node?,
-        )
-
-        sealed interface LoadMoreState {
-            data object None : LoadMoreState
-            data object Loading : LoadMoreState
-            data class Error(val throwable: Throwable) : LoadMoreState
-        }
-    }
-
-    data class StaffTimelineRefreshParams(
-        val timeline: StaffTimeline,
+    data class StaffTimelineRefreshParams<MediaEntry>(
+        val timeline: StaffTimeline<MediaEntry>,
         val requestedYear: Int?,
         val existingResults: List<StaffDetailsStaffMediaPage>,
         val showAdult: Boolean,
     )
 
-    data class StaffTimeline(
-        val yearsToMedia: List<Pair<Int?, List<Media>>> = emptyList(),
-        val loadMoreState: LoadMoreState = LoadMoreState.None,
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val settings: StaffSettings,
+        private val favoritesController: FavoritesController,
+        private val mediaListStatusController: MediaListStatusController,
+        private val ignoreController: IgnoreController,
+        private val markdown: Markdown,
+        private val navigationTypeMap: NavigationTypeMap,
+        @Assisted private val savedStateHandle: SavedStateHandle,
     ) {
-        data class Media(
-            val id: String,
-            val role: String?,
-            override val media: StaffDetailsStaffMediaPage.Edge.Node,
-            val mediaFilterable: MediaFilterableData = MediaFilterableData(
-                mediaId = media.id.toString(),
-                isAdult = media.isAdult,
-                mediaListStatus = media.mediaListEntry?.status?.toMediaListStatus(),
-                progress = media.mediaListEntry?.progress,
-                progressVolumes = media.mediaListEntry?.progressVolumes,
-                scoreRaw = media.mediaListEntry?.score,
-                ignored = false,
-                showLessImportantTags = false,
-                showSpoilerTags = false,
-            ),
-            override val color: Color? = media.coverImage?.color
-                ?.let(ComposeColorUtils::hexToColor),
-            override val averageScore: Int? = media.averageScore,
-        ) : MediaGridCard.Entry {
-            override val type
-                get() = media.type
-            override val chapters
-                get() = media.chapters
-            override val episodes
-                get() = media.episodes
-            override val volumes
-                get() = media.volumes
-            override val nextAiringEpisode = media.nextAiringEpisode?.toNextAiringEpisode()
-            override val mediaListStatus
-                get() = mediaFilterable.mediaListStatus
-            override val ignored
-                get() = mediaFilterable.ignored
-            override val progress
-                get() = mediaFilterable.progress
-            override val progressVolumes
-                get() = mediaFilterable.progressVolumes
-            override val scoreRaw
-                get() = mediaFilterable.scoreRaw
-        }
-
-        sealed interface LoadMoreState {
-            data object None : LoadMoreState
-            data object Loading : LoadMoreState
-            data class Error(val throwable: Throwable) : LoadMoreState
-        }
+        fun <MediaEntry> create(
+            mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
+        ) = StaffDetailsViewModel(
+            aniListApi = aniListApi,
+            settings = settings,
+            favoritesController = favoritesController,
+            mediaListStatusController = mediaListStatusController,
+            ignoreController = ignoreController,
+            markdown = markdown,
+            navigationTypeMap = navigationTypeMap,
+            savedStateHandle = savedStateHandle,
+            mediaEntryProvider = mediaEntryProvider,
+        )
     }
 }

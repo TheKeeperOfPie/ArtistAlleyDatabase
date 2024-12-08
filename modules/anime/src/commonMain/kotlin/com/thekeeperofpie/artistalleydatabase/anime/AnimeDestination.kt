@@ -17,7 +17,6 @@ import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.characters.StaffDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
@@ -255,36 +254,6 @@ sealed interface AnimeDestination : NavDestination {
             LAST,
             THIS,
             NEXT,
-        }
-    }
-
-    @Serializable
-    data class StaffCharacters(
-        val staffId: String,
-        val sharedTransitionKey: SharedTransitionKey? = null,
-        val headerParams: StaffHeaderParams? = null,
-    ) : AnimeDestination
-
-    @Serializable
-    data class StaffDetails(
-        val staffId: String,
-        val sharedTransitionKey: SharedTransitionKey? = null,
-        val headerParams: StaffHeaderParams? = null,
-    ) : AnimeDestination {
-        companion object {
-            val route: StaffDetailsRoute =
-                { id, sharedTransitionKey, name, subtitle, image, favorite ->
-                    AnimeDestination.StaffDetails(
-                        staffId = id,
-                        sharedTransitionKey = sharedTransitionKey,
-                        headerParams = StaffHeaderParams(
-                            name = name,
-                            subtitle = subtitle,
-                            coverImage = image,
-                            favorite = favorite,
-                        )
-                    )
-                }
         }
     }
 

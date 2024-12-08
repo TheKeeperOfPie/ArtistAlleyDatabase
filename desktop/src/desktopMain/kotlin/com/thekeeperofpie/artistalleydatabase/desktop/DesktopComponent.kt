@@ -9,12 +9,14 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSettings
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
@@ -64,6 +66,9 @@ abstract class DesktopComponent(
     val DesktopSettingsProvider.bindAnimeSettings: AnimeSettings
         @Provides get() = this
 
+    val DesktopSettingsProvider.bindCharacterSettings: CharacterSettings
+        @Provides get() = this
+
     val DesktopSettingsProvider.bindCropSettings: CropSettings
         @Provides get() = this
 
@@ -80,6 +85,9 @@ abstract class DesktopComponent(
         @Provides get() = this
 
     val DesktopSettingsProvider.bindNetworkSettings: NetworkSettings
+        @Provides get() = this
+
+    val DesktopSettingsProvider.bindStaffSettings: StaffSettings
         @Provides get() = this
 
     val DesktopDatabase.bindAniListDatabase: AniListDatabase

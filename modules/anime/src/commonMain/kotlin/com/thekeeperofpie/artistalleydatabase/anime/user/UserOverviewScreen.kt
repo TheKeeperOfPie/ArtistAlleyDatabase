@@ -55,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
@@ -165,20 +166,16 @@ object UserOverviewScreen {
                     )
                 },
                 viewAllContentDescriptionTextRes = Res.string.anime_user_favorite_media_view_all_character_content_description,
-                staffDetailsRoute = AnimeDestination.StaffDetails.route,
+                staffDetailsRoute = StaffDestinations.StaffDetails.route,
             )
 
             staffSection(
                 titleRes = Res.string.anime_user_favorite_staff_label,
                 staffList = staff,
-                onClickViewAll = {
-                    it.navigate(
-                        AnimeDestination.UserFavoriteStaff(
-                            userId = userId,
-                            userName = user.name,
-                        )
-                    )
-                },
+                viewAllRoute = AnimeDestination.UserFavoriteStaff(
+                    userId = userId,
+                    userName = user.name,
+                ),
                 viewAllContentDescriptionTextRes = Res.string.anime_user_favorite_media_view_all_staff_content_description,
             )
 

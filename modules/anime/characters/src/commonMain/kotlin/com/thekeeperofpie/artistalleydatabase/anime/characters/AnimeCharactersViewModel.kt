@@ -11,6 +11,7 @@ import androidx.paging.cachedIn
 import com.anilist.data.MediaDetailsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager2
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -34,7 +35,7 @@ class AnimeCharactersViewModel(
     @Assisted characters: Flow<MediaDetailsQuery.Data.Media.Characters?>,
 ) : ViewModel() {
 
-    val charactersDeferred = MutableStateFlow(PagingData.Companion.empty<CharacterDetails>())
+    val charactersDeferred = MutableStateFlow(PagingData.empty<CharacterDetails>())
 
     private val mediaId = savedStateHandle.get<String>("mediaId")!!
 
@@ -42,7 +43,7 @@ class AnimeCharactersViewModel(
         private set
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.Main) {
+        viewModelScope.launch(CustomDispatchers.Main) {
             characters
                 .collectLatest {
                     charactersInitial = CharacterUtils.toDetailsCharacters(
@@ -51,12 +52,12 @@ class AnimeCharactersViewModel(
                 }
         }
 
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             characters
-                .flowOn(CustomDispatchers.Companion.Main)
+                .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { characters ->
                     if (characters == null) {
-                        return@flatMapLatest flowOf(PagingData.Companion.empty<CharacterDetails>())
+                        return@flatMapLatest flowOf(PagingData.empty<CharacterDetails>())
                     }
                     val perPage = 6
                     AniListPager2(

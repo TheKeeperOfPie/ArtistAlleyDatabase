@@ -55,7 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.Density
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.ui.generated.resources.Res
@@ -478,7 +478,6 @@ fun GenericViewAllCard(
 // TODO: Placeholder background color
 @Composable
 fun ListRowSmallImage(
-    density: Density,
     ignored: Boolean,
     imageState: CoilImageState?,
     contentDescriptionTextRes: StringResource,
@@ -487,6 +486,7 @@ fun ListRowSmallImage(
     height: Dp = 96.dp,
     onClick: () -> Unit,
 ) {
+    val density = LocalDensity.current
     CoilImage(
         state = imageState,
         model = imageState.request()

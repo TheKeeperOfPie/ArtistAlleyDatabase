@@ -66,7 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_image_long_press_preview
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_image_long_press_preview
 import artistalleydatabase.modules.anime2anime.generated.resources.Res
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_app_bar_title
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_game_tab_custom
@@ -95,8 +95,6 @@ import com.anilist.data.fragment.CharacterNavigationData
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeStrings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
@@ -107,6 +105,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
@@ -509,7 +508,7 @@ object Anime2AnimeScreen {
                         .combinedClickable(
                             onClick = {
                                 navigationCallback.navigate(
-                                    AnimeDestination.StaffDetails(
+                                    StaffDestinations.StaffDetails(
                                         staffId = voiceActor.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
@@ -525,7 +524,8 @@ object Anime2AnimeScreen {
                                 voiceActor.image?.large?.let(fullscreenImageHandler::openImage)
                             },
                             onLongClickLabel = stringResource(
-                                AnimeStrings.anime_staff_image_long_press_preview
+                                artistalleydatabase.modules.anime.staff.generated.resources.Res
+                                    .string.anime_staff_image_long_press_preview
                             ),
                         ),
                     contentScale = ContentScale.Crop
@@ -603,7 +603,7 @@ object Anime2AnimeScreen {
         OutlinedCard(
             onClick = {
                 navigationCallback.navigate(
-                    AnimeDestination.StaffDetails(
+                    StaffDestinations.StaffDetails(
                         staffId = staff.id.toString(),
                         sharedTransitionKey = sharedTransitionKey,
                         headerParams = StaffHeaderParams(
@@ -636,7 +636,7 @@ object Anime2AnimeScreen {
                         .combinedClickable(
                             onClick = {
                                 navigationCallback.navigate(
-                                    AnimeDestination.StaffDetails(
+                                    StaffDestinations.StaffDetails(
                                         staffId = staff.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
@@ -652,7 +652,8 @@ object Anime2AnimeScreen {
                                 staff.image?.large?.let(fullscreenImageHandler::openImage)
                             },
                             onLongClickLabel = stringResource(
-                                AnimeStrings.anime_staff_image_long_press_preview
+                                artistalleydatabase.modules.anime.staff.generated.resources.Res
+                                    .string.anime_staff_image_long_press_preview
                             ),
                         ),
                     contentScale = ContentScale.Crop
@@ -842,7 +843,7 @@ object Anime2AnimeScreen {
                         charactersDeferred = { continuation.characters.collectAsLazyPagingItems() },
                         contentPadding = PaddingValues(0.dp),
                         showVoiceActorAsMain = true,
-                        staffDetailsRoute = AnimeDestination.StaffDetails.route,
+                        staffDetailsRoute = StaffDestinations.StaffDetails.route,
                         // TODO: View all characters
                     )
                 }

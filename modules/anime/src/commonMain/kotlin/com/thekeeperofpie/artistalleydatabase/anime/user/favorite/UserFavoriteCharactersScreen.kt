@@ -24,12 +24,12 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -117,7 +117,7 @@ object UserFavoriteCharactersScreen {
                                     val entry = characters[it]
                                     CharacterListRow(
                                         entry = entry,
-                                        staffDetailsRoute = AnimeDestination.StaffDetails.route,
+                                        staffDetailsRoute = StaffDestinations.StaffDetails.route,
                                         mediaItems = {
                                             characterMediaItems(
                                                 media = it,

@@ -213,4 +213,6 @@ class AnimeMediaDetailsViewModel(
     fun characters() = snapshotFlow { state.mediaEntry.result?.media?.characters }
 
     fun reviews() = snapshotFlow { state.mediaEntry.result?.media?.reviews }
+
+    fun media() = snapshotFlow { state.mediaEntry.result?.media }
 }

@@ -19,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -128,7 +127,6 @@ object StudioListRow {
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
-        val density = LocalDensity.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -151,7 +149,6 @@ object StudioListRow {
                         rememberSharedContentState(sharedTransitionKey, "media_image")
                     val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
                     ListRowSmallImage(
-                        density = density,
                         ignored = item?.mediaFilterable?.ignored ?: false,
                         imageState = imageState,
                         contentDescriptionTextRes = Res.string.anime_media_cover_image_content_description,

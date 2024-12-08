@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,8 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.LocalContentColor
@@ -33,77 +32,56 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_staff_image_long_press_preview
-import artistalleydatabase.modules.anime.ui.generated.resources.anime_character_image_content_description
-import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
+import artistalleydatabase.modules.anime.staff.generated.resources.Res
+import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_image_long_press_preview
 import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.StaffSearchQuery
 import com.anilist.data.UserFavoritesStaffQuery
 import com.anilist.data.fragment.CharacterNavigationData
-import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.StaffNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
 import org.jetbrains.compose.resources.stringResource
-import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
     ExperimentalCoilApi::class
 )
 object StaffListRow {
 
     private val MIN_HEIGHT = 156.dp
     private val IMAGE_WIDTH = 108.dp
-    private val MEDIA_WIDTH = 80.dp
-    private val MEDIA_HEIGHT = 120.dp
 
     @Composable
-    operator fun invoke(
-        viewer: AniListViewer?,
-        entry: Entry?,
-        onClickListEdit: (MediaNavigationData) -> Unit,
+    operator fun <MediaEntry> invoke(
+        entry: Entry<MediaEntry>?,
+        charactersSection: LazyListScope.(List<CharacterNavigationData>) -> Unit,
+        mediaSection: LazyListScope.(List<MediaEntry>) -> Unit,
     ) {
         val coverImageState = rememberCoilImageState(entry?.staff?.image?.large)
-        val navigationCallback = LocalNavigationCallback.current
+        val navHostController = LocalNavHostController.current
         val staffName = entry?.staff?.name?.primaryName()
         val staffSubtitle = entry?.staff?.name?.subtitleName()
         val sharedTransitionKey = entry?.staff?.id?.toString()
             ?.let { SharedTransitionKey.makeKeyForId(it) }
         val onClick = {
             if (entry != null) {
-                navigationCallback.navigate(
-                    AnimeDestination.StaffDetails(
+                navHostController.navigate(
+                    StaffDestinations.StaffDetails(
                         staffId = entry.staff.id.toString(),
                         sharedTransitionKey = sharedTransitionKey,
                         headerParams = StaffHeaderParams(
@@ -152,9 +130,9 @@ object StaffListRow {
                     Spacer(Modifier.weight(1f))
 
                     CharactersAndMediaRow(
-                        viewer = viewer,
                         entry = entry,
-                        onClickListEdit = onClickListEdit,
+                        charactersSection = charactersSection,
+                        mediaSection = mediaSection,
                     )
                 }
             }
@@ -162,8 +140,8 @@ object StaffListRow {
     }
 
     @Composable
-    private fun StaffImage(
-        entry: Entry?,
+    private fun <MediaEntry> StaffImage(
+        entry: Entry<MediaEntry>?,
         coverImageState: CoilImageState,
         onClick: () -> Unit,
     ) {
@@ -195,7 +173,7 @@ object StaffListRow {
     }
 
     @Composable
-    private fun NameText(entry: Entry?, modifier: Modifier = Modifier) {
+    private fun <MediaEntry> NameText(entry: Entry<MediaEntry>?, modifier: Modifier = Modifier) {
         Text(
             text = entry?.staff?.name?.primaryName() ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
@@ -212,7 +190,7 @@ object StaffListRow {
     }
 
     @Composable
-    private fun OccupationsText(entry: Entry?) {
+    private fun <MediaEntry> OccupationsText(entry: Entry<MediaEntry>?) {
         if (entry?.occupations?.isEmpty() != false) return
         Text(
             text = entry.occupations.joinToString(separator = " - "),
@@ -231,116 +209,37 @@ object StaffListRow {
     }
 
     @Composable
-    private fun CharactersAndMediaRow(
-        viewer: AniListViewer?,
-        entry: Entry?,
-        onClickListEdit: (MediaNavigationData) -> Unit,
+    private fun <MediaEntry> CharactersAndMediaRow(
+        entry: Entry<MediaEntry>?,
+        charactersSection: LazyListScope.(List<CharacterNavigationData>) -> Unit,
+        mediaSection: LazyListScope.(List<MediaEntry>) -> Unit,
     ) {
         val media = entry?.media.orEmpty()
         val characters = entry?.characters.orEmpty()
         if (media.isEmpty() && characters.isEmpty()) return
-        val density = LocalDensity.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalWindowConfiguration.current.screenWidthDp, height = MEDIA_HEIGHT)
+                .size(width = LocalWindowConfiguration.current.screenWidthDp, height = 120.dp)
         ) {
-            items(characters, key = { it.id }) {
-                val navigationCallback = LocalNavigationCallback.current
-                val characterName = it.name?.primaryName()
-                val imageState = rememberCoilImageState(it.image?.large)
-                val sharedTransitionKey = SharedTransitionKey.makeKeyForId(it.id.toString())
-                val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
-                ListRowSmallImage(
-                    density = density,
-                    ignored = false,
-                    imageState = imageState,
-                    contentDescriptionTextRes = UiRes.string.anime_character_image_content_description,
-                    onClick = {
-                        navigationCallback.navigate(
-                            CharacterDestinations.CharacterDetails(
-                                characterId = it.id.toString(),
-                                sharedTransitionScopeKey = sharedTransitionScopeKey,
-                                headerParams = CharacterHeaderParams(
-                                    name = characterName,
-                                    subtitle = null,
-                                    favorite = null,
-                                    coverImage = imageState.toImageState(),
-                                )
-                            )
-                        )
-                    },
-                    width = MEDIA_WIDTH,
-                    height = MEDIA_HEIGHT,
-                    modifier = Modifier.sharedElement(sharedTransitionKey, "character_image")
-                )
-            }
-
-            items(media, key = { it.media.id }) {
-                Box {
-                    val navigationCallback = LocalNavigationCallback.current
-                    val title = it.media.title?.primaryTitle()
-                    val sharedTransitionKey =
-                        SharedTransitionKey.makeKeyForId(it.media.id.toString())
-                    val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
-                    val imageState = rememberCoilImageState(it.media.coverImage?.extraLarge)
-                    ListRowSmallImage(
-                        density = density,
-                        ignored = it.mediaFilterable.ignored,
-                        imageState = imageState,
-                        contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
-                        onClick = {
-                            navigationCallback.navigate(
-                                AnimeDestination.MediaDetails(
-                                    mediaId = it.media.id.toString(),
-                                    title = title,
-                                    coverImage = imageState.toImageState(),
-                                    sharedTransitionKey = sharedTransitionKey,
-                                    headerParams = MediaHeaderParams(
-                                        coverImage = imageState.toImageState(),
-                                        title = title,
-                                        mediaWithListStatus = it.media,
-                                    )
-                                )
-                            )
-                        },
-                        width = MEDIA_WIDTH,
-                        height = MEDIA_HEIGHT,
-                        modifier = Modifier.sharedElement(sharedTransitionKey, "media_image")
-                    )
-
-                    if (viewer != null) {
-                        MediaListQuickEditIconButton(
-                            viewer = viewer,
-                            mediaType = it.media.type,
-                            media = it.mediaFilterable,
-                            maxProgress = MediaUtils.maxProgress(it.media),
-                            maxProgressVolumes = it.media.volumes,
-                            onClick = { onClickListEdit(it.media) },
-                            padding = 6.dp,
-                            modifier = Modifier
-                                .animateSharedTransitionWithOtherState(sharedContentState)
-                                .align(Alignment.BottomStart)
-                        )
-                    }
-                }
-            }
+            charactersSection(characters)
+            mediaSection(media)
         }
     }
 
-    data class Entry(
+    data class Entry<MediaEntry>(
         val staff: StaffNavigationData,
-        val media: List<MediaWithListStatusEntry>,
+        val media: List<MediaEntry>,
         val characters: List<CharacterNavigationData>,
         val favorites: Int?,
         val occupations: List<String>,
     ) {
         constructor(
             staff: StaffSearchQuery.Data.Page.Staff,
-            media: List<MediaWithListStatusEntry>,
+            media: List<MediaEntry>,
         ) : this(
             staff = staff,
             media = media,
@@ -350,7 +249,7 @@ object StaffListRow {
         )
         constructor(
             staff: UserFavoritesStaffQuery.Data.User.Favourites.Staff.Node,
-            media: List<MediaWithListStatusEntry>,
+            media: List<MediaEntry>,
         ) : this(
             staff = staff,
             media = media,

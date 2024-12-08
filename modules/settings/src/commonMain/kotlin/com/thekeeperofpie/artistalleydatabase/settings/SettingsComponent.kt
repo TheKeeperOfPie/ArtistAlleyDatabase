@@ -2,9 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.settings
 
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSettings
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
@@ -24,6 +26,9 @@ interface SettingsComponent {
     val SettingsProvider.bindArtSettings: ArtSettings
         @Provides get() = this
 
+    val SettingsProvider.bindCharacterSettings: CharacterSettings
+        @Provides get() = this
+
     val SettingsProvider.bindCropSettings: CropSettings
         @Provides get() = this
 
@@ -40,5 +45,8 @@ interface SettingsComponent {
         @Provides get() = this
 
     val SettingsProvider.bindNewsSettings: NewsSettings
+        @Provides get() = this
+
+    val SettingsProvider.bindStaffSettings: StaffSettings
         @Provides get() = this
 }

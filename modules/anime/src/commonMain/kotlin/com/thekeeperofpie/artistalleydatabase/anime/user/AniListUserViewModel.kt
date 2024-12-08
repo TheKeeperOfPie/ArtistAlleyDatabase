@@ -30,8 +30,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySortOptio
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activities.applyActivityFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.data.toNextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry

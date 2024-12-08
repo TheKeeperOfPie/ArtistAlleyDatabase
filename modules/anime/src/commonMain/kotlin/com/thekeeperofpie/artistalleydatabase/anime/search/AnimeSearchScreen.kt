@@ -66,13 +66,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
+import com.thekeeperofpie.artistalleydatabase.anime.characters.horizontalCharactersRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
@@ -237,7 +240,7 @@ object AnimeSearchScreen {
                                             is AnimeSearchEntry.Character -> CharacterListRow(
                                                 entry = data.entry,
                                                 staffDetailsRoute =
-                                                    AnimeDestination.StaffDetails.route,
+                                                    StaffDestinations.StaffDetails.route,
                                                 mediaItems = {
                                                     characterMediaItems(
                                                         media = it,
@@ -247,9 +250,15 @@ object AnimeSearchScreen {
                                                 },
                                             )
                                             is AnimeSearchEntry.Staff -> StaffListRow(
-                                                viewer = viewer,
                                                 entry = data.entry,
-                                                onClickListEdit = editViewModel::initialize,
+                                                charactersSection = { horizontalCharactersRow(it) },
+                                                mediaSection = { media ->
+                                                    horizontalMediaCardRow(
+                                                        viewer = { viewer },
+                                                        media = media,
+                                                        onClickListEdit = editViewModel::initialize,
+                                                    )
+                                                },
                                             )
                                             is AnimeSearchEntry.Studio -> StudioListRow(
                                                 viewer = viewer,
@@ -275,14 +284,14 @@ object AnimeSearchScreen {
                                                     CharacterListRow<Unit>(
                                                         entry = null,
                                                         staffDetailsRoute =
-                                                            AnimeDestination.StaffDetails.route,
+                                                            StaffDestinations.StaffDetails.route,
                                                         mediaItems = {},
                                                     )
                                                 AnimeSearchViewModel.SearchType.STAFF ->
-                                                    StaffListRow(
-                                                        viewer = viewer,
+                                                    StaffListRow<Unit>(
                                                         entry = null,
-                                                        onClickListEdit = {},
+                                                        charactersSection = {},
+                                                        mediaSection = {},
                                                     )
                                                 AnimeSearchViewModel.SearchType.STUDIO ->
                                                     StudioListRow(

@@ -11,6 +11,7 @@ import com.anilist.data.fragment.DetailsCharacterEdge
 import com.anilist.data.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 
 object CharacterUtils {
 

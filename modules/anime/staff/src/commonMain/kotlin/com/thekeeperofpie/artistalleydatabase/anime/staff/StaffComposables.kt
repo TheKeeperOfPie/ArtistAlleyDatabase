@@ -26,9 +26,6 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.request.crossfade
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
@@ -42,6 +39,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingErrorItem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
@@ -53,7 +52,7 @@ fun LazyGridScope.staffSection(
     titleRes: StringResource?,
     staffList: LazyPagingItems<StaffDetails>,
     roleLines: Int = 1,
-    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+    viewAllRoute: NavDestination? = null,
     viewAllContentDescriptionTextRes: StringResource? = null,
 ) {
     if (staffList.itemCount == 0) return
@@ -63,10 +62,10 @@ fun LazyGridScope.staffSection(
             span = GridUtils.maxSpanFunction,
             contentType = "detailsSectionHeader",
         ) {
-            val navigationCallback = LocalNavigationCallback.current
+            val navHostController = LocalNavHostController.current
             DetailsSectionHeader(
                 stringResource(titleRes),
-                onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
+                onClickViewAll = viewAllRoute?.let { { navHostController.navigate(viewAllRoute) } },
                 viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
             )
         }
@@ -89,7 +88,6 @@ fun StaffListRow(
 ) {
     @Suppress("NAME_SHADOWING")
     val staffList = staffList()
-    val navigationCallback = LocalNavigationCallback.current
     LazyRow(
         contentPadding = contentPadding,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -111,13 +109,14 @@ fun StaffListRow(
                 val staffSubtitle = staff?.staff?.name?.subtitleName()
                 val sharedTransitionKey = staff?.staff?.id?.toString()
                     ?.let { SharedTransitionKey.makeKeyForId(it) }
+                val navHostController = LocalNavHostController.current
                 StaffSmallCard(
                     sharedTransitionKey = sharedTransitionKey,
                     imageState = coverImageState,
                     onClick = {
                         if (staff != null) {
-                            navigationCallback.navigate(
-                                AnimeDestination.StaffDetails(
+                            navHostController.navigate(
+                                StaffDestinations.StaffDetails(
                                     staffId = staff.staff.id.toString(),
                                     sharedTransitionKey = sharedTransitionKey,
                                     headerParams = StaffHeaderParams(

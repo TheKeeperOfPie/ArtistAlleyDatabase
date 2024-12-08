@@ -41,7 +41,7 @@ class UserFavoriteStaffViewModel(
 
     val userId = savedStateHandle.get<String?>("userId")
     val viewer = aniListApi.authedUser
-    val staff = MutableStateFlow(PagingData.empty<StaffListRow.Entry>())
+    val staff = MutableStateFlow(PagingData.empty<StaffListRow.Entry<MediaWithListStatusEntry>>())
 
     private val refresh = RefreshFlow()
 

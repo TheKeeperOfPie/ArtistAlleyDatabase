@@ -57,7 +57,7 @@ sealed interface AnimeSearchEntry {
     }
 
     data class Staff(
-        val entry: StaffListRow.Entry,
+        val entry: StaffListRow.Entry<MediaWithListStatusEntry>,
     ) : AnimeSearchEntry {
         override val entryId = EntryId("staff", entry.staff.id.toString())
     }

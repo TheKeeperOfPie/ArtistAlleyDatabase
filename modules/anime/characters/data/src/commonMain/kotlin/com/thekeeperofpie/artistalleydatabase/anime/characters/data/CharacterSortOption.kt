@@ -1,11 +1,11 @@
-package com.thekeeperofpie.artistalleydatabase.anime.characters
+package com.thekeeperofpie.artistalleydatabase.anime.characters.data
 
-import artistalleydatabase.modules.anime.characters.generated.resources.Res
-import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_sort_favorites
-import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_sort_id
-import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_sort_relevance
-import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_sort_role
-import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_sort_search_match
+import artistalleydatabase.modules.anime.characters.data.generated.resources.Res
+import artistalleydatabase.modules.anime.characters.data.generated.resources.anime_character_sort_favorites
+import artistalleydatabase.modules.anime.characters.data.generated.resources.anime_character_sort_id
+import artistalleydatabase.modules.anime.characters.data.generated.resources.anime_character_sort_relevance
+import artistalleydatabase.modules.anime.characters.data.generated.resources.anime_character_sort_role
+import artistalleydatabase.modules.anime.characters.data.generated.resources.anime_character_sort_search_match
 import com.anilist.data.type.CharacterSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
@@ -20,7 +20,6 @@ enum class CharacterSortOption(
     ROLE(Res.string.anime_character_sort_role),
     FAVORITES(Res.string.anime_character_sort_favorites),
     RELEVANCE(Res.string.anime_character_sort_relevance, supportsAscending = false),
-
     ;
 
     fun toApiValue(ascending: Boolean) = when (this) {

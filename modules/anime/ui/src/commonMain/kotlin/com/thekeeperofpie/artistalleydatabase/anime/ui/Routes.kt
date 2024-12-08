@@ -12,3 +12,12 @@ typealias UserRoute = (
     name: String,
     ImageState?,
 ) -> NavDestination
+
+typealias StaffDetailsRoute = (
+    staffId: String,
+    SharedTransitionKey?,
+    staffName: String?,
+    staffSubtitle: String?,
+    ImageState?,
+    favorite: Boolean?,
+) -> NavDestination

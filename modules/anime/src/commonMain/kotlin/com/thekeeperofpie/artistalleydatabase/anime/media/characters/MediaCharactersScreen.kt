@@ -29,11 +29,11 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -153,7 +153,7 @@ object MediaCharactersScreen {
                     minHeight = MIN_IMAGE_HEIGHT,
                     character = it,
                     voiceActorLanguage = voiceActorLanguage,
-                    staffDetailsRoute = AnimeDestination.StaffDetails.route,
+                    staffDetailsRoute = StaffDestinations.StaffDetails.route,
                 )
             },
         )

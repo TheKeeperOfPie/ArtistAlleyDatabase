@@ -18,6 +18,7 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
@@ -134,7 +135,7 @@ object UserMediaScreen {
                             val voiceActor = value.voiceActor
                             if (voiceActor != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestination.StaffDetails(
+                                    StaffDestinations.StaffDetails(
                                         staffId = voiceActor.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(
@@ -201,7 +202,7 @@ object UserMediaScreen {
                             val staff = value.staff
                             if (staff != null) {
                                 navigationCallback.navigate(
-                                    AnimeDestination.StaffDetails(
+                                    StaffDestinations.StaffDetails(
                                         staffId = staff.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
                                         headerParams = StaffHeaderParams(

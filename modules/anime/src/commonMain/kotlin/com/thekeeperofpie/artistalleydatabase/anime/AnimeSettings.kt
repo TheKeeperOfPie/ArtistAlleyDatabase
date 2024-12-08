@@ -1,15 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 
-interface AnimeSettings : CharacterSettings, MediaDataSettings, IgnoreSettings {
+interface AnimeSettings : CharacterSettings, MediaDataSettings, IgnoreSettings, StaffSettings {
 
     val savedAnimeFilters: MutableStateFlow<Map<String, FilterData>>
 
@@ -19,7 +19,6 @@ interface AnimeSettings : CharacterSettings, MediaDataSettings, IgnoreSettings {
     val mediaHistoryEnabled: MutableStateFlow<Boolean>
     val mediaHistoryMaxEntries: MutableStateFlow<Int>
 
-    val languageOptionStaff: MutableStateFlow<AniListLanguageOption>
     val languageOptionVoiceActor: MutableStateFlow<VoiceActorLanguageOption>
     val showFallbackVoiceActor: MutableStateFlow<Boolean>
 

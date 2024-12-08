@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.characters
+package com.thekeeperofpie.artistalleydatabase.anime.characters.data
 
 import androidx.compose.runtime.Immutable
 import com.anilist.data.fragment.CharacterNameLanguageFragment

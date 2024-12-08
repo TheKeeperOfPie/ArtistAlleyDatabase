@@ -5,12 +5,6 @@
     <string name="anime_character_role_background">Background</string>
     <string name="anime_character_role_unknown">Unknown</string>
 
-    <string name="anime_character_sort_id">Last added</string>
-    <string name="anime_character_sort_role">Role</string>
-    <string name="anime_character_sort_search_match">Search match</string>
-    <string name="anime_character_sort_favorites">Favorites</string>
-    <string name="anime_character_sort_relevance">Relevance</string>
-
     <string name="anime_character_filter_sort_label">Sort</string>
     <string name="anime_character_filter_birthday_label">Birthday today</string>
     <string name="anime_character_filter_setting_name_language">Name language</string>

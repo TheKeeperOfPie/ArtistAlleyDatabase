@@ -5,9 +5,12 @@ import androidx.compose.animation.core.EaseOutExpo
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -16,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -47,13 +51,20 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_followin
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityTab
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activities.activitiesSection
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.characters.rememberImageStateBelowInnerImage
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumComposables
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchScreen
@@ -66,6 +77,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
@@ -76,6 +88,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationComposables
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
@@ -88,9 +102,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScree
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
-import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersScreen
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
@@ -105,8 +117,10 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
@@ -214,9 +228,9 @@ object AnimeNavigator {
                 charactersViewModel.charactersDeferred.collectAsLazyPagingItems()
 
             val staffViewModel = viewModel {
-                component.animeStaffViewModel(
+                component.animeMediaDetailsStaffViewModel(
                     createSavedStateHandle(),
-                    mediaDetailsViewModel,
+                    mediaDetailsViewModel.media(),
                 )
             }
             val staff = staffViewModel.staff.collectAsLazyPagingItems()
@@ -309,7 +323,7 @@ object AnimeNavigator {
                             )
                         },
                         viewAllContentDescriptionTextRes = Res.string.anime_media_details_view_all_content_description,
-                        staffDetailsRoute = AnimeDestination.StaffDetails.route,
+                        staffDetailsRoute = StaffDestinations.StaffDetails.route,
                     )
                 },
                 staffCount = { staff.itemCount },
@@ -469,50 +483,6 @@ object AnimeNavigator {
                         },
                     )
                 },
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.StaffDetails>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}" },
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}/.*" },
-            ),
-        ) {
-            val viewModel =
-                viewModel { component.staffDetailsViewModel(createSavedStateHandle()) }
-            val destination = it.toRoute<AnimeDestination.StaffDetails>()
-            val headerValues = StaffHeaderValues(
-                params = destination.headerParams,
-                staff = { viewModel.entry?.staff },
-                favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
-            )
-
-            StaffDetailsScreen(
-                viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
-                headerValues = headerValues,
-                sharedTransitionKey = destination.sharedTransitionKey,
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.StaffCharacters>(
-            navigationTypeMap = navigationTypeMap,
-        ) {
-            val viewModel =
-                viewModel { component.staffCharactersViewModel(createSavedStateHandle()) }
-            val destination = it.toRoute<AnimeDestination.StaffCharacters>()
-            val headerValues = StaffHeaderValues(
-                params = destination.headerParams,
-                staff = { viewModel.entry.result?.staff },
-                favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
-            )
-
-            StaffCharactersScreen(
-                viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
-                headerValues = headerValues,
-                sharedTransitionKey = destination.sharedTransitionKey,
             )
         }
 
@@ -1035,6 +1005,144 @@ object AnimeNavigator {
                     }
                 )
             }
+        )
+
+        StaffDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            characterRow = { entry, viewer, onClickListEdit ->
+                CharacterListRow(
+                    entry = entry,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    showRole = true,
+                    staffDetailsRoute = StaffDestinations.StaffDetails.route,
+                    mediaItems = {
+                        characterMediaItems(
+                            media = it,
+                            viewer = { viewer },
+                            onClickListEdit = onClickListEdit,
+                        )
+                    },
+                )
+            },
+            charactersSection = { titleRes, viewAllRoute, viewAllContentDescriptionTextRes, characters ->
+                charactersSection(
+                    titleRes = titleRes,
+                    characters = characters,
+                    viewAllRoute = viewAllRoute,
+                    viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                    staffDetailsRoute = StaffDestinations.StaffDetails.route,
+                )
+            },
+            characterCard = {
+                val image = it.character.image?.large
+                val innerImage = it.media?.coverImage?.extraLarge
+                val imageState =
+                    rememberImageStateBelowInnerImage(image, innerImage)
+                val innerImageState = rememberCoilImageState(innerImage)
+                val languageOptionMedia = LocalLanguageOptionMedia.current
+                val characterName = it.character.name?.primaryName()
+                val characterSharedTransitionKey =
+                    SharedTransitionKey.makeKeyForId(it.character.id.toString())
+                val mediaSharedTransitionKey = it.media?.id?.toString()
+                    ?.let { SharedTransitionKey.makeKeyForId(it) }
+                val sharedTransitionScopeKey =
+                    LocalSharedTransitionPrefixKeys.current
+                val navHostController = LocalNavHostController.current
+                CharacterSmallCard(
+                    sharedTransitionKey = characterSharedTransitionKey,
+                    sharedTransitionIdentifier = "character_image",
+                    innerSharedTransitionKey = mediaSharedTransitionKey,
+                    innerSharedTransitionIdentifier = "media_image",
+                    image = image,
+                    innerImage = innerImage,
+                    imageState = imageState,
+                    innerImageState = innerImageState,
+                    onClick = {
+                        navHostController.navigate(
+                            CharacterDestinations.CharacterDetails(
+                                characterId = it.character.id.toString(),
+                                sharedTransitionScopeKey = sharedTransitionScopeKey,
+                                headerParams = CharacterHeaderParams(
+                                    name = characterName,
+                                    subtitle = null,
+                                    favorite = null,
+                                    coverImage = imageState.toImageState(),
+                                )
+                            )
+                        )
+                    },
+                    onClickInnerImage = {
+                        it.media?.let {
+                            navHostController.navigate(
+                                AnimeDestination.MediaDetails(
+                                    mediaNavigationData = it,
+                                    coverImage = innerImageState.toImageState(),
+                                    languageOptionMedia = languageOptionMedia,
+                                    sharedTransitionKey = mediaSharedTransitionKey,
+                                )
+                            )
+                        }
+                    },
+                ) { textColor ->
+                    it.role?.let {
+                        AutoHeightText(
+                            text = stringResource(it.toTextRes()),
+                            color = textColor,
+                            style = MaterialTheme.typography.bodySmall
+                                .copy(lineBreak = LineBreak.Heading),
+                            maxLines = 1,
+                            minTextSizeSp = 8f,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp, top = 8.dp)
+                        )
+                    }
+
+                    it.character.name?.primaryName()?.let {
+                        AutoHeightText(
+                            text = it,
+                            color = textColor,
+                            style = MaterialTheme.typography.bodyMedium
+                                .copy(lineBreak = LineBreak.Heading),
+                            minTextSizeSp = 8f,
+                            minLines = 2,
+                            maxLines = 2,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+            },
+            mediaGridCard = { mediaWithRole, viewer, onClickListEdit ->
+                MediaGridCard(
+                    entry = mediaWithRole.mediaEntry,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    modifier = Modifier.width(120.dp),
+                    showTypeIcon = true,
+                ) { textColor ->
+                    mediaWithRole.role?.let {
+                        AutoHeightText(
+                            text = it,
+                            color = textColor,
+                            style = MaterialTheme.typography.bodySmall
+                                .copy(lineBreak = LineBreak.Heading),
+                            minLines = 2,
+                            maxLines = 2,
+                            minTextSizeSp = 8f,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 8.dp, end = 8.dp, top = 8.dp)
+                        )
+                    }
+                }
+            },
+            characterEntryProvider = CharacterListRow.Entry.Provider<MediaWithListStatusEntry>(),
+            mediaEntryProvider = MediaWithListStatusEntry.Provider,
         )
     }
 

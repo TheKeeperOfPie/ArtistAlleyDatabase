@@ -25,8 +25,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.characters.horizontalCharactersRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -114,9 +116,15 @@ object UserFavoriteStaffScreen {
                                 ) {
                                     val entry = staff[it]
                                     StaffListRow(
-                                        viewer = viewer,
                                         entry = entry,
-                                        onClickListEdit = editViewModel::initialize,
+                                        charactersSection = { horizontalCharactersRow(it) },
+                                        mediaSection = { media ->
+                                            horizontalMediaCardRow(
+                                                viewer = { viewer },
+                                                media = media,
+                                                onClickListEdit = editViewModel::initialize,
+                                            )
+                                        },
                                     )
                                 }
 

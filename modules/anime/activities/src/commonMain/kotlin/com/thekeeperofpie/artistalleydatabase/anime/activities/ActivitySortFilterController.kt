@@ -131,7 +131,7 @@ class ActivitySortFilterController(
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
-            Instant.Companion.fromEpochMilliseconds(it)
+            Instant.fromEpochMilliseconds(it)
                 .toLocalDateTime(TimeZone.Companion.UTC)
                 .date
         }

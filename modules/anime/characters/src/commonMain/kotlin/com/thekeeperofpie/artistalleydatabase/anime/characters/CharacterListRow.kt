@@ -36,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.characters.generated.resources.Res
@@ -56,10 +55,12 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -83,14 +84,15 @@ object CharacterListRow {
     operator fun <MediaEntry> invoke(
         entry: Entry<MediaEntry>?,
         staffDetailsRoute: StaffDetailsRoute,
-        modifier: Modifier = Modifier.Companion,
+        modifier: Modifier = Modifier,
         showRole: Boolean = false,
         mediaItems: LazyListScope.(List<MediaEntry?>) -> Unit,
     ) {
         val coverImageState = rememberCoilImageState(entry?.character?.image?.large)
         val navHostController = LocalNavHostController.current
         val characterName = entry?.character?.name?.primaryName()
-        val characterSharedTransitionKey = entry?.character?.id?.toString()?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
+        val characterSharedTransitionKey =
+            entry?.character?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
         val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         val onClick = {
             if (entry != null) {
@@ -284,7 +286,6 @@ object CharacterListRow {
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
-        val density = LocalDensity.current
         val navHostController = LocalNavHostController.current
         val voiceActor = entry?.voiceActor()
         LazyRow(
@@ -304,7 +305,6 @@ object CharacterListRow {
                     val sharedTransitionKey =
                         SharedTransitionKey.Companion.makeKeyForId(voiceActor.id.toString())
                     ListRowSmallImage(
-                        density = density,
                         ignored = false,
                         imageState = voiceActorImageState,
                         contentDescriptionTextRes = UiRes.string.anime_staff_image_content_description,
@@ -341,7 +341,10 @@ object CharacterListRow {
         val favorites: Int?,
         private val voiceActors: Map<String?, List<StaffNavigationData>>,
     ) {
-        constructor(character: CharacterAdvancedSearchQuery.Data.Page.Character, media: List<MediaEntry>) : this(
+        constructor(
+            character: CharacterAdvancedSearchQuery.Data.Page.Character,
+            media: List<MediaEntry>,
+        ) : this(
             character = character,
             role = null,
             media = media,
@@ -366,5 +369,23 @@ object CharacterListRow {
 
         @Composable
         fun voiceActor() = AniListUtils.selectVoiceActor(voiceActors)?.firstOrNull()
+
+        class Provider<MediaEntry> :
+            CharacterEntryProvider<CharacterWithRoleAndFavorites, Entry<MediaEntry>, MediaEntry> {
+            override fun characterEntry(
+                character: CharacterWithRoleAndFavorites,
+                media: List<MediaEntry>,
+            ) = Entry(character = character, media = media)
+
+            override fun id(characterEntry: Entry<MediaEntry>) =
+                characterEntry.character.id.toString()
+
+            override fun media(characterEntry: Entry<MediaEntry>) = characterEntry.media
+
+            override fun copyCharacterEntry(
+                entry: Entry<MediaEntry>,
+                media: List<MediaEntry>,
+            ) = entry.copy(media = media)
+        }
     }
 }

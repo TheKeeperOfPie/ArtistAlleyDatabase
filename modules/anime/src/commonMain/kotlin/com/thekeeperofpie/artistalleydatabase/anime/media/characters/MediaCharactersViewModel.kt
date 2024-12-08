@@ -9,9 +9,9 @@ import com.anilist.data.fragment.CharacterWithRole
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDetails
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType

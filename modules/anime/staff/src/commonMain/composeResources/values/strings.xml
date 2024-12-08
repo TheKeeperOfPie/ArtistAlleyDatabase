@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_staff_sort_id">Last added</string>
+    <string name="anime_staff_sort_search_match">Search match</string>
+    <string name="anime_staff_sort_role">Role</string>
+    <string name="anime_staff_sort_language">Language</string>
+    <string name="anime_staff_sort_favorites">Favorites</string>
+    <string name="anime_staff_sort_relevance">Relevance</string>
+
+    <string name="anime_staff_overview_label">Overview</string>
+    <string name="anime_staff_media_label">Media</string>
+    <string name="anime_staff_staff_label">Staff</string>
+
+    <string name="anime_staff_filter_sort_label">Sort</string>
+    <string name="anime_staff_filter_birthday_label">Birthday today</string>
+    <string name="anime_staff_filter_setting_title_language">Name language</string>
+
+    <string name="anime_staff_details_more_actions_content_description">More actions</string>
+    <string name="anime_staff_details_open_external">Open in external</string>
+    <string name="anime_staff_details_open_external_icon_content_description">Open in external</string>
+    <string name="anime_staff_details_media_load_retry">Retry</string>
+    <string name="anime_staff_media_year_unknown">TBA</string>
+
+    <string name="anime_staff_details_information_label">Information</string>
+    <string name="anime_staff_details_age_label">Age</string>
+    <string name="anime_staff_details_gender_label">Gender</string>
+    <string name="anime_staff_details_date_of_birth_label">Date of birth</string>
+    <string name="anime_staff_details_date_of_death_label">Date of death</string>
+    <string name="anime_staff_details_home_town_label">Home town</string>
+    <string name="anime_staff_details_blood_type_label">Blood type</string>
+    <string name="anime_staff_details_primary_occupations_label">Occupations</string>
+    <string name="anime_staff_details_primary_occupations_expand_content_description">Occupations expand</string>
+    <string name="anime_staff_details_years_active_label">Years active</string>
+    <string name="anime_staff_details_years_active_beginning">%1$d - Present</string>
+    <string name="anime_staff_details_years_active_beginning_and_end">%1$d - %2$d</string>
+    <string name="anime_staff_details_favorites_label">Favorites</string>
+    <string name="anime_staff_details_characters_label">Characters</string>
+    <string name="anime_staff_details_view_all_content_description">View all</string>
+
+    <string name="anime_staff_image_long_press_preview">Preview staff image</string>
+    <string name="anime_staff_error_loading">Error loading staff</string>
+
+    <string name="anime_staff_characters_error_loading">Error loading characters</string>
+    <string name="anime_staff_characters_header">Characters</string>
+    <string name="anime_staff_characters_filter_sort_label">Sort</string>
+    <string name="anime_staff_characters_filter_setting_name_language">Name language</string>
+</resources>

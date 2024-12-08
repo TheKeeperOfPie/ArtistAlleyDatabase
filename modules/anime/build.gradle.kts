@@ -17,7 +17,7 @@ kotlin {
             api(projects.modules.anime.news)
             api(projects.modules.anime.recommendations)
             api(projects.modules.anime.reviews)
-            api(projects.modules.anime.staff.data)
+            api(projects.modules.anime.staff)
 
             implementation(projects.modules.anilist)
             implementation(projects.modules.anime.data)

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -19,6 +18,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +29,7 @@ import androidx.paging.LoadState
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.error_loading
 import artistalleydatabase.modules.utils_compose.generated.resources.no_results
+import artistalleydatabase.modules.utils_compose.generated.resources.retry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
@@ -68,7 +69,7 @@ object VerticalList {
         ) {
             LazyVerticalGrid(
                 state = gridState,
-                columns = GridCells.Adaptive(450.dp),
+                columns = GridUtils.standardWidthAdaptiveCells,
                 contentPadding = contentPadding,
                 verticalArrangement = verticalArrangement,
                 horizontalArrangement = horizontalArrangement,
@@ -159,19 +160,28 @@ object VerticalList {
     fun ErrorContent(
         errorText: String,
         exception: Throwable? = null,
+        onRetry: (() -> Unit)? = null,
     ) {
-        Text(
-            text = errorText,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-        )
-
-        if (exception != null) {
+        Column {
             Text(
-                text = exception.stackTraceToString(),
-                style = MaterialTheme.typography.bodySmall,
+                text = errorText,
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             )
+
+            if (onRetry != null) {
+                TextButton(onClick = onRetry) {
+                    Text(stringResource(Res.string.retry))
+                }
+            }
+
+            if (exception != null) {
+                Text(
+                    text = exception.stackTraceToString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                )
+            }
         }
     }
 

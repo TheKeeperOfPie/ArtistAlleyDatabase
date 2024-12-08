@@ -30,6 +30,10 @@ fragment MediaWithListStatus on Media {
         progress
         score(format: POINT_100)
     }
+    coverImage {
+        color
+    }
+    averageScore
 }
 
 fragment MediaPreview on Media {

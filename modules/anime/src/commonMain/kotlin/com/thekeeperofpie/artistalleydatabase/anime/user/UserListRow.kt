@@ -27,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -193,7 +192,6 @@ object UserListRow {
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() } ?: return
-        val density = LocalDensity.current
         LazyRow(
             contentPadding = PaddingValues(start = 16.dp, end = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -219,7 +217,6 @@ object UserListRow {
                         rememberSharedContentState(sharedTransitionKey, "media_image")
                     val imageState = rememberCoilImageState(it?.media?.coverImage?.extraLarge)
                     ListRowSmallImage(
-                        density = density,
                         ignored = it?.mediaFilterable?.ignored ?: false,
                         imageState = imageState,
                         contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,

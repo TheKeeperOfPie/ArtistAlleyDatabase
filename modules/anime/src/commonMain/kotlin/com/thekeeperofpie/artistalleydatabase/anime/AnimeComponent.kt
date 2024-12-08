@@ -32,9 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleViewM
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.staff.AnimeStaffViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffComponent
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersViewModel
@@ -54,7 +52,7 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
 }
 
 interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
-    RecommendationsComponent, ReviewsComponent {
+    RecommendationsComponent, ReviewsComponent, StaffComponent {
 
     val airingScheduleViewModel: () -> AiringScheduleViewModel
     val aniListUserViewModel: (SavedStateHandle, MediaDetailsRoute) -> AniListUserViewModel
@@ -68,7 +66,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val animeRootViewModel: () -> AnimeRootViewModel
     val animeSearchViewModel: (SavedStateHandle) -> AnimeSearchViewModel
     val animeSongsViewModel: (AnimeMediaDetailsViewModel) -> AnimeSongsViewModel
-    val animeStaffViewModel: (SavedStateHandle, AnimeMediaDetailsViewModel) -> AnimeStaffViewModel
     val animeUserListViewModel: (
         SavedStateHandle,
         userId: String?,
@@ -87,8 +84,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
     val notificationsViewModel: () -> NotificationsViewModel
     val seasonalViewModel: (SavedStateHandle) -> SeasonalViewModel
-    val staffCharactersViewModel: (SavedStateHandle) -> StaffCharactersViewModel
-    val staffDetailsViewModel: (SavedStateHandle) -> StaffDetailsViewModel
     val studioMediasViewModel: (SavedStateHandle) -> StudioMediasViewModel
     val unlockScreenViewModel: () -> UnlockScreenViewModel
     val userFavoriteCharactersViewModel: (SavedStateHandle) -> UserFavoriteCharactersViewModel

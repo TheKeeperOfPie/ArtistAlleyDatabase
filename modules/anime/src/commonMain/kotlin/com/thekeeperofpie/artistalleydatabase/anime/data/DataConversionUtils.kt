@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.data
 
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaPreviewWithDescription
+import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.fragment.StaffDetailsStaffMediaPage
 import com.anilist.data.fragment.UserFavoriteMediaNode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
@@ -25,6 +26,11 @@ fun UserFavoriteMediaNode.NextAiringEpisode.toNextAiringEpisode() = NextAiringEp
 )
 
 fun StaffDetailsStaffMediaPage.Edge.Node.NextAiringEpisode.toNextAiringEpisode() = NextAiringEpisode(
+    episode = episode,
+    airingAt = Instant.fromEpochSeconds(airingAt.toLong()),
+)
+
+fun MediaWithListStatus.NextAiringEpisode.toNextAiringEpisode() = NextAiringEpisode(
     episode = episode,
     airingAt = Instant.fromEpochSeconds(airingAt.toLong()),
 )
