@@ -258,14 +258,6 @@ sealed interface AnimeDestination : NavDestination {
     }
 
     @Serializable
-    data class StudioMedias(
-        val studioId: String,
-        val name: String? = null,
-        // TODO: Favorite is never actually passed in
-        val favorite: Boolean? = null,
-    ) : AnimeDestination
-
-    @Serializable
     data class User(
         val userId: String? = null,
         val sharedTransitionKey: SharedTransitionKey? = null,

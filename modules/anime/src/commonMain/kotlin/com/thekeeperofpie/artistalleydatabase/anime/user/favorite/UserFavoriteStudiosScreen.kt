@@ -27,7 +27,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -114,9 +115,17 @@ object UserFavoriteStudiosScreen {
                                 ) {
                                     val entry = studios[it]
                                     StudioListRow(
-                                        viewer = viewer,
                                         entry = entry,
-                                        onClickListEdit = editViewModel::initialize,
+                                        mediaHeight = 180.dp,
+                                        mediaRow = { media ->
+                                            horizontalMediaCardRow(
+                                                viewer = { viewer },
+                                                media = media,
+                                                onClickListEdit = editViewModel::initialize,
+                                                mediaWidth = 120.dp,
+                                                mediaHeight = 180.dp,
+                                            )
+                                        },
                                     )
                                 }
 

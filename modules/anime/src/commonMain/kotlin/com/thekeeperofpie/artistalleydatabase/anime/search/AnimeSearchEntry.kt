@@ -10,7 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -63,7 +63,7 @@ sealed interface AnimeSearchEntry {
     }
 
     data class Studio(
-        val entry: StudioListRow.Entry,
+        val entry: StudioListRow.Entry<MediaWithListStatusEntry>,
     ) : AnimeSearchEntry {
         override val entryId = EntryId("studio", entry.studio.id.toString())
     }

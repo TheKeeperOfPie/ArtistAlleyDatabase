@@ -53,11 +53,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
@@ -267,7 +269,7 @@ object UserOverviewScreen {
     private fun LazyGridScope.favoriteStudiosSection(
         viewer: AniListViewer?,
         editViewModel: MediaEditViewModel,
-        studios: List<StudioListRow.Entry>,
+        studios: List<StudioListRow.Entry<MediaWithListStatusEntry>>,
         hasMore: Boolean,
         onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
         viewAllContentDescriptionTextRes: StringResource? = null,
@@ -289,9 +291,17 @@ object UserOverviewScreen {
         ) { index, item ->
             SharedTransitionKeyScope("user_favorite_studio_row", item.studio.id.toString()) {
                 StudioListRow(
-                    viewer = viewer,
                     entry = item,
-                    onClickListEdit = editViewModel::initialize,
+                    mediaHeight = 96.dp,
+                    mediaRow = { media ->
+                        horizontalMediaCardRow(
+                            viewer = { viewer },
+                            media = media,
+                            onClickListEdit = editViewModel::initialize,
+                            mediaWidth = 64.dp,
+                            mediaHeight = 96.dp,
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
@@ -299,8 +309,6 @@ object UserOverviewScreen {
                             end = 16.dp,
                             bottom = if (index == studios.lastIndex && !hasMore) 0.dp else 16.dp,
                         ),
-                    mediaWidth = 64.dp,
-                    mediaHeight = 96.dp
                 )
             }
         }

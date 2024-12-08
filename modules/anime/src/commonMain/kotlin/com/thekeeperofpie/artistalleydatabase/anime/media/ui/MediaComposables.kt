@@ -69,7 +69,6 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
@@ -699,50 +698,57 @@ fun LazyListScope.characterMediaItems(
 
 fun LazyListScope.horizontalMediaCardRow(
     viewer: () -> AniListViewer?,
-    media: List<MediaWithListStatusEntry>,
+    media: List<MediaWithListStatusEntry?>,
     onClickListEdit: (MediaNavigationData) -> Unit,
+    mediaWidth: Dp = 80.dp,
+    mediaHeight: Dp = 120.dp,
 ) {
-    items(media, key = { it.media.id }) {
+    itemsIndexed(
+        media,
+        key = { index, item -> item?.media?.id ?: "placeholder_$index" },
+    ) { index, item ->
         Box {
-            val navigationCallback = LocalNavigationCallback.current
-            val title = it.media.title?.primaryTitle()
-            val sharedTransitionKey =
-                SharedTransitionKey.makeKeyForId(it.media.id.toString())
+            val navHostController = LocalNavHostController.current
+            val title = item?.media?.title?.primaryTitle()
+            val sharedTransitionKey = item?.media?.id?.toString()
+                ?.let { SharedTransitionKey.makeKeyForId(it) }
             val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
-            val imageState = rememberCoilImageState(it.media.coverImage?.extraLarge)
+            val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
             ListRowSmallImage(
-                ignored = it.mediaFilterable.ignored,
+                ignored = item?.mediaFilterable?.ignored == true,
                 imageState = imageState,
                 contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
                 onClick = {
-                    navigationCallback.navigate(
-                        AnimeDestination.MediaDetails(
-                            mediaId = it.media.id.toString(),
-                            title = title,
-                            coverImage = imageState.toImageState(),
-                            sharedTransitionKey = sharedTransitionKey,
-                            headerParams = MediaHeaderParams(
-                                coverImage = imageState.toImageState(),
+                    if (item != null) {
+                        navHostController.navigate(
+                            AnimeDestination.MediaDetails(
+                                mediaId = item.media.id.toString(),
                                 title = title,
-                                mediaWithListStatus = it.media,
+                                coverImage = imageState.toImageState(),
+                                sharedTransitionKey = sharedTransitionKey,
+                                headerParams = MediaHeaderParams(
+                                    coverImage = imageState.toImageState(),
+                                    title = title,
+                                    mediaWithListStatus = item.media,
+                                )
                             )
                         )
-                    )
+                    }
                 },
-                width = 80.dp,
-                height = 120.dp,
+                width = mediaWidth,
+                height = mediaHeight,
                 modifier = Modifier.sharedElement(sharedTransitionKey, "media_image")
             )
 
             val viewer = viewer()
-            if (viewer != null) {
+            if (viewer != null && item != null) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
-                    mediaType = it.media.type,
-                    media = it.mediaFilterable,
-                    maxProgress = MediaUtils.maxProgress(it.media),
-                    maxProgressVolumes = it.media.volumes,
-                    onClick = { onClickListEdit(it.media) },
+                    mediaType = item.media.type,
+                    media = item.mediaFilterable,
+                    maxProgress = MediaUtils.maxProgress(item.media),
+                    maxProgressVolumes = item.media.volumes,
+                    onClick = { onClickListEdit(item.media) },
                     padding = 6.dp,
                     modifier = Modifier
                         .animateSharedTransitionWithOtherState(sharedContentState)

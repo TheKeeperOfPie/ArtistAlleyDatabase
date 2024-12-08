@@ -547,17 +547,6 @@
 
     <string name="anime_generic_filter_show_adult_content">Show adult content</string>
 
-    <string name="anime_studio_sort_search_match">Search match</string>
-    <string name="anime_studio_sort_id">Last added</string>
-    <string name="anime_studio_sort_name">Name</string>
-    <string name="anime_studio_sort_favorites">Favorites</string>
-    <string name="anime_studio_filter_sort_label">Sort</string>
-    <string name="anime_studio_medias_error_loading">Error loading medias</string>
-
-    <string name="anime_studio_media_filter_sort_label">Sort</string>
-    <string name="anime_studio_media_filter_main_label">Main studio</string>
-    <string name="anime_studio_media_filter_setting_title_language">Title language</string>
-
     <string name="anime_media_tag_search_clear_content_description">Clear query</string>
 
     <string name="anime_requires_unlock">Requires higher feature tier</string>

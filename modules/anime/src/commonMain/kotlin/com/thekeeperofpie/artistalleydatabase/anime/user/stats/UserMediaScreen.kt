@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
@@ -175,7 +176,7 @@ object UserMediaScreen {
                     onValueClick = { value, _, _ ->
                         value.studio?.let {
                             navigationCallback.navigate(
-                                AnimeDestination.StudioMedias(
+                                StudioDestinations.StudioMedias(
                                     studioId = it.id.toString(),
                                     name = it.name,
                                 )

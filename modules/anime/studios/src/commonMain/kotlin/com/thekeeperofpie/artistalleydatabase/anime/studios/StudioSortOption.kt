@@ -1,10 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.anime.studio
+package com.thekeeperofpie.artistalleydatabase.anime.studios
 
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_studio_sort_favorites
-import artistalleydatabase.modules.anime.generated.resources.anime_studio_sort_id
-import artistalleydatabase.modules.anime.generated.resources.anime_studio_sort_name
-import artistalleydatabase.modules.anime.generated.resources.anime_studio_sort_search_match
+import artistalleydatabase.modules.anime.studios.generated.resources.Res
+import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_sort_favorites
+import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_sort_id
+import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_sort_name
+import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_sort_search_match
 import com.anilist.data.type.StudioSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource
@@ -18,7 +18,6 @@ enum class StudioSortOption(
     ID(Res.string.anime_studio_sort_id),
     NAME(Res.string.anime_studio_sort_name),
     FAVORITES(Res.string.anime_studio_sort_favorites),
-
     ;
 
     fun toApiValue(ascending: Boolean) = when (this) {

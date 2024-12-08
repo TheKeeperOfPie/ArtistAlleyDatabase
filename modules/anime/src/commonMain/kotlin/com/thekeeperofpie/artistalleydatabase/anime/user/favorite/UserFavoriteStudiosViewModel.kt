@@ -14,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -47,7 +47,8 @@ class UserFavoriteStudiosViewModel(
         savedStateHandle.toDestination<AnimeDestination.UserFavoriteStudios>(navigationTypeMap)
     val userId = destination.userId
     val viewer = aniListApi.authedUser
-    val studios = MutableStateFlow(PagingData.empty<StudioListRow.Entry>())
+    val studios =
+        MutableStateFlow(PagingData.empty<StudioListRow.Entry<MediaWithListStatusEntry>>())
 
     private val refresh = RefreshFlow()
 

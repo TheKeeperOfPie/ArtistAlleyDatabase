@@ -104,7 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasScreen
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersScreen
@@ -643,31 +643,6 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.StudioMedias>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/studio/{studioId}" },
-                navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/studio/{studioId}/.*"
-                },
-            ),
-        ) {
-            val destination = it.toRoute<AnimeDestination.StudioMedias>()
-            val viewModel =
-                viewModel { component.studioMediasViewModel(createSavedStateHandle()) }
-
-            StudioMediasScreen(
-                upIconOption = UpIconOption.Back(navHostController),
-                viewModel = viewModel,
-                name = { viewModel.entry.result?.studio?.name ?: destination.name ?: "" },
-                favorite = {
-                    viewModel.favoritesToggleHelper.favorite
-                        ?: viewModel.entry.result?.studio?.isFavourite
-                        ?: destination.favorite
-                },
-            )
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.FeatureTiers>(navigationTypeMap) {
             UnlockScreen(
                 upIconOption = UpIconOption.Back(navHostController),
@@ -1144,6 +1119,22 @@ object AnimeNavigator {
             },
             characterEntryProvider = CharacterListRow.Entry.Provider<MediaWithListStatusEntry>(),
             mediaEntryProvider = MediaWithListStatusEntry.Provider,
+        )
+
+        StudioDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            mediaEntryProvider = MediaPreviewEntry.Provider,
+            mediaRow = { entry, viewer, onClickListEdit, modifier ->
+                AnimeMediaListRow(
+                    entry = entry,
+                    viewer = viewer,
+                    modifier = modifier,
+                    onClickListEdit = onClickListEdit,
+                )
+            },
         )
     }
 

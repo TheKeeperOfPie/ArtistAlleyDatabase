@@ -1,13 +1,13 @@
-package com.thekeeperofpie.artistalleydatabase.anime.studio
+package com.thekeeperofpie.artistalleydatabase.anime.studios
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_studio_media_filter_main_label
-import artistalleydatabase.modules.anime.generated.resources.anime_studio_media_filter_setting_title_language
-import artistalleydatabase.modules.anime.generated.resources.anime_studio_media_filter_sort_label
+import artistalleydatabase.modules.anime.studios.generated.resources.Res
+import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_media_filter_main_label
+import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_media_filter_setting_title_language
+import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_media_filter_sort_label
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -20,7 +20,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(FlowPreview::class)
 class StudioMediaSortFilterController(
     scope: CoroutineScope,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : MediaDataSettingsSortFilterController<StudioMediaSortFilterController.FilterParams>(
     scope = scope,

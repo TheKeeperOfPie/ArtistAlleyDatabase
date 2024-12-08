@@ -63,8 +63,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsContro
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption

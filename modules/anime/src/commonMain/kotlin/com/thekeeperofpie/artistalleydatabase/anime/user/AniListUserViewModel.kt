@@ -44,7 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringDat
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
-import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -535,6 +535,6 @@ class AniListUserViewModel(
 
     data class StudiosEntry(
         val hasMore: Boolean = false,
-        val studios: List<StudioListRow.Entry> = emptyList(),
+        val studios: List<StudioListRow. Entry<MediaWithListStatusEntry>> = emptyList(),
     )
 }

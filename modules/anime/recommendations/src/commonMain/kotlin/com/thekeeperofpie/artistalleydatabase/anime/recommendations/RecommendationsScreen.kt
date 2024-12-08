@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
@@ -84,17 +85,19 @@ object RecommendationsScreen {
                     ),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     item = {
-                        RecommendationCard(
-                            viewer = viewer(),
-                            user = it?.user,
-                            media = it?.media,
-                            recommendation = it?.data,
-                            onUserRecommendationRating = onUserRecommendationRating,
-                            mediaRows = {
-                                mediaRows(it?.media, it?.mediaRecommendation, onClickListEdit)
-                            },
-                            userRoute = userRoute,
-                        )
+                        SharedTransitionKeyScope("anime_recommendation_card", it?.id.orEmpty()) {
+                            RecommendationCard(
+                                viewer = viewer(),
+                                user = it?.user,
+                                media = it?.media,
+                                recommendation = it?.data,
+                                onUserRecommendationRating = onUserRecommendationRating,
+                                mediaRows = {
+                                    mediaRows(it?.media, it?.mediaRecommendation, onClickListEdit)
+                                },
+                                userRoute = userRoute,
+                            )
+                        }
                     },
                     modifier = Modifier.padding(it)
                 )
