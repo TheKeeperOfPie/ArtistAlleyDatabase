@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendations
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.data.MediaDetailsQuery
@@ -33,7 +32,7 @@ class AnimeMediaDetailsRecommendationsViewModel<MediaEntry>(
     private val recommendationStatusController: RecommendationStatusController,
     private val ignoreController: IgnoreController,
     private val settings: MediaDataSettings,
-    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaId: String,
     @Assisted mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
     @Assisted recommendations: Flow<MediaDetailsQuery.Data.Media.Recommendations?>,
 ) : ViewModel() {
@@ -106,8 +105,6 @@ class AnimeMediaDetailsRecommendationsViewModel<MediaEntry>(
     val recommendationToggleHelper =
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 
-    private val mediaId = savedStateHandle.get<String>("mediaId")!!
-
     data class RecommendationsEntry<MediaEntry>(
         val recommendations: List<Recommendation<MediaEntry>>,
         val hasMore: Boolean,
@@ -126,7 +123,7 @@ class AnimeMediaDetailsRecommendationsViewModel<MediaEntry>(
         private val recommendationStatusController: RecommendationStatusController,
         private val ignoreController: IgnoreController,
         private val settings: MediaDataSettings,
-        @Assisted private val savedStateHandle: SavedStateHandle,
+        @Assisted private val mediaId: String,
     ) {
         fun <MediaEntry> create(
             recommendations: Flow<MediaDetailsQuery.Data.Media.Recommendations?>,
@@ -137,7 +134,7 @@ class AnimeMediaDetailsRecommendationsViewModel<MediaEntry>(
             recommendationStatusController = recommendationStatusController,
             ignoreController = ignoreController,
             settings = settings,
-            savedStateHandle = savedStateHandle,
+            mediaId = mediaId,
             recommendations = recommendations,
             mediaEntryProvider = mediaEntryProvider,
         )

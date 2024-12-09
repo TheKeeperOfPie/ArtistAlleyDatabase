@@ -9,6 +9,7 @@ import com.anilist.data.fragment.PaginationInfo
 import com.anilist.data.fragment.UserWithFavorites
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
@@ -20,6 +21,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserUtils
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -41,7 +44,6 @@ abstract class UserListViewModel(
     ignoreController: IgnoreController,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-    savedStateHandle: SavedStateHandle,
     private val apiCall: suspend (
         userId: String,
         filterParams: UserFollowSortFilterController.FilterParams,
@@ -55,7 +57,7 @@ abstract class UserListViewModel(
         UserFollowSortFilterController(viewModelScope, settings, featureOverrideProvider)
     val users = MutableStateFlow(PagingData.empty<UserListRow.Entry>())
 
-    private val userId = savedStateHandle.get<String?>("userId")
+    abstract val userId: String?
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -113,6 +115,7 @@ abstract class UserListViewModel(
         ignoreController: IgnoreController,
         settings: AnimeSettings,
         featureOverrideProvider: FeatureOverrideProvider,
+        navigationTypeMap: NavigationTypeMap,
         @Assisted savedStateHandle: SavedStateHandle,
     ) : UserListViewModel(
         aniListApi = aniListApi,
@@ -120,7 +123,6 @@ abstract class UserListViewModel(
         ignoreController = ignoreController,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
-        savedStateHandle = savedStateHandle,
         apiCall = { userId, filterParams, page ->
             val result = aniListApi.userSocialFollowingWithFavorites(
                 userId = userId,
@@ -131,7 +133,10 @@ abstract class UserListViewModel(
             result.page?.pageInfo to result.page?.following?.filterNotNull()
                 .orEmpty()
         }
-    )
+    ) {
+        override val userId =
+            savedStateHandle.toDestination<AnimeDestination.UserFollowing>(navigationTypeMap).userId
+    }
 
     @Inject
     class Followers(
@@ -140,6 +145,7 @@ abstract class UserListViewModel(
         ignoreController: IgnoreController,
         settings: AnimeSettings,
         featureOverrideProvider: FeatureOverrideProvider,
+        navigationTypeMap: NavigationTypeMap,
         @Assisted savedStateHandle: SavedStateHandle,
     ) : UserListViewModel(
         aniListApi = aniListApi,
@@ -147,7 +153,6 @@ abstract class UserListViewModel(
         ignoreController = ignoreController,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
-        savedStateHandle = savedStateHandle,
         apiCall = { userId, filterParams, page ->
             val result = aniListApi.userSocialFollowersWithFavorites(
                 userId = userId,
@@ -158,5 +163,8 @@ abstract class UserListViewModel(
             result.page?.pageInfo to result.page?.followers?.filterNotNull()
                 .orEmpty()
         }
-    )
+    ) {
+        override val userId =
+            savedStateHandle.toDestination<AnimeDestination.UserFollowers>(navigationTypeMap).userId
+    }
 }

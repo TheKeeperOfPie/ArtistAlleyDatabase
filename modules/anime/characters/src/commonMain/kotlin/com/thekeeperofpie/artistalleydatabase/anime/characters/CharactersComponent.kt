@@ -8,6 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface CharactersComponent {
     val animeCharacterDetailsViewModelFactory: (SavedStateHandle) -> AnimeCharacterDetailsViewModel.Factory
-    val animeCharactersViewModel: (SavedStateHandle, Flow<MediaDetailsQuery.Data.Media.Characters?>) -> AnimeCharactersViewModel
+    val animeMediaDetailsCharactersViewModel: (mediaId: String, Flow<MediaDetailsQuery.Data.Media.Characters?>) -> AnimeMediaDetailsCharactersViewModel
     val characterMediasViewModelFactory: (SavedStateHandle) -> CharacterMediasViewModel.Factory
 }

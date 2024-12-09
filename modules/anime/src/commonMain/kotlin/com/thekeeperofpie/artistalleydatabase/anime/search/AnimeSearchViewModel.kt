@@ -134,7 +134,7 @@ class AnimeSearchViewModel(
 
     val unlocked = monetizationController.unlocked
 
-    private val tagId = savedStateHandle.get<String?>("tagId")
+    private val tagId = destination.tagId
 
     val animeSortFilterController = AnimeSearchSortFilterController(
         scope = viewModelScope,

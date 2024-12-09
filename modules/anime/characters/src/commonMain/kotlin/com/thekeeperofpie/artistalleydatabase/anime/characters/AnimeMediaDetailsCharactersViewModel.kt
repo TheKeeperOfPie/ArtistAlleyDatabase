@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.characters
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -29,15 +28,13 @@ import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class AnimeCharactersViewModel(
+class AnimeMediaDetailsCharactersViewModel(
     private val aniListApi: AuthedAniListApi,
-    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaId: String,
     @Assisted characters: Flow<MediaDetailsQuery.Data.Media.Characters?>,
 ) : ViewModel() {
 
     val charactersDeferred = MutableStateFlow(PagingData.empty<CharacterDetails>())
-
-    private val mediaId = savedStateHandle.get<String>("mediaId")!!
 
     var charactersInitial by mutableStateOf<List<CharacterDetails>>(emptyList())
         private set

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -26,12 +25,9 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class AnimeMediaDetailsStaffViewModel(
     private val aniListApi: AuthedAniListApi,
-    @Assisted savedStateHandle: SavedStateHandle,
     @Assisted media: Flow<MediaPreview?>,
 ) : ViewModel() {
     val staff = MutableStateFlow(PagingData.Companion.empty<StaffDetails>())
-
-    private val mediaId = savedStateHandle.get<String>("mediaId")!!
 
     init {
         viewModelScope.launch(CustomDispatchers.Companion.IO) {
@@ -45,7 +41,7 @@ class AnimeMediaDetailsStaffViewModel(
                     ) { (page, skipCache) ->
                         val result =
                             aniListApi.mediaDetailsStaffPage(
-                                mediaId,
+                                it.id.toString(),
                                 page,
                                 perPage,
                                 skipCache

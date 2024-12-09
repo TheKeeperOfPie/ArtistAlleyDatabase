@@ -22,6 +22,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringDat
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.flow.Flow
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
@@ -34,12 +36,14 @@ class StudioMediasViewModel<MediaEntry : Any>(
     private val settings: MediaDataSettings,
     favoritesController: FavoritesController,
     featureOverrideProvider: FeatureOverrideProvider,
+    navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
     @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
 ) : SortFilteredViewModel<StudioMediasScreen.Entry, MediaPreview, MediaEntry, StudioMediaSortFilterController.FilterParams>(
     loadingErrorTextRes = Res.string.anime_studio_medias_error_loading,
 ) {
-    val studioId = savedStateHandle.get<String>("studioId")!!
+    val studioId =
+        savedStateHandle.toDestination<StudioDestinations.StudioMedias>(navigationTypeMap).studioId
 
     override val sortFilterController =
         StudioMediaSortFilterController(viewModelScope, settings, featureOverrideProvider)
@@ -95,6 +99,7 @@ class StudioMediasViewModel<MediaEntry : Any>(
         private val settings: MediaDataSettings,
         private val favoritesController: FavoritesController,
         private val featureOverrideProvider: FeatureOverrideProvider,
+        private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
     ) {
         fun <MediaEntry : Any> create(
@@ -106,6 +111,7 @@ class StudioMediasViewModel<MediaEntry : Any>(
             settings = settings,
             favoritesController = favoritesController,
             featureOverrideProvider = featureOverrideProvider,
+            navigationTypeMap = navigationTypeMap,
             savedStateHandle = savedStateHandle,
             mediaEntryProvider = mediaEntryProvider,
         )

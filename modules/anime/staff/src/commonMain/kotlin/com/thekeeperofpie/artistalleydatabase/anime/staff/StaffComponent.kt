@@ -7,7 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.details.StaffDetailsVi
 import kotlinx.coroutines.flow.Flow
 
 interface StaffComponent {
-    val animeMediaDetailsStaffViewModel: (SavedStateHandle, Flow<MediaPreview?>) -> AnimeMediaDetailsStaffViewModel
+    val animeMediaDetailsStaffViewModel: (Flow<MediaPreview?>) -> AnimeMediaDetailsStaffViewModel
     val staffCharactersViewModelFactory: (SavedStateHandle) -> StaffCharactersViewModel.Factory
     val staffDetailsViewModelFactory: (SavedStateHandle) -> StaffDetailsViewModel.Factory
 }

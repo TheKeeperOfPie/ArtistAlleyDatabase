@@ -7,6 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
@@ -16,6 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -36,10 +39,13 @@ class UserFavoriteCharactersViewModel(
     mediaListStatusController: MediaListStatusController,
     ignoreController: IgnoreController,
     settings: AnimeSettings,
+    navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    val userId = savedStateHandle.get<String?>("userId")
+    val userId = savedStateHandle
+        .toDestination<AnimeDestination.UserFavoriteCharacters>(navigationTypeMap)
+        .userId
     val viewer = aniListApi.authedUser
     val characters =
         MutableStateFlow(PagingData.empty<CharacterListRow.Entry<MediaWithListStatusEntry>>())

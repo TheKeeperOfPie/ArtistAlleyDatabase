@@ -56,7 +56,7 @@ object StudioDestinations {
                 },
             ),
         ) {
-            val destination = it.toRoute<StudioDestinations.StudioMedias>()
+            val destination = it.toRoute<StudioMedias>()
             val viewModel = viewModel {
                 component.studioMediasViewModelFactory(createSavedStateHandle())
                     .create(mediaEntryProvider)

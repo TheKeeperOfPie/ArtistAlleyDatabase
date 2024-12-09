@@ -216,8 +216,8 @@ object AnimeNavigator {
             )
 
             val charactersViewModel = viewModel {
-                component.animeCharactersViewModel(
-                    createSavedStateHandle(),
+                component.animeMediaDetailsCharactersViewModel(
+                    destination.mediaId,
                     mediaDetailsViewModel.characters(),
                 )
             }
@@ -225,10 +225,7 @@ object AnimeNavigator {
                 charactersViewModel.charactersDeferred.collectAsLazyPagingItems()
 
             val staffViewModel = viewModel {
-                component.animeMediaDetailsStaffViewModel(
-                    createSavedStateHandle(),
-                    mediaDetailsViewModel.media(),
-                )
+                component.animeMediaDetailsStaffViewModel(mediaDetailsViewModel.media())
             }
             val staff = staffViewModel.staff.collectAsLazyPagingItems()
 
@@ -245,14 +242,14 @@ object AnimeNavigator {
             }
 
             val cdsViewModel =
-                viewModel { cdEntryComponent.cdsFromMediaViewModel(createSavedStateHandle()) }
+                viewModel { cdEntryComponent.cdsFromMediaViewModel(destination.mediaId) }
 
             val viewer by mediaDetailsViewModel.viewer.collectAsState()
 
             @Suppress("UNCHECKED_CAST")
             val recommendationsViewModel = viewModel {
                 component
-                    .animeMediaDetailsRecommendationsViewModelFactory(createSavedStateHandle())
+                    .animeMediaDetailsRecommendationsViewModelFactory(destination.mediaId)
                     .create(mediaDetailsViewModel.recommendations(), MediaPreviewEntry.Provider)
             }
 
@@ -271,10 +268,7 @@ object AnimeNavigator {
             }
 
             val forumThreadsViewModel = viewModel {
-                component.animeMediaDetailsForumThreadsViewModel(
-                    createSavedStateHandle(),
-                    mediaDetailsViewModel.media(),
-                )
+                component.animeMediaDetailsForumThreadsViewModel(mediaDetailsViewModel.media())
             }
 
             val reviewsViewModel = viewModel {

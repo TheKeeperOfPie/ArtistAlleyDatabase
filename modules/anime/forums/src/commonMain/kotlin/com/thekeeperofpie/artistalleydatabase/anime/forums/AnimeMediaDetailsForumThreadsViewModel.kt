@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.forums
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.forums.generated.resources.Res
@@ -23,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -36,7 +36,6 @@ import me.tatarka.inject.annotations.Inject
 class AnimeMediaDetailsForumThreadsViewModel(
     private val aniListApi: AuthedAniListApi,
     private val threadStatusController: ForumThreadStatusController,
-    @Assisted savedStateHandle: SavedStateHandle,
     @Assisted media: Flow<MediaDetailsQuery.Data.Media?>,
 ) : ViewModel() {
     var forumThreads by mutableStateOf<LoadingResult<List<ForumThreadEntry>>>(LoadingResult.Companion.loading())
@@ -45,20 +44,20 @@ class AnimeMediaDetailsForumThreadsViewModel(
     val threadToggleHelper =
         ForumThreadToggleHelper(aniListApi, threadStatusController, viewModelScope)
 
-    private val mediaId = savedStateHandle.get<String>("mediaId")!!
     private var barrier = MutableStateFlow(false)
 
     init {
         viewModelScope.launch(CustomDispatchers.Companion.Main) {
             barrier.filter { it }
                 .flatMapLatest { media }
+                .filterNotNull()
                 .flowOn(CustomDispatchers.Companion.Main)
                 .mapLatest {
                     aniListApi.forumThreadSearch(
                         null,
                         false,
                         null,
-                        mediaCategoryId = mediaId,
+                        mediaCategoryId = it.id.toString(),
                         sort = ForumThreadSortOption.REPLIED_AT.toApiValue(sortAscending = false),
                         page = 1,
                     ).page.threads?.filterNotNull().orEmpty()

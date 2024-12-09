@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.cds
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
@@ -21,12 +20,10 @@ class CdsFromMediaViewModel(
     appFileSystem: AppFileSystem,
     cdEntryDao: CdEntryDao,
     json: Json,
-    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaId: String,
 ): ViewModel() {
 
     var cdEntries by mutableStateOf(emptyList<CdEntryGridModel>())
-
-    private val mediaId = savedStateHandle.get<String>("mediaId")!!
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
