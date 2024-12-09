@@ -39,7 +39,6 @@ import com.anilist.data.type.MediaType
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
@@ -49,6 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.BarChart
 import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.PieChart
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.minutes
@@ -248,7 +248,7 @@ object UserStatsBasicScreen {
     ) {
         val statistics = user.statistics?.anime ?: return
         item {
-            val navigationCallback = LocalNavigationCallback.current
+            val navigationController = LocalNavigationController.current
             StatsCard(
                 statistics.count.toString() to Res.string.anime_user_statistics_count,
                 String.format(
@@ -260,7 +260,7 @@ object UserStatsBasicScreen {
                     statistics.meanScore
                 ) to Res.string.anime_user_statistics_mean_score,
                 onClick = {
-                    navigationCallback.navigate(
+                    navigationController.navigate(
                         AnimeDestination.UserList(
                             userId = user.id.toString(),
                             userName = user.name,
@@ -277,7 +277,7 @@ object UserStatsBasicScreen {
     ) {
         val statistics = user.statistics?.manga ?: return
         item {
-            val navigationCallback = LocalNavigationCallback.current
+            val navigationController = LocalNavigationController.current
             StatsCard(
                 statistics.count.toString() to Res.string.anime_user_statistics_count,
                 statistics.chaptersRead.toString() to
@@ -287,7 +287,7 @@ object UserStatsBasicScreen {
                     .roundToDigitPositionAfterDecimalPoint(1, RoundingMode.FLOOR)
                     .toStringExpanded() to Res.string.anime_user_statistics_mean_score,
                 onClick = {
-                    navigationCallback.navigate(
+                    navigationController.navigate(
                         AnimeDestination.UserList(
                             userId = user.id.toString(),
                             userName = user.name,

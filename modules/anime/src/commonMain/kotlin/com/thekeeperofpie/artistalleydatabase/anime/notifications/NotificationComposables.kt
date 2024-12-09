@@ -44,7 +44,6 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivityCardContent
@@ -63,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.datetime.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
@@ -131,13 +131,13 @@ fun ActivityMentionNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
         SharedTransitionKey.makeKeyForId(notification.activityId.toString())
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         activityEntry?.id?.let {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 ActivityDestinations.ActivityDetails(
                     activityId = it,
                     sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -175,13 +175,13 @@ fun ActivityMessageNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
         SharedTransitionKey.makeKeyForId(notification.activityId.toString())
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         activityEntry?.id?.let {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 ActivityDestinations.ActivityDetails(
                     activityId = it,
                     sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -220,13 +220,13 @@ fun ActivityReplyNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
         SharedTransitionKey.makeKeyForId(notification.activityId.toString())
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         notification.activityId.toString().let {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 ActivityDestinations.ActivityDetails(
                     activityId = it,
                     sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -265,12 +265,12 @@ fun ActivityReplySubscribedNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
         SharedTransitionKey.makeKeyForId(notification.activityId.toString())
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
-        navigationCallback.navigate(
+        navigationController.navigate(
             ActivityDestinations.ActivityDetails(
                 activityId = notification.activityId.toString(),
                 sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -308,12 +308,12 @@ fun ActivityLikedNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
         SharedTransitionKey.makeKeyForId(notification.activityId.toString())
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
-        navigationCallback.navigate(
+        navigationController.navigate(
             ActivityDestinations.ActivityDetails(
                 activityId = notification.activityId.toString(),
                 sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -351,12 +351,12 @@ fun ActivityReplyLikedNotificationCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
         SharedTransitionKey.makeKeyForId(notification.activityId.toString())
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
-        navigationCallback.navigate(
+        navigationController.navigate(
             ActivityDestinations.ActivityDetails(
                 activityId = notification.activityId.toString(),
                 sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -392,11 +392,11 @@ fun AiringNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val sharedTransitionKey = notification.mediaId?.let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId?.let {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 AnimeDestination.MediaDetails(
                     mediaId = it,
                     title = null,
@@ -433,13 +433,13 @@ fun AiringNotificationCard(
 fun FollowingNotificationCard(
     notification: NotificationsQuery.Data.Page.FollowingNotificationNotification,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val imageState = rememberCoilImageState(notification.user?.avatar?.large)
     val sharedTransitionKey = notification.user?.id?.toString()
         ?.let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.user?.let {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 AnimeDestination.User(
                     userId = it.id.toString(),
                     sharedTransitionKey = sharedTransitionKey,
@@ -469,12 +469,12 @@ fun RelatedMediaAdditionNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val sharedTransitionKey =
         notification.mediaId.toString().let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 AnimeDestination.MediaDetails(
                     mediaId = it,
                     title = null,
@@ -511,12 +511,12 @@ fun MediaDataChangeNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val sharedTransitionKey =
         notification.mediaId.toString().let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 AnimeDestination.MediaDetails(
                     mediaId = it,
                     title = null,
@@ -603,12 +603,12 @@ fun MediaMergeNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val sharedTransitionKey =
         notification.mediaId.toString().let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 AnimeDestination.MediaDetails(
                     mediaId = it,
                     title = null,
@@ -730,14 +730,14 @@ private fun ThreadAndCommentNotificationCard(
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val threadId = thread?.id?.toString()
     val imageState = rememberCoilImageState(user?.avatar?.large)
     val sharedTransitionKey = user?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         val commentId = entry?.comment?.id?.toString()
         if (threadId != null && commentId != null) {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 ForumDestinations.ForumThreadComment(
                     threadId = threadId,
                     commentId = commentId,
@@ -764,7 +764,7 @@ private fun ThreadAndCommentNotificationCard(
                 userRoute = AnimeDestination.User.route,
                 modifier = Modifier.clickable {
                     if (threadId != null) {
-                        navigationCallback.navigate(
+                        navigationController.navigate(
                             ForumDestinations.ForumThread(
                                 threadId = threadId,
                                 title = thread.title,
@@ -783,7 +783,7 @@ private fun ThreadAndCommentNotificationCard(
                         .heightIn(max = 140.dp)
                         .verticalScroll(rememberScrollState())
                         .clickable {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 ForumDestinations.ForumThreadComment(
                                     threadId = threadId,
                                     commentId = comment.id.toString(),
@@ -815,14 +815,14 @@ private fun ThreadAndCommentNotificationCard(
 fun ThreadLikeNotificationCard(
     notification: NotificationsQuery.Data.Page.ThreadLikeNotificationNotification,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val thread = notification.thread
     val imageState = rememberCoilImageState(notification.user?.avatar?.large)
     val sharedTransitionKey = notification.user?.id?.toString()
         ?.let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         if (thread != null) {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 ForumDestinations.ForumThread(
                     threadId = thread.id.toString(),
                     title = thread.title,
@@ -865,7 +865,7 @@ private fun ContextHeader(
             .fillMaxWidth()
     ) {
         val shape = RoundedCornerShape(12.dp)
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         UserAvatarImage(
             imageState = imageState,
             image = imageState.request().build(),
@@ -876,7 +876,7 @@ private fun ContextHeader(
                 .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                 .clickable {
                     if (user != null) {
-                        navigationCallback.navigate(
+                        navigationController.navigate(
                             AnimeDestination.User(
                                 userId = user.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
@@ -920,11 +920,11 @@ private fun ActivityCard(
 ) {
     // TODO: Load activity manually if notification doesn't provide it
     val activity = activityEntry?.activity ?: return
-    val navigationCallback = LocalNavigationCallback.current
+    val navigationController = LocalNavigationController.current
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     OutlinedCard(
         onClick = {
-            navigationCallback.navigate(
+            navigationController.navigate(
                 ActivityDestinations.ActivityDetails(
                     activityId = activityEntry.id,
                     sharedTransitionScopeKey = sharedTransitionScopeKey,

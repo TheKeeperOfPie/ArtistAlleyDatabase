@@ -57,7 +57,6 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
@@ -74,6 +73,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
@@ -109,7 +109,7 @@ object AnimeMediaListRow {
             ?.let { SharedTransitionKey.makeKeyForId(it) }
         val coverImageState =
             rememberCoilImageState(entry?.media?.coverImage?.extraLarge, requestColors = true)
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         ElevatedCard(
             modifier = modifier
                 .fillMaxWidth()
@@ -123,7 +123,7 @@ object AnimeMediaListRow {
             val onClickEntry = {
                 if (entry != null) {
                     val media = entry.media
-                    navigationCallback.navigate(
+                    navigationController.navigate(
                         AnimeDestination.MediaDetails(
                             mediaId = media.id.toString(),
                             title = title,
@@ -205,7 +205,7 @@ object AnimeMediaListRow {
                                 tags = tags,
                                 onTagClick = { id, name ->
                                     if (entry != null) {
-                                        navigationCallback.navigate(
+                                        navigationController.navigate(
                                             AnimeDestination.SearchMedia(
                                                 title =
                                                     AnimeDestination.SearchMedia.Title.Custom(name),

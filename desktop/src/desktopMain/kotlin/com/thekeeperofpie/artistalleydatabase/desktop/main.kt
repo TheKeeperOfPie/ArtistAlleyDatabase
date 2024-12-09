@@ -134,7 +134,6 @@ fun main() {
                 val navigationController = rememberNavigationController(navHostController)
                 val navigationCallback = remember(navHostController, cdEntryNavigator) {
                     AnimeNavigator.NavigationCallback(
-                        navigationController = navigationController,
                         navHostController = navHostController,
                         cdEntryNavigator = cdEntryNavigator,
                     )

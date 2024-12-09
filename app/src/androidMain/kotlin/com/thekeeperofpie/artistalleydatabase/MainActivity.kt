@@ -79,7 +79,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceAc
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
@@ -177,14 +176,6 @@ class MainActivity : ComponentActivity() {
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
                 val imageColorsState = rememberImageColorsState()
                 val navigationController = rememberNavigationController(navHostController)
-                val navigationCallback =
-                    remember(languageOptionMedia, languageOptionCharacters, languageOptionStaff) {
-                        AnimeNavigator.NavigationCallback(
-                            navigationController = navigationController,
-                            navHostController = navHostController,
-                            cdEntryNavigator = cdEntryNavigator,
-                        )
-                    }
                 CompositionLocalProvider(
                     LocalNavigationController provides navigationController,
                     LocalMonetizationProvider provides monetizationProvider,
@@ -197,7 +188,6 @@ class MainActivity : ComponentActivity() {
                     LocalLanguageOptionStaff provides languageOptionStaff,
                     LocalLanguageOptionVoiceActor provides
                             (languageOptionVoiceActor to showFallbackVoiceActor),
-                    LocalNavigationCallback provides navigationCallback,
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
                     LocalMarkdown provides markdown,
                     LocalComposeSettings provides settings.composeSettingsData(),
@@ -432,6 +422,10 @@ class MainActivity : ComponentActivity() {
                                 },
                                 component = applicationComponent,
                                 cdEntryComponent = applicationComponent,
+                                onCdEntryClick = { entryIds, imageCornerDp ->
+                                    cdEntryNavigator
+                                        .onCdEntryClick(navHostController, entryIds, imageCornerDp)
+                                }
                             )
 
                             artEntryNavigator.initialize(
@@ -507,7 +501,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 val root = it.arguments?.getString("root")
                                     ?.toBooleanStrictOrNull() == true
-                                val navigationCallback = LocalNavigationCallback.current
+                                val navigationController = LocalNavigationController.current
                                 SettingsScreen(
                                     viewModel = viewModel,
                                     appMetadataProvider = appMetadataProvider,
@@ -517,15 +511,15 @@ class MainActivity : ComponentActivity() {
                                         navHostController.navigate(AppNavDestinations.CRASH.id)
                                     },
                                     onClickFeatureTiers = {
-                                        navigationCallback.navigate(AnimeDestination.FeatureTiers)
+                                        navigationController.navigate(AnimeDestination.FeatureTiers)
                                     },
                                     onClickViewMediaHistory = {
-                                        navigationCallback.navigate(
+                                        navigationController.navigate(
                                             AnimeDestination.MediaHistory(mediaType = null)
                                         )
                                     },
                                     onClickViewMediaIgnore = {
-                                        navigationCallback.navigate(
+                                        navigationController.navigate(
                                             AnimeDestination.Ignored(mediaType = null)
                                         )
                                     },

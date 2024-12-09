@@ -17,7 +17,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
@@ -27,7 +26,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -110,9 +108,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteSt
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
-import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
@@ -123,7 +119,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
@@ -145,6 +140,7 @@ object AnimeNavigator {
         onClickShowLastCrash: () -> Unit,
         component: AnimeComponent,
         cdEntryComponent: CdEntryComponent,
+        onCdEntryClick: (entryIds: List<String>, imageCornerDp: Dp) -> Unit = { _, _ -> },
     ) {
         navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.HOME.id,
@@ -277,7 +273,7 @@ object AnimeNavigator {
                 component.animeMediaDetailsReviewsViewModel(mediaDetailsViewModel.reviews())
             }
 
-            val navigationCallback = LocalNavigationCallback.current
+            val navigationController = LocalNavigationController.current
 
             val sharedTransitionKey = destination.sharedTransitionKey
             val mediaTitle = mediaDetailsViewModel.state.mediaEntry.result?.media?.title
@@ -348,10 +344,7 @@ object AnimeNavigator {
                     cdsSection(
                         cdEntries = cdsViewModel.cdEntries,
                         onClickEntry = { _, entry ->
-                            navigationCallback.onCdEntryClick(
-                                model = entry,
-                                imageCornerDp = 12.dp,
-                            )
+                            onCdEntryClick(listOf(entry.id.valueId), 12.dp)
                         }
                     )
                 },
@@ -366,7 +359,7 @@ object AnimeNavigator {
                         expanded = expanded,
                         onExpandedChange = onExpandedChange,
                         onClickViewAll = {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.MediaRecommendations(
                                     mediaId = mediaDetailsViewModel.state.mediaId,
                                     headerParams = mediaHeaderParams(),
@@ -411,7 +404,7 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChanged,
                         userRoute = AnimeDestination.User.route,
                         onClickViewAll = {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.MediaActivities(
                                     mediaId = mediaDetailsViewModel.state.mediaId,
                                     showFollowing = activityTab == ActivityTab.FOLLOWING,
@@ -434,7 +427,7 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChanged,
                         onClickViewAll = {
                             val entry = mediaDetailsViewModel.state.mediaEntry.result
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 ForumDestinations.ForumSearch(
                                     title = entry?.media?.title?.userPreferred
                                         ?.let(ForumDestinations.ForumSearch.Title::Custom),
@@ -459,7 +452,7 @@ object AnimeNavigator {
                         onExpandedChange = onExpandedChange,
                         userRoute = AnimeDestination.User.route,
                         onClickViewAll = {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 ReviewDestinations.MediaReviews(
                                     mediaId = mediaDetailsViewModel.state.mediaId,
                                     headerParams = mediaHeaderParams()
@@ -467,7 +460,7 @@ object AnimeNavigator {
                             )
                         },
                         onReviewClick = { item ->
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 ReviewDestinations.ReviewDetails(
                                     reviewId = item.id.toString(),
                                     headerParams = mediaHeaderParams(),
@@ -1112,23 +1105,4 @@ object AnimeNavigator {
             bottomNavigationState = bottomNavigationState,
         )
     }
-
-    class NavigationCallback(
-        // Null to make previews easier
-        private val navigationController: NavigationController? = null,
-        private val navHostController: NavHostController? = null,
-        private val cdEntryNavigator: CdEntryNavigator? = null,
-    ) {
-        fun onCdEntryClick(model: CdEntryGridModel, imageCornerDp: Dp?) {
-            navHostController?.let {
-                cdEntryNavigator?.onCdEntryClick(it, listOf(model.id.valueId), imageCornerDp)
-            }
-        }
-
-        fun navigate(route: String) = navHostController?.navigate(route)
-
-        fun navigate(route: NavDestination) = navigationController?.navigate(route)
-    }
 }
-
-val LocalNavigationCallback = staticCompositionLocalOf { AnimeNavigator.NavigationCallback(null) }

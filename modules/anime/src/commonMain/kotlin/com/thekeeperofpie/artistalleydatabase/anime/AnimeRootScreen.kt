@@ -43,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysNavigationBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigationBarEnterAlwaysScrollBehavior
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
@@ -106,7 +107,7 @@ object AnimeRootScreen {
                     scrollBehavior = scrollBehavior,
                     modifier = Modifier.height(56.dp)
                 ) {
-                    val navigationCallback = LocalNavigationCallback.current
+                    val navigationController = LocalNavigationController.current
                     val unlocked by viewModel.unlocked.collectAsState()
 
                     var showAnimeMenu by remember { mutableStateOf(false) }
@@ -143,7 +144,7 @@ object AnimeRootScreen {
                                                 text = { Text(stringResource(Res.string.anime_root_menu_ignored)) },
                                                 onClick = {
                                                     dismissMenu(destination)
-                                                    navigationCallback.navigate(
+                                                    navigationController.navigate(
                                                         AnimeDestination.Ignored(
                                                             mediaType = if (destination == AnimeRootNavDestination.ANIME) {
                                                                 MediaType.ANIME
@@ -158,7 +159,7 @@ object AnimeRootScreen {
                                                 text = { Text(stringResource(Res.string.anime_root_menu_history)) },
                                                 onClick = {
                                                     dismissMenu(destination)
-                                                    navigationCallback.navigate(
+                                                    navigationController.navigate(
                                                         AnimeDestination.MediaHistory(
                                                             mediaType = if (destination == AnimeRootNavDestination.ANIME) {
                                                                 MediaType.ANIME

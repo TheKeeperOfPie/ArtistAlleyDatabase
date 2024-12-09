@@ -64,7 +64,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_search_user
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.characters.horizontalCharactersRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -90,6 +89,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -372,10 +372,10 @@ object AnimeSearchScreen {
                     text = stringResource(Res.string.anime_requires_unlock),
                     modifier = Modifier.padding(vertical = 10.dp)
                 )
-                val navigationCallback = LocalNavigationCallback.current
+                val navigationController = LocalNavigationController.current
                 Button(
                     onClick = {
-                        navigationCallback.navigate(AnimeDestination.FeatureTiers)
+                        navigationController.navigate(AnimeDestination.FeatureTiers)
                     }
                 ) {
                     Text(

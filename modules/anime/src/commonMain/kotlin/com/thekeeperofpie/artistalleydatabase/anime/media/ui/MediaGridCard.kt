@@ -40,7 +40,6 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
@@ -54,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalCoilApi::class)
@@ -93,7 +93,7 @@ object MediaGridCard {
                 .fillMaxWidth()
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
         ) {
-            val navigationCallback = LocalNavigationCallback.current
+            val navigationController = LocalNavigationController.current
             val ignoreController = LocalIgnoreController.current
             val title = entry?.media?.title?.primaryTitle()
             Box(
@@ -101,7 +101,7 @@ object MediaGridCard {
                     enabled = entry != null,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.MediaDetails(
                                     mediaId = entry.media.id.toString(),
                                     title = title,
@@ -133,7 +133,7 @@ object MediaGridCard {
                             viewer = viewer,
                             onClick = {
                                 if (entry != null) {
-                                    navigationCallback.navigate(
+                                    navigationController.navigate(
                                         AnimeDestination.MediaDetails(
                                             mediaId = entry.media.id.toString(),
                                             title = title,

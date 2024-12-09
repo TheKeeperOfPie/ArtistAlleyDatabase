@@ -49,7 +49,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -58,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
@@ -100,9 +100,9 @@ object AiringScheduleScreen {
                             title = { Text(stringResource(Res.string.anime_airing_schedule_label)) },
                             navigationIcon = { ArrowBackIconButton(onClick = onClickBack) },
                             actions = {
-                                val navigationCallback = LocalNavigationCallback.current
+                                val navigationController = LocalNavigationController.current
                                 IconButton(onClick = {
-                                    navigationCallback.navigate(
+                                    navigationController.navigate(
                                         AnimeDestination.Seasonal(
                                             type = AnimeDestination.Seasonal.Type.THIS,
                                         )

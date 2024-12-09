@@ -39,7 +39,6 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
@@ -50,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
@@ -214,7 +214,7 @@ object UserStatsDetailScreen {
 
                         items(mediaIds, key = { it }) {
                             val media = medias.getOrNull()?.get(it)
-                            val navigationCallback = LocalNavigationCallback.current
+                            val navigationController = LocalNavigationController.current
                             val languageOptionMedia = LocalLanguageOptionMedia.current
                             val sharedTransitionKey = media?.id?.toString()
                                 ?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -225,7 +225,7 @@ object UserStatsDetailScreen {
                                 loading = media == null,
                                 onClick = { imageState ->
                                     if (media != null) {
-                                        navigationCallback.navigate(
+                                        navigationController.navigate(
                                             AnimeDestination.MediaDetails(
                                                 mediaNavigationData = media,
                                                 coverImage = imageState.toImageState(),

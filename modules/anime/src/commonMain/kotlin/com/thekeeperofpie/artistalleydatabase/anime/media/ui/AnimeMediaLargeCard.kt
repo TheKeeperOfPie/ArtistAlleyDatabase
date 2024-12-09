@@ -56,7 +56,6 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.data.CoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaQuickEditData
 import com.thekeeperofpie.artistalleydatabase.anime.data.Title
@@ -79,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.stringResource
 
@@ -120,7 +120,7 @@ object AnimeMediaLargeCard {
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
                 .recomposeHighlighter()
         ) {
-            val navigationCallback = LocalNavigationCallback.current
+            val navigationController = LocalNavigationController.current
             val ignoreController = LocalIgnoreController.current
             val title = entry?.primaryTitle()
             val imageState =
@@ -131,7 +131,7 @@ object AnimeMediaLargeCard {
                     enabled = entry != null,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.MediaDetails(
                                     mediaId = entry.mediaId,
                                     title = title,
@@ -214,7 +214,7 @@ object AnimeMediaLargeCard {
                                 tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
                                 onTagClick = { id, name ->
                                     if (entry != null) {
-                                        navigationCallback.navigate(
+                                        navigationController.navigate(
                                             AnimeDestination.SearchMedia(
                                                 title = AnimeDestination.SearchMedia.Title.Custom(
                                                     name

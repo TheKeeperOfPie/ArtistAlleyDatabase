@@ -43,7 +43,6 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
@@ -58,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
@@ -88,7 +88,7 @@ object AnimeMediaCompactListRow {
                 .sharedElement(sharedTransitionKey, "media_compact_list_row")
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
         ) {
-            val navigationCallback = LocalNavigationCallback.current
+            val navigationController = LocalNavigationController.current
             val ignoreController = LocalIgnoreController.current
             val title = entry?.media?.title?.primaryTitle().orEmpty()
             Row(
@@ -99,7 +99,7 @@ object AnimeMediaCompactListRow {
                         enabled = entry != null,
                         onClick = {
                             if (entry != null) {
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     AnimeDestination.MediaDetails(
                                         mediaId = entry.media.id.toString(),
                                         title = title,
@@ -128,7 +128,7 @@ object AnimeMediaCompactListRow {
                     sharedTransitionKey = sharedTransitionKey,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.MediaDetails(
                                     mediaId = entry.media.id.toString(),
                                     title = title,
@@ -179,7 +179,7 @@ object AnimeMediaCompactListRow {
                         tags = entry?.tags ?: AnimeMediaTagEntry.PLACEHOLDERS,
                         onTagClick = { id, name ->
                             if (entry != null) {
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     AnimeDestination.SearchMedia(
                                         title = AnimeDestination.SearchMedia.Title.Custom(name),
                                         tagId = id,

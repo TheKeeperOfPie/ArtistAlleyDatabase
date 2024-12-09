@@ -50,8 +50,6 @@ import com.anilist.data.UserByIdQuery
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -67,6 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -92,7 +91,7 @@ object UserOverviewScreen {
         val manga = viewModel.manga.collectAsLazyPagingItems()
         val characters = viewModel.characters.collectAsLazyPagingItems()
         val staff = viewModel.staff.collectAsLazyPagingItems()
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         LazyVerticalGrid(
             columns = GridUtils.standardWidthAdaptiveCells,
             contentPadding = PaddingValues(
@@ -129,7 +128,7 @@ object UserOverviewScreen {
                 entries = anime,
                 forceListEditIcon = true,
                 onClickViewAll = {
-                    navigationCallback.navigate(
+                    navigationController.navigate(
                         AnimeDestination.UserFavoriteMedia(
                             userId = userId,
                             userName = user.name,
@@ -147,7 +146,7 @@ object UserOverviewScreen {
                 entries = manga,
                 forceListEditIcon = true,
                 onClickViewAll = {
-                    navigationCallback.navigate(
+                    navigationController.navigate(
                         AnimeDestination.UserFavoriteMedia(
                             userId = userId,
                             userName = user.name,
@@ -188,7 +187,7 @@ object UserOverviewScreen {
                 studios = studios.studios,
                 hasMore = studios.hasMore,
                 onClickViewAll = {
-                    it.navigate(
+                    navigationController.navigate(
                         AnimeDestination.UserFavoriteStudios(
                             userId = userId,
                             userName = user.name
@@ -271,15 +270,14 @@ object UserOverviewScreen {
         editViewModel: MediaEditViewModel,
         studios: List<StudioListRow.Entry<MediaWithListStatusEntry>>,
         hasMore: Boolean,
-        onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
+        onClickViewAll: (() -> Unit)? = null,
         viewAllContentDescriptionTextRes: StringResource? = null,
     ) {
         if (studios.isEmpty()) return
         item("favoriteStudiosHeader") {
-            val navigationCallback = LocalNavigationCallback.current
             DetailsSectionHeader(
                 stringResource(Res.string.anime_user_favorite_studios_label),
-                onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
+                onClickViewAll = onClickViewAll,
                 viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
             )
         }
@@ -315,9 +313,9 @@ object UserOverviewScreen {
 
         if (hasMore) {
             item("favoriteStudios-showAll") {
-                val navigationCallback = LocalNavigationCallback.current
+                val navigationController = LocalNavigationController.current
                 ElevatedCard(
-                    onClick = { onClickViewAll?.invoke(navigationCallback) },
+                    onClick = { onClickViewAll?.invoke() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)

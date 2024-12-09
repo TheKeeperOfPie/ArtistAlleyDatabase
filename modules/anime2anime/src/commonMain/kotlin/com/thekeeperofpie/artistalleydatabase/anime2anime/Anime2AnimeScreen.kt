@@ -96,7 +96,6 @@ import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
@@ -127,6 +126,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
@@ -463,7 +463,7 @@ object Anime2AnimeScreen {
         voiceActor: StaffNavigationData,
         modifier: Modifier = Modifier,
     ) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         OutlinedCard(
             modifier = modifier.padding(start = 48.dp, end = 16.dp)
         ) {
@@ -507,7 +507,7 @@ object Anime2AnimeScreen {
                         .width(48.dp)
                         .combinedClickable(
                             onClick = {
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     StaffDestinations.StaffDetails(
                                         staffId = voiceActor.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
@@ -545,7 +545,7 @@ object Anime2AnimeScreen {
 
     @Composable
     private fun CharacterImage(character: CharacterNavigationData) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
         val characterName = character.name?.primaryName()
         val subtitleName = character.name?.subtitleName()
@@ -562,7 +562,7 @@ object Anime2AnimeScreen {
                 .sharedElement(sharedTransitionKey, "character_image")
                 .combinedClickable(
                     onClick = {
-                        navigationCallback.navigate(
+                        navigationController.navigate(
                             CharacterDestinations.CharacterDetails(
                                 characterId = character.id.toString(),
                                 sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -595,14 +595,14 @@ object Anime2AnimeScreen {
         role: String?,
         modifier: Modifier = Modifier,
     ) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         val staffName = staff.name?.primaryName()
         val staffSubtitle = staff.name?.subtitleName()
         val coverImageState = rememberCoilImageState(staff.image?.large)
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(staff.id.toString())
         OutlinedCard(
             onClick = {
-                navigationCallback.navigate(
+                navigationController.navigate(
                     StaffDestinations.StaffDetails(
                         staffId = staff.id.toString(),
                         sharedTransitionKey = sharedTransitionKey,
@@ -635,7 +635,7 @@ object Anime2AnimeScreen {
                         .align(Alignment.CenterVertically)
                         .combinedClickable(
                             onClick = {
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     StaffDestinations.StaffDetails(
                                         staffId = staff.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,

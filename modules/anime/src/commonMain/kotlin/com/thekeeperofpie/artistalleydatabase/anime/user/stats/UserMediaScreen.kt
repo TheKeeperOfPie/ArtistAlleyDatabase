@@ -17,7 +17,6 @@ import com.anilist.data.fragment.UserMediaStatistics
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
@@ -27,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 
 object UserMediaScreen {
@@ -60,7 +60,7 @@ object UserMediaScreen {
 
             HorizontalDivider()
 
-            val navigationCallback = LocalNavigationCallback.current
+            val navigationController = LocalNavigationController.current
             when (values[selectedTabIndex]) {
                 UserStatsTab.STATS -> UserStatsBasicScreen(
                     user = user,
@@ -83,7 +83,7 @@ object UserMediaScreen {
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, _, _ ->
                         val genre = value.genre!!
-                        navigationCallback.navigate(
+                        navigationController.navigate(
                             AnimeDestination.SearchMedia(
                                 title = AnimeDestination.SearchMedia.Title.Custom(genre),
                                 genre = genre,
@@ -107,7 +107,7 @@ object UserMediaScreen {
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, _, _ ->
                         value.tag?.let { tag ->
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.SearchMedia(
                                     title = AnimeDestination.SearchMedia.Title.Custom(tag.name),
                                     tagId = tag.id.toString(),
@@ -135,7 +135,7 @@ object UserMediaScreen {
                         onValueClick = { value, imageState, sharedTransitionKey ->
                             val voiceActor = value.voiceActor
                             if (voiceActor != null) {
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     StaffDestinations.StaffDetails(
                                         staffId = voiceActor.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,
@@ -175,7 +175,7 @@ object UserMediaScreen {
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, _, _ ->
                         value.studio?.let {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 StudioDestinations.StudioMedias(
                                     studioId = it.id.toString(),
                                     name = it.name,
@@ -202,7 +202,7 @@ object UserMediaScreen {
                         onValueClick = { value, imageState, sharedTransitionKey ->
                             val staff = value.staff
                             if (staff != null) {
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     StaffDestinations.StaffDetails(
                                         staffId = staff.id.toString(),
                                         sharedTransitionKey = sharedTransitionKey,

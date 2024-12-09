@@ -170,7 +170,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
@@ -220,6 +219,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoTe
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.colorsOrDefault
 import com.thekeeperofpie.artistalleydatabase.utils_compose.multiplyCoerceSaturation
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
@@ -808,7 +808,7 @@ object AnimeMediaDetailsScreen {
         genres: List<MediaEntry.Genre>,
         mediaType: MediaType?,
     ) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         val mediaGenreDialogController = LocalMediaGenreDialogController.current
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -822,7 +822,7 @@ object AnimeMediaDetailsScreen {
             genres.forEach {
                 AssistChip(
                     onClick = {
-                        navigationCallback.navigate(
+                        navigationController.navigate(
                             AnimeDestination.SearchMedia(
                                 title = AnimeDestination.SearchMedia.Title.Custom(it.name),
                                 genre = it.name,
@@ -1192,7 +1192,7 @@ object AnimeMediaDetailsScreen {
                 span = GridUtils.maxSpanFunction,
                 contentType = "tagsSection"
             ) {
-                val navigationCallback = LocalNavigationCallback.current
+                val navigationController = LocalNavigationController.current
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
@@ -1215,7 +1215,7 @@ object AnimeMediaDetailsScreen {
                                 }
                             },
                             onTagClick = { id, name ->
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     AnimeDestination.SearchMedia(
                                         title = AnimeDestination.SearchMedia.Title.Custom(name),
                                         tagId = id,

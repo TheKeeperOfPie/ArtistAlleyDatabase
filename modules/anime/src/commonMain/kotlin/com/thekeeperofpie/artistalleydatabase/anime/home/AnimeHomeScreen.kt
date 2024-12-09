@@ -107,7 +107,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySmallCard
@@ -395,11 +394,11 @@ object AnimeHomeScreen {
                         )
                     }
 
-                    val navigationCallback = LocalNavigationCallback.current
+                    val navigationController = LocalNavigationController.current
 
                     if (unlocked()) {
                         IconButton(onClick = {
-                            navigationCallback.navigate(ForumDestinations.Forum)
+                            navigationController.navigate(ForumDestinations.Forum)
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Forum,
@@ -422,7 +421,7 @@ object AnimeHomeScreen {
                             }
                         }) {
                             IconButton(onClick = {
-                                navigationCallback.navigate(AnimeDestination.Notifications)
+                                navigationController.navigate(AnimeDestination.Notifications)
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.Notifications,
@@ -435,7 +434,7 @@ object AnimeHomeScreen {
                     }
 
                     IconButton(onClick = {
-                        navigationCallback.navigate(AnimeDestination.AiringSchedule)
+                        navigationController.navigate(AnimeDestination.AiringSchedule)
                     }) {
                         Icon(
                             imageVector = Icons.Filled.CalendarMonth,
@@ -711,9 +710,9 @@ object AnimeHomeScreen {
             }
 
             item("view_all") {
-                val navigationCallback = LocalNavigationCallback.current
+                val navigationController = LocalNavigationController.current
                 GenericViewAllCard(onClick = {
-                    navigationCallback.navigate(viewAllRoute)
+                    navigationController.navigate(viewAllRoute)
                 })
             }
         }
@@ -739,7 +738,7 @@ object AnimeHomeScreen {
                 ?: MaterialTheme.colorScheme.surface
         }
 
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         val title = media?.title?.primaryTitle()
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(media?.id.toString())
 
@@ -747,7 +746,7 @@ object AnimeHomeScreen {
             colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
             onClick = {
                 if (media != null) {
-                    navigationCallback.navigate(
+                    navigationController.navigate(
                         AnimeDestination.MediaDetails(
                             mediaId = media.id.toString(),
                             title = title,
@@ -887,7 +886,7 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         val title = MediaUtils.userPreferredTitle(
             userPreferred = media?.title?.userPreferred,
             romaji = media?.title?.romaji,
@@ -914,7 +913,7 @@ object AnimeHomeScreen {
                 .combinedClickable(
                     onClick = {
                         if (media != null) {
-                            navigationCallback.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.MediaDetails(
                                     mediaId = media.id.toString(),
                                     title = title,
@@ -1182,7 +1181,7 @@ object AnimeHomeScreen {
             viewAllRoute = null,
         )
 
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 8.dp),
@@ -1196,7 +1195,7 @@ object AnimeHomeScreen {
                 contentType = { "suggestion" },
             ) {
                 SuggestionChip(
-                    onClick = { navigationCallback.navigate(it.second) },
+                    onClick = { navigationController.navigate(it.second) },
                     label = { Text(stringResource(it.first)) },
                     modifier = Modifier.recomposeHighlighter()
                 )

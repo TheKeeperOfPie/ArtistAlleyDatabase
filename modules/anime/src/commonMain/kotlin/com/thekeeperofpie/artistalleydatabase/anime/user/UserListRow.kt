@@ -41,7 +41,6 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
@@ -58,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
@@ -80,12 +80,12 @@ object UserListRow {
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         val avatarImageState = rememberCoilImageState(entry?.user?.avatar?.large)
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         val sharedTransitionKey = entry?.user?.id?.toString()
             ?.let { SharedTransitionKey.makeKeyForId(it) }
         val onUserClick = {
             if (entry != null) {
-                navigationCallback.navigate(
+                navigationController.navigate(
                     AnimeDestination.User(
                         userId = entry.user.id.toString(),
                         sharedTransitionKey = sharedTransitionKey,
@@ -209,7 +209,7 @@ object UserListRow {
                 contentType = { "media" },
             ) {
                 Box {
-                    val navigationCallback = LocalNavigationCallback.current
+                    val navigationController = LocalNavigationController.current
                     val languageOptionMedia = LocalLanguageOptionMedia.current
                     val sharedTransitionKey = it?.media?.id?.toString()
                         ?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -224,7 +224,7 @@ object UserListRow {
                         height = MEDIA_HEIGHT,
                         onClick = {
                             if (it?.media != null) {
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     AnimeDestination.MediaDetails(
                                         mediaNavigationData = it.media,
                                         coverImage = imageState.toImageState(),

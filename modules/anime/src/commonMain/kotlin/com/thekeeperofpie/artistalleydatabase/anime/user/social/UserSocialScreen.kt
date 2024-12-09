@@ -37,7 +37,6 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
@@ -47,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
@@ -75,7 +75,7 @@ object UserSocialScreen {
 
         val isLoading = following.loadState.refresh is LoadState.Loading
                 && followers.loadState.refresh is LoadState.Loading
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         LazyColumn(
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp),
@@ -101,7 +101,7 @@ object UserSocialScreen {
                 titleRes = Res.string.anime_user_social_following,
                 emptyTextRes = Res.string.anime_user_social_not_following_anyone,
                 onClickViewAll = {
-                    navigationCallback.navigate(
+                    navigationController.navigate(
                         AnimeDestination.UserFollowing(
                             userId = userId,
                             userName = user?.name,
@@ -117,7 +117,7 @@ object UserSocialScreen {
                     titleRes = Res.string.anime_user_social_followers,
                     emptyTextRes = null,
                     onClickViewAll = {
-                        navigationCallback.navigate(
+                        navigationController.navigate(
                             AnimeDestination.UserFollowers(
                                 userId = userId,
                                 userName = user?.name,
@@ -178,7 +178,7 @@ object UserSocialScreen {
 
     @Composable
     private fun UserPreview(user: UserNavigationData?) {
-        val navigationCallback = LocalNavigationCallback.current
+        val navigationController = LocalNavigationController.current
         val imageState = rememberCoilImageState(user?.avatar?.large)
         val sharedTransitionKey = user?.id?.toString()
             ?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -188,7 +188,7 @@ object UserSocialScreen {
                 .size(USER_IMAGE_SIZE)
                 .clickable {
                     user?.let {
-                        navigationCallback.navigate(
+                        navigationController.navigate(
                             AnimeDestination.User(
                                 userId = it.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,

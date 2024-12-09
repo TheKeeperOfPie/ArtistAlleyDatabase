@@ -109,7 +109,6 @@ import com.anilist.data.type.ScoreFormat
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
@@ -125,6 +124,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -291,7 +291,7 @@ object AnimeMediaEditBottomSheet {
                     .height(IntrinsicSize.Min)
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
-                val navigationCallback = LocalNavigationCallback.current
+                val navigationController = LocalNavigationController.current
                 val coverImageState = rememberCoilImageState(coverImage)
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 val sharedTransitionKey = SharedTransitionKey.makeKeyForId(mediaId)
@@ -306,7 +306,7 @@ object AnimeMediaEditBottomSheet {
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .combinedClickable(
                             onClick = {
-                                navigationCallback.navigate(
+                                navigationController.navigate(
                                     AnimeDestination.MediaDetails(
                                         mediaId = mediaId,
                                         title = initialParams.title,
