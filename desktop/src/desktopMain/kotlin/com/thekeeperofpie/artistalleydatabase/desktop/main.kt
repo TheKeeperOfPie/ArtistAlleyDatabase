@@ -130,14 +130,16 @@ fun main() {
                 val cdEntryNavigator = desktopComponent.cdEntryNavigator
                 val fullScreenImageHandler = remember { FullscreenImageHandler() }
                 val navHostController = rememberNavController()
+
+                val navigationController = rememberNavigationController(navHostController)
                 val navigationCallback = remember(navHostController, cdEntryNavigator) {
                     AnimeNavigator.NavigationCallback(
+                        navigationController = navigationController,
                         navHostController = navHostController,
                         cdEntryNavigator = cdEntryNavigator,
                     )
                 }
 
-                val navigationController = rememberNavigationController(navHostController)
                 CompositionLocalProvider(
                     LocalWindowConfiguration provides windowConfiguration,
                     LocalNavigationController provides navigationController,

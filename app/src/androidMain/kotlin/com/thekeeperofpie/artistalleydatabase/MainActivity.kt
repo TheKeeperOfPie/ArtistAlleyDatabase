@@ -174,17 +174,17 @@ class MainActivity : ComponentActivity() {
             val languageOptionVoiceActor by settings.languageOptionVoiceActor.collectAsState()
             val showFallbackVoiceActor by settings.showFallbackVoiceActor.collectAsState()
 
-            val navigationCallback =
-                remember(languageOptionMedia, languageOptionCharacters, languageOptionStaff) {
-                    AnimeNavigator.NavigationCallback(
-                        navHostController = navHostController,
-                        cdEntryNavigator = cdEntryNavigator,
-                    )
-                }
-
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
                 val imageColorsState = rememberImageColorsState()
-                val navigationController =rememberNavigationController(navHostController)
+                val navigationController = rememberNavigationController(navHostController)
+                val navigationCallback =
+                    remember(languageOptionMedia, languageOptionCharacters, languageOptionStaff) {
+                        AnimeNavigator.NavigationCallback(
+                            navigationController = navigationController,
+                            navHostController = navHostController,
+                            cdEntryNavigator = cdEntryNavigator,
+                        )
+                    }
                 CompositionLocalProvider(
                     LocalNavigationController provides navigationController,
                     LocalMonetizationProvider provides monetizationProvider,
