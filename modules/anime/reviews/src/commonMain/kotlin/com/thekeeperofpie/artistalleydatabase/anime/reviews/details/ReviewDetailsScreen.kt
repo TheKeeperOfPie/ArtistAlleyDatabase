@@ -66,7 +66,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.datetime.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
@@ -132,7 +132,7 @@ object ReviewDetailsScreen {
                             .height(IntrinsicSize.Min)
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        val navHostController = LocalNavHostController.current
+                        val navigationController = LocalNavigationController.current
                         val shape = RoundedCornerShape(12.dp)
                         val imageState = rememberCoilImageState(review.user?.avatar?.large)
                         val sharedTransitionKey = review.user?.id?.toString()
@@ -151,7 +151,7 @@ object ReviewDetailsScreen {
                                 )
                                 .clickable {
                                     review.user?.let {
-                                        navHostController.navigate(
+                                        navigationController.navigate(
                                             userRoute(
                                                 it.id.toString(),
                                                 sharedTransitionKey,

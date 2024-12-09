@@ -123,7 +123,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.openForceExternal
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
@@ -134,10 +134,10 @@ object ForumComposables {
 
 @Composable
 fun ThreadCompactCard(thread: ForumThread, modifier: Modifier = Modifier) {
-    val navHostController = LocalNavHostController.current
+    val navigationController = LocalNavigationController.current
     ElevatedCard(
         onClick = {
-            navHostController.navigate(
+            navigationController.navigate(
                 ForumDestinations.ForumThread(
                     threadId = thread.id.toString(),
                     title = thread.title,
@@ -164,11 +164,11 @@ fun ThreadSmallCard(
     onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val navHostController = LocalNavHostController.current
+    val navigationController = LocalNavigationController.current
     val thread = entry.thread
     ElevatedCard(
         onClick = {
-            navHostController.navigate(
+            navigationController.navigate(
                 ForumDestinations.ForumThread(
                     threadId = thread.id.toString(),
                     title = thread.title,
@@ -263,11 +263,11 @@ fun ThreadSmallCard(
 @Composable
 fun ThreadCard(thread: ForumThread?, userRoute: UserRoute, modifier: Modifier = Modifier) {
     SharedTransitionKeyScope("forum_thread_${thread?.id}") {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         ElevatedCard(
             onClick = {
                 if (thread != null) {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         ForumDestinations.ForumThread(
                             threadId = thread.id.toString(),
                             title = thread.title,
@@ -455,7 +455,7 @@ fun ThreadCategoryRow(thread: ForumThread, modifier: Modifier = Modifier) {
     val mediaCategories = thread.mediaCategories?.filterNotNull().orEmpty()
     if (categories.isEmpty() && mediaCategories.isEmpty()) return
 
-    val navHostController = LocalNavHostController.current
+    val navigationController = LocalNavigationController.current
     LazyRow(
         contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -475,7 +475,7 @@ fun ThreadCategoryRow(thread: ForumThread, modifier: Modifier = Modifier) {
         items(categories, { "category-${it.id}" }) {
             SuggestionChip(
                 onClick = {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         ForumDestinations.ForumSearch(
                             title = ForumDestinations.ForumSearch.Title.Custom(it.name),
                             categoryId = it.id.toString(),
@@ -489,7 +489,7 @@ fun ThreadCategoryRow(thread: ForumThread, modifier: Modifier = Modifier) {
             it.title?.primaryTitle()?.let { title ->
                 SuggestionChip(
                     onClick = {
-                        navHostController.navigate(
+                        navigationController.navigate(
                             ForumDestinations.ForumSearch(
                                 title = ForumDestinations.ForumSearch.Title.Custom(title),
                                 mediaCategoryId = it.id.toString(),
@@ -571,7 +571,7 @@ private fun UserImage(
     userRoute: UserRoute,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    val navHostController = LocalNavHostController.current
+    val navigationController = LocalNavigationController.current
     UserAvatarImage(
         imageState = imageState,
         image = imageState.request().build(),
@@ -582,7 +582,7 @@ private fun UserImage(
             .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
             .clickable {
                 if (user != null) {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         userRoute(
                             user.id.toString(),
                             sharedTransitionKey,
@@ -937,7 +937,7 @@ fun ThreadCommentContent(
     onClickDelete: ((String, MarkdownText?) -> Unit)? = null,
     onClickReplyComment: ((String, MarkdownText?) -> Unit)? = null,
 ) {
-    val navHostController = LocalNavHostController.current
+    val navigationController = LocalNavigationController.current
     val imageState = rememberCoilImageState(user?.avatar?.large)
     val sharedTransitionKey = user?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     Row(
@@ -945,7 +945,7 @@ fun ThreadCommentContent(
         modifier = Modifier
             .clickable {
                 if (user != null) {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         userRoute(
                             user.id.toString(),
                             sharedTransitionKey,

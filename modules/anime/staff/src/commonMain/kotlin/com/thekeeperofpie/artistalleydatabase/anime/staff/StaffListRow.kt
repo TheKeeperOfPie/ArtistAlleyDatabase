@@ -54,7 +54,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(
@@ -73,14 +73,14 @@ object StaffListRow {
         mediaSection: LazyListScope.(List<MediaEntry>) -> Unit,
     ) {
         val coverImageState = rememberCoilImageState(entry?.staff?.image?.large)
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val staffName = entry?.staff?.name?.primaryName()
         val staffSubtitle = entry?.staff?.name?.subtitleName()
         val sharedTransitionKey = entry?.staff?.id?.toString()
             ?.let { SharedTransitionKey.makeKeyForId(it) }
         val onClick = {
             if (entry != null) {
-                navHostController.navigate(
+                navigationController.navigate(
                     StaffDestinations.StaffDetails(
                         staffId = entry.staff.id.toString(),
                         sharedTransitionKey = sharedTransitionKey,

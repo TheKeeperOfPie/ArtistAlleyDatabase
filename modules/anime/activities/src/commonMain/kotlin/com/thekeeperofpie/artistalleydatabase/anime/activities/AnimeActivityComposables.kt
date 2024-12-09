@@ -88,7 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterCon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import kotlinx.datetime.Instant
@@ -271,11 +271,11 @@ fun TextActivitySmallCard(
     }
 
     if (clickable && activity != null) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ElevatedCard(
             onClick = {
-                navHostController.navigate(
+                navigationController.navigate(
                     ActivityDestinations.ActivityDetails(
                         activityId = activity.id.toString(),
                         sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -362,7 +362,7 @@ fun ColumnScope.TextActivityCardContent(
     }
 
     if (activity == null || activity.text != null) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ImageHtmlText(
             text = activity?.text ?: "Placeholder text",
@@ -370,7 +370,7 @@ fun ColumnScope.TextActivityCardContent(
                 .takeOrElse { LocalContentColor.current },
             onClickFallback = {
                 if (activity != null && clickable) {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         ActivityDestinations.ActivityDetails(
                             activityId = activity.id.toString(),
                             sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -426,11 +426,11 @@ fun MessageActivitySmallCard(
     }
 
     if (clickable && activity != null) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         ElevatedCard(
             onClick = {
-                navHostController.navigate(
+                navigationController.navigate(
                     ActivityDestinations.ActivityDetails(
                         activityId = activity.id.toString(),
                         sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -519,7 +519,7 @@ fun ColumnScope.MessageActivityCardContent(
         )
     }
 
-    val navHostController = LocalNavHostController.current
+    val navigationController = LocalNavigationController.current
     val userImage = activity?.recipient?.avatar?.large
     val userImageState = rememberCoilImageState(userImage)
     val userSharedTransitionKey = activity?.recipient?.id?.toString()
@@ -532,7 +532,7 @@ fun ColumnScope.MessageActivityCardContent(
             .align(Alignment.End)
             .clickable {
                 activity?.recipient?.let {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         userRoute(
                             it.id.toString(),
                             userSharedTransitionKey,
@@ -584,7 +584,7 @@ fun ColumnScope.MessageActivityCardContent(
                 .takeOrElse { LocalContentColor.current },
             onClickFallback = {
                 if (activity != null && clickable) {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         ActivityDestinations.ActivityDetails(
                             activityId = activity.id.toString(),
                             sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -713,10 +713,10 @@ private fun <MediaEntry> ListActivitySmallCard(
         )
     }
     if (clickable && activity != null) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         ElevatedCard(
             onClick = {
-                navHostController.navigate(
+                navigationController.navigate(
                     ActivityDestinations.ActivityDetails(
                         activityId = activity.id.toString(),
                         sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -991,7 +991,7 @@ private fun UserImage(
     userRoute: UserRoute,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    val navHostController = LocalNavHostController.current
+    val navigationController = LocalNavigationController.current
     val imageState = rememberCoilImageState(user?.avatar?.large)
     val sharedTransitionKey = user?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     UserAvatarImage(
@@ -1004,7 +1004,7 @@ private fun UserImage(
             .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
             .clickable(enabled = clickable) {
                 if (user != null) {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         userRoute(
                             user.id.toString(),
                             sharedTransitionKey,

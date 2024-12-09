@@ -66,7 +66,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSec
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -214,14 +214,14 @@ class MediaSearchSortFilterSection(
 
             val selectedMedia = selectedMedia
             if (selectedMedia != null) {
-                val navHostController = LocalNavHostController.current
+                val navigationController = LocalNavigationController.current
                 val languageOptionMedia = LocalLanguageOptionMedia.current
                 val sharedTransitionKey =
                     SharedTransitionKey.makeKeyForId(selectedMedia.id.toString())
                 val coverImageState = rememberCoilImageState(selectedMedia.coverImage?.medium)
                 OutlinedCard(
                     onClick = {
-                        navHostController.navigate(
+                        navigationController.navigate(
                             mediaDetailsRoute(
                                 selectedMedia,
                                 coverImageState.toImageState(),

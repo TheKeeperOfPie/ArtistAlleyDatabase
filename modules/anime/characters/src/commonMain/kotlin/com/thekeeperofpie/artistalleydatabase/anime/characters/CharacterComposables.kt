@@ -83,7 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreens
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.colorsOrDefault
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -237,12 +237,12 @@ fun LazyGridScope.charactersSection(
         span = GridUtils.maxSpanFunction,
         contentType = "detailsSectionHeader",
     ) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         DetailsSectionHeader(
             text = stringResource(titleRes),
             onClickViewAll = if (viewAllRoute != null) {
                 {
-                    navHostController.navigate(viewAllRoute())
+                    navigationController.navigate(viewAllRoute())
                 }
             } else null,
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
@@ -276,12 +276,12 @@ fun LazyGridScope.charactersSection(
         span = GridUtils.maxSpanFunction,
         contentType = "detailsSectionHeader",
     ) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         DetailsSectionHeader(
             text = stringResource(titleRes),
             onClickViewAll = if (viewAllRoute != null) {
                 {
-                    navHostController.navigate(viewAllRoute())
+                    navigationController.navigate(viewAllRoute())
                 }
             } else null,
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
@@ -380,7 +380,7 @@ fun CharactersSectionItem(
 ) {
     val sharedTransitionScopeKey = character?.id.toString()
     SharedTransitionKeyScope(sharedTransitionScopeKey) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
         val characterName = character?.character?.name?.primaryName()
         val image = if (showVoiceActorAsMain) voiceActor?.image else character?.image
@@ -396,7 +396,7 @@ fun CharactersSectionItem(
         }
         val onClickCharacter: () -> Unit = {
             if (character?.character != null) {
-                navHostController.navigate(
+                navigationController.navigate(
                     CharacterDestinations.CharacterDetails(
                         characterId = character.id,
                         sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -418,7 +418,7 @@ fun CharactersSectionItem(
         val voiceActorSubtitle = voiceActor?.staff?.name?.subtitleName()
         val onClickVoiceActor: () -> Unit = {
             voiceActor?.let {
-                navHostController.navigate(
+                navigationController.navigate(
                     staffDetailsRoute(
                         voiceActor.id,
                         voiceActorTransitionKey,
@@ -529,7 +529,7 @@ fun CharacterCard(
     val sharedTransitionScopeKey = character?.id.toString()
     SharedTransitionKeyScope(sharedTransitionScopeKey) {
         val coverImageState = rememberCoilImageState(character?.character?.image?.large)
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val characterName = character?.character?.name?.primaryName()
 
         val voiceActor = AniListUtils.selectVoiceActor(
@@ -543,7 +543,7 @@ fun CharacterCard(
         ElevatedCard(
             onClick = {
                 character?.character?.let {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         CharacterDestinations.CharacterDetails(
                             characterId = character.id,
                             sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -671,7 +671,7 @@ fun CharacterCard(
                             )
                             .clickable {
                                 if (voiceActor != null) {
-                                    navHostController.navigate(
+                                    navigationController.navigate(
                                         staffDetailsRoute(
                                             voiceActor.staff.id.toString(),
                                             voiceActorSharedTransitionKey,
@@ -713,7 +713,7 @@ fun rememberImageStateBelowInnerImage(
 
 fun LazyListScope.horizontalCharactersRow(characters: List<CharacterNavigationData>) {
     items(characters, key = { it.id }) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val characterName = it.name?.primaryName()
         val imageState = rememberCoilImageState(it.image?.large)
         val sharedTransitionKey = SharedTransitionKey.makeKeyForId(it.id.toString())
@@ -723,7 +723,7 @@ fun LazyListScope.horizontalCharactersRow(characters: List<CharacterNavigationDa
             imageState = imageState,
             contentDescriptionTextRes = UiRes.string.anime_character_image_content_description,
             onClick = {
-                navHostController.navigate(
+                navigationController.navigate(
                     CharacterDestinations.CharacterDetails(
                         characterId = it.id.toString(),
                         sharedTransitionScopeKey = sharedTransitionScopeKey,

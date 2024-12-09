@@ -28,7 +28,7 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 object StudioListRow {
@@ -40,11 +40,11 @@ object StudioListRow {
         modifier: Modifier = Modifier.Companion,
         mediaHeight: Dp = 180.dp,
     ) {
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         ElevatedCard(
             onClick = {
                 if (entry != null) {
-                    navHostController.navigate(
+                    navigationController.navigate(
                         StudioDestinations.StudioMedias(
                             studioId = entry.studio.id.toString(),
                             name = entry.studio.name,

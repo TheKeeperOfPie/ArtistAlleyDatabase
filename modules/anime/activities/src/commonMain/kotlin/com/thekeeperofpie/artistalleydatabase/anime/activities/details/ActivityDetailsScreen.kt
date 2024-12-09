@@ -97,7 +97,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
@@ -414,13 +414,13 @@ object ActivityDetailsScreen {
             val imageState = rememberCoilImageState(user?.avatar?.large)
             val sharedTransitionKey = user?.id?.toString()
                 ?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
-            val navHostController = LocalNavHostController.current
+            val navigationController = LocalNavigationController.current
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
                     .clickable {
                         if (user != null) {
-                            navHostController.navigate(
+                            navigationController.navigate(
                                 userRoute(
                                     user.id.toString(),
                                     sharedTransitionKey,

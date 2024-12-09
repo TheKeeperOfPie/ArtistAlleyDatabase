@@ -39,7 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingErrorItem
@@ -62,10 +62,10 @@ fun LazyGridScope.staffSection(
             span = GridUtils.maxSpanFunction,
             contentType = "detailsSectionHeader",
         ) {
-            val navHostController = LocalNavHostController.current
+            val navigationController = LocalNavigationController.current
             DetailsSectionHeader(
                 stringResource(titleRes),
-                onClickViewAll = viewAllRoute?.let { { navHostController.navigate(viewAllRoute) } },
+                onClickViewAll = viewAllRoute?.let { { navigationController.navigate(viewAllRoute) } },
                 viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
             )
         }
@@ -109,13 +109,13 @@ fun StaffListRow(
                 val staffSubtitle = staff?.staff?.name?.subtitleName()
                 val sharedTransitionKey = staff?.staff?.id?.toString()
                     ?.let { SharedTransitionKey.makeKeyForId(it) }
-                val navHostController = LocalNavHostController.current
+                val navigationController = LocalNavigationController.current
                 StaffSmallCard(
                     sharedTransitionKey = sharedTransitionKey,
                     imageState = coverImageState,
                     onClick = {
                         if (staff != null) {
-                            navHostController.navigate(
+                            navigationController.navigate(
                                 StaffDestinations.StaffDetails(
                                     staffId = staff.staff.id.toString(),
                                     sharedTransitionKey = sharedTransitionKey,

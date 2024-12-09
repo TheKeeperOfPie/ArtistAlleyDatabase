@@ -108,7 +108,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalShare
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -182,8 +184,9 @@ class MainActivity : ComponentActivity() {
 
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
                 val imageColorsState = rememberImageColorsState()
+                val navigationController =rememberNavigationController(navHostController)
                 CompositionLocalProvider(
-                    LocalNavHostController provides navHostController,
+                    LocalNavigationController provides navigationController,
                     LocalMonetizationProvider provides monetizationProvider,
                     LocalSubscriptionProvider provides subscriptionProvider,
                     LocalMediaTagDialogController provides mediaTagDialogController,
@@ -281,6 +284,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             ) {
                                 Content(
+                                    navigationController = navigationController,
                                     navHostController = navHostController,
                                     unlockDatabaseFeatures = true,
                                     onClickNav = ::onClickNav,
@@ -292,6 +296,7 @@ class MainActivity : ComponentActivity() {
                             }
                         } else {
                             Content(
+                                navigationController = navigationController,
                                 navHostController = navHostController,
                                 unlockDatabaseFeatures = false,
                                 onClickNav = ::onClickNav,
@@ -369,6 +374,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun Content(
+        navigationController: NavigationController,
         navHostController: NavHostController,
         unlockDatabaseFeatures: Boolean,
         onClickNav: () -> Unit,
@@ -411,7 +417,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             AnimeNavigator.initialize(
-                                navHostController = navHostController,
+                                navigationController = navigationController,
                                 navGraphBuilder = this,
                                 upIconOption = navDrawerUpIconOption,
                                 navigationTypeMap = navigationTypeMap,
@@ -430,6 +436,7 @@ class MainActivity : ComponentActivity() {
 
                             artEntryNavigator.initialize(
                                 onClickNav = onClickNav,
+                                navigationController = navigationController,
                                 navHostController = navHostController,
                                 navGraphBuilder = this,
                                 artEntryComponent = applicationComponent,
@@ -505,7 +512,7 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel,
                                     appMetadataProvider = appMetadataProvider,
                                     upIconOption = navDrawerUpIconOption.takeIf { root }
-                                        ?: UpIconOption.Back(navHostController),
+                                        ?: UpIconOption.Back(navigationController),
                                     onClickShowLastCrash = {
                                         navHostController.navigate(AppNavDestinations.CRASH.id)
                                     },

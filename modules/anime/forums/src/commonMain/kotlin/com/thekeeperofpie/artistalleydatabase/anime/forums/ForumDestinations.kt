@@ -24,7 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
@@ -105,7 +105,7 @@ object ForumDestinations {
         navGraphBuilder.sharedElementComposable<Forum>(navigationTypeMap) {
             val viewModel = viewModel { component.forumRootScreenViewModel() }
             ForumRootScreen(
-                upIconOption = UpIconOption.Back(LocalNavHostController.current),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 onRefresh = viewModel::refresh,
                 entry = viewModel.entry,
                 userRoute = userRoute,
@@ -131,7 +131,7 @@ object ForumDestinations {
             }
             ForumSearchScreen(
                 sortFilterState = viewModel.sortFilterController::state,
-                upIconOption = UpIconOption.Back(LocalNavHostController.current),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 title = destination.title,
                 query = { viewModel.query },
                 onQueryChanged = { viewModel.query = it },
@@ -162,7 +162,7 @@ object ForumDestinations {
             ForumThreadScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                 viewer = { viewer },
-                upIconOption = UpIconOption.Back(LocalNavHostController.current),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 refresh = viewModel.refresh,
                 onRefresh = viewModel::refresh,
                 threadId = viewModel.threadId,
@@ -208,7 +208,7 @@ object ForumDestinations {
             ForumThreadCommentTreeScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                 viewer = { viewer },
-                upIconOption = UpIconOption.Back(LocalNavHostController.current),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 refresh = viewModel.refresh,
                 onRefresh = viewModel::refresh,
                 threadId = viewModel.threadId,

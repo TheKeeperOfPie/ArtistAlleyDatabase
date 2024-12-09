@@ -44,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import org.jetbrains.compose.resources.stringResource
 
 object MediaDataUtils {
@@ -166,7 +167,7 @@ typealias MediaDetailsRoute = (
     coverImage: ImageState?,
     languageOptionMedia: AniListLanguageOption,
     sharedTransitionKey: SharedTransitionKey?,
-) -> Unit
+) -> NavDestination
 
 /** Decouples MediaDetails from this module */
 typealias MediaEditBottomSheetScaffoldComposable = @Composable (

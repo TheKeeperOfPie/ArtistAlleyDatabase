@@ -96,7 +96,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
@@ -655,14 +655,14 @@ fun LazyListScope.characterMediaItems(
                 ?.let { SharedTransitionKey.makeKeyForId(it) }
             val sharedContentState =
                 rememberSharedContentState(sharedTransitionKey, "media_image")
-            val navHostController = LocalNavHostController.current
+            val navigationController = LocalNavigationController.current
             ListRowSmallImage(
                 ignored = item?.mediaFilterable?.ignored ?: false,
                 imageState = imageState,
                 contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
                 onClick = {
                     if (item != null) {
-                        navHostController.navigate(
+                        navigationController.navigate(
                             AnimeDestination.MediaDetails(
                                 mediaNavigationData = item.media,
                                 coverImage = imageState.toImageState(),
@@ -708,7 +708,7 @@ fun LazyListScope.horizontalMediaCardRow(
         key = { index, item -> item?.media?.id ?: "placeholder_$index" },
     ) { index, item ->
         Box {
-            val navHostController = LocalNavHostController.current
+            val navigationController = LocalNavigationController.current
             val title = item?.media?.title?.primaryTitle()
             val sharedTransitionKey = item?.media?.id?.toString()
                 ?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -720,7 +720,7 @@ fun LazyListScope.horizontalMediaCardRow(
                 contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
                 onClick = {
                     if (item != null) {
-                        navHostController.navigate(
+                        navigationController.navigate(
                             AnimeDestination.MediaDetails(
                                 mediaId = item.media.id.toString(),
                                 title = title,

@@ -15,18 +15,18 @@ fun NavigationHeader(
     modifier: Modifier = Modifier,
     viewAllContentDescriptionTextRes: StringResource? = null,
 ) {
-    val navHostController = LocalNavHostController.current
+    val navigationController = LocalNavigationController.current
     DetailsSectionHeader(
         text = stringResource(titleRes),
         onClickViewAll = viewAllRoute?.let {
             {
-                navHostController.navigate(viewAllRoute)
+                navigationController.navigate(viewAllRoute)
             }
         },
         viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
         modifier = Modifier
             .clickable(enabled = viewAllRoute != null) {
-                navHostController.navigate(viewAllRoute!!)
+                navigationController.navigate(viewAllRoute!!)
             }
             .then(modifier)
             .recomposeHighlighter()

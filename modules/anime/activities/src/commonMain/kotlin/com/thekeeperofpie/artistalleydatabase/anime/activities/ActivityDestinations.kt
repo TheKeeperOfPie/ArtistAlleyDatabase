@@ -21,7 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
@@ -68,14 +68,14 @@ object ActivityDestinations {
             val destination = it.toRoute<ActivityDestinations.ActivityDetails>()
             // TODO: Shared element doesn't actually work
             SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
-                val navHostController = LocalNavHostController.current
+                val navigationController = LocalNavigationController.current
                 val viewModel = viewModel {
                     component.activityDetailsViewModelFactory(createSavedStateHandle())
                         .create(mediaEntryProvider)
                 }
                 val viewer by viewModel.viewer.collectAsState()
                 ActivityDetailsScreen(
-                    upIconOption = UpIconOption.Back(navHostController),
+                    upIconOption = UpIconOption.Back(navigationController),
                     viewer = { viewer },
                     refresh = viewModel.refresh.updates,
                     state = viewModel.state,

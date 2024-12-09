@@ -15,10 +15,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.app_bar_back_icon_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.nav_drawer_icon_content_description
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -31,8 +31,8 @@ fun UpIconButton(option: UpIconOption, modifier: Modifier = Modifier) {
 
 sealed interface UpIconOption {
     class Back(val onClick: () -> Unit) : UpIconOption {
-        constructor(navHostController: NavHostController) :
-                this(onClick = { navHostController.navigateUp() })
+        constructor(navigationController: NavigationController) :
+                this(onClick = { navigationController.navigateUp() })
     }
 
     class NavDrawer(val onClick: () -> Unit) : UpIconOption

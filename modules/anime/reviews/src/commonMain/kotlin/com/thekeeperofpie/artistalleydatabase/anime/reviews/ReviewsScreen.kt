@@ -46,7 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
@@ -232,14 +232,14 @@ object ReviewsScreen {
                     val entry = reviews[it]
                     SharedTransitionKeyScope("anime_review_card", entry?.review?.id.toString()) {
                         val mediaTitle = entry?.media?.let { mediaTitle(it) }
-                        val navHostController = LocalNavHostController.current
+                        val navigationController = LocalNavigationController.current
                         ReviewCard(
                             review = entry?.review,
                             media = entry?.media,
                             userRoute = userRoute,
                             onClick = { coverImageState ->
                                 if (entry != null) {
-                                    navHostController.navigate(
+                                    navigationController.navigate(
                                         ReviewDestinations.ReviewDetails(
                                             reviewId = entry.review.id.toString(),
                                             headerParams = mediaHeaderParams(

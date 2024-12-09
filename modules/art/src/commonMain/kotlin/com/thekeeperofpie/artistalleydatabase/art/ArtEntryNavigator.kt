@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import me.tatarka.inject.annotations.Inject
 
@@ -35,6 +36,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
 
     fun initialize(
         onClickNav: () -> Unit,
+        navigationController: NavigationController,
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder,
         artEntryComponent: ArtEntryComponent,
@@ -114,7 +116,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
 
             viewModel.initialize(column, query)
             ArtBrowseSelectionScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 title = { title },
                 loading = { viewModel.loading },
                 entries = { viewModel.entries.collectAsLazyPagingItems() },

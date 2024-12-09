@@ -25,7 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,13 +71,13 @@ object MediaReviewsScreen {
                     itemKey = { it.id },
                     items = items,
                     item = {
-                        val navHostController = LocalNavHostController.current
+                        val navigationController = LocalNavigationController.current
                         ReviewSmallCard(
                             review = it,
                             userRoute = userRoute,
                             onClick = {
                                 if (it != null) {
-                                    navHostController.navigate(
+                                    navigationController.navigate(
                                         ReviewDestinations.ReviewDetails(
                                             reviewId = it.id.toString(),
                                             headerParams = MediaHeaderParams(

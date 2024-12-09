@@ -70,7 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
@@ -251,9 +251,9 @@ object ForumThreadCommentTreeScreen {
                                                 .weight(1f)
                                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                                         )
-                                        val navHostController = LocalNavHostController.current
+                                        val navigationController = LocalNavigationController.current
                                         TextButton(onClick = {
-                                            navHostController.navigate(
+                                            navigationController.navigate(
                                                 ForumDestinations.ForumThread(
                                                     threadId = threadId,
                                                     title = entry.result?.thread?.title,

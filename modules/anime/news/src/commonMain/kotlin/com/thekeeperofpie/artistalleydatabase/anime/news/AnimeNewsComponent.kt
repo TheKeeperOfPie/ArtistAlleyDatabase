@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestinationProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import me.tatarka.inject.annotations.IntoSet
@@ -16,11 +16,11 @@ interface AnimeNewsComponent {
     fun provideNewsDestination(animeNewsViewModel: () -> AnimeNewsViewModel) =
         NavDestinationProvider {
             sharedElementComposable<AnimeNewsNavDestinations.News>(it) {
-                val navHostController = LocalNavHostController.current
+                val navigationController = LocalNavigationController.current
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 AnimeNewsScreen(
                     viewModel = viewModel { animeNewsViewModel() },
-                    onBackClick = navHostController::navigateUp,
+                    onBackClick = navigationController::navigateUp,
                     onOpenImage = fullscreenImageHandler::openImage,
                 )
             }

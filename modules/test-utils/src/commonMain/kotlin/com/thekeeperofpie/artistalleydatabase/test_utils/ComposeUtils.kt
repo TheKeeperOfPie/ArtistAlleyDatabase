@@ -14,7 +14,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfigura
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 
 @Composable
 fun ComposeTestRoot(vararg values: ProvidedValue<*>, content: @Composable () -> Unit) {
@@ -22,7 +23,8 @@ fun ComposeTestRoot(vararg values: ProvidedValue<*>, content: @Composable () -> 
         AnimatedVisibility(visible = true) {
             CompositionLocalProvider(
                 LocalWindowConfiguration provides WindowConfiguration(100.dp, 100.dp),
-                LocalNavHostController provides rememberNavController(),
+                LocalNavigationController provides
+                        rememberNavigationController(rememberNavController()),
                 LocalSharedTransitionScope provides this@SharedTransitionLayout,
                 LocalAnimatedVisibilityScope provides this@AnimatedVisibility,
                 *values,

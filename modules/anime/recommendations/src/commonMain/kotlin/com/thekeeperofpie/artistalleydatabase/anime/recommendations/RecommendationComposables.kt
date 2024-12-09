@@ -51,7 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
@@ -80,7 +80,7 @@ fun <MediaEntry> RecommendationCard(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
             ) {
                 val shape = RoundedCornerShape(12.dp)
-                val navHostController = LocalNavHostController.current
+                val navigationController = LocalNavigationController.current
                 val imageState = rememberCoilImageState(user?.avatar?.large)
                 val sharedTransitionKey = user?.id?.toString()
                     ?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -94,7 +94,7 @@ fun <MediaEntry> RecommendationCard(
                         .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                         .clickable {
                             user?.let {
-                                navHostController.navigate(
+                                navigationController.navigate(
                                     userRoute(
                                         user.id.toString(),
                                         sharedTransitionKey,

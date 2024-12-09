@@ -122,7 +122,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -134,7 +135,7 @@ import org.jetbrains.compose.resources.stringResource
 object AnimeNavigator {
 
     fun initialize(
-        navHostController: NavHostController,
+        navigationController: NavigationController,
         navGraphBuilder: NavGraphBuilder,
         navigationTypeMap: NavigationTypeMap,
         upIconOption: UpIconOption?,
@@ -164,7 +165,7 @@ object AnimeNavigator {
             val destination = it.toRoute<AnimeDestination.SearchMedia>()
             MediaSearchScreen(
                 title = destination.title,
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 tagId = destination.tagId,
                 genre = destination.genre,
             )
@@ -178,7 +179,7 @@ object AnimeNavigator {
                 userId = destination.userId,
                 userName = destination.userName,
                 mediaType = destination.mediaType,
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 mediaListStatus = destination.mediaListStatus,
                 scrollStateSaver = ScrollStateSaver(),
             )
@@ -294,7 +295,7 @@ object AnimeNavigator {
             val reviewsEntry by reviewsViewModel.reviewsEntry.collectAsState()
             AnimeMediaDetailsScreen(
                 viewModel = mediaDetailsViewModel,
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 headerValues = headerValues,
                 sharedTransitionKey = sharedTransitionKey,
                 coverImageState = coverImageState,
@@ -497,27 +498,27 @@ object AnimeNavigator {
             )
             AniListUserScreen(
                 viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 headerValues = headerValues,
             )
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Ignored>(navigationTypeMap) {
-            AnimeIgnoreScreen(upIconOption = UpIconOption.Back(navHostController))
+            AnimeIgnoreScreen(upIconOption = UpIconOption.Back(navigationController))
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.AiringSchedule>(navigationTypeMap) {
             AiringScheduleScreen(
-                onClickBack = { navHostController.navigateUp() },
+                onClickBack = { navigationController.navigateUp() },
             )
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Seasonal>(navigationTypeMap) {
-            SeasonalScreen(upIconOption = UpIconOption.Back(navHostController))
+            SeasonalScreen(upIconOption = UpIconOption.Back(navigationController))
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Notifications>(navigationTypeMap) {
-            NotificationsScreen(upIconOption = UpIconOption.Back(navHostController))
+            NotificationsScreen(upIconOption = UpIconOption.Back(navigationController))
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaCharacters>(
@@ -534,7 +535,7 @@ object AnimeNavigator {
 
             MediaCharactersScreen(
                 viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 headerValues = headerValues,
             )
         }
@@ -574,7 +575,7 @@ object AnimeNavigator {
                             val media = entry.result?.media
                             MediaHeader(
                                 viewer = viewer,
-                                upIconOption = UpIconOption.Back(navHostController),
+                                upIconOption = UpIconOption.Back(navigationController),
                                 mediaId = viewModel.mediaId,
                                 mediaType = media?.type,
                                 titles = entry.result?.titlesUnique,
@@ -629,14 +630,14 @@ object AnimeNavigator {
 
             MediaActivitiesScreen(
                 viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 headerValues = headerValues,
             )
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.FeatureTiers>(navigationTypeMap) {
             UnlockScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 viewModel = viewModel { component.unlockScreenViewModel() },
                 onClickSettings = null,
             )
@@ -644,7 +645,7 @@ object AnimeNavigator {
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaHistory>(navigationTypeMap) {
             MediaHistoryScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
             )
         }
 
@@ -653,7 +654,7 @@ object AnimeNavigator {
             val viewModel =
                 viewModel { component.userListViewModelFollowing(createSavedStateHandle()) }
             UserListScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 viewModel = viewModel,
                 title = {
                     if (destination.userId == null) {
@@ -673,7 +674,7 @@ object AnimeNavigator {
             val viewModel =
                 viewModel { component.userListViewModelFollowers(createSavedStateHandle()) }
             UserListScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 viewModel = viewModel,
                 title = {
                     if (destination.userId == null) {
@@ -695,7 +696,7 @@ object AnimeNavigator {
             val viewModel =
                 viewModel { component.userFavoriteMediaViewModel(createSavedStateHandle()) }
             UserFavoriteMediaScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 viewModel = viewModel,
                 title = {
                     if (viewModel.mediaType == MediaType.ANIME) {
@@ -726,7 +727,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.UserFavoriteCharacters>()
             UserFavoriteCharactersScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 title = {
                     if (destination.userId == null) {
                         stringResource(Res.string.anime_user_favorite_characters_you)
@@ -745,7 +746,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.UserFavoriteStaff>()
             UserFavoriteStaffScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 title = {
                     if (destination.userId == null) {
                         stringResource(Res.string.anime_user_favorite_staff_you)
@@ -764,7 +765,7 @@ object AnimeNavigator {
         ) {
             val destination = it.toRoute<AnimeDestination.UserFavoriteStudios>()
             UserFavoriteStudiosScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(navigationController),
                 title = {
                     if (destination.userId == null) {
                         stringResource(Res.string.anime_user_favorite_studios_you)
@@ -885,14 +886,14 @@ object AnimeNavigator {
                 )
             },
             mediaHeader = { progress, viewer, media, headerValues, titlesUnique, onFavoriteChanged ->
-                val navHostController = LocalNavHostController.current
+                val navigationController = LocalNavigationController.current
                 val coverImageState = rememberCoilImageState(media?.coverImage?.extraLarge)
                 val title = media?.title?.primaryTitle()
                 val mediaSharedTransitionKey = media?.id?.toString()
                     ?.let { SharedTransitionKey.makeKeyForId(it) }
                 MediaHeader(
                     viewer = viewer,
-                    upIconOption = UpIconOption.Back(navHostController),
+                    upIconOption = UpIconOption.Back(navigationController),
                     mediaId = media?.id?.toString(),
                     mediaType = media?.type,
                     titles = titlesUnique,
@@ -908,7 +909,7 @@ object AnimeNavigator {
                     onCoverImageClick = {
                         if (media != null) {
                             val imageState = coverImageState.toImageState()
-                            navHostController.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.MediaDetails(
                                     mediaId = media.id.toString(),
                                     title = title,
@@ -971,7 +972,7 @@ object AnimeNavigator {
                     ?.let { SharedTransitionKey.makeKeyForId(it) }
                 val sharedTransitionScopeKey =
                     LocalSharedTransitionPrefixKeys.current
-                val navHostController = LocalNavHostController.current
+                val navigationController = LocalNavigationController.current
                 CharacterSmallCard(
                     sharedTransitionKey = characterSharedTransitionKey,
                     sharedTransitionIdentifier = "character_image",
@@ -982,7 +983,7 @@ object AnimeNavigator {
                     imageState = imageState,
                     innerImageState = innerImageState,
                     onClick = {
-                        navHostController.navigate(
+                        navigationController.navigate(
                             CharacterDestinations.CharacterDetails(
                                 characterId = it.character.id.toString(),
                                 sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -997,7 +998,7 @@ object AnimeNavigator {
                     },
                     onClickInnerImage = {
                         it.media?.let {
-                            navHostController.navigate(
+                            navigationController.navigate(
                                 AnimeDestination.MediaDetails(
                                     mediaNavigationData = it,
                                     coverImage = innerImageState.toImageState(),

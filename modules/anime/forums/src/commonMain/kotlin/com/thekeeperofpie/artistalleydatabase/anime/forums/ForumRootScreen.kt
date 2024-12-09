@@ -60,7 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
@@ -99,9 +99,9 @@ object ForumRootScreen {
                         title = { Text(text = stringResource(Res.string.anime_forum_header)) },
                         navigationIcon = { upIconOption?.let { UpIconButton(upIconOption) } },
                         actions = {
-                            val navHostController = LocalNavHostController.current
+                            val navigationController = LocalNavigationController.current
                             IconButton(onClick = {
-                                navHostController.navigate(ForumDestinations.ForumSearch())
+                                navigationController.navigate(ForumDestinations.ForumSearch())
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.Search,
@@ -210,10 +210,10 @@ object ForumRootScreen {
                 val categories = ForumCategoryOption.entries
                 items(items = categories, key = { it.categoryId }, contentType = { "category" }) {
                     val name = stringResource(it.textRes)
-                    val navHostController = LocalNavHostController.current
+                    val navigationController = LocalNavigationController.current
                     SuggestionChip(
                         onClick = {
-                            navHostController.navigate(
+                            navigationController.navigate(
                                 ForumDestinations.ForumSearch(
                                     title = ForumDestinations.ForumSearch.Title.Custom(name),
                                     categoryId = it.categoryId.toString(),

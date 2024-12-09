@@ -57,7 +57,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalShare
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
@@ -136,9 +137,10 @@ fun main() {
                     )
                 }
 
+                val navigationController = rememberNavigationController(navHostController)
                 CompositionLocalProvider(
                     LocalWindowConfiguration provides windowConfiguration,
-                    LocalNavHostController provides navHostController,
+                    LocalNavigationController provides navigationController,
                     LocalNavigationCallback provides navigationCallback,
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
                 ) {
@@ -154,7 +156,7 @@ fun main() {
                                     }
 
                                     AnimeNavigator.initialize(
-                                        navHostController = navHostController,
+                                        navigationController = navigationController,
                                         navGraphBuilder = this,
                                         upIconOption = null,
                                         navigationTypeMap = navigationTypeMap,

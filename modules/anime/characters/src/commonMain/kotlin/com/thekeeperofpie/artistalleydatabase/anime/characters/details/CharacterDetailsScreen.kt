@@ -40,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.paging.PagingData
 import artistalleydatabase.modules.anime.characters.generated.resources.Res
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_details_age_label
@@ -84,7 +83,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
@@ -188,7 +188,7 @@ object CharacterDetailsScreen {
                             val character = entry.result?.character
                             val characterName = character?.name?.primaryName()
                             val characterSubtitle = character?.name?.subtitleName()
-                            val navHostController = LocalNavHostController.current
+                            val navigationController = LocalNavigationController.current
                             val headerSharedTransitionKey =
                                 SharedTransitionKey.makeKeyForId(characterId)
                             LazyVerticalGrid(
@@ -207,7 +207,7 @@ object CharacterDetailsScreen {
                                     voiceActors = voiceActors,
                                     coverImageState = coverImageState,
                                     expandedState = expandedState,
-                                    navHostController = navHostController,
+                                    navigationController = navigationController,
                                     staffSection = staffSection,
                                     mediaRow = { item, modifier ->
                                         mediaRow(item, onClickListEdit, modifier)
@@ -236,7 +236,7 @@ object CharacterDetailsScreen {
         voiceActors: LazyPagingItems<StaffDetails>,
         coverImageState: CoilImageState,
         expandedState: ExpandedState,
-        navHostController: NavHostController,
+        navigationController: NavigationController,
         staffSection: LazyGridScope.(
             titleRes: StringResource?,
             LazyPagingItems<StaffDetails>,
@@ -273,7 +273,7 @@ object CharacterDetailsScreen {
             coverImageState = coverImageState,
             expanded = expandedState::media,
             onExpandedChange = { expandedState.media = it },
-            navHostController = navHostController,
+            navigationController = navigationController,
             mediaRow = mediaRow,
         )
 
@@ -453,7 +453,7 @@ object CharacterDetailsScreen {
         coverImageState: CoilImageState,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
-        navHostController: NavHostController,
+        navigationController: NavigationController,
         mediaRow: @Composable (AnimeCharacterDetailsViewModel.Entry<MediaEntry>, Modifier) -> Unit,
     ) {
         listSection(
@@ -465,7 +465,7 @@ object CharacterDetailsScreen {
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             onClickViewAll = {
-                navHostController.navigate(
+                navigationController.navigate(
                     CharacterDestinations.CharacterMedias(
                         characterId = entry.character.id.toString(),
                         sharedTransitionKey = headerSharedTransitionKey,

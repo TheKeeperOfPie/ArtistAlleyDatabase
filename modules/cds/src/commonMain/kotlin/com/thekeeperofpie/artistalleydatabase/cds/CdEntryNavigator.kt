@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import me.tatarka.inject.annotations.Inject
 import kotlin.math.roundToInt
@@ -107,7 +108,7 @@ class CdEntryNavigator : BrowseSelectionNavigator {
 
             viewModel.initialize(column, query)
             CdBrowseSelectionScreen(
-                upIconOption = UpIconOption.Back(navHostController),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 title = { title },
                 loading = { viewModel.loading },
                 entries = { viewModel.entries.collectAsLazyPagingItems() },

@@ -30,7 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -75,11 +75,11 @@ object AnimeActivityScreen {
                         stringResource(Res.string.anime_activity_title_with_media, mediaTitle)
                     }
 
-                    val navHostController = LocalNavHostController.current
+                    val navigationController = LocalNavigationController.current
                     if (viewer == null) {
                         AppBar(
                             text = title,
-                            upIconOption = UpIconOption.Back(navHostController),
+                            upIconOption = UpIconOption.Back(navigationController),
                             scrollBehavior = scrollBehavior,
                         )
                     } else {
@@ -87,7 +87,7 @@ object AnimeActivityScreen {
                             Column {
                                 AppBar(
                                     text = title,
-                                    upIconOption = UpIconOption.Back(navHostController),
+                                    upIconOption = UpIconOption.Back(navigationController),
                                 )
 
                                 val scope = rememberCoroutineScope()

@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
@@ -66,7 +66,7 @@ object StudioDestinations {
             StudioMediasScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                 sortFilterState = viewModel.sortFilterController::state,
-                upIconOption = UpIconOption.Back(LocalNavHostController.current),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 onRefresh = viewModel::refresh,
                 media = viewModel.items.collectAsLazyPagingItems(),
                 mediaItemKey = { mediaEntryProvider.mediaFilterable(it).mediaId },

@@ -70,7 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
@@ -90,14 +90,14 @@ object CharacterListRow {
         showStaff: Boolean = true,
     ) {
         val coverImageState = rememberCoilImageState(entry?.character?.image?.large)
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val characterName = entry?.character?.name?.primaryName()
         val characterSharedTransitionKey =
             entry?.character?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
         val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
         val onClick = {
             if (entry != null) {
-                navHostController.navigate(
+                navigationController.navigate(
                     CharacterDestinations.CharacterDetails(
                         characterId = entry.character.id.toString(),
                         sharedTransitionScopeKey = sharedTransitionScopeKey,
@@ -289,7 +289,7 @@ object CharacterListRow {
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val voiceActor = entry?.voiceActor()
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -312,7 +312,7 @@ object CharacterListRow {
                         imageState = voiceActorImageState,
                         contentDescriptionTextRes = UiRes.string.anime_staff_image_content_description,
                         onClick = {
-                            navHostController.navigate(
+                            navigationController.navigate(
                                 staffDetailsRoute(
                                     voiceActor.id.toString(),
                                     sharedTransitionKey,

@@ -55,7 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import kotlinx.datetime.Instant
 import nl.jacobras.humanreadable.HumanReadable
@@ -95,7 +95,7 @@ private fun ColumnScope.ReviewSmallCardContent(
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         val shape = RoundedCornerShape(12.dp)
-        val navHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val imageState = rememberCoilImageState(review?.user?.avatar?.large)
         val sharedTransitionKey = review?.user?.id?.toString()
             ?.let { SharedTransitionKey.makeKeyForId(it) }
@@ -109,7 +109,7 @@ private fun ColumnScope.ReviewSmallCardContent(
                 .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                 .clickable {
                     review?.user?.let {
-                        navHostController.navigate(
+                        navigationController.navigate(
                             userRoute(
                                 it.id.toString(),
                                 sharedTransitionKey,

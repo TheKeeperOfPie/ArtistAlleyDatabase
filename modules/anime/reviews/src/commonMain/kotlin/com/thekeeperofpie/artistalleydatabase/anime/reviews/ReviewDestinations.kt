@@ -28,7 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
@@ -88,7 +88,7 @@ object ReviewDestinations {
             val viewer by viewModel.viewer.collectAsState()
             ReviewsScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                upIconOption = UpIconOption.Back(LocalNavHostController.current),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 sortFilterStateAnime = viewModel.sortFilterControllerAnime::state,
                 sortFilterStateManga = viewModel.sortFilterControllerManga::state,
                 selectedMediaAnime = { viewModel.sortFilterControllerAnime.selectedMedia() },

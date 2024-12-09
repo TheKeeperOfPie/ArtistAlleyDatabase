@@ -162,7 +162,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.blurForScreens
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.HorizontalPagerItemsRow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
@@ -1136,14 +1136,14 @@ object AnimeHomeScreen {
             val mediaTitle = it?.media?.media?.title?.primaryTitle()
             SharedTransitionKeyScope("anime_home_review_${it?.review?.id}") {
                 val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
-                val navHostController = LocalNavHostController.current
+                val navigationController = LocalNavigationController.current
                 ReviewCard(
                     review = it?.review,
                     media = it?.media,
                     userRoute = AnimeDestination.User.route,
                     onClick = { coverImageState ->
                         if (it != null) {
-                            navHostController.navigate(
+                            navigationController.navigate(
                                 ReviewDestinations.ReviewDetails(
                                     reviewId = it.review.id.toString(),
                                     sharedTransitionScopeKey = sharedTransitionScopeKey,

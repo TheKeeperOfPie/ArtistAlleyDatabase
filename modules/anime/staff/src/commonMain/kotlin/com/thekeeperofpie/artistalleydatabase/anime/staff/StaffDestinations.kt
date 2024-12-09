@@ -27,7 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.details.StaffTimeline
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
@@ -118,7 +118,7 @@ object StaffDestinations {
                 characterRow = { entry, onClickListEdit ->
                     characterRow(entry, viewer, onClickListEdit)
                 },
-                upIconOption = UpIconOption.Back(LocalNavHostController.current),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 headerValues = headerValues,
                 sharedTransitionKey = destination.sharedTransitionKey,
                 onFavoriteChanged = {
@@ -151,7 +151,7 @@ object StaffDestinations {
             StaffDetailsScreen(
                 staffId = viewModel.staffId,
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                upIconOption = UpIconOption.Back(LocalNavHostController.current),
+                upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 onRefresh = viewModel::refresh,
                 headerValues = headerValues,
                 sharedTransitionKey = destination.sharedTransitionKey,

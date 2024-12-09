@@ -94,7 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.topBorder
@@ -118,10 +118,10 @@ object EntryDetailsScreen {
         onNavigate: (String) -> Unit,
     ) {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
-        val localNavHostController = LocalNavHostController.current
+        val navigationController = LocalNavigationController.current
         val pullRefreshState = rememberPullRefreshState(
             refreshing = false,
-            onRefresh = { localNavHostController.navigateUp() },
+            onRefresh = navigationController::navigateUp,
             resetAfterPull = false,
         )
 

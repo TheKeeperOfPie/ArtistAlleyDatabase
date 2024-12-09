@@ -23,7 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavHostController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
 // TODO: Shared transition from CharacterDetails could be better
@@ -60,10 +60,10 @@ object CharacterMediasScreen {
                         pinnedHeight = 120.dp,
                         scrollBehavior = scrollBehavior,
                     ) {
-                        val navHostController = LocalNavHostController.current
+                        val navigationController = LocalNavigationController.current
                         CharacterHeader(
                             viewer = viewer(),
-                            upIconOption = UpIconOption.Back(navHostController),
+                            upIconOption = UpIconOption.Back(navigationController),
                             characterId = characterId,
                             progress = it,
                             headerValues = headerValues,

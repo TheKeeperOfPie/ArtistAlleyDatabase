@@ -5,12 +5,10 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.serialization.decodeArguments
@@ -20,9 +18,6 @@ import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-
-// TODO: Replace with custom variant enforcing use of a NavDestination
-val LocalNavHostController = staticCompositionLocalOf<NavHostController> { throw IllegalStateException("No NavHostController provided")}
 
 class NavigationTypeMap(val typeMap: Map<KType, NavType<*>>)
 
