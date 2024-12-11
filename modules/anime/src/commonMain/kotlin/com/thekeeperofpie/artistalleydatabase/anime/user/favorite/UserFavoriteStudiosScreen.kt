@@ -26,9 +26,11 @@ import androidx.paging.LoadState
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -47,8 +49,12 @@ object UserFavoriteStudiosScreen {
     operator fun invoke(
         animeComponent: AnimeComponent = LocalAnimeComponent.current,
         upIconOption: UpIconOption? = null,
-        viewModel: UserFavoriteStudiosViewModel = viewModel {
-            animeComponent.userFavoriteStudiosViewModel(createSavedStateHandle())
+        viewModel: UserFavoriteStudiosViewModel<MediaWithListStatusEntry, StudioListRowFragmentEntry<MediaWithListStatusEntry>> = viewModel {
+            animeComponent.userFavoriteStudiosViewModelFactory(createSavedStateHandle())
+                .create(
+                    MediaWithListStatusEntry.Provider,
+                    StudioListRowFragmentEntry.provider(),
+                )
         },
         title: @Composable () -> String,
     ) {

@@ -35,6 +35,7 @@ import artistalleydatabase.modules.anime.generated.resources.last_crash_notifica
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification_button
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
@@ -52,6 +53,7 @@ object AnimeRootScreen {
 
     @Composable
     operator fun invoke(
+        mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
         upIconOption: UpIconOption?,
         viewModel: AnimeRootViewModel,
         onClickAuth: () -> Unit,
@@ -255,6 +257,7 @@ object AnimeRootScreen {
                             )
                         }
                         AnimeRootNavDestination.PROFILE -> AniListViewerProfileScreen(
+                            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                             upIconOption = upIconOption,
                             needsAuth = { needsAuth },
                             onClickAuth = onClickAuth,

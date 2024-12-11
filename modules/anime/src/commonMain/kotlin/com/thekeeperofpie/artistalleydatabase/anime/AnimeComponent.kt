@@ -51,7 +51,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     ForumsComponent, RecommendationsComponent, ReviewsComponent, StaffComponent, StudiosComponent {
 
     val airingScheduleViewModel: () -> AiringScheduleViewModel
-    val aniListUserViewModel: (SavedStateHandle, MediaDetailsRoute) -> AniListUserViewModel
+    val aniListUserViewModelFactory: (SavedStateHandle, MediaDetailsRoute) -> AniListUserViewModel.Factory
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
     val animeHomeViewModel: () -> AnimeHomeViewModel
@@ -79,7 +79,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val userFavoriteCharactersViewModel: (SavedStateHandle) -> UserFavoriteCharactersViewModel
     val userFavoriteMediaViewModel: (SavedStateHandle) -> UserFavoriteMediaViewModel
     val userFavoriteStaffViewModel: (SavedStateHandle) -> UserFavoriteStaffViewModel
-    val userFavoriteStudiosViewModel: (SavedStateHandle) -> UserFavoriteStudiosViewModel
+    val userFavoriteStudiosViewModelFactory: (SavedStateHandle) -> UserFavoriteStudiosViewModel.Factory
     val userListViewModelFollowers: (SavedStateHandle) -> UserListViewModel.Followers
     val userListViewModelFollowing: (SavedStateHandle) -> UserListViewModel.Following
     val userSocialViewModelFollowers: (userId: String?) -> UserSocialViewModel.Followers

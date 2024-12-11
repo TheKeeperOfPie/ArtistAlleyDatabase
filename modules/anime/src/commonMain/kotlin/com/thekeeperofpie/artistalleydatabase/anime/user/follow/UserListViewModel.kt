@@ -12,12 +12,13 @@ import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserUtils
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserUtils
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
@@ -77,7 +78,10 @@ abstract class UserListViewModel(
                     it.mapOnIO {
                         UserListRow.Entry(
                             user = it,
-                            media = UserUtils.buildInitialMediaEntries(it),
+                            media = UserUtils.buildInitialMediaEntries(
+                                user = it,
+                                mediaEntryProvider = MediaWithListStatusEntry.Provider,
+                            ),
                         )
                     }
                 }

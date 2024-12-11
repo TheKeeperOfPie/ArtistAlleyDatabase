@@ -58,7 +58,7 @@ class AnimeMediaDetailsRecommendationsViewModel<MediaEntry>(
             .orEmpty()
 
         val recommendationMediaIds = recommendations
-            .map { mediaEntryProvider.mediaFilterable(it.entry).mediaId }
+            .map { mediaEntryProvider.id(it.entry) }
             .toSet()
 
         combine(

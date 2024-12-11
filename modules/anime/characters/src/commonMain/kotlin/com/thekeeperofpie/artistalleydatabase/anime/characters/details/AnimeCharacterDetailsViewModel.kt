@@ -97,9 +97,9 @@ class AnimeCharacterDetailsViewModel<MediaEntry>(
                         }
                         .orEmpty()
                     combine(
-                        statusController
-                            .allChanges(media.map { mediaEntryProvider.mediaFilterable(it.mediaEntry).mediaId }
-                                .toSet()),
+                        statusController.allChanges(
+                            media.map { mediaEntryProvider.id(it.mediaEntry) }.toSet()
+                        ),
                         ignoreController.updates(),
                         settings.mediaFilteringData(forceShowIgnored = true),
                     ) { statuses, _, filteringData ->

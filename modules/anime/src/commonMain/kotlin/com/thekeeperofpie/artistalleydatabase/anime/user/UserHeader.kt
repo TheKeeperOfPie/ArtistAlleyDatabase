@@ -57,7 +57,7 @@ data class UserHeaderParams(
 
 class UserHeaderValues(
     private val params: UserHeaderParams?,
-    private val user: () -> UserByIdQuery.Data.User?,
+    val user: () -> UserByIdQuery.Data.User?,
 ) : DetailsHeaderValues {
     override val coverImage
         get() = params?.coverImage.maybeOverride(user()?.avatar?.large)

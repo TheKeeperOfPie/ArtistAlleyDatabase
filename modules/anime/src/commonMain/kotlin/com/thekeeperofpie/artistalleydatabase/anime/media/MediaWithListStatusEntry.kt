@@ -50,5 +50,6 @@ data class MediaWithListStatusEntry(
         override fun mediaFilterable(entry: MediaWithListStatusEntry) = entry.mediaFilterable
         override fun copyMediaEntry(entry: MediaWithListStatusEntry, data: MediaFilterableData) =
             entry.copy(mediaFilterable = data)
+        override fun id(entry: MediaWithListStatusEntry) = entry.mediaFilterable.mediaId
     }
 }

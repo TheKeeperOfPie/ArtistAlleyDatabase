@@ -5,4 +5,5 @@ interface MediaEntryProvider<Media, MediaEntry> {
     fun mediaEntry(media: Media): MediaEntry
     fun mediaFilterable(entry: MediaEntry): MediaFilterableData
     fun copyMediaEntry(entry: MediaEntry, data: MediaFilterableData): MediaEntry
+    fun id(entry: MediaEntry): String
 }

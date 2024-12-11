@@ -2,11 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.user.follow
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_user_filter_sort_label
+import artistalleydatabase.modules.anime.users.generated.resources.Res
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_filter_sort_label
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection

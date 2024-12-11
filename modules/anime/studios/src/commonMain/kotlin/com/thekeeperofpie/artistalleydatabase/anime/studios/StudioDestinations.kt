@@ -69,7 +69,7 @@ object StudioDestinations {
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 onRefresh = viewModel::refresh,
                 media = viewModel.items.collectAsLazyPagingItems(),
-                mediaItemKey = { mediaEntryProvider.mediaFilterable(it).mediaId },
+                mediaItemKey = mediaEntryProvider::id,
                 mediaRow = { entry, onClickListEdit, modifier ->
                     mediaRow(entry, viewer, onClickListEdit, modifier)
                 },

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_user_tab_overview">Overview</string>
+    <string name="anime_user_tab_activity">Activity</string>
+    <string name="anime_user_tab_anime_stats">Anime</string>
+    <string name="anime_user_tab_manga_stats">Manga</string>
+    <string name="anime_user_tab_social">Social</string>
+
+    <string name="anime_user_sort_id">Last added</string>
+    <string name="anime_user_sort_search_match">Search match</string>
+    <string name="anime_user_sort_username">Username</string>
+    <string name="anime_user_sort_watched_time">Watched time</string>
+    <string name="anime_user_sort_chapters_read">Chapters read</string>
+
+    <string name="anime_user_filter_sort_label">Sort</string>
+    <string name="anime_user_filter_moderator_label">Moderator</string>
+
+    <string name="anime_user_favorite_anime_label">Favorite anime</string>
+    <string name="anime_user_favorite_manga_label">Favorite manga</string>
+    <string name="anime_user_favorite_characters_label">Favorite characters</string>
+    <string name="anime_user_favorite_staff_label">Favorite staff</string>
+    <string name="anime_user_favorite_studios_label">Favorite studios</string>
+    <string name="anime_user_favorite_anime_you">Favorite anime</string>
+    <string name="anime_user_favorite_anime_user">%1$s\'s favorite anime</string>
+    <string name="anime_user_favorite_manga_you">Favorite manga</string>
+    <string name="anime_user_favorite_manga_user">%1$s\'s favorite manga</string>
+    <string name="anime_user_favorite_characters_you">Favorite characters</string>
+    <string name="anime_user_favorite_characters_user">%1$s\'s favorite characters</string>
+    <string name="anime_user_favorite_staff_you">Favorite staff</string>
+    <string name="anime_user_favorite_staff_user">%1$s\'s favorite staff</string>
+    <string name="anime_user_favorite_studios_you">Favorite studios</string>
+    <string name="anime_user_favorite_studios_user">%1$s\'s favorite studios</string>
+    <string name="anime_user_favorite_media_view_all_anime_content_description">View all favorite anime</string>
+    <string name="anime_user_favorite_media_view_all_manga_content_description">View all favorite manga</string>
+    <string name="anime_user_favorite_media_view_all_character_content_description">View all favorite characters</string>
+    <string name="anime_user_favorite_media_view_all_staff_content_description">View all favorite staff</string>
+    <string name="anime_user_favorite_media_view_all_studios_content_description">View all favorite studios</string>
+
+    <string name="anime_user_following_you">Following you</string>
+    <string name="anime_user_following_user">Following %1$s</string>
+    <string name="anime_user_following">Following</string>
+    <string name="anime_user_followers_you">Your followers</string>
+    <string name="anime_user_followers_user">%1$s\'s followers</string>
+    <string name="anime_user_is_follower_content_description">User following you indicator</string>
+    <string name="anime_user_is_not_follower_content_description">User not following you indicator</string>
+    <string name="anime_user_is_following_content_description">Following user indicator</string>
+    <string name="anime_user_is_not_following_content_description">Not following user indicator</string>
+
+    <string name="anime_user_previous_names_label">Previous names</string>
+</resources>

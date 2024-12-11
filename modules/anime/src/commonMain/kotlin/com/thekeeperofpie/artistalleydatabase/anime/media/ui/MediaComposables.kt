@@ -82,7 +82,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
@@ -145,9 +144,9 @@ fun <T> LazyGridScope.mediaListSection(
 
 fun LazyGridScope.mediaHorizontalRow(
     viewer: AniListViewer?,
-    editViewModel: MediaEditViewModel,
     titleRes: StringResource,
     entries: LazyPagingItems<out MediaGridCard.Entry>,
+    onClickListEdit: (MediaNavigationData) -> Unit,
     forceListEditIcon: Boolean = false,
     onClickViewAll: () -> Unit,
     viewAllContentDescriptionTextRes: StringResource,
@@ -183,7 +182,7 @@ fun LazyGridScope.mediaHorizontalRow(
                 MediaGridCard(
                     entry = entry,
                     viewer = viewer,
-                    onClickListEdit = editViewModel::initialize,
+                    onClickListEdit = onClickListEdit,
                     modifier = Modifier.width(120.dp),
                     forceListEditIcon = forceListEditIcon
                 )

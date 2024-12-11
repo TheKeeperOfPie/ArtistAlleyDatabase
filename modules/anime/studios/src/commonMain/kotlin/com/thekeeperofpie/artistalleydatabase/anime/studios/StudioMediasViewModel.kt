@@ -64,7 +64,7 @@ class StudioMediasViewModel<MediaEntry : Any>(
 
     override fun makeEntry(item: MediaPreview) = mediaEntryProvider.mediaEntry(item)
 
-    override fun entryId(entry: MediaEntry) = mediaEntryProvider.mediaFilterable(entry).mediaId
+    override fun entryId(entry: MediaEntry) = mediaEntryProvider.id(entry)
 
     override suspend fun initialRequest(
         filterParams: StudioMediaSortFilterController.FilterParams?,
@@ -87,7 +87,7 @@ class StudioMediasViewModel<MediaEntry : Any>(
             statusController = statusController,
             ignoreController = ignoreController,
             mediaFilteringData = settings.mediaFilteringData(false),
-            mediaFilterable = { mediaEntryProvider.mediaFilterable(it) },
+            mediaFilterable = mediaEntryProvider::mediaFilterable,
             copy = { mediaEntryProvider.copyMediaEntry(this, it) },
         )
 

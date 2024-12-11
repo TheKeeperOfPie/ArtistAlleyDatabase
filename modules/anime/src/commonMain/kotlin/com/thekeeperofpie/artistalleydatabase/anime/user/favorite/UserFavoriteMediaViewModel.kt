@@ -17,7 +17,6 @@ import com.anilist.data.type.MediaStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
@@ -25,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -52,7 +52,7 @@ class UserFavoriteMediaViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestination.UserFavoriteMedia>(navigationTypeMap)
+    private val destination = savedStateHandle.toDestination<UserDestinations.UserFavoriteMedia>(navigationTypeMap)
     val userId = destination.userId
     val mediaType = destination.mediaType
 

@@ -63,12 +63,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsContro
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserUtils
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserUtils
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -554,13 +554,12 @@ class AnimeSearchViewModel(
             id = { it.id },
             entry = {
                 AnimeSearchEntry.Studio(
-                    StudioListRow.Entry(
+                    StudioListRowFragmentEntry(
                         studio = it,
                         media = (it.main?.nodes?.filterNotNull().orEmpty()
-                            .map(::MediaWithListStatusEntry) +
-                                it.nonMain?.nodes?.filterNotNull().orEmpty()
-                                    .map(::MediaWithListStatusEntry))
-                            .distinctBy { it.media.id },
+                                + it.nonMain?.nodes?.filterNotNull().orEmpty())
+                            .distinctBy { it.id }
+                            .map(::MediaWithListStatusEntry),
                     )
                 )
             },
@@ -572,16 +571,21 @@ class AnimeSearchViewModel(
                         settings.mediaFilteringData(),
                     ) { statuses, _, filteringData ->
                         it.mapNotNull {
-                            it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
-                                applyMediaFiltering(
-                                    statuses = statuses,
-                                    ignoreController = ignoreController,
-                                    filteringData = filteringData,
-                                    entry = it,
-                                    filterableData = it.mediaFilterable,
-                                    copy = { copy(mediaFilterable = it) },
+                            it.copy(entry =
+                                StudioListRowFragmentEntry.provider<MediaWithListStatusEntry>().copyStudioEntry(
+                                    it.entry,
+                                    it.entry.media.mapNotNull {
+                                        applyMediaFiltering(
+                                            statuses = statuses,
+                                            ignoreController = ignoreController,
+                                            filteringData = filteringData,
+                                            entry = it,
+                                            filterableData = it.mediaFilterable,
+                                            copy = { copy(mediaFilterable = it) },
+                                        )
+                                    }
                                 )
-                            }))
+                            )
                         }
                     }
                 }
@@ -614,7 +618,10 @@ class AnimeSearchViewModel(
                 AnimeSearchEntry.User(
                     UserListRow.Entry(
                         user = it,
-                        media = UserUtils.buildInitialMediaEntries(it),
+                        media = UserUtils.buildInitialMediaEntries(
+                            user = it,
+                            mediaEntryProvider = MediaWithListStatusEntry.Provider,
+                        ),
                     )
                 )
             },

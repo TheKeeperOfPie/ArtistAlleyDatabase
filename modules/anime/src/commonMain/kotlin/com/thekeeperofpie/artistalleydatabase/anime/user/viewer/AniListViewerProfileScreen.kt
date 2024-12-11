@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,8 +43,11 @@ import artistalleydatabase.modules.anime.generated.resources.anime_auth_prompt_t
 import artistalleydatabase.modules.anime.generated.resources.anime_settings_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.confirm
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -55,6 +59,7 @@ object AniListViewerProfileScreen {
 
     @Composable
     operator fun invoke(
+        mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
         upIconOption: UpIconOption?,
         needsAuth: @Composable () -> Boolean,
         onClickAuth: () -> Unit,
@@ -72,18 +77,23 @@ object AniListViewerProfileScreen {
         } else {
             val animeComponent = LocalAnimeComponent.current
             val viewModel = viewModel {
-                animeComponent.aniListUserViewModel(
+                animeComponent.aniListUserViewModelFactory(
                     createSavedStateHandle(),
                     AnimeDestination.MediaDetails.route,
+                ).create(
+                    mediaEntryProvider = MediaWithListStatusEntry.Provider,
+                    studioEntryProvider = StudioListRowFragmentEntry.provider(),
                 )
             }
-            val headerValues = UserHeaderValues(null) { viewModel.entry?.user }
-            AniListUserScreen(
+            val entry by viewModel.entry.collectAsState()
+            val headerValues = UserHeaderValues(null) { entry.result?.user }
+            AnimeNavigator.AniListUserScreen(
+                component = animeComponent,
                 viewModel = viewModel,
                 upIconOption = upIconOption,
                 headerValues = headerValues,
-                bottomNavigationState = bottomNavigationState,
                 showLogOut = true,
+                bottomNavigationState = bottomNavigationState,
                 onClickSettings = onClickSettings,
             )
         }

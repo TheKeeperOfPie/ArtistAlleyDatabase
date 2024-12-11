@@ -7,7 +7,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
@@ -15,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusCo
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -44,7 +44,7 @@ class UserFavoriteStaffViewModel(
 ) : ViewModel() {
 
     val userId =
-        savedStateHandle.toDestination<AnimeDestination.UserFavoriteStaff>(navigationTypeMap).userId
+        savedStateHandle.toDestination<UserDestinations.UserFavoriteStaff>(navigationTypeMap).userId
     val viewer = aniListApi.authedUser
     val staff = MutableStateFlow(PagingData.empty<StaffListRow.Entry<MediaWithListStatusEntry>>())
 

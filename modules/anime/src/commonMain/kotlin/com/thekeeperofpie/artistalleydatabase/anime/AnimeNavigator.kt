@@ -32,26 +32,27 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_characters_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_staff_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_view_all_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_anime_user
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_anime_you
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_characters_user
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_characters_you
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_manga_user
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_manga_you
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_staff_user
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_staff_you
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_studios_user
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_studios_you
-import artistalleydatabase.modules.anime.generated.resources.anime_user_followers_user
-import artistalleydatabase.modules.anime.generated.resources.anime_user_followers_you
-import artistalleydatabase.modules.anime.generated.resources.anime_user_following_user
-import artistalleydatabase.modules.anime.generated.resources.anime_user_following_you
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_anime_user
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_anime_you
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_characters_user
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_characters_you
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_manga_user
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_manga_you
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_staff_user
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_staff_you
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_studios_user
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_studios_you
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_followers_user
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_followers_you
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_following_user
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_following_you
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityList
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityTab
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityComposables
 import com.thekeeperofpie.artistalleydatabase.anime.activities.activitiesSection
@@ -85,6 +86,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactLi
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationComposables
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
@@ -100,13 +103,17 @@ import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
+import com.thekeeperofpie.artistalleydatabase.anime.studios.studiosSection
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
+import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStaffScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
@@ -126,6 +133,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestina
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.users.generated.resources.Res as UsersRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 object AnimeNavigator {
@@ -148,6 +156,8 @@ object AnimeNavigator {
         ) {
             val viewModel = viewModel { component.animeRootViewModel() }
             AnimeRootScreen(
+                mediaEditBottomSheetScaffold =
+                    MediaEditBottomSheetScaffold.fromComponent(component),
                 upIconOption = upIconOption,
                 viewModel = viewModel,
                 onClickAuth = onClickAuth,
@@ -479,18 +489,23 @@ object AnimeNavigator {
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
             ),
         ) {
+            val destination = it.toRoute<AnimeDestination.User>()
             val viewModel = viewModel {
-                component.aniListUserViewModel(
+                component.aniListUserViewModelFactory(
                     createSavedStateHandle(),
                     AnimeDestination.MediaDetails.route,
+                ).create(
+                    mediaEntryProvider = MediaWithListStatusEntry.Provider,
+                    studioEntryProvider = StudioListRowFragmentEntry.provider(),
                 )
             }
-            val destination = it.toRoute<AnimeDestination.User>()
+            val entry by viewModel.entry.collectAsState()
             val headerValues = UserHeaderValues(
                 params = destination.headerParams,
-                user = { viewModel.entry?.user },
+                user = { entry.result?.user },
             )
             AniListUserScreen(
+                component = component,
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navigationController),
                 headerValues = headerValues,
@@ -652,10 +667,10 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 title = {
                     if (destination.userId == null) {
-                        stringResource(Res.string.anime_user_following_you)
+                        stringResource(UsersRes.string.anime_user_following_you)
                     } else {
                         stringResource(
-                            Res.string.anime_user_following_user,
+                            UsersRes.string.anime_user_following_user,
                             destination.userName.orEmpty()
                         )
                     }
@@ -672,10 +687,10 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 title = {
                     if (destination.userId == null) {
-                        stringResource(Res.string.anime_user_followers_you)
+                        stringResource(UsersRes.string.anime_user_followers_you)
                     } else {
                         stringResource(
-                            Res.string.anime_user_followers_user,
+                            UsersRes.string.anime_user_followers_user,
                             destination.userName.orEmpty()
                         )
                     }
@@ -683,10 +698,10 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteMedia>(
+        navGraphBuilder.sharedElementComposable<UserDestinations.UserFavoriteMedia>(
             navigationTypeMap
         ) {
-            val destination = it.toRoute<AnimeDestination.UserFavoriteMedia>()
+            val destination = it.toRoute<UserDestinations.UserFavoriteMedia>()
             val viewModel =
                 viewModel { component.userFavoriteMediaViewModel(createSavedStateHandle()) }
             UserFavoriteMediaScreen(
@@ -695,19 +710,19 @@ object AnimeNavigator {
                 title = {
                     if (viewModel.mediaType == MediaType.ANIME) {
                         if (destination.userId == null) {
-                            stringResource(Res.string.anime_user_favorite_anime_you)
+                            stringResource(UsersRes.string.anime_user_favorite_anime_you)
                         } else {
                             stringResource(
-                                Res.string.anime_user_favorite_anime_user,
+                                UsersRes.string.anime_user_favorite_anime_user,
                                 destination.userName.orEmpty()
                             )
                         }
                     } else {
                         if (destination.userId == null) {
-                            stringResource(Res.string.anime_user_favorite_manga_you)
+                            stringResource(UsersRes.string.anime_user_favorite_manga_you)
                         } else {
                             stringResource(
-                                Res.string.anime_user_favorite_manga_user,
+                                UsersRes.string.anime_user_favorite_manga_user,
                                 destination.userName.orEmpty()
                             )
                         }
@@ -716,18 +731,18 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteCharacters>(
+        navGraphBuilder.sharedElementComposable<UserDestinations.UserFavoriteCharacters>(
             navigationTypeMap
         ) {
-            val destination = it.toRoute<AnimeDestination.UserFavoriteCharacters>()
+            val destination = it.toRoute<UserDestinations.UserFavoriteCharacters>()
             UserFavoriteCharactersScreen(
                 upIconOption = UpIconOption.Back(navigationController),
                 title = {
                     if (destination.userId == null) {
-                        stringResource(Res.string.anime_user_favorite_characters_you)
+                        stringResource(UsersRes.string.anime_user_favorite_characters_you)
                     } else {
                         stringResource(
-                            Res.string.anime_user_favorite_characters_user,
+                            UsersRes.string.anime_user_favorite_characters_user,
                             destination.userName.orEmpty()
                         )
                     }
@@ -735,18 +750,18 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteStaff>(
+        navGraphBuilder.sharedElementComposable<UserDestinations.UserFavoriteStaff>(
             navigationTypeMap
         ) {
-            val destination = it.toRoute<AnimeDestination.UserFavoriteStaff>()
+            val destination = it.toRoute<UserDestinations.UserFavoriteStaff>()
             UserFavoriteStaffScreen(
                 upIconOption = UpIconOption.Back(navigationController),
                 title = {
                     if (destination.userId == null) {
-                        stringResource(Res.string.anime_user_favorite_staff_you)
+                        stringResource(UsersRes.string.anime_user_favorite_staff_you)
                     } else {
                         stringResource(
-                            Res.string.anime_user_favorite_staff_user,
+                            UsersRes.string.anime_user_favorite_staff_user,
                             destination.userName.orEmpty()
                         )
                     }
@@ -754,18 +769,18 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.UserFavoriteStudios>(
+        navGraphBuilder.sharedElementComposable<UserDestinations.UserFavoriteStudios>(
             navigationTypeMap
         ) {
-            val destination = it.toRoute<AnimeDestination.UserFavoriteStudios>()
+            val destination = it.toRoute<UserDestinations.UserFavoriteStudios>()
             UserFavoriteStudiosScreen(
                 upIconOption = UpIconOption.Back(navigationController),
                 title = {
                     if (destination.userId == null) {
-                        stringResource(Res.string.anime_user_favorite_studios_you)
+                        stringResource(UsersRes.string.anime_user_favorite_studios_you)
                     } else {
                         stringResource(
-                            Res.string.anime_user_favorite_studios_user,
+                            UsersRes.string.anime_user_favorite_studios_user,
                             destination.userName.orEmpty(),
                         )
                     }
@@ -1103,6 +1118,111 @@ object AnimeNavigator {
             viewModel = viewModel,
             scrollStateSaver = scrollStateSaver,
             bottomNavigationState = bottomNavigationState,
+        )
+    }
+
+    // TODO: Share this elsewhere
+    @Composable
+    fun AniListUserScreen(
+        component: AnimeComponent,
+        viewModel: AniListUserViewModel<MediaWithListStatusEntry, StudioListRowFragmentEntry<MediaWithListStatusEntry>>,
+        upIconOption: UpIconOption?,
+        headerValues: UserHeaderValues,
+        showLogOut: Boolean = false,
+        bottomNavigationState: BottomNavigationState? = null,
+        onClickSettings: (() -> Unit)? = null,
+    ) {
+        val entry by viewModel.entry.collectAsState()
+        val viewer by viewModel.viewer.collectAsState()
+        val anime = viewModel.anime.collectAsLazyPagingItems()
+        val manga = viewModel.manga.collectAsLazyPagingItems()
+        val characters = viewModel.characters.collectAsLazyPagingItems()
+        val staff = viewModel.staff.collectAsLazyPagingItems()
+        val studios by viewModel.studios.collectAsState()
+        val navigationController = LocalNavigationController.current
+        AniListUserScreen(
+            mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+            viewModel = viewModel,
+            viewer = { viewer },
+            entry = { entry },
+            upIconOption = upIconOption,
+            headerValues = headerValues,
+            anime = anime,
+            manga = manga,
+            mediaHorizontalRow = { titleRes, entries, viewAllRoute, viewAllContentDescriptionTextRes, onClickListEdit ->
+                // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
+                mediaHorizontalRow(
+                    viewer = viewer,
+                    titleRes = titleRes,
+                    entries = entries,
+                    forceListEditIcon = true,
+                    onClickListEdit = onClickListEdit,
+                    onClickViewAll = {
+                        navigationController.navigate(viewAllRoute)
+                    },
+                    viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                )
+            },
+            characters = characters,
+            charactersSection = { titleRes, characters, viewAllRoute, viewAllContentDescriptionTextRes ->
+                charactersSection(
+                    titleRes = titleRes,
+                    characters = characters,
+                    viewAllRoute = viewAllRoute,
+                    viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                    staffDetailsRoute = StaffDestinations.StaffDetails.route,
+                )
+            },
+            staff = staff,
+            staffSection = { titleRes, staff, viewAllRoute, viewAllContentDescriptionTextRes ->
+                staffSection(
+                    titleRes = titleRes,
+                    staffList = staff,
+                    viewAllRoute = viewAllRoute,
+                    viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                )
+            },
+            studios = { studios },
+            studiosSection = { studios, hasMore, onClickListEdit ->
+                studiosSection(
+                    studios = studios,
+                    hasMore = hasMore,
+                    mediaRow = { media ->
+                        horizontalMediaCardRow(
+                            viewer = { viewer },
+                            media = media,
+                            onClickListEdit = onClickListEdit,
+                            mediaWidth = 64.dp,
+                            mediaHeight = 96.dp,
+                        )
+                    },
+                )
+            },
+            activitySortFilterState = viewModel.activitySortFilterController::state,
+            activitySection = { onClickListEdit ->
+                val activities = viewModel.activities.collectAsLazyPagingItems()
+                ActivityList(
+                    viewer = viewer,
+                    activities = activities,
+                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                    showMedia = true,
+                    allowUserClick = false,
+                    sortFilterState = viewModel.activitySortFilterController::state,
+                    userRoute = AnimeDestination.User.route,
+                    mediaRow = { entry, modifier ->
+                        AnimeMediaCompactListRow(
+                            viewer = viewer,
+                            entry = entry,
+                            onClickListEdit = onClickListEdit,
+                            modifier = modifier,
+                        )
+                    },
+                )
+            },
+            showLogOut = showLogOut,
+            onLogOutClick = viewModel::logOut,
+            bottomNavigationState = bottomNavigationState,
+            onClickSettings = onClickSettings,
         )
     }
 }

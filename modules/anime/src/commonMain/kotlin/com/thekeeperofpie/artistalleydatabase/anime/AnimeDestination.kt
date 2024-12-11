@@ -223,31 +223,6 @@ sealed interface AnimeDestination : NavDestination {
     }
 
     @Serializable
-    data class UserFavoriteCharacters(
-        val userId: String?,
-        val userName: String? = null,
-    ) : AnimeDestination
-
-    @Serializable
-    data class UserFavoriteMedia(
-        val userId: String?,
-        val userName: String? = null,
-        val mediaType: MediaType,
-    ) : AnimeDestination
-
-    @Serializable
-    data class UserFavoriteStaff(
-        val userId: String?,
-        val userName: String? = null,
-    ) : AnimeDestination
-
-    @Serializable
-    data class UserFavoriteStudios(
-        val userId: String?,
-        val userName: String? = null,
-    ) : AnimeDestination
-
-    @Serializable
     data class UserFollowers(
         val userId: String?,
         val userName: String? = null,

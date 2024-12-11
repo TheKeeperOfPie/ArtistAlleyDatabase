@@ -161,7 +161,7 @@ object CharacterDestinations {
                 viewer = { viewer },
                 onRefresh = viewModel::refresh,
                 items = viewModel.items.collectAsLazyPagingItems(),
-                itemKey = { mediaEntryProvider.mediaFilterable(it).mediaId },
+                itemKey = mediaEntryProvider::id,
                 onFavoriteChanged = {
                     viewModel.favoritesToggleHelper
                         .set(FavoriteType.CHARACTER, viewModel.characterId, it)

@@ -180,7 +180,7 @@ object ForumDestinations {
                 onConfirmDelete = viewModel::deleteComment,
                 onStatusUpdate = viewModel.threadToggleHelper::toggle,
                 onCommentLikeStatusUpdate = viewModel.commentToggleHelper::toggleLike,
-                mediaItemKey = { mediaEntryProvider.mediaFilterable(it).mediaId },
+                mediaItemKey = mediaEntryProvider::id,
                 mediaRow = { entry, onClickListEdit, modifier ->
                     mediaRow(entry, viewer, onClickListEdit, modifier)
                 },
@@ -226,7 +226,7 @@ object ForumDestinations {
                 onConfirmDelete = viewModel::deleteComment,
                 onStatusUpdate = viewModel.threadToggleHelper::toggle,
                 onCommentLikeStatusUpdate = viewModel.commentToggleHelper::toggleLike,
-                mediaItemKey = { mediaEntryProvider.mediaFilterable(it).mediaId },
+                mediaItemKey = mediaEntryProvider::id,
                 mediaRow = { entry, onClickListEdit, modifier ->
                     mediaRow(entry, viewer, onClickListEdit, modifier)
                 },

@@ -42,5 +42,6 @@ data class MediaCompactWithTagsEntry(
         override fun mediaFilterable(entry: MediaCompactWithTagsEntry) = entry.mediaFilterable
         override fun copyMediaEntry(entry: MediaCompactWithTagsEntry, data: MediaFilterableData) =
             entry.copy(mediaFilterable = data)
+        override fun id(entry: MediaCompactWithTagsEntry) = entry.mediaFilterable.mediaId
     }
 }

@@ -10,6 +10,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.modules.anilist)
             api(projects.modules.anime.media.data)
+            api(projects.modules.anime.studios.data)
             api(projects.modules.utilsCompose)
             implementation(projects.modules.utils)
             implementation(libs.compose.placeholder.material3)

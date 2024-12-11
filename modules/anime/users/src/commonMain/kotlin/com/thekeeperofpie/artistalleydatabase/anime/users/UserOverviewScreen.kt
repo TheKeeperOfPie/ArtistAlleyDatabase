@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.user
+package com.thekeeperofpie.artistalleydatabase.anime.users
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -27,46 +26,41 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_anime_label
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_characters_label
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_manga_label
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_media_view_all_anime_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_media_view_all_character_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_media_view_all_manga_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_media_view_all_staff_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_media_view_all_studios_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_staff_label
-import artistalleydatabase.modules.anime.generated.resources.anime_user_favorite_studios_label
-import artistalleydatabase.modules.anime.generated.resources.anime_user_following
-import artistalleydatabase.modules.anime.generated.resources.anime_user_following_you
-import artistalleydatabase.modules.anime.generated.resources.anime_user_is_follower_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_is_following_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_is_not_follower_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_is_not_following_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_user_previous_names_label
+import artistalleydatabase.modules.anime.users.generated.resources.Res
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_anime_label
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_characters_label
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_manga_label
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_media_view_all_anime_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_media_view_all_character_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_media_view_all_manga_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_media_view_all_staff_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_media_view_all_studios_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_staff_label
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_studios_label
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_following
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_following_you
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_is_follower_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_is_following_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_is_not_follower_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_is_not_following_content_description
+import artistalleydatabase.modules.anime.users.generated.resources.anime_user_previous_names_label
 import artistalleydatabase.modules.utils_compose.generated.resources.view_all
 import com.anilist.data.UserByIdQuery
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
+import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -74,23 +68,41 @@ import org.jetbrains.compose.resources.stringResource
 object UserOverviewScreen {
 
     @Composable
-    operator fun invoke(
+    operator fun <MediaEntry : Any, StudioEntry : Any> invoke(
         userId: String?,
-        entry: AniListUserScreen.Entry,
-        viewModel: AniListUserViewModel,
-        editViewModel: MediaEditViewModel,
+        entry: Entry,
+        anime: LazyPagingItems<MediaEntry>,
+        manga: LazyPagingItems<MediaEntry>,
+        characters: LazyPagingItems<CharacterDetails>,
+        staff: LazyPagingItems<StaffDetails>,
+        studios: () -> LoadingResult<UserStudiosEntry<StudioEntry>>,
         viewer: AniListViewer?,
         isFollowing: @Composable () -> Boolean,
         onFollowingClick: () -> Unit,
-        modifier: Modifier = Modifier,
+        mediaRow: LazyGridScope.(
+            titleRes: StringResource,
+            LazyPagingItems<MediaEntry>,
+            viewAllRoute: NavDestination,
+            viewAllContentDescriptionTextRes: StringResource,
+        ) -> Unit,
+        charactersSection: LazyGridScope.(
+            titleRes: StringResource,
+            characters: LazyPagingItems<CharacterDetails>,
+            viewAllRoute: (() -> NavDestination)?,
+            viewAllContentDescriptionTextRes: StringResource,
+        ) -> Unit,
+        staffSection: LazyGridScope.(
+            titleRes: StringResource?,
+            staff: LazyPagingItems<StaffDetails>,
+            viewAllRoute: NavDestination,
+            viewAllContentDescriptionTextRes: StringResource,
+        ) -> Unit,
+        studiosSection: LazyGridScope.(List<StudioEntry>, hasMore: Boolean) -> Unit,
+        modifier: Modifier = Modifier.Companion,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val user = entry.user
         var descriptionExpanded by remember { mutableStateOf(false) }
-        val anime = viewModel.anime.collectAsLazyPagingItems()
-        val manga = viewModel.manga.collectAsLazyPagingItems()
-        val characters = viewModel.characters.collectAsLazyPagingItems()
-        val staff = viewModel.staff.collectAsLazyPagingItems()
         val navigationController = LocalNavigationController.current
         LazyVerticalGrid(
             columns = GridUtils.standardWidthAdaptiveCells,
@@ -120,81 +132,61 @@ object UserOverviewScreen {
                 }
             }
 
-            // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
-            mediaHorizontalRow(
-                viewer = viewer,
-                editViewModel = editViewModel,
-                titleRes = Res.string.anime_user_favorite_anime_label,
-                entries = anime,
-                forceListEditIcon = true,
-                onClickViewAll = {
-                    navigationController.navigate(
-                        AnimeDestination.UserFavoriteMedia(
-                            userId = userId,
-                            userName = user.name,
-                            mediaType = MediaType.ANIME,
-                        )
-                    )
-                },
-                viewAllContentDescriptionTextRes = Res.string.anime_user_favorite_media_view_all_anime_content_description,
+            mediaRow(
+                Res.string.anime_user_favorite_anime_label,
+                anime,
+                UserDestinations.UserFavoriteMedia(
+                    userId = userId,
+                    userName = user.name,
+                    mediaType = MediaType.ANIME,
+                ),
+                Res.string.anime_user_favorite_media_view_all_anime_content_description
             )
-
-            mediaHorizontalRow(
-                viewer = viewer,
-                editViewModel = editViewModel,
-                titleRes = Res.string.anime_user_favorite_manga_label,
-                entries = manga,
-                forceListEditIcon = true,
-                onClickViewAll = {
-                    navigationController.navigate(
-                        AnimeDestination.UserFavoriteMedia(
-                            userId = userId,
-                            userName = user.name,
-                            mediaType = MediaType.MANGA,
-                        )
-                    )
-                },
-                viewAllContentDescriptionTextRes = Res.string.anime_user_favorite_media_view_all_manga_content_description,
+            mediaRow(
+                Res.string.anime_user_favorite_manga_label,
+                manga,
+                UserDestinations.UserFavoriteMedia(
+                    userId = userId,
+                    userName = user.name,
+                    mediaType = MediaType.MANGA,
+                ),
+                Res.string.anime_user_favorite_media_view_all_manga_content_description
             )
 
             charactersSection(
-                titleRes = Res.string.anime_user_favorite_characters_label,
-                characters = characters,
-                viewAllRoute = {
-                    AnimeDestination.UserFavoriteCharacters(
+                Res.string.anime_user_favorite_characters_label,
+                characters,
+                {
+                    UserDestinations.UserFavoriteCharacters(
                         userId = userId,
                         userName = user.name,
                     )
                 },
-                viewAllContentDescriptionTextRes = Res.string.anime_user_favorite_media_view_all_character_content_description,
-                staffDetailsRoute = StaffDestinations.StaffDetails.route,
+                Res.string.anime_user_favorite_media_view_all_character_content_description,
             )
 
             staffSection(
-                titleRes = Res.string.anime_user_favorite_staff_label,
-                staffList = staff,
-                viewAllRoute = AnimeDestination.UserFavoriteStaff(
+                Res.string.anime_user_favorite_staff_label,
+                staff,
+                UserDestinations.UserFavoriteStaff(
                     userId = userId,
                     userName = user.name,
                 ),
-                viewAllContentDescriptionTextRes = Res.string.anime_user_favorite_media_view_all_staff_content_description,
+                Res.string.anime_user_favorite_media_view_all_staff_content_description,
             )
 
-            val studios = viewModel.studios
             favoriteStudiosSection(
-                viewer = viewer,
-                editViewModel = editViewModel,
-                studios = studios.studios,
-                hasMore = studios.hasMore,
+                studios = studios,
                 onClickViewAll = {
                     navigationController.navigate(
-                        AnimeDestination.UserFavoriteStudios(
+                        UserDestinations.UserFavoriteStudios(
                             userId = userId,
                             userName = user.name
                         )
                     )
                 },
                 viewAllContentDescriptionTextRes = Res.string.anime_user_favorite_media_view_all_studios_content_description,
+                studiosSection = studiosSection,
             )
 
             previousNamesSection(
@@ -213,7 +205,7 @@ object UserOverviewScreen {
         item {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 10.dp)
             ) {
@@ -265,15 +257,16 @@ object UserOverviewScreen {
         }
     }
 
-    private fun LazyGridScope.favoriteStudiosSection(
-        viewer: AniListViewer?,
-        editViewModel: MediaEditViewModel,
-        studios: List<StudioListRow.Entry<MediaWithListStatusEntry>>,
-        hasMore: Boolean,
+    private fun <StudioEntry> LazyGridScope.favoriteStudiosSection(
+        studios: () -> LoadingResult<UserStudiosEntry<StudioEntry>>,
+        studiosSection: LazyGridScope.(List<StudioEntry>, hasMore: Boolean) -> Unit,
         onClickViewAll: (() -> Unit)? = null,
         viewAllContentDescriptionTextRes: StringResource? = null,
     ) {
-        if (studios.isEmpty()) return
+        val studiosLoadingResult = studios()
+        val studiosEntry = studiosLoadingResult.result
+        val studios = studiosEntry?.studios
+        if (studios.isNullOrEmpty()) return
         item("favoriteStudiosHeader") {
             DetailsSectionHeader(
                 stringResource(Res.string.anime_user_favorite_studios_label),
@@ -282,50 +275,22 @@ object UserOverviewScreen {
             )
         }
 
-        itemsIndexed(
-            items = studios,
-            key = { _, item -> item.studio.id },
-            contentType = { _, _ -> "studio" },
-        ) { index, item ->
-            SharedTransitionKeyScope("user_favorite_studio_row", item.studio.id.toString()) {
-                StudioListRow(
-                    entry = item,
-                    mediaHeight = 96.dp,
-                    mediaRow = { media ->
-                        horizontalMediaCardRow(
-                            viewer = { viewer },
-                            media = media,
-                            onClickListEdit = editViewModel::initialize,
-                            mediaWidth = 64.dp,
-                            mediaHeight = 96.dp,
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = if (index == studios.lastIndex && !hasMore) 0.dp else 16.dp,
-                        ),
-                )
-            }
-        }
+        studiosSection(studios, studiosEntry.hasMore)
 
-        if (hasMore) {
+        if (studiosEntry.hasMore) {
             item("favoriteStudios-showAll") {
-                val navigationController = LocalNavigationController.current
                 ElevatedCard(
                     onClick = { onClickViewAll?.invoke() },
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                         .animateItem()
                 ) {
                     Text(
                         text = stringResource(UtilsStrings.view_all),
-                        modifier = Modifier
+                        modifier = Modifier.Companion
                             .padding(horizontal = 16.dp, vertical = 10.dp)
-                            .align(Alignment.CenterHorizontally)
+                            .align(Alignment.Companion.CenterHorizontally)
                     )
                 }
             }
@@ -340,7 +305,7 @@ object UserOverviewScreen {
 
         item {
             ElevatedCard(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
             ) {
@@ -352,10 +317,15 @@ object UserOverviewScreen {
                     Text(
                         text = name,
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                        modifier = Modifier.Companion.padding(horizontal = 16.dp, vertical = 10.dp)
                     )
                 }
             }
         }
+    }
+
+    interface Entry {
+        val user: UserByIdQuery.Data.User
+        val about: MarkdownText?
     }
 }

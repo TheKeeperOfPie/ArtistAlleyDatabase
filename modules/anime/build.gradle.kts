@@ -20,6 +20,8 @@ kotlin {
             api(projects.modules.anime.reviews)
             api(projects.modules.anime.staff)
             api(projects.modules.anime.studios)
+            api(projects.modules.anime.studios.data)
+            api(projects.modules.anime.users)
 
             implementation(projects.modules.anilist)
             implementation(projects.modules.anime.data)

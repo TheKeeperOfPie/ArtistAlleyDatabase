@@ -65,7 +65,7 @@ class CharacterMediasViewModel<MediaEntry : Any>(
 
     override fun makeEntry(item: MediaPreview) = mediaEntryProvider.mediaEntry(item)
 
-    override fun entryId(entry: MediaEntry) = mediaEntryProvider.mediaFilterable(entry).mediaId
+    override fun entryId(entry: MediaEntry) = mediaEntryProvider.id(entry)
 
     override suspend fun initialRequest(
         filterParams: CharacterMediaSortFilterController.FilterParams?,

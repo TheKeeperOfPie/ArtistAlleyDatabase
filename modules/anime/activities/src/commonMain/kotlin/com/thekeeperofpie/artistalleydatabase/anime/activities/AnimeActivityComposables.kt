@@ -61,7 +61,6 @@ import com.anilist.data.UserSocialActivityQuery
 import com.anilist.data.fragment.ActivityItem
 import com.anilist.data.fragment.ListActivityActivityItem
 import com.anilist.data.fragment.ListActivityWithoutMedia
-import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MessageActivityActivityItem
 import com.anilist.data.fragment.MessageActivityFragment
 import com.anilist.data.fragment.TextActivityActivityItem
@@ -113,12 +112,11 @@ fun <MediaEntry> ActivityList(
     userRoute: UserRoute,
     mediaRow: @Composable (
         MediaEntry?,
-        onClickListEdit: (MediaNavigationData) -> Unit,
         Modifier,
     ) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
 ) {
     val gridState = rememberLazyGridState()
+    // TODO: Move this further up
     sortFilterState()?.ImmediateScrollResetEffect(gridState)
     VerticalList(
         gridState = gridState,
@@ -147,7 +145,7 @@ fun <MediaEntry> ActivityList(
                         viewer = viewer,
                         activity = activity,
                         mediaEntry = entry.media,
-                        mediaRow = { entry, modifier -> mediaRow(entry, onClickListEdit, modifier) },
+                        mediaRow = { entry, modifier -> mediaRow(entry, modifier) },
                         entry = entry,
                         onActivityStatusUpdate = onActivityStatusUpdate,
                         modifier = Modifier.fillMaxWidth(),

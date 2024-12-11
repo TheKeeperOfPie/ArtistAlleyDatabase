@@ -117,8 +117,8 @@ object StudioListRow {
         }
     }
 
-    data class Entry<MediaEntry>(
-        val studio: StudioListRowFragment,
-        val media: List<MediaEntry>,
-    )
+    interface Entry<MediaEntry> {
+        val studio: StudioListRowFragment
+        val media: List<MediaEntry>
+    }
 }

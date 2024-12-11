@@ -131,9 +131,8 @@ class ForumThreadViewModel<MediaEntry>(
                 }
                 .flatMapLatest { media ->
                     combine(
-                        mediaListStatusController.allChanges(
-                            media.map { mediaEntryProvider.mediaFilterable(it).mediaId }.toSet()
-                        ),
+                        mediaListStatusController
+                            .allChanges(media.map(mediaEntryProvider::id).toSet()),
                         ignoreController.updates(),
                         settings.mediaFilteringData(forceShowIgnored = true)
                     ) { updates, _, filteringData ->

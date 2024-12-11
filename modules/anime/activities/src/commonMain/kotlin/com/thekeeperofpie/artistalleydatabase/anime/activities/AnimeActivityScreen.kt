@@ -152,8 +152,9 @@ object AnimeActivityScreen {
                         showMedia = mediaTitle() == null,
                         sortFilterState = sortFilterState,
                         userRoute = userRoute,
-                        mediaRow = mediaRow,
-                        onClickListEdit = onClickListEdit,
+                        mediaRow = { entry, modifier ->
+                            mediaRow(entry, onClickListEdit, modifier)
+                        },
                     )
                 }
             }
