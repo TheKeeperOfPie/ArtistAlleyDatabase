@@ -122,7 +122,7 @@ object CharacterListRow {
                     onClick = onClick,
                 )
         ) {
-            Row(modifier = Modifier.Companion.height(IntrinsicSize.Min)) {
+            Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 CharacterImage(
                     imageState = coverImageState,
                     sharedTransitionKey = characterSharedTransitionKey,
@@ -131,16 +131,16 @@ object CharacterListRow {
                 )
 
                 Column(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .heightIn(min = MIN_HEIGHT)
                         .padding(bottom = 12.dp)
                 ) {
-                    Row(Modifier.Companion.fillMaxWidth()) {
+                    Row(Modifier.fillMaxWidth()) {
                         if (showRole) {
                             Column(
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .weight(1f)
-                                    .wrapContentHeight(Alignment.Companion.Top)
+                                    .wrapContentHeight(Alignment.Top)
                             ) {
                                 NameText(entry = entry)
                                 RoleText(entry = entry)
@@ -148,16 +148,16 @@ object CharacterListRow {
                         } else {
                             NameText(
                                 entry = entry,
-                                modifier = Modifier.Companion
+                                modifier = Modifier
                                     .weight(1f)
-                                    .wrapContentHeight(Alignment.Companion.Top)
+                                    .wrapContentHeight(Alignment.Top)
                             )
                         }
 
                         StatsSection(entry = entry)
                     }
 
-                    Spacer(Modifier.Companion.weight(1f))
+                    Spacer(Modifier.weight(1f))
 
                     MediaRow(
                         entry = entry,
@@ -183,19 +183,19 @@ object CharacterListRow {
             image = imageState.request()
                 .crossfade(true)
                 .build(),
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxHeight()
                 .heightIn(min = MIN_HEIGHT)
                 .width(IMAGE_WIDTH)
                 .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                 .sharedElement(sharedTransitionKey, "character_image")
                 .also {
-                    Logger.Companion.d("SharedDebug") { "CharacterListRow Image = $sharedTransitionKey - character_image" }
+                    Logger.d("SharedDebug") { "CharacterListRow Image = $sharedTransitionKey - character_image" }
                 }
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .placeholder(
                     visible = entry == null,
-                    highlight = PlaceholderHighlight.Companion.shimmer(),
+                    highlight = PlaceholderHighlight.shimmer(),
                 )
                 .combinedClickable(
                     onClick = onClick,
@@ -206,27 +206,27 @@ object CharacterListRow {
                         Res.string.anime_character_image_long_press_preview
                     ),
                 ),
-            contentScale = ContentScale.Companion.Crop
+            contentScale = ContentScale.Crop
         )
     }
 
     @Composable
-    private fun NameText(entry: Entry<*>?, modifier: Modifier = Modifier.Companion) {
+    private fun NameText(entry: Entry<*>?, modifier: Modifier = Modifier) {
         Text(
             text = entry?.character?.name?.primaryName() ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Companion.Black,
+            fontWeight = FontWeight.Black,
             modifier = modifier
                 .padding(horizontal = 12.dp, vertical = 10.dp)
                 .placeholder(
                     visible = entry == null,
-                    highlight = PlaceholderHighlight.Companion.shimmer(),
+                    highlight = PlaceholderHighlight.shimmer(),
                 )
         )
     }
 
     @Composable
-    private fun RoleText(entry: Entry<*>?, modifier: Modifier = Modifier.Companion) {
+    private fun RoleText(entry: Entry<*>?, modifier: Modifier = Modifier) {
         Text(
             text = entry?.role?.toTextRes()?.let { stringResource(it) } ?: "Main",
             style = MaterialTheme.typography.bodyMedium,
@@ -234,7 +234,7 @@ object CharacterListRow {
                 .padding(horizontal = 12.dp)
                 .placeholder(
                     visible = entry == null,
-                    highlight = PlaceholderHighlight.Companion.shimmer(),
+                    highlight = PlaceholderHighlight.shimmer(),
                 )
         )
     }
@@ -246,17 +246,17 @@ object CharacterListRow {
         val loading = entry == null
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.Companion.End,
-            modifier = Modifier.Companion.padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.End,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.Companion.CenterVertically,
-                modifier = Modifier.Companion
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
                     .height(24.dp)
                     .placeholder(
                         visible = loading,
-                        highlight = PlaceholderHighlight.Companion.shimmer(),
+                        highlight = PlaceholderHighlight.shimmer(),
                     ),
             ) {
                 val favorites = entry?.favorites
@@ -295,7 +295,7 @@ object CharacterListRow {
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.Companion
+            modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
                 .size(width = LocalWindowConfiguration.current.screenWidthDp, height = 120.dp)
@@ -307,7 +307,7 @@ object CharacterListRow {
                     val voiceActorSubtitle = voiceActor.name?.subtitleName()
                     val voiceActorImageState = rememberCoilImageState(voiceActor.image?.large)
                     val sharedTransitionKey =
-                        SharedTransitionKey.Companion.makeKeyForId(voiceActor.id.toString())
+                        SharedTransitionKey.makeKeyForId(voiceActor.id.toString())
                     ListRowSmallImage(
                         ignored = false,
                         imageState = voiceActorImageState,
@@ -326,7 +326,7 @@ object CharacterListRow {
                         },
                         width = 80.dp,
                         height = 120.dp,
-                        modifier = Modifier.Companion.sharedElement(
+                        modifier = Modifier.sharedElement(
                             sharedTransitionKey,
                             "staff_image"
                         )

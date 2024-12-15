@@ -66,7 +66,7 @@ object UserListRow {
         val avatarImageState = rememberCoilImageState(entry?.user?.avatar?.large)
         val navigationController = LocalNavigationController.current
         val sharedTransitionKey = entry?.user?.id?.toString()
-            ?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         val onUserClick = {
             if (entry != null) {
                 navigationController.navigate(
@@ -84,31 +84,31 @@ object UserListRow {
         }
         ElevatedCard(
             onClick = onUserClick,
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = MIN_HEIGHT)
         ) {
-            Row(modifier = Modifier.Companion.height(IntrinsicSize.Min)) {
+            Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 UserImage(
                     entry = entry,
                     imageState = avatarImageState,
                     onClick = onUserClick,
-                    modifier = Modifier.Companion.sharedElement(sharedTransitionKey, "user_image")
+                    modifier = Modifier.sharedElement(sharedTransitionKey, "user_image")
                 )
 
                 Column(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .heightIn(min = MIN_HEIGHT)
                         .padding(bottom = 12.dp)
                 ) {
                     NameText(
                         entry = entry,
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight(Alignment.Companion.Top)
+                            .wrapContentHeight(Alignment.Top)
                     )
 
-                    Spacer(Modifier.Companion.weight(1f))
+                    Spacer(Modifier.weight(1f))
 
                     MediaRow(
                         entry = entry,
@@ -130,8 +130,8 @@ object UserListRow {
         UserAvatarImage(
             imageState = imageState,
             image = imageState.request().build(),
-            contentScale = ContentScale.Companion.Crop,
-            modifier = Modifier.Companion
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
                 .fillMaxHeight()
                 .heightIn(min = MIN_HEIGHT)
                 .width(IMAGE_WIDTH)
@@ -139,7 +139,7 @@ object UserListRow {
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .placeholder(
                     visible = entry == null,
-                    highlight = PlaceholderHighlight.Companion.shimmer(),
+                    highlight = PlaceholderHighlight.shimmer(),
                 )
                 .combinedClickable(
                     onClick = onClick,
@@ -154,16 +154,16 @@ object UserListRow {
     }
 
     @Composable
-    private fun NameText(entry: Entry<*>?, modifier: Modifier = Modifier.Companion) {
+    private fun NameText(entry: Entry<*>?, modifier: Modifier = Modifier) {
         AutoHeightText(
             text = entry?.user?.name ?: "Placeholder username",
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Companion.Black,
+            fontWeight = FontWeight.Black,
             modifier = modifier
                 .padding(horizontal = 12.dp, vertical = 10.dp)
                 .placeholder(
                     visible = entry == null,
-                    highlight = PlaceholderHighlight.Companion.shimmer(),
+                    highlight = PlaceholderHighlight.shimmer(),
                 )
         )
     }
@@ -177,7 +177,7 @@ object UserListRow {
         LazyRow(
             contentPadding = PaddingValues(start = 16.dp, end = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .padding(top = 8.dp)
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.

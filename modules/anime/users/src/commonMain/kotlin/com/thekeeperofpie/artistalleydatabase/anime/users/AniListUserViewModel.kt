@@ -122,18 +122,18 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
             }
         }
         .foldPreviousResult()
-        .stateIn(viewModelScope, SharingStarted.Companion.Eagerly, LoadingResult.Companion.loading())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, LoadingResult.loading())
 
     val viewer = aniListApi.authedUser
 
-    val anime = MutableStateFlow(PagingData.Companion.empty<MediaWithListStatusEntry>())
-    val manga = MutableStateFlow(PagingData.Companion.empty<MediaWithListStatusEntry>())
-    val characters = MutableStateFlow(PagingData.Companion.empty<CharacterDetails>())
-    val staff = MutableStateFlow(PagingData.Companion.empty<StaffDetails>())
+    val anime = MutableStateFlow(PagingData.empty<MediaWithListStatusEntry>())
+    val manga = MutableStateFlow(PagingData.empty<MediaWithListStatusEntry>())
+    val characters = MutableStateFlow(PagingData.empty<CharacterDetails>())
+    val staff = MutableStateFlow(PagingData.empty<StaffDetails>())
 
     var studios = entry
         .map {
-            withContext(CustomDispatchers.Companion.IO) {
+            withContext(CustomDispatchers.IO) {
                 it.transformResult {
                     val result = it.user.favourites?.studios
                     val hasMore = result?.pageInfo?.hasNextPage == true
@@ -149,7 +149,7 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
             }
         }
         .foldPreviousResult()
-        .stateIn(viewModelScope, SharingStarted.Companion.Eagerly, LoadingResult.Companion.loading())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, LoadingResult.loading())
 
     val activities =
         entry.mapLatestNotNull { it.result }
@@ -182,7 +182,7 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
                                 ?.epochSeconds
                                 ?.toInt(),
                             createdAtLesser = filterParams.date.endDate
-                                ?.plus(1, DateTimeUnit.Companion.DAY)
+                                ?.plus(1, DateTimeUnit.DAY)
                                 ?.atStartOfDayIn(timeZone)
                                 ?.epochSeconds
                                 ?.toInt(),
@@ -266,7 +266,7 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
-    private val timeZone = TimeZone.Companion.currentSystemDefault()
+    private val timeZone = TimeZone.currentSystemDefault()
     private var toggleFollowRequestMillis = MutableStateFlow(-1L)
     private var initialFollowState by mutableStateOf<Boolean?>(null)
     private var toggleFollowingResult by mutableStateOf<ToggleFollowMutation.Data.ToggleFollow?>(
@@ -382,14 +382,14 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
             property = staff,
         )
 
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             toggleFollowRequestMillis.filter { it > 0 }
                 .mapLatest { aniListApi.toggleFollow(userId!!.toInt()) }
                 .catch {
                     // TODO: Error message
                 }
                 .collect {
-                    withContext(CustomDispatchers.Companion.Main) {
+                    withContext(CustomDispatchers.Main) {
                         initialFollowState = null
                         toggleFollowingResult = it
                     }
@@ -404,7 +404,7 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
         property: MutableStateFlow<PagingData<ResultType>>,
         transformFlow: (Flow<PagingData<ResultType>>.() -> Flow<PagingData<ResultType>>)? = null,
     ) {
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             entry.mapLatestNotNull { it.result }
                 .flatMapLatest { entry -> AniListPager { request(entry, it) } }
                 .mapLatest { it.mapOnIO(map) }
@@ -457,7 +457,7 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
             return state.mediaFlows.getOrPut(key) {
                 state.refreshRequest.filter { it == key }
                     .startWith(key)
-                    .flowOn(CustomDispatchers.Companion.IO)
+                    .flowOn(CustomDispatchers.IO)
                     .map {
                         Result.success(
                             aniListApi.mediaTitlesAndImages(state.valueToMediaIds(value))
@@ -465,7 +465,7 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
                         )
                     }
                     .catch { emit(Result.failure(it)) }
-                    .shareIn(viewModelScope, started = SharingStarted.Companion.Lazily, replay = 1)
+                    .shareIn(viewModelScope, started = SharingStarted.Lazily, replay = 1)
             }
                 .collectAsState(initial = Result.success(null))
                 .value

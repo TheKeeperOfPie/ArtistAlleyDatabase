@@ -51,12 +51,12 @@ class UserFavoriteStudiosViewModel<MediaEntry : Any, StudioEntry : Any>(
         savedStateHandle.toDestination<UserDestinations.UserFavoriteStudios>(navigationTypeMap)
     val userId = destination.userId
     val viewer = aniListApi.authedUser
-    val studios = MutableStateFlow(PagingData.Companion.empty<StudioEntry>())
+    val studios = MutableStateFlow(PagingData.empty<StudioEntry>())
 
     private val refresh = RefreshFlow()
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             combine(viewer, refresh.updates, ::Pair)
                 .flatMapLatest { (viewer) ->
                     val userId = userId ?: viewer?.id

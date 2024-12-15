@@ -60,7 +60,7 @@ object MediaReviewsScreen {
                         mediaHeader(it)
                     }
                 },
-                modifier = Modifier.Companion.padding(padding)
+                modifier = Modifier.padding(padding)
             ) {
                 val gridState = rememberLazyGridState()
                 sortFilterState().ImmediateScrollResetEffect(gridState)
@@ -90,7 +90,7 @@ object MediaReviewsScreen {
                                     )
                                 }
                             },
-                            modifier = Modifier.Companion.padding(
+                            modifier = Modifier.padding(
                                 start = 16.dp,
                                 end = 16.dp,
                                 bottom = 16.dp
@@ -98,7 +98,7 @@ object MediaReviewsScreen {
                         )
                     },
                     nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                    modifier = Modifier.Companion.padding(it)
+                    modifier = Modifier.padding(it)
                 )
             }
         }

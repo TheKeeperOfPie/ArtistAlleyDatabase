@@ -55,7 +55,7 @@ class ForumSearchViewModel(
     var query by mutableStateOf("")
 
     val content =
-        MutableStateFlow(PagingData.Companion.empty<ForumThreadSearchQuery.Data.Page.Thread>())
+        MutableStateFlow(PagingData.empty<ForumThreadSearchQuery.Data.Page.Thread>())
 
     init {
         sortFilterController.initialize(
@@ -66,9 +66,9 @@ class ForumSearchViewModel(
             )
         )
 
-        viewModelScope.launch(CustomDispatchers.Companion.Main) {
+        viewModelScope.launch(CustomDispatchers.Main) {
             combine(
-                snapshotFlow { query }.flowOn(CustomDispatchers.Companion.Main),
+                snapshotFlow { query }.flowOn(CustomDispatchers.Main),
                 sortFilterController.filterParams,
                 ::Pair
             )

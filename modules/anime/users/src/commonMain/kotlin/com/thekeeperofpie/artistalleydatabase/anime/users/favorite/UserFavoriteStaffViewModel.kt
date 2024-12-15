@@ -50,12 +50,12 @@ class UserFavoriteStaffViewModel<StaffEntry : Any, MediaEntry>(
     val userId =
         savedStateHandle.toDestination<UserDestinations.UserFavoriteStaff>(navigationTypeMap).userId
     val viewer = aniListApi.authedUser
-    val staff = MutableStateFlow(PagingData.Companion.empty<StaffEntry>())
+    val staff = MutableStateFlow(PagingData.empty<StaffEntry>())
 
     private val refresh = RefreshFlow()
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 viewer,
                 refresh.updates,

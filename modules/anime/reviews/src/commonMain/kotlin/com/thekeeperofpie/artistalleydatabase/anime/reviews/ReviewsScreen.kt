@@ -100,7 +100,7 @@ object ReviewsScreen {
                         onChangeSelectedIsAnime = { selectedIsAnime = it },
                     )
                 },
-                modifier = Modifier.Companion.nestedScroll(scrollBehavior.nestedScrollConnection)
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 val anime = anime.collectAsLazyPagingItems()
                 val manga = manga.collectAsLazyPagingItems()
@@ -163,9 +163,9 @@ object ReviewsScreen {
                 val selectedIsAnime = selectedIsAnime()
                 TabRow(
                     selectedTabIndex = if (selectedIsAnime) 0 else 1,
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.Companion.CenterHorizontally)
+                        .align(Alignment.CenterHorizontally)
                 ) {
                     Tab(
                         selected = selectedIsAnime,
@@ -205,7 +205,7 @@ object ReviewsScreen {
             onRefresh = reviews::refresh,
         )
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(scaffoldPadding)
                 .pullRefresh(pullRefreshState)
@@ -222,7 +222,7 @@ object ReviewsScreen {
                     bottom = 72.dp,
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.Companion.fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 items(
                     count = reviews.itemCount,
@@ -262,7 +262,7 @@ object ReviewsScreen {
             PullRefreshIndicator(
                 refreshing = refreshing,
                 state = pullRefreshState,
-                modifier = Modifier.Companion.align(Alignment.Companion.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter)
             )
         }
     }

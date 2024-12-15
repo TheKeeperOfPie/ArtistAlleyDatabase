@@ -47,8 +47,8 @@ class ReviewsViewModel<MediaEntry>(
 
     val viewer = aniListApi.authedUser
 
-    val anime = MutableStateFlow(PagingData.Companion.empty<ReviewEntry<MediaEntry>>())
-    val manga = MutableStateFlow(PagingData.Companion.empty<ReviewEntry<MediaEntry>>())
+    val anime = MutableStateFlow(PagingData.empty<ReviewEntry<MediaEntry>>())
+    val manga = MutableStateFlow(PagingData.empty<ReviewEntry<MediaEntry>>())
 
     // Shares the sort option between the tabs
     val sortSection = ReviewSortFilterController.sortSection()
@@ -83,7 +83,7 @@ class ReviewsViewModel<MediaEntry>(
         reviews: MutableStateFlow<PagingData<ReviewEntry<MediaEntry>>>,
         sortFilterController: ReviewSortFilterController,
     ) {
-        viewModelScope.launch(CustomDispatchers.Companion.Main) {
+        viewModelScope.launch(CustomDispatchers.Main) {
             sortFilterController.filterParams
                 .flatMapLatest { filterParams ->
                     AniListPager {
@@ -126,7 +126,7 @@ class ReviewsViewModel<MediaEntry>(
                     }
                 }
                 .cachedIn(viewModelScope)
-                .flowOn(CustomDispatchers.Companion.IO)
+                .flowOn(CustomDispatchers.IO)
                 .collectLatest(reviews::emit)
         }
     }

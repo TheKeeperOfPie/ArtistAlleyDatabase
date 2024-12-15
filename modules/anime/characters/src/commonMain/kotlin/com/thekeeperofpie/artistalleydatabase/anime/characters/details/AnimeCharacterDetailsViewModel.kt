@@ -124,7 +124,7 @@ class AnimeCharacterDetailsViewModel<MediaEntry>(
                         }
                     }
                 }
-                .catch { emit(LoadingResult.Companion.error(Res.string.anime_character_error_loading)) }
+                .catch { emit(LoadingResult.error(Res.string.anime_character_error_loading)) }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { entry = it }
         }

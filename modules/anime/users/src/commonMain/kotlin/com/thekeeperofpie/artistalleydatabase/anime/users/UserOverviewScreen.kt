@@ -98,7 +98,7 @@ object UserOverviewScreen {
             viewAllContentDescriptionTextRes: StringResource,
         ) -> Unit,
         studiosSection: LazyGridScope.(List<StudioEntry>, hasMore: Boolean) -> Unit,
-        modifier: Modifier = Modifier.Companion,
+        modifier: Modifier = Modifier,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val user = entry.user
@@ -205,7 +205,7 @@ object UserOverviewScreen {
         item {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 10.dp)
             ) {
@@ -281,16 +281,16 @@ object UserOverviewScreen {
             item("favoriteStudios-showAll") {
                 ElevatedCard(
                     onClick = { onClickViewAll?.invoke() },
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                         .animateItem()
                 ) {
                     Text(
                         text = stringResource(UtilsStrings.view_all),
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 10.dp)
-                            .align(Alignment.Companion.CenterHorizontally)
+                            .align(Alignment.CenterHorizontally)
                     )
                 }
             }
@@ -305,7 +305,7 @@ object UserOverviewScreen {
 
         item {
             ElevatedCard(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
             ) {
@@ -317,7 +317,7 @@ object UserOverviewScreen {
                     Text(
                         text = name,
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.Companion.padding(horizontal = 16.dp, vertical = 10.dp)
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
                     )
                 }
             }

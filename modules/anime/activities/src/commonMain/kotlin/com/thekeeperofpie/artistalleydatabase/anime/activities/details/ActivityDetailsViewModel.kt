@@ -148,7 +148,7 @@ class ActivityDetailsViewModel<MediaEntry>(
                 }
                 .catch {
                     emit(
-                        LoadingResult.Companion.error(
+                        LoadingResult.error(
                             Res.string.anime_activity_details_error_loading,
                             it
                         )

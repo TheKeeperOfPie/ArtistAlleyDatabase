@@ -211,20 +211,20 @@ object AniListViewerProfileScreen {
         bottomNavigationState: BottomNavigationState?,
     ) {
         Scaffold(
-            modifier = Modifier.Companion.conditionally(bottomNavigationState != null) {
+            modifier = Modifier.conditionally(bottomNavigationState != null) {
                 nestedScroll(bottomNavigationState!!.nestedScrollConnection)
             }
         ) {
             Box(
-                contentAlignment = Alignment.Companion.Center,
-                modifier = Modifier.Companion
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(it)
             ) {
                 Column(
-                    horizontalAlignment = Alignment.Companion.CenterHorizontally,
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .widthIn(min = 300.dp)
                         .fillMaxSize()
@@ -233,13 +233,13 @@ object AniListViewerProfileScreen {
                     Text(
                         stringResource(Res.string.anime_auth_prompt_label),
                         style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.Companion.padding(top = 32.dp)
+                        modifier = Modifier.padding(top = 32.dp)
                     )
 
                     Text(
                         stringResource(Res.string.anime_auth_prompt_text),
-                        textAlign = TextAlign.Companion.Center,
-                        modifier = Modifier.Companion
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
                             .padding(vertical = 8.dp)
                             .widthIn(min = 300.dp)
                             .width(IntrinsicSize.Min)
@@ -251,14 +251,14 @@ object AniListViewerProfileScreen {
 
                     Text(
                         stringResource(Res.string.anime_auth_prompt_paste),
-                        modifier = Modifier.Companion.padding(top = 20.dp)
+                        modifier = Modifier.padding(top = 20.dp)
                     )
 
                     var value by remember { mutableStateOf("") }
                     TextField(
                         value = value,
                         onValueChange = { value = it },
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .size(width = 200.dp, height = 200.dp)
                             .padding(16.dp),
                     )
@@ -271,13 +271,13 @@ object AniListViewerProfileScreen {
                         Text(stringResource(UtilsStrings.confirm))
                     }
 
-                    Spacer(Modifier.Companion.height(88.dp))
+                    Spacer(Modifier.height(88.dp))
                 }
 
                 if (onClickSettings != null) {
                     IconButton(
                         onClick = onClickSettings,
-                        modifier = Modifier.Companion.align(Alignment.Companion.TopEnd)
+                        modifier = Modifier.align(Alignment.TopEnd)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Settings,

@@ -68,14 +68,14 @@ object UserStatsBasicScreen {
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp),
             ),
-            modifier = Modifier.Companion.fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             if (entry == null) {
                 item {
-                    Box(modifier = Modifier.Companion.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator(
-                            modifier = Modifier.Companion
-                                .align(Alignment.Companion.Center)
+                            modifier = Modifier
+                                .align(Alignment.Center)
                                 .padding(32.dp)
                         )
                     }
@@ -192,7 +192,7 @@ object UserStatsBasicScreen {
 
         item {
             ElevatedCard(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
             ) {
@@ -223,7 +223,7 @@ object UserStatsBasicScreen {
 
         item {
             ElevatedCard(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
             ) {
@@ -281,7 +281,7 @@ object UserStatsBasicScreen {
                 statistics.chaptersRead.toString() to
                         Res.string.anime_user_statistics_manga_chapters_read,
                 statistics.meanScore
-                    .let(BigDecimal.Companion::fromDouble)
+                    .let(BigDecimal::fromDouble)
                     .roundToDigitPositionAfterDecimalPoint(1, RoundingMode.FLOOR)
                     .toStringExpanded() to Res.string.anime_user_statistics_mean_score,
                 onClick = {
@@ -304,7 +304,7 @@ object UserStatsBasicScreen {
     ) {
         ElevatedCard(
             onClick = onClick,
-            modifier = Modifier.Companion.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
         ) {
             StatsRow(*pairs)
         }
@@ -313,7 +313,7 @@ object UserStatsBasicScreen {
     @Composable
     fun StatsRow(
         vararg pairs: Pair<String, StringResource>,
-        modifier: Modifier = Modifier.Companion,
+        modifier: Modifier = Modifier,
     ) {
         Row(
             modifier = modifier
@@ -322,12 +322,12 @@ object UserStatsBasicScreen {
         ) {
             pairs.forEachIndexed { index, pair ->
                 if (index != 0) {
-                    VerticalDivider(modifier = Modifier.Companion.padding(vertical = 8.dp))
+                    VerticalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 }
 
                 Column(
-                    horizontalAlignment = Alignment.Companion.CenterHorizontally,
-                    modifier = Modifier.Companion
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
                         .weight(0.33f)
                         .padding(8.dp)
                 ) {

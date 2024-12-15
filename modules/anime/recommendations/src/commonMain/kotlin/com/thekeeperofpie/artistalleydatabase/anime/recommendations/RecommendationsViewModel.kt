@@ -57,7 +57,7 @@ class RecommendationsViewModel<MediaEntry>(
     )
 
     val recommendations =
-        MutableStateFlow(PagingData.Companion.empty<RecommendationEntry<MediaEntry>>())
+        MutableStateFlow(PagingData.empty<RecommendationEntry<MediaEntry>>())
     val recommendationToggleHelper =
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 

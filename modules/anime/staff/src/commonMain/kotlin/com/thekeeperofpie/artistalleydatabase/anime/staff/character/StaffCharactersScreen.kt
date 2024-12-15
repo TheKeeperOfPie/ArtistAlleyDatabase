@@ -82,7 +82,7 @@ object StaffCharactersScreen {
                         }
                     },
                     nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                    modifier = Modifier.Companion.padding(it)
+                    modifier = Modifier.padding(it)
                 )
             }
         }

@@ -51,12 +51,12 @@ class UserFavoriteCharactersViewModel<CharacterEntry : Any, MediaEntry>(
         .toDestination<UserDestinations.UserFavoriteCharacters>(navigationTypeMap)
         .userId
     val viewer = aniListApi.authedUser
-    val characters = MutableStateFlow(PagingData.Companion.empty<CharacterEntry>())
+    val characters = MutableStateFlow(PagingData.empty<CharacterEntry>())
 
     private val refresh = RefreshFlow()
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 viewer,
                 refresh.updates,

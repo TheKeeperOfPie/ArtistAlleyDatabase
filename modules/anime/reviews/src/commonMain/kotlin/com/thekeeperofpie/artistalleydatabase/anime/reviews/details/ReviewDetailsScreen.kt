@@ -96,10 +96,10 @@ object ReviewDetailsScreen {
                     mediaHeader(it)
                 }
             },
-            modifier = Modifier.Companion.nestedScroll(scrollBehavior.nestedScrollConnection)
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             Column(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .padding(it)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
@@ -109,12 +109,12 @@ object ReviewDetailsScreen {
                 if (review == null) {
                     if (entry.loading) {
                         Box(
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .fillMaxWidth()
                         ) {
                             CircularProgressIndicator(
-                                modifier = Modifier.Companion
-                                    .align(Alignment.Companion.Center)
+                                modifier = Modifier
+                                    .align(Alignment.Center)
                                     .padding(32.dp)
                             )
                         }
@@ -127,8 +127,8 @@ object ReviewDetailsScreen {
                     }
                 } else {
                     Row(
-                        verticalAlignment = Alignment.Companion.CenterVertically,
-                        modifier = Modifier.Companion
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
                             .height(IntrinsicSize.Min)
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
@@ -136,16 +136,16 @@ object ReviewDetailsScreen {
                         val shape = RoundedCornerShape(12.dp)
                         val imageState = rememberCoilImageState(review.user?.avatar?.large)
                         val sharedTransitionKey = review.user?.id?.toString()
-                            ?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
+                            ?.let { SharedTransitionKey.makeKeyForId(it) }
                         UserAvatarImage(
                             imageState = imageState,
                             image = imageState.request().build(),
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .size(64.dp)
                                 .sharedElement(sharedTransitionKey, "user_image")
                                 .clip(shape)
                                 .border(
-                                    width = Dp.Companion.Hairline,
+                                    width = Dp.Hairline,
                                     MaterialTheme.colorScheme.primary,
                                     shape
                                 )
@@ -161,7 +161,7 @@ object ReviewDetailsScreen {
                                         )
                                     }
                                 },
-                            contentScale = ContentScale.Companion.FillHeight,
+                            contentScale = ContentScale.FillHeight,
                             contentDescriptionTextRes = Res.string
                                 .anime_media_details_reviews_user_avatar_content_description,
                         )
@@ -169,7 +169,7 @@ object ReviewDetailsScreen {
                         AutoSizeText(
                             text = review.user?.name.orEmpty(),
                             style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                         )
@@ -182,26 +182,26 @@ object ReviewDetailsScreen {
                     }
 
                     val timestamp = remember(review) {
-                        HumanReadable.timeAgo(Instant.Companion.fromEpochSeconds(review.createdAt.toLong()))
+                        HumanReadable.timeAgo(Instant.fromEpochSeconds(review.createdAt.toLong()))
                     }
 
                     Text(
                         text = timestamp.toString(),
                         style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.Companion.padding(horizontal = 16.dp)
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
                     ImageHtmlText(
                         text = review.body.orEmpty(),
                         color = MaterialTheme.typography.bodyMedium.color
                             .takeOrElse { LocalContentColor.current },
-                        modifier = Modifier.Companion.padding(16.dp)
+                        modifier = Modifier.padding(16.dp)
                     )
 
                     Row(
-                        verticalAlignment = Alignment.Companion.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.Companion.padding(
+                        modifier = Modifier.padding(
                             start = 16.dp,
                             end = 16.dp,
                             bottom = 32.dp
@@ -210,8 +210,8 @@ object ReviewDetailsScreen {
                         val ratingColor = review.score?.let { MediaDataUtils.ratingColor(it) }
 
                         Box(
-                            contentAlignment = Alignment.Companion.Center,
-                            modifier = Modifier.Companion.weight(1f)
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.weight(1f)
                         ) {
                             ElevatedCard(
                                 colors = CardDefaults.elevatedCardColors(
@@ -225,9 +225,9 @@ object ReviewDetailsScreen {
                                         review.score?.toString() ?: "-"
                                     ),
                                     color = ratingColor?.let(ComposeColorUtils::bestTextColor)
-                                        ?: Color.Companion.Unspecified,
+                                        ?: Color.Unspecified,
                                     style = MaterialTheme.typography.titleLarge,
-                                    modifier = Modifier.Companion.padding(
+                                    modifier = Modifier.padding(
                                         horizontal = 16.dp,
                                         vertical = 10.dp
                                     )
@@ -263,7 +263,7 @@ object ReviewDetailsScreen {
                                     } else {
                                         Icons.Outlined.ThumbDown
                                     },
-                                    tint = if (isDownvoted) Color.Companion.Red else LocalContentColor.current,
+                                    tint = if (isDownvoted) Color.Red else LocalContentColor.current,
                                     contentDescription = stringResource(
                                         Res.string.anime_review_details_downvote_content_description
                                     )

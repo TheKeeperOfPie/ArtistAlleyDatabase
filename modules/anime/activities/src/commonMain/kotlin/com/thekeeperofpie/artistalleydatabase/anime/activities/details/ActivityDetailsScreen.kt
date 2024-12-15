@@ -342,7 +342,7 @@ object ActivityDetailsScreen {
                                 } else null,
                                 confirmButton = {
                                     Box(
-                                        contentAlignment = Alignment.Companion.Center,
+                                        contentAlignment = Alignment.Center,
                                         modifier = Modifier.height(IntrinsicSize.Min)
                                     ) {
                                         val loadingAlpha by animateFloatAsState(
@@ -377,7 +377,7 @@ object ActivityDetailsScreen {
                         PullRefreshIndicator(
                             refreshing = entry.loading,
                             state = pullRefreshState,
-                            modifier = Modifier.align(Alignment.Companion.TopCenter)
+                            modifier = Modifier.align(Alignment.TopCenter)
                         )
                     }
                 }
@@ -389,7 +389,7 @@ object ActivityDetailsScreen {
     private fun LazyListScope.centeredMessage(textRes: StringResource) {
         item {
             Column(
-                horizontalAlignment = Alignment.Companion.CenterHorizontally,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -413,7 +413,7 @@ object ActivityDetailsScreen {
         Column(modifier = Modifier.fillMaxWidth()) {
             val imageState = rememberCoilImageState(user?.avatar?.large)
             val sharedTransitionKey = user?.id?.toString()
-                ?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
+                ?.let { SharedTransitionKey.makeKeyForId(it) }
             val navigationController = LocalNavigationController.current
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -443,7 +443,7 @@ object ActivityDetailsScreen {
                             .clip(RoundedCornerShape(8.dp))
                             .placeholder(
                                 visible = replyEntry == null,
-                                highlight = PlaceholderHighlight.Companion.shimmer(),
+                                highlight = PlaceholderHighlight.shimmer(),
                             )
                     )
                 }
@@ -453,13 +453,13 @@ object ActivityDetailsScreen {
                         text = user?.name ?: "USERNAME",
                         modifier = Modifier.placeholder(
                             visible = replyEntry == null,
-                            highlight = PlaceholderHighlight.Companion.shimmer(),
+                            highlight = PlaceholderHighlight.shimmer(),
                         )
                     )
 
                     val timestamp = remember(replyEntry) {
                         replyEntry?.reply?.let {
-                            HumanReadable.timeAgo(Instant.Companion.fromEpochSeconds(it.createdAt.toLong()))
+                            HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
                         }
                     }
 
@@ -469,13 +469,13 @@ object ActivityDetailsScreen {
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.placeholder(
                                 visible = replyEntry == null,
-                                highlight = PlaceholderHighlight.Companion.shimmer(),
+                                highlight = PlaceholderHighlight.shimmer(),
                             )
                         )
                     }
                 }
 
-                Row(verticalAlignment = Alignment.Companion.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     if (viewer != null && viewer.id == user?.id?.toString()) {
                         IconButton(onClick = { onClickDelete(replyEntry.reply.id.toString()) }) {
                             Icon(
@@ -495,7 +495,7 @@ object ActivityDetailsScreen {
                             modifier = Modifier
                                 .placeholder(
                                     visible = replyEntry == null,
-                                    highlight = PlaceholderHighlight.Companion.shimmer(),
+                                    highlight = PlaceholderHighlight.shimmer(),
                                 )
                         )
                     }
@@ -534,7 +534,7 @@ object ActivityDetailsScreen {
                     .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
                     .placeholder(
                         visible = replyEntry == null,
-                        highlight = PlaceholderHighlight.Companion.shimmer(),
+                        highlight = PlaceholderHighlight.shimmer(),
                     )
             )
 
@@ -548,8 +548,8 @@ object ActivityDetailsScreen {
         var deleting by mutableStateOf(false)
         var error by mutableStateOf<Pair<StringResource, Throwable?>?>(null)
 
-        var entry by mutableStateOf<LoadingResult<Entry<MediaEntry>>>(LoadingResult.Companion.loading())
-        var replies = MutableStateFlow(PagingData.Companion.empty<ReplyEntry>())
+        var entry by mutableStateOf<LoadingResult<Entry<MediaEntry>>>(LoadingResult.loading())
+        var replies = MutableStateFlow(PagingData.empty<ReplyEntry>())
     }
 
     sealed interface Event {

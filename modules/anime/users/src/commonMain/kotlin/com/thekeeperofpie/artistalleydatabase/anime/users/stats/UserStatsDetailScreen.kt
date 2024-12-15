@@ -84,14 +84,14 @@ object UserStatsDetailScreen {
                 top = 16.dp,
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp),
             ),
-            modifier = Modifier.Companion.fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             if (values == null) {
                 item {
-                    Box(modifier = Modifier.Companion.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator(
-                            modifier = Modifier.Companion
-                                .align(Alignment.Companion.Center)
+                            modifier = Modifier
+                                .align(Alignment.Center)
                                 .padding(32.dp)
                         )
                     }
@@ -147,14 +147,14 @@ object UserStatsDetailScreen {
         val sharedTransitionKey = initialItemSharedTransitionKey?.invoke(value)
         ElevatedCard(
             onClick = { onValueClick(value, firstItemImageState, sharedTransitionKey) },
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .height(IntrinsicSize.Min),
         ) {
             Text(
                 text = valueToText(value),
                 style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.Companion.padding(
+                modifier = Modifier.padding(
                     start = 16.dp,
                     end = 16.dp,
                     top = 10.dp,
@@ -168,7 +168,7 @@ object UserStatsDetailScreen {
                     valueToMinutesWatched(value)
                         .minutes
                         .toDouble(DurationUnit.DAYS)
-                        .let(BigDecimal.Companion::fromDouble)
+                        .let(BigDecimal::fromDouble)
                         .roundToDigitPositionAfterDecimalPoint(1, RoundingMode.FLOOR)
                         .toStringExpanded() to Res.string.anime_user_statistics_anime_days_watched
                 } else {
@@ -176,7 +176,7 @@ object UserStatsDetailScreen {
                             Res.string.anime_user_statistics_manga_chapters_read
                 },
                 valueToMeanScore(value)
-                    .let(BigDecimal.Companion::fromDouble)
+                    .let(BigDecimal::fromDouble)
                     .roundToDigitPositionAfterDecimalPoint(1, RoundingMode.FLOOR)
                     .toStringExpanded() to Res.string.anime_user_statistics_mean_score,
             )
@@ -188,7 +188,7 @@ object UserStatsDetailScreen {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .padding(vertical = 16.dp)
                             .height(180.dp)
                     ) {
@@ -223,7 +223,7 @@ object UserStatsDetailScreen {
                             val navigationController = LocalNavigationController.current
                             val languageOptionMedia = LocalLanguageOptionMedia.current
                             val sharedTransitionKey = media?.id?.toString()
-                                ?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
+                                ?.let { SharedTransitionKey.makeKeyForId(it) }
                             InnerCard(
                                 sharedTransitionKey = sharedTransitionKey,
                                 sharedTransitionIdentifier = "media_image",
@@ -272,15 +272,15 @@ object UserStatsDetailScreen {
                         height = density.run { 180.dp.roundToPx() },
                     )
                     .build(),
-                contentScale = ContentScale.Companion.Crop,
+                contentScale = ContentScale.Crop,
                 contentDescription = stringResource(UiRes.string.anime_media_cover_image_content_description),
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .sharedElement(sharedTransitionKey, sharedTransitionIdentifier)
                     .fillMaxHeight()
                     .size(width = 130.dp, height = 180.dp)
                     .placeholder(
                         visible = loading,
-                        highlight = PlaceholderHighlight.Companion.shimmer(),
+                        highlight = PlaceholderHighlight.shimmer(),
                     )
                     .clip(RoundedCornerShape(12.dp))
             )

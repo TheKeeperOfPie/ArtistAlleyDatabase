@@ -63,7 +63,7 @@ object UserListScreen {
                         )
                     }
                 },
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .padding(padding)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { sortFilterScaffoldPadding ->
@@ -86,7 +86,7 @@ object UserListScreen {
                             }
                         )
                     },
-                    modifier = Modifier.Companion.padding(sortFilterScaffoldPadding)
+                    modifier = Modifier.padding(sortFilterScaffoldPadding)
                 )
             }
         }

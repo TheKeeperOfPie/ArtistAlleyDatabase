@@ -38,7 +38,7 @@ class ActivityReplyToggleHelper(
                     )
                 )
             } catch (e: Throwable) {
-                Logger.Companion.e(TAG, e) { "Error toggling activity like" }
+                Logger.e(TAG, e) { "Error toggling activity like" }
                 statusController.onUpdate(
                     statusUpdate.copy(liked = !liked, pending = false, error = e)
                 )

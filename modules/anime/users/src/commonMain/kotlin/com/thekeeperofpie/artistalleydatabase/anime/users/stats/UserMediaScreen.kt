@@ -53,7 +53,7 @@ object UserMediaScreen {
                 .filter { !it.isAnimeOnly || isAnime }
             ScrollableTabRow(
                 selectedTabIndex = selectedTabIndex,
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxWidth(),
                 divider = { /* No divider, manually draw so that it's full width */ }
             ) {
@@ -159,7 +159,7 @@ object UserMediaScreen {
                         initialItemImage = { it.voiceActor?.image?.large },
                         initialItemSharedTransitionKey = {
                             it.voiceActor?.id?.toString()
-                                ?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
+                                ?.let { SharedTransitionKey.makeKeyForId(it) }
                         },
                         initialItemSharedTransitionIdentifier = { "staff_image" },
                         mediaDetailsRoute = mediaDetailsRoute,
@@ -219,7 +219,7 @@ object UserMediaScreen {
                         initialItemImage = { it.staff?.image?.large },
                         initialItemSharedTransitionKey = {
                             it.staff?.id?.toString()
-                                ?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
+                                ?.let { SharedTransitionKey.makeKeyForId(it) }
                         },
                         initialItemSharedTransitionIdentifier = { "staff_image" },
                         mediaDetailsRoute = mediaDetailsRoute,

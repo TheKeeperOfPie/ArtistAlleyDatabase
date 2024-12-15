@@ -402,7 +402,7 @@ fun ThreadViewReplyCountIcons(viewCount: Int?, replyCount: Int?, modifier: Modif
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.Companion.placeholder(
+            modifier = Modifier.placeholder(
                 visible = viewCount == null,
                 highlight = PlaceholderHighlight.shimmer(),
             )
@@ -424,7 +424,7 @@ fun ThreadViewReplyCountIcons(viewCount: Int?, replyCount: Int?, modifier: Modif
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.Companion.placeholder(
+            modifier = Modifier.placeholder(
                 visible = replyCount == null,
                 highlight = PlaceholderHighlight.shimmer(),
             )
@@ -513,7 +513,7 @@ fun ThreadCommentTimestamp(loading: Boolean, aniListTimestamp: Int?) {
         Text(
             text = timestamp.toString(),
             style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.Companion.placeholder(
+            modifier = Modifier.placeholder(
                 visible = loading,
                 highlight = PlaceholderHighlight.shimmer(),
             )
@@ -551,7 +551,7 @@ fun ThreadAuthor(
             Text(
                 text = user?.name ?: "USERNAME",
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.Companion.placeholder(
+                modifier = Modifier.placeholder(
                     visible = loading,
                     highlight = PlaceholderHighlight.shimmer(),
                 )
@@ -971,7 +971,7 @@ fun ThreadCommentContent(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = user?.name ?: "USERNAME",
-                modifier = Modifier.Companion.placeholder(
+                modifier = Modifier.placeholder(
                     visible = loading,
                     highlight = PlaceholderHighlight.shimmer(),
                 )
@@ -1003,7 +1003,7 @@ fun ThreadCommentContent(
                 Text(
                     text = likeCount.toString(),
                     style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .placeholder(
                             visible = loading,
                             highlight = PlaceholderHighlight.shimmer(),

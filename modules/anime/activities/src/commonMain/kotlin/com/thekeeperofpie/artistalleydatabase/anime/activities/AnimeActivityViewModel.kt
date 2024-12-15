@@ -72,19 +72,19 @@ class AnimeActivityViewModel<MediaEntry>(
     private val refresh = RefreshFlow()
 
     private val globalActivity =
-        MutableStateFlow(PagingData.Companion.empty<ActivityEntry<MediaEntry>>())
+        MutableStateFlow(PagingData.empty<ActivityEntry<MediaEntry>>())
     private var globalActivityJob: Job? = null
 
     private val followingActivity =
-        MutableStateFlow(PagingData.Companion.empty<ActivityEntry<MediaEntry>>())
+        MutableStateFlow(PagingData.empty<ActivityEntry<MediaEntry>>())
     private var followingActivityJob: Job? = null
 
     private val ownActivity =
-        MutableStateFlow(PagingData.Companion.empty<ActivityEntry<MediaEntry>>())
+        MutableStateFlow(PagingData.empty<ActivityEntry<MediaEntry>>())
     private var ownActivityJob: Job? = null
 
     // TODO: Should this be accessed from inside a composable?
-    private val timeZone = TimeZone.Companion.currentSystemDefault()
+    private val timeZone = TimeZone.currentSystemDefault()
 
     fun ownActivity(): StateFlow<PagingData<ActivityEntry<MediaEntry>>> {
         if (ownActivityJob == null) {
@@ -146,7 +146,7 @@ class AnimeActivityViewModel<MediaEntry>(
                             ?.epochSeconds
                             ?.toInt(),
                         createdAtLesser = filterParams.date.endDate
-                            ?.plus(1, DateTimeUnit.Companion.DAY)
+                            ?.plus(1, DateTimeUnit.DAY)
                             ?.atStartOfDayIn(timeZone)
                             ?.epochSeconds
                             ?.toInt(),

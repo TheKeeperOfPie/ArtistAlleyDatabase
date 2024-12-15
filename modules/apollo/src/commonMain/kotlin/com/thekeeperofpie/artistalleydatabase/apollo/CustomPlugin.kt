@@ -152,7 +152,7 @@ class CustomPlugin : ApolloCompilerPlugin {
                                 }
                                 it.toBuilder(type = newTypeName)
                                     .addAnnotation(
-                                        AnnotationSpec.Companion.builder(annotation)
+                                        AnnotationSpec.builder(annotation)
                                             .addMember("%T::class", optionalSerializer)
                                             .build()
                                     )

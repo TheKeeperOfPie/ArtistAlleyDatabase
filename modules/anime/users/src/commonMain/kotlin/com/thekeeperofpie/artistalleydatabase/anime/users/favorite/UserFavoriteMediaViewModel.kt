@@ -60,12 +60,12 @@ class UserFavoriteMediaViewModel<MediaEntry : Any>(
 
     val viewer = aniListApi.authedUser
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
-    val media = MutableStateFlow(PagingData.Companion.empty<MediaEntry>())
+    val media = MutableStateFlow(PagingData.empty<MediaEntry>())
 
     private val refresh = RefreshFlow()
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
                 viewer,

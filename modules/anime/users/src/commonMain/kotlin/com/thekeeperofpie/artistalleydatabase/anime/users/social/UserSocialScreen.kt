@@ -74,14 +74,14 @@ object UserSocialScreen {
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp),
             ),
-            modifier = Modifier.Companion.fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             if (isLoading) {
                 item("loading") {
-                    Box(modifier = Modifier.Companion.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator(
-                            modifier = Modifier.Companion
-                                .align(Alignment.Companion.Center)
+                            modifier = Modifier
+                                .align(Alignment.Center)
                                 .padding(32.dp)
                         )
                     }
@@ -141,12 +141,12 @@ object UserSocialScreen {
 
         item(key) {
             if (empty) {
-                Box(modifier = Modifier.Companion.fillMaxWidth()) {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(emptyTextRes!!),
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 12.dp)
-                            .align(Alignment.Companion.TopCenter)
+                            .align(Alignment.TopCenter)
                     )
                 }
             } else {
@@ -175,9 +175,9 @@ object UserSocialScreen {
         val navigationController = LocalNavigationController.current
         val imageState = rememberCoilImageState(user?.avatar?.large)
         val sharedTransitionKey = user?.id?.toString()
-            ?.let { SharedTransitionKey.Companion.makeKeyForId(it) }
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
         ElevatedCard(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxWidth()
                 .size(USER_IMAGE_SIZE)
                 .clickable {
@@ -200,30 +200,30 @@ object UserSocialScreen {
                 UserAvatarImage(
                     imageState = imageState,
                     image = imageState.request().build(),
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .size(USER_IMAGE_SIZE)
                         .sharedElement(sharedTransitionKey, "user_image")
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .placeholder(
                             visible = user == null,
-                            highlight = PlaceholderHighlight.Companion.shimmer(),
+                            highlight = PlaceholderHighlight.shimmer(),
                         )
                         .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Companion.Crop,
+                    contentScale = ContentScale.Crop,
                 )
 
                 Text(
                     text = user?.name ?: "USERNAME",
-                    overflow = TextOverflow.Companion.Ellipsis,
+                    overflow = TextOverflow.Ellipsis,
                     maxLines = 2,
                     style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.Companion
-                        .align(Alignment.Companion.BottomStart)
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f))
                         .placeholder(
                             visible = user == null,
-                            highlight = PlaceholderHighlight.Companion.shimmer(),
+                            highlight = PlaceholderHighlight.shimmer(),
                         )
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 )

@@ -59,8 +59,8 @@ class ReviewDetailsViewModel(
                     .let(ReviewDetailsScreen::Entry)
             }
         }
-            .flowOn(CustomDispatchers.Companion.IO)
-            .stateIn(viewModelScope, SharingStarted.Companion.Eagerly, LoadingResult.Companion.loading())
+            .flowOn(CustomDispatchers.IO)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, LoadingResult.loading())
 
     val userRating = entry.flatMapLatest {
         flow {
@@ -75,15 +75,15 @@ class ReviewDetailsViewModel(
                 .flatMapLatest {
                     flow {
                         emit(LoadingResult(loading = true, success = false, result = it))
-                        emit(LoadingResult.Companion.success(aniListApi.rateReview(reviewId, it)))
+                        emit(LoadingResult.success(aniListApi.rateReview(reviewId, it)))
                     }
                 }
                 .collect(::emit)
         }
     }
-        .catch { emit(LoadingResult.Companion.error(Res.string.anime_review_details_error_rating, it)) }
+        .catch { emit(LoadingResult.error(Res.string.anime_review_details_error_rating, it)) }
         .foldPreviousResult()
-        .stateIn(viewModelScope, SharingStarted.Companion.Eagerly, LoadingResult.Companion.loading())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, LoadingResult.loading())
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)

@@ -55,7 +55,7 @@ object UserFavoriteStaffScreen {
                         )
                     }
                 },
-                modifier = Modifier.Companion.padding(padding)
+                modifier = Modifier.padding(padding)
             ) { scaffoldPadding ->
                 VerticalList(
                     itemHeaderText = null,
@@ -67,7 +67,7 @@ object UserFavoriteStaffScreen {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                    modifier = Modifier.Companion.padding(scaffoldPadding)
+                    modifier = Modifier.padding(scaffoldPadding)
                 )
             }
         }

@@ -132,7 +132,7 @@ class ActivitySortFilterController(
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
             Instant.fromEpochMilliseconds(it)
-                .toLocalDateTime(TimeZone.Companion.UTC)
+                .toLocalDateTime(TimeZone.UTC)
                 .date
         }
 

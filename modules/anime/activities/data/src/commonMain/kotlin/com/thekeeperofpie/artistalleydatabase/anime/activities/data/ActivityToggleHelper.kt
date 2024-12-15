@@ -60,7 +60,7 @@ class ActivityToggleHelper(
                             )
                         )
                     } catch (e: Throwable) {
-                        Logger.Companion.e(TAG, e) { "Error toggling activity subscribe" }
+                        Logger.e(TAG, e) { "Error toggling activity subscribe" }
                         statusController.onUpdate(
                             statusUpdate.copy(
                                 subscribed = !update.subscribed,

@@ -34,12 +34,12 @@ abstract class UserSocialViewModel<T : Any>(
     private val viewer = aniListApi.authedUser
     private val refresh = RefreshFlow()
 
-    private var data = MutableStateFlow(PagingData.Companion.empty<T>())
+    private var data = MutableStateFlow(PagingData.empty<T>())
     private var job: Job? = null
 
     fun data(): StateFlow<PagingData<T>> {
         if (job == null) {
-            job = viewModelScope.launch(CustomDispatchers.Companion.IO) {
+            job = viewModelScope.launch(CustomDispatchers.IO) {
                 (if (userId != null) flowOf(userId) else viewer.mapNotNull { it?.id })
                     .flatMapLatest { userId ->
                         refresh.updates

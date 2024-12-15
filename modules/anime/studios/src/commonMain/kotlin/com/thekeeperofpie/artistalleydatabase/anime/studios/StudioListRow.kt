@@ -37,7 +37,7 @@ object StudioListRow {
     operator fun <MediaEntry> invoke(
         entry: Entry<MediaEntry>?,
         mediaRow: LazyListScope.(List<MediaEntry?>) -> Unit,
-        modifier: Modifier = Modifier.Companion,
+        modifier: Modifier = Modifier,
         mediaHeight: Dp = 180.dp,
     ) {
         val navigationController = LocalNavigationController.current
@@ -55,15 +55,15 @@ object StudioListRow {
             modifier = modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .padding(bottom = 12.dp)
             ) {
-                Row(Modifier.Companion.fillMaxWidth()) {
+                Row(Modifier.fillMaxWidth()) {
                     NameText(
                         entry = entry,
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .weight(1f)
-                            .wrapContentHeight(Alignment.Companion.Top)
+                            .wrapContentHeight(Alignment.Top)
                     )
 
                     ListRowFavoritesSection(
@@ -82,16 +82,16 @@ object StudioListRow {
     }
 
     @Composable
-    private fun NameText(entry: Entry<*>?, modifier: Modifier = Modifier.Companion) {
+    private fun NameText(entry: Entry<*>?, modifier: Modifier = Modifier) {
         Text(
             text = entry?.studio?.name ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Companion.Black,
+            fontWeight = FontWeight.Black,
             modifier = modifier
                 .padding(horizontal = 16.dp, vertical = 10.dp)
                 .placeholder(
                     visible = entry == null,
-                    highlight = PlaceholderHighlight.Companion.shimmer(),
+                    highlight = PlaceholderHighlight.shimmer(),
                 )
         )
     }
@@ -107,7 +107,7 @@ object StudioListRow {
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.Companion
+            modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
                 .size(width = LocalWindowConfiguration.current.screenWidthDp, height = mediaHeight)

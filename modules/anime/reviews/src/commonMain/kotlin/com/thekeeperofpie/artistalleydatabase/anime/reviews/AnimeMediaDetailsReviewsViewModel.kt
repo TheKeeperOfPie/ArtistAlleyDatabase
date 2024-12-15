@@ -23,5 +23,5 @@ class AnimeMediaDetailsReviewsViewModel(
                 hasMore = it?.pageInfo?.hasNextPage != false,
             )
         }
-        .stateIn(viewModelScope, SharingStarted.Companion.Eagerly, null)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 }

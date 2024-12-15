@@ -58,12 +58,12 @@ abstract class UserListViewModel<MediaEntry>(
 
     val sortFilterController =
         UserFollowSortFilterController(viewModelScope, settings, featureOverrideProvider)
-    val users = MutableStateFlow(PagingData.Companion.empty<UserListRow.Entry<MediaEntry>>())
+    val users = MutableStateFlow(PagingData.empty<UserListRow.Entry<MediaEntry>>())
 
     abstract val userId: String?
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 aniListApi.authedUser,
                 sortFilterController.filterParams,
@@ -71,7 +71,7 @@ abstract class UserListViewModel<MediaEntry>(
             ).flatMapLatest { (viewer, filterParams) ->
                 val userId = userId ?: viewer?.id
                 if (userId == null) {
-                    flowOf(PagingData.Companion.empty())
+                    flowOf(PagingData.empty())
                 } else {
                     AniListPager { apiCall(userId, filterParams, it) }
                 }

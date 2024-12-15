@@ -38,7 +38,7 @@ class AnimeMediaDetailsForumThreadsViewModel(
     private val threadStatusController: ForumThreadStatusController,
     @Assisted media: Flow<MediaDetailsQuery.Data.Media?>,
 ) : ViewModel() {
-    var forumThreads by mutableStateOf<LoadingResult<List<ForumThreadEntry>>>(LoadingResult.Companion.loading())
+    var forumThreads by mutableStateOf<LoadingResult<List<ForumThreadEntry>>>(LoadingResult.loading())
         private set
 
     val threadToggleHelper =
@@ -47,11 +47,11 @@ class AnimeMediaDetailsForumThreadsViewModel(
     private var barrier = MutableStateFlow(false)
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.Main) {
+        viewModelScope.launch(CustomDispatchers.Main) {
             barrier.filter { it }
                 .flatMapLatest { media }
                 .filterNotNull()
-                .flowOn(CustomDispatchers.Companion.Main)
+                .flowOn(CustomDispatchers.Main)
                 .mapLatest {
                     aniListApi.forumThreadSearch(
                         null,
@@ -80,7 +80,7 @@ class AnimeMediaDetailsForumThreadsViewModel(
                 .map(LoadingResult.Companion::success)
                 .catch {
                     emit(
-                        LoadingResult.Companion.error(
+                        LoadingResult.error(
                             Res.string.anime_media_details_forum_threads_error_loading,
                             it
                         )

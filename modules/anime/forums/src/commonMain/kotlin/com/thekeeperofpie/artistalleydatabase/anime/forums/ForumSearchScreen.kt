@@ -91,12 +91,12 @@ object ForumSearchScreen {
                     sheetState
                 )
             },
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .pullRefresh(pullRefreshState)
         ) {
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(it)
             ) {
@@ -145,7 +145,7 @@ object ForumSearchScreen {
                 PullRefreshIndicator(
                     refreshing = refreshing,
                     state = pullRefreshState,
-                    modifier = Modifier.Companion.align(Alignment.Companion.TopCenter)
+                    modifier = Modifier.align(Alignment.TopCenter)
                 )
             }
         }
@@ -163,7 +163,7 @@ object ForumSearchScreen {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             val isNotEmpty by remember { derivedStateOf { query().isNotEmpty() } }
             BackHandler(
-                isNotEmpty && !WindowInsets.Companion.isImeVisibleKmp
+                isNotEmpty && !WindowInsets.isImeVisibleKmp
                         // Need to manually check sheet state because top bar
                         // takes precedence over all other handlers
                         && sheetState.targetValue != SheetValue.Expanded

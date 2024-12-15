@@ -27,12 +27,12 @@ class AnimeMediaDetailsStaffViewModel(
     private val aniListApi: AuthedAniListApi,
     @Assisted media: Flow<MediaPreview?>,
 ) : ViewModel() {
-    val staff = MutableStateFlow(PagingData.Companion.empty<StaffDetails>())
+    val staff = MutableStateFlow(PagingData.empty<StaffDetails>())
 
     init {
-        viewModelScope.launch(CustomDispatchers.Companion.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             media.filterNotNull()
-                .flowOn(CustomDispatchers.Companion.Main)
+                .flowOn(CustomDispatchers.Main)
                 .flatMapLatest {
                     val perPage = 6
                     AniListPager2(

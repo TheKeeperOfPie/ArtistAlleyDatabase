@@ -27,7 +27,7 @@ val UpperHalfBiasAlignment = BiasAbsoluteAlignment(0f, -0.5f)
 fun MediaCoverImage(
     imageState: CoilImageState?,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Companion.Fit,
+    contentScale: ContentScale = ContentScale.Fit,
     onSuccess: ((AsyncImagePainter.State.Success) -> Unit)? = null,
     onError: ((AsyncImagePainter.State.Error) -> Unit)? = null,
 ) {
@@ -49,7 +49,7 @@ fun MediaCoverImage(
     imageState: CoilImageState,
     image: ImageRequest,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Companion.Fit,
+    contentScale: ContentScale = ContentScale.Fit,
 ) {
     CoilImage(
         state = imageState,
@@ -67,7 +67,7 @@ fun CharacterCoverImage(
     imageState: CoilImageState?,
     image: ImageRequest,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Companion.Fit,
+    contentScale: ContentScale = ContentScale.Fit,
 ) {
     CoilImage(
         state = imageState,
@@ -85,7 +85,7 @@ fun StaffCoverImage(
     imageState: CoilImageState?,
     image: ImageRequest,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Companion.Fit,
+    contentScale: ContentScale = ContentScale.Fit,
     contentDescriptionTextRes: StringResource = Res.string.anime_staff_image,
 ) {
     CoilImage(
@@ -104,7 +104,7 @@ fun UserAvatarImage(
     imageState: CoilImageState?,
     image: ImageRequest,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Companion.Fit,
+    contentScale: ContentScale = ContentScale.Fit,
     contentDescriptionTextRes: StringResource = Res.string.anime_user_image,
 ) {
     CoilImage(

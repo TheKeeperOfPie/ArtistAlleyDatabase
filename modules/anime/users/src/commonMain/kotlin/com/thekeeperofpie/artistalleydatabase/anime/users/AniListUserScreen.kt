@@ -163,7 +163,7 @@ object AniListUserScreen {
                         val actuallyShowLogOut = showLogOut || (viewer != null
                                 && viewer.id == headerValues.user()?.id?.toString())
                         if (onClickSettings != null || actuallyShowLogOut) {
-                            Row(modifier = Modifier.Companion.align(Alignment.Companion.TopEnd)) {
+                            Row(modifier = Modifier.align(Alignment.TopEnd)) {
                                 // TODO: Move settings to its owm module and a slot
                                 if (onClickSettings != null) {
                                     IconButton(onClick = onClickSettings) {
@@ -206,16 +206,16 @@ object AniListUserScreen {
                         }
                     }
                 },
-                modifier = Modifier.Companion.padding(padding)
+                modifier = Modifier.padding(padding)
             ) { scaffoldPadding ->
-                Column(modifier = Modifier.Companion.padding(scaffoldPadding)) {
+                Column(modifier = Modifier.padding(scaffoldPadding)) {
                     val pagerState = rememberPagerState(pageCount = { UserTab.entries.size })
                     val scope = rememberCoroutineScope()
                     ScrollableTabRow(
                         selectedTabIndex = pagerState.currentPage,
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .fillMaxWidth()
-                            .align(Alignment.Companion.CenterHorizontally),
+                            .align(Alignment.CenterHorizontally),
                         divider = { /* No divider, manually draw so that it's full width */ }
                     ) {
                         UserTab.entries.forEachIndexed { index, tab ->
@@ -237,7 +237,7 @@ object AniListUserScreen {
                     val entry = entryLoadingResult.result
                     if (entry == null) {
                         Box(
-                            modifier = Modifier.Companion
+                            modifier = Modifier
                                 .fillMaxSize()
                                 .pullRefresh(pullRefreshState)
                         ) {
@@ -253,7 +253,7 @@ object AniListUserScreen {
                             PullRefreshIndicator(
                                 refreshing = entryLoadingResult.loading,
                                 state = pullRefreshState,
-                                modifier = Modifier.Companion.align(Alignment.Companion.TopCenter)
+                                modifier = Modifier.align(Alignment.TopCenter)
                             )
                         }
                     } else {
@@ -264,7 +264,7 @@ object AniListUserScreen {
                                 scrollBehavior.nestedScrollConnection,
                                 bottomNavigationState?.nestedScrollConnection,
                             ),
-                            modifier = Modifier.Companion.pullRefresh(pullRefreshState)
+                            modifier = Modifier.pullRefresh(pullRefreshState)
                         ) {
                             Box {
                                 val user = entry.user
@@ -361,7 +361,7 @@ object AniListUserScreen {
                                 PullRefreshIndicator(
                                     refreshing = entryLoadingResult.loading,
                                     state = pullRefreshState,
-                                    modifier = Modifier.Companion.align(Alignment.Companion.TopCenter)
+                                    modifier = Modifier.align(Alignment.TopCenter)
                                 )
                             }
                         }
