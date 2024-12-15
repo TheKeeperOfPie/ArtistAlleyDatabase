@@ -32,20 +32,6 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_characters_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_staff_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_view_all_content_description
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_anime_user
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_anime_you
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_characters_user
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_characters_you
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_manga_user
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_manga_you
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_staff_user
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_staff_you
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_studios_user
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_studios_you
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_followers_user
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_followers_you
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_following_user
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_following_you
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -64,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSmallCar
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.characters.horizontalCharactersRow
 import com.thekeeperofpie.artistalleydatabase.anime.characters.rememberImageStateBelowInnerImage
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumComposables
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
@@ -74,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
@@ -86,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
@@ -102,18 +91,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.studios.studiosSection
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStaffScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosScreen
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.users.UserHeaderValues
-import com.thekeeperofpie.artistalleydatabase.anime.users.follow.UserListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.users.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
@@ -133,7 +117,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestina
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
-import artistalleydatabase.modules.anime.users.generated.resources.Res as UsersRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 object AnimeNavigator {
@@ -178,6 +161,7 @@ object AnimeNavigator {
             )
         }
 
+        // TODO: Move to users component?
         navGraphBuilder.sharedElementComposable<UserDestinations.UserList>(
             navigationTypeMap = navigationTypeMap,
         ) {
@@ -482,121 +466,6 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<UserDestinations.User>(
-            navigationTypeMap = navigationTypeMap,
-            deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}" },
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
-            ),
-        ) {
-            val destination = it.toRoute<UserDestinations.User>()
-            val viewModel = viewModel {
-                component.aniListUserViewModelFactory(
-                    createSavedStateHandle(),
-                    AnimeDestination.MediaDetails.route,
-                ).create(
-                    activityEntryProvider =
-                        ActivityEntry.provider(MediaCompactWithTagsEntry.Provider),
-                    mediaWithListStatusEntryProvider = MediaWithListStatusEntry.Provider,
-                    mediaCompactWithTagsEntryProvider = MediaCompactWithTagsEntry.Provider,
-                    studioEntryProvider = StudioListRowFragmentEntry.provider(),
-                )
-            }
-            val entry by viewModel.entry.collectAsState()
-            val headerValues = UserHeaderValues(
-                params = destination.headerParams,
-                user = { entry.result?.user },
-            )
-            val followingViewModel =
-                viewModel { component.userSocialViewModelFollowing(viewModel.userId) }
-            val followersViewModel =
-                viewModel { component.userSocialViewModelFollowers(viewModel.userId) }
-            val viewer by viewModel.viewer.collectAsState()
-            AniListViewerProfileScreen.UserScreen(
-                mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
-                viewModel = viewModel,
-                followingViewModel = followingViewModel,
-                followersViewModel = followersViewModel,
-                upIconOption = UpIconOption.Back(navigationController),
-                headerValues = headerValues,
-                mediaHorizontalRow = { titleRes, entries, viewAllRoute, viewAllContentDescriptionTextRes, onClickListEdit ->
-                    // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
-                    mediaHorizontalRow(
-                        viewer = viewer,
-                        titleRes = titleRes,
-                        entries = entries,
-                        forceListEditIcon = true,
-                        onClickListEdit = onClickListEdit,
-                        onClickViewAll = {
-                            navigationController.navigate(viewAllRoute)
-                        },
-                        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
-                    )
-                },
-                charactersSection = { titleRes, characters, viewAllRoute, viewAllContentDescriptionTextRes ->
-                    charactersSection(
-                        titleRes = titleRes,
-                        characters = characters,
-                        viewAllRoute = viewAllRoute,
-                        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
-                        staffDetailsRoute = StaffDestinations.StaffDetails.route,
-                    )
-                },
-                staffSection = { titleRes, staff, viewAllRoute, viewAllContentDescriptionTextRes ->
-                    staffSection(
-                        titleRes = titleRes,
-                        staffList = staff,
-                        viewAllRoute = viewAllRoute,
-                        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
-                    )
-                },
-                studiosSection = { studios, hasMore, onClickListEdit ->
-                    studiosSection(
-                        studios = studios,
-                        hasMore = hasMore,
-                        mediaRow = { media ->
-                            horizontalMediaCardRow(
-                                viewer = { viewer },
-                                media = media,
-                                onClickListEdit = onClickListEdit,
-                                mediaWidth = 64.dp,
-                                mediaHeight = 96.dp,
-                            )
-                        },
-                    )
-                },
-                activitySection = { onClickListEdit ->
-                    ActivityList(
-                        viewer = viewer,
-                        activities = viewModel.activities.collectAsLazyPagingItems(),
-                        entryToActivity = { it.activity },
-                        activityId = { it.activityId.scopedId },
-                        activityContentType = { it.activityId.type },
-                        activityToMediaEntry = { it.media },
-                        activityStatusAware = { it },
-                        onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                        showMedia = true,
-                        allowUserClick = false,
-                        sortFilterState = viewModel.activitySortFilterController::state,
-                        userRoute = UserDestinations.User.route,
-                        mediaRow = { entry, modifier ->
-                            AnimeMediaCompactListRow(
-                                viewer = viewer,
-                                entry = entry,
-                                onClickListEdit = onClickListEdit,
-                                modifier = modifier,
-                            )
-                        },
-                    )
-                },
-                mediaDetailsRoute = AnimeDestination.MediaDetails.route,
-                searchMediaGenreRoute = AnimeDestination.SearchMedia.genreRoute,
-                searchMediaTagRoute = AnimeDestination.SearchMedia.tagRoute,
-                staffDetailsRoute = StaffDestinations.StaffDetails.route,
-                studioMediasRoute = StudioDestinations.StudioMedias.route,
-            )
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.Ignored>(navigationTypeMap) {
             AnimeIgnoreScreen(upIconOption = UpIconOption.Back(navigationController))
         }
@@ -740,164 +609,6 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaHistory>(navigationTypeMap) {
             MediaHistoryScreen(
                 upIconOption = UpIconOption.Back(navigationController),
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<UserDestinations.UserFollowing>(navigationTypeMap) {
-            val destination = it.toRoute<UserDestinations.UserFollowing>()
-            val viewModel = viewModel {
-                component.userListViewModelFollowingFactory(createSavedStateHandle())
-                    .create(MediaWithListStatusEntry.Provider)
-            }
-            val viewer by viewModel.viewer.collectAsState()
-            UserListScreen(
-                mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
-                upIconOption = UpIconOption.Back(navigationController),
-                sortFilterState = viewModel.sortFilterController::state,
-                title = {
-                    if (destination.userId == null) {
-                        stringResource(UsersRes.string.anime_user_following_you)
-                    } else {
-                        stringResource(
-                            UsersRes.string.anime_user_following_user,
-                            destination.userName.orEmpty()
-                        )
-                    }
-                },
-                users = viewModel.users.collectAsLazyPagingItems(),
-                mediaRow = { media, onClickListEdit ->
-                    horizontalMediaCardRow(
-                        viewer = { viewer },
-                        media = media,
-                        onClickListEdit = onClickListEdit,
-                        // API is broken, doesn't return the viewer's entry
-                        forceListEditIcon = true,
-                    )
-                }
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<UserDestinations.UserFollowers>(navigationTypeMap) {
-            val destination = it.toRoute<UserDestinations.UserFollowers>()
-            val viewModel = viewModel {
-                component.userListViewModelFollowersFactory(createSavedStateHandle())
-                    .create(MediaWithListStatusEntry.Provider)
-            }
-            val viewer by viewModel.viewer.collectAsState()
-            UserListScreen(
-                mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
-                upIconOption = UpIconOption.Back(navigationController),
-                sortFilterState = viewModel.sortFilterController::state,
-                title = {
-                    if (destination.userId == null) {
-                        stringResource(UsersRes.string.anime_user_followers_you)
-                    } else {
-                        stringResource(
-                            UsersRes.string.anime_user_followers_user,
-                            destination.userName.orEmpty()
-                        )
-                    }
-                },
-                users = viewModel.users.collectAsLazyPagingItems(),
-                mediaRow = {media, onClickListEdit ->
-                    horizontalMediaCardRow(
-                        viewer = { viewer },
-                        media = media,
-                        onClickListEdit = onClickListEdit,
-                        // API is broken, doesn't return the viewer's entry
-                        forceListEditIcon = true,
-                    )
-                }
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<UserDestinations.UserFavoriteMedia>(
-            navigationTypeMap
-        ) {
-            val destination = it.toRoute<UserDestinations.UserFavoriteMedia>()
-            val viewModel =
-                viewModel { component.userFavoriteMediaViewModel(createSavedStateHandle()) }
-            UserFavoriteMediaScreen(
-                upIconOption = UpIconOption.Back(navigationController),
-                viewModel = viewModel,
-                title = {
-                    if (viewModel.mediaType == MediaType.ANIME) {
-                        if (destination.userId == null) {
-                            stringResource(UsersRes.string.anime_user_favorite_anime_you)
-                        } else {
-                            stringResource(
-                                UsersRes.string.anime_user_favorite_anime_user,
-                                destination.userName.orEmpty()
-                            )
-                        }
-                    } else {
-                        if (destination.userId == null) {
-                            stringResource(UsersRes.string.anime_user_favorite_manga_you)
-                        } else {
-                            stringResource(
-                                UsersRes.string.anime_user_favorite_manga_user,
-                                destination.userName.orEmpty()
-                            )
-                        }
-                    }
-                },
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<UserDestinations.UserFavoriteCharacters>(
-            navigationTypeMap
-        ) {
-            val destination = it.toRoute<UserDestinations.UserFavoriteCharacters>()
-            UserFavoriteCharactersScreen(
-                upIconOption = UpIconOption.Back(navigationController),
-                title = {
-                    if (destination.userId == null) {
-                        stringResource(UsersRes.string.anime_user_favorite_characters_you)
-                    } else {
-                        stringResource(
-                            UsersRes.string.anime_user_favorite_characters_user,
-                            destination.userName.orEmpty()
-                        )
-                    }
-                },
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<UserDestinations.UserFavoriteStaff>(
-            navigationTypeMap
-        ) {
-            val destination = it.toRoute<UserDestinations.UserFavoriteStaff>()
-            UserFavoriteStaffScreen(
-                upIconOption = UpIconOption.Back(navigationController),
-                title = {
-                    if (destination.userId == null) {
-                        stringResource(UsersRes.string.anime_user_favorite_staff_you)
-                    } else {
-                        stringResource(
-                            UsersRes.string.anime_user_favorite_staff_user,
-                            destination.userName.orEmpty()
-                        )
-                    }
-                },
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<UserDestinations.UserFavoriteStudios>(
-            navigationTypeMap
-        ) {
-            val destination = it.toRoute<UserDestinations.UserFavoriteStudios>()
-            UserFavoriteStudiosScreen(
-                upIconOption = UpIconOption.Back(navigationController),
-                title = {
-                    if (destination.userId == null) {
-                        stringResource(UsersRes.string.anime_user_favorite_studios_you)
-                    } else {
-                        stringResource(
-                            UsersRes.string.anime_user_favorite_studios_user,
-                            destination.userName.orEmpty(),
-                        )
-                    }
-                },
             )
         }
 
@@ -1201,6 +912,156 @@ object AnimeNavigator {
                     viewer = viewer,
                     modifier = modifier,
                     onClickListEdit = onClickListEdit,
+                )
+            },
+        )
+
+        UserDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+            mediaDetailsRoute = AnimeDestination.MediaDetails.route,
+            searchMediaGenreRoute = AnimeDestination.SearchMedia.genreRoute,
+            searchMediaTagRoute = AnimeDestination.SearchMedia.tagRoute,
+            staffDetailsRoute = StaffDestinations.StaffDetails.route,
+            studioMediasRoute = StudioDestinations.StudioMedias.route,
+            activityEntryProvider =
+                ActivityEntry.provider(MediaCompactWithTagsEntry.Provider),
+            characterEntryProvider = CharacterListRow.Entry.NavigationDataProvider(),
+            mediaWithListStatusEntryProvider = MediaWithListStatusEntry.Provider,
+            mediaCompactWithTagsEntryProvider = MediaCompactWithTagsEntry.Provider,
+            mediaPreviewWithDescriptionEntryProvider = MediaPreviewWithDescriptionEntry.Provider,
+            staffEntryProvider = StaffListRow.Entry.Provider(),
+            studioEntryProvider = StudioListRowFragmentEntry.provider(),
+            mediaHorizontalRow = { viewer, titleRes, entries, viewAllRoute, viewAllContentDescriptionTextRes, onClickListEdit ->
+                // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
+                mediaHorizontalRow(
+                    viewer = viewer,
+                    titleRes = titleRes,
+                    entries = entries,
+                    forceListEditIcon = true,
+                    onClickListEdit = onClickListEdit,
+                    onClickViewAll = {
+                        navigationController.navigate(viewAllRoute)
+                    },
+                    viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                )
+            },
+            mediaHorizontalCardRow = { viewer, media, onClickListEdit ->
+                horizontalMediaCardRow(
+                    viewer = { viewer },
+                    media = media,
+                    onClickListEdit = onClickListEdit,
+                    // API is broken, doesn't return the viewer's entry
+                    forceListEditIcon = true,
+                )
+            },
+            mediaViewOptionRow = { viewer, mediaViewOption, entry, onClickListEdit ->
+                MediaViewOptionRow(
+                    mediaViewOption = mediaViewOption,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    entry = entry,
+                    // API doesn't support returning viewer entry
+                    forceListEditIcon = true,
+                )
+            },
+            charactersSection = { titleRes, characters, viewAllRoute, viewAllContentDescriptionTextRes ->
+                charactersSection(
+                    titleRes = titleRes,
+                    characters = characters,
+                    viewAllRoute = viewAllRoute,
+                    viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                    staffDetailsRoute = StaffDestinations.StaffDetails.route,
+                )
+            },
+            characterRow = { viewer, entry, onClickListEdit ->
+                CharacterListRow(
+                    entry = entry,
+                    staffDetailsRoute = StaffDestinations.StaffDetails.route,
+                    mediaItems = {
+                        characterMediaItems(
+                            media = it,
+                            viewer = { viewer },
+                            onClickListEdit = onClickListEdit,
+                        )
+                    },
+                )
+            },
+            staffSection = { titleRes, staff, viewAllRoute, viewAllContentDescriptionTextRes ->
+                staffSection(
+                    titleRes = titleRes,
+                    staffList = staff,
+                    viewAllRoute = viewAllRoute,
+                    viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                )
+            },
+            staffRow = { viewer, entry, onClickListEdit ->
+                StaffListRow(
+                    entry = entry,
+                    charactersSection = { horizontalCharactersRow(it) },
+                    mediaSection = { media ->
+                        horizontalMediaCardRow(
+                            viewer = { viewer },
+                            media = media,
+                            onClickListEdit = onClickListEdit,
+                        )
+                    },
+                )
+            },
+            studiosSection = { viewer, studios, hasMore, onClickListEdit ->
+                studiosSection(
+                    studios = studios,
+                    hasMore = hasMore,
+                    mediaRow = { media ->
+                        horizontalMediaCardRow(
+                            viewer = { viewer },
+                            media = media,
+                            onClickListEdit = onClickListEdit,
+                            mediaWidth = 64.dp,
+                            mediaHeight = 96.dp,
+                        )
+                    },
+                )
+            },
+            studioRow = { viewer, entry, onClickListEdit ->
+                StudioListRow(
+                    entry = entry,
+                    mediaHeight = 180.dp,
+                    mediaRow = { media ->
+                        horizontalMediaCardRow(
+                            viewer = { viewer },
+                            media = media,
+                            onClickListEdit = onClickListEdit,
+                            mediaWidth = 120.dp,
+                            mediaHeight = 180.dp,
+                        )
+                    },
+                )
+            },
+            activitySection = { viewer, activities, sortFilterState, onActivityStatusUpdate, onClickListEdit ->
+                ActivityList(
+                    viewer = viewer,
+                    activities = activities,
+                    entryToActivity = { it.activity },
+                    activityId = { it.activityId.scopedId },
+                    activityContentType = { it.activityId.type },
+                    activityToMediaEntry = { it.media },
+                    activityStatusAware = { it },
+                    onActivityStatusUpdate = onActivityStatusUpdate,
+                    showMedia = true,
+                    allowUserClick = false,
+                    sortFilterState = sortFilterState,
+                    userRoute = UserDestinations.User.route,
+                    mediaRow = { entry, modifier ->
+                        AnimeMediaCompactListRow(
+                            viewer = viewer,
+                            entry = entry,
+                            onClickListEdit = onClickListEdit,
+                            modifier = modifier,
+                        )
+                    },
                 )
             },
         )

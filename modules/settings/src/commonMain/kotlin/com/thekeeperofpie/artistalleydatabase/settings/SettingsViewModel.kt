@@ -85,7 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController

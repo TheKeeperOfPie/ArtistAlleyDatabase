@@ -7,8 +7,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkRegion

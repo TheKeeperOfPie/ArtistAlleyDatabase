@@ -33,15 +33,15 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_not_enabled_prompt
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_tab_anime
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_tab_manga
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -49,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazy
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 object AnimeIgnoreScreen {
@@ -158,7 +159,7 @@ object AnimeIgnoreScreen {
                             Icon(
                                 imageVector = nextMediaViewOption.icon,
                                 contentDescription = stringResource(
-                                    Res.string.anime_media_view_option_icon_content_description
+                                    MediaDataRes.string.anime_media_view_option_icon_content_description
                                 ),
                             )
                         }

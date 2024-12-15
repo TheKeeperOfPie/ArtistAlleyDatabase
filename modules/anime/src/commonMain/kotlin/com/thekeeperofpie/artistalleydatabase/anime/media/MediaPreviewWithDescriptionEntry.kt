@@ -6,6 +6,7 @@ import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
 import com.anilist.data.fragment.MediaPreviewWithDescription
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.data.toCoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
@@ -92,4 +93,12 @@ data class MediaPreviewWithDescriptionEntry(
 
     @Composable
     override fun primaryTitle() = media.title?.primaryTitle()
+
+    object Provider : MediaEntryProvider<MediaPreviewWithDescription, MediaPreviewWithDescriptionEntry> {
+        override fun mediaEntry(media: MediaPreviewWithDescription) = MediaPreviewWithDescriptionEntry(media)
+        override fun mediaFilterable(entry: MediaPreviewWithDescriptionEntry) = entry.mediaFilterable
+        override fun copyMediaEntry(entry: MediaPreviewWithDescriptionEntry, data: MediaFilterableData) =
+            entry.copy(mediaFilterable = data)
+        override fun id(entry: MediaPreviewWithDescriptionEntry) = entry.mediaFilterable.mediaId
+    }
 }

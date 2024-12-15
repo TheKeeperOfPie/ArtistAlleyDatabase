@@ -30,12 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffComponent
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudiosComponent
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStaffViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
-import com.thekeeperofpie.artistalleydatabase.anime.users.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
 import me.tatarka.inject.annotations.IntoSet
@@ -60,6 +55,8 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val animeRootViewModel: () -> AnimeRootViewModel
     val animeSearchViewModel: (SavedStateHandle) -> AnimeSearchViewModel
     val animeSongsViewModel: (AnimeMediaDetailsViewModel) -> AnimeSongsViewModel
+
+    // TODO; Move into users module?
     val animeUserListViewModel: (
         SavedStateHandle,
         userId: String?,
@@ -75,12 +72,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val notificationsViewModel: () -> NotificationsViewModel
     val seasonalViewModel: (SavedStateHandle) -> SeasonalViewModel
     val unlockScreenViewModel: () -> UnlockScreenViewModel
-    val userFavoriteCharactersViewModel: (SavedStateHandle) -> UserFavoriteCharactersViewModel
-    val userFavoriteMediaViewModel: (SavedStateHandle) -> UserFavoriteMediaViewModel
-    val userFavoriteStaffViewModel: (SavedStateHandle) -> UserFavoriteStaffViewModel
-    val userFavoriteStudiosViewModelFactory: (SavedStateHandle) -> UserFavoriteStudiosViewModel.Factory
-    val userListViewModelFollowersFactory: (SavedStateHandle) -> UserListViewModel.Followers.Factory
-    val userListViewModelFollowingFactory: (SavedStateHandle) -> UserListViewModel.Following.Factory
 
     @SingletonScope
     @Provides

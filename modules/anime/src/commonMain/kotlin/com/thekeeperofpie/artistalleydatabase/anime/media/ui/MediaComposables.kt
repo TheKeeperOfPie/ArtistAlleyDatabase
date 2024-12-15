@@ -80,6 +80,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection

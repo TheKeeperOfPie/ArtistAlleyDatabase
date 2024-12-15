@@ -51,7 +51,6 @@ import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_open_feature_tiers_button
 import artistalleydatabase.modules.anime.generated.resources.anime_requires_unlock
 import artistalleydatabase.modules.anime.generated.resources.anime_search_anime
@@ -61,19 +60,20 @@ import artistalleydatabase.modules.anime.generated.resources.anime_search_manga
 import artistalleydatabase.modules.anime.generated.resources.anime_search_staff
 import artistalleydatabase.modules.anime.generated.resources.anime_search_studio
 import artistalleydatabase.modules.anime.generated.resources.anime_search_user
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.characters.horizontalCharactersRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
@@ -94,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazy
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeSearchScreen {
@@ -471,7 +472,7 @@ object AnimeSearchScreen {
                                     Icon(
                                         imageVector = nextMediaViewOption.icon,
                                         contentDescription = stringResource(
-                                            Res.string.anime_media_view_option_icon_content_description
+                                            MediaDataRes.string.anime_media_view_option_icon_content_description
                                         ),
                                     )
                                 }

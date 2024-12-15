@@ -24,7 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
@@ -133,7 +133,7 @@ class SeasonalViewModel(
         init {
             viewModelScope.launch(CustomDispatchers.Main) {
                 combine(
-                    MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
+                    MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
                     refresh.updates,
                     sortFilterController.filterParams,
                 ) { includeDescription, refreshEvent, filterParams ->

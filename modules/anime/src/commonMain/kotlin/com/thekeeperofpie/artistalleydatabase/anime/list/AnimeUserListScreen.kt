@@ -51,7 +51,6 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_search_clear
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_anime_search
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_header_expand_content_description
@@ -59,6 +58,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_list_man
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_tab_all
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_user_name_anime_search
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_user_name_manga_search
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaType
 import com.anilist.data.type.ScoreFormat
@@ -70,15 +70,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -97,6 +97,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSa
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
@@ -330,7 +331,7 @@ object AnimeUserListScreen {
                                 Icon(
                                     imageVector = nextMediaViewOption.icon,
                                     contentDescription = stringResource(
-                                        Res.string.anime_media_view_option_icon_content_description
+                                        MediaDataRes.string.anime_media_view_option_icon_content_description
                                     ),
                                 )
                             }

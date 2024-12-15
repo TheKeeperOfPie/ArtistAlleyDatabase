@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_fab_user_status_completed
@@ -97,13 +96,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.transformWhile
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -761,17 +756,6 @@ object MediaUtils {
             }
         }
     }
-
-    fun mediaViewOptionIncludeDescriptionFlow(mediaViewOption: () -> MediaViewOption) =
-        snapshotFlow { mediaViewOption() }
-            .map { it == MediaViewOption.LARGE_CARD }
-            .transformWhile {
-                // Take until description is ever requested,
-                // then always request to prevent unnecessary refreshes
-                emit(it)
-                !it
-            }
-            .distinctUntilChanged()
 
     /** So that enough meaningful text is shown, strip any double newlines */
     fun stripDoubleNewlinesFromDescription(description: String) =

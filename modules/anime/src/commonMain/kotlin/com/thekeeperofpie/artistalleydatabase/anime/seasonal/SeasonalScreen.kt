@@ -44,22 +44,22 @@ import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_season_year
 import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_title
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import com.anilist.data.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
@@ -71,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentTy
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object SeasonalScreen {
@@ -157,7 +158,7 @@ object SeasonalScreen {
                             Icon(
                                 imageVector = nextMediaViewOption.icon,
                                 contentDescription = stringResource(
-                                    Res.string.anime_media_view_option_icon_content_description
+                                    MediaDataRes.string.anime_media_view_option_icon_content_description
                                 ),
                             )
                         }

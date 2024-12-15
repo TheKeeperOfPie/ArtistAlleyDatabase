@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.user.favorite
+package com.thekeeperofpie.artistalleydatabase.anime.users.favorite
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -9,8 +9,8 @@ import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.fragment.StudioListRowFragment
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
@@ -40,7 +40,7 @@ class UserFavoriteStudiosViewModel<MediaEntry : Any, StudioEntry : Any>(
     aniListApi: AuthedAniListApi,
     mediaListStatusController: MediaListStatusController,
     ignoreController: IgnoreController,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
     @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
@@ -51,12 +51,12 @@ class UserFavoriteStudiosViewModel<MediaEntry : Any, StudioEntry : Any>(
         savedStateHandle.toDestination<UserDestinations.UserFavoriteStudios>(navigationTypeMap)
     val userId = destination.userId
     val viewer = aniListApi.authedUser
-    val studios = MutableStateFlow(PagingData.empty<StudioEntry>())
+    val studios = MutableStateFlow(PagingData.Companion.empty<StudioEntry>())
 
     private val refresh = RefreshFlow()
 
     init {
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(CustomDispatchers.Companion.IO) {
             combine(viewer, refresh.updates, ::Pair)
                 .flatMapLatest { (viewer) ->
                     val userId = userId ?: viewer?.id
@@ -113,7 +113,7 @@ class UserFavoriteStudiosViewModel<MediaEntry : Any, StudioEntry : Any>(
         private val aniListApi: AuthedAniListApi,
         private val mediaListStatusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
-        private val settings: AnimeSettings,
+        private val settings: MediaDataSettings,
         private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
     ) {

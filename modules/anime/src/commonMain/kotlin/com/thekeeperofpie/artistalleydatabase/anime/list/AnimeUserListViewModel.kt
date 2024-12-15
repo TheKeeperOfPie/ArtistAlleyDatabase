@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
@@ -164,7 +165,7 @@ class AnimeUserListViewModel(
         }
 
         val includeDescriptionFlow =
-            MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
+            MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
 
         viewModelScope.launch(CustomDispatchers.Main) {
             val response = if (userId == null) {

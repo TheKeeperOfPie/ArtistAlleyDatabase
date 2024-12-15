@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -54,6 +55,7 @@ object VerticalList {
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier,
         gridState: LazyGridState = rememberLazyGridState(),
+        columns: GridCells = GridUtils.standardWidthAdaptiveCells,
         nestedScrollConnection: NestedScrollConnection? = null,
         verticalArrangement: Arrangement.Vertical = Arrangement.Top,
         horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
@@ -69,7 +71,7 @@ object VerticalList {
         ) {
             LazyVerticalGrid(
                 state = gridState,
-                columns = GridUtils.standardWidthAdaptiveCells,
+                columns = columns,
                 contentPadding = contentPadding,
                 verticalArrangement = verticalArrangement,
                 horizontalArrangement = horizontalArrangement,
@@ -117,7 +119,7 @@ object VerticalList {
                                 key = "load_more_error",
                                 span = GridUtils.maxSpanFunction
                             ) {
-                                ErrorAppend { items.retry() }
+                                ErrorAppend(onRefresh)
                             }
                             is LoadState.NotLoading -> Unit
                         }

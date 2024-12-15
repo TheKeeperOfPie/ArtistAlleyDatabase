@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_airing_date_season_default
@@ -55,6 +56,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformWhile
 import org.jetbrains.compose.resources.stringResource
 
 object MediaDataUtils {
@@ -105,6 +109,17 @@ object MediaDataUtils {
         rating > 50 -> Color(0xFFFF9000) // Orange
         else -> Color.Red
     }
+
+    fun mediaViewOptionIncludeDescriptionFlow(mediaViewOption: () -> MediaViewOption) =
+        snapshotFlow { mediaViewOption() }
+            .map { it == MediaViewOption.LARGE_CARD }
+            .transformWhile {
+                // Take until description is ever requested,
+                // then always request to prevent unnecessary refreshes
+                emit(it)
+                !it
+            }
+            .distinctUntilChanged()
 }
 
 @Composable

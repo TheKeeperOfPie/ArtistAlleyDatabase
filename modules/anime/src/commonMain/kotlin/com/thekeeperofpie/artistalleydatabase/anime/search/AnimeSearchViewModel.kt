@@ -47,8 +47,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
@@ -347,7 +347,7 @@ class AnimeSearchViewModel(
         )
 
         val includeDescriptionFlow =
-            MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
+            MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
 
         collectSearch(
             searchType = SearchType.ANIME,

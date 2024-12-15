@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media.ui
+package com.thekeeperofpie.artistalleydatabase.anime.media.data
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
@@ -6,11 +6,11 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.ViewStream
 import androidx.compose.ui.graphics.vector.ImageVector
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_compact
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_grid
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_large_card
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_small_card
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_compact
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_grid
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_large_card
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_small_card
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import org.jetbrains.compose.resources.StringResource
 

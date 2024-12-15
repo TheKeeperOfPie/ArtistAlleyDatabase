@@ -86,4 +86,10 @@
     <string name="anime_media_list_status_repeating">Repeating</string>
     <string name="anime_media_list_status_unknown">Unknown</string>
     <string name="anime_media_list_status_none">Not on list</string>
+
+    <string name="anime_media_view_option_small_card">Small card</string>
+    <string name="anime_media_view_option_large_card">Large card</string>
+    <string name="anime_media_view_option_compact">Compact</string>
+    <string name="anime_media_view_option_grid">Grid</string>
+    <string name="anime_media_view_option_icon_content_description">Change view type</string>
 </resources>

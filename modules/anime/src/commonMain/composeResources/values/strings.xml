@@ -366,8 +366,8 @@
 
     <string name="anime_user_media_list_error_loading_cache">Error loading from cache</string>
 
-    <string name="anime_user_list_user_name_anime_search">Search %1$s\'s anime list…</string>
-    <string name="anime_user_list_user_name_manga_search">Search %1$s\'s manga list…</string>
+    <string name="anime_user_list_user_name_anime_search">Search %1$s's anime list…</string>
+    <string name="anime_user_list_user_name_manga_search">Search %1$s's manga list…</string>
     <string name="anime_user_list_anime_search">Search anime list…</string>
     <string name="anime_user_list_manga_search">Search manga list…</string>
     <string name="anime_user_list_header_expand_content_description">Expand list</string>
@@ -386,12 +386,6 @@
     <string name="anime_media_activities_error_loading">Error loading activity</string>
     <string name="anime_media_activities_tab_following">Following</string>
     <string name="anime_media_activities_tab_global">Global</string>
-
-    <string name="anime_media_view_option_small_card">Small card</string>
-    <string name="anime_media_view_option_large_card">Large card</string>
-    <string name="anime_media_view_option_compact">Compact</string>
-    <string name="anime_media_view_option_grid">Grid</string>
-    <string name="anime_media_view_option_icon_content_description">Change view type</string>
 
     <string name="anime_character_image">Character image</string>
 

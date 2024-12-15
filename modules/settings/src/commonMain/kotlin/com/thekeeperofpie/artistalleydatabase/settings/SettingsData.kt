@@ -4,8 +4,8 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCategory

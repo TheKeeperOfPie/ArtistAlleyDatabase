@@ -45,6 +45,7 @@ import artistalleydatabase.modules.anime.ui.generated.resources.anime_staff_imag
 import co.touchlab.kermit.Logger
 import coil3.request.crossfade
 import com.anilist.data.CharacterAdvancedSearchQuery
+import com.anilist.data.UserFavoritesCharactersQuery
 import com.anilist.data.fragment.CharacterNavigationData
 import com.anilist.data.fragment.CharacterWithRoleAndFavorites
 import com.anilist.data.fragment.StaffNavigationData
@@ -370,6 +371,20 @@ object CharacterListRow {
                 .groupBy { it.languageV2 }
         )
 
+        constructor(
+            character: UserFavoritesCharactersQuery.Data.User.Favourites.Characters.Node,
+            media: List<MediaEntry>,
+        ) : this(
+            character = character,
+            role = null,
+            media = media,
+            favorites = character.favourites,
+            voiceActors = character.media?.edges?.filterNotNull()
+                ?.flatMap { it.voiceActors?.filterNotNull().orEmpty() }
+                ?.groupBy { it.languageV2 }
+                .orEmpty()
+        )
+
         @Composable
         fun voiceActor() = AniListUtils.selectVoiceActor(voiceActors)?.firstOrNull()
 
@@ -377,6 +392,24 @@ object CharacterListRow {
             CharacterEntryProvider<CharacterWithRoleAndFavorites, Entry<MediaEntry>, MediaEntry> {
             override fun characterEntry(
                 character: CharacterWithRoleAndFavorites,
+                media: List<MediaEntry>,
+            ) = Entry(character = character, media = media)
+
+            override fun id(characterEntry: Entry<MediaEntry>) =
+                characterEntry.character.id.toString()
+
+            override fun media(characterEntry: Entry<MediaEntry>) = characterEntry.media
+
+            override fun copyCharacterEntry(
+                entry: Entry<MediaEntry>,
+                media: List<MediaEntry>,
+            ) = entry.copy(media = media)
+        }
+
+        class NavigationDataProvider<MediaEntry> :
+            CharacterEntryProvider<UserFavoritesCharactersQuery.Data.User.Favourites.Characters.Node, Entry<MediaEntry>, MediaEntry> {
+            override fun characterEntry(
+                character: UserFavoritesCharactersQuery.Data.User.Favourites.Characters.Node,
                 media: List<MediaEntry>,
             ) = Entry(character = character, media = media)
 

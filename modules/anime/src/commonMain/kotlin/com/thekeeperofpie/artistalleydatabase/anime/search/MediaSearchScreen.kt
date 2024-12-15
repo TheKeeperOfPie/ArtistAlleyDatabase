@@ -41,7 +41,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_list_er
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_info_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_show_when_spoiler
-import artistalleydatabase.modules.anime.generated.resources.anime_media_view_option_icon_content_description
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
@@ -49,10 +49,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
@@ -63,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazy
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaSearchScreen {
@@ -255,7 +256,7 @@ object MediaSearchScreen {
                             Icon(
                                 imageVector = nextMediaViewOption.icon,
                                 contentDescription = stringResource(
-                                    Res.string.anime_media_view_option_icon_content_description
+                                    MediaDataRes.string.anime_media_view_option_icon_content_description
                                 ),
                             )
                         }

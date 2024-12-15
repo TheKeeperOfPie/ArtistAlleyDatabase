@@ -44,6 +44,7 @@ import com.anilist.data.fragment.StaffNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
@@ -247,6 +248,7 @@ object StaffListRow {
             favorites = staff.favourites,
             occupations = staff.primaryOccupations?.filterNotNull().orEmpty(),
         )
+
         constructor(
             staff: UserFavoritesStaffQuery.Data.User.Favourites.Staff.Node,
             media: List<MediaEntry>,
@@ -257,5 +259,21 @@ object StaffListRow {
             favorites = staff.favourites,
             occupations = staff.primaryOccupations?.filterNotNull().orEmpty(),
         )
+
+        class Provider<MediaEntry> :
+            StaffEntryProvider<UserFavoritesStaffQuery.Data.User.Favourites.Staff.Node, Entry<MediaEntry>, MediaEntry> {
+            override fun staffEntry(
+                staff: UserFavoritesStaffQuery.Data.User.Favourites.Staff.Node,
+                media: List<MediaEntry>,
+            ) = Entry(staff = staff, media = media)
+
+            override fun id(entry: Entry<MediaEntry>) = entry.staff.id.toString()
+            override fun media(entry: Entry<MediaEntry>) = entry.media
+            override fun copyStaffEntry(
+                entry: Entry<MediaEntry>,
+                media: List<MediaEntry>,
+            ) = entry.copy(media = media)
+
+        }
     }
 }

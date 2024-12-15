@@ -18,4 +18,5 @@ interface MediaDataSettings {
     val collapseAnimeFiltersOnClose: MutableStateFlow<Boolean>
     val languageOptionMedia: MutableStateFlow<AniListLanguageOption>
     val preferredMediaType: MutableStateFlow<MediaType>
+    val mediaViewOption: MutableStateFlow<MediaViewOption>
 }

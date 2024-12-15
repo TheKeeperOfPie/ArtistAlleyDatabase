@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.user.favorite
+package com.thekeeperofpie.artistalleydatabase.anime.users.favorite
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,10 +17,10 @@ import com.anilist.data.type.MediaStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
@@ -43,29 +43,31 @@ import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class UserFavoriteMediaViewModel(
+class UserFavoriteMediaViewModel<MediaEntry : Any>(
     aniListApi: AuthedAniListApi,
     mediaListStatusController: MediaListStatusController,
     ignoreController: IgnoreController,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<UserDestinations.UserFavoriteMedia>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<UserDestinations.UserFavoriteMedia>(navigationTypeMap)
     val userId = destination.userId
     val mediaType = destination.mediaType
 
     val viewer = aniListApi.authedUser
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
-    val media = MutableStateFlow(PagingData.empty<MediaPreviewWithDescriptionEntry>())
+    val media = MutableStateFlow(PagingData.Companion.empty<MediaEntry>())
 
     private val refresh = RefreshFlow()
 
     init {
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(CustomDispatchers.Companion.IO) {
             combine(
-                MediaUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
+                MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
                 viewer,
                 refresh.updates,
                 ::Triple,
@@ -91,15 +93,15 @@ class UserFavoriteMediaViewModel(
                     }
                 }
             }
-                .mapLatest { it.mapOnIO { MediaPreviewWithDescriptionEntry(MediaWrapper(it)) } }
-                .enforceUniqueIds { it.mediaId }
+                .mapLatest { it.mapOnIO { mediaEntryProvider.mediaEntry(MediaWrapper(it)) } }
+                .enforceUniqueIds(mediaEntryProvider::id)
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = mediaListStatusController,
                     ignoreController = ignoreController,
                     mediaFilteringData = settings.mediaFilteringData(false),
-                    mediaFilterable = { it.mediaFilterable },
-                    copy = { copy(mediaFilterable = it) },
+                    mediaFilterable = mediaEntryProvider::mediaFilterable,
+                    copy = { mediaEntryProvider.copyMediaEntry(this, it) },
                 )
                 .cachedIn(viewModelScope)
                 .collectLatest(media::emit)
@@ -173,4 +175,26 @@ class UserFavoriteMediaViewModel(
         },
         override val description: String? = media.description,
     ) : MediaPreviewWithDescription
+
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val mediaListStatusController: MediaListStatusController,
+        private val ignoreController: IgnoreController,
+        private val settings: MediaDataSettings,
+        private val navigationTypeMap: NavigationTypeMap,
+        @Assisted private val savedStateHandle: SavedStateHandle,
+    ) {
+        fun <MediaEntry : Any> create(
+            mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
+        ) = UserFavoriteMediaViewModel(
+            aniListApi = aniListApi,
+            mediaListStatusController = mediaListStatusController,
+            ignoreController = ignoreController,
+            settings = settings,
+            navigationTypeMap = navigationTypeMap,
+            savedStateHandle = savedStateHandle,
+            mediaEntryProvider = mediaEntryProvider,
+        )
+    }
 }
