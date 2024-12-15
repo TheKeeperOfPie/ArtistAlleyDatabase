@@ -37,22 +37,22 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.9.0-alpha03"
+        const val gradle = "8.9.0-alpha05"
     }
 
     object androidx {
-        const val activity = "1.10.0-beta01"
+        const val activity = "1.10.0-rc01"
         const val annotation = "1.9.1"
         const val browser = "1.8.0"
-        const val core = "1.15.0"
-        const val lifecycle = "2.9.0-alpha07"
+        const val core = "1.16.0-alpha01"
+        const val lifecycle = "2.9.0-alpha08"
         const val media3 = "1.5.0"
         const val navigation = "2.8.1"
-        const val paging = "3.3.4"
+        const val paging = "3.3.5"
         const val palette = "1.0.0"
-        const val room = "2.7.0-alpha11"
+        const val room = "2.7.0-alpha12"
         const val securityCrypto = "1.1.0-alpha06"
-        const val sqlite = "2.5.0-alpha11"
+        const val sqlite = "2.5.0-alpha12"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
@@ -84,11 +84,11 @@ object Versions {
 
     object composeMultiplatform {
         object androidx {
-            const val navigation = "2.8.0-alpha10"
+            const val navigation = "2.8.0-alpha11"
         }
 
-        const val plugin = "1.8.0-dev1905"
-        const val runtime = "1.8.0-dev1905"
+        const val plugin = "1.8.0-alpha01"
+        const val runtime = "1.8.0-alpha01"
     }
 
     const val cronetEmbedded = "119.6045.31"
@@ -114,7 +114,7 @@ object Versions {
     const val jackson = "2.18.2"
     const val javaPoet = "1.13.0"
     const val jimfs = "1.3.0"
-    const val jsonTree = "2.4.0"
+    const val jsonTree = "2.4.1"
 
     const val kermit = "2.0.5"
     const val kmpalette = "3.1.0"
@@ -125,15 +125,15 @@ object Versions {
         const val datetime = "0.6.1"
         const val io = "0.6.0"
         const val ksp = "2.1.0-1.0.29"
-        const val serialization = "1.7.3"
+        const val serialization = "1.8.0-RC"
     }
 
     const val kotlinInject = "0.7.2"
     const val kotlinPoet = "1.15.3"
-    const val ktor = "3.0.1"
+    const val ktor = "3.0.2"
     const val ksoup = "0.2.1"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.42"
+    const val manifoldGraphql = "2024.1.43"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
@@ -142,7 +142,7 @@ object Versions {
     const val molecule = "2.0.0"
     const val multiplatformMarkdown = "0.28.0-b01"
     const val netflixDgs = "9.1.0"
-    const val netflixDgsCodegen = "7.0.2"
+    const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
     const val placeholder = "1.0.8"
     const val sekret = "2.0.0-alpha-07"
