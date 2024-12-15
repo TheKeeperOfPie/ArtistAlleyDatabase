@@ -21,8 +21,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.ui.SearchMediaGenreRoute
+import com.thekeeperofpie.artistalleydatabase.anime.ui.SearchMediaTagRoute
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
@@ -145,6 +146,23 @@ sealed interface AnimeDestination : NavDestination {
         val year: Int? = null,
         val lockSortOverride: Boolean? = null,
     ) : AnimeDestination {
+        companion object {
+            val genreRoute: SearchMediaGenreRoute = { genre, mediaType ->
+                SearchMedia(
+                    title = Title.Custom(genre),
+                    genre = genre,
+                    mediaType = mediaType,
+                )
+            }
+            val tagRoute: SearchMediaTagRoute = { tagId, tagName, mediaType ->
+                SearchMedia(
+                    title = Title.Custom(tagName),
+                    tagId = tagId,
+                    mediaType = mediaType,
+                )
+            }
+        }
+
         // TODO: Find a way to serialize StringResource
         @Serializable
         sealed interface Title {
@@ -200,45 +218,4 @@ sealed interface AnimeDestination : NavDestination {
             NEXT,
         }
     }
-
-    @Serializable
-    data class User(
-        val userId: String? = null,
-        val sharedTransitionKey: SharedTransitionKey? = null,
-        val headerParams: UserHeaderParams? = null,
-    ) : AnimeDestination {
-        companion object {
-            val route: UserRoute = { id, userSharedTransitionKey, name, imageState ->
-                AnimeDestination.User(
-                    userId = id,
-                    sharedTransitionKey = userSharedTransitionKey,
-                    headerParams = UserHeaderParams(
-                        name = name,
-                        bannerImage = null,
-                        coverImage = imageState,
-                    )
-                )
-            }
-        }
-    }
-
-    @Serializable
-    data class UserFollowers(
-        val userId: String?,
-        val userName: String? = null,
-    ) : AnimeDestination
-
-    @Serializable
-    data class UserFollowing(
-        val userId: String?,
-        val userName: String? = null,
-    ) : AnimeDestination
-
-    @Serializable
-    data class UserList(
-        val userId: String?,
-        val userName: String?,
-        val mediaType: MediaType,
-        val mediaListStatus: MediaListStatus? = null,
-    ) : AnimeDestination
 }

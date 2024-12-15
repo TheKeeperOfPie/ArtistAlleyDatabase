@@ -23,6 +23,15 @@ import artistalleydatabase.modules.anime.media.data.generated.resources.anime_me
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_format_tv
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_format_tv_short
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_format_unknown
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_completed
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_current_anime
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_current_not_anime
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_dropped
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_none
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_paused
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_planning
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_repeating
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_list_status_unknown
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_status_cancelled
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_status_finished
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_status_hiatus
@@ -35,6 +44,7 @@ import com.anilist.data.fragment.AniListDate
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MediaTitleFragment
 import com.anilist.data.type.MediaFormat
+import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaStatus
 import com.anilist.data.type.MediaType
@@ -159,6 +169,47 @@ fun MediaStatus?.toTextRes() = when (this) {
     MediaStatus.CANCELLED -> Res.string.anime_media_status_cancelled
     MediaStatus.HIATUS -> Res.string.anime_media_status_hiatus
     else -> Res.string.anime_media_status_unknown
+}
+
+fun MediaListStatus?.toTextRes(mediaType: MediaType?) = toTextRes(mediaType != MediaType.MANGA)
+
+fun MediaListStatus?.toTextRes(anime: Boolean) = when (this) {
+    MediaListStatus.CURRENT -> if (anime) {
+        Res.string.anime_media_list_status_current_anime
+    } else {
+        Res.string.anime_media_list_status_current_not_anime
+    }
+    MediaListStatus.PLANNING -> Res.string.anime_media_list_status_planning
+    MediaListStatus.COMPLETED -> Res.string.anime_media_list_status_completed
+    MediaListStatus.DROPPED -> Res.string.anime_media_list_status_dropped
+    MediaListStatus.PAUSED -> Res.string.anime_media_list_status_paused
+    MediaListStatus.REPEATING -> Res.string.anime_media_list_status_repeating
+    MediaListStatus.UNKNOWN__ -> Res.string.anime_media_list_status_unknown
+    null -> Res.string.anime_media_list_status_none
+}
+
+fun MediaListStatus?.toColor() = when (this) {
+    MediaListStatus.CURRENT -> Color(146, 86, 243)
+    MediaListStatus.PLANNING -> Color(104, 214, 57)
+    MediaListStatus.COMPLETED -> Color(2, 169, 255)
+    MediaListStatus.DROPPED -> Color(0xFF810831)
+    MediaListStatus.PAUSED -> Color(247, 121, 164)
+    MediaListStatus.REPEATING -> Color(0xFFFF9000)
+    MediaListStatus.UNKNOWN__, null -> Color.White
+}
+
+fun MediaFormat?.toColor() = when (this) {
+    MediaFormat.TV -> Color(146, 86, 243)
+    MediaFormat.TV_SHORT -> Color(104, 214, 57)
+    MediaFormat.MOVIE -> Color(2, 169, 255)
+    MediaFormat.SPECIAL -> Color(0xFF810831)
+    MediaFormat.OVA -> Color(247, 121, 164)
+    MediaFormat.ONA -> Color(0xFFFF9000)
+    MediaFormat.MUSIC -> Color.Blue
+    MediaFormat.MANGA -> Color.Yellow
+    MediaFormat.NOVEL -> Color(0xFFFFE4C4)
+    MediaFormat.ONE_SHOT -> Color(0xFF778899)
+    MediaFormat.UNKNOWN__, null -> Color.White
 }
 
 /** Decouples MediaDetails from this module */

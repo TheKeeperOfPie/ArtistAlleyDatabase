@@ -45,17 +45,18 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivityCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCommentContent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
@@ -440,7 +441,7 @@ fun FollowingNotificationCard(
     ElevatedCard(onClick = {
         notification.user?.let {
             navigationController.navigate(
-                AnimeDestination.User(
+                UserDestinations.User(
                     userId = it.id.toString(),
                     sharedTransitionKey = sharedTransitionKey,
                     headerParams = UserHeaderParams(
@@ -761,7 +762,7 @@ private fun ThreadAndCommentNotificationCard(
         ) {
             ThreadCardContent(
                 thread = thread,
-                userRoute = AnimeDestination.User.route,
+                userRoute = UserDestinations.User.route,
                 modifier = Modifier.clickable {
                     if (threadId != null) {
                         navigationController.navigate(
@@ -802,7 +803,7 @@ private fun ThreadAndCommentNotificationCard(
                         liked = entry.liked,
                         likeCount = comment.likeCount,
                         user = entry.user,
-                        userRoute = AnimeDestination.User.route,
+                        userRoute = UserDestinations.User.route,
                         onStatusUpdate = onStatusUpdate,
                     )
                 }
@@ -844,7 +845,7 @@ fun ThreadLikeNotificationCard(
                     .height(IntrinsicSize.Min)
                     .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
             ) {
-                ThreadCardContent(thread = thread, userRoute = AnimeDestination.User.route)
+                ThreadCardContent(thread = thread, userRoute = UserDestinations.User.route)
             }
         }
     }
@@ -877,7 +878,7 @@ private fun ContextHeader(
                 .clickable {
                     if (user != null) {
                         navigationController.navigate(
-                            AnimeDestination.User(
+                            UserDestinations.User(
                                 userId = user.id.toString(),
                                 sharedTransitionKey = sharedTransitionKey,
                                 headerParams = UserHeaderParams(
@@ -952,7 +953,7 @@ private fun ActivityCard(
                 liked = activityEntry.liked,
                 subscribed = activityEntry.subscribed,
                 onActivityStatusUpdate = onActivityStatusUpdate,
-                userRoute = AnimeDestination.User.route,
+                userRoute = UserDestinations.User.route,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> MessageActivityCardContent(
                 viewer = viewer,
@@ -961,7 +962,7 @@ private fun ActivityCard(
                 entry = activityEntry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 clickable = true,
-                userRoute = AnimeDestination.User.route,
+                userRoute = UserDestinations.User.route,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> TextActivityCardContent(
                 viewer = viewer,
@@ -969,7 +970,7 @@ private fun ActivityCard(
                 user = activity.user,
                 entry = activityEntry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
-                userRoute = AnimeDestination.User.route,
+                userRoute = UserDestinations.User.route,
                 clickable = true,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
@@ -979,7 +980,7 @@ private fun ActivityCard(
                 user = null,
                 entry = null,
                 onActivityStatusUpdate = onActivityStatusUpdate,
-                userRoute = AnimeDestination.User.route,
+                userRoute = UserDestinations.User.route,
             )
         }
     }

@@ -98,9 +98,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow

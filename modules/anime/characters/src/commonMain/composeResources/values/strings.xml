@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="anime_character_role_main">Main</string>
-    <string name="anime_character_role_supporting">Supporting</string>
-    <string name="anime_character_role_background">Background</string>
-    <string name="anime_character_role_unknown">Unknown</string>
-
     <string name="anime_character_filter_sort_label">Sort</string>
     <string name="anime_character_filter_birthday_label">Birthday today</string>
     <string name="anime_character_filter_setting_name_language">Name language</string>

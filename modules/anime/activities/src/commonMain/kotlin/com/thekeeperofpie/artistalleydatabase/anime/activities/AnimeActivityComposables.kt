@@ -71,6 +71,8 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSectionWithoutHeader
@@ -102,9 +104,14 @@ object AnimeActivityComposables {
 typealias MediaRow<MediaEntry> = @Composable (MediaEntry?, Modifier) -> Unit
 
 @Composable
-fun <MediaEntry> ActivityList(
+fun <ActivityEntry : Any, MediaEntry> ActivityList(
     viewer: AniListViewer?,
-    activities: LazyPagingItems<ActivityEntry<MediaEntry>>,
+    activities: LazyPagingItems<ActivityEntry>,
+    entryToActivity: (ActivityEntry) -> UserSocialActivityQuery.Data.Page.Activity,
+    activityId: (ActivityEntry) -> String,
+    activityContentType: (ActivityEntry) -> String,
+    activityToMediaEntry: (ActivityEntry) -> MediaEntry,
+    activityStatusAware: (ActivityEntry) -> ActivityStatusAware,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     showMedia: Boolean,
     allowUserClick: Boolean = true,
@@ -125,16 +132,16 @@ fun <MediaEntry> ActivityList(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 72.dp),
         itemHeaderText = null,
-        itemKey = { it.activityId.scopedId },
-        itemContentType = { it.activityId.type },
+        itemKey = activityId,
+        itemContentType = activityContentType,
         items = activities,
         item = { entry ->
-            SharedTransitionKeyScope("anime_user_activity_card_${entry?.activityId?.valueId}") {
-                when (val activity = entry?.activity) {
+            SharedTransitionKeyScope("anime_user_activity_card_${entry?.let(activityId)}") {
+                when (val activity = entry?.let(entryToActivity)) {
                     is UserSocialActivityQuery.Data.Page.TextActivityActivity -> TextActivitySmallCard(
                         viewer = viewer,
                         activity = activity,
-                        entry = entry,
+                        entry = activityStatusAware(entry),
                         onActivityStatusUpdate = onActivityStatusUpdate,
                         modifier = Modifier.fillMaxWidth(),
                         allowUserClick = allowUserClick,
@@ -144,9 +151,9 @@ fun <MediaEntry> ActivityList(
                     is UserSocialActivityQuery.Data.Page.ListActivityActivity -> ListActivitySmallCard<MediaEntry>(
                         viewer = viewer,
                         activity = activity,
-                        mediaEntry = entry.media,
+                        mediaEntry = activityToMediaEntry(entry),
                         mediaRow = { entry, modifier -> mediaRow(entry, modifier) },
-                        entry = entry,
+                        entry = activityStatusAware(entry),
                         onActivityStatusUpdate = onActivityStatusUpdate,
                         modifier = Modifier.fillMaxWidth(),
                         allowUserClick = allowUserClick,
@@ -157,7 +164,7 @@ fun <MediaEntry> ActivityList(
                     is UserSocialActivityQuery.Data.Page.MessageActivityActivity -> MessageActivitySmallCard(
                         viewer = viewer,
                         activity = activity,
-                        entry = entry,
+                        entry = activityStatusAware(entry),
                         onActivityStatusUpdate = onActivityStatusUpdate,
                         modifier = Modifier.fillMaxWidth(),
                         allowUserClick = allowUserClick,

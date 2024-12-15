@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StudioMediasRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
@@ -32,7 +33,13 @@ object StudioDestinations {
         val name: String? = null,
         // TODO: Favorite is never actually passed in
         val favorite: Boolean? = null,
-    ) : NavDestination
+    ) : NavDestination {
+        companion object {
+            val route: StudioMediasRoute = { studioId, studioName ->
+                StudioMedias(studioId = studioId, name = studioName)
+            }
+        }
+    }
 
     fun <MediaEntry : Any> addToGraph(
         navGraphBuilder: NavGraphBuilder,

@@ -46,8 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.characters.generated.resources.Res
-import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_role_main
+import artistalleydatabase.modules.anime.characters.data.generated.resources.anime_character_role_main
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_character_image_content_description
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_voice_actor_image
 import coil3.request.crossfade
@@ -59,8 +58,8 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
@@ -93,6 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.characters.data.generated.resources.Res as CharactersDataRes
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @Composable
@@ -612,7 +612,7 @@ fun CharacterCard(
                         if (character == null || character.roleTextRes != null) {
                             Text(
                                 text = stringResource(
-                                    character?.roleTextRes ?: Res.string.anime_character_role_main
+                                    character?.roleTextRes ?: CharactersDataRes.string.anime_character_role_main
                                 ),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.typography.labelSmall.color

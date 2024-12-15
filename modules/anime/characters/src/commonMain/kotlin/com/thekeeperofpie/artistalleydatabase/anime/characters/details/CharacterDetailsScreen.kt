@@ -62,8 +62,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinat
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderValues
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.subtitleName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection

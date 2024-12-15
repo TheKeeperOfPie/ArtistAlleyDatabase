@@ -8,6 +8,11 @@ import com.anilist.data.UserSocialActivityQuery
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortOption
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
@@ -182,7 +187,6 @@ class AnimeActivityViewModel<MediaEntry>(
                             entry = it,
                             activityId = it.activityId.valueId,
                             activityStatusAware = it,
-                            media = (it.activity as? UserSocialActivityQuery.Data.Page.ListActivityActivity)?.media,
                             mediaFilterable = it.media?.let(mediaEntryProvider::mediaFilterable),
                             copyMedia = { filterableData ->
                                 copy(

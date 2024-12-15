@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activities
 
 import com.anilist.data.fragment.ListActivityMediaListActivityItem
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusAware
 
 data class MediaActivityEntry(
     val activity: ListActivityMediaListActivityItem,

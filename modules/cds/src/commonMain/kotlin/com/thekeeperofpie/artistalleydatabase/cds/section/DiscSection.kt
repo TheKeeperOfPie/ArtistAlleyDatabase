@@ -46,9 +46,9 @@ import artistalleydatabase.modules.cds.generated.resources.cd_entry_track_durati
 import artistalleydatabase.modules.cds.generated.resources.cd_entry_track_duration_placeholder
 import artistalleydatabase.modules.cds.generated.resources.cd_entry_track_title_label
 import artistalleydatabase.modules.entry.generated.resources.delete
-import artistalleydatabase.modules.entry.generated.resources.more_actions_content_description
 import artistalleydatabase.modules.entry.generated.resources.move_down
 import artistalleydatabase.modules.entry.generated.resources.move_up
+import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
@@ -59,6 +59,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsRes
 
 class DiscSection(private val json: Json, lockState: LockState? = null) :
     EntrySection.Custom<List<String>>(lockState) {
@@ -194,7 +195,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = stringResource(
-                            EntryStrings.more_actions_content_description
+                            UtilsRes.string.more_actions_content_description
                         ),
                     )
                 }
@@ -315,7 +316,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = stringResource(
-                            EntryStrings.more_actions_content_description
+                            UtilsRes.string.more_actions_content_description
                         ),
                     )
                 }

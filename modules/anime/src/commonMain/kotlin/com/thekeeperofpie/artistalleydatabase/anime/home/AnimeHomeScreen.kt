@@ -110,7 +110,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
@@ -137,6 +137,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
@@ -162,11 +163,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilIm
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.HorizontalPagerItemsRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsIndexed
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsWithPlaceholderCount
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
@@ -573,7 +575,7 @@ object AnimeHomeScreen {
         if (media?.isEmpty() == true) return
         RowHeader(
             titleRes = currentMediaState.headerTextRes,
-            viewAllRoute = AnimeDestination.UserList(
+            viewAllRoute = UserDestinations.UserList(
                 userId = null,
                 userName = null,
                 mediaType = currentMediaState.mediaType,
@@ -609,7 +611,7 @@ object AnimeHomeScreen {
         ) {
             val media = mediaResult().result
             val placeholderCount = if (media == null) currentMediaPreviousSize else 0
-            items(
+            itemsWithPlaceholderCount(
                 data = media,
                 placeholderCount = placeholderCount,
                 key = { it.media.id },
@@ -629,7 +631,7 @@ object AnimeHomeScreen {
     @Composable
     private fun RowHeader(
         titleRes: StringResource,
-        viewAllRoute: AnimeDestination?,
+        viewAllRoute: NavDestination?,
     ) {
         NavigationHeader(
             titleRes = titleRes,
@@ -1083,7 +1085,7 @@ object AnimeHomeScreen {
                             )
                         }
                     },
-                    userRoute = AnimeDestination.User.route,
+                    userRoute = UserDestinations.User.route,
                 )
             }
         }
@@ -1139,7 +1141,7 @@ object AnimeHomeScreen {
                 ReviewCard(
                     review = it?.review,
                     media = it?.media,
-                    userRoute = AnimeDestination.User.route,
+                    userRoute = UserDestinations.User.route,
                     onClick = { coverImageState ->
                         if (it != null) {
                             navigationController.navigate(

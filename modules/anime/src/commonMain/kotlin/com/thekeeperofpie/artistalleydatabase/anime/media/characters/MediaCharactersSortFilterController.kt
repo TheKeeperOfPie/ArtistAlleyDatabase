@@ -11,8 +11,8 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_charact
 import com.anilist.data.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState

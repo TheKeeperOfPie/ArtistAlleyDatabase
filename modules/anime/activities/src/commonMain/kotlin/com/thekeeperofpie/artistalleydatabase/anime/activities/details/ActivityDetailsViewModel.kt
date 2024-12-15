@@ -16,8 +16,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityReplyStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityReplyToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider

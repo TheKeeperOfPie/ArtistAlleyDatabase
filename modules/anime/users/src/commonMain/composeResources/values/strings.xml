@@ -47,4 +47,39 @@
     <string name="anime_user_is_not_following_content_description">Not following user indicator</string>
 
     <string name="anime_user_previous_names_label">Previous names</string>
+
+    <string name="anime_user_stats_tab_stats">Stats</string>
+    <string name="anime_user_stats_tab_genres">Genres</string>
+    <string name="anime_user_stats_tab_tags">Tags</string>
+    <string name="anime_user_stats_tab_voice_actors">Voice actors</string>
+    <string name="anime_user_stats_tab_studios">Studios</string>
+    <string name="anime_user_stats_tab_staff">Staff</string>
+    <string name="anime_user_stats_formats_label">Formats</string>
+    <string name="anime_user_stats_statuses_label">Statuses</string>
+    <string name="anime_user_stats_scores_label">Scores</string>
+    <string name="anime_user_stats_lengths_label">Lengths</string>
+    <string name="anime_user_stats_release_years_label">Release years</string>
+    <string name="anime_user_stats_start_years_label">Start years</string>
+
+    <string name="anime_user_statistics_anime">Anime statistics</string>
+    <string name="anime_user_statistics_manga">Manga statistics</string>
+    <string name="anime_user_statistics_count">On list</string>
+    <string name="anime_user_statistics_mean_score">Mean score</string>
+    <string name="anime_user_statistics_anime_days_watched">Days watched</string>
+    <string name="anime_user_statistics_manga_chapters_read">Chapters read</string>
+
+    <string name="anime_user_social_following">Following</string>
+    <string name="anime_user_social_followers">Followers</string>
+    <string name="anime_user_social_not_following_anyone">Not following anyone</string>
+    <string name="anime_user_social_activity_list_status">%1$s %2$s</string>
+
+    <string name="anime_settings_content_description">View settings</string>
+    <string name="anime_user_error_loading">Error loading user</string>
+    <string name="anime_users_error_loading">Error loading user</string>
+    <string name="anime_user_image_long_press_preview">Preview user image</string>
+
+    <string name="anime_auth_button_log_in">Log in</string>
+    <string name="anime_auth_prompt_label">AniList account required</string>
+    <string name="anime_auth_prompt_paste">Or paste in an auth token</string>
+    <string name="anime_auth_prompt_text">This will open a webpage to log into AniList.co</string>
 </resources>

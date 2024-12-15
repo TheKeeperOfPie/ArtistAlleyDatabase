@@ -11,6 +11,7 @@ import com.anilist.data.MediaDetailsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager2
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO

@@ -16,11 +16,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivitySortOption
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortOption
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute

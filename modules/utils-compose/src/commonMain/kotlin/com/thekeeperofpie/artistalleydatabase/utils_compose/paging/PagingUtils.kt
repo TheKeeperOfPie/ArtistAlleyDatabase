@@ -146,18 +146,18 @@ fun <T : Any> LazyGridScope.itemsIndexed(
     }
 }
 
-fun <T : Any> LazyListScope.items(
+fun <T : Any> LazyListScope.itemsWithPlaceholderCount(
     data: List<T>?,
     placeholderCount: Int,
     key: (T) -> Any,
-    contentType: (T?) -> String,
+    contentType: ((T?) -> String)? = null,
     itemContent: @Composable LazyItemScope.(item: T?) -> Unit,
 ) {
     if (data == null) {
         items(
             count = placeholderCount,
             key = { PagingPlaceholderKey(it) },
-            contentType = { contentType(null) },
+            contentType = { contentType?.invoke(null) },
         ) {
             itemContent(null)
         }
@@ -165,7 +165,7 @@ fun <T : Any> LazyListScope.items(
         items(
             items = data,
             key = key,
-            contentType = contentType,
+            contentType = { contentType?.invoke(it) },
         ) {
             itemContent(it)
         }

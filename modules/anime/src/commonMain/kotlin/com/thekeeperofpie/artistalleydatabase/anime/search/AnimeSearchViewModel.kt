@@ -65,7 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterControl
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserUtils

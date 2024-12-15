@@ -77,7 +77,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
-import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
@@ -273,9 +273,16 @@ object AnimeSearchScreen {
                                                 },
                                             )
                                             is AnimeSearchEntry.User -> UserListRow(
-                                                viewer = viewer,
                                                 entry = data.entry,
-                                                onClickListEdit = editViewModel::initialize,
+                                                mediaRow = { media ->
+                                                    horizontalMediaCardRow(
+                                                        viewer = {viewer},
+                                                        media = media,
+                                                        onClickListEdit =
+                                                            editViewModel::initialize,
+                                                        forceListEditIcon = true,
+                                                    )
+                                                }
                                             )
 
                                             null -> when (selectedType) {
@@ -308,9 +315,16 @@ object AnimeSearchScreen {
                                                     )
                                                 AnimeSearchViewModel.SearchType.USER ->
                                                     UserListRow(
-                                                        viewer = viewer,
                                                         entry = null,
-                                                        onClickListEdit = {},
+                                                        mediaRow = { media ->
+                                                            horizontalMediaCardRow(
+                                                                viewer = {viewer},
+                                                                media = media,
+                                                                onClickListEdit =
+                                                                    editViewModel::initialize,
+                                                                forceListEditIcon = true,
+                                                            )
+                                                        }
                                                     )
                                             }
                                         }

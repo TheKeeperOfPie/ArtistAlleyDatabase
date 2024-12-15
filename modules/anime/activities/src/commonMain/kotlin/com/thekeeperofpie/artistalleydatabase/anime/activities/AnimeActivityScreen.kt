@@ -23,6 +23,7 @@ import artistalleydatabase.modules.anime.activities.generated.resources.anime_ac
 import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_title_with_media
 import com.anilist.data.fragment.MediaNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
@@ -145,10 +146,15 @@ object AnimeActivityScreen {
                         2 -> globalActivity
                         else -> throw IllegalArgumentException("Invalid page")
                     }
-                    ActivityList<MediaEntry>(
+                    ActivityList(
                         viewer = viewer,
                         activities = activities(),
+                        entryToActivity = { it.activity },
+                        activityId = { it.activityId.scopedId },
+                        activityContentType = { it.activityId.type },
+                        activityToMediaEntry = { it.media },
                         onActivityStatusUpdate = onActivityStatusUpdate,
+                        activityStatusAware = { it },
                         showMedia = mediaTitle() == null,
                         sortFilterState = sortFilterState,
                         userRoute = userRoute,

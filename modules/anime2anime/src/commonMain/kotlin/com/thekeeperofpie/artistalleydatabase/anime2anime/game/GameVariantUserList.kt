@@ -11,10 +11,10 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState

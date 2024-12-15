@@ -110,8 +110,8 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow

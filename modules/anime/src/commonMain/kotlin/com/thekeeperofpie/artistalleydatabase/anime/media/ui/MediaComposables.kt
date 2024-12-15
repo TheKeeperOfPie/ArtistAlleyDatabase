@@ -99,6 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsWithPlaceholderCount
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -701,59 +702,104 @@ fun LazyListScope.horizontalMediaCardRow(
     onClickListEdit: (MediaNavigationData) -> Unit,
     mediaWidth: Dp = 80.dp,
     mediaHeight: Dp = 120.dp,
+    forceListEditIcon: Boolean = false,
 ) {
     itemsIndexed(
         media,
         key = { index, item -> item?.media?.id ?: "placeholder_$index" },
     ) { index, item ->
-        Box {
-            val navigationController = LocalNavigationController.current
-            val title = item?.media?.title?.primaryTitle()
-            val sharedTransitionKey = item?.media?.id?.toString()
-                ?.let { SharedTransitionKey.makeKeyForId(it) }
-            val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
-            val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
-            ListRowSmallImage(
-                ignored = item?.mediaFilterable?.ignored == true,
-                imageState = imageState,
-                contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
-                onClick = {
-                    if (item != null) {
-                        navigationController.navigate(
-                            AnimeDestination.MediaDetails(
-                                mediaId = item.media.id.toString(),
-                                title = title,
+        HorizontalMediaSmallCard(
+            item = item,
+            viewer = viewer,
+            onClickListEdit = onClickListEdit,
+            mediaWidth = mediaWidth,
+            mediaHeight = mediaHeight,
+            forceListEditIcon = forceListEditIcon,
+        )
+    }
+}
+
+fun LazyListScope.horizontalMediaCardRow(
+    viewer: () -> AniListViewer?,
+    media: List<MediaWithListStatusEntry>,
+    placeholderCount: Int,
+    onClickListEdit: (MediaNavigationData) -> Unit,
+    mediaWidth: Dp = 80.dp,
+    mediaHeight: Dp = 120.dp,
+    forceListEditIcon: Boolean = false,
+) {
+    itemsWithPlaceholderCount(
+        data = media,
+        placeholderCount = placeholderCount,
+        key = { it.media.id },
+    ) {
+        HorizontalMediaSmallCard(
+            item = it,
+            viewer = viewer,
+            onClickListEdit = onClickListEdit,
+            mediaWidth = mediaWidth,
+            mediaHeight = mediaHeight,
+            forceListEditIcon = forceListEditIcon,
+        )
+    }
+}
+
+@Composable
+private fun HorizontalMediaSmallCard(
+    item: MediaWithListStatusEntry?,
+    viewer: () -> AniListViewer?,
+    onClickListEdit: (MediaNavigationData) -> Unit,
+    mediaWidth: Dp,
+    mediaHeight: Dp,
+    forceListEditIcon: Boolean,
+) {
+    Box {
+        val navigationController = LocalNavigationController.current
+        val title = item?.media?.title?.primaryTitle()
+        val sharedTransitionKey = item?.media?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
+        val sharedContentState = rememberSharedContentState(sharedTransitionKey, "media_image")
+        val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
+        ListRowSmallImage(
+            ignored = item?.mediaFilterable?.ignored == true,
+            imageState = imageState,
+            contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
+            onClick = {
+                if (item != null) {
+                    navigationController.navigate(
+                        AnimeDestination.MediaDetails(
+                            mediaId = item.media.id.toString(),
+                            title = title,
+                            coverImage = imageState.toImageState(),
+                            sharedTransitionKey = sharedTransitionKey,
+                            headerParams = MediaHeaderParams(
                                 coverImage = imageState.toImageState(),
-                                sharedTransitionKey = sharedTransitionKey,
-                                headerParams = MediaHeaderParams(
-                                    coverImage = imageState.toImageState(),
-                                    title = title,
-                                    mediaWithListStatus = item.media,
-                                )
+                                title = title,
+                                mediaWithListStatus = item.media,
                             )
                         )
-                    }
-                },
-                width = mediaWidth,
-                height = mediaHeight,
-                modifier = Modifier.sharedElement(sharedTransitionKey, "media_image")
-            )
+                    )
+                }
+            },
+            width = mediaWidth,
+            height = mediaHeight,
+            modifier = Modifier.sharedElement(sharedTransitionKey, "media_image")
+        )
 
-            val viewer = viewer()
-            if (viewer != null && item != null) {
-                MediaListQuickEditIconButton(
-                    viewer = viewer,
-                    mediaType = item.media.type,
-                    media = item.mediaFilterable,
-                    maxProgress = MediaUtils.maxProgress(item.media),
-                    maxProgressVolumes = item.media.volumes,
-                    onClick = { onClickListEdit(item.media) },
-                    padding = 6.dp,
-                    modifier = Modifier
-                        .animateSharedTransitionWithOtherState(sharedContentState)
-                        .align(Alignment.BottomStart)
-                )
-            }
+        val viewer = viewer()
+        if (viewer != null && item != null) {
+            MediaListQuickEditIconButton(
+                viewer = viewer,
+                mediaType = item.media.type,
+                media = item.mediaFilterable,
+                maxProgress = MediaUtils.maxProgress(item.media),
+                maxProgressVolumes = item.media.volumes,
+                onClick = { onClickListEdit(item.media) },
+                padding = 6.dp,
+                modifier = Modifier
+                    .animateSharedTransitionWithOtherState(sharedContentState)
+                    .align(Alignment.BottomStart)
+            )
         }
     }
 }

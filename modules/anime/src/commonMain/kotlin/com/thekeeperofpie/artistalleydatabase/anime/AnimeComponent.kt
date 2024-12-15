@@ -30,13 +30,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffComponent
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudiosComponent
-import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStaffViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.favorite.UserFavoriteStudiosViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.user.follow.UserListViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
+import com.thekeeperofpie.artistalleydatabase.anime.users.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
 import me.tatarka.inject.annotations.IntoSet
@@ -48,10 +47,10 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
 }
 
 interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
-    ForumsComponent, RecommendationsComponent, ReviewsComponent, StaffComponent, StudiosComponent {
+    ForumsComponent, RecommendationsComponent, ReviewsComponent, StaffComponent, StudiosComponent,
+    UsersComponent {
 
     val airingScheduleViewModel: () -> AiringScheduleViewModel
-    val aniListUserViewModelFactory: (SavedStateHandle, MediaDetailsRoute) -> AniListUserViewModel.Factory
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
     val animeHomeViewModel: () -> AnimeHomeViewModel
@@ -80,10 +79,8 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val userFavoriteMediaViewModel: (SavedStateHandle) -> UserFavoriteMediaViewModel
     val userFavoriteStaffViewModel: (SavedStateHandle) -> UserFavoriteStaffViewModel
     val userFavoriteStudiosViewModelFactory: (SavedStateHandle) -> UserFavoriteStudiosViewModel.Factory
-    val userListViewModelFollowers: (SavedStateHandle) -> UserListViewModel.Followers
-    val userListViewModelFollowing: (SavedStateHandle) -> UserListViewModel.Following
-    val userSocialViewModelFollowers: (userId: String?) -> UserSocialViewModel.Followers
-    val userSocialViewModelFollowing: (userId: String?) -> UserSocialViewModel.Following
+    val userListViewModelFollowersFactory: (SavedStateHandle) -> UserListViewModel.Followers.Factory
+    val userListViewModelFollowingFactory: (SavedStateHandle) -> UserListViewModel.Following.Factory
 
     @SingletonScope
     @Provides

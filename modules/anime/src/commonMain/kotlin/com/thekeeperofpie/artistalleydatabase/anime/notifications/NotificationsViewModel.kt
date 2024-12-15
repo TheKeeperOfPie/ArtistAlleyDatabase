@@ -10,10 +10,10 @@ import com.anilist.data.fragment.ActivityItem.Companion.asListActivity
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activities.applyActivityFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentToggleHelper
@@ -170,7 +170,6 @@ class NotificationsViewModel(
                                 entry = entry,
                                 activityId = entry.activityEntry?.id,
                                 activityStatusAware = entry.activityEntry,
-                                media = entry.mediaEntry?.media,
                                 mediaFilterable = entry.mediaEntry?.mediaFilterable,
                                 copyMedia = {
                                     copy(

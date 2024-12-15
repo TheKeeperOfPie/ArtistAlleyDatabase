@@ -34,11 +34,25 @@ import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_ign
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification
 import artistalleydatabase.modules.anime.generated.resources.last_crash_notification_button
 import com.anilist.data.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityList
+import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
+import com.thekeeperofpie.artistalleydatabase.anime.studios.studiosSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
-import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.users.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysNavigationBar
@@ -67,7 +81,8 @@ object AnimeRootScreen {
         val needsAuth = viewModel.authToken.collectAsState().value == null
 
         var selectedScreen by rememberSaveable(stateSaver = AnimeRootNavDestination.StateSaver) {
-            mutableStateOf(viewModel.persistedSelectedScreen
+            mutableStateOf(
+                viewModel.persistedSelectedScreen
                 .takeIf { !it.requiresAuth || !needsAuth }
                 ?.takeIf { !it.requiresUnlock || viewModel.unlocked() }
                 ?: AnimeRootNavDestination.HOME
@@ -185,7 +200,7 @@ object AnimeRootScreen {
                                             AnimeRootNavDestination.SEARCH,
                                             AnimeRootNavDestination.PROFILE,
                                             AnimeRootNavDestination.UNLOCK,
-                                            -> Unit
+                                                -> Unit
                                         }
                                     } else {
                                         selectedScreen = destination
@@ -256,15 +271,103 @@ object AnimeRootScreen {
                                 bottomNavigationState = bottomNavigationState,
                             )
                         }
-                        AnimeRootNavDestination.PROFILE -> AniListViewerProfileScreen(
-                            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                            upIconOption = upIconOption,
-                            needsAuth = { needsAuth },
-                            onClickAuth = onClickAuth,
-                            onSubmitAuthToken = onSubmitAuthToken,
-                            onClickSettings = onClickSettings,
-                            bottomNavigationState = bottomNavigationState,
-                        )
+                        AnimeRootNavDestination.PROFILE -> {
+                            val navigationController = LocalNavigationController.current
+                            val activityEntryProvider = remember {
+                                ActivityEntry.provider(MediaCompactWithTagsEntry.Provider)
+                            }
+                            AniListViewerProfileScreen(
+                                component = LocalAnimeComponent.current,
+                                mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+                                upIconOption = upIconOption,
+                                needsAuth = { needsAuth },
+                                onClickAuth = onClickAuth,
+                                onSubmitAuthToken = onSubmitAuthToken,
+                                onClickSettings = onClickSettings,
+                                bottomNavigationState = bottomNavigationState,
+                                // TODO: Move this elsewhere to avoid remember
+                                activityEntryProvider = activityEntryProvider,
+                                mediaWithListStatusEntryProvider = MediaWithListStatusEntry.Provider,
+                                mediaCompactWithTagsEntryProvider = MediaCompactWithTagsEntry.Provider,
+                                // TODO: Move this elsewhere to avoid remember
+                                studioEntryProvider = remember { StudioListRowFragmentEntry.provider() },
+                                mediaHorizontalRow = { viewer, titleRes, entries, viewAllRoute, viewAllContentDescriptionTextRes, onClickListEdit ->
+                                    // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
+                                    mediaHorizontalRow(
+                                        viewer = viewer,
+                                        titleRes = titleRes,
+                                        entries = entries,
+                                        forceListEditIcon = true,
+                                        onClickListEdit = onClickListEdit,
+                                        onClickViewAll = {
+                                            navigationController.navigate(viewAllRoute)
+                                        },
+                                        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                                    )
+                                },
+                                charactersSection = { titleRes, characters, viewAllRoute, viewAllContentDescriptionTextRes ->
+                                    charactersSection(
+                                        titleRes = titleRes,
+                                        characters = characters,
+                                        viewAllRoute = viewAllRoute,
+                                        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                                        staffDetailsRoute = StaffDestinations.StaffDetails.route,
+                                    )
+                                },
+                                staffSection = { titleRes, staff, viewAllRoute, viewAllContentDescriptionTextRes ->
+                                    staffSection(
+                                        titleRes = titleRes,
+                                        staffList = staff,
+                                        viewAllRoute = viewAllRoute,
+                                        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+                                    )
+                                },
+                                studiosSection = { viewer, studios, hasMore, onClickListEdit ->
+                                    studiosSection(
+                                        studios = studios,
+                                        hasMore = hasMore,
+                                        mediaRow = { media ->
+                                            horizontalMediaCardRow(
+                                                viewer = { viewer },
+                                                media = media,
+                                                onClickListEdit = onClickListEdit,
+                                                mediaWidth = 64.dp,
+                                                mediaHeight = 96.dp,
+                                            )
+                                        },
+                                    )
+                                },
+                                activitySection = { viewer, activities, sortFilterState, onActivityStatusUpdate, onClickListEdit ->
+                                    ActivityList(
+                                        viewer = viewer,
+                                        activities = activities,
+                                        entryToActivity = activityEntryProvider::activity,
+                                        activityId = activityEntryProvider::id,
+                                        activityContentType = activityEntryProvider::contentType,
+                                        activityToMediaEntry = activityEntryProvider::media,
+                                        activityStatusAware = activityEntryProvider::activityStatusAware,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        showMedia = true,
+                                        allowUserClick = false,
+                                        sortFilterState = { sortFilterState },
+                                        userRoute = UserDestinations.User.route,
+                                        mediaRow = { entry, modifier ->
+                                            AnimeMediaCompactListRow(
+                                                viewer = viewer,
+                                                entry = entry,
+                                                onClickListEdit = onClickListEdit,
+                                                modifier = modifier,
+                                            )
+                                        },
+                                    )
+                                },
+                                mediaDetailsRoute = AnimeDestination.MediaDetails.route,
+                                searchMediaGenreRoute = AnimeDestination.SearchMedia.genreRoute,
+                                searchMediaTagRoute = AnimeDestination.SearchMedia.tagRoute,
+                                staffDetailsRoute = StaffDestinations.StaffDetails.route,
+                                studioMediasRoute = StudioDestinations.StudioMedias.route,
+                            )
+                        }
                         AnimeRootNavDestination.UNLOCK -> {
                             val animeComponent = LocalAnimeComponent.current
                             UnlockScreen(

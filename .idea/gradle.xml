@@ -29,6 +29,7 @@
             <option value="$PROJECT_DIR$/modules/anilist/data" />
             <option value="$PROJECT_DIR$/modules/anime" />
             <option value="$PROJECT_DIR$/modules/anime/activities" />
+            <option value="$PROJECT_DIR$/modules/anime/activities/data" />
             <option value="$PROJECT_DIR$/modules/anime/characters" />
             <option value="$PROJECT_DIR$/modules/anime/characters/data" />
             <option value="$PROJECT_DIR$/modules/anime/data" />

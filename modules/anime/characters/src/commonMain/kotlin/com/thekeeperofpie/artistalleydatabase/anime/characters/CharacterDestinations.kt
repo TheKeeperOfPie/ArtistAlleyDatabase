@@ -19,7 +19,7 @@ import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.characters.details.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.characters.media.CharacterMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType

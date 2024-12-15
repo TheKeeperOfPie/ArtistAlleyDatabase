@@ -3,12 +3,10 @@
     <string name="lock_state_locked_content_description">Locked section</string>
     <string name="lock_state_unlocked_content_description">Unlocked section</string>
     <string name="lock_state_different_content_description">Lock state different indicator</string>
-    <string name="more_actions_content_description">More actions</string>
     <string name="different_indicator_content_description">Different values indicator</string>
     <string name="move_down">Move down</string>
     <string name="move_up">Move up</string>
     <string name="delete">Delete</string>
-    <string name="log_out">Log out</string>
     <string name="save">Save</string>
     <string name="save_template">Save template</string>
     <string name="save_skip_errors">Save skipping errors</string>

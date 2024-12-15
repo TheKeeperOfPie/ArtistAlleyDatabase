@@ -54,15 +54,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_video_game
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_visual_novel
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_source_web_novel
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_completed
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_current_anime
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_current_not_anime
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_dropped
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_none
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_paused
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_planning
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_repeating
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_status_unknown
 import artistalleydatabase.modules.anime.generated.resources.anime_media_next_airing_episode_with_episode
 import artistalleydatabase.modules.anime.generated.resources.anime_media_next_airing_episode_with_episode_with_relative
 import artistalleydatabase.modules.anime.generated.resources.anime_media_next_airing_episode_without_episode
@@ -166,23 +157,6 @@ object MediaUtils {
         (isGeneralSpoiler ?: false) || (isMediaSpoiler
             ?: false) -> Res.string.anime_media_tag_is_spoiler
         else -> null
-    }
-
-    fun MediaListStatus?.toTextRes(mediaType: MediaType?) = toTextRes(mediaType != MediaType.MANGA)
-
-    fun MediaListStatus?.toTextRes(anime: Boolean) = when (this) {
-        MediaListStatus.CURRENT -> if (anime) {
-            Res.string.anime_media_list_status_current_anime
-        } else {
-            Res.string.anime_media_list_status_current_not_anime
-        }
-        MediaListStatus.PLANNING -> Res.string.anime_media_list_status_planning
-        MediaListStatus.COMPLETED -> Res.string.anime_media_list_status_completed
-        MediaListStatus.DROPPED -> Res.string.anime_media_list_status_dropped
-        MediaListStatus.PAUSED -> Res.string.anime_media_list_status_paused
-        MediaListStatus.REPEATING -> Res.string.anime_media_list_status_repeating
-        MediaListStatus.UNKNOWN__ -> Res.string.anime_media_list_status_unknown
-        null -> Res.string.anime_media_list_status_none
     }
 
     fun scoreFormatToText(score: Double, format: ScoreFormat): String {
@@ -301,30 +275,6 @@ object MediaUtils {
                 Res.string.anime_media_details_fab_user_status_repeating_icon_content_description
         MediaListStatus.UNKNOWN__, null -> Icons.Filled.Add to
                 Res.string.anime_media_details_fab_user_status_edit_icon_content_description
-    }
-
-    fun MediaListStatus?.toColor() = when (this) {
-        MediaListStatus.CURRENT -> Color(146, 86, 243)
-        MediaListStatus.PLANNING -> Color(104, 214, 57)
-        MediaListStatus.COMPLETED -> Color(2, 169, 255)
-        MediaListStatus.DROPPED -> Color(0xFF810831)
-        MediaListStatus.PAUSED -> Color(247, 121, 164)
-        MediaListStatus.REPEATING -> Color(0xFFFF9000)
-        MediaListStatus.UNKNOWN__, null -> Color.White
-    }
-
-    fun MediaFormat?.toColor() = when (this) {
-        MediaFormat.TV -> Color(146, 86, 243)
-        MediaFormat.TV_SHORT -> Color(104, 214, 57)
-        MediaFormat.MOVIE -> Color(2, 169, 255)
-        MediaFormat.SPECIAL -> Color(0xFF810831)
-        MediaFormat.OVA -> Color(247, 121, 164)
-        MediaFormat.ONA -> Color(0xFFFF9000)
-        MediaFormat.MUSIC -> Color.Blue
-        MediaFormat.MANGA -> Color.Yellow
-        MediaFormat.NOVEL -> Color(0xFFFFE4C4)
-        MediaFormat.ONE_SHOT -> Color(0xFF778899)
-        MediaFormat.UNKNOWN__, null -> Color.White
     }
 
     fun MediaSource?.toTextRes() = when (this) {

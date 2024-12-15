@@ -53,9 +53,9 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.primaryName
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterEntryProvider
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage

@@ -7,6 +7,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            api(projects.modules.anilist)
             api(projects.modules.markdown)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)

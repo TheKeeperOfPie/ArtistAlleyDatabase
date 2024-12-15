@@ -75,11 +75,11 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute

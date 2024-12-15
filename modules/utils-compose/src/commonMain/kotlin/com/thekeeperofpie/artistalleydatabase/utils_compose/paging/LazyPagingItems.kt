@@ -27,7 +27,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * The class responsible for accessing the data from a [Flow] of [PagingData].
  * In order to obtain an instance of [LazyPagingItems] use the [collectAsLazyPagingItems] extension
  * method of [Flow] with [PagingData].
- * This instance can be used for Lazy foundations such as [LazyListScope.items] to display data
+ * This instance can be used for Lazy foundations such as [LazyListScope.itemsWithPlaceholderCount] to display data
  * received from the [Flow] of [PagingData].
  *
  * Previewing [LazyPagingItems] is supported on a list of mock data. See sample for how to preview
@@ -175,7 +175,7 @@ private val InitialLoadStates = LoadStates(
 /**
  * Collects values from this [Flow] of [PagingData] and represents them inside a [LazyPagingItems]
  * instance. The [LazyPagingItems] instance can be used for lazy foundations such as
- * [LazyListScope.items] in order to display the data obtained from a [Flow] of [PagingData].
+ * [LazyListScope.itemsWithPlaceholderCount] in order to display the data obtained from a [Flow] of [PagingData].
  *
  * @sample androidx.paging.compose.samples.PagingBackendSample
  *

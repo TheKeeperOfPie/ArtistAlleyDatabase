@@ -115,9 +115,9 @@ import artistalleydatabase.modules.entry.generated.resources.label_open_entry_li
 import artistalleydatabase.modules.entry.generated.resources.lock_state_different_content_description
 import artistalleydatabase.modules.entry.generated.resources.lock_state_locked_content_description
 import artistalleydatabase.modules.entry.generated.resources.lock_state_unlocked_content_description
-import artistalleydatabase.modules.entry.generated.resources.more_actions_content_description
 import artistalleydatabase.modules.entry.generated.resources.move_down
 import artistalleydatabase.modules.entry.generated.resources.move_up
+import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
@@ -133,6 +133,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsRes
 
 @Composable
 fun EntryForm(
@@ -484,7 +485,7 @@ private fun PrefilledSectionField(
                                 Icon(
                                     imageVector = Icons.Default.MoreVert,
                                     contentDescription = stringResource(
-                                        Res.string.more_actions_content_description
+                                        UtilsRes.string.more_actions_content_description
                                     ),
                                 )
                             }
@@ -590,7 +591,7 @@ private fun PrefilledSectionField(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = stringResource(
-                                Res.string.more_actions_content_description
+                                UtilsRes.string.more_actions_content_description
                             ),
                         )
                     }
@@ -608,7 +609,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = stringResource(
-                                    Res.string.more_actions_content_description
+                                    UtilsRes.string.more_actions_content_description
                                 ),
                             )
                         }
@@ -651,7 +652,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = stringResource(
-                                    Res.string.more_actions_content_description
+                                    UtilsRes.string.more_actions_content_description
                                 ),
                             )
                         }

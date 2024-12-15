@@ -12,11 +12,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityUtils.entryId
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityUtils.liked
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityUtils.subscribed
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityUtils.entryId
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityUtils.liked
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController

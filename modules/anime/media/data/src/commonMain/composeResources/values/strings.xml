@@ -76,4 +76,14 @@
     <string name="anime_media_status_cancelled">Cancelled</string>
     <string name="anime_media_status_hiatus">Hiatus</string>
     <string name="anime_media_status_unknown">Unknown</string>
+
+    <string name="anime_media_list_status_current_anime">Watching</string>
+    <string name="anime_media_list_status_current_not_anime">Reading</string>
+    <string name="anime_media_list_status_planning">Planning</string>
+    <string name="anime_media_list_status_completed">Completed</string>
+    <string name="anime_media_list_status_dropped">Dropped</string>
+    <string name="anime_media_list_status_paused">On hold</string>
+    <string name="anime_media_list_status_repeating">Repeating</string>
+    <string name="anime_media_list_status_unknown">Unknown</string>
+    <string name="anime_media_list_status_none">Not on list</string>
 </resources>

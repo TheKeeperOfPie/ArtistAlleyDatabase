@@ -176,7 +176,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogC
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -184,6 +183,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet

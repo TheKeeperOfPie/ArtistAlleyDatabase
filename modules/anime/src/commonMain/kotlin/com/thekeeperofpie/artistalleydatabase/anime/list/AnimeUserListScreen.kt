@@ -70,7 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow

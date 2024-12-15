@@ -11,7 +11,7 @@ import com.anilist.data.fragment.CharacterNavigationData
 import com.anilist.data.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
