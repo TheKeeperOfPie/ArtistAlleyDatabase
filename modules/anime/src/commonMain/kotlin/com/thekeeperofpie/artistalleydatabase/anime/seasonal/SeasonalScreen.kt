@@ -111,11 +111,12 @@ object SeasonalScreen {
                         scrollBehavior = scrollBehavior
                     )
                 },
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) {
                     val data = viewModel.items(it)
                     ListContent(
