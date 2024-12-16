@@ -3,14 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.activity
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -23,12 +19,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_activities_header
 import artistalleydatabase.modules.anime.generated.resources.anime_media_activities_tab_following
@@ -36,22 +30,15 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_activit
 import com.anilist.data.MediaActivityQuery
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,7 +106,6 @@ object MediaActivitiesScreen {
             },
             snackbarHostState = snackbarHostState,
         ) { scaffoldPadding ->
-            val gridState = rememberLazyGridState()
             val following = viewModel.following.collectAsLazyPagingItems()
             val global = viewModel.global.collectAsLazyPagingItems()
             val selectedIsFollowing = viewModel.selectedIsFollowing
@@ -145,90 +131,31 @@ object MediaActivitiesScreen {
                     }
                 }
 
-                val refreshing = items.loadState.refresh is LoadState.Loading
-                val pullRefreshState = rememberPullRefreshState(
-                    refreshing = refreshing,
+                VerticalList(
+                    itemHeaderText = Res.string.anime_media_activities_header,
+                    items = items,
+                    itemKey = { it.activityId },
                     onRefresh = items::refresh,
-                )
-
-                Box(
+                    contentPadding = PaddingValues(
+                        top = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 32.dp,
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxSize()
-                        .pullRefresh(pullRefreshState)
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .padding(scaffoldPadding)
                 ) {
-                    when (val refreshState = items.loadState.refresh) {
-                        LoadState.Loading -> Unit
-                        is LoadState.Error -> AnimeMediaListScreen.Error(exception = refreshState.error)
-                        is LoadState.NotLoading -> {
-                            if (items.itemCount == 0) {
-                                AnimeMediaListScreen.NoResults()
-                            } else {
-                                LazyVerticalGrid(
-                                    state = gridState,
-                                    columns = GridCells.Adaptive(450.dp),
-                                    contentPadding = PaddingValues(
-                                        top = 16.dp,
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        bottom = 32.dp,
-                                    ),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                                        .padding(scaffoldPadding)
-                                ) {
-                                    if (viewer == null) {
-                                        item(
-                                            key = "header",
-                                            span = GridUtils.maxSpanFunction,
-                                            contentType = "detailsSectionHeader",
-                                        ) {
-                                            DetailsSectionHeader(stringResource(Res.string.anime_media_activities_header))
-                                        }
-                                    }
-
-                                    items(
-                                        count = items.itemCount,
-                                        key = items.itemKey { it.activityId },
-                                        contentType = items.itemContentType { "item" },
-                                    ) {
-                                        val item = items[it]
-                                        ListActivitySmallCard(
-                                            viewer = viewer,
-                                            activity = item?.activity,
-                                            entry = item,
-                                            onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                                            userRoute = UserDestinations.User.route,
-                                            clickable = true,
-                                        )
-                                    }
-
-                                    when (items.loadState.append) {
-                                        is LoadState.Loading -> item(
-                                            "load_more_append",
-                                            span = GridUtils.maxSpanFunction,
-                                        ) {
-                                            AnimeMediaListScreen.LoadingMore()
-                                        }
-                                        is LoadState.Error -> item(
-                                            "load_more_error",
-                                            span = GridUtils.maxSpanFunction,
-                                        ) {
-                                            AnimeMediaListScreen.AppendError { items.retry() }
-                                        }
-                                        is LoadState.NotLoading -> Unit
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    PullRefreshIndicator(
-                        refreshing = refreshing,
-                        state = pullRefreshState,
-                        modifier = Modifier.align(Alignment.TopCenter)
+                    ListActivitySmallCard(
+                        viewer = viewer,
+                        activity = it?.activity,
+                        entry = it,
+                        onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                        userRoute = UserDestinations.User.route,
+                        clickable = true,
                     )
                 }
             }

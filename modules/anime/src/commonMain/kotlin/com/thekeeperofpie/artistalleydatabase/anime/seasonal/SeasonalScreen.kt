@@ -4,14 +4,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -33,17 +30,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
 import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_season_year
 import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_title
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
@@ -51,14 +44,10 @@ import com.anilist.data.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -66,9 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
@@ -118,13 +105,34 @@ object SeasonalScreen {
                         .fillMaxSize()
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) {
-                    val data = viewModel.items(it)
-                    ListContent(
-                        viewModel = viewModel,
-                        editViewModel = editViewModel,
-                        content = data,
-                        scaffoldPadding = scaffoldPadding,
-                        sortFilterController = sortFilterController,
+                    val viewer by viewModel.viewer.collectAsState()
+                    val columns = viewModel.mediaViewOption.widthAdaptiveCells
+                    val gridState = rememberLazyGridState()
+                    sortFilterController.ImmediateScrollResetEffect(gridState)
+                    VerticalList(
+                        gridState = gridState,
+                        itemHeaderText = null,
+                        onRefresh = viewModel::onRefresh,
+                        items = viewModel.items(it),
+                        itemKey = { it.media.id },
+                        item = {
+                            MediaViewOptionRow(
+                                mediaViewOption = viewModel.mediaViewOption,
+                                viewer = viewer,
+                                onClickListEdit = editViewModel::initialize,
+                                entry = it,
+                            )
+                        },
+                        columns = columns,
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 16.dp,
+                            bottom = 16.dp,
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(scaffoldPadding)
                     )
                 }
             }
@@ -226,91 +234,6 @@ object SeasonalScreen {
                 }
 
                 HorizontalDivider()
-            }
-        }
-    }
-
-    @Composable
-    private fun ListContent(
-        viewModel: SeasonalViewModel,
-        editViewModel: MediaEditViewModel,
-        content: LazyPagingItems<MediaPreviewWithDescriptionEntry>,
-        scaffoldPadding: PaddingValues,
-        sortFilterController: AnimeSortFilterController<*>,
-    ) {
-        val refreshState = content.loadState.refresh
-        val refreshing = content.loadState.refresh is LoadState.Loading
-        val viewer by viewModel.viewer.collectAsState()
-        AnimeMediaListScreen(
-            refreshing = refreshing,
-            onRefresh = viewModel::onRefresh,
-            modifier = Modifier.padding(scaffoldPadding),
-        ) {
-            val columns = viewModel.mediaViewOption.widthAdaptiveCells
-            val gridState = rememberLazyGridState()
-            sortFilterController.ImmediateScrollResetEffect(gridState)
-            LazyVerticalGrid(
-                state = gridState,
-                columns = columns,
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 16.dp,
-                    bottom = 16.dp,
-                ),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                when {
-                    refreshState is LoadState.Error && content.itemCount == 0 ->
-                        item {
-                            AnimeMediaListScreen.ErrorContent(
-                                errorTextRes = Res.string.anime_media_list_error_loading,
-                                exception = refreshState.error,
-                            )
-                        }
-                    refreshState is LoadState.NotLoading && content.itemCount == 0 ->
-                        item {
-                            Box(
-                                contentAlignment = Alignment.TopCenter,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    stringResource(Res.string.anime_media_list_no_results),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(
-                                        horizontal = 16.dp,
-                                        vertical = 10.dp
-                                    ),
-                                )
-                            }
-                        }
-                    else -> {
-                        items(
-                            count = content.itemCount,
-                            key = content.itemKey { it.media.id },
-                            contentType = content.itemContentType { "media" }
-                        ) { index ->
-                            val item = content[index]
-                            MediaViewOptionRow(
-                                mediaViewOption = viewModel.mediaViewOption,
-                                viewer = viewer,
-                                onClickListEdit = editViewModel::initialize,
-                                entry = item,
-                            )
-                        }
-                    }
-                }
-
-                when (content.loadState.append) {
-                    is LoadState.Loading -> item(key = "load_more_append") {
-                        AnimeMediaListScreen.LoadingMore()
-                    }
-                    is LoadState.Error -> item(key = "load_more_error") {
-                        AnimeMediaListScreen.AppendError { content.retry() }
-                    }
-                    is LoadState.NotLoading -> Unit
-                }
             }
         }
     }

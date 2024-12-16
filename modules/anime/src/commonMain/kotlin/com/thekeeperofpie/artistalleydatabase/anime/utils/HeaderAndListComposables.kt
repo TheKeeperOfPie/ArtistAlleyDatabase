@@ -4,50 +4,29 @@ package com.thekeeperofpie.artistalleydatabase.anime.utils
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.paging.LoadState
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
-import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun <ListEntryType : Any> HeaderAndListScreen(
@@ -156,87 +135,16 @@ private fun <ListEntryType : Any> List(
     val gridState = rememberLazyGridState()
     val items = viewModel.items.collectAsLazyPagingItems()
     sortFilterController.ImmediateScrollResetEffect(gridState)
-    val refreshState = items.loadState.refresh
-
-    val refreshing = refreshState is LoadState.Loading
-    val pullRefreshState = rememberPullRefreshState(refreshing, viewModel::refresh)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
+    VerticalList(
+        itemHeaderText = headerTextRes,
+        items = items,
+        itemKey = itemKey,
+        gridState = gridState,
+        onRefresh = items::refresh,
+        contentPadding = PaddingValues(bottom = 32.dp),
+        nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+        modifier = Modifier.padding(scaffoldPadding)
     ) {
-        LazyVerticalGrid(
-            state = gridState,
-            columns = GridCells.Adaptive(450.dp),
-            contentPadding = PaddingValues(bottom = 32.dp),
-            modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(scaffoldPadding)
-        ) {
-            if (headerTextRes != null) {
-                item(
-                    key = "header",
-                    span = GridUtils.maxSpanFunction,
-                    contentType = "detailsSectionHeader",
-                ) {
-                    DetailsSectionHeader(text = stringResource(headerTextRes))
-                }
-            }
-            when {
-                refreshState is LoadState.Error && items.itemCount == 0 ->
-                    item(key = "errorLoading", span = GridUtils.maxSpanFunction) {
-                        AnimeMediaListScreen.ErrorContent(
-                            errorTextRes = Res.string.anime_media_list_error_loading,
-                            exception = refreshState.error,
-                        )
-                    }
-                refreshState is LoadState.NotLoading && items.itemCount == 0 ->
-                    item(key = "errorNoResults", span = GridUtils.maxSpanFunction) {
-                        Box(
-                            contentAlignment = Alignment.TopCenter,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                stringResource(Res.string.anime_media_list_no_results),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(
-                                    horizontal = 16.dp,
-                                    vertical = 10.dp
-                                ),
-                            )
-                        }
-                    }
-                else -> {
-                    items(
-                        count = items.itemCount,
-                        key = items.itemKey { itemKey(it) },
-                        contentType = items.itemContentType { "item" },
-                    ) {
-                        item(items[it])
-                    }
-
-                    when (items.loadState.append) {
-                        is LoadState.Loading -> item(
-                            key = "load_more_append",
-                            span = GridUtils.maxSpanFunction
-                        ) {
-                            AnimeMediaListScreen.LoadingMore()
-                        }
-                        is LoadState.Error -> item(
-                            key = "load_more_error",
-                            span = GridUtils.maxSpanFunction
-                        ) {
-                            AnimeMediaListScreen.AppendError { items.retry() }
-                        }
-                        is LoadState.NotLoading -> Unit
-                    }
-                }
-            }
-        }
-        PullRefreshIndicator(
-            refreshing = refreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
+        item(it)
     }
 }

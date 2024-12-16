@@ -79,13 +79,15 @@ object AnimeRootScreen {
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
         val bottomNavigationState = BottomNavigationState(scrollBehavior)
         val needsAuth = viewModel.authToken.collectAsState().value == null
+        val persistedSelectedScreen by viewModel.persistedSelectedScreen.collectAsState()
+        val unlocked by viewModel.unlocked.collectAsState()
 
         var selectedScreen by rememberSaveable(stateSaver = AnimeRootNavDestination.StateSaver) {
             mutableStateOf(
-                viewModel.persistedSelectedScreen
-                .takeIf { !it.requiresAuth || !needsAuth }
-                ?.takeIf { !it.requiresUnlock || viewModel.unlocked() }
-                ?: AnimeRootNavDestination.HOME
+                persistedSelectedScreen
+                    .takeIf { !it.requiresAuth || !needsAuth }
+                    ?.takeIf { !it.requiresUnlock || unlocked }
+                    ?: AnimeRootNavDestination.HOME
             )
         }
 
@@ -125,7 +127,6 @@ object AnimeRootScreen {
                     modifier = Modifier.height(56.dp)
                 ) {
                     val navigationController = LocalNavigationController.current
-                    val unlocked by viewModel.unlocked.collectAsState()
 
                     var showAnimeMenu by remember { mutableStateOf(false) }
                     var showMangaMenu by remember { mutableStateOf(false) }

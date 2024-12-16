@@ -14,13 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -50,7 +48,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
 import artistalleydatabase.modules.anime.generated.resources.anime_open_feature_tiers_button
 import artistalleydatabase.modules.anime.generated.resources.anime_requires_unlock
 import artistalleydatabase.modules.anime.generated.resources.anime_search_anime
@@ -61,12 +58,13 @@ import artistalleydatabase.modules.anime.generated.resources.anime_search_staff
 import artistalleydatabase.modules.anime.generated.resources.anime_search_studio
 import artistalleydatabase.modules.anime.generated.resources.anime_search_user
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
+import com.anilist.data.fragment.MediaNavigationData
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.characters.horizontalCharactersRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -82,16 +80,15 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
@@ -167,208 +164,48 @@ object AnimeSearchScreen {
 
                 val viewer by viewModel.viewer.collectAsState()
                 val layoutDirection = LocalLayoutDirection.current
-                AnimeMediaListScreen(
-                    refreshing = refreshing,
-                    onRefresh = viewModel::onRefresh,
-                    modifier = Modifier.padding(
-                        start = scaffoldPadding.calculateStartPadding(layoutDirection),
-                        end = scaffoldPadding.calculateEndPadding(layoutDirection),
-                        top = scaffoldPadding.calculateTopPadding(),
-                    ),
-                ) {
-                    if (!selectedUnlocked) {
-                        LockedFeatureTiers()
-                    } else {
-                        val columns =
-                            if (selectedType == AnimeSearchViewModel.SearchType.ANIME || selectedType == AnimeSearchViewModel.SearchType.MANGA) {
-                                viewModel.mediaViewOption.widthAdaptiveCells
-                            } else {
-                                GridCells.Adaptive(300.dp)
-                            }
-                        val gridState = scrollStateSaver.lazyGridState()
-                        sortFilterController.ImmediateScrollResetEffect(gridState)
-                        LazyVerticalGrid(
-                            columns = columns,
-                            state = gridState,
-                            contentPadding = PaddingValues(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = 16.dp,
-                                bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
-                            ),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            when {
-                                refreshState is LoadState.Error && content.itemCount == 0 ->
-                                    item {
-                                        AnimeMediaListScreen.ErrorContent(
-                                            errorTextRes = Res.string.anime_media_list_error_loading,
-                                            exception = refreshState.error,
-                                        )
-                                    }
-                                refreshState is LoadState.NotLoading && content.itemCount == 0 ->
-                                    item {
-                                        Box(
-                                            contentAlignment = Alignment.TopCenter,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Text(
-                                                stringResource(Res.string.anime_media_list_no_results),
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                modifier = Modifier.padding(
-                                                    horizontal = 16.dp,
-                                                    vertical = 10.dp
-                                                ),
-                                            )
-                                        }
-                                    }
-                                else -> {
-                                    items(
-                                        data = content,
-                                        placeholderCount = 10,
-                                        key = { it.entryId.scopedId },
-                                        contentType = { it.entryId.type }
-                                    ) { data ->
-                                        when (data) {
-                                            is AnimeSearchEntry.Media -> MediaViewOptionRow(
-                                                mediaViewOption = viewModel.mediaViewOption,
-                                                viewer = viewer,
-                                                onClickListEdit = editViewModel::initialize,
-                                                entry = data.entry,
-                                            )
-                                            is AnimeSearchEntry.Character -> CharacterListRow(
-                                                entry = data.entry,
-                                                staffDetailsRoute =
-                                                    StaffDestinations.StaffDetails.route,
-                                                mediaItems = {
-                                                    characterMediaItems(
-                                                        media = it,
-                                                        viewer = { viewer },
-                                                        onClickListEdit = editViewModel::initialize,
-                                                    )
-                                                },
-                                            )
-                                            is AnimeSearchEntry.Staff -> StaffListRow(
-                                                entry = data.entry,
-                                                charactersSection = { horizontalCharactersRow(it) },
-                                                mediaSection = { media ->
-                                                    horizontalMediaCardRow(
-                                                        viewer = { viewer },
-                                                        media = media,
-                                                        onClickListEdit = editViewModel::initialize,
-                                                    )
-                                                },
-                                            )
-                                            is AnimeSearchEntry.Studio -> StudioListRow(
-                                                entry = data.entry,
-                                                mediaRow = { media ->
-                                                    horizontalMediaCardRow(
-                                                        viewer = { viewer },
-                                                        media = media,
-                                                        onClickListEdit = editViewModel::initialize,
-                                                        mediaWidth = 120.dp,
-                                                        mediaHeight = 180.dp,
-                                                    )
-                                                },
-                                            )
-                                            is AnimeSearchEntry.User -> UserListRow(
-                                                entry = data.entry,
-                                                mediaRow = { media ->
-                                                    horizontalMediaCardRow(
-                                                        viewer = {viewer},
-                                                        media = media,
-                                                        onClickListEdit =
-                                                            editViewModel::initialize,
-                                                        forceListEditIcon = true,
-                                                    )
-                                                }
-                                            )
-
-                                            null -> when (selectedType) {
-                                                AnimeSearchViewModel.SearchType.ANIME,
-                                                AnimeSearchViewModel.SearchType.MANGA,
-                                                    -> MediaViewOptionRow(
-                                                    mediaViewOption = viewModel.mediaViewOption,
-                                                    viewer = viewer,
-                                                    onClickListEdit = editViewModel::initialize,
-                                                    entry = null,
-                                                )
-                                                AnimeSearchViewModel.SearchType.CHARACTER ->
-                                                    CharacterListRow<Unit>(
-                                                        entry = null,
-                                                        staffDetailsRoute =
-                                                            StaffDestinations.StaffDetails.route,
-                                                        mediaItems = {},
-                                                    )
-                                                AnimeSearchViewModel.SearchType.STAFF ->
-                                                    StaffListRow<Unit>(
-                                                        entry = null,
-                                                        charactersSection = {},
-                                                        mediaSection = {},
-                                                    )
-                                                AnimeSearchViewModel.SearchType.STUDIO ->
-                                                    StudioListRow<Unit>(
-                                                        entry = null,
-                                                        mediaRow = {},
-                                                        mediaHeight = 180.dp,
-                                                    )
-                                                AnimeSearchViewModel.SearchType.USER ->
-                                                    UserListRow(
-                                                        entry = null,
-                                                        mediaRow = { media ->
-                                                            horizontalMediaCardRow(
-                                                                viewer = {viewer},
-                                                                media = media,
-                                                                onClickListEdit =
-                                                                    editViewModel::initialize,
-                                                                forceListEditIcon = true,
-                                                            )
-                                                        }
-                                                    )
-                                            }
-                                        }
-                                    }
-
-                                    when (content.loadState.append) {
-                                        is LoadState.Error -> item(
-                                            key = "append_error",
-                                            span = GridUtils.maxSpanFunction
-                                        ) {
-                                            Box(Modifier.fillMaxWidth()) {
-                                                Text(
-                                                    text = stringResource(Res.string.anime_media_list_error_loading),
-                                                    modifier = Modifier.align(Alignment.Center),
-                                                )
-                                            }
-                                        }
-                                        LoadState.Loading -> item(
-                                            key = "append_loading",
-                                            span = GridUtils.maxSpanFunction
-                                        ) {
-                                            Box(Modifier.fillMaxWidth()) {
-                                                CircularProgressIndicator(
-                                                    Modifier.align(Alignment.Center)
-                                                )
-                                            }
-                                        }
-                                        is LoadState.NotLoading -> Unit
-                                    }
-                                }
-                            }
-
-                            when (content.loadState.append) {
-                                is LoadState.Loading -> item(key = "load_more_append") {
-                                    AnimeMediaListScreen.LoadingMore()
-                                }
-                                is LoadState.Error -> item(key = "load_more_error") {
-                                    AnimeMediaListScreen.AppendError { content.retry() }
-                                }
-                                is LoadState.NotLoading -> Unit
-                            }
+                if (!selectedUnlocked) {
+                    LockedFeatureTiers()
+                } else {
+                    val columns =
+                        if (selectedType == AnimeSearchViewModel.SearchType.ANIME || selectedType == AnimeSearchViewModel.SearchType.MANGA) {
+                            viewModel.mediaViewOption.widthAdaptiveCells
+                        } else {
+                            GridCells.Adaptive(300.dp)
                         }
-                    }
+                    val gridState = scrollStateSaver.lazyGridState()
+                    sortFilterController.ImmediateScrollResetEffect(gridState)
+                    VerticalList(
+                        gridState = gridState,
+                        itemHeaderText = null,
+                        onRefresh = viewModel::onRefresh,
+                        columns = columns,
+                        items = content,
+                        itemKey = { it.entryId.scopedId },
+                        itemContentType = { it.entryId.type },
+                        item = {
+                            EntryItem(
+                                viewer = viewer,
+                                mediaViewOption = { viewModel.mediaViewOption },
+                                selectedType = selectedType,
+                                entry = it,
+                                onClickListEdit = editViewModel::initialize,
+                            )
+                        },
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 16.dp,
+                            bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(
+                            start = scaffoldPadding.calculateStartPadding(layoutDirection),
+                            end = scaffoldPadding.calculateEndPadding(layoutDirection),
+                            top = scaffoldPadding.calculateTopPadding(),
+                        )
+                    )
                 }
             }
         }
@@ -507,6 +344,112 @@ object AnimeSearchScreen {
                 }
 
                 HorizontalDivider()
+            }
+        }
+    }
+
+    @Composable
+    private fun EntryItem(
+        viewer: AniListViewer?,
+        mediaViewOption: () -> MediaViewOption,
+        selectedType: AnimeSearchViewModel.SearchType,
+        entry: AnimeSearchEntry?,
+        onClickListEdit: (MediaNavigationData) -> Unit,
+    ) {
+        when (entry) {
+            is AnimeSearchEntry.Media -> MediaViewOptionRow(
+                mediaViewOption = mediaViewOption(),
+                viewer = viewer,
+                onClickListEdit = onClickListEdit,
+                entry = entry.entry,
+            )
+            is AnimeSearchEntry.Character -> CharacterListRow(
+                entry = entry.entry,
+                staffDetailsRoute =
+                    StaffDestinations.StaffDetails.route,
+                mediaItems = {
+                    characterMediaItems(
+                        media = it,
+                        viewer = { viewer },
+                        onClickListEdit = onClickListEdit,
+                    )
+                },
+            )
+            is AnimeSearchEntry.Staff -> StaffListRow(
+                entry = entry.entry,
+                charactersSection = { horizontalCharactersRow(it) },
+                mediaSection = { media ->
+                    horizontalMediaCardRow(
+                        viewer = { viewer },
+                        media = media,
+                        onClickListEdit = onClickListEdit,
+                    )
+                },
+            )
+            is AnimeSearchEntry.Studio -> StudioListRow(
+                entry = entry.entry,
+                mediaRow = { media ->
+                    horizontalMediaCardRow(
+                        viewer = { viewer },
+                        media = media,
+                        onClickListEdit = onClickListEdit,
+                        mediaWidth = 120.dp,
+                        mediaHeight = 180.dp,
+                    )
+                },
+            )
+            is AnimeSearchEntry.User -> UserListRow(
+                entry = entry.entry,
+                mediaRow = { media ->
+                    horizontalMediaCardRow(
+                        viewer = { viewer },
+                        media = media,
+                        onClickListEdit = onClickListEdit,
+                        forceListEditIcon = true,
+                    )
+                }
+            )
+
+            null -> when (selectedType) {
+                AnimeSearchViewModel.SearchType.ANIME,
+                AnimeSearchViewModel.SearchType.MANGA,
+                    -> MediaViewOptionRow(
+                    mediaViewOption = mediaViewOption(),
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    entry = null,
+                )
+                AnimeSearchViewModel.SearchType.CHARACTER ->
+                    CharacterListRow<Unit>(
+                        entry = null,
+                        staffDetailsRoute =
+                            StaffDestinations.StaffDetails.route,
+                        mediaItems = {},
+                    )
+                AnimeSearchViewModel.SearchType.STAFF ->
+                    StaffListRow<Unit>(
+                        entry = null,
+                        charactersSection = {},
+                        mediaSection = {},
+                    )
+                AnimeSearchViewModel.SearchType.STUDIO ->
+                    StudioListRow<Unit>(
+                        entry = null,
+                        mediaRow = {},
+                        mediaHeight = 180.dp,
+                    )
+                AnimeSearchViewModel.SearchType.USER ->
+                    UserListRow(
+                        entry = null,
+                        mediaRow = { media ->
+                            horizontalMediaCardRow(
+                                viewer = { viewer },
+                                media = media,
+                                onClickListEdit = onClickListEdit,
+                                forceListEditIcon = true,
+                            )
+                        }
+                    )
             }
         }
     }

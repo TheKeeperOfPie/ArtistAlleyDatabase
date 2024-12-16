@@ -5,8 +5,10 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.lists
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,9 +39,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
+import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,8 +55,7 @@ object VerticalList {
         itemHeaderText: StringResource?,
         items: LazyPagingItems<Item>,
         itemKey: (Item) -> Any,
-        itemContentType: ((Item) -> Any)? = null,
-        item: @Composable LazyGridItemScope.(Item?) -> Unit,
+        itemContentType: ((Item) -> String)? = null,
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier,
         gridState: LazyGridState = rememberLazyGridState(),
@@ -60,14 +64,114 @@ object VerticalList {
         verticalArrangement: Arrangement.Vertical = Arrangement.Top,
         horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
         contentPadding: PaddingValues = PaddingValues(bottom = 32.dp),
+        placeholderCount: Int = 10,
+        showScrollbar: Boolean = false,
+        item: @Composable LazyGridItemScope.(Item?) -> Unit,
+    ) = VerticalList(
+        itemHeaderText = itemHeaderText,
+        itemCount = { items.itemCount },
+        itemAtIndex = { items[it] },
+        itemKey = items.itemKey(itemKey),
+        itemContentType = items.itemContentType { itemContentType?.invoke(it) },
+        onRefresh = onRefresh,
+        modifier = modifier,
+        gridState = gridState,
+        columns = columns,
+        nestedScrollConnection = nestedScrollConnection,
+        verticalArrangement = verticalArrangement,
+        horizontalArrangement = horizontalArrangement,
+        contentPadding = contentPadding,
+        placeholderCount = placeholderCount,
+        pullRefreshState =
+            rememberPullRefreshState(items.loadState.refresh is LoadState.Loading, onRefresh),
+        pullRefreshIndicator = { refreshing, pullRefreshState ->
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        },
+        refreshState = { items.loadState.refresh },
+        appendState = { items.loadState.append },
+        showScrollbar = showScrollbar,
+        item = item,
+    )
+
+    @Composable
+    operator fun <Item : Any> invoke(
+        itemHeaderText: StringResource?,
+        items: List<Item>?,
+        itemKey: (Item) -> Any,
+        itemContentType: ((Item) -> String)? = null,
+        modifier: Modifier = Modifier,
+        gridState: LazyGridState = rememberLazyGridState(),
+        columns: GridCells = GridUtils.standardWidthAdaptiveCells,
+        nestedScrollConnection: NestedScrollConnection? = null,
+        verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+        horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+        contentPadding: PaddingValues = PaddingValues(bottom = 32.dp),
+        placeholderCount: Int = 10,
+        showScrollbar: Boolean = false,
+        item: @Composable LazyGridItemScope.(Item?) -> Unit,
+    ) = VerticalList(
+        itemHeaderText = itemHeaderText,
+        itemCount = { items?.size ?: 0 },
+        itemAtIndex = { items?.getOrNull(it) },
+        itemKey = { items?.getOrNull(it)?.let(itemKey) },
+        itemContentType = { items?.getOrNull(it)?.let { itemContentType?.invoke(it) } },
+        onRefresh = {},
+        modifier = modifier,
+        gridState = gridState,
+        columns = columns,
+        nestedScrollConnection = nestedScrollConnection,
+        verticalArrangement = verticalArrangement,
+        horizontalArrangement = horizontalArrangement,
+        contentPadding = contentPadding,
+        placeholderCount = placeholderCount,
+        pullRefreshState = null,
+        pullRefreshIndicator = null,
+        refreshState = { if (items == null) LoadState.Loading else LoadState.NotLoading(true) },
+        appendState = { LoadState.NotLoading(true) },
+        showScrollbar = showScrollbar,
+        item = item,
+    )
+
+    @Composable
+    private fun <Item : Any> VerticalList(
+        itemHeaderText: StringResource?,
+        itemCount: () -> Int,
+        itemAtIndex: (index: Int) -> Item?,
+        itemKey: (index: Int) -> Any?,
+        itemContentType: ((index: Int) -> Any?)? = null,
+        onRefresh: () -> Unit,
+        modifier: Modifier = Modifier,
+        gridState: LazyGridState = rememberLazyGridState(),
+        columns: GridCells = GridUtils.standardWidthAdaptiveCells,
+        nestedScrollConnection: NestedScrollConnection? = null,
+        verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+        horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+        contentPadding: PaddingValues = PaddingValues(bottom = 32.dp),
+        placeholderCount: Int = 10,
+        pullRefreshState: PullRefreshState?,
+        pullRefreshIndicator: (@Composable BoxScope.(
+            refreshing: Boolean,
+            pullRefreshState: PullRefreshState,
+        ) -> Unit)? = { refreshing, pullRefreshState ->
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        },
+        refreshState: () -> LoadState,
+        appendState: () -> LoadState,
+        showScrollbar: Boolean = false,
+        item: @Composable LazyGridItemScope.(Item?) -> Unit,
     ) {
-        val refreshState = items.loadState.refresh
-        val refreshing = refreshState is LoadState.Loading
-        val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh)
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .pullRefresh(pullRefreshState)
+                .conditionallyNonNull(pullRefreshState) { pullRefresh(it) }
         ) {
             LazyVerticalGrid(
                 state = gridState,
@@ -87,28 +191,32 @@ object VerticalList {
                         DetailsSectionHeader(text = stringResource(itemHeaderText))
                     }
                 }
+                val refreshState = refreshState()
                 when {
-                    refreshState is LoadState.Error && items.itemCount == 0 ->
+                    refreshState is LoadState.Error && itemCount() == 0 ->
                         item(key = "errorLoading", span = GridUtils.maxSpanFunction) {
                             ErrorContent(
                                 errorText = stringResource(Res.string.error_loading),
                                 exception = refreshState.error,
                             )
                         }
-                    refreshState is LoadState.NotLoading && items.itemCount == 0 ->
+                    refreshState is LoadState.NotLoading && itemCount() == 0 ->
                         item(key = "errorNoResults", span = GridUtils.maxSpanFunction) {
                             NoResults()
                         }
                     else -> {
                         items(
-                            count = items.itemCount,
-                            key = items.itemKey { itemKey(it) },
-                            contentType = items.itemContentType { itemContentType?.invoke(it) },
+                            itemCount = itemCount,
+                            itemAtIndex = itemAtIndex,
+                            refreshState = refreshState,
+                            placeholderCount = placeholderCount,
+                            key = itemKey,
+                            contentType = { itemContentType?.invoke(it) ?: "defaultType" },
                         ) {
-                            item(items[it])
+                            item(it)
                         }
 
-                        when (items.loadState.append) {
+                        when (appendState()) {
                             is LoadState.Loading -> item(
                                 key = "load_more_append",
                                 span = GridUtils.maxSpanFunction
@@ -126,11 +234,18 @@ object VerticalList {
                     }
                 }
             }
-            PullRefreshIndicator(
-                refreshing = refreshing,
-                state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
+            if (pullRefreshState != null && pullRefreshIndicator != null) {
+                pullRefreshIndicator(this, refreshState() is LoadState.Loading, pullRefreshState)
+            }
+
+            if (showScrollbar) {
+                VerticalScrollbar(
+                    state = gridState,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                )
+            }
         }
     }
 

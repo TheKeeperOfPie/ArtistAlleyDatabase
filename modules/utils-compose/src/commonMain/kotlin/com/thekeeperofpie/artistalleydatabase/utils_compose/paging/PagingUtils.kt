@@ -118,6 +118,39 @@ fun <T : Any> LazyGridScope.items(
     }
 }
 
+fun <T : Any> LazyGridScope.items(
+    itemCount: () -> Int,
+    itemAtIndex: (index: Int) -> T?,
+    refreshState: LoadState,
+    placeholderCount: Int,
+    key: (index: Int) -> Any?,
+    contentType: (index: Int) -> Any?,
+    itemContent: @Composable LazyGridItemScope.(item: T?) -> Unit,
+) {
+    val mockingPlaceholder = refreshState is LoadState.Loading && itemCount() == 0
+    val itemCount = if (mockingPlaceholder) placeholderCount else itemCount()
+    items(
+        count = itemCount,
+        key = {
+            if (mockingPlaceholder) {
+                PagingPlaceholderKey(it)
+            } else {
+                key(it) ?: PagingPlaceholderKey(it)
+            }
+        },
+        contentType = {
+            if (mockingPlaceholder) {
+                PagingPlaceholderContentType
+            } else {
+                contentType(it)
+            }
+        },
+    ) {
+        val item = if (mockingPlaceholder) null else itemAtIndex(it)
+        itemContent(item)
+    }
+}
+
 fun <T : Any> LazyGridScope.itemsIndexed(
     data: LazyPagingItems<T>,
     placeholderCount: Int,

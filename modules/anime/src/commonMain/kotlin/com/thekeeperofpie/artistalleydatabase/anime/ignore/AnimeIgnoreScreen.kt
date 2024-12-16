@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,12 +20,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_header
 import artistalleydatabase.modules.anime.generated.resources.anime_media_ignore_not_enabled_button
@@ -37,7 +34,6 @@ import artistalleydatabase.modules.anime.media.data.generated.resources.anime_me
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -45,9 +41,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
@@ -65,74 +60,40 @@ object AnimeIgnoreScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             viewModel = editViewModel,
             topBar = { TopBar(viewModel, upIconOption, scrollBehavior) },
         ) { scaffoldPadding ->
             val content = viewModel.content.collectAsLazyPagingItems()
-            val refreshing = content.loadState.refresh is LoadState.Loading
             val viewer by viewModel.viewer.collectAsState()
-            AnimeMediaListScreen(
-                refreshing = refreshing,
-                onRefresh = viewModel::onRefresh,
-                modifier = Modifier.padding(scaffoldPadding),
-            ) {
-                val enabled by viewModel.enabled.collectAsState()
-                if (!enabled) {
-                    NotEnabledPrompt(viewModel)
-                } else {
-                    when (val refreshState = content.loadState.refresh) {
-                        LoadState.Loading -> Unit
-                        is LoadState.Error -> AnimeMediaListScreen.Error(
-                            exception = refreshState.error,
-                        )
-                        is LoadState.NotLoading -> {
-                            if (content.itemCount == 0) {
-                                AnimeMediaListScreen.NoResults()
-                            } else {
-                                val columns = viewModel.mediaViewOption.widthAdaptiveCells
-                                val mediaType = viewModel.selectedType
-                                LazyVerticalGrid(
-                                    columns = columns,
-                                    contentPadding = PaddingValues(
-                                        top = 16.dp,
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        bottom = 32.dp,
-                                    ),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    items(
-                                        count = content.itemCount,
-                                        key = content.itemKey { it.media.id },
-                                        contentType = content.itemContentType { "media" },
-                                    ) { index ->
-                                        val networkEntry = content[index]
-                                        val entry =
-                                            networkEntry ?: viewModel.placeholder(index, mediaType)
-                                        MediaViewOptionRow(
-                                            mediaViewOption = viewModel.mediaViewOption,
-                                            viewer = viewer,
-                                            onClickListEdit = editViewModel::initialize,
-                                            entry = entry,
-                                            showQuickEdit = false,
-                                        )
-                                    }
-
-                                    when (content.loadState.append) {
-                                        is LoadState.Loading -> item(key = "load_more_append") {
-                                            AnimeMediaListScreen.LoadingMore()
-                                        }
-                                        is LoadState.Error -> item(key = "load_more_error") {
-                                            AnimeMediaListScreen.AppendError { content.retry() }
-                                        }
-                                        is LoadState.NotLoading -> Unit
-                                    }
-                                }
-                            }
-                        }
-                    }
+            val enabled by viewModel.enabled.collectAsState()
+            if (!enabled) {
+                NotEnabledPrompt(viewModel, Modifier.padding(scaffoldPadding))
+            } else {
+                val columns = viewModel.mediaViewOption.widthAdaptiveCells
+                VerticalList(
+                    itemHeaderText = null,
+                    items = content,
+                    itemKey = { it.media.id },
+                    onRefresh = viewModel::onRefresh,
+                    columns = columns,
+                    contentPadding = PaddingValues(
+                        top = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 32.dp,
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                    modifier = Modifier.padding(scaffoldPadding)
+                ) {
+                    MediaViewOptionRow(
+                        mediaViewOption = viewModel.mediaViewOption,
+                        viewer = viewer,
+                        onClickListEdit = editViewModel::initialize,
+                        entry = it,
+                        showQuickEdit = false,
+                    )
                 }
             }
         }
@@ -193,10 +154,10 @@ object AnimeIgnoreScreen {
     }
 
     @Composable
-    private fun NotEnabledPrompt(viewModel: AnimeMediaIgnoreViewModel) {
+    private fun NotEnabledPrompt(viewModel: AnimeMediaIgnoreViewModel, modifier: Modifier) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth()
         ) {
             Text(
                 text = stringResource(Res.string.anime_media_ignore_not_enabled_prompt),

@@ -10,12 +10,10 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -67,7 +65,6 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
@@ -89,12 +86,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
@@ -144,11 +140,6 @@ object AnimeUserListScreen {
                 },
                 sheetState = sortSheetState,
                 bottomNavigationState = bottomNavigationState,
-                modifier = Modifier
-                    .conditionally(bottomNavigationState != null) {
-                        nestedScroll(bottomNavigationState!!.nestedScrollConnection)
-                    }
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 val error = entry.error
                 val errorText = error?.message()
@@ -177,6 +168,10 @@ object AnimeUserListScreen {
                             .padding(scaffoldPadding)
                             .pullRefresh(pullRefreshState)
                             .fillMaxSize()
+                            .conditionally(bottomNavigationState != null) {
+                                nestedScroll(bottomNavigationState!!.nestedScrollConnection)
+                            }
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
                     ) { page ->
                         val listEntry = if (page == 0) null else entry.result?.lists?.get(page - 1)
                         val scoreFormat = listEntry?.scoreFormat
@@ -185,63 +180,35 @@ object AnimeUserListScreen {
                         } else {
                             listEntry?.entries
                         }
-                        val hasItems = mediaEntries == null || mediaEntries.isNotEmpty()
-                        when {
-                            !entry.loading && !entry.success && !hasItems ->
-                                AnimeMediaListScreen.Error(
-                                    error = error?.message,
-                                    exception = error?.throwable,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            else -> {
-                                if (!entry.loading && !hasItems) {
-                                    AnimeMediaListScreen.NoResults()
-                                } else {
-                                    val columns = viewModel.mediaViewOption.widthAdaptiveCells
-                                    Box(modifier = Modifier.fillMaxSize()) {
-                                        val gridState = scrollStateSaver.lazyGridState()
-                                        sortFilterController.ImmediateScrollResetEffect(gridState)
-                                        val viewer by viewModel.viewer.collectAsState()
-                                        LazyVerticalGrid(
-                                            columns = columns,
-                                            state = gridState,
-                                            contentPadding = PaddingValues(
-                                                top = 16.dp,
-                                                start = 16.dp,
-                                                end = 16.dp,
-                                                bottom = 88.dp,
-                                            ),
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                                            modifier = Modifier.fillMaxSize()
-                                        ) {
-                                            items(
-                                                data = mediaEntries,
-                                                placeholderCount = 10,
-                                                key = { "media_${it.entry.media.id}" },
-                                                contentType = { "media" },
-                                            ) {
-                                                MediaRow(
-                                                    entry = it,
-                                                    viewer = viewer,
-                                                    viewModel = viewModel,
-                                                    onClickListEdit = editViewModel::initialize,
-                                                    scoreFormat = scoreFormat
-                                                        ?: viewer?.scoreFormat,
-                                                    modifier = Modifier.animateItem(),
-                                                )
-                                            }
-                                        }
-
-                                        VerticalScrollbar(
-                                            state = gridState,
-                                            modifier = Modifier
-                                                .align(Alignment.CenterEnd)
-                                                .fillMaxHeight()
-                                        )
-                                    }
-                                }
-                            }
+                        val gridState = scrollStateSaver.lazyGridState()
+                        sortFilterController.ImmediateScrollResetEffect(gridState)
+                        val viewer by viewModel.viewer.collectAsState()
+                        val columns = viewModel.mediaViewOption.widthAdaptiveCells
+                        VerticalList(
+                            itemHeaderText = null,
+                            items = mediaEntries,
+                            itemKey = { it.entry.media.id.toString() },
+                            columns = columns,
+                            gridState = gridState,
+                            contentPadding = PaddingValues(
+                                top = 16.dp,
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = 88.dp,
+                            ),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            showScrollbar = true,
+                        ) {
+                            MediaRow(
+                                entry = it,
+                                viewer = viewer,
+                                viewModel = viewModel,
+                                onClickListEdit = editViewModel::initialize,
+                                scoreFormat = scoreFormat
+                                    ?: viewer?.scoreFormat,
+                                modifier = Modifier.animateItem(),
+                            )
                         }
                     }
 

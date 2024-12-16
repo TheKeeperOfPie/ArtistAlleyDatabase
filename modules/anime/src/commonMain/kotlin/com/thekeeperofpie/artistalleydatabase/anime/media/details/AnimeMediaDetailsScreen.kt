@@ -170,7 +170,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
@@ -218,6 +217,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.PieChart
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.colorsOrDefault
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
@@ -667,8 +667,8 @@ object AnimeMediaDetailsScreen {
                     val finalError = mediaEntry.result == null && !mediaEntry.loading
                     Crossfade(targetState = finalError, label = "Media details crossfade") {
                         if (it) {
-                            AnimeMediaListScreen.Error(
-                                error = mediaEntry.error?.message,
+                            VerticalList.ErrorContent(
+                                errorText = mediaEntry.error?.message().orEmpty(),
                                 exception = mediaEntry.error?.throwable,
                             )
                         } else if (mediaEntry.result != null) {

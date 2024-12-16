@@ -17,14 +17,9 @@ class AnimeRootViewModel(
 
     val lastCrash = settings.lastCrash
     val lastCrashShown = settings.lastCrashShown
-    val persistedSelectedScreen = settings.rootNavDestination.value
-
+    val persistedSelectedScreen = settings.rootNavDestination
     val authToken = oAuthStore.authToken
-
     val unlocked = monetizationController.unlocked
-
-    fun unlocked() = monetizationController.adsEnabled.value
-            || monetizationController.subscribed.value
 
     fun onSubmitAuthToken(token: String) {
         viewModelScope.launch(CustomDispatchers.IO) {

@@ -1,13 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -34,18 +32,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_genre_info_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
-import artistalleydatabase.modules.anime.generated.resources.anime_media_list_no_results
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_info_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_show_when_spoiler
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
@@ -59,9 +53,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
@@ -108,92 +101,44 @@ object MediaSearchScreen {
                 },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
-                val content = viewModel.content.collectAsLazyPagingItems(CustomDispatchers.IO)
-                val refreshState = content.loadState.refresh
-                val refreshing = content.loadState.refresh is LoadState.Loading
                 val viewer by viewModel.viewer.collectAsState()
-                AnimeMediaListScreen(
-                    refreshing = refreshing,
+                val content = viewModel.content.collectAsLazyPagingItems(CustomDispatchers.IO)
+                val gridState = rememberLazyGridState()
+                val columns = viewModel.mediaViewOption.widthAdaptiveCells
+                sortFilterController.ImmediateScrollResetEffect(gridState)
+                val showWithSpoiler =
+                    if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
+                        viewModel.animeSortFilterController.tagShowWhenSpoiler
+                    } else {
+                        viewModel.mangaSortFilterController.tagShowWhenSpoiler
+                    }
+                OnChangeEffect(showWithSpoiler) {
+                    gridState.scrollToItem(0)
+                }
+                VerticalList(
+                    itemHeaderText = null,
+                    items = content,
+                    itemKey = { },
+                    gridState = gridState,
                     onRefresh = viewModel::onRefresh,
+                    columns = columns,
+                    contentPadding = PaddingValues(
+                        top = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 32.dp,
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(scaffoldPadding)
                 ) {
-                    val gridState = rememberLazyGridState()
-                    sortFilterController.ImmediateScrollResetEffect(gridState)
-                    val showWithSpoiler =
-                        if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
-                            viewModel.animeSortFilterController.tagShowWhenSpoiler
-                        } else {
-                            viewModel.mangaSortFilterController.tagShowWhenSpoiler
-                        }
-                    OnChangeEffect(showWithSpoiler) {
-                        gridState.scrollToItem(0)
-                    }
-
-                    val columns = viewModel.mediaViewOption.widthAdaptiveCells
-
-                    LazyVerticalGrid(
-                        state = gridState,
-                        columns = columns,
-                        contentPadding = PaddingValues(
-                            top = 16.dp,
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = 32.dp,
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        when {
-                            refreshState is LoadState.Error && content.itemCount == 0 ->
-                                item {
-                                    AnimeMediaListScreen.ErrorContent(
-                                        errorTextRes = Res.string.anime_media_list_error_loading,
-                                        exception = refreshState.error,
-                                    )
-                                }
-                            refreshState is LoadState.NotLoading && content.itemCount == 0 ->
-                                item {
-                                    Box(
-                                        contentAlignment = Alignment.TopCenter,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(
-                                            stringResource(Res.string.anime_media_list_no_results),
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            modifier = Modifier.padding(
-                                                horizontal = 16.dp,
-                                                vertical = 10.dp
-                                            ),
-                                        )
-                                    }
-                                }
-                            else -> {
-                                items(
-                                    count = content.itemCount,
-                                    key = content.itemKey { it.entryId.scopedId },
-                                    contentType = content.itemContentType { it.entryId.type }
-                                ) {
-                                    val item = content[it] as? AnimeSearchEntry.Media
-                                    MediaViewOptionRow(
-                                        mediaViewOption = viewModel.mediaViewOption,
-                                        viewer = viewer,
-                                        onClickListEdit = editViewModel::initialize,
-                                        entry = item?.entry,
-                                    )
-                                }
-                            }
-                        }
-
-                        when (content.loadState.append) {
-                            is LoadState.Loading -> item(key = "load_more_append") {
-                                AnimeMediaListScreen.LoadingMore()
-                            }
-                            is LoadState.Error -> item(key = "load_more_error") {
-                                AnimeMediaListScreen.AppendError { content.retry() }
-                            }
-                            is LoadState.NotLoading -> Unit
-                        }
-                    }
+                    val item = it as? AnimeSearchEntry.Media
+                    MediaViewOptionRow(
+                        mediaViewOption = viewModel.mediaViewOption,
+                        viewer = viewer,
+                        onClickListEdit = editViewModel::initialize,
+                        entry = item?.entry,
+                    )
                 }
             }
         }
