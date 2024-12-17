@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
@@ -64,6 +65,7 @@ fun AppBar(
     upIconOption: UpIconOption? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
         title = { Text(text = text, maxLines = 1) },
@@ -74,5 +76,6 @@ fun AppBar(
         },
         scrollBehavior = scrollBehavior,
         colors = colors,
+        actions = actions,
     )
 }

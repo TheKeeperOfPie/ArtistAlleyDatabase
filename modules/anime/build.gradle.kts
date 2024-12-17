@@ -18,6 +18,7 @@ kotlin {
             api(projects.modules.anime.news)
             api(projects.modules.anime.recommendations)
             api(projects.modules.anime.reviews)
+            api(projects.modules.anime.schedule)
             api(projects.modules.anime.staff)
             api(projects.modules.anime.studios)
             api(projects.modules.anime.studios.data)

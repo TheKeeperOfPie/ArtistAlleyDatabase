@@ -24,7 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsV
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.media.MediaRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewsComponent
-import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleComponent
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
@@ -42,10 +42,9 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
 }
 
 interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
-    ForumsComponent, RecommendationsComponent, ReviewsComponent, StaffComponent, StudiosComponent,
-    UsersComponent {
+    ForumsComponent, RecommendationsComponent, ReviewsComponent, ScheduleComponent, StaffComponent,
+    StudiosComponent, UsersComponent {
 
-    val airingScheduleViewModel: () -> AiringScheduleViewModel
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
     val animeHomeViewModel: () -> AnimeHomeViewModel

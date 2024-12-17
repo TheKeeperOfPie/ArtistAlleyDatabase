@@ -2,9 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.schedule
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedule_sort_label
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import artistalleydatabase.modules.anime.schedule.generated.resources.Res
+import artistalleydatabase.modules.anime.schedule.generated.resources.anime_airing_schedule_sort_label
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
@@ -15,7 +15,7 @@ import kotlinx.coroutines.FlowPreview
 @OptIn(FlowPreview::class)
 class AiringScheduleSortFilterController(
     scope: CoroutineScope,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : MediaDataSettingsSortFilterController<AiringScheduleSortFilterController.FilterParams>(
     scope = scope,

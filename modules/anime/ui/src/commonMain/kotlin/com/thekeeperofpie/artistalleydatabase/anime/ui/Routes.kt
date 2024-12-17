@@ -38,3 +38,5 @@ typealias SearchMediaTagRoute = (
     tagName: String,
     mediaType: MediaType,
 ) -> NavDestination
+
+typealias SeasonalCurrentRoute = () -> NavDestination

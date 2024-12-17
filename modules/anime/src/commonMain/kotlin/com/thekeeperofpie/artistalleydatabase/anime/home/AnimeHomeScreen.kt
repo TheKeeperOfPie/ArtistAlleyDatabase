@@ -82,7 +82,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_airing_schedule_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_home_activity_label
 import artistalleydatabase.modules.anime.generated.resources.anime_home_label_anime
 import artistalleydatabase.modules.anime.generated.resources.anime_home_label_manga
@@ -93,6 +92,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_suggesti
 import artistalleydatabase.modules.anime.generated.resources.anime_notifications_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_home_title
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_home_title
+import artistalleydatabase.modules.anime.schedule.generated.resources.anime_airing_schedule_icon_content_description
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import com.anilist.data.fragment.HomeMedia
 import com.anilist.data.fragment.MediaNavigationData
@@ -134,6 +134,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.recommendations.Recommendati
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewCard
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
@@ -178,6 +179,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSa
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.forums.generated.resources.Res as ForumsRes
+import artistalleydatabase.modules.anime.schedule.generated.resources.Res as ScheduleRes
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 @Suppress("NAME_SHADOWING")
@@ -436,12 +438,12 @@ object AnimeHomeScreen {
                     }
 
                     IconButton(onClick = {
-                        navigationController.navigate(AnimeDestination.AiringSchedule)
+                        navigationController.navigate(ScheduleDestinations.AiringSchedule)
                     }) {
                         Icon(
                             imageVector = Icons.Filled.CalendarMonth,
                             contentDescription = stringResource(
-                                Res.string.anime_airing_schedule_icon_content_description
+                                ScheduleRes.string.anime_airing_schedule_icon_content_description
                             ),
                         )
                     }
@@ -1047,7 +1049,11 @@ object AnimeHomeScreen {
                             AnimeMediaCompactListRow(
                                 viewer = viewer(),
                                 entry = it?.media,
-                                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                                modifier = Modifier.padding(
+                                    start = 8.dp,
+                                    end = 8.dp,
+                                    bottom = 8.dp
+                                ),
                                 onClickListEdit = onClickListEdit,
                             )
 
@@ -1133,7 +1139,7 @@ object AnimeHomeScreen {
                         }
                     },
                     mediaImageUri = { it?.media?.coverImage?.extraLarge },
-                    mediaRow =  { entry, coverImageState, modifier ->
+                    mediaRow = { entry, coverImageState, modifier ->
                         AnimeMediaCompactListRow(
                             viewer = viewer(),
                             entry = entry,

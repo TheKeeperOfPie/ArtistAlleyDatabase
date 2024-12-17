@@ -86,7 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.recommendations.recommendati
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewComposables
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.reviewsSection
-import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
+import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
@@ -470,12 +470,6 @@ object AnimeNavigator {
             AnimeIgnoreScreen(upIconOption = UpIconOption.Back(navigationController))
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.AiringSchedule>(navigationTypeMap) {
-            AiringScheduleScreen(
-                onClickBack = { navigationController.navigateUp() },
-            )
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.Seasonal>(navigationTypeMap) {
             SeasonalScreen(upIconOption = UpIconOption.Back(navigationController))
         }
@@ -759,6 +753,28 @@ object AnimeNavigator {
                     }
                 )
             }
+        )
+
+        ScheduleDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+            mediaEntryProvider = MediaPreviewEntry.Provider,
+            mediaRow = { viewer, entry, onClickListEdit ->
+                AnimeMediaListRow(
+                    entry = entry?.media,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    nextAiringEpisode = entry?.nextAiringEpisode,
+                    showDate = false,
+                )
+            },
+            seasonalCurrentRoute = {
+                AnimeDestination.Seasonal(
+                    type = AnimeDestination.Seasonal.Type.THIS,
+                )
+            },
         )
 
         StaffDestinations.addToGraph(

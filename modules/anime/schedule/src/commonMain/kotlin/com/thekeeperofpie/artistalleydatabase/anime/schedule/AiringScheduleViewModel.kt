@@ -8,13 +8,13 @@ import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.data.AiringScheduleQuery
+import com.anilist.data.fragment.MediaPreview
 import com.anilist.data.type.AiringSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
@@ -49,12 +48,13 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class AiringScheduleViewModel(
+class AiringScheduleViewModel<MediaEntry : Any>(
     private val aniListApi: AuthedAniListApi,
-    private val settings: AnimeSettings,
+    private val settings: MediaDataSettings,
     private val statusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
     featureOverrideProvider: FeatureOverrideProvider,
+    private val mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -70,7 +70,7 @@ class AiringScheduleViewModel(
 
     // Spans last week, current week, next week
     private val dayFlows = Array(21) {
-        MutableStateFlow(PagingData.loading<Entry>())
+        MutableStateFlow(PagingData.loading<AiringScheduleScreen.Entry<MediaEntry>>())
     }
     private val initialized = Array(21) { false }
 
@@ -83,14 +83,25 @@ class AiringScheduleViewModel(
                 ::Pair
             )
                 .flatMapLatest { (filterParams) -> buildPagingData(index, filterParams) }
-                .map { it.mapOnIO { Entry(data = it) } }
+                .map {
+                    it.mapOnIO {
+                        AiringScheduleScreen.Entry(
+                            data = it,
+                            media = it.media?.let(mediaEntryProvider::mediaEntry)
+                        )
+                    }
+                }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreController = ignoreController,
                     mediaFilteringData = settings.mediaFilteringData(false),
-                    mediaFilterable = { it.media?.mediaFilterable },
-                    copy = { copy(media = media?.copy(mediaFilterable = it)) },
+                    mediaFilterable = { it.media?.let(mediaEntryProvider::mediaFilterable) },
+                    copy = { mediaFilterable ->
+                        copy(media = media?.let { media ->
+                            mediaEntryProvider.copyMediaEntry(media, mediaFilterable)
+                        })
+                    },
                 )
                 .cachedIn(viewModelScope)
                 .collectLatest(dayFlows[index]::emit)
@@ -171,7 +182,7 @@ class AiringScheduleViewModel(
     }
 
     @Composable
-    fun items(index: Int): LazyPagingItems<Entry> {
+    fun items(index: Int): LazyPagingItems<AiringScheduleScreen.Entry<MediaEntry>> {
         if (!initialized[index]) {
             initialize(index)
         }
@@ -180,13 +191,23 @@ class AiringScheduleViewModel(
 
     fun refresh() = refresh.refresh()
 
-    data class Entry(
-        val data: AiringScheduleQuery.Data.Page.AiringSchedule,
-        val media: MediaPreviewEntry? = data.media?.let { MediaPreviewEntry(media = it) },
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val settings: MediaDataSettings,
+        private val statusController: MediaListStatusController,
+        private val ignoreController: IgnoreController,
+        private val featureOverrideProvider: FeatureOverrideProvider,
     ) {
-        val nextAiringEpisode = NextAiringEpisode(
-            episode = data.episode,
-            airingAt = Instant.fromEpochSeconds(data.airingAt.toLong()),
+        fun <MediaEntry : Any> create(
+            mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
+        ) = AiringScheduleViewModel(
+            aniListApi = aniListApi,
+            settings = settings,
+            statusController = statusController,
+            ignoreController = ignoreController,
+            featureOverrideProvider = featureOverrideProvider,
+            mediaEntryProvider = mediaEntryProvider,
         )
     }
 }

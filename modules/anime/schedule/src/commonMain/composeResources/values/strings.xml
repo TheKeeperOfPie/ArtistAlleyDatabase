@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_airing_schedule_label">Airing schedule</string>
+    <string name="anime_airing_schedule_icon_content_description">Airing schedule</string>
+    <string name="anime_airing_schedule_sort_label">Sort</string>
+    <string name="anime_airing_schedule_sort_popularity">Popularity</string>
+    <string name="anime_airing_schedule_sort_id">Last added</string>
+    <string name="anime_airing_schedule_sort_time">Time</string>
+    <string name="anime_airing_schedule_sort_episode">Episode</string>
+    <string name="anime_airing_schedule_sort_content_description">Sort options</string>
+    <string name="anime_airing_schedule_today">Today</string>
+    <string name="anime_airing_schedule_tomorrow">Tomorrow</string>
+    <string name="anime_seasonal_icon_content_description">Seasonal schedule</string>
+</resources>

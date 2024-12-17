@@ -55,9 +55,6 @@ sealed interface AnimeDestination : NavDestination {
     }
 
     @Serializable
-    data object AiringSchedule : AnimeDestination
-
-    @Serializable
     data object FeatureTiers : AnimeDestination
 
     @Serializable
