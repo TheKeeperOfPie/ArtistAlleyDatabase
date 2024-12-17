@@ -8,7 +8,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -28,7 +27,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.coerceAtLeast
@@ -50,7 +51,6 @@ import artistalleydatabase.modules.anime.media.data.generated.resources.anime_me
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -185,8 +185,8 @@ private fun AiringDateBasicSection(
             )
         }
 
-        FlowRow(
-            horizontalArrangement = Arrangement.Center,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.weight(1f, fill = false)
         ) {
@@ -220,7 +220,7 @@ private fun AiringDateBasicSection(
                 }
             }
 
-            MinWidthTextField(
+            TextField(
                 value = data.seasonYear,
                 onValueChange = onSeasonYearChange,
                 label = { Text(stringResource(Res.string.anime_media_filter_airing_date_season_year)) },
@@ -275,10 +275,9 @@ private fun AiringDateBasicSection(
                         }
                     }
                 },
-                minWidth = minWidth,
                 modifier = Modifier
+                    .widthIn(min = minWidth, max = (screenWidth - 160.dp).coerceAtLeast(minWidth))
                     .width(IntrinsicSize.Min)
-                    .widthIn(max = (screenWidth - 160.dp).coerceAtLeast(minWidth))
                     .padding(horizontal = 8.dp)
             )
         }

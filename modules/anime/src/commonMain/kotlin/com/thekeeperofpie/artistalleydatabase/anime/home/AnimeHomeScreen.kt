@@ -55,7 +55,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -78,6 +77,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_icon_content_description
@@ -166,7 +166,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsIndexed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsWithPlaceholderCount
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.rememberPagerState
@@ -220,10 +220,10 @@ object AnimeHomeScreen {
             mutableStateOf(viewModel.preferredMediaType == MediaType.ANIME)
         }
         val mediaViewModel = mediaViewModel(selectedIsAnime)
-        val unlocked by viewModel.unlocked.collectAsState()
-        val viewer by viewModel.viewer.collectAsState()
+        val unlocked by viewModel.unlocked.collectAsStateWithLifecycle()
+        val viewer by viewModel.viewer.collectAsStateWithLifecycle()
         val currentMediaState = mediaViewModel.currentMediaState()
-        val news by viewModel.newsController.newsDateDescending.collectAsState()
+        val news by viewModel.newsController.newsDateDescending.collectAsStateWithLifecycle()
         val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         AnimeHomeScreen(
             upIconOption = upIconOption,
@@ -235,9 +235,9 @@ object AnimeHomeScreen {
                 viewModel.refresh()
                 mediaViewModel.refresh()
             },
-            activity = viewModel.activity.collectAsLazyPagingItems(),
-            recommendations = viewModel.recommendations.collectAsLazyPagingItems(),
-            reviews = mediaViewModel.reviews.collectAsLazyPagingItems(),
+            activity = viewModel.activity.collectAsLazyPagingItemsWithLifecycle(),
+            recommendations = viewModel.recommendations.collectAsLazyPagingItemsWithLifecycle(),
+            reviews = mediaViewModel.reviews.collectAsLazyPagingItemsWithLifecycle(),
             news = { news },
             homeEntry = { mediaViewModel.entry },
             currentMedia = { mediaViewModel.currentMedia },
@@ -888,15 +888,7 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val navigationController = LocalNavigationController.current
-        val title = MediaUtils.userPreferredTitle(
-            userPreferred = media?.title?.userPreferred,
-            romaji = media?.title?.romaji,
-            english = media?.title?.english,
-            native = media?.title?.native,
-        )
-
-        val fullscreenImageHandler = LocalFullscreenImageHandler.current
+        val title = media?.title?.primaryTitle()
         val sharedTransitionKey =
             media?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
         val coverImageState =
@@ -906,6 +898,8 @@ object AnimeHomeScreen {
                 ?: MaterialTheme.colorScheme.surface
         }
 
+        val navigationController = LocalNavigationController.current
+        val fullscreenImageHandler = LocalFullscreenImageHandler.current
         ElevatedCard(
             colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
             modifier = modifier
@@ -1015,27 +1009,7 @@ object AnimeHomeScreen {
                         nextAiringEpisode = media.nextAiringEpisode?.episode,
                     ),
                     maxProgressVolumes = media.volumes,
-                    onClick = {
-                        onClickListEdit(object : MediaNavigationData {
-                            override val id = media.id
-                            override val title = object : MediaNavigationData.Title {
-                                override val __typename = "Default"
-                                override val userPreferred = media.title?.userPreferred
-                                override val romaji = media.title?.romaji
-                                override val english = media.title?.english
-                                override val native = media.title?.native
-
-                            }
-                            override val coverImage =
-                                object : MediaNavigationData.CoverImage {
-                                    override val extraLarge = media.coverImage?.extraLarge
-
-                                }
-                            override val type = media.type
-                            override val isAdult = media.isAdult
-
-                        })
-                    },
+                    onClick = { onClickListEdit(media) },
                     modifier = Modifier
                         .animateEnterExit()
                         .align(Alignment.BottomStart)

@@ -9,15 +9,26 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 inline fun <T : Any> Flow<PagingData<T>>.enforceUniqueIds(
     crossinline id: suspend (value: T) -> String?,
@@ -267,3 +278,43 @@ fun <T : Any> PagingData.Companion.loading() = PagingData.empty<T>(
         prepend = LoadState.NotLoading(true)
     )
 )
+@Composable
+fun <T : Any> Flow<PagingData<T>>.collectAsLazyPagingItemsWithLifecycle(
+    lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
+    minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    context: CoroutineContext = EmptyCoroutineContext,
+): LazyPagingItems<T> {
+
+    val lazyPagingItems = remember(this) { LazyPagingItems(this) }
+
+    LaunchedEffect(lazyPagingItems) {
+        lifecycle.repeatOnLifecycle(minActiveState) {
+            if (context == EmptyCoroutineContext) {
+                lazyPagingItems.collectPagingData()
+            } else {
+                withContext(context) {
+                    lazyPagingItems.collectPagingData()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(lazyPagingItems) {
+        lifecycle.repeatOnLifecycle(minActiveState) {
+            if (context == EmptyCoroutineContext) {
+                lazyPagingItems.collectLoadState()
+            } else {
+                withContext(context) {
+                    lazyPagingItems.collectLoadState()
+                }
+            }
+        }
+    }
+
+    return lazyPagingItems
+}
+
+context(ViewModel)
+@Suppress("CONTEXT_RECEIVERS_DEPRECATED")
+fun <T : Any> Flow<PagingData<T>>.stateInForCompose() =
+    stateIn(viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, PagingData.loading())

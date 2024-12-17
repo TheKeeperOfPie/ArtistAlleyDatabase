@@ -13,7 +13,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,6 +22,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -114,7 +114,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
 
@@ -214,12 +214,12 @@ object AnimeNavigator {
                 )
             }
             val charactersDeferred =
-                charactersViewModel.charactersDeferred.collectAsLazyPagingItems()
+                charactersViewModel.charactersDeferred.collectAsLazyPagingItemsWithLifecycle()
 
             val staffViewModel = viewModel {
                 component.animeMediaDetailsStaffViewModel(mediaDetailsViewModel.media())
             }
-            val staff = staffViewModel.staff.collectAsLazyPagingItems()
+            val staff = staffViewModel.staff.collectAsLazyPagingItemsWithLifecycle()
 
             val songsViewModel =
                 viewModel { component.animeSongsViewModel(mediaDetailsViewModel) }
@@ -236,7 +236,7 @@ object AnimeNavigator {
             val cdsViewModel =
                 viewModel { cdEntryComponent.cdsFromMediaViewModel(destination.mediaId) }
 
-            val viewer by mediaDetailsViewModel.viewer.collectAsState()
+            val viewer by mediaDetailsViewModel.viewer.collectAsStateWithLifecycle()
 
             @Suppress("UNCHECKED_CAST")
             val recommendationsViewModel = viewModel {
@@ -282,8 +282,8 @@ object AnimeNavigator {
                     ?: media?.isFavourite,
             )
 
-            val recommendations by recommendationsViewModel.recommendations.collectAsState()
-            val reviewsEntry by reviewsViewModel.reviewsEntry.collectAsState()
+            val recommendations by recommendationsViewModel.recommendations.collectAsStateWithLifecycle()
+            val reviewsEntry by reviewsViewModel.reviewsEntry.collectAsStateWithLifecycle()
             AnimeMediaDetailsScreen(
                 viewModel = mediaDetailsViewModel,
                 upIconOption = UpIconOption.Back(navigationController),
@@ -520,7 +520,7 @@ object AnimeNavigator {
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
-            val viewer by viewModel.viewer.collectAsState()
+            val viewer by viewModel.viewer.collectAsStateWithLifecycle()
             val editViewModel = viewModel { component.mediaEditViewModel() }
             MediaEditBottomSheetScaffold(
                 state = { editViewModel.state },
@@ -532,7 +532,7 @@ object AnimeNavigator {
                     MediaRecommendationsScreen(
                         gridState = gridState,
                         onRefresh = viewModel::refresh,
-                        items = viewModel.items.collectAsLazyPagingItems(),
+                        items = viewModel.items.collectAsLazyPagingItemsWithLifecycle(),
                         mediaHeader = { progress ->
                             val entry = viewModel.entry
                             val media = entry.result?.media

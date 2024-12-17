@@ -18,7 +18,6 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_history
@@ -78,9 +78,9 @@ object AnimeRootScreen {
     ) {
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
         val bottomNavigationState = BottomNavigationState(scrollBehavior)
-        val needsAuth = viewModel.authToken.collectAsState().value == null
-        val persistedSelectedScreen by viewModel.persistedSelectedScreen.collectAsState()
-        val unlocked by viewModel.unlocked.collectAsState()
+        val needsAuth = viewModel.authToken.collectAsStateWithLifecycle().value == null
+        val persistedSelectedScreen by viewModel.persistedSelectedScreen.collectAsStateWithLifecycle()
+        val unlocked by viewModel.unlocked.collectAsStateWithLifecycle()
 
         var selectedScreen by rememberSaveable(stateSaver = AnimeRootNavDestination.StateSaver) {
             mutableStateOf(
@@ -96,8 +96,8 @@ object AnimeRootScreen {
             snackbarHost = {
                 val appUpdateChecker = LocalAppUpdateChecker.current
                 val snackbarHostState = remember { SnackbarHostState() }
-                val lastCrashShown by viewModel.lastCrashShown.collectAsState()
-                val lastCrashText by viewModel.lastCrash.collectAsState()
+                val lastCrashShown by viewModel.lastCrashShown.collectAsStateWithLifecycle()
+                val lastCrashText by viewModel.lastCrash.collectAsStateWithLifecycle()
                 val lastCrashMessage = stringResource(Res.string.last_crash_notification)
                 val lastCrashButton = stringResource(Res.string.last_crash_notification_button)
                 LaunchedEffect(lastCrashText, lastCrashShown) {
