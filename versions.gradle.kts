@@ -235,7 +235,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("androidx.palette:palette-ktx:$palette")
 
                     withVersion(room) {
-                        library("androidx.room:room-ktx")
                         library("androidx.room:room-paging")
                         library("androidx.room:room-runtime")
                         library("androidx.room:room-testing")

@@ -201,7 +201,6 @@ kotlin {
             runtimeOnly(libs.paging.runtime.ktx)
 
             runtimeOnly(libs.room.runtime)
-            implementation(libs.room.ktx)
             implementation(libs.room.paging)
 
             implementation(libs.work.runtime)

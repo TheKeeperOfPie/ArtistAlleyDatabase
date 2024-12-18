@@ -11,7 +11,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             libs.find(
-                "libs.room.ktx",
                 "libs.room.paging",
             ).forEach(::api)
             libs.find(

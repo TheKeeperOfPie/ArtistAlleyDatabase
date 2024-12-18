@@ -1,3 +1,4 @@
+import jdk.tools.jlink.resources.plugins
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -168,7 +169,6 @@ dependencies {
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)
-    implementation(libs.room.ktx)
     testImplementation(libs.room.testing)
     implementation(libs.room.paging)
 }

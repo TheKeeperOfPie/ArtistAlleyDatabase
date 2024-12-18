@@ -1,3 +1,5 @@
+import jdk.tools.jlink.resources.plugins
+
 plugins {
     id("compose-library")
     id("com.google.devtools.ksp")
@@ -39,7 +41,6 @@ dependencies {
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)
-    implementation(libs.room.ktx)
     testImplementation(libs.room.testing)
     implementation(libs.room.paging)
 

@@ -38,7 +38,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceAc
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
@@ -132,17 +131,9 @@ fun main() {
                 val navHostController = rememberNavController()
 
                 val navigationController = rememberNavigationController(navHostController)
-                val navigationCallback = remember(navHostController, cdEntryNavigator) {
-                    AnimeNavigator.NavigationCallback(
-                        navHostController = navHostController,
-                        cdEntryNavigator = cdEntryNavigator,
-                    )
-                }
-
                 CompositionLocalProvider(
                     LocalWindowConfiguration provides windowConfiguration,
                     LocalNavigationController provides navigationController,
-                    LocalNavigationCallback provides navigationCallback,
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
                 ) {
                     Surface(modifier = Modifier.safeDrawingPadding()) {

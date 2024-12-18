@@ -22,7 +22,6 @@ kotlin {
                 implementation(libs.jetBrainsCompose.navigation.compose)
                 implementation(libs.lifecycle.viewmodel.compose)
 
-                implementation(libs.room.ktx)
                 implementation(libs.room.paging)
                 runtimeOnly(libs.room.runtime)
             }
@@ -36,12 +35,6 @@ kotlin {
             }
         }
     }
-}
-
-configurations.all {
-    // A Room artifact is including the Android coroutines library,
-    // need to exclude so that Swing is used instead
-    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-android")
 }
 
 dependencies {
