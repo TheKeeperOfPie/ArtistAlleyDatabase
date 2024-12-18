@@ -1,9 +1,17 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("app-android")
+    id("com.android.application")
+    id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.multiplatform")
+    id("androidx.room")
 }
 
 android {
@@ -118,7 +126,26 @@ android {
     }
 }
 
+compose.desktop {
+    application {
+        mainClass = "com.thekeeperofpie.artistalleydatabase.desktop.MainKt"
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Exe)
+            packageName = "com.thekeeperofpie.artistalleydatabase"
+            packageVersion = "0.0.1"
+        }
+    }
+}
+
 kotlin {
+    androidTarget {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_18
+        }
+    }
+    jvm("desktop")
     compilerOptions {
         jvmToolchain(18)
         sourceSets.all {
@@ -133,22 +160,14 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.anime)
-            implementation(projects.modules.anime2anime)
-            implementation(projects.modules.anilist)
-            implementation(projects.modules.art)
-            implementation(projects.modules.browse)
-            implementation(projects.modules.cds)
-            implementation(projects.modules.image)
-            implementation(projects.modules.data)
-            implementation(projects.modules.entry)
-            implementation(projects.modules.markdown)
             implementation(projects.modules.media)
             implementation(projects.modules.monetization)
-            implementation(projects.modules.utilsInject)
-            implementation(projects.modules.utilsRoom)
             implementation(projects.modules.settings)
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsInject)
+            implementation(projects.modules.utilsNetwork)
+            implementation(projects.modules.utilsRoom)
 
-            implementation(libs.kotlin.inject.runtime.kmp)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(compose.runtime)
@@ -156,7 +175,11 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.materialIconsExtended)
             implementation(compose.ui)
+
+            implementation(libs.coil3.coil.compose)
             implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.kermit)
+            implementation(libs.kotlin.inject.runtime.kmp)
         }
         invokeWhenCreated("androidDebug") {
             dependencies {
@@ -184,43 +207,60 @@ kotlin {
             }
         }
         androidMain.dependencies {
-            runtimeOnly(libs.kotlin.reflect)
+            implementation(projects.modules.anime2anime)
+            implementation(projects.modules.anilist)
+            implementation(projects.modules.art)
+            implementation(projects.modules.browse)
+            implementation(projects.modules.cds)
+            implementation(projects.modules.image)
+            implementation(projects.modules.data)
+            implementation(projects.modules.entry)
+            implementation(projects.modules.markdown)
 
-            implementation(libs.kotlinx.serialization.json)
-            runtimeOnly(libs.kotlinx.coroutines.android)
-
-            implementation(libs.paging.runtime.ktx)
-
+            implementation(libs.activity.compose)
             implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.security.crypto)
+            implementation(libs.coil3.coil.network.okhttp)
+            implementation(libs.commons.compress)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.lifecycle.livedata.ktx)
             implementation(libs.lifecycle.viewmodel.compose)
-            implementation(libs.activity.compose)
-
-            implementation(libs.androidx.security.crypto)
-
-            runtimeOnly(libs.paging.runtime.ktx)
-
-            runtimeOnly(libs.room.runtime)
+            implementation(libs.paging.runtime.ktx)
             implementation(libs.room.paging)
-
             implementation(libs.work.runtime)
             implementation(libs.work.runtime.ktx)
 
-            implementation(libs.commons.compress)
-            implementation(libs.coil3.coil.compose)
-            implementation(libs.coil3.coil.network.okhttp)
+            runtimeOnly(libs.kotlin.reflect)
+            runtimeOnly(libs.kotlinx.coroutines.android)
+            runtimeOnly(libs.paging.runtime.ktx)
+            runtimeOnly(libs.room.runtime)
+        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(libs.androidx.sqlite.bundled)
+                implementation(libs.coil3.coil.network.ktor3)
+                implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.uri.kmp)
+            }
         }
     }
 }
 
 dependencies {
-    add("kspAndroid", kspProcessors.room.compiler)
-    add("kspAndroid", kspProcessors.kotlin.inject.compiler.ksp)
     add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
+    arrayOf(
+        kspProcessors.room.compiler,
+        kspProcessors.kotlin.inject.compiler.ksp,
+    ).forEach {
+        add("kspAndroid", it)
+        add("kspDesktop", it)
+    }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
+room {
+    schemaDirectory("$projectDir/schemas")
+    generateKotlin = true
 }
 
 tasks.register("installAll") {
@@ -295,4 +335,10 @@ tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
 tasks.named { it.contains("explodeCodeSource") }.configureEach {
     dependsOn("generateResourceAccessorsForAndroidMain")
     dependsOn("generateActualResourceCollectorsForAndroidMain")
+}
+
+configurations.all {
+    resolutionStrategy.capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
+        select("com.google.guava:guava:0")
+    }
 }

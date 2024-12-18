@@ -176,6 +176,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
             create("libs") {
                 fun plugin(id: String) = plugin(id, id)
+                plugin("androidx.room").version(Versions.androidx.room)
                 plugin("app.cash.burst").version(Versions.burst)
                 plugin("com.android.application").version(Versions.android.gradle)
                 plugin("com.android.library").version(Versions.android.gradle)
@@ -268,7 +269,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 withVersion(Versions.accompanist) {
-                    library("com.google.accompanist:accompanist-flowlayout")
                     library("com.google.accompanist:accompanist-navigation-animation")
                     library("com.google.accompanist:accompanist-pager-indicators")
                 }

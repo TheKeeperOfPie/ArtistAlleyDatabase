@@ -16,7 +16,6 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
 
-            implementation(libs.accompanist.flowlayout)
             implementation(libs.coil3.coil.compose)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.molecule.runtime)
