@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.desktop
 import androidx.navigation.NavType
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.thekeeperofpie.artistalleydatabase.AppComponent
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListComponent
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
@@ -10,10 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSettings
@@ -22,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -47,14 +44,11 @@ import kotlin.reflect.KType
 @Component
 abstract class DesktopComponent(
     @get:Provides val scope: ApplicationScope,
-) : AniListComponent, AnimeComponent, CdEntryComponent, NetworkComponent, VgmdbComponent {
+) : AppComponent, AniListComponent, AnimeComponent, CdEntryComponent, NetworkComponent,
+    VgmdbComponent {
 
     abstract val cdEntryNavigator: CdEntryNavigator
     abstract val httpClient: HttpClient
-    abstract val ignoreController: IgnoreController
-    abstract val markdown: Markdown
-    abstract val mediaGenreDialogController: MediaGenreDialogController
-    abstract val mediaTagDialogController: MediaTagDialogController
     abstract val navigationTypeMap: NavigationTypeMap
     abstract val settingsProvider: DesktopSettingsProvider
 

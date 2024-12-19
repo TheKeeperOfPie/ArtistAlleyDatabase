@@ -16,7 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.thekeeperofpie.artistalleydatabase.ApplicationComponent
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
-import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
+import com.thekeeperofpie.artistalleydatabase.ui.theme.AndroidTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
@@ -44,7 +44,7 @@ class ChooserActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            ArtistAlleyDatabaseTheme(
+            AndroidTheme(
                 settings = applicationComponent.settingsProvider,
                 navHostController = navController,
             ) {

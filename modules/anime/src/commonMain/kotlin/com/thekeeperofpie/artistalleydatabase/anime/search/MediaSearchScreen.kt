@@ -118,7 +118,7 @@ object MediaSearchScreen {
                 VerticalList(
                     itemHeaderText = null,
                     items = content,
-                    itemKey = { },
+                    itemKey = { it.entryId.scopedId },
                     gridState = gridState,
                     onRefresh = viewModel::onRefresh,
                     columns = columns,

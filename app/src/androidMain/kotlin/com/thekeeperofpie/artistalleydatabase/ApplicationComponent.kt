@@ -11,9 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
@@ -27,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.chooser.ChooserViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
@@ -61,9 +57,9 @@ import kotlin.reflect.KType
 @Component
 abstract class ApplicationComponent(
     @get:Provides val application: Application,
-) : AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent, BrowseComponent,
-    CdEntryComponent, MusicalArtistComponent, NetworkComponent, SettingsComponent, ApplicationVariantComponent,
-    VgmdbComponent, WorkerComponent {
+) : AppComponent, AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent,
+    BrowseComponent, CdEntryComponent, MusicalArtistComponent, NetworkComponent, SettingsComponent,
+    ApplicationVariantComponent, VgmdbComponent, WorkerComponent {
 
     abstract val chooserViewModel: () -> ChooserViewModel
     abstract val exportViewModel: () -> ExportViewModel
@@ -73,10 +69,6 @@ abstract class ApplicationComponent(
     abstract val artEntryNavigator: ArtEntryNavigator
     abstract val cdEntryNavigator: CdEntryNavigator
     abstract val featureOverrideProvider: FeatureOverrideProvider
-    abstract val ignoreController: IgnoreController
-    abstract val markdown: Markdown
-    abstract val mediaGenreDialogController: MediaGenreDialogController
-    abstract val mediaTagDialogController: MediaTagDialogController
     abstract val monetizationController: MonetizationController
     abstract val navigationTypeMap: NavigationTypeMap
     abstract val notificationsController: NotificationsController

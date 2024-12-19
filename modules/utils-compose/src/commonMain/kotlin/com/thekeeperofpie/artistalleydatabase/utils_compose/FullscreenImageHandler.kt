@@ -23,9 +23,12 @@ import androidx.compose.ui.window.Dialog
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.full_image_content_description
 import coil3.compose.AsyncImage
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 
-
+@SingletonScope
+@Inject
 class FullscreenImageHandler {
 
     private var imageUrl by mutableStateOf<String?>(null)

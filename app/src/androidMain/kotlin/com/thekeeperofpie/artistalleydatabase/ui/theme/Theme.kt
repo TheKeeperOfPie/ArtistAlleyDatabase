@@ -36,7 +36,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 
 @Composable
-fun ArtistAlleyDatabaseTheme(
+fun AndroidTheme(
     settings: SettingsProvider,
     navHostController: NavHostController,
     content: @Composable () -> Unit,

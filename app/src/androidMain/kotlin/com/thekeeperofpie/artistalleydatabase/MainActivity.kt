@@ -72,41 +72,27 @@ import artistalleydatabase.app.generated.resources.nav_drawer_manga
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGenrePreview
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaTagPreview
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
-import com.thekeeperofpie.artistalleydatabase.markdown.LocalMarkdown
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalSubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
-import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
+import com.thekeeperofpie.artistalleydatabase.ui.theme.AndroidTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
-import com.thekeeperofpie.artistalleydatabase.utils_compose.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalComposeSettings
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.LocalImageColorsState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberImageColorsState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
@@ -130,10 +116,6 @@ class MainActivity : ComponentActivity() {
     private val artEntryNavigator by lazy { applicationComponent.artEntryNavigator }
     private val cdEntryNavigator by lazy { applicationComponent.cdEntryNavigator }
     private val featureOverrideProvider by lazy { applicationComponent.featureOverrideProvider }
-    private val ignoreController by lazy { applicationComponent.ignoreController }
-    private val markdown by lazy { applicationComponent.markdown }
-    private val mediaGenreDialogController by lazy { applicationComponent.mediaGenreDialogController }
-    private val mediaTagDialogController by lazy { applicationComponent.mediaTagDialogController }
     private val monetizationController by lazy { applicationComponent.monetizationController }
     private val navigationTypeMap by lazy { applicationComponent.navigationTypeMap }
     private val notificationsController by lazy { applicationComponent.notificationsController }
@@ -149,8 +131,6 @@ class MainActivity : ComponentActivity() {
     private val subscriptionProvider by lazy { activityComponent.injector.subscriptionProvider }
     private val shareHandler by lazy { activityComponent.injector.shareHandler }
 
-    private val fullScreenImageHandler = FullscreenImageHandler()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -162,155 +142,124 @@ class MainActivity : ComponentActivity() {
             .takeUnless { it == NavDrawerItems.SETTINGS.id }
         val startDestination = (startDestinationFromIntent
             ?: startDestinationFromSettings)
-            ?.let { startId -> NavDrawerItems.values().find { it.id == startId }?.id }
+            ?.let { startId -> NavDrawerItems.entries.find { it.id == startId }?.id }
             ?: NavDrawerItems.ANIME.id
 
         setContent {
             val navHostController = rememberNavController()
-            val languageOptionMedia by settings.languageOptionMedia.collectAsState()
-            val languageOptionCharacters by settings.languageOptionCharacters.collectAsState()
-            val languageOptionStaff by settings.languageOptionStaff.collectAsState()
-            val languageOptionVoiceActor by settings.languageOptionVoiceActor.collectAsState()
-            val showFallbackVoiceActor by settings.showFallbackVoiceActor.collectAsState()
 
-            ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
-                val imageColorsState = rememberImageColorsState()
-                val navigationController = rememberNavigationController(navHostController)
-                CompositionLocalProvider(
-                    LocalNavigationController provides navigationController,
-                    LocalMonetizationProvider provides monetizationProvider,
-                    LocalSubscriptionProvider provides subscriptionProvider,
-                    LocalMediaTagDialogController provides mediaTagDialogController,
-                    LocalMediaGenreDialogController provides mediaGenreDialogController,
-                    LocalAppUpdateChecker provides appUpdateChecker,
-                    LocalLanguageOptionMedia provides languageOptionMedia,
-                    LocalLanguageOptionCharacters provides languageOptionCharacters,
-                    LocalLanguageOptionStaff provides languageOptionStaff,
-                    LocalLanguageOptionVoiceActor provides
-                            (languageOptionVoiceActor to showFallbackVoiceActor),
-                    LocalFullscreenImageHandler provides fullScreenImageHandler,
-                    LocalMarkdown provides markdown,
-                    LocalComposeSettings provides settings.composeSettingsData(),
-                    LocalImageColorsState provides imageColorsState,
-                    LocalIgnoreController provides ignoreController,
-                    LocalAnimeComponent provides applicationComponent,
-                    LocalShareHandler provides shareHandler,
-                ) {
-                    // TODO: Draw inside insets for applicable screens
-                    Surface(modifier = Modifier.safeDrawingPadding()) {
-                        val startDrawerState = rememberDrawerState(DrawerValue.Closed)
-                        val endDrawerState = rememberDrawerState(DrawerValue.Closed)
-                        val scope = rememberCoroutineScope()
-                        val navDrawerItems = NavDrawerItems.entries
+            AndroidTheme(settings = settings, navHostController = navHostController) {
+                SharedInfra(applicationComponent) {
+                    val navigationController = rememberNavigationController(navHostController)
+                    CompositionLocalProvider(
+                        LocalNavigationController provides navigationController,
+                        LocalMonetizationProvider provides monetizationProvider,
+                        LocalSubscriptionProvider provides subscriptionProvider,
+                        LocalAppUpdateChecker provides appUpdateChecker,
+                        LocalComposeSettings provides settings.composeSettingsData(),
+                        LocalAnimeComponent provides applicationComponent,
+                        LocalShareHandler provides shareHandler,
+                    ) {
+                        // TODO: Draw inside insets for applicable screens
+                        Surface(modifier = Modifier.safeDrawingPadding()) {
+                            val startDrawerState = rememberDrawerState(DrawerValue.Closed)
+                            val endDrawerState = rememberDrawerState(DrawerValue.Closed)
+                            val scope = rememberCoroutineScope()
+                            val navDrawerItems = NavDrawerItems.entries
 
-                        fun onClickNav() = scope.launch { startDrawerState.open() }
-                        val unlockDatabaseFeatures by monetizationController.unlockDatabaseFeatures
-                            .collectAsState(false)
+                            fun onClickNav() = scope.launch { startDrawerState.open() }
+                            val unlockDatabaseFeatures by monetizationController.unlockDatabaseFeatures
+                                .collectAsState(false)
 
-                        if (unlockDatabaseFeatures) {
-                            var gesturesEnabled by remember { mutableStateOf(true) }
-                            @Suppress("KotlinConstantConditions")
-                            if (BuildConfig.BUILD_TYPE == "release") {
-                                DisposableEffect(navHostController) {
-                                    val listener =
-                                        NavController.OnDestinationChangedListener { controller, destination, arguments ->
-                                            gesturesEnabled = NavDrawerItems.entries
-                                                .any { it.route == destination.route }
+                            if (unlockDatabaseFeatures) {
+                                var gesturesEnabled by remember { mutableStateOf(true) }
+                                @Suppress("KotlinConstantConditions")
+                                if (BuildConfig.BUILD_TYPE == "release") {
+                                    DisposableEffect(navHostController) {
+                                        val listener =
+                                            NavController.OnDestinationChangedListener { controller, destination, arguments ->
+                                                gesturesEnabled = NavDrawerItems.entries
+                                                    .any { it.route == destination.route }
+                                            }
+                                        navHostController.addOnDestinationChangedListener(listener)
+                                        onDispose {
+                                            navHostController.removeOnDestinationChangedListener(
+                                                listener
+                                            )
                                         }
-                                    navHostController.addOnDestinationChangedListener(listener)
-                                    onDispose {
-                                        navHostController.removeOnDestinationChangedListener(
-                                            listener
-                                        )
                                     }
                                 }
-                            }
-                            DebugDoubleDrawer(
-                                applicationComponent = applicationComponent,
-                                startDrawerState = startDrawerState,
-                                endDrawerState = endDrawerState,
-                                gesturesEnabled = gesturesEnabled,
-                                drawerContent = {
-                                    // TODO: This is not a good way to to infer the selected root
-                                    var selectedRouteIndex by rememberSaveable {
-                                        mutableIntStateOf(
-                                            NavDrawerItems.entries
-                                                .indexOfFirst { it.id == startDestination })
-                                    }
+                                DebugDoubleDrawer(
+                                    applicationComponent = applicationComponent,
+                                    startDrawerState = startDrawerState,
+                                    endDrawerState = endDrawerState,
+                                    gesturesEnabled = gesturesEnabled,
+                                    drawerContent = {
+                                        // TODO: This is not a good way to to infer the selected root
+                                        var selectedRouteIndex by rememberSaveable {
+                                            mutableIntStateOf(
+                                                NavDrawerItems.entries
+                                                    .indexOfFirst { it.id == startDestination })
+                                        }
 
-                                    StartDrawer(
-                                        drawerState = startDrawerState,
-                                        navDrawerItems = { navDrawerItems },
-                                        selectedIndex = { selectedRouteIndex },
-                                        onSelectIndex = {
-                                            if (selectedRouteIndex == it) {
-                                                scope.launch { startDrawerState.close() }
-                                            } else {
-                                                selectedRouteIndex = it
-                                                val navDrawerItem = navDrawerItems[it]
-                                                navHostController.navigate(navDrawerItem.route) {
-                                                    launchSingleTop = true
-                                                    restoreState = true
-                                                    val rootRoute =
-                                                        navHostController.currentBackStackEntry
-                                                            ?.destination?.route
-                                                    if (rootRoute != null) {
-                                                        popUpTo(rootRoute) {
-                                                            inclusive = true
-                                                            saveState = true
+                                        StartDrawer(
+                                            drawerState = startDrawerState,
+                                            navDrawerItems = { navDrawerItems },
+                                            selectedIndex = { selectedRouteIndex },
+                                            onSelectIndex = {
+                                                if (selectedRouteIndex == it) {
+                                                    scope.launch { startDrawerState.close() }
+                                                } else {
+                                                    selectedRouteIndex = it
+                                                    val navDrawerItem = navDrawerItems[it]
+                                                    navHostController.navigate(navDrawerItem.route) {
+                                                        launchSingleTop = true
+                                                        restoreState = true
+                                                        val rootRoute =
+                                                            navHostController.currentBackStackEntry
+                                                                ?.destination?.route
+                                                        if (rootRoute != null) {
+                                                            popUpTo(rootRoute) {
+                                                                inclusive = true
+                                                                saveState = true
+                                                            }
                                                         }
                                                     }
+                                                    if (startDestinationFromIntent == null
+                                                        && navDrawerItem != NavDrawerItems.SETTINGS
+                                                    ) {
+                                                        settings.navDrawerStartDestination.value =
+                                                            navDrawerItem.id
+                                                    }
                                                 }
-                                                if (startDestinationFromIntent == null
-                                                    && navDrawerItem != NavDrawerItems.SETTINGS
-                                                ) {
-                                                    settings.navDrawerStartDestination.value =
-                                                        navDrawerItem.id
-                                                }
-                                            }
+                                            },
+                                            onCloseDrawer = { scope.launch { startDrawerState.close() } },
+                                        )
+                                    }
+                                ) {
+                                    Content(
+                                        navigationController = navigationController,
+                                        navHostController = navHostController,
+                                        unlockDatabaseFeatures = true,
+                                        onClickNav = ::onClickNav,
+                                        startDestination = startDestination,
+                                        onVariantBannerClick = {
+                                            scope.launch { endDrawerState.open() }
                                         },
-                                        onCloseDrawer = { scope.launch { startDrawerState.close() } },
                                     )
                                 }
-                            ) {
+                            } else {
                                 Content(
                                     navigationController = navigationController,
                                     navHostController = navHostController,
-                                    unlockDatabaseFeatures = true,
+                                    unlockDatabaseFeatures = false,
                                     onClickNav = ::onClickNav,
                                     startDestination = startDestination,
-                                    onVariantBannerClick = {
-                                        scope.launch { endDrawerState.open() }
-                                    },
+                                    onVariantBannerClick = { scope.launch { endDrawerState.open() } },
                                 )
                             }
-                        } else {
-                            Content(
-                                navigationController = navigationController,
-                                navHostController = navHostController,
-                                unlockDatabaseFeatures = false,
-                                onClickNav = ::onClickNav,
-                                startDestination = startDestination,
-                                onVariantBannerClick = { scope.launch { endDrawerState.open() } },
-                            )
                         }
                     }
-
-                    val tagShown = mediaTagDialogController.tagShown
-                    if (tagShown != null) {
-                        MediaTagPreview(tag = tagShown) {
-                            mediaTagDialogController.tagShown = null
-                        }
-                    }
-
-                    val genreShown = mediaGenreDialogController.genreShown
-                    if (genreShown != null) {
-                        MediaGenrePreview(genre = genreShown) {
-                            mediaGenreDialogController.genreShown = null
-                        }
-                    }
-
-                    fullScreenImageHandler.ImageDialog()
                 }
             }
         }
