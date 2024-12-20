@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumThreadSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsByIdRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
@@ -107,7 +108,18 @@ sealed interface AnimeDestination : NavDestination {
                         ),
                     )
                 }
+
+            val routeById: MediaDetailsByIdRoute = { mediaId, sharedTransitionKey ->
+                MediaDetails(
+                    mediaId = mediaId,
+                    title = null,
+                    coverImage = null,
+                    headerParams = null,
+                    sharedTransitionKey = sharedTransitionKey,
+                )
+            }
         }
+
         constructor(
             mediaNavigationData: MediaNavigationData,
             coverImage: ImageState?,
@@ -129,9 +141,6 @@ sealed interface AnimeDestination : NavDestination {
     data class MediaHistory(
         val mediaType: MediaType?,
     ) : AnimeDestination
-
-    @Serializable
-    data object Notifications : AnimeDestination
 
     @Serializable
     data class SearchMedia(

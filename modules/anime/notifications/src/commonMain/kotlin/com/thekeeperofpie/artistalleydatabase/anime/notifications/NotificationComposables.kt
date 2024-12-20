@@ -26,9 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_notification_episode_aired
-import artistalleydatabase.modules.anime.generated.resources.anime_notification_related_added
+import artistalleydatabase.modules.anime.notifications.generated.resources.Res
+import artistalleydatabase.modules.anime.notifications.generated.resources.anime_notification_episode_aired
+import artistalleydatabase.modules.anime.notifications.generated.resources.anime_notification_related_added
 import com.anilist.data.NotificationMediaAndActivityQuery
 import com.anilist.data.NotificationsQuery
 import com.anilist.data.NotificationsQuery.Data.Page.ActivityLikeNotificationNotification
@@ -37,26 +37,17 @@ import com.anilist.data.NotificationsQuery.Data.Page.ActivityReplyLikeNotificati
 import com.anilist.data.NotificationsQuery.Data.Page.ActivityReplyNotificationNotification
 import com.anilist.data.NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification
 import com.anilist.data.fragment.ForumThread
-import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.UserNavigationData
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivityCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivityCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivityCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleUpdate
-import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCommentContent
-import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsByIdRoute
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ActivityDetailsRoute
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ForumThreadCommentRoute
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ForumThreadRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
-import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.users.UserHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
@@ -125,12 +116,11 @@ fun NotificationPlaceholderCard() {
 
 @Composable
 fun ActivityMentionNotificationCard(
-    viewer: AniListViewer?,
     notification: ActivityMentionNotificationNotification,
-    activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    activityEntry: NotificationActivityEntry?,
+    activityDetailsRoute: ActivityDetailsRoute,
+    activityRow: @Composable (ActivityStatusAware, NotificationMediaAndActivityQuery.Data.Activity.Activity) -> Unit,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
@@ -139,10 +129,7 @@ fun ActivityMentionNotificationCard(
     ElevatedCard(onClick = {
         activityEntry?.id?.let {
             navigationController.navigate(
-                ActivityDestinations.ActivityDetails(
-                    activityId = it,
-                    sharedTransitionScopeKey = sharedTransitionScopeKey,
-                )
+                activityDetailsRoute(it, sharedTransitionScopeKey)
             )
         }
     }) {
@@ -155,26 +142,25 @@ fun ActivityMentionNotificationCard(
             imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
+            userRoute = userRoute,
         )
 
         ActivityCard(
-            viewer = viewer,
             activityEntry = activityEntry,
             sharedTransitionKey = activitySharedTransitionKey,
-            mediaEntry = mediaEntry,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
+            activityDetailsRoute = activityDetailsRoute,
+            activityRow = activityRow,
         )
     }
 }
 
 @Composable
 fun ActivityMessageNotificationCard(
-    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ActivityMessageNotificationNotification,
-    activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
-    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    activityEntry: NotificationActivityEntry?,
+    activityDetailsRoute: ActivityDetailsRoute,
+    activityRow: @Composable (ActivityStatusAware, NotificationMediaAndActivityQuery.Data.Activity.Activity) -> Unit,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
@@ -183,10 +169,7 @@ fun ActivityMessageNotificationCard(
     ElevatedCard(onClick = {
         activityEntry?.id?.let {
             navigationController.navigate(
-                ActivityDestinations.ActivityDetails(
-                    activityId = it,
-                    sharedTransitionScopeKey = sharedTransitionScopeKey,
-                )
+                activityDetailsRoute(it, sharedTransitionScopeKey)
             )
         }
     }) {
@@ -199,27 +182,25 @@ fun ActivityMessageNotificationCard(
             imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
+            userRoute = userRoute,
         )
 
         ActivityCard(
-            viewer = viewer,
             activityEntry = activityEntry,
             sharedTransitionKey = activitySharedTransitionKey,
-            mediaEntry = null,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
+            activityDetailsRoute = activityDetailsRoute,
+            activityRow = activityRow,
         )
     }
 }
 
 @Composable
 fun ActivityReplyNotificationCard(
-    viewer: AniListViewer?,
     notification: ActivityReplyNotificationNotification,
-    activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    activityEntry: NotificationActivityEntry?,
+    activityDetailsRoute: ActivityDetailsRoute,
+    activityRow: @Composable (ActivityStatusAware, NotificationMediaAndActivityQuery.Data.Activity.Activity) -> Unit,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
@@ -228,10 +209,7 @@ fun ActivityReplyNotificationCard(
     ElevatedCard(onClick = {
         notification.activityId.toString().let {
             navigationController.navigate(
-                ActivityDestinations.ActivityDetails(
-                    activityId = it,
-                    sharedTransitionScopeKey = sharedTransitionScopeKey,
-                )
+                activityDetailsRoute(it, sharedTransitionScopeKey)
             )
         }
     }) {
@@ -244,27 +222,25 @@ fun ActivityReplyNotificationCard(
             imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
+            userRoute = userRoute,
         )
 
         ActivityCard(
-            viewer = viewer,
             activityEntry = activityEntry,
             sharedTransitionKey = activitySharedTransitionKey,
-            mediaEntry = mediaEntry,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
+            activityDetailsRoute = activityDetailsRoute,
+            activityRow = activityRow,
         )
     }
 }
 
 @Composable
 fun ActivityReplySubscribedNotificationCard(
-    viewer: AniListViewer?,
     notification: ActivityReplySubscribedNotificationNotification,
-    activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    activityEntry: NotificationActivityEntry?,
+    activityDetailsRoute: ActivityDetailsRoute,
+    activityRow: @Composable (ActivityStatusAware, NotificationMediaAndActivityQuery.Data.Activity.Activity) -> Unit,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
@@ -272,10 +248,7 @@ fun ActivityReplySubscribedNotificationCard(
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         navigationController.navigate(
-            ActivityDestinations.ActivityDetails(
-                activityId = notification.activityId.toString(),
-                sharedTransitionScopeKey = sharedTransitionScopeKey,
-            )
+            activityDetailsRoute(notification.activityId.toString(), sharedTransitionScopeKey)
         )
     }) {
         val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
@@ -287,27 +260,25 @@ fun ActivityReplySubscribedNotificationCard(
             imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
+            userRoute = userRoute,
         )
 
         ActivityCard(
-            viewer = viewer,
             activityEntry = activityEntry,
             sharedTransitionKey = activitySharedTransitionKey,
-            mediaEntry = mediaEntry,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
+            activityDetailsRoute = activityDetailsRoute,
+            activityRow = activityRow,
         )
     }
 }
 
 @Composable
 fun ActivityLikedNotificationCard(
-    viewer: AniListViewer?,
     notification: ActivityLikeNotificationNotification,
-    activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    activityEntry: NotificationActivityEntry?,
+    activityDetailsRoute: ActivityDetailsRoute,
+    activityRow: @Composable (ActivityStatusAware, NotificationMediaAndActivityQuery.Data.Activity.Activity) -> Unit,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
@@ -315,10 +286,7 @@ fun ActivityLikedNotificationCard(
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         navigationController.navigate(
-            ActivityDestinations.ActivityDetails(
-                activityId = notification.activityId.toString(),
-                sharedTransitionScopeKey = sharedTransitionScopeKey,
-            )
+            activityDetailsRoute(notification.activityId.toString(), sharedTransitionScopeKey)
         )
     }) {
         val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
@@ -330,27 +298,25 @@ fun ActivityLikedNotificationCard(
             imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
+            userRoute = userRoute,
         )
 
         ActivityCard(
-            viewer = viewer,
             activityEntry = activityEntry,
             sharedTransitionKey = activitySharedTransitionKey,
-            mediaEntry = mediaEntry,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
+            activityDetailsRoute = activityDetailsRoute,
+            activityRow = activityRow,
         )
     }
 }
 
 @Composable
 fun ActivityReplyLikedNotificationCard(
-    viewer: AniListViewer?,
     notification: ActivityReplyLikeNotificationNotification,
-    activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    activityEntry: NotificationActivityEntry?,
+    activityDetailsRoute: ActivityDetailsRoute,
+    activityRow: @Composable (ActivityStatusAware, NotificationMediaAndActivityQuery.Data.Activity.Activity) -> Unit,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val activitySharedTransitionKey =
@@ -358,10 +324,7 @@ fun ActivityReplyLikedNotificationCard(
     val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
     ElevatedCard(onClick = {
         navigationController.navigate(
-            ActivityDestinations.ActivityDetails(
-                activityId = notification.activityId.toString(),
-                sharedTransitionScopeKey = sharedTransitionScopeKey,
-            )
+            activityDetailsRoute(notification.activityId.toString(), sharedTransitionScopeKey)
         )
     }) {
         val userImageState = rememberCoilImageState(notification.user?.avatar?.large)
@@ -373,39 +336,29 @@ fun ActivityReplyLikedNotificationCard(
             imageState = userImageState,
             context = notification.context,
             createdAt = notification.createdAt,
+            userRoute = userRoute,
         )
 
         ActivityCard(
-            viewer = viewer,
             activityEntry = activityEntry,
             sharedTransitionKey = activitySharedTransitionKey,
-            mediaEntry = mediaEntry,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-            onClickListEdit = onClickListEdit,
+            activityDetailsRoute = activityDetailsRoute,
+            activityRow = activityRow,
         )
     }
 }
 
 @Composable
 fun AiringNotificationCard(
-    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.AiringNotificationNotification,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    mediaDetailsByIdRoute: MediaDetailsByIdRoute,
+    mediaRow: @Composable (Modifier) -> Unit,
 ) {
     val navigationController = LocalNavigationController.current
     val sharedTransitionKey = notification.mediaId?.let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
         notification.mediaId?.let {
-            navigationController.navigate(
-                AnimeDestination.MediaDetails(
-                    mediaId = it,
-                    title = null,
-                    coverImage = null,
-                    headerParams = null,
-                    sharedTransitionKey = sharedTransitionKey,
-                )
-            )
+            navigationController.navigate(mediaDetailsByIdRoute(it, sharedTransitionKey))
         }
     }) {
         Row(
@@ -421,18 +374,15 @@ fun AiringNotificationCard(
             )
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        AnimeMediaCompactListRow(
-            viewer = viewer,
-            entry = mediaEntry,
-            modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit,
-        )
+
+        mediaRow(Modifier.padding(8.dp))
     }
 }
 
 @Composable
 fun FollowingNotificationCard(
     notification: NotificationsQuery.Data.Page.FollowingNotificationNotification,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val imageState = rememberCoilImageState(notification.user?.avatar?.large)
@@ -441,15 +391,7 @@ fun FollowingNotificationCard(
     ElevatedCard(onClick = {
         notification.user?.let {
             navigationController.navigate(
-                UserDestinations.User(
-                    userId = it.id.toString(),
-                    sharedTransitionKey = sharedTransitionKey,
-                    headerParams = UserHeaderParams(
-                        name = it.name,
-                        bannerImage = null,
-                        coverImage = imageState.toImageState(),
-                    )
-                )
+                userRoute(it.id.toString(), sharedTransitionKey, it.name, imageState.toImageState())
             )
         }
     }) {
@@ -459,16 +401,16 @@ fun FollowingNotificationCard(
             imageState = imageState,
             context = notification.context,
             createdAt = notification.createdAt,
+            userRoute = userRoute,
         )
     }
 }
 
 @Composable
 fun RelatedMediaAdditionNotificationCard(
-    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    mediaDetailsByIdRoute: MediaDetailsByIdRoute,
+    mediaRow: @Composable (Modifier) -> Unit,
 ) {
     val navigationController = LocalNavigationController.current
     val sharedTransitionKey =
@@ -476,13 +418,7 @@ fun RelatedMediaAdditionNotificationCard(
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationController.navigate(
-                AnimeDestination.MediaDetails(
-                    mediaId = it,
-                    title = null,
-                    coverImage = null,
-                    headerParams = null,
-                    sharedTransitionKey = sharedTransitionKey,
-                )
+                mediaDetailsByIdRoute(it, sharedTransitionKey)
             )
         }
     }) {
@@ -496,21 +432,16 @@ fun RelatedMediaAdditionNotificationCard(
             )
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        AnimeMediaCompactListRow(
-            viewer = viewer,
-            entry = mediaEntry,
-            modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit,
-        )
+
+        mediaRow(Modifier.padding(8.dp))
     }
 }
 
 @Composable
 fun MediaDataChangeNotificationCard(
-    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    mediaDetailsByIdRoute: MediaDetailsByIdRoute,
+    mediaRow: @Composable (Modifier) -> Unit,
 ) {
     val navigationController = LocalNavigationController.current
     val sharedTransitionKey =
@@ -518,13 +449,7 @@ fun MediaDataChangeNotificationCard(
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationController.navigate(
-                AnimeDestination.MediaDetails(
-                    mediaId = it,
-                    title = null,
-                    coverImage = null,
-                    headerParams = null,
-                    sharedTransitionKey = sharedTransitionKey,
-                )
+                mediaDetailsByIdRoute(it, sharedTransitionKey)
             )
         }
     }) {
@@ -548,21 +473,15 @@ fun MediaDataChangeNotificationCard(
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        AnimeMediaCompactListRow(
-            viewer = viewer,
-            entry = mediaEntry,
-            modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit,
-        )
+
+        mediaRow(Modifier.padding(8.dp))
     }
 }
 
 @Composable
 fun MediaDeletionNotificationCard(
-    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaDeletionNotificationNotification,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    mediaRow: @Composable (Modifier) -> Unit,
 ) {
     ElevatedCard {
         Row(
@@ -588,21 +507,16 @@ fun MediaDeletionNotificationCard(
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        AnimeMediaCompactListRow(
-            viewer = viewer,
-            entry = mediaEntry,
-            modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit
-        )
+
+        mediaRow(Modifier.padding(8.dp))
     }
 }
 
 @Composable
 fun MediaMergeNotificationCard(
-    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaMergeNotificationNotification,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    mediaDetailsByIdRoute: MediaDetailsByIdRoute,
+    mediaRow: @Composable (Modifier) -> Unit,
 ) {
     val navigationController = LocalNavigationController.current
     val sharedTransitionKey =
@@ -610,13 +524,7 @@ fun MediaMergeNotificationCard(
     ElevatedCard(onClick = {
         notification.mediaId.takeIf { it > 0 }?.toString()?.let {
             navigationController.navigate(
-                AnimeDestination.MediaDetails(
-                    mediaId = it,
-                    title = null,
-                    coverImage = null,
-                    headerParams = null,
-                    sharedTransitionKey = sharedTransitionKey,
-                )
+                mediaDetailsByIdRoute(it, sharedTransitionKey)
             )
         }
     }) {
@@ -640,110 +548,137 @@ fun MediaMergeNotificationCard(
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
-        AnimeMediaCompactListRow(
-            viewer = viewer,
-            entry = mediaEntry,
-            modifier = Modifier.padding(8.dp),
-            onClickListEdit = onClickListEdit,
-        )
+
+        mediaRow(Modifier.padding(8.dp))
     }
 }
 
 @Composable
-fun ThreadCommentMentionNotificationCard(
-    viewer: AniListViewer?,
+fun <CommentEntry> ThreadCommentMentionNotificationCard(
     notification: NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification,
-    entry: ForumCommentEntry?,
-    onStatusUpdate: (String, Boolean) -> Unit,
+    commentId: String?,
+    commentEntry: CommentEntry?,
+    forumThreadRoute: ForumThreadRoute,
+    forumThreadCommentRoute: ForumThreadCommentRoute,
+    threadRow: @Composable (ForumThread?, Modifier) -> Unit,
+    commentRow: @Composable (threadId: String, CommentEntry) -> Unit,
+    userRoute: UserRoute,
 ) {
     ThreadAndCommentNotificationCard(
-        viewer = viewer,
         user = notification.user,
         context = notification.context,
         createdAt = notification.createdAt,
         thread = notification.thread,
-        entry = entry,
-        onStatusUpdate = onStatusUpdate,
+        commentId = commentId,
+        commentEntry = commentEntry,
+        forumThreadRoute = forumThreadRoute,
+        forumThreadCommentRoute = forumThreadCommentRoute,
+        threadRow = threadRow,
+        commentRow = commentRow,
+        userRoute = userRoute,
     )
 }
 
 @Composable
-fun ThreadCommentLikeNotificationCard(
-    viewer: AniListViewer?,
+fun <CommentEntry> ThreadCommentLikeNotificationCard(
     notification: NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification,
-    entry: ForumCommentEntry?,
-    onStatusUpdate: (String, Boolean) -> Unit,
+    commentId: String?,
+    commentEntry: CommentEntry?,
+    forumThreadRoute: ForumThreadRoute,
+    forumThreadCommentRoute: ForumThreadCommentRoute,
+    threadRow: @Composable (ForumThread?, Modifier) -> Unit,
+    commentRow: @Composable (threadId: String, CommentEntry) -> Unit,
+    userRoute: UserRoute,
 ) {
     ThreadAndCommentNotificationCard(
-        viewer = viewer,
         user = notification.user,
         context = notification.context,
         createdAt = notification.createdAt,
         thread = notification.thread,
-        entry = entry,
-        onStatusUpdate = onStatusUpdate,
+        commentId = commentId,
+        commentEntry = commentEntry,
+        forumThreadRoute = forumThreadRoute,
+        forumThreadCommentRoute = forumThreadCommentRoute,
+        threadRow = threadRow,
+        commentRow = commentRow,
+        userRoute = userRoute,
     )
 }
 
 @Composable
-fun ThreadCommentReplyNotificationCard(
-    viewer: AniListViewer?,
+fun <CommentEntry> ThreadCommentReplyNotificationCard(
     notification: NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification,
-    entry: ForumCommentEntry?,
-    onStatusUpdate: (String, Boolean) -> Unit,
+    commentId: String?,
+    commentEntry: CommentEntry?,
+    forumThreadRoute: ForumThreadRoute,
+    forumThreadCommentRoute: ForumThreadCommentRoute,
+    threadRow: @Composable (ForumThread?, Modifier) -> Unit,
+    commentRow: @Composable (threadId: String, CommentEntry) -> Unit,
+    userRoute: UserRoute,
 ) {
     ThreadAndCommentNotificationCard(
-        viewer = viewer,
         user = notification.user,
         context = notification.context,
         createdAt = notification.createdAt,
         thread = notification.thread,
-        entry = entry,
-        onStatusUpdate = onStatusUpdate,
+        commentId = commentId,
+        commentEntry = commentEntry,
+        forumThreadRoute = forumThreadRoute,
+        forumThreadCommentRoute = forumThreadCommentRoute,
+        threadRow = threadRow,
+        commentRow = commentRow,
+        userRoute = userRoute,
     )
 }
 
 @Composable
-fun ThreadCommentSubscribedNotificationCard(
-    viewer: AniListViewer?,
+fun <CommentEntry> ThreadCommentSubscribedNotificationCard(
     notification: NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification,
-    entry: ForumCommentEntry?,
-    onStatusUpdate: (String, Boolean) -> Unit,
+    commentId: String?,
+    commentEntry: CommentEntry?,
+    forumThreadRoute: ForumThreadRoute,
+    forumThreadCommentRoute: ForumThreadCommentRoute,
+    threadRow: @Composable (ForumThread?, Modifier) -> Unit,
+    commentRow: @Composable (threadId: String, CommentEntry) -> Unit,
+    userRoute: UserRoute,
 ) {
     ThreadAndCommentNotificationCard(
-        viewer = viewer,
         user = notification.user,
         context = notification.context,
         createdAt = notification.createdAt,
         thread = notification.thread,
-        entry = entry,
-        onStatusUpdate = onStatusUpdate,
+        commentId = commentId,
+        commentEntry = commentEntry,
+        forumThreadRoute = forumThreadRoute,
+        forumThreadCommentRoute = forumThreadCommentRoute,
+        threadRow = threadRow,
+        commentRow = commentRow,
+        userRoute = userRoute,
     )
 }
 
 @Composable
-private fun ThreadAndCommentNotificationCard(
-    viewer: AniListViewer?,
+private fun <CommentEntry> ThreadAndCommentNotificationCard(
     user: UserNavigationData?,
     context: String?,
     createdAt: Int?,
     thread: ForumThread?,
-    entry: ForumCommentEntry?,
-    onStatusUpdate: (String, Boolean) -> Unit,
+    commentId: String?,
+    commentEntry: CommentEntry?,
+    forumThreadRoute: ForumThreadRoute,
+    forumThreadCommentRoute: ForumThreadCommentRoute,
+    threadRow: @Composable (ForumThread?, Modifier) -> Unit,
+    commentRow: @Composable (threadId: String, CommentEntry) -> Unit,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val threadId = thread?.id?.toString()
     val imageState = rememberCoilImageState(user?.avatar?.large)
     val sharedTransitionKey = user?.id?.toString()?.let { SharedTransitionKey.makeKeyForId(it) }
     ElevatedCard(onClick = {
-        val commentId = entry?.comment?.id?.toString()
         if (threadId != null && commentId != null) {
             navigationController.navigate(
-                ForumDestinations.ForumThreadComment(
-                    threadId = threadId,
-                    commentId = commentId,
-                    title = thread.title,
-                )
+                forumThreadCommentRoute(threadId, commentId, thread.title)
             )
         }
     }) {
@@ -753,6 +688,7 @@ private fun ThreadAndCommentNotificationCard(
             imageState = imageState,
             context = context,
             createdAt = createdAt,
+            userRoute = userRoute,
         )
 
         OutlinedCard(
@@ -760,52 +696,29 @@ private fun ThreadAndCommentNotificationCard(
                 .height(IntrinsicSize.Min)
                 .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
         ) {
-            ThreadCardContent(
-                thread = thread,
-                userRoute = UserDestinations.User.route,
-                modifier = Modifier.clickable {
+            threadRow(
+                thread,
+                Modifier.clickable {
                     if (threadId != null) {
-                        navigationController.navigate(
-                            ForumDestinations.ForumThread(
-                                threadId = threadId,
-                                title = thread.title,
-                            )
-                        )
+                        navigationController.navigate(forumThreadRoute(threadId, thread.title))
                     }
                 }
             )
 
             HorizontalDivider()
 
-            val comment = entry?.comment
-            if (threadId != null && comment != null) {
+            if (threadId != null && commentId != null && commentEntry != null) {
                 Column(
                     modifier = Modifier
                         .heightIn(max = 140.dp)
                         .verticalScroll(rememberScrollState())
                         .clickable {
                             navigationController.navigate(
-                                ForumDestinations.ForumThreadComment(
-                                    threadId = threadId,
-                                    commentId = comment.id.toString(),
-                                    title = thread.title,
-                                )
+                                forumThreadCommentRoute(threadId, commentId, thread.title)
                             )
                         }
                 ) {
-                    ThreadCommentContent(
-                        threadId = threadId,
-                        viewer = viewer,
-                        loading = false,
-                        commentId = comment.id.toString(),
-                        commentMarkdown = entry.commentMarkdown,
-                        createdAt = comment.createdAt,
-                        liked = entry.liked,
-                        likeCount = comment.likeCount,
-                        user = entry.user,
-                        userRoute = UserDestinations.User.route,
-                        onStatusUpdate = onStatusUpdate,
-                    )
+                    commentRow(threadId, commentEntry)
                 }
             }
         }
@@ -815,6 +728,9 @@ private fun ThreadAndCommentNotificationCard(
 @Composable
 fun ThreadLikeNotificationCard(
     notification: NotificationsQuery.Data.Page.ThreadLikeNotificationNotification,
+    forumThreadRoute: ForumThreadRoute,
+    threadRow: @Composable (ForumThread?) -> Unit,
+    userRoute: UserRoute,
 ) {
     val navigationController = LocalNavigationController.current
     val thread = notification.thread
@@ -824,10 +740,7 @@ fun ThreadLikeNotificationCard(
     ElevatedCard(onClick = {
         if (thread != null) {
             navigationController.navigate(
-                ForumDestinations.ForumThread(
-                    threadId = thread.id.toString(),
-                    title = thread.title,
-                )
+                forumThreadRoute(thread.id.toString(), thread.title)
             )
         }
     }) {
@@ -837,6 +750,7 @@ fun ThreadLikeNotificationCard(
             imageState = imageState,
             context = notification.context,
             createdAt = notification.createdAt,
+            userRoute = userRoute,
         )
 
         if (thread != null) {
@@ -845,7 +759,7 @@ fun ThreadLikeNotificationCard(
                     .height(IntrinsicSize.Min)
                     .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
             ) {
-                ThreadCardContent(thread = thread, userRoute = UserDestinations.User.route)
+                threadRow(thread)
             }
         }
     }
@@ -858,6 +772,7 @@ private fun ContextHeader(
     imageState: CoilImageState,
     context: String?,
     createdAt: Int?,
+    userRoute: UserRoute,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -878,14 +793,11 @@ private fun ContextHeader(
                 .clickable {
                     if (user != null) {
                         navigationController.navigate(
-                            UserDestinations.User(
-                                userId = user.id.toString(),
-                                sharedTransitionKey = sharedTransitionKey,
-                                headerParams = UserHeaderParams(
-                                    name = user.name,
-                                    bannerImage = null,
-                                    coverImage = imageState.toImageState(),
-                                )
+                            userRoute(
+                                user.id.toString(),
+                                sharedTransitionKey,
+                                user.name,
+                                imageState.toImageState(),
                             )
                         )
                     }
@@ -912,12 +824,10 @@ private fun ContextHeader(
 
 @Composable
 private fun ActivityCard(
-    viewer: AniListViewer?,
-    activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
+    activityEntry: NotificationActivityEntry?,
     sharedTransitionKey: SharedTransitionKey?,
-    mediaEntry: AnimeMediaCompactListRow.Entry?,
-    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    onClickListEdit: (MediaNavigationData) -> Unit,
+    activityDetailsRoute: ActivityDetailsRoute,
+    activityRow: @Composable (ActivityStatusAware, NotificationMediaAndActivityQuery.Data.Activity.Activity) -> Unit,
 ) {
     // TODO: Load activity manually if notification doesn't provide it
     val activity = activityEntry?.activity ?: return
@@ -926,63 +836,14 @@ private fun ActivityCard(
     OutlinedCard(
         onClick = {
             navigationController.navigate(
-                ActivityDestinations.ActivityDetails(
-                    activityId = activityEntry.id,
-                    sharedTransitionScopeKey = sharedTransitionScopeKey,
-                )
+                activityDetailsRoute(activityEntry.id, sharedTransitionScopeKey)
             )
         },
         modifier = Modifier
             .sharedElement(sharedTransitionKey, "activity_card")
             .padding(8.dp)
     ) {
-        when (activity) {
-            is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> ListActivityCardContent(
-                viewer = viewer,
-                activity = activity,
-                user = activity.user,
-                entry = mediaEntry,
-                mediaRow = { entry, modifier ->
-                    AnimeMediaCompactListRow(
-                        viewer = viewer,
-                        entry = entry,
-                        onClickListEdit = onClickListEdit,
-                        modifier = modifier,
-                    )
-                },
-                liked = activityEntry.liked,
-                subscribed = activityEntry.subscribed,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-                userRoute = UserDestinations.User.route,
-            )
-            is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> MessageActivityCardContent(
-                viewer = viewer,
-                activity = activity,
-                messenger = activity.messenger,
-                entry = activityEntry,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-                clickable = true,
-                userRoute = UserDestinations.User.route,
-            )
-            is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> TextActivityCardContent(
-                viewer = viewer,
-                activity = activity,
-                user = activity.user,
-                entry = activityEntry,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-                userRoute = UserDestinations.User.route,
-                clickable = true,
-            )
-            is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
-                -> TextActivityCardContent(
-                viewer = viewer,
-                activity = null,
-                user = null,
-                entry = null,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-                userRoute = UserDestinations.User.route,
-            )
-        }
+        activityRow(activityEntry, activity)
     }
 }
 

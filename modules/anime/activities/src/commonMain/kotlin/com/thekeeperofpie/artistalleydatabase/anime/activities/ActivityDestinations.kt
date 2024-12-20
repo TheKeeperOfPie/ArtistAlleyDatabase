@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ActivityDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
@@ -37,7 +38,17 @@ object ActivityDestinations {
     data class ActivityDetails(
         val activityId: String,
         val sharedTransitionScopeKey: String?,
-    ) : NavDestination
+    ) : NavDestination {
+        companion object {
+            // TODO: Can this use a non-scope key?
+            val route: ActivityDetailsRoute = { activityId, sharedTransitionScopeKey ->
+                ActivityDetails(
+                    activityId = activityId,
+                    sharedTransitionScopeKey = sharedTransitionScopeKey,
+                )
+            }
+        }
+    }
 
     fun <MediaEntry> addToGraph(
         navGraphBuilder: NavGraphBuilder,

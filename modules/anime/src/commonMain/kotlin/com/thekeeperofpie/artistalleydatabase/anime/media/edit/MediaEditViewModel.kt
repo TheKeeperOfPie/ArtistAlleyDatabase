@@ -168,7 +168,7 @@ class MediaEditViewModel(
         titleNative = mediaQuickEditData.titleNative,
     )
 
-    fun initialize(
+    private fun initialize(
         mediaId: String,
         coverImage: String?,
         type: MediaType?,
@@ -203,7 +203,7 @@ class MediaEditViewModel(
         state.showing = true
     }
 
-    fun initialize(
+    private fun initialize(
         mediaId: String,
         coverImage: String?,
         // TODO: Pass all translations so that UI can react to language changes down the line

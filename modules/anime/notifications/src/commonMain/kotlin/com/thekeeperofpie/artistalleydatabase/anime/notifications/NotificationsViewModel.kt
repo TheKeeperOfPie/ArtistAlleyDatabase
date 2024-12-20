@@ -5,24 +5,23 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.anilist.data.NotificationMediaAndActivityQuery
-import com.anilist.data.NotificationsQuery
 import com.anilist.data.fragment.ActivityItem.Companion.asListActivity
+import com.anilist.data.fragment.ForumThreadComment
+import com.anilist.data.fragment.MediaCompactWithTags
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.applyActivityFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentEntry
-import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumCommentEntryProvider
+import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumThreadCommentStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumThreadCommentToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
@@ -35,19 +34,21 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class NotificationsViewModel(
+class NotificationsViewModel<MediaEntry, ForumCommentEntry>(
     private val aniListApi: AuthedAniListApi,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     private val activityStatusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
     commentStatusController: ForumThreadCommentStatusController,
     private val ignoreController: IgnoreController,
-    markdown: Markdown,
     notificationsController: NotificationsController,
+    @Assisted mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
+    @Assisted forumCommentEntryProvider: ForumCommentEntryProvider<ForumThreadComment, ForumCommentEntry>,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -58,7 +59,7 @@ class NotificationsViewModel(
     val commentToggleHelper =
         ForumThreadCommentToggleHelper(aniListApi, commentStatusController, viewModelScope)
 
-    val content = MutableStateFlow(PagingData.empty<NotificationEntry>())
+    val content = MutableStateFlow(PagingData.empty<NotificationEntry<MediaEntry, ForumCommentEntry>>())
 
     private val refresh = RefreshFlow()
 
@@ -102,7 +103,7 @@ class NotificationsViewModel(
                                 is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> it.id.toString()
                                 is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
                                 null,
-                                -> null
+                                    -> null
                             }
                         }
                         .orEmpty()
@@ -114,7 +115,7 @@ class NotificationsViewModel(
                             notificationId = EntryId(it.__typename, it.id.toString()),
                             notification = it,
                             activityEntry = activity?.let {
-                                NotificationEntry.ActivityEntry(
+                                NotificationActivityEntry(
                                     id = when (activity) {
                                         is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> activity.id.toString()
                                         is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> activity.id.toString()
@@ -136,20 +137,21 @@ class NotificationsViewModel(
                                     } ?: false,
                                 )
                             },
-                            mediaEntry = media?.let { MediaCompactWithTagsEntry(it) }
+                            mediaEntry = media?.let(mediaEntryProvider::mediaEntry)
                                 ?: activity?.asListActivity()?.media
-                                    ?.let { MediaCompactWithTagsEntry(it) },
+                                    ?.let(mediaEntryProvider::mediaEntry),
                             commentEntry = it.comment?.let {
-                                ForumCommentEntry(
-                                    comment = it,
-                                    commentMarkdown = it.comment?.let(markdown::convertMarkdownText),
-                                    children = emptyList(),
-                                )
+                                forumCommentEntryProvider.commentEntry(it)
                             }
                         )
                     }
                 }
-                    .map { it.filterOnIO { showAdult || it.mediaEntry?.media?.isAdult != true } }
+                    .map {
+                        it.filterOnIO {
+                            showAdult || it.mediaEntry
+                                ?.let(mediaEntryProvider::mediaFilterable)?.isAdult != true
+                        }
+                    }
             }
                 .enforceUniqueIds { it.notificationId.scopedId }
                 .cachedIn(viewModelScope)
@@ -170,12 +172,13 @@ class NotificationsViewModel(
                                 entry = entry,
                                 activityId = entry.activityEntry?.id,
                                 activityStatusAware = entry.activityEntry,
-                                mediaFilterable = entry.mediaEntry?.mediaFilterable,
-                                copyMedia = {
+                                mediaFilterable = entry.mediaEntry?.let(mediaEntryProvider::mediaFilterable),
+                                copyMedia = { mediaFilterable ->
                                     copy(
-                                        mediaEntry = mediaEntry?.copy(
-                                            mediaFilterable = it
-                                        )
+                                        mediaEntry = mediaEntry?.let {
+                                            mediaEntryProvider
+                                                .copyMediaEntry(it, mediaFilterable)
+                                        }
                                     )
                                 },
                                 copyActivity = { liked, subscribed ->
@@ -187,15 +190,17 @@ class NotificationsViewModel(
                                     )
                                 }
                             )?.let {
-                                val commentId = it.commentEntry?.comment?.id?.toString()
+                                val commentEntry = it.commentEntry
+                                val commentId = commentEntry?.let(forumCommentEntryProvider::id)
                                     ?: return@let it
                                 val liked = commentUpdates[commentId]?.liked
-                                    ?: it.commentEntry.comment.isLiked
-                                    ?: false
+                                    ?: forumCommentEntryProvider.liked(commentEntry)
                                 it.copy(
-                                    commentEntry = it.commentEntry.copy(
-                                        liked = liked,
-                                    )
+                                    commentEntry = forumCommentEntryProvider
+                                        .copyCommentEntry(
+                                            entry = commentEntry,
+                                            liked = liked == true,
+                                        )
                                 )
                             }
                         }
@@ -206,18 +211,29 @@ class NotificationsViewModel(
         }
     }
 
-    data class NotificationEntry(
-        val notificationId: EntryId,
-        val notification: NotificationsQuery.Data.Page.Notification,
-        val activityEntry: ActivityEntry?,
-        val mediaEntry: MediaCompactWithTagsEntry?,
-        val commentEntry: ForumCommentEntry?,
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val settings: MediaDataSettings,
+        private val activityStatusController: ActivityStatusController,
+        private val mediaListStatusController: MediaListStatusController,
+        private val commentStatusController: ForumThreadCommentStatusController,
+        private val ignoreController: IgnoreController,
+        private val notificationsController: NotificationsController,
     ) {
-        data class ActivityEntry(
-            val id: String,
-            val activity: NotificationMediaAndActivityQuery.Data.Activity.Activity,
-            override val liked: Boolean,
-            override val subscribed: Boolean,
-        ) : ActivityStatusAware
+        fun <MediaEntry, ForumCommentEntry> create(
+            @Assisted mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
+            @Assisted forumCommentEntryProvider: ForumCommentEntryProvider<ForumThreadComment, ForumCommentEntry>,
+        ) = NotificationsViewModel(
+            aniListApi = aniListApi,
+            settings = settings,
+            activityStatusController = activityStatusController,
+            mediaListStatusController = mediaListStatusController,
+            commentStatusController = commentStatusController,
+            ignoreController = ignoreController,
+            notificationsController = notificationsController,
+            mediaEntryProvider = mediaEntryProvider,
+            forumCommentEntryProvider = forumCommentEntryProvider,
+        )
     }
 }

@@ -16,6 +16,7 @@ kotlin {
             api(projects.modules.anime.ignore.data)
             api(projects.modules.anime.media.data)
             api(projects.modules.anime.news)
+            api(projects.modules.anime.notifications)
             api(projects.modules.anime.recommendations)
             api(projects.modules.anime.reviews)
             api(projects.modules.anime.schedule)

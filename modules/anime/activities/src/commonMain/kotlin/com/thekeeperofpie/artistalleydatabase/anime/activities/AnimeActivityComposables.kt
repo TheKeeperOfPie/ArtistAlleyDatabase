@@ -300,7 +300,7 @@ fun TextActivitySmallCard(
 
 @Suppress("UnusedReceiverParameter")
 @Composable
-fun ColumnScope.TextActivityCardContent(
+fun TextActivityCardContent(
     viewer: AniListViewer?,
     activity: TextActivityFragment?,
     user: UserNavigationData?,
@@ -312,93 +312,95 @@ fun ColumnScope.TextActivityCardContent(
     onClickDelete: (String) -> Unit = {},
     userRoute: UserRoute,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-    ) {
-        val image = user?.avatar?.large
-        if (activity == null || image != null) {
-            UserImage(
-                loading = activity == null,
-                user = user,
-                clickable = allowUserClick,
-                userRoute = userRoute,
-            )
-        }
-
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = user?.name ?: "USERNAME",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.placeholder(
-                    visible = activity == null,
-                    highlight = PlaceholderHighlight.shimmer(),
+    Column {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+        ) {
+            val image = user?.avatar?.large
+            if (activity == null || image != null) {
+                UserImage(
+                    loading = activity == null,
+                    user = user,
+                    clickable = allowUserClick,
+                    userRoute = userRoute,
                 )
-            )
-
-            val timestamp = remember(activity) {
-                activity?.let {
-                    HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
-                }
             }
 
-            if (activity == null || timestamp != null) {
+            Column(Modifier.weight(1f)) {
                 Text(
-                    text = timestamp.toString(),
-                    style = MaterialTheme.typography.labelMedium,
+                    text = user?.name ?: "USERNAME",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.placeholder(
                         visible = activity == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
                 )
-            }
-        }
 
-        ActivityStatusIcons(
-            activityId = activity?.id?.toString(),
-            replies = activity?.replyCount,
-            likes = activity?.likeCount,
-            viewer = viewer,
-            liked = entry?.liked == true,
-            subscribed = entry?.subscribed == true,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-        )
-    }
+                val timestamp = remember(activity) {
+                    activity?.let {
+                        HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
+                    }
+                }
 
-    if (activity == null || activity.text != null) {
-        val navigationController = LocalNavigationController.current
-        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
-        ImageHtmlText(
-            text = activity?.text ?: "Placeholder text",
-            color = MaterialTheme.typography.bodySmall.color
-                .takeOrElse { LocalContentColor.current },
-            onClickFallback = {
-                if (activity != null && clickable) {
-                    navigationController.navigate(
-                        ActivityDestinations.ActivityDetails(
-                            activityId = activity.id.toString(),
-                            sharedTransitionScopeKey = sharedTransitionScopeKey,
+                if (activity == null || timestamp != null) {
+                    Text(
+                        text = timestamp.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.placeholder(
+                            visible = activity == null,
+                            highlight = PlaceholderHighlight.shimmer(),
                         )
                     )
                 }
-            },
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .conditionally(activity == null) { fillMaxWidth() }
-                .placeholder(
-                    visible = activity == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
-    }
+            }
 
-    if (showActionsRow) {
-        ActivityDetailsActionRow(
-            activityId = activity?.id?.toString(),
-            isViewer = viewer != null && user?.id?.toString() == viewer.id,
-            onClickDelete = onClickDelete,
-        )
+            ActivityStatusIcons(
+                activityId = activity?.id?.toString(),
+                replies = activity?.replyCount,
+                likes = activity?.likeCount,
+                viewer = viewer,
+                liked = entry?.liked == true,
+                subscribed = entry?.subscribed == true,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+            )
+        }
+
+        if (activity == null || activity.text != null) {
+            val navigationController = LocalNavigationController.current
+            val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
+            ImageHtmlText(
+                text = activity?.text ?: "Placeholder text",
+                color = MaterialTheme.typography.bodySmall.color
+                    .takeOrElse { LocalContentColor.current },
+                onClickFallback = {
+                    if (activity != null && clickable) {
+                        navigationController.navigate(
+                            ActivityDestinations.ActivityDetails(
+                                activityId = activity.id.toString(),
+                                sharedTransitionScopeKey = sharedTransitionScopeKey,
+                            )
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .conditionally(activity == null) { fillMaxWidth() }
+                    .placeholder(
+                        visible = activity == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+        }
+
+        if (showActionsRow) {
+            ActivityDetailsActionRow(
+                activityId = activity?.id?.toString(),
+                isViewer = viewer != null && user?.id?.toString() == viewer.id,
+                onClickDelete = onClickDelete,
+            )
+        }
     }
 }
 
@@ -454,7 +456,7 @@ fun MessageActivitySmallCard(
 }
 
 @Composable
-fun ColumnScope.MessageActivityCardContent(
+fun MessageActivityCardContent(
     viewer: AniListViewer?,
     activity: MessageActivityFragment?,
     messenger: UserNavigationData?,
@@ -466,153 +468,155 @@ fun ColumnScope.MessageActivityCardContent(
     userRoute: UserRoute,
     onClickDelete: (String) -> Unit = {},
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp)
-    ) {
-        val image = messenger?.avatar?.large
-        if (activity == null || image != null) {
-            UserImage(
-                loading = activity == null,
-                user = messenger,
-                clickable = allowUserClick,
-                userRoute = userRoute,
+    Column {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp)
+        ) {
+            val image = messenger?.avatar?.large
+            if (activity == null || image != null) {
+                UserImage(
+                    loading = activity == null,
+                    user = messenger,
+                    clickable = allowUserClick,
+                    userRoute = userRoute,
+                )
+            }
+
+            Column(Modifier.weight(1f)) {
+                val messengerName = if (activity == null) "USERNAME" else messenger?.name
+                if (messengerName != null) {
+                    Text(
+                        text = messengerName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .placeholder(
+                                visible = activity == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                    )
+                }
+
+                val timestamp = remember(activity) {
+                    activity?.let {
+                        HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
+                    }
+                }
+
+                if (activity == null || timestamp != null) {
+                    Text(
+                        text = timestamp.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.placeholder(
+                            visible = activity == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                    )
+                }
+            }
+
+            ActivityStatusIcons(
+                activityId = activity?.id?.toString(),
+                replies = activity?.replyCount,
+                likes = activity?.likeCount,
+                viewer = viewer,
+                liked = entry?.liked == true,
+                subscribed = entry?.subscribed == true,
+                onActivityStatusUpdate = onActivityStatusUpdate,
             )
         }
 
-        Column(Modifier.weight(1f)) {
-            val messengerName = if (activity == null) "USERNAME" else messenger?.name
-            if (messengerName != null) {
-                Text(
-                    text = messengerName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
+        val navigationController = LocalNavigationController.current
+        val userImage = activity?.recipient?.avatar?.large
+        val userImageState = rememberCoilImageState(userImage)
+        val userSharedTransitionKey = activity?.recipient?.id?.toString()
+            ?.let { SharedTransitionKey.makeKeyForId(it) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .align(Alignment.End)
+                .clickable {
+                    activity?.recipient?.let {
+                        navigationController.navigate(
+                            userRoute(
+                                it.id.toString(),
+                                userSharedTransitionKey,
+                                it.name,
+                                userImageState.toImageState()
+                            )
+                        )
+                    }
+                }
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
+                contentDescription = stringResource(
+                    Res.string.anime_activity_message_arrow_recipient_icon_content_description
+                ),
+                modifier = Modifier.size(16.dp)
+            )
+
+            Text(
+                text = activity?.recipient?.name ?: "USERNAME",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .placeholder(
+                        visible = activity == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+            if (activity == null || userImage != null) {
+                UserAvatarImage(
+                    imageState = userImageState,
+                    image = userImageState.request().build(),
                     modifier = Modifier
+                        .size(32.dp)
+                        .sharedElement(userSharedTransitionKey, "userImage")
+                        .clip(RoundedCornerShape(12.dp))
                         .placeholder(
                             visible = activity == null,
                             highlight = PlaceholderHighlight.shimmer(),
                         )
                 )
             }
-
-            val timestamp = remember(activity) {
-                activity?.let {
-                    HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
-                }
-            }
-
-            if (activity == null || timestamp != null) {
-                Text(
-                    text = timestamp.toString(),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.placeholder(
-                        visible = activity == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                )
-            }
         }
 
-        ActivityStatusIcons(
-            activityId = activity?.id?.toString(),
-            replies = activity?.replyCount,
-            likes = activity?.likeCount,
-            viewer = viewer,
-            liked = entry?.liked == true,
-            subscribed = entry?.subscribed == true,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-        )
-    }
-
-    val navigationController = LocalNavigationController.current
-    val userImage = activity?.recipient?.avatar?.large
-    val userImageState = rememberCoilImageState(userImage)
-    val userSharedTransitionKey = activity?.recipient?.id?.toString()
-        ?.let { SharedTransitionKey.makeKeyForId(it) }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .align(Alignment.End)
-            .clickable {
-                activity?.recipient?.let {
-                    navigationController.navigate(
-                        userRoute(
-                            it.id.toString(),
-                            userSharedTransitionKey,
-                            it.name,
-                            userImageState.toImageState()
+        if (activity == null || activity.message != null) {
+            val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
+            ImageHtmlText(
+                text = activity?.message ?: "Placeholder text",
+                color = MaterialTheme.typography.bodySmall.color
+                    .takeOrElse { LocalContentColor.current },
+                onClickFallback = {
+                    if (activity != null && clickable) {
+                        navigationController.navigate(
+                            ActivityDestinations.ActivityDetails(
+                                activityId = activity.id.toString(),
+                                sharedTransitionScopeKey = sharedTransitionScopeKey,
+                            )
                         )
-                    )
-                }
-            }
-    ) {
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
-            contentDescription = stringResource(
-                Res.string.anime_activity_message_arrow_recipient_icon_content_description
-            ),
-            modifier = Modifier.size(16.dp)
-        )
-
-        Text(
-            text = activity?.recipient?.name ?: "USERNAME",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .placeholder(
-                    visible = activity == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
-        if (activity == null || userImage != null) {
-            UserAvatarImage(
-                imageState = userImageState,
-                image = userImageState.request().build(),
+                    }
+                },
                 modifier = Modifier
-                    .size(32.dp)
-                    .sharedElement(userSharedTransitionKey, "userImage")
-                    .clip(RoundedCornerShape(12.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .conditionally(activity == null) { fillMaxWidth() }
                     .placeholder(
                         visible = activity == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
             )
         }
-    }
 
-    if (activity == null || activity.message != null) {
-        val sharedTransitionScopeKey = LocalSharedTransitionPrefixKeys.current
-        ImageHtmlText(
-            text = activity?.message ?: "Placeholder text",
-            color = MaterialTheme.typography.bodySmall.color
-                .takeOrElse { LocalContentColor.current },
-            onClickFallback = {
-                if (activity != null && clickable) {
-                    navigationController.navigate(
-                        ActivityDestinations.ActivityDetails(
-                            activityId = activity.id.toString(),
-                            sharedTransitionScopeKey = sharedTransitionScopeKey,
-                        )
-                    )
-                }
-            },
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .conditionally(activity == null) { fillMaxWidth() }
-                .placeholder(
-                    visible = activity == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
-    }
-
-    if (showActionsRow) {
-        ActivityDetailsActionRow(
-            activityId = activity?.id?.toString(),
-            isViewer = viewer != null && messenger?.id?.toString() == viewer.id,
-            onClickDelete = onClickDelete,
-        )
+        if (showActionsRow) {
+            ActivityDetailsActionRow(
+                activityId = activity?.id?.toString(),
+                isViewer = viewer != null && messenger?.id?.toString() == viewer.id,
+                onClickDelete = onClickDelete,
+            )
+        }
     }
 }
 
@@ -648,7 +652,7 @@ fun ListActivitySmallCard(
 }
 
 @Composable
-fun <MediaEntry >ListActivitySmallCard(
+fun <MediaEntry> ListActivitySmallCard(
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     mediaEntry: MediaEntry?,
@@ -741,7 +745,7 @@ private fun <MediaEntry> ListActivitySmallCard(
 
 @Suppress("UnusedReceiverParameter")
 @Composable
-fun <MediaEntry> ColumnScope.ListActivityCardContent(
+fun <MediaEntry> ListActivityCardContent(
     viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     user: UserNavigationData?,
@@ -757,87 +761,89 @@ fun <MediaEntry> ColumnScope.ListActivityCardContent(
     allowUserClick: Boolean = true,
     userRoute: UserRoute,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
-    ) {
-        val image = user?.avatar?.large
-        if (showUser && (activity == null || image != null)) {
-            UserImage(
-                loading = activity == null,
-                user = user,
-                clickable = allowUserClick,
-                userRoute = userRoute,
+    Column {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
+        ) {
+            val image = user?.avatar?.large
+            if (showUser && (activity == null || image != null)) {
+                UserImage(
+                    loading = activity == null,
+                    user = user,
+                    clickable = allowUserClick,
+                    userRoute = userRoute,
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                val userName = if (activity == null) "USERNAME" else user?.name
+                if (userName != null) {
+                    Text(
+                        text = userName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .placeholder(
+                                visible = activity == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                    )
+                }
+
+                // API returns "1" if the status is "plans to watch", which is redundant, strip it
+                val progress =
+                    if (activity?.status == "plans to watch") null else activity?.progress
+                val status = listOfNotNull(activity?.status, progress).joinToString(separator = " ")
+                val timestamp = remember(activity) {
+                    activity?.let {
+                        HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
+                    }
+                }
+                val summaryText = if (status.isNotBlank()) {
+                    stringResource(
+                        Res.string.anime_activity_status_with_timestamp,
+                        status,
+                        timestamp.toString()
+                    )
+                } else {
+                    timestamp
+                }
+                if (activity == null || summaryText != null) {
+                    Text(
+                        text = summaryText.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier
+                            .placeholder(
+                                visible = activity == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                    )
+                }
+            }
+
+            ActivityStatusIcons(
+                activityId = activity?.id?.toString(),
+                replies = activity?.replyCount,
+                likes = activity?.likeCount,
+                viewer = viewer,
+                liked = liked,
+                subscribed = subscribed,
+                onActivityStatusUpdate = onActivityStatusUpdate,
             )
         }
 
-        Column(modifier = Modifier.weight(1f)) {
-            val userName = if (activity == null) "USERNAME" else user?.name
-            if (userName != null) {
-                Text(
-                    text = userName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .placeholder(
-                            visible = activity == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                )
-            }
-
-            // API returns "1" if the status is "plans to watch", which is redundant, strip it
-            val progress =
-                if (activity?.status == "plans to watch") null else activity?.progress
-            val status = listOfNotNull(activity?.status, progress).joinToString(separator = " ")
-            val timestamp = remember(activity) {
-                activity?.let {
-                    HumanReadable.timeAgo(Instant.fromEpochSeconds(it.createdAt.toLong()))
-                }
-            }
-            val summaryText = if (status.isNotBlank()) {
-                stringResource(
-                    Res.string.anime_activity_status_with_timestamp,
-                    status,
-                    timestamp.toString()
-                )
-            } else {
-                timestamp
-            }
-            if (activity == null || summaryText != null) {
-                Text(
-                    text = summaryText.toString(),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier
-                        .placeholder(
-                            visible = activity == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                )
-            }
+        if (showMedia) {
+            mediaRow(entry, Modifier.padding(horizontal = 8.dp, vertical = 8.dp))
         }
 
-        ActivityStatusIcons(
-            activityId = activity?.id?.toString(),
-            replies = activity?.replyCount,
-            likes = activity?.likeCount,
-            viewer = viewer,
-            liked = liked,
-            subscribed = subscribed,
-            onActivityStatusUpdate = onActivityStatusUpdate,
-        )
-    }
-
-    if (showMedia) {
-        mediaRow(entry, Modifier.padding(horizontal = 8.dp, vertical = 8.dp))
-    }
-
-    if (showActionsRow) {
-        ActivityDetailsActionRow(
-            activityId = activity?.id?.toString(),
-            isViewer = viewer != null && user?.id?.toString() == viewer.id,
-            onClickDelete = onClickDelete,
-        )
+        if (showActionsRow) {
+            ActivityDetailsActionRow(
+                activityId = activity?.id?.toString(),
+                isViewer = viewer != null && user?.id?.toString() == viewer.id,
+                onClickDelete = onClickDelete,
+            )
+        }
     }
 }
 

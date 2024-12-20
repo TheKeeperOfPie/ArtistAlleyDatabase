@@ -32,6 +32,7 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_characters_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_staff_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_view_all_content_description
+import com.anilist.data.NotificationMediaAndActivityQuery
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -42,6 +43,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityList
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityTab
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivityComposables
+import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivityCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivityCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.activitiesSection
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
@@ -54,6 +58,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.horizontalCharact
 import com.thekeeperofpie.artistalleydatabase.anime.characters.rememberImageStateBelowInnerImage
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumComposables
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCommentContent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.forumThreadsSection
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
@@ -78,7 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
-import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationComposables
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.media.MediaRecommendationsScreen
@@ -474,10 +480,6 @@ object AnimeNavigator {
             SeasonalScreen(upIconOption = UpIconOption.Back(navigationController))
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.Notifications>(navigationTypeMap) {
-            NotificationsScreen(upIconOption = UpIconOption.Back(navigationController))
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaCharacters>(
             navigationTypeMap = navigationTypeMap,
         ) {
@@ -665,6 +667,100 @@ object AnimeNavigator {
                 )
             },
             mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+        )
+
+        NotificationDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+            activityDetailsRoute = ActivityDestinations.ActivityDetails.route,
+            forumThreadRoute = ForumDestinations.ForumThread.route,
+            forumThreadCommentRoute = ForumDestinations.ForumThreadComment.route,
+            mediaDetailsByIdRoute = AnimeDestination.MediaDetails.routeById,
+            userRoute = UserDestinations.User.route,
+            mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+            forumCommentEntryProvider = component.forumCommentEntryProvider,
+            activityRow = { viewer, activityEntry, activity, mediaEntry, onActivityStatusUpdate, onClickListEdit ->
+                when (activity) {
+                    is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> ListActivityCardContent(
+                        viewer = viewer,
+                        activity = activity,
+                        user = activity.user,
+                        entry = mediaEntry,
+                        mediaRow = { entry, modifier ->
+                            AnimeMediaCompactListRow(
+                                viewer = viewer,
+                                entry = entry,
+                                onClickListEdit = onClickListEdit,
+                                modifier = modifier,
+                            )
+                        },
+                        liked = activityEntry.liked,
+                        subscribed = activityEntry.subscribed,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
+                        userRoute = UserDestinations.User.route,
+                    )
+                    is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> MessageActivityCardContent(
+                        viewer = viewer,
+                        activity = activity,
+                        messenger = activity.messenger,
+                        entry = activityEntry,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
+                        clickable = true,
+                        userRoute = UserDestinations.User.route,
+                    )
+                    is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> TextActivityCardContent(
+                        viewer = viewer,
+                        activity = activity,
+                        user = activity.user,
+                        entry = activityEntry,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
+                        userRoute = UserDestinations.User.route,
+                        clickable = true,
+                    )
+                    is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
+                        -> TextActivityCardContent(
+                        viewer = viewer,
+                        activity = null,
+                        user = null,
+                        entry = null,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
+                        userRoute = UserDestinations.User.route,
+                    )
+                }
+            },
+            mediaRow = { viewer, entry, onClickListEdit, modifier ->
+                AnimeMediaCompactListRow(
+                    viewer = viewer,
+                    entry = entry,
+                    onClickListEdit = onClickListEdit,
+                    modifier = modifier,
+                )
+            },
+            threadRow = { thread, modifier ->
+                ThreadCardContent(
+                    thread = thread,
+                    userRoute = UserDestinations.User.route,
+                    modifier = modifier
+                )
+            },
+            commentRow = { viewer, threadId, commentEntry, onStatusUpdate ->
+                val comment = commentEntry.comment
+                ThreadCommentContent(
+                    threadId = threadId,
+                    viewer = viewer,
+                    loading = false,
+                    commentId = comment.id.toString(),
+                    commentMarkdown = commentEntry.commentMarkdown,
+                    createdAt = comment.createdAt,
+                    liked = commentEntry.liked == true,
+                    likeCount = comment.likeCount,
+                    user = commentEntry.user,
+                    userRoute = UserDestinations.User.route,
+                    onStatusUpdate = onStatusUpdate,
+                )
+            },
         )
 
         RecommendationDestinations.addToGraph(

@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anime.forums
 
 import com.anilist.data.ForumThread_CommentsQuery
 import com.anilist.data.fragment.ForumThreadComment
+import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentChild
-import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 

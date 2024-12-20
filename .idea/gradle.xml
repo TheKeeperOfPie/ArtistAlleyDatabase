@@ -35,12 +35,14 @@
             <option value="$PROJECT_DIR$/modules/anime/data" />
             <option value="$PROJECT_DIR$/modules/anime/favorites" />
             <option value="$PROJECT_DIR$/modules/anime/forums" />
+            <option value="$PROJECT_DIR$/modules/anime/forums/data" />
             <option value="$PROJECT_DIR$/modules/anime/ignore" />
             <option value="$PROJECT_DIR$/modules/anime/ignore/data" />
             <option value="$PROJECT_DIR$/modules/anime/ignore/testing" />
             <option value="$PROJECT_DIR$/modules/anime/media" />
             <option value="$PROJECT_DIR$/modules/anime/media/data" />
             <option value="$PROJECT_DIR$/modules/anime/news" />
+            <option value="$PROJECT_DIR$/modules/anime/notifications" />
             <option value="$PROJECT_DIR$/modules/anime/recommendations" />
             <option value="$PROJECT_DIR$/modules/anime/reviews" />
             <option value="$PROJECT_DIR$/modules/anime/schedule" />

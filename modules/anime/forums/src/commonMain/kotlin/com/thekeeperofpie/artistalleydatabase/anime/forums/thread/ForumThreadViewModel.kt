@@ -17,10 +17,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumUtils
+import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumThreadCommentStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumThreadCommentToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentReplyData
-import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.forums.toForumThreadComment
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings

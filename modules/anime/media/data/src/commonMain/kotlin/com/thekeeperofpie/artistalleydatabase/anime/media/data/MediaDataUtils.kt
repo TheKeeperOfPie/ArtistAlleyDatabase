@@ -235,6 +235,11 @@ typealias MediaDetailsRoute = (
     sharedTransitionKey: SharedTransitionKey?,
 ) -> NavDestination
 
+typealias MediaDetailsByIdRoute = (
+    mediaId: String,
+    sharedTransitionKey: SharedTransitionKey?,
+) -> NavDestination
+
 /** Decouples MediaDetails from this module */
 typealias MediaEditBottomSheetScaffoldComposable = @Composable (
     @Composable (

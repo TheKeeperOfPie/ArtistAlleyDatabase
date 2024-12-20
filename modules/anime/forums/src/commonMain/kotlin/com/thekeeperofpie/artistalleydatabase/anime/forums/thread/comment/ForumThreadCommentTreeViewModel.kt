@@ -17,6 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumUtils
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumUtils.decodeChild
+import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumThreadCommentStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumThreadCommentToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.ForumThreadEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.ForumThreadState
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.ForumThreadStatusController

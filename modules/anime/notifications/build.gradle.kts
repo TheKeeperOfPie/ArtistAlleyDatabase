@@ -9,22 +9,23 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.anilist)
+            api(projects.modules.anime.activities.data)
+            api(projects.modules.anime.forums.data)
+            api(projects.modules.anime.media.data)
+            api(projects.modules.anime.ui)
             api(projects.modules.utilsCompose)
-            implementation(projects.modules.anime.forums.data)
-            implementation(projects.modules.anime.media.data)
-            implementation(projects.modules.anime.ui)
-            implementation(projects.modules.markdown)
+
             implementation(projects.modules.utils)
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
+            implementation(libs.human.readable)
             implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.stately.concurrent.collections)
         }
     }
 }
 
 android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.anime.forums"
+    namespace = "com.thekeeperofpie.artistalleydatabase.anime.notifications"
 }
 
 compose.resources {

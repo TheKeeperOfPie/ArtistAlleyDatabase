@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_notifications_title">Notifications</string>
+    <string name="anime_notifications_icon_content_description">Notifications</string>
+    <string name="anime_notification_episode_aired">Episode %1$d aired</string>
+    <string name="anime_notification_related_added">Recently added</string>
+</resources>

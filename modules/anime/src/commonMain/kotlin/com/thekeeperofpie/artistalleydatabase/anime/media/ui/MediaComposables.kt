@@ -73,7 +73,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
@@ -100,7 +99,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsWithPlaceholderCount
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -405,38 +403,6 @@ fun MediaListQuickEditIconButton(
 fun MediaListQuickEditIconButton(
     viewer: AniListViewer?,
     mediaType: MediaType?,
-    media: MediaStatusAware,
-    maxProgress: Int?,
-    maxProgressVolumes: Int?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    textVerticalPadding: Dp = 4.dp,
-    padding: Dp = 8.dp,
-    iconSize: Dp = 20.dp,
-    forceListEditIcon: Boolean = false,
-) {
-    MediaListQuickEditIconButton(
-        viewer = viewer,
-        mediaType = mediaType,
-        listStatus = media.mediaListStatus,
-        progress = media.progress,
-        progressVolumes = media.progressVolumes,
-        scoreRaw = media.scoreRaw,
-        maxProgress = maxProgress,
-        maxProgressVolumes = maxProgressVolumes,
-        onClick = onClick,
-        modifier = modifier,
-        textVerticalPadding = textVerticalPadding,
-        padding = padding,
-        iconSize = iconSize,
-        forceListEditIcon = forceListEditIcon
-    )
-}
-
-@Composable
-fun MediaListQuickEditIconButton(
-    viewer: AniListViewer?,
-    mediaType: MediaType?,
     media: MediaFilterable,
     maxProgress: Int?,
     maxProgressVolumes: Int?,
@@ -720,31 +686,6 @@ fun LazyListScope.horizontalMediaCardRow(
     }
 }
 
-fun LazyListScope.horizontalMediaCardRow(
-    viewer: () -> AniListViewer?,
-    media: List<MediaWithListStatusEntry>,
-    placeholderCount: Int,
-    onClickListEdit: (MediaNavigationData) -> Unit,
-    mediaWidth: Dp = 80.dp,
-    mediaHeight: Dp = 120.dp,
-    forceListEditIcon: Boolean = false,
-) {
-    itemsWithPlaceholderCount(
-        data = media,
-        placeholderCount = placeholderCount,
-        key = { it.media.id },
-    ) {
-        HorizontalMediaSmallCard(
-            item = it,
-            viewer = viewer,
-            onClickListEdit = onClickListEdit,
-            mediaWidth = mediaWidth,
-            mediaHeight = mediaHeight,
-            forceListEditIcon = forceListEditIcon,
-        )
-    }
-}
-
 @Composable
 private fun HorizontalMediaSmallCard(
     item: MediaWithListStatusEntry?,
@@ -797,6 +738,7 @@ private fun HorizontalMediaSmallCard(
                 maxProgressVolumes = item.media.volumes,
                 onClick = { onClickListEdit(item.media) },
                 padding = 6.dp,
+                forceListEditIcon = forceListEditIcon,
                 modifier = Modifier
                     .animateSharedTransitionWithOtherState(sharedContentState)
                     .align(Alignment.BottomStart)

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment
+package com.thekeeperofpie.artistalleydatabase.anime.forums.data
 
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope

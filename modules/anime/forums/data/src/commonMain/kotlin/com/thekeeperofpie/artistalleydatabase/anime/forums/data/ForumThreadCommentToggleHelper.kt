@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment
+package com.thekeeperofpie.artistalleydatabase.anime.forums.data
 
 import co.touchlab.kermit.Logger
 import co.touchlab.stately.collections.ConcurrentMutableMap

@@ -7,6 +7,22 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestin
 
 // TODO: Move these elsewhere
 
+typealias ActivityDetailsRoute = (
+    activityId: String,
+    sharedTransitionScopeKey: String?,
+) -> NavDestination
+
+typealias ForumThreadRoute = (
+    threadId: String,
+    title: String?,
+) -> NavDestination
+
+typealias ForumThreadCommentRoute = (
+    threadId: String,
+    commentId: String,
+    title: String?,
+) -> NavDestination
+
 typealias UserRoute = (
     id: String,
     SharedTransitionKey?,

@@ -286,7 +286,7 @@ fun ThreadCard(thread: ForumThread?, userRoute: UserRoute, modifier: Modifier = 
 
 @Suppress("UnusedReceiverParameter")
 @Composable
-fun ColumnScope.ThreadCardContent(
+fun ThreadCardContent(
     thread: ForumThread?,
     userRoute: UserRoute,
     modifier: Modifier = Modifier,

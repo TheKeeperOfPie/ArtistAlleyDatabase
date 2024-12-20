@@ -22,6 +22,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumT
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ForumThreadCommentRoute
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ForumThreadRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -78,14 +80,30 @@ object ForumDestinations {
     data class ForumThread(
         val threadId: String,
         val title: String? = null,
-    ) : NavDestination
+    ) : NavDestination {
+        companion object {
+            val route: ForumThreadRoute = { threadId, title ->
+                ForumThread(threadId = threadId, title = title)
+            }
+        }
+    }
 
     @Serializable
     data class ForumThreadComment(
         val threadId: String,
         val commentId: String,
         val title: String? = null,
-    ) : NavDestination
+    ) : NavDestination {
+        companion object {
+            val route: ForumThreadCommentRoute = { threadId, commentId, title ->
+                ForumThreadComment(
+                    threadId = threadId,
+                    commentId = commentId,
+                    title = title,
+                )
+            }
+        }
+    }
 
     fun <MediaEntry> addToGraph(
         navGraphBuilder: NavGraphBuilder,

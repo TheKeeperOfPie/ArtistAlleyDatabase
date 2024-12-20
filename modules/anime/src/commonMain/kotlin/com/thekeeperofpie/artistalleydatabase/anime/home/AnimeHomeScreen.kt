@@ -89,9 +89,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_media_in
 import artistalleydatabase.modules.anime.generated.resources.anime_home_media_type_switch_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_home_row_view_all_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestions_header
-import artistalleydatabase.modules.anime.generated.resources.anime_notifications_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_recommendations_home_title
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_home_title
+import artistalleydatabase.modules.anime.notifications.generated.resources.anime_notifications_icon_content_description
 import artistalleydatabase.modules.anime.schedule.generated.resources.anime_airing_schedule_icon_content_description
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import com.anilist.data.fragment.HomeMedia
@@ -127,6 +127,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsRow
+import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationCard
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
@@ -179,6 +180,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSa
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.forums.generated.resources.Res as ForumsRes
+import artistalleydatabase.modules.anime.notifications.generated.resources.Res as NotificationsRes
 import artistalleydatabase.modules.anime.schedule.generated.resources.Res as ScheduleRes
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
@@ -425,12 +427,13 @@ object AnimeHomeScreen {
                             }
                         }) {
                             IconButton(onClick = {
-                                navigationController.navigate(AnimeDestination.Notifications)
+                                navigationController
+                                    .navigate(NotificationDestinations.Notifications)
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.Notifications,
                                     contentDescription = stringResource(
-                                        Res.string.anime_notifications_icon_content_description
+                                        NotificationsRes.string.anime_notifications_icon_content_description
                                     ),
                                 )
                             }

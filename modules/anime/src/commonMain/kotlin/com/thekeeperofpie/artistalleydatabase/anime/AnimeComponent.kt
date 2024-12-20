@@ -20,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsComponent
-import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.media.MediaRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewsComponent
@@ -42,8 +42,8 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
 }
 
 interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
-    ForumsComponent, RecommendationsComponent, ReviewsComponent, ScheduleComponent, StaffComponent,
-    StudiosComponent, UsersComponent {
+    ForumsComponent, NotificationsComponent, RecommendationsComponent, ReviewsComponent,
+    ScheduleComponent, StaffComponent, StudiosComponent, UsersComponent {
 
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
@@ -68,7 +68,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val mediaEditViewModel: () -> MediaEditViewModel
     val mediaHistoryViewModel: (SavedStateHandle) -> MediaHistoryViewModel
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
-    val notificationsViewModel: () -> NotificationsViewModel
     val seasonalViewModel: (SavedStateHandle) -> SeasonalViewModel
     val unlockScreenViewModel: () -> UnlockScreenViewModel
 

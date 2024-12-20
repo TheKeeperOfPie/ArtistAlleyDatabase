@@ -443,11 +443,6 @@
     <string name="anime_requires_unlock">Requires higher feature tier</string>
     <string name="anime_open_feature_tiers_button">Open tiers</string>
 
-    <string name="anime_notifications_title">Notifications</string>
-    <string name="anime_notifications_icon_content_description">Notifications</string>
-    <string name="anime_notification_episode_aired">Episode %1$d aired</string>
-    <string name="anime_notification_related_added">Recently added</string>
-
     <string name="anime_media_genre_action_description">A work that is focused on characters physically fighting one another. This can involve or escalate to otherworldly levels.</string>
     <string name="anime_media_genre_adventure_description">A work depicting characters exploring and learning about their world. A focus should be on the travel from one location to the next.</string>
     <string name="anime_media_genre_comedy_description">A work that is focused on making the audience laugh.</string>
