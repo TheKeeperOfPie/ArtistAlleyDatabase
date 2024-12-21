@@ -37,7 +37,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.9.0-alpha05"
+        const val gradle = "8.9.0-alpha06"
     }
 
     object androidx {
@@ -46,7 +46,7 @@ object Versions {
         const val browser = "1.8.0"
         const val core = "1.16.0-alpha01"
         const val lifecycle = "2.9.0-alpha08"
-        const val media3 = "1.5.0"
+        const val media3 = "1.6.0-alpha01"
         const val navigation = "2.8.1"
         const val paging = "3.3.5"
         const val palette = "1.0.0"
@@ -84,7 +84,7 @@ object Versions {
 
     object composeMultiplatform {
         object androidx {
-            const val navigation = "2.8.0-alpha11"
+            const val navigation = "2.8.0-SNAPSHOT+pull-1739"
         }
 
         const val plugin = "1.8.0-alpha01"
@@ -121,16 +121,16 @@ object Versions {
 
     object kotlin {
         const val core = "2.1.0"
-        const val coroutines = "1.9.0"
+        const val coroutines = "1.10.1"
         const val datetime = "0.6.1"
         const val io = "0.6.0"
-        const val ksp = "2.1.0-1.0.29"
+        const val ksp = "2.1.20-Beta1-1.0.29"
         const val serialization = "1.8.0-RC"
     }
 
     const val kotlinInject = "0.7.2"
     const val kotlinPoet = "1.15.3"
-    const val ktor = "3.0.2"
+    const val ktor = "3.0.3"
     const val ksoup = "0.2.1"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.43"
