@@ -38,9 +38,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalDestinations
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -292,7 +294,7 @@ abstract class AnimeHomeMediaViewModel(
             val popularThisSeason = RowInput(
                 id = "anime_popular_this_season",
                 titleRes = Res.string.anime_home_popular_this_season,
-                viewAllRoute = AnimeDestination.Seasonal(AnimeDestination.Seasonal.Type.THIS)
+                viewAllRoute = SeasonalDestinations.Seasonal(SeasonalDestinations.Seasonal.Type.THIS)
             )
             val lastAdded = RowInput(
                 id = "anime_last_added",
@@ -306,12 +308,12 @@ abstract class AnimeHomeMediaViewModel(
             val popularLastSeason = RowInput(
                 id = "anime_popular_last_season",
                 titleRes = Res.string.anime_home_popular_last_season,
-                viewAllRoute = AnimeDestination.Seasonal(AnimeDestination.Seasonal.Type.LAST)
+                viewAllRoute = SeasonalDestinations.Seasonal(SeasonalDestinations.Seasonal.Type.LAST)
             )
             val popularNextSeason = RowInput(
                 id = "anime_popular_next_season",
                 titleRes = Res.string.anime_home_popular_next_season,
-                viewAllRoute = AnimeDestination.Seasonal(AnimeDestination.Seasonal.Type.NEXT)
+                viewAllRoute = SeasonalDestinations.Seasonal(SeasonalDestinations.Seasonal.Type.NEXT)
             )
 
             emit(
@@ -430,7 +432,7 @@ abstract class AnimeHomeMediaViewModel(
     data class RowInput(
         val id: String,
         val titleRes: StringResource,
-        val viewAllRoute: AnimeDestination,
+        val viewAllRoute: NavDestination,
         val list: List<HomeMedia?>? = null,
     )
 

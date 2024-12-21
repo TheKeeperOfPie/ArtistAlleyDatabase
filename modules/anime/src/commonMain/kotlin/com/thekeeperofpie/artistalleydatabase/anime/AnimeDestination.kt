@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.ui.SearchMediaGenreRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.SearchMediaTagRoute
@@ -35,6 +36,7 @@ import kotlin.reflect.typeOf
 
 sealed interface AnimeDestination : NavDestination {
     companion object {
+        // TODO: Move these into their module classes?
         val typeMap = mapOf(
             typeOf<AniListDate?>() to CustomNavTypes.SerializableType<AniListDate>(),
             typeOf<CharacterHeaderParams?>() to CustomNavTypes.SerializableType<CharacterHeaderParams>(),
@@ -47,7 +49,7 @@ sealed interface AnimeDestination : NavDestination {
             typeOf<MediaSortOption?>() to CustomNavTypes.NullableEnumType(MediaSortOption::valueOf),
             typeOf<MediaType>() to CustomNavTypes.NullableEnumType(MediaType::valueOf),
             typeOf<MediaType?>() to CustomNavTypes.NullableEnumType(MediaType::valueOf),
-            typeOf<Seasonal.Type>() to CustomNavTypes.NullableEnumType(Seasonal.Type::valueOf),
+            typeOf<SeasonalDestinations.Seasonal.Type>() to CustomNavTypes.NullableEnumType(SeasonalDestinations.Seasonal.Type::valueOf),
             typeOf<StaffHeaderParams?>() to CustomNavTypes.SerializableType<StaffHeaderParams>(),
             typeOf<UserHeaderParams?>() to CustomNavTypes.SerializableType<UserHeaderParams>(),
             typeOf<ForumDestinations.ForumSearch.Title?>() to CustomNavTypes.SerializableType<ForumDestinations.ForumSearch.Title>(),
@@ -212,16 +214,6 @@ sealed interface AnimeDestination : NavDestination {
                 @Composable
                 override fun text() = title
             }
-        }
-    }
-
-    @Serializable
-    data class Seasonal(val type: Type) : AnimeDestination {
-        @Serializable
-        enum class Type {
-            LAST,
-            THIS,
-            NEXT,
         }
     }
 }

@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharac
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsComponent
@@ -26,7 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.recommendations.media.MediaR
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleComponent
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalComponent
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffComponent
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudiosComponent
@@ -43,7 +44,7 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
 
 interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
     ForumsComponent, NotificationsComponent, RecommendationsComponent, ReviewsComponent,
-    ScheduleComponent, StaffComponent, StudiosComponent, UsersComponent {
+    ScheduleComponent, SeasonalComponent, StaffComponent, StudiosComponent, UsersComponent {
 
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
@@ -68,8 +69,9 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val mediaEditViewModel: () -> MediaEditViewModel
     val mediaHistoryViewModel: (SavedStateHandle) -> MediaHistoryViewModel
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
-    val seasonalViewModel: (SavedStateHandle) -> SeasonalViewModel
     val unlockScreenViewModel: () -> UnlockScreenViewModel
+
+    val animeSortFilterControllerFactory: AnimeSortFilterController.Factory
 
     @SingletonScope
     @Provides

@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDateAdvancedSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -194,7 +195,7 @@ open class MangaSortFilterController<SortType : SortOption>(
 
     @Suppress("UNCHECKED_CAST")
     @Composable
-    override fun filterParams() = FilterParams(
+    override fun filterParams() = MediaSearchFilterParams(
         sort = sortSection.sortOptions,
         sortAscending = sortSection.sortAscending,
         genres = genreSection.filterOptions,

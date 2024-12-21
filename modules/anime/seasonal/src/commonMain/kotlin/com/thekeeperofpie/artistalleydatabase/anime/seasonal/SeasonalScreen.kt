@@ -26,36 +26,32 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_season_year
-import artistalleydatabase.modules.anime.generated.resources.anime_seasonal_title
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
+import artistalleydatabase.modules.anime.seasonal.generated.resources.Res
+import artistalleydatabase.modules.anime.seasonal.generated.resources.anime_seasonal_season_year
+import artistalleydatabase.modules.anime.seasonal.generated.resources.anime_seasonal_title
+import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
@@ -64,36 +60,40 @@ import artistalleydatabase.modules.anime.media.data.generated.resources.Res as M
 object SeasonalScreen {
 
     @Composable
-    operator fun invoke(
-        animeComponent: AnimeComponent = LocalAnimeComponent.current,
-        viewModel: SeasonalViewModel = viewModel {
-            animeComponent.seasonalViewModel(createSavedStateHandle())
-        },
+    operator fun <MediaEntry : Any> invoke(
+        mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
         upIconOption: UpIconOption? = null,
+        initialPage: Int,
+        onRefresh: () -> Unit,
+        sortFilterState: () -> SortFilterController<*>.State,
+        itemsForPage: @Composable (page: Int) -> LazyPagingItems<MediaEntry>,
+        itemKey: (MediaEntry) -> String,
+        mediaViewOption: () -> MediaViewOption,
+        onMediaViewOptionChange: (MediaViewOption) -> Unit,
+        mediaViewOptionRow: @Composable (
+            MediaEntry?,
+            onClickListEdit: (MediaNavigationData) -> Unit,
+        ) -> Unit,
     ) {
         val pagerState = rememberPagerState(
-            initialPage = viewModel.initialPage,
+            initialPage = initialPage,
             pageCount = { Int.MAX_VALUE },
         )
 
         val currentSeasonYear = remember { AniListUtils.getCurrentSeasonYear() }
-        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
-        MediaEditBottomSheetScaffold(
-            viewModel = editViewModel,
-        ) {
+        mediaEditBottomSheetScaffold { padding, onClickListEdit ->
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-            val sortFilterController = viewModel.sortFilterController
-            sortFilterController.PromptDialog()
 
             SortFilterBottomScaffold(
-                sortFilterController = sortFilterController,
+                state = sortFilterState,
                 topBar = {
                     TopBar(
                         upIconOption = upIconOption,
-                        viewModel = viewModel,
-                        initialPage = viewModel.initialPage,
+                        initialPage = initialPage,
                         pagerState = pagerState,
+                        mediaViewOption = mediaViewOption,
+                        onMediaViewOptionChange = onMediaViewOptionChange,
                         currentSeasonYear = currentSeasonYear,
                         scrollBehavior = scrollBehavior
                     )
@@ -101,27 +101,21 @@ object SeasonalScreen {
             ) { scaffoldPadding ->
                 HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .fillMaxSize()
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) {
-                    val viewer by viewModel.viewer.collectAsState()
-                    val columns = viewModel.mediaViewOption.widthAdaptiveCells
+                    val columns = mediaViewOption().widthAdaptiveCells
                     val gridState = rememberLazyGridState()
-                    sortFilterController.ImmediateScrollResetEffect(gridState)
+                    sortFilterState().ImmediateScrollResetEffect(gridState)
                     VerticalList(
                         gridState = gridState,
                         itemHeaderText = null,
-                        onRefresh = viewModel::onRefresh,
-                        items = viewModel.items(it),
-                        itemKey = { it.media.id },
+                        onRefresh = onRefresh,
+                        items = itemsForPage(it),
+                        itemKey = itemKey,
                         item = {
-                            MediaViewOptionRow(
-                                mediaViewOption = viewModel.mediaViewOption,
-                                viewer = viewer,
-                                onClickListEdit = editViewModel::initialize,
-                                entry = it,
-                            )
+                            mediaViewOptionRow(it, onClickListEdit)
                         },
                         columns = columns,
                         contentPadding = PaddingValues(
@@ -132,7 +126,7 @@ object SeasonalScreen {
                         ),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(scaffoldPadding)
+                        modifier = Modifier.Companion.padding(scaffoldPadding)
                     )
                 }
             }
@@ -142,8 +136,9 @@ object SeasonalScreen {
     @Composable
     private fun TopBar(
         upIconOption: UpIconOption?,
-        viewModel: SeasonalViewModel,
         initialPage: Int,
+        mediaViewOption: () -> MediaViewOption,
+        onMediaViewOptionChange: (MediaViewOption) -> Unit,
         pagerState: PagerState,
         currentSeasonYear: Pair<MediaSeason, Int>,
         scrollBehavior: TopAppBarScrollBehavior,
@@ -158,11 +153,11 @@ object SeasonalScreen {
                         }
                     },
                     actions = {
-                        val mediaViewOption = viewModel.mediaViewOption
-                        val nextMediaViewOption = MediaViewOption.values()
+                        val mediaViewOption = mediaViewOption()
+                        val nextMediaViewOption = MediaViewOption.entries
                             .let { it[(it.indexOf(mediaViewOption) + 1) % it.size] }
                         IconButton(onClick = {
-                            viewModel.mediaViewOption = nextMediaViewOption
+                            onMediaViewOptionChange(nextMediaViewOption)
                         }) {
                             Icon(
                                 imageVector = nextMediaViewOption.icon,
@@ -189,7 +184,7 @@ object SeasonalScreen {
                 LazyRow(
                     state = state,
                     flingBehavior = rememberSnapFlingBehavior(state),
-                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                    modifier = Modifier.Companion.background(MaterialTheme.colorScheme.background)
                 ) {
                     items(
                         Int.MAX_VALUE,
@@ -213,7 +208,7 @@ object SeasonalScreen {
                                     color = if (index == Int.MAX_VALUE / 2) {
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                     } else {
-                                        Color.Unspecified
+                                        Color.Companion.Unspecified
                                     },
                                     maxLines = 1,
                                 )
@@ -223,7 +218,7 @@ object SeasonalScreen {
                                     pagerState.animateScrollToPage(index)
                                 }
                             },
-                            modifier = Modifier.conditionally(selected) {
+                            modifier = Modifier.Companion.conditionally(selected) {
                                 bottomBorder(
                                     color = MaterialTheme.colorScheme.primary,
                                     width = 3.dp,

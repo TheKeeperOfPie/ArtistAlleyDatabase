@@ -99,9 +99,7 @@
     <!-- TODO: Insert the actual values into the content descriptions -->
     <string name="anime_media_filter_format_content_description">Format filter expand</string>
     <string name="anime_media_filter_format_chip_state_content_description">Format chip state</string>
-    <string name="anime_media_tag_is_adult">Adult 18+ warning</string>
     <string name="anime_media_tag_adult">Adult</string>
-    <string name="anime_media_tag_is_spoiler">Spoiler warning</string>
     <string name="anime_media_tag_spoiler">Spoiler</string>
     <string name="anime_media_tag_search_placeholder">Search tag…</string>
 
@@ -424,11 +422,6 @@
     <string name="anime_home_suggestion_popular_all_time">Popular</string>
 
     <string name="anime_home_media_increment_progress_content_description">Increment media progress</string>
-
-    <string name="anime_seasonal_title">Seasonal</string>
-    <string name="anime_seasonal_previous_season_content_description">Previous season</string>
-    <string name="anime_seasonal_next_season_content_description">Next season</string>
-    <string name="anime_seasonal_season_year">%1$s %2$s</string>
 
     <string name="anime_news_home_title">NEWS</string>
 

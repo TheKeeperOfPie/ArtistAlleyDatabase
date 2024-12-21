@@ -26,6 +26,7 @@ import com.anilist.data.MediaDetailsQuery
 import com.anilist.data.fragment.GeneralMediaTag
 import com.anilist.data.fragment.HomeMedia
 import com.anilist.data.fragment.MediaPreview
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.assistChipColors
@@ -123,12 +124,12 @@ data class AnimeMediaTagEntry(
         shouldHide = (tag.isAdult ?: false)
                 || (tag.isGeneralSpoiler ?: false)
                 || (isMediaSpoiler ?: false),
-        leadingIconVector = MediaUtils.tagLeadingIcon(
+        leadingIconVector = MediaDataUtils.tagLeadingIcon(
             isAdult = tag.isAdult,
             isGeneralSpoiler = tag.isGeneralSpoiler,
             isMediaSpoiler = isMediaSpoiler,
         ),
-        leadingIconContentDescription = MediaUtils.tagLeadingIconContentDescription(
+        leadingIconContentDescription = MediaDataUtils.tagLeadingIconContentDescription(
             isAdult = tag.isAdult,
             isGeneralSpoiler = tag.isGeneralSpoiler,
             isMediaSpoiler = isMediaSpoiler,
@@ -160,12 +161,12 @@ data class AnimeMediaTagEntry(
         shouldHide = (tag.isAdult ?: false)
                 || (tag.isGeneralSpoiler ?: false)
                 || (tag.isMediaSpoiler ?: false),
-        leadingIconVector = MediaUtils.tagLeadingIcon(
+        leadingIconVector = MediaDataUtils.tagLeadingIcon(
             isAdult = tag.isAdult,
             isGeneralSpoiler = tag.isGeneralSpoiler,
             isMediaSpoiler = tag.isMediaSpoiler,
         ),
-        leadingIconContentDescription = MediaUtils.tagLeadingIconContentDescription(
+        leadingIconContentDescription = MediaDataUtils.tagLeadingIconContentDescription(
             isAdult = tag.isAdult,
             isGeneralSpoiler = tag.isGeneralSpoiler,
             isMediaSpoiler = tag.isMediaSpoiler,

@@ -92,4 +92,7 @@
     <string name="anime_media_view_option_compact">Compact</string>
     <string name="anime_media_view_option_grid">Grid</string>
     <string name="anime_media_view_option_icon_content_description">Change view type</string>
+
+    <string name="anime_media_tag_is_adult">Adult 18+ warning</string>
+    <string name="anime_media_tag_is_spoiler">Spoiler warning</string>
 </resources>

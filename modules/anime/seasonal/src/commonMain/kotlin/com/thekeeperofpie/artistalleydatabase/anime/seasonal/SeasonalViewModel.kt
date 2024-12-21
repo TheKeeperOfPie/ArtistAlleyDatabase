@@ -1,5 +1,3 @@
-@file:OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.seasonal
 
 import androidx.collection.LruCache
@@ -16,39 +14,38 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import com.anilist.data.MediaAdvancedSearchQuery
+import com.anilist.data.fragment.MediaPreview
+import com.anilist.data.fragment.MediaPreviewWithDescription
 import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.anime.search.data.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -56,23 +53,27 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
-import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @Inject
-class SeasonalViewModel(
+class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSearchFilterParams<MediaSortOption>>, MediaEntry : Any>(
     private val aniListApi: AuthedAniListApi,
-    private val settings: AnimeSettings,
+    private val settings: MediaDataSettings,
     val ignoreController: IgnoreController,
-    private val statusController: MediaListStatusController,
-    mediaTagsController: MediaTagsController,
-    mediaGenresController: MediaGenresController,
-    mediaLicensorsController: MediaLicensorsController,
-    featureOverrideProvider: FeatureOverrideProvider,
-    @Assisted savedStateHandle: SavedStateHandle,
+    private val mediaListStatusController: MediaListStatusController,
     navigationTypeMap: NavigationTypeMap,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted private val sortFilterControllerProvider: (CoroutineScope) -> SortFilterControllerType,
+    @Assisted private val filterMedia: (
+        sortFilterController: SortFilterControllerType,
+        PagingData<MediaEntry>,
+        (MediaEntry) -> MediaPreview,
+    ) -> Flow<PagingData<MediaEntry>>,
+    @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
-    private val destination = savedStateHandle.toDestination<AnimeDestination.Seasonal>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<SeasonalDestinations.Seasonal>(navigationTypeMap)
 
     val viewer = aniListApi.authedUser
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
@@ -82,39 +83,21 @@ class SeasonalViewModel(
     private val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
 
     var initialPage = when (destination.type) {
-        AnimeDestination.Seasonal.Type.LAST -> Int.MAX_VALUE / 2 - 1
-        AnimeDestination.Seasonal.Type.THIS -> Int.MAX_VALUE / 2
-        AnimeDestination.Seasonal.Type.NEXT -> Int.MAX_VALUE / 2 + 1
+        SeasonalDestinations.Seasonal.Type.LAST -> Int.MAX_VALUE / 2 - 1
+        SeasonalDestinations.Seasonal.Type.THIS -> Int.MAX_VALUE / 2
+        SeasonalDestinations.Seasonal.Type.NEXT -> Int.MAX_VALUE / 2 + 1
     }
-
-    val sortFilterController = AnimeSortFilterController(
-        sortTypeEnumClass = MediaSortOption::class,
-        scope = viewModelScope,
-        aniListApi = aniListApi,
-        settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
-        mediaTagsController = mediaTagsController,
-        mediaGenresController = mediaGenresController,
-        mediaLicensorsController = mediaLicensorsController,
-    )
 
     private val refresh = RefreshFlow()
 
-    init {
-        sortFilterController.initialize(
-            initialParams = AnimeSortFilterController.InitialParams(
-                airingDateEnabled = false,
-                defaultSort = MediaSortOption.POPULARITY,
-                lockSort = false,
-            ),
-        )
-    }
+    // TODO: All of the logic for this is extremely messy
+    val sortFilterController = sortFilterControllerProvider(viewModelScope)
 
     fun onRefresh() = refresh.refresh()
 
     @Composable
-    fun items(page: Int): LazyPagingItems<MediaPreviewWithDescriptionEntry> {
-        var pageData = pages.get(page)
+    fun items(page: Int): LazyPagingItems<MediaEntry> {
+        var pageData = pages[page]
         if (pageData == null) {
             val seasonYear = AniListUtils.calculateSeasonYearWithOffset(
                 seasonYear = currentSeasonYear,
@@ -124,11 +107,11 @@ class SeasonalViewModel(
             pages.put(page, pageData)
         }
 
-        return pageData.content.collectAsLazyPagingItems()
+        return pageData.content.collectAsLazyPagingItemsWithLifecycle()
     }
 
     inner class Page(seasonYear: Pair<MediaSeason, Int>) {
-        var content = MutableStateFlow(PagingData.empty<MediaPreviewWithDescriptionEntry>())
+        var content = MutableStateFlow(PagingData.Companion.empty<MediaEntry>())
 
         init {
             viewModelScope.launch(CustomDispatchers.Main) {
@@ -145,7 +128,6 @@ class SeasonalViewModel(
                         seasonYearOverride = seasonYear,
                     )
                 }
-                    .debounce(100.milliseconds)
                     .distinctUntilChanged()
                     .flatMapLatest {
                         val cache =
@@ -162,20 +144,52 @@ class SeasonalViewModel(
                         }.flow
                     }
                     .enforceUniqueIntIds { it.id }
-                    .map { it.mapOnIO { MediaPreviewWithDescriptionEntry(it) } }
+                    .map { it.mapOnIO(mediaEntryProvider::mediaEntry) }
                     .cachedIn(viewModelScope)
-                    .flatMapLatest { sortFilterController.filterMedia(it) { it.media } }
+                    .flatMapLatest {
+                        filterMedia(sortFilterController, it, mediaEntryProvider::media)
+                    }
                     .applyMediaStatusChanges(
-                        statusController = statusController,
+                        statusController = mediaListStatusController,
                         ignoreController = ignoreController,
                         mediaFilteringData = settings.mediaFilteringData(false),
-                        mediaFilterable = { it.mediaFilterable },
-                        copy = { copy(mediaFilterable = it) },
+                        mediaFilterable = mediaEntryProvider::mediaFilterable,
+                        copy = { mediaEntryProvider.copyMediaEntry(this, it) },
                     )
                     .cachedIn(viewModelScope)
                     .flowOn(CustomDispatchers.IO)
                     .collectLatest(content::emit)
             }
         }
+    }
+
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val settings: MediaDataSettings,
+        private val ignoreController: IgnoreController,
+        private val mediaListStatusController: MediaListStatusController,
+        private val navigationTypeMap: NavigationTypeMap,
+        @Assisted private val savedStateHandle: SavedStateHandle,
+    ) {
+        fun <SortFilterControllerType : SortFilterController<MediaSearchFilterParams<MediaSortOption>>, MediaEntry : Any> create(
+            mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
+            sortFilterControllerProvider: (CoroutineScope) -> SortFilterControllerType,
+            filterMedia: (
+                sortFilterController: SortFilterControllerType,
+                PagingData<MediaEntry>,
+                (MediaEntry) -> MediaPreview,
+            ) -> Flow<PagingData<MediaEntry>>,
+        ) = SeasonalViewModel(
+            aniListApi = aniListApi,
+            settings = settings,
+            ignoreController = ignoreController,
+            mediaListStatusController = mediaListStatusController,
+            navigationTypeMap = navigationTypeMap,
+            savedStateHandle = savedStateHandle,
+            sortFilterControllerProvider = sortFilterControllerProvider,
+            filterMedia = filterMedia,
+            mediaEntryProvider = mediaEntryProvider,
+        )
     }
 }

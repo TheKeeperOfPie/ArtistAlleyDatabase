@@ -9,9 +9,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WatchLater
-import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -71,8 +69,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_relatio
 import artistalleydatabase.modules.anime.generated.resources.anime_media_relation_spin_off
 import artistalleydatabase.modules.anime.generated.resources.anime_media_relation_summary
 import artistalleydatabase.modules.anime.generated.resources.anime_media_relation_unknown
-import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_is_adult
-import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_is_spoiler
 import com.anilist.data.MediaDetailsQuery
 import com.anilist.data.MediaListEntryQuery
 import com.anilist.data.fragment.MediaCompactWithTags
@@ -92,10 +88,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
@@ -131,28 +127,6 @@ object MediaUtils {
         lightness = 0.25f,
         saturation = 0.25f,
     )
-
-    fun tagLeadingIcon(
-        isAdult: Boolean? = false,
-        isGeneralSpoiler: Boolean? = false,
-        isMediaSpoiler: Boolean? = null,
-    ) = when {
-        isAdult ?: false -> Icons.TwoTone._18UpRating
-        (isGeneralSpoiler ?: false) || (isMediaSpoiler ?: false) ->
-            Icons.Filled.Warning
-        else -> null
-    }
-
-    fun tagLeadingIconContentDescription(
-        isAdult: Boolean? = false,
-        isGeneralSpoiler: Boolean? = false,
-        isMediaSpoiler: Boolean? = null,
-    ) = when {
-        isAdult ?: false -> Res.string.anime_media_tag_is_adult
-        (isGeneralSpoiler ?: false) || (isMediaSpoiler
-            ?: false) -> Res.string.anime_media_tag_is_spoiler
-        else -> null
-    }
 
     fun scoreFormatToText(score: Double, format: ScoreFormat): String {
         return if (score == 0.0) "" else when (format) {
@@ -359,7 +333,7 @@ object MediaUtils {
     }
 
     fun <SortType : SortOption, MediaEntryType> filterEntries(
-        filterParams: MediaSortFilterController.FilterParams<SortType>,
+        filterParams: MediaSearchFilterParams<SortType>,
         showTagWhenSpoiler: Boolean,
         entries: List<MediaEntryType>,
         media: (MediaEntryType) -> MediaPreview,
@@ -402,8 +376,8 @@ object MediaUtils {
 
         val allTags = filterParams.tagsByCategory.values.flatMap {
             when (it) {
-                is TagSection.Category -> it.flatten()
-                is TagSection.Tag -> listOf(it)
+                is MediaTagSection.Category -> it.flatten()
+                is MediaTagSection.Tag -> listOf(it)
             }
         }
         filteredEntries = FilterIncludeExcludeState.applyFiltering(

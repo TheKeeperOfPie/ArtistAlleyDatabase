@@ -1,11 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media.filter
+package com.thekeeperofpie.artistalleydatabase.anime.media.data
 
 import com.anilist.data.MediaTagsQuery
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 
-sealed interface TagSection {
+sealed interface MediaTagSection {
     val name: String
 
     fun findTag(id: String): Tag? = when (this) {
@@ -17,7 +16,7 @@ sealed interface TagSection {
         is Tag -> takeIf { it.id == id }
     }
 
-    fun filter(predicate: (Tag) -> Boolean): TagSection? = when (this) {
+    fun filter(predicate: (Tag) -> Boolean): MediaTagSection? = when (this) {
         is Category -> {
             children.values
                 .mapNotNull { it.filter(predicate) }
@@ -33,7 +32,7 @@ sealed interface TagSection {
         is Tag -> takeIf { predicate(it) }
     }
 
-    fun replace(block: (Tag) -> Tag): TagSection = when (this) {
+    fun replace(block: (Tag) -> Tag): MediaTagSection = when (this) {
         is Category -> {
             copy(
                 children = children.mapValues { (_, value) -> value.replace(block) }
@@ -49,10 +48,10 @@ sealed interface TagSection {
 
     data class Category(
         override val name: String,
-        val children: Map<String, TagSection>,
+        val children: Map<String, MediaTagSection>,
         val expanded: Boolean = false,
         val hasAnySelected: Boolean = false,
-    ) : TagSection {
+    ) : MediaTagSection {
 
         fun flatten(): List<Tag> = children.values.flatMap {
             when (it) {
@@ -114,14 +113,14 @@ sealed interface TagSection {
         override val value: MediaTagsQuery.Data.MediaTagCollection,
         override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
         override val clickable: Boolean = true,
-    ) : FilterEntry<MediaTagsQuery.Data.MediaTagCollection>, TagSection {
-        override val leadingIconVector = MediaUtils.tagLeadingIcon(
+    ) : FilterEntry<MediaTagsQuery.Data.MediaTagCollection>, MediaTagSection {
+        override val leadingIconVector = MediaDataUtils.tagLeadingIcon(
             isAdult = isAdult,
             isGeneralSpoiler = value.isGeneralSpoiler,
         )
 
         override val leadingIconContentDescription =
-            MediaUtils.tagLeadingIconContentDescription(
+            MediaDataUtils.tagLeadingIconContentDescription(
                 isAdult = isAdult,
                 isGeneralSpoiler = value.isGeneralSpoiler,
             )

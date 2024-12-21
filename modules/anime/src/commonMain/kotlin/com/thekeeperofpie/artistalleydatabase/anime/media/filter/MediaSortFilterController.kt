@@ -33,7 +33,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_status_label
 import com.anilist.data.LicensorsQuery
 import com.anilist.data.fragment.MediaPreview
-import com.anilist.data.type.MediaFormat
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaSource
 import com.anilist.data.type.MediaStatus
@@ -43,7 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -51,7 +51,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
@@ -80,7 +79,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaGenresController: MediaGenresController,
     private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
-) : MediaDataSettingsSortFilterController<MediaSortFilterController.FilterParams<SortType>>(
+) : MediaDataSettingsSortFilterController<MediaSearchFilterParams<SortType>>(
     scope = scope,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider
@@ -141,7 +140,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         valueToText = { it.value },
     )
 
-    private var tagsByCategory by mutableStateOf(emptyMap<String, TagSection>())
+    private var tagsByCategory by mutableStateOf(emptyMap<String, MediaTagSection>())
     protected val tagsByCategoryFiltered = snapshotFlow { tagsByCategory }
         .flatMapLatest { tags ->
             settings.showAdult.map { showAdult ->
@@ -351,8 +350,8 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         snapshotFlow {
             val includedTags = tagsByCategory.values.flatMap {
                 when (it) {
-                    is TagSection.Category -> it.flatten()
-                    is TagSection.Tag -> listOf(it)
+                    is MediaTagSection.Category -> it.flatten()
+                    is MediaTagSection.Tag -> listOf(it)
                 }
             }.filter { it.state == FilterIncludeExcludeState.INCLUDE }
 
@@ -394,28 +393,4 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         val genre: String?
         val year: Int?
     }
-
-    data class FilterParams<SortType : SortOption>(
-        val sort: List<SortEntry<SortType>>,
-        val sortAscending: Boolean,
-        val genres: List<FilterEntry<String>>,
-        val tagsByCategory: Map<String, TagSection>,
-        val tagRank: Int?,
-        val statuses: List<FilterEntry<MediaStatus>>,
-        val myListStatuses: List<FilterEntry<MediaListStatus>>,
-        val theirListStatuses: List<FilterEntry<MediaListStatus>>?,
-        val onList: Boolean?,
-        val myScore: RangeData?,
-        val theirScore: RangeData?,
-        val formats: List<FilterEntry<MediaFormat>>,
-        val averageScoreRange: RangeData,
-        val episodesRange: RangeData?,
-        val volumesRange: RangeData?,
-        val chaptersRange: RangeData?,
-        val showAdult: Boolean,
-        val showIgnored: Boolean,
-        val airingDate: AiringDate,
-        val sources: List<FilterEntry<MediaSource>>,
-        val licensedBy: List<FilterEntry<LicensorsQuery.Data.ExternalLinkSourceCollection>>,
-    )
 }

@@ -40,6 +40,7 @@ data class MediaCompactWithTagsEntry(
     object Provider : MediaEntryProvider<MediaCompactWithTags, MediaCompactWithTagsEntry> {
         override fun mediaEntry(media: MediaCompactWithTags) = MediaCompactWithTagsEntry(media)
         override fun mediaFilterable(entry: MediaCompactWithTagsEntry) = entry.mediaFilterable
+        override fun media(entry: MediaCompactWithTagsEntry) = entry.media
         override fun copyMediaEntry(entry: MediaCompactWithTagsEntry, data: MediaFilterableData) =
             entry.copy(mediaFilterable = data)
         override fun id(entry: MediaCompactWithTagsEntry) = entry.mediaFilterable.mediaId

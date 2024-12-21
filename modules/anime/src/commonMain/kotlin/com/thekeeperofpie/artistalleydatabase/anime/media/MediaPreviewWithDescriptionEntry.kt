@@ -97,6 +97,7 @@ data class MediaPreviewWithDescriptionEntry(
     object Provider : MediaEntryProvider<MediaPreviewWithDescription, MediaPreviewWithDescriptionEntry> {
         override fun mediaEntry(media: MediaPreviewWithDescription) = MediaPreviewWithDescriptionEntry(media)
         override fun mediaFilterable(entry: MediaPreviewWithDescriptionEntry) = entry.mediaFilterable
+        override fun media(entry: MediaPreviewWithDescriptionEntry) = entry.media
         override fun copyMediaEntry(entry: MediaPreviewWithDescriptionEntry, data: MediaFilterableData) =
             entry.copy(mediaFilterable = data)
         override fun id(entry: MediaPreviewWithDescriptionEntry) = entry.mediaFilterable.mediaId

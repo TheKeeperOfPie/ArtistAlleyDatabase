@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.home
 import androidx.compose.runtime.Composable
 import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
 import com.anilist.data.fragment.HomeMedia
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.data.CoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.data.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
@@ -14,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableDa
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.StringResource
 
@@ -124,6 +124,6 @@ data class AnimeHomeDataEntry(
         val id: String,
         val titleRes: StringResource,
         val entries: List<MediaEntry>?,
-        val viewAllRoute: AnimeDestination,
+        val viewAllRoute: NavDestination,
     )
 }

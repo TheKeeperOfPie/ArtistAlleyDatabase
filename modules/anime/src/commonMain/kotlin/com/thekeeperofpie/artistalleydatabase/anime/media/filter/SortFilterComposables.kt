@@ -48,6 +48,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_sea
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_placeholder
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_show_when_spoiler
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilterChip
@@ -64,7 +65,7 @@ fun TagSection(
     onExpandedChange: (Boolean) -> Unit,
     showMediaWithTagSpoiler: () -> Boolean,
     onShowMediaWithTagSpoilerChange: (Boolean) -> Unit,
-    tags: @Composable () -> Map<String, TagSection>,
+    tags: @Composable () -> Map<String, MediaTagSection>,
     onTagClick: (String) -> Unit,
     tagRank: @Composable () -> String,
     onTagRankChange: (String) -> Unit,
@@ -113,7 +114,7 @@ fun TagSection(
                 tags.values.mapNotNull {
                     it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
                 }
-            }).filterIsInstance<TagSection.Category>()
+            }).filterIsInstance<MediaTagSection.Category>()
 
             if (expanded || subcategoriesToShow.isNotEmpty()) {
                 Row(
@@ -162,7 +163,7 @@ fun TagSection(
             }
 
             val children =
-                tags.values.filterIsInstance<TagSection.Tag>()
+                tags.values.filterIsInstance<MediaTagSection.Tag>()
             if (children.isNotEmpty()) {
                 TagChips(
                     tags = children,
@@ -234,7 +235,7 @@ fun TagSection(
 @Composable
 private fun TagSubsection(
     name: String,
-    children: Collection<TagSection>,
+    children: Collection<MediaTagSection>,
     parentExpanded: Boolean,
     level: Int,
     onTagClick: (String) -> Unit,
@@ -274,7 +275,7 @@ private fun TagSubsection(
         }
     }
 
-    val tags = children.filterIsInstance<TagSection.Tag>()
+    val tags = children.filterIsInstance<MediaTagSection.Tag>()
     val tagsToShow = if (query.isNotBlank()) {
         tags.filter {
             it.state != FilterIncludeExcludeState.DEFAULT
@@ -287,19 +288,19 @@ private fun TagSubsection(
     }
 
     val subcategories =
-        children.filterIsInstance<TagSection.Category>()
+        children.filterIsInstance<MediaTagSection.Category>()
     val subcategoriesToShow = if (query.isNotBlank()) {
         subcategories.mapNotNull {
             it.filter {
                 it.state != FilterIncludeExcludeState.DEFAULT
                         || it.name.contains(query, ignoreCase = true)
-            } as? TagSection.Category
+            } as? MediaTagSection.Category
         }
     } else if (expanded) {
         subcategories
     } else {
         subcategories.mapNotNull {
-            it.filter { it.state != FilterIncludeExcludeState.DEFAULT } as? TagSection.Category
+            it.filter { it.state != FilterIncludeExcludeState.DEFAULT } as? MediaTagSection.Category
         }
     }
 
@@ -338,7 +339,7 @@ private fun TagSubsection(
 
 @Composable
 private fun TagChips(
-    tags: List<TagSection.Tag>,
+    tags: List<MediaTagSection.Tag>,
     level: Int,
     onTagClick: (String) -> Unit,
 ) {

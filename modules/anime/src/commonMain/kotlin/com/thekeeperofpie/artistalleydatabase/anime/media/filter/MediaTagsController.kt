@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import com.anilist.data.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -40,7 +41,7 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi)
      */
     private fun buildTagSections(
         tags: List<MediaTagsQuery.Data.MediaTagCollection>,
-    ): Map<String, TagSection> {
+    ): Map<String, MediaTagSection> {
         val sections = mutableMapOf<String, Any>()
         tags.forEach {
             var categories = it.category?.split('-')
@@ -59,18 +60,18 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi)
                 }
             }
 
-            var currentCategory: TagSection.Category.Builder? = null
+            var currentCategory: MediaTagSection.Category.Builder? = null
             categories?.forEach {
                 currentCategory = if (currentCategory == null) {
-                    sections.getOrPut(it) { TagSection.Category.Builder(it) }
-                            as TagSection.Category.Builder
+                    sections.getOrPut(it) { MediaTagSection.Category.Builder(it) }
+                            as MediaTagSection.Category.Builder
                 } else {
-                    (currentCategory as TagSection.Category.Builder).getOrPutCategory(it)
+                    (currentCategory as MediaTagSection.Category.Builder).getOrPutCategory(it)
                 }
             }
 
             if (currentCategory == null) {
-                sections[it.name] = TagSection.Tag(it)
+                sections[it.name] = MediaTagSection.Tag(it)
             } else {
                 currentCategory!!.addChild(it)
             }
@@ -78,8 +79,8 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi)
 
         return sections.mapValues { (_, value) ->
             when (value) {
-                is TagSection.Category.Builder -> value.build()
-                is TagSection.Tag -> value
+                is MediaTagSection.Category.Builder -> value.build()
+                is MediaTagSection.Tag -> value
                 else -> throw IllegalStateException("Unexpected value $value")
             }
         }

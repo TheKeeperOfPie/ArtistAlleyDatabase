@@ -60,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
+import com.thekeeperofpie.artistalleydatabase.anime.search.data.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption

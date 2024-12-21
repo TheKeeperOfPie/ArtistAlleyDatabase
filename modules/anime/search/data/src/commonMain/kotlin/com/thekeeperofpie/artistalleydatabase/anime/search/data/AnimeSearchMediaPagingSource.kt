@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.search
+package com.thekeeperofpie.artistalleydatabase.anime.search.data
 
 import androidx.collection.LruCache
 import com.anilist.data.MediaAdvancedSearchQuery
@@ -8,10 +8,10 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.toAniListFuzzyDateInt
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.datetime.DateTimeUnit
@@ -30,8 +30,8 @@ class AnimeSearchMediaPagingSource(
         val filterParams = refreshParams.filterParams
         val flattenedTags = filterParams.tagsByCategory.values.flatMap {
             when (it) {
-                is TagSection.Category -> it.flatten()
-                is TagSection.Tag -> listOf(it)
+                is MediaTagSection.Category -> it.flatten()
+                is MediaTagSection.Tag -> listOf(it)
             }
         }
 
@@ -81,11 +81,11 @@ class AnimeSearchMediaPagingSource(
             seasonYear = seasonYear,
             startDateGreater = (filterParams.airingDate as? AiringDate.Advanced)
                 ?.startDate
-                ?.minus(1, DateTimeUnit.DAY)
+                ?.minus(1, DateTimeUnit.Companion.DAY)
                 ?.toAniListFuzzyDateInt(),
             startDateLesser = (filterParams.airingDate as? AiringDate.Advanced)
                 ?.endDate
-                ?.plus(1, DateTimeUnit.DAY)
+                ?.plus(1, DateTimeUnit.Companion.DAY)
                 ?.toAniListFuzzyDateInt(),
             averageScoreGreater = filterParams.averageScoreRange.apiStart,
             averageScoreLesser = filterParams.averageScoreRange.apiEnd,
@@ -115,7 +115,7 @@ class AnimeSearchMediaPagingSource(
         val query: String,
         val includeDescription: Boolean,
         val refreshEvent: RefreshFlow.Event,
-        val filterParams: MediaSortFilterController.FilterParams<MediaSortOption>,
+        val filterParams: MediaSearchFilterParams<MediaSortOption>,
         val seasonYearOverride: Pair<MediaSeason, Int>? = null,
     ) {
         fun sortApiValue() =

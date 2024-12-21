@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_seasonal_title">Seasonal</string>
+    <string name="anime_seasonal_previous_season_content_description">Previous season</string>
+    <string name="anime_seasonal_next_season_content_description">Next season</string>
+    <string name="anime_seasonal_season_year">%1$s %2$s</string>
+</resources>

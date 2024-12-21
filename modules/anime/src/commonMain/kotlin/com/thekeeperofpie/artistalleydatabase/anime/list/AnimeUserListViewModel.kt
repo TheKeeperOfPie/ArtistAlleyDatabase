@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
@@ -247,9 +248,10 @@ class AnimeUserListViewModel(
                                     )
                                 }
                                 .let {
-                                    if (filterParams.theirListStatuses == null) it else {
+                                    val theirListStatuses = filterParams.theirListStatuses
+                                    if (theirListStatuses == null) it else {
                                         FilterIncludeExcludeState.applyFiltering(
-                                            filterParams.theirListStatuses,
+                                            theirListStatuses,
                                             it,
                                             {
                                                 listOfNotNull(it.authorData?.status)
@@ -298,7 +300,7 @@ class AnimeUserListViewModel(
 
     private fun List<UserMediaListController.MediaEntry>.toFilteredEntries(
         query: String,
-        filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
+        filterParams: MediaSearchFilterParams<MediaListSortOption>,
         showTagWhenSpoiler: Boolean,
     ): List<MediaEntry> {
         var filteredEntries = MediaUtils.filterEntries(
@@ -327,8 +329,9 @@ class AnimeUserListViewModel(
             }
             filteredByTheirScore
         }.run {
-            if (filterParams.onList == null) return@run this
-            if (filterParams.onList) {
+            val onList = filterParams.onList
+            if (onList == null) return@run this
+            if (onList) {
                 filter {
                     it.mediaFilterable.mediaListStatus != null
                             && it.mediaFilterable.mediaListStatus != com.thekeeperofpie.artistalleydatabase.anime.data.MediaListStatus.UNKNOWN
@@ -411,7 +414,7 @@ class AnimeUserListViewModel(
         val response: LoadingResult<List<UserMediaListController.ListEntry>>,
         val mediaUpdates: Map<String, MediaListStatusController.Update>,
         val query: String,
-        val filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
+        val filterParams: MediaSearchFilterParams<MediaListSortOption>,
 
         // This is broken out to avoid network refreshes,
         // since this doesn't affect the network response

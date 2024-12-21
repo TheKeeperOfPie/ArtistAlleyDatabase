@@ -79,10 +79,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEnt
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
@@ -510,7 +510,7 @@ fun MediaListQuickEditIconButton(
 
 @Composable
 fun MediaTagPreview(
-    tag: TagSection.Tag,
+    tag: MediaTagSection.Tag,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
@@ -518,9 +518,10 @@ fun MediaTagPreview(
         title = { Text(tag.name) },
         text = {
             Column {
-                if (tag.category != null) {
+                val category = tag.category
+                if (category != null) {
                     Text(
-                        tag.category,
+                        category,
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )

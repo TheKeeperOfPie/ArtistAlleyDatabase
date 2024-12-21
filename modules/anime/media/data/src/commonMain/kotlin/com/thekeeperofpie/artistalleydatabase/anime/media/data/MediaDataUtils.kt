@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
@@ -39,6 +41,8 @@ import artistalleydatabase.modules.anime.media.data.generated.resources.anime_me
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_status_not_yet_released
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_status_releasing
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_status_unknown
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_tag_is_adult
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_tag_is_spoiler
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_type_anime_icon_content_description
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_type_manga_icon_content_description
 import com.anilist.data.fragment.AniListDate
@@ -120,6 +124,28 @@ object MediaDataUtils {
                 !it
             }
             .distinctUntilChanged()
+
+    fun tagLeadingIcon(
+        isAdult: Boolean? = false,
+        isGeneralSpoiler: Boolean? = false,
+        isMediaSpoiler: Boolean? = null,
+    ) = when {
+        isAdult == true -> Icons.TwoTone._18UpRating
+        (isGeneralSpoiler == true) || (isMediaSpoiler == true) ->
+            Icons.Filled.Warning
+        else -> null
+    }
+
+    fun tagLeadingIconContentDescription(
+        isAdult: Boolean? = false,
+        isGeneralSpoiler: Boolean? = false,
+        isMediaSpoiler: Boolean? = null,
+    ) = when {
+        isAdult == true -> Res.string.anime_media_tag_is_adult
+        (isGeneralSpoiler == true) || (isMediaSpoiler == true) ->
+            Res.string.anime_media_tag_is_spoiler
+        else -> null
+    }
 }
 
 @Composable

@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDateSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.KClass
 
@@ -116,7 +118,7 @@ open class AnimeSortFilterController<SortType : SortOption>(
                             AiringDate.SeasonOption.SUMMER,
                             AiringDate.SeasonOption.FALL,
                             null,
-                            -> ""
+                                -> ""
                         }
                     }
                     airingDate = airingDate.copy(
@@ -211,7 +213,7 @@ open class AnimeSortFilterController<SortType : SortOption>(
 
     @Suppress("UNCHECKED_CAST")
     @Composable
-    override fun filterParams() = FilterParams(
+    override fun filterParams() = MediaSearchFilterParams(
         sort = sortSection.sortOptions,
         sortAscending = sortSection.sortAscending,
         genres = genreSection.filterOptions,
@@ -225,7 +227,7 @@ open class AnimeSortFilterController<SortType : SortOption>(
             FilterIncludeExcludeState.EXCLUDE -> false
             FilterIncludeExcludeState.DEFAULT,
             null,
-            -> null
+                -> null
         },
         formats = formatSection.filterOptions,
         averageScoreRange = averageScoreSection.data,
@@ -284,4 +286,28 @@ open class AnimeSortFilterController<SortType : SortOption>(
         val mediaListStatus: MediaListStatus? = null,
         val lockMediaListStatus: Boolean = false,
     ) : MediaSortFilterController.InitialParams<SortType>
+
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val settings: AnimeSettings,
+        private val featureOverrideProvider: FeatureOverrideProvider,
+        private val mediaTagsController: MediaTagsController,
+        private val mediaGenresController: MediaGenresController,
+        private val mediaLicensorsController: MediaLicensorsController,
+    ) {
+        fun <SortType : SortOption> create(
+            scope: CoroutineScope,
+            sortTypeEnumClass: KClass<SortType>,
+        ) = AnimeSortFilterController(
+            sortTypeEnumClass = sortTypeEnumClass,
+            scope = scope,
+            aniListApi = aniListApi,
+            settings = settings,
+            featureOverrideProvider = featureOverrideProvider,
+            mediaTagsController = mediaTagsController,
+            mediaGenresController = mediaGenresController,
+            mediaLicensorsController = mediaLicensorsController,
+        )
+    }
 }

@@ -73,10 +73,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActiviti
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
@@ -94,7 +96,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.reviewsSection
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
-import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
+import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
@@ -474,10 +476,6 @@ object AnimeNavigator {
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.Ignored>(navigationTypeMap) {
             AnimeIgnoreScreen(upIconOption = UpIconOption.Back(navigationController))
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.Seasonal>(navigationTypeMap) {
-            SeasonalScreen(upIconOption = UpIconOption.Back(navigationController))
         }
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaCharacters>(
@@ -867,8 +865,40 @@ object AnimeNavigator {
                 )
             },
             seasonalCurrentRoute = {
-                AnimeDestination.Seasonal(
-                    type = AnimeDestination.Seasonal.Type.THIS,
+                SeasonalDestinations.Seasonal(
+                    type = SeasonalDestinations.Seasonal.Type.THIS,
+                )
+            },
+        )
+
+        SeasonalDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+            mediaEntryProvider = MediaPreviewWithDescriptionEntry.Provider,
+            sortFilterControllerProvider = {
+                component.animeSortFilterControllerFactory
+                    .create(it, MediaSortOption::class)
+                    .apply {
+                        initialize(
+                            initialParams = AnimeSortFilterController.InitialParams(
+                                airingDateEnabled = false,
+                                defaultSort = MediaSortOption.POPULARITY,
+                                lockSort = false,
+                            ),
+                        )
+                    }
+            },
+            filterMedia = { sortFilterController, result, transform ->
+                sortFilterController.filterMedia(result, transform)
+            },
+            mediaViewOptionRow = { viewer, mediaViewOption, entry, onClickListEdit ->
+                MediaViewOptionRow(
+                    mediaViewOption = mediaViewOption,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    entry = entry,
                 )
             },
         )
