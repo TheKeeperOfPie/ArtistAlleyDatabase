@@ -120,7 +120,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_share
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_share_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_social_links_label
-import artistalleydatabase.modules.anime.generated.resources.anime_media_details_songs_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_source_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_staff_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_start_date_label
@@ -154,6 +153,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_long_click_content_description
 import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_details_recommendations_label
 import artistalleydatabase.modules.anime.reviews.generated.resources.anime_media_details_reviews_label
+import artistalleydatabase.modules.anime.songs.generated.resources.anime_songs_label
 import artistalleydatabase.modules.utils_compose.generated.resources.no
 import artistalleydatabase.modules.utils_compose.generated.resources.yes
 import coil3.compose.AsyncImage
@@ -238,6 +238,7 @@ import artistalleydatabase.modules.anime.activities.generated.resources.Res as A
 import artistalleydatabase.modules.anime.forums.generated.resources.Res as ForumsRes
 import artistalleydatabase.modules.anime.recommendations.generated.resources.Res as RecommendationsRes
 import artistalleydatabase.modules.anime.reviews.generated.resources.Res as ReviewsRes
+import artistalleydatabase.modules.anime.songs.generated.resources.Res as SongsRes
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
@@ -1827,7 +1828,7 @@ object AnimeMediaDetailsScreen {
             CHARACTERS(Res.string.anime_media_details_characters_label),
             RELATIONS(Res.string.anime_media_details_relations_label),
             INFO(Res.string.anime_media_details_information_label),
-            SONGS(Res.string.anime_media_details_songs_label),
+            SONGS(SongsRes.string.anime_songs_label),
             CDS(Res.string.anime_media_details_cds_label),
             STAFF(Res.string.anime_media_details_staff_label),
             STATS(Res.string.anime_media_details_stats_label),

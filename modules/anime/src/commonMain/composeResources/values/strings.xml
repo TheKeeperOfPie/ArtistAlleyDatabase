@@ -3,8 +3,6 @@
     <string name="anime_auth_button_why">Why?</string>
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_banner_image_content_description">Media banner image</string>
-    <string name="anime_media_artist_image">Artist image</string>
-    <string name="anime_media_artist_no_image">No artist image</string>
     <string name="anime_media_voice_actor_image">Voice actor image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
     <string name="anime_media_list_no_results">No results</string>
@@ -214,19 +212,6 @@
     <string name="anime_media_details_synonyms_expand_content_description">Synonyms expand</string>
 
     <string name="anime_media_details_cds_label">CDs</string>
-    <string name="anime_media_details_songs_label">Songs</string>
-    <string name="anime_media_details_song_expand_content_description">Song expand</string>
-    <string name="anime_media_details_song_play_content_description">Play song</string>
-    <string name="anime_media_details_song_pause_content_description">Pause song</string>
-    <string name="anime_media_details_song_open_link_content_description">Open song link</string>
-    <string name="anime_media_details_song_opening">Opening</string>
-    <string name="anime_media_details_song_opening_episodes">Opening - Ep. %1$s</string>
-    <string name="anime_media_details_song_ending">Ending</string>
-    <string name="anime_media_details_song_ending_episodes">Ending - Ep. %1$s</string>
-    <string name="anime_media_details_song_artist_as_character">%1$s (CV: %2$s)</string>
-    <string name="anime_media_details_song_artist_with_character">%1$s (%2$s)</string>
-    <string name="anime_media_details_song_spoiler">Spoiler</string>
-    <string name="anime_media_details_song_spoiler_content_description">Song is spoiler</string>
 
     <string name="anime_media_details_links_label">Links</string>
     <string name="anime_media_details_social_links_label">Socials</string>

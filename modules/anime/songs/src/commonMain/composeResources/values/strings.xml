@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_songs_label">Songs</string>
+    <string name="anime_songs_artist_image">Artist image</string>
+    <string name="anime_songs_artist_no_image">No artist image</string>
+    <string name="anime_songs_expand_content_description">Song expand</string>
+    <string name="anime_songs_play_content_description">Play song</string>
+    <string name="anime_songs_pause_content_description">Pause song</string>
+    <string name="anime_songs_open_link_content_description">Open song link</string>
+    <string name="anime_songs_opening">Opening</string>
+    <string name="anime_songs_opening_episodes">Opening - Ep. %1$s</string>
+    <string name="anime_songs_ending">Ending</string>
+    <string name="anime_songs_ending_episodes">Ending - Ep. %1$s</string>
+    <string name="anime_songs_artist_as_character">%1$s (CV: %2$s)</string>
+    <string name="anime_songs_artist_with_character">%1$s (%2$s)</string>
+    <string name="anime_songs_spoiler">Spoiler</string>
+    <string name="anime_songs_spoiler_content_description">Song is spoiler</string>
+</resources>

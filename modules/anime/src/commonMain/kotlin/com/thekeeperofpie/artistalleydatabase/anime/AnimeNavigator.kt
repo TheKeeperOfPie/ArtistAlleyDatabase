@@ -98,6 +98,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleDestination
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
+import com.thekeeperofpie.artistalleydatabase.anime.songs.songsSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
@@ -230,7 +231,7 @@ object AnimeNavigator {
             val staff = staffViewModel.staff.collectAsLazyPagingItemsWithLifecycle()
 
             val songsViewModel =
-                viewModel { component.animeSongsViewModel(mediaDetailsViewModel) }
+                viewModel { component.animeSongsViewModel(mediaDetailsViewModel.media()) }
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
                 lifecycleOwner.lifecycle.addObserver(songsViewModel)
@@ -330,10 +331,15 @@ object AnimeNavigator {
                     hasMore = false,
                 ),
                 songsSection = { expanded, onExpandedChange ->
-                    AnimeSongComposables.songsSection(
-                        viewModel = songsViewModel,
+                    songsSection(
+                        mediaPlayer = songsViewModel.mediaPlayer,
+                        animeSongs = songsViewModel.animeSongs,
                         songsExpanded = expanded,
                         onSongsExpandedChange = onExpandedChange,
+                        songState = songsViewModel::getAnimeSongState,
+                        onAnimeSongExpandedToggle = songsViewModel::onAnimeSongExpandedToggle,
+                        onAnimeSongProgressUpdate = songsViewModel::onAnimeSongProgressUpdate,
+                        onAnimeSongPlayAudioClick = songsViewModel::onAnimeSongPlayAudioClick,
                     )
                 },
                 cdsSectionMetadata = object :
