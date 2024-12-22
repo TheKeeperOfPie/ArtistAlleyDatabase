@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
@@ -77,6 +78,15 @@ abstract class ApplicationComponent(
     abstract val workManager: WorkManager
 
     abstract val navDestinationProviders: Set<NavDestinationProvider>
+
+    val AndroidSettingsProvider.bindSettingsProvider: SettingsProvider
+        @Provides get() = this
+
+    val AndroidSettingsProvider.bindAppSettings: AppSettings
+        @Provides get() = this
+
+    val AndroidSettingsProvider.bindArtSettings: ArtSettings
+        @Provides get() = this
 
     val AppMonetizationOverrideProvider.bind: MonetizationOverrideProvider
         @Provides get() = this

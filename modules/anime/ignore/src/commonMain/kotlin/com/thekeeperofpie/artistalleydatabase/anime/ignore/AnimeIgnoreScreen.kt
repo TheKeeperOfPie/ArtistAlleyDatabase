@@ -68,14 +68,15 @@ object AnimeIgnoreScreen {
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             Scaffold(
                 topBar = { TopBar(state, upIconOption, scrollBehavior) },
+                modifier = Modifier.padding(padding)
             ) { scaffoldPadding ->
-                val content = state.content.collectAsLazyPagingItems()
                 val enabled by state.enabled.collectAsState()
                 if (!enabled) {
                     NotEnabledPrompt(state, Modifier.Companion.padding(scaffoldPadding))
                 } else {
                     val mediaViewOption by state.mediaViewOption.collectAsStateWithLifecycle()
                     val columns = mediaViewOption.widthAdaptiveCells
+                    val content = state.content.collectAsLazyPagingItems()
                     VerticalList(
                         itemHeaderText = null,
                         items = content,

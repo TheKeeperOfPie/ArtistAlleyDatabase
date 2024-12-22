@@ -37,6 +37,7 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityList
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
@@ -179,7 +180,7 @@ object AnimeRootScreen {
                                                 onClick = {
                                                     dismissMenu(destination)
                                                     navigationController.navigate(
-                                                        AnimeDestination.MediaHistory(
+                                                        HistoryDestinations.MediaHistory(
                                                             mediaType = if (destination == AnimeRootNavDestination.ANIME) {
                                                                 MediaType.ANIME
                                                             } else {

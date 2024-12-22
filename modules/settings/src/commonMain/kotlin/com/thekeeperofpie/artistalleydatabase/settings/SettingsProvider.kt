@@ -21,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCateg
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -37,15 +36,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import me.tatarka.inject.annotations.Inject
 import kotlin.reflect.KProperty0
 
-@SingletonScope
-@Inject
-class SettingsProvider(
+//@SingletonScope
+//@Inject
+open class SettingsProvider(
     scope: ApplicationScope,
     private val json: Json,
     private val featureOverrideProvider: FeatureOverrideProvider,

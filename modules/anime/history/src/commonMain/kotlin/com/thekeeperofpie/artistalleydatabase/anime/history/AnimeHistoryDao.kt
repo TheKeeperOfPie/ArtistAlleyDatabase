@@ -21,7 +21,7 @@ interface AnimeHistoryDao {
     suspend fun getEntries(limit: Int, offset: Int, type: MediaType): List<AnimeMediaHistoryEntry>
 
     @Deprecated(message = "Use [insertEntry] instead", replaceWith = ReplaceWith("insertEntry"))
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insertEntries(vararg entries: AnimeMediaHistoryEntry)
 
     @Query("""SELECT COUNT(*) FROM anime_media_history""")

@@ -9,7 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesCo
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeMediaDetailsActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersComponent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumsComponent
-import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryComponent
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreComponent
@@ -43,9 +43,9 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
 }
 
 interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
-    ForumsComponent, IgnoreComponent, NotificationsComponent, RecommendationsComponent,
-    ReviewsComponent, ScheduleComponent, SeasonalComponent, SongsComponent, StaffComponent,
-    StudiosComponent, UsersComponent {
+    ForumsComponent, HistoryComponent, IgnoreComponent, NotificationsComponent,
+    RecommendationsComponent, ReviewsComponent, ScheduleComponent, SeasonalComponent,
+    SongsComponent, StaffComponent, StudiosComponent, UsersComponent {
 
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
@@ -66,7 +66,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val mediaActivitiesViewModel: (SavedStateHandle, MediaDetailsRoute) -> MediaActivitiesViewModel
     val mediaCharactersViewModel: (SavedStateHandle) -> MediaCharactersViewModel
     val mediaEditViewModel: () -> MediaEditViewModel
-    val mediaHistoryViewModel: (SavedStateHandle) -> MediaHistoryViewModel
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
     val unlockScreenViewModel: () -> UnlockScreenViewModel
 

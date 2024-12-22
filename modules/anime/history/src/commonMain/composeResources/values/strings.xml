@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_history_header">Media history</string>
+    <string name="anime_history_error_loading">Error loading history</string>
+    <string name="anime_history_anime">Anime</string>
+    <string name="anime_history_manga">Manga</string>
+    <string name="anime_history_not_enabled_prompt">Media history not enabled</string>
+    <string name="anime_history_not_enabled_button">Enable</string>
+</resources>

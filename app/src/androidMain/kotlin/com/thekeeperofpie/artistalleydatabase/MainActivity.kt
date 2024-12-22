@@ -75,6 +75,7 @@ import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
+import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreDestinations
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -465,7 +466,7 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onClickViewMediaHistory = {
                                         navigationController.navigate(
-                                            AnimeDestination.MediaHistory(mediaType = null)
+                                            HistoryDestinations.MediaHistory(mediaType = null)
                                         )
                                     },
                                     onClickViewMediaIgnore = {

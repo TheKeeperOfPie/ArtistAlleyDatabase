@@ -4,31 +4,24 @@ import androidx.navigation.NavType
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.thekeeperofpie.artistalleydatabase.AppComponent
+import com.thekeeperofpie.artistalleydatabase.AppSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListComponent
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
-import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSettings
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsStore
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestinationProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkComponent
-import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbComponent
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
@@ -54,34 +47,7 @@ abstract class DesktopComponent(
 
     abstract val navDestinationProviders: Set<NavDestinationProvider>
 
-    val DesktopSettingsProvider.bindAniListSettings: AniListSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindAnimeSettings: AnimeSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindCharacterSettings: CharacterSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindCropSettings: CropSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindIgnoreSettings: IgnoreSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindMediaDataSettings: MediaDataSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindMonetizationSettings: MonetizationSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindNewsSettings: NewsSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindNetworkSettings: NetworkSettings
-        @Provides get() = this
-
-    val DesktopSettingsProvider.bindStaffSettings: StaffSettings
+    val DesktopSettingsProvider.bindAppSettings: AppSettings
         @Provides get() = this
 
     val DesktopDatabase.bindAniListDatabase: AniListDatabase
@@ -96,9 +62,15 @@ abstract class DesktopComponent(
     val DesktopDatabase.bindVgmdbDatabase: VgmdbDatabase
         @Provides get() = this
 
+    // Remove this once SettingsProvider is unified
     @SingletonScope
     @Provides
-    fun provideSettingsProvider() = DesktopSettingsProvider()
+    fun provideSettingsProvider(
+        scope: ApplicationScope,
+        json: Json,
+        featureOverrideProvider: FeatureOverrideProvider,
+        settingsStore: SettingsStore,
+    ) = SettingsProvider(scope, json, featureOverrideProvider, settingsStore)
 
     @SingletonScope
     @Provides

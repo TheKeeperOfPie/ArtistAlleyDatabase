@@ -135,11 +135,6 @@ sealed interface AnimeDestination : NavDestination {
     }
 
     @Serializable
-    data class MediaHistory(
-        val mediaType: MediaType?,
-    ) : AnimeDestination
-
-    @Serializable
     data class SearchMedia(
         val title: Title? = null,
         val tagId: String? = null,

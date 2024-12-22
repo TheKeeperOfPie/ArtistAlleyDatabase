@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.history
 
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -14,7 +13,7 @@ import me.tatarka.inject.annotations.Inject
 class HistoryController(
     private val scope: ApplicationScope,
     private val historyDao: AnimeHistoryDao,
-    private val settings: AnimeSettings,
+    private val settings: HistorySettings,
 ) {
     fun onVisitMediaDetails(
         mediaId: String,
@@ -27,7 +26,7 @@ class HistoryController(
         titleNative: String?,
     ) {
         if (!settings.mediaHistoryEnabled.value) return
-        scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.Companion.IO) {
             try {
                 historyDao.insertEntry(
                     AnimeMediaHistoryEntry(
@@ -51,7 +50,7 @@ class HistoryController(
     }
 
     fun clear() {
-        scope.launch(CustomDispatchers.IO) {
+        scope.launch(CustomDispatchers.Companion.IO) {
             try {
                 historyDao.deleteAll()
             } catch (ignored: Throwable) {

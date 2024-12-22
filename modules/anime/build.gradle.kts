@@ -13,6 +13,7 @@ kotlin {
             api(projects.modules.anime.characters)
             api(projects.modules.anime.favorites)
             api(projects.modules.anime.forums)
+            api(projects.modules.anime.history)
             api(projects.modules.anime.ignore)
             api(projects.modules.anime.media.data)
             api(projects.modules.anime.news)

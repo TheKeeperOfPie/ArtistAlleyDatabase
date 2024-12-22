@@ -61,7 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCommentContent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.forumThreadsSection
-import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
+import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
@@ -602,12 +602,6 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.MediaHistory>(navigationTypeMap) {
-            MediaHistoryScreen(
-                upIconOption = UpIconOption.Back(navigationController),
-            )
-        }
-
         val mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component)
         ActivityDestinations.addToGraph(
             navGraphBuilder = navGraphBuilder,
@@ -667,6 +661,23 @@ object AnimeNavigator {
                 )
             },
             mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+        )
+
+        HistoryDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+            mediaEntryProvider = MediaPreviewWithDescriptionEntry.Provider,
+            mediaViewOptionRow = { viewer, mediaViewOption, entry, onClickListEdit ->
+                MediaViewOptionRow(
+                    mediaViewOption = mediaViewOption,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    entry = entry,
+                    showQuickEdit = false,
+                )
+            },
         )
 
         IgnoreDestinations.addToGraph(

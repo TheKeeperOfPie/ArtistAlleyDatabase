@@ -5,7 +5,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.history
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,14 +15,12 @@ import androidx.paging.cachedIn
 import com.anilist.data.fragment.MediaPreviewWithDescription
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.utils.RequestBatcher
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -39,24 +36,27 @@ import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @Inject
-class MediaHistoryViewModel(
+class MediaHistoryViewModel<MediaEntry : Any>(
     aniListApi: AuthedAniListApi,
-    settings: AnimeSettings,
+    historySettings: HistorySettings,
+    mediaDataSettings: MediaDataSettings,
     mediaListStatusController: MediaListStatusController,
     val ignoreController: IgnoreController,
     private val historyDao: AnimeHistoryDao,
-    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
     private val destination =
-        savedStateHandle.toDestination<AnimeDestination.MediaHistory>(navigationTypeMap)
-    val enabled = settings.mediaHistoryEnabled
-    var selectedType by mutableStateOf(destination.mediaType ?: settings.preferredMediaType.value)
-    var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
+        savedStateHandle.toDestination<HistoryDestinations.MediaHistory>(navigationTypeMap)
+    val enabled = historySettings.mediaHistoryEnabled
+    var selectedType =
+        MutableStateFlow(destination.mediaType ?: mediaDataSettings.preferredMediaType.value)
+    var mediaViewOption = MutableStateFlow(mediaDataSettings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
-    val content = MutableStateFlow(PagingData.empty<MediaPreviewWithDescriptionEntry>())
+    val content = MutableStateFlow(PagingData.empty<MediaEntry>())
 
 //    private val localContentAnime =
 //        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
@@ -65,20 +65,20 @@ class MediaHistoryViewModel(
 //        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
 
     // TODO: Re-enable network fetch by migrating to custom paginator
-    private val mediaRequestBatcher = RequestBatcher(
-        scope = viewModelScope,
-        apiCall = {
-            aniListApi.mediaByIds(
-                it.map { it.toInt() },
-                includeDescription = true
-            )
-        },
-        resultToId = { it.id.toString() },
-    )
+//    private val mediaRequestBatcher = RequestBatcher(
+//        scope = viewModelScope,
+//        apiCall = {
+//            aniListApi.mediaByIds(
+//                it.map { it.toInt() },
+//                includeDescription = true
+//            )
+//        },
+//        resultToId = { it.id.toString() },
+//    )
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { selectedType }
+            selectedType
                 .flatMapLatest {
                     Pager(config = PagingConfig(pageSize = 10)) {
                         historyDao.getEntries(it)
@@ -87,26 +87,24 @@ class MediaHistoryViewModel(
                 }
                 .map {
                     it.mapNotNull {
-                        MediaPreviewWithDescriptionEntry(
-                            media = PlaceholderMediaEntry(it)
-                        )
+                        mediaEntryProvider.mediaEntry(PlaceholderMediaEntry(it))
 //                        mediaRequestBatcher.fetch(it.id)?.let(::MediaPreviewWithDescriptionEntry)
                     }
                 }
-                .enforceUniqueIds { it.mediaId }
+                .enforceUniqueIds(mediaEntryProvider::id)
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = mediaListStatusController,
                     ignoreController = ignoreController,
-                    mediaFilteringData = settings.mediaFilteringData(false),
-                    mediaFilterable = { it.mediaFilterable },
-                    copy = { copy(mediaFilterable = it) },
+                    mediaFilteringData = mediaDataSettings.mediaFilteringData(false),
+                    mediaFilterable = mediaEntryProvider::mediaFilterable,
+                    copy = { mediaEntryProvider.copyMediaEntry(this, it) },
                 )
                 .collectLatest(content::emit)
         }
     }
 
-    fun placeholder(index: Int, mediaType: MediaType): MediaPreviewWithDescriptionEntry? {
+    fun placeholder(index: Int, mediaType: MediaType): MediaEntry? {
         return null
 //        val localContent = if (mediaType == MediaType.ANIME) {
 //            localContentAnime
@@ -184,5 +182,31 @@ class MediaHistoryViewModel(
         override val startDate = null
         override val externalLinks = null
         override val description = null
+    }
+
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val historySettings: HistorySettings,
+        private val mediaDataSettings: MediaDataSettings,
+        private val mediaListStatusController: MediaListStatusController,
+        private val ignoreController: IgnoreController,
+        private val historyDao: AnimeHistoryDao,
+        private val navigationTypeMap: NavigationTypeMap,
+        @Assisted private val savedStateHandle: SavedStateHandle,
+    ) {
+        fun <MediaEntry : Any> create(
+            mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
+        ) = MediaHistoryViewModel(
+            aniListApi = aniListApi,
+            historySettings = historySettings,
+            mediaDataSettings = mediaDataSettings,
+            mediaListStatusController = mediaListStatusController,
+            ignoreController = ignoreController,
+            historyDao = historyDao,
+            navigationTypeMap = navigationTypeMap,
+            savedStateHandle = savedStateHandle,
+            mediaEntryProvider = mediaEntryProvider,
+        )
     }
 }
