@@ -357,14 +357,6 @@
 
     <string name="anime_user_list_tab_all">ALL</string>
 
-    <string name="anime_media_ignore_header">Ignored</string>
-    <string name="anime_media_ignore_tab_anime">Anime</string>
-    <string name="anime_media_ignore_tab_manga">Manga</string>
-    <string name="anime_media_ignore_search_anime">Search anime…</string>
-    <string name="anime_media_ignore_search_manga">Search manga…</string>
-    <string name="anime_media_ignore_not_enabled_prompt">Ignore feature (long press on media card) not enabled</string>
-    <string name="anime_media_ignore_not_enabled_button">Enable</string>
-
     <string name="anime_media_activities_header">Activity</string>
     <string name="anime_media_activities_error_loading">Error loading activity</string>
     <string name="anime_media_activities_tab_following">Following</string>

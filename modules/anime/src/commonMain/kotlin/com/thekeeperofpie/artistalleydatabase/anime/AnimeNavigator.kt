@@ -62,7 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ThreadCommentContent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.forumThreadsSection
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
@@ -480,10 +480,6 @@ object AnimeNavigator {
             )
         }
 
-        navGraphBuilder.sharedElementComposable<AnimeDestination.Ignored>(navigationTypeMap) {
-            AnimeIgnoreScreen(upIconOption = UpIconOption.Back(navigationController))
-        }
-
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaCharacters>(
             navigationTypeMap = navigationTypeMap,
         ) {
@@ -671,6 +667,23 @@ object AnimeNavigator {
                 )
             },
             mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+        )
+
+        IgnoreDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+            mediaEntryProvider = MediaPreviewWithDescriptionEntry.Provider,
+            mediaViewOptionRow = { viewer, mediaViewOption, entry, onClickListEdit ->
+                MediaViewOptionRow(
+                    mediaViewOption = mediaViewOption,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    entry = entry,
+                    showQuickEdit = false,
+                )
+            },
         )
 
         NotificationDestinations.addToGraph(

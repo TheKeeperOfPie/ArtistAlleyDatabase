@@ -61,11 +61,6 @@ sealed interface AnimeDestination : NavDestination {
     data object FeatureTiers : AnimeDestination
 
     @Serializable
-    data class Ignored(
-        val mediaType: MediaType?,
-    ) : AnimeDestination
-
-    @Serializable
     data class MediaCharacters(
         val mediaId: String,
         val sharedElementKey: String? = null,

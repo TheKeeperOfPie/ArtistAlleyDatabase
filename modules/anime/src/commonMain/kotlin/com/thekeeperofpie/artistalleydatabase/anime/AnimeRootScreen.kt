@@ -38,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityList
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
@@ -163,7 +164,7 @@ object AnimeRootScreen {
                                                 onClick = {
                                                     dismissMenu(destination)
                                                     navigationController.navigate(
-                                                        AnimeDestination.Ignored(
+                                                        IgnoreDestinations.Ignored(
                                                             mediaType = if (destination == AnimeRootNavDestination.ANIME) {
                                                                 MediaType.ANIME
                                                             } else {

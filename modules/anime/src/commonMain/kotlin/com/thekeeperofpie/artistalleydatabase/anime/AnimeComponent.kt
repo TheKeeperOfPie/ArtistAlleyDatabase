@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavType
-import com.anilist.data.MediaDetailsQuery
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesComponent
@@ -13,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreComponent
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
@@ -29,14 +28,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleComponent
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalComponent
-import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.songs.SongsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffComponent
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudiosComponent
 import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
-import kotlinx.coroutines.flow.Flow
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 import kotlin.reflect.KType
@@ -46,16 +43,15 @@ val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
 }
 
 interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, CharactersComponent,
-    ForumsComponent, NotificationsComponent, RecommendationsComponent, ReviewsComponent,
-    ScheduleComponent, SeasonalComponent, SongsComponent, StaffComponent, StudiosComponent,
-    UsersComponent {
+    ForumsComponent, IgnoreComponent, NotificationsComponent, RecommendationsComponent,
+    ReviewsComponent, ScheduleComponent, SeasonalComponent, SongsComponent, StaffComponent,
+    StudiosComponent, UsersComponent {
 
     val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
     val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
     val animeHomeViewModel: () -> AnimeHomeViewModel
     val animeMediaDetailsActivityViewModel: (mediaId: String) -> AnimeMediaDetailsActivityViewModel
     val animeMediaDetailsViewModel: (SavedStateHandle) -> AnimeMediaDetailsViewModel
-    val animeMediaIgnoreViewModel: (SavedStateHandle) -> AnimeMediaIgnoreViewModel
     val animeRootViewModel: () -> AnimeRootViewModel
     val animeSearchViewModel: (SavedStateHandle) -> AnimeSearchViewModel
 
