@@ -101,7 +101,7 @@ object SeasonalScreen {
             ) { scaffoldPadding ->
                 HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxSize()
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) {
@@ -126,7 +126,7 @@ object SeasonalScreen {
                         ),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.Companion.padding(scaffoldPadding)
+                        modifier = Modifier.padding(scaffoldPadding)
                     )
                 }
             }
@@ -184,7 +184,7 @@ object SeasonalScreen {
                 LazyRow(
                     state = state,
                     flingBehavior = rememberSnapFlingBehavior(state),
-                    modifier = Modifier.Companion.background(MaterialTheme.colorScheme.background)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
                 ) {
                     items(
                         Int.MAX_VALUE,
@@ -208,7 +208,7 @@ object SeasonalScreen {
                                     color = if (index == Int.MAX_VALUE / 2) {
                                         MaterialTheme.colorScheme.onSurfaceVariant
                                     } else {
-                                        Color.Companion.Unspecified
+                                        Color.Unspecified
                                     },
                                     maxLines = 1,
                                 )
@@ -218,7 +218,7 @@ object SeasonalScreen {
                                     pagerState.animateScrollToPage(index)
                                 }
                             },
-                            modifier = Modifier.Companion.conditionally(selected) {
+                            modifier = Modifier.conditionally(selected) {
                                 bottomBorder(
                                     color = MaterialTheme.colorScheme.primary,
                                     width = 3.dp,

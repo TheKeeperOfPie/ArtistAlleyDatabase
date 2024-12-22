@@ -54,7 +54,7 @@ class AnimeSongsViewModel(
                                     }
                                 }
                             } catch (e: Exception) {
-                                Logger.Companion.e(TAG, e) { "Error loading from AnimeThemes" }
+                                Logger.e(TAG, e) { "Error loading from AnimeThemes" }
                             }
                         }
                     }

@@ -1482,7 +1482,7 @@ object AnimeMediaDetailsScreen {
         val statusTextRes = media.status.toTextRes()
         val licensedTextRes = media.isLicensed
             ?.let { if (it) UtilsStrings.yes else UtilsStrings.no }
-        val country = media.countryOfOrigin?.let(Country.Companion::forCodeOrNull)
+        val country = media.countryOfOrigin?.let(Country::forCodeOrNull)
         val hashtags = media.hashtag?.split("#")
             ?.filter { it.isNotEmpty() }
             ?.map { "#${it.trim()}" }

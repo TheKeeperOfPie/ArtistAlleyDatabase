@@ -81,11 +81,11 @@ class AnimeSearchMediaPagingSource(
             seasonYear = seasonYear,
             startDateGreater = (filterParams.airingDate as? AiringDate.Advanced)
                 ?.startDate
-                ?.minus(1, DateTimeUnit.Companion.DAY)
+                ?.minus(1, DateTimeUnit.DAY)
                 ?.toAniListFuzzyDateInt(),
             startDateLesser = (filterParams.airingDate as? AiringDate.Advanced)
                 ?.endDate
-                ?.plus(1, DateTimeUnit.Companion.DAY)
+                ?.plus(1, DateTimeUnit.DAY)
                 ?.toAniListFuzzyDateInt(),
             averageScoreGreater = filterParams.averageScoreRange.apiStart,
             averageScoreLesser = filterParams.averageScoreRange.apiEnd,

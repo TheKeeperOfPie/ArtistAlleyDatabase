@@ -111,7 +111,7 @@ class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSea
     }
 
     inner class Page(seasonYear: Pair<MediaSeason, Int>) {
-        var content = MutableStateFlow(PagingData.Companion.empty<MediaEntry>())
+        var content = MutableStateFlow(PagingData.empty<MediaEntry>())
 
         init {
             viewModelScope.launch(CustomDispatchers.Main) {
