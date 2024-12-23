@@ -121,6 +121,7 @@ class AnimeSearchMediaPagingSource(
         fun sortApiValue() =
             filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .flatMap { it.value.toApiValue(filterParams.sortAscending) }
+                .distinct()
                 .ifEmpty { listOf(MediaSort.SEARCH_MATCH) }
     }
 }

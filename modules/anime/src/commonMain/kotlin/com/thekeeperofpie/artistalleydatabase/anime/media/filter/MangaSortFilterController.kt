@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
+import androidx.annotation.MainThread
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -22,6 +23,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import com.anilist.data.type.MediaFormat
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
@@ -40,7 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -51,6 +53,7 @@ import kotlin.reflect.KClass
 @OptIn(ExperimentalCoroutinesApi::class)
 open class MangaSortFilterController<SortType : SortOption>(
     sortTypeEnumClass: KClass<SortType>,
+    defaultSortEnabled: SortType? = null,
     scope: CoroutineScope,
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
@@ -60,6 +63,7 @@ open class MangaSortFilterController<SortType : SortOption>(
     mediaLicensorsController: MediaLicensorsController,
 ) : MediaSortFilterController<SortType, MangaSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
+    defaultSortEnabled = defaultSortEnabled,
     scope = scope,
     aniListApi = aniListApi,
     settings = settings,
@@ -141,56 +145,60 @@ open class MangaSortFilterController<SortType : SortOption>(
 
     open fun initialize(initialParams: InitialParams<SortType>) {
         super.initialize(initialParams)
+        onUserChange(initialParams, aniListApi.authedUser.value)
         scope.launch(CustomDispatchers.Main) {
             aniListApi.authedUser
-                .mapLatest { viewer ->
-                    listOfNotNull(
-                        sortSection.apply {
-                            if (initialParams.defaultSort != null) {
-                                changeDefault(
-                                    initialParams.defaultSort,
-                                    sortAscending = false,
-                                    lockSort = initialParams.lockSort,
-                                )
-                            }
-                        },
-                        statusSection,
-                        formatSection,
-                        genreSection,
-                        tagSection,
-                        releaseDateSection.takeIf { initialParams.airingDateEnabled },
-                        myListStatusSection.takeIf { viewer != null }?.apply {
-                            if (filterOptions.none { it.value == null }) {
-                                filterOptions =
-                                    filterOptions + FilterEntry.FilterEntryImpl(null)
-                            }
+                .drop(1)
+                .collectLatest { onUserChange(initialParams, it) }
+        }
+    }
 
-                            if (initialParams.mediaListStatus != null) {
-                                setIncluded(
-                                    initialParams.mediaListStatus,
-                                    initialParams.lockMediaListStatus,
-                                )
-                            }
-                        },
-                        volumesSection,
-                        chaptersSection,
-                        sourceSection,
-                        licensedBySection,
-                        titleLanguageSection,
-                        advancedSection.apply {
-                            children = listOfNotNull(
-                                showAdultSection,
-                                collapseOnCloseSection,
-                                hideIgnoredSection.takeIf { initialParams.hideIgnoredEnabled },
-                                showLessImportantTagsSection,
-                                showSpoilerTagsSection,
-                            )
-                        },
-                        SortFilterSection.Spacer(height = 32.dp),
+    @MainThread
+    private fun onUserChange(initialParams: InitialParams<SortType>, viewer: AniListViewer?) {
+        sections = listOfNotNull(
+            sortSection.apply {
+                if (initialParams.defaultSort != null) {
+                    changeDefault(
+                        initialParams.defaultSort,
+                        sortAscending = false,
+                        lockSort = initialParams.lockSort,
                     )
                 }
-                .collectLatest { sections = it }
-        }
+            },
+            statusSection,
+            formatSection,
+            genreSection,
+            tagSection,
+            releaseDateSection.takeIf { initialParams.airingDateEnabled },
+            myListStatusSection.takeIf { viewer != null }?.apply {
+                if (filterOptions.none { it.value == null }) {
+                    filterOptions =
+                        filterOptions + FilterEntry.FilterEntryImpl(null)
+                }
+
+                if (initialParams.mediaListStatus != null) {
+                    setIncluded(
+                        initialParams.mediaListStatus,
+                        initialParams.lockMediaListStatus,
+                    )
+                }
+            },
+            volumesSection,
+            chaptersSection,
+            sourceSection,
+            licensedBySection,
+            titleLanguageSection,
+            advancedSection.apply {
+                children = listOfNotNull(
+                    showAdultSection,
+                    collapseOnCloseSection,
+                    hideIgnoredSection.takeIf { initialParams.hideIgnoredEnabled },
+                    showLessImportantTagsSection,
+                    showSpoilerTagsSection,
+                )
+            },
+            SortFilterSection.Spacer(height = 32.dp),
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -209,7 +217,7 @@ open class MangaSortFilterController<SortType : SortOption>(
             FilterIncludeExcludeState.EXCLUDE -> false
             FilterIncludeExcludeState.DEFAULT,
             null,
-            -> null
+                -> null
         },
         formats = formatSection.filterOptions,
         averageScoreRange = averageScoreSection.data,

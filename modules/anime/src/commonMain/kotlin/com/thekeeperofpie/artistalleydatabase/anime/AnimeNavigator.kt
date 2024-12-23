@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.LineBreak
@@ -162,8 +163,20 @@ object AnimeNavigator {
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.SearchMedia>(navigationTypeMap) {
             val destination = it.toRoute<AnimeDestination.SearchMedia>()
+            val viewModel = viewModel {
+                component.animeSearchViewModelFactory(createSavedStateHandle())
+                    .create(MediaPreviewWithDescriptionEntry.Provider)
+            }
+            val state = remember {
+                MediaSearchScreen.State(
+                    selectedType = viewModel.selectedType,
+                    mediaViewOption = viewModel.mediaViewOption,
+                )
+            }
             MediaSearchScreen(
                 title = destination.title,
+                state = state,
+                viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navigationController),
                 tagId = destination.tagId,
                 genre = destination.genre,

@@ -166,7 +166,7 @@ class AnimeUserListViewModel(
         }
 
         val includeDescriptionFlow =
-            MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
+            MediaDataUtils.mediaViewOptionIncludeDescriptionFlow(snapshotFlow { mediaViewOption })
 
         viewModelScope.launch(CustomDispatchers.Main) {
             val response = if (userId == null) {

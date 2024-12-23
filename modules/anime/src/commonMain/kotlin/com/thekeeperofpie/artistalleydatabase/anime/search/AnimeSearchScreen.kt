@@ -34,29 +34,25 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_list_error_loading
 import artistalleydatabase.modules.anime.generated.resources.anime_open_feature_tiers_button
 import artistalleydatabase.modules.anime.generated.resources.anime_requires_unlock
-import artistalleydatabase.modules.anime.generated.resources.anime_search_anime
-import artistalleydatabase.modules.anime.generated.resources.anime_search_characters
 import artistalleydatabase.modules.anime.generated.resources.anime_search_clear
-import artistalleydatabase.modules.anime.generated.resources.anime_search_manga
-import artistalleydatabase.modules.anime.generated.resources.anime_search_staff
-import artistalleydatabase.modules.anime.generated.resources.anime_search_studio
-import artistalleydatabase.modules.anime.generated.resources.anime_search_user
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import com.anilist.data.fragment.MediaNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
@@ -65,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.characters.horizontalCharactersRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -76,13 +73,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
@@ -90,6 +87,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
@@ -99,27 +98,27 @@ object AnimeSearchScreen {
     @Composable
     operator fun invoke(
         animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        state: State,
+        viewModel: AnimeSearchViewModel<MediaPreviewWithDescriptionEntry>,
         upIconOption: UpIconOption? = null,
-        viewModel: AnimeSearchViewModel = viewModel {
-            animeComponent.animeSearchViewModel(createSavedStateHandle())
-        },
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
+        var selectedType by state.selectedType.collectAsMutableStateWithLifecycle()
         val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
             bottomNavigationState = bottomNavigationState,
         ) {
-            val sortFilterController = when (viewModel.selectedType) {
-                AnimeSearchViewModel.SearchType.ANIME -> viewModel.animeSortFilterController
-                AnimeSearchViewModel.SearchType.MANGA -> viewModel.mangaSortFilterController
-                AnimeSearchViewModel.SearchType.CHARACTER -> viewModel.characterSortFilterController
-                AnimeSearchViewModel.SearchType.STAFF -> viewModel.staffSortFilterController
-                AnimeSearchViewModel.SearchType.STUDIO -> viewModel.studioSortFilterController
-                AnimeSearchViewModel.SearchType.USER -> viewModel.userSortFilterController
+            val sortFilterController = when (selectedType) {
+                SearchType.ANIME -> viewModel.animeSortFilterController
+                SearchType.MANGA -> viewModel.mangaSortFilterController
+                SearchType.CHARACTER -> viewModel.characterSortFilterController
+                SearchType.STAFF -> viewModel.staffSortFilterController
+                SearchType.STUDIO -> viewModel.studioSortFilterController
+                SearchType.USER -> viewModel.userSortFilterController
             }
             sortFilterController.PromptDialog()
 
@@ -128,11 +127,12 @@ object AnimeSearchScreen {
                 sortFilterController = sortFilterController,
                 topBar = {
                     TopBar(
-                        viewModel,
-                        upIconOption,
-                        scrollBehavior,
-                        bottomSheetScaffoldState.bottomSheetState,
-                        editViewModel.state,
+                        viewModel = viewModel,
+                        state = state,
+                        upIconOption = upIconOption,
+                        scrollBehavior = scrollBehavior,
+                        sheetState = bottomSheetScaffoldState.bottomSheetState,
+                        mediaEditState = editViewModel.state,
                     )
                 },
                 sheetState = bottomSheetScaffoldState.bottomSheetState,
@@ -144,7 +144,7 @@ object AnimeSearchScreen {
                     }
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
-                val content = viewModel.content.collectAsLazyPagingItems(CustomDispatchers.IO)
+                val content = viewModel.content.collectAsLazyPagingItems()
                 val refreshState = content.loadState.refresh
                 val errorText = (refreshState as? LoadState.Error)
                     ?.let { stringResource(Res.string.anime_media_list_error_loading) }
@@ -154,22 +154,20 @@ object AnimeSearchScreen {
                     }
                 }
 
-                val selectedType = viewModel.selectedType
-                val unlocked by viewModel.unlocked.collectAsState()
-                val selectedUnlocked = selectedType == AnimeSearchViewModel.SearchType.ANIME
-                        || selectedType == AnimeSearchViewModel.SearchType.MANGA
+                val unlocked by state.unlocked.collectAsStateWithLifecycle()
+                val selectedUnlocked = selectedType == SearchType.ANIME
+                        || selectedType == SearchType.MANGA
                         || unlocked
-
-                val refreshing = refreshState is LoadState.Loading && selectedUnlocked
 
                 val viewer by viewModel.viewer.collectAsState()
                 val layoutDirection = LocalLayoutDirection.current
                 if (!selectedUnlocked) {
                     LockedFeatureTiers()
                 } else {
+                    val mediaViewOption by state.mediaViewOption.collectAsStateWithLifecycle()
                     val columns =
-                        if (selectedType == AnimeSearchViewModel.SearchType.ANIME || selectedType == AnimeSearchViewModel.SearchType.MANGA) {
-                            viewModel.mediaViewOption.widthAdaptiveCells
+                        if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA) {
+                            mediaViewOption.widthAdaptiveCells
                         } else {
                             GridCells.Adaptive(300.dp)
                         }
@@ -186,7 +184,7 @@ object AnimeSearchScreen {
                         item = {
                             EntryItem(
                                 viewer = viewer,
-                                mediaViewOption = { viewModel.mediaViewOption },
+                                mediaViewOption = { mediaViewOption },
                                 selectedType = selectedType,
                                 entry = it,
                                 onClickListEdit = editViewModel::initialize,
@@ -242,14 +240,16 @@ object AnimeSearchScreen {
 
     @Composable
     private fun TopBar(
-        viewModel: AnimeSearchViewModel,
+        viewModel: AnimeSearchViewModel<*>,
+        state: State,
         upIconOption: UpIconOption? = null,
         scrollBehavior: TopAppBarScrollBehavior,
         sheetState: SheetState,
         mediaEditState: MediaEditState,
     ) {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-            val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+            var query by state.query.collectAsMutableStateWithLifecycle()
+            val isNotEmpty by remember { derivedStateOf { query.isNotEmpty() } }
             BackHandler(
                 isNotEmpty && !WindowInsets.isImeVisibleKmp
                         // Need to manually check sheet state because top bar
@@ -257,38 +257,20 @@ object AnimeSearchScreen {
                         && sheetState.targetValue != SheetValue.Expanded
                         && !mediaEditState.showing
             ) {
-                viewModel.query = ""
+                query = ""
             }
             Column {
+                var selectedType by state.selectedType.collectAsMutableStateWithLifecycle()
                 StaticSearchBar(
-                    query = viewModel.query,
-                    onQueryChange = { viewModel.query = it },
+                    query = query,
+                    onQueryChange = { query = it },
                     leadingIcon = if (upIconOption != null) {
                         { UpIconButton(upIconOption) }
                     } else null,
-                    placeholder = {
-                        Text(
-                            stringResource(
-                                when (viewModel.selectedType) {
-                                    AnimeSearchViewModel.SearchType.ANIME ->
-                                        Res.string.anime_search_anime
-                                    AnimeSearchViewModel.SearchType.MANGA ->
-                                        Res.string.anime_search_manga
-                                    AnimeSearchViewModel.SearchType.CHARACTER ->
-                                        Res.string.anime_search_characters
-                                    AnimeSearchViewModel.SearchType.STAFF ->
-                                        Res.string.anime_search_staff
-                                    AnimeSearchViewModel.SearchType.STUDIO ->
-                                        Res.string.anime_search_studio
-                                    AnimeSearchViewModel.SearchType.USER ->
-                                        Res.string.anime_search_user
-                                }
-                            )
-                        )
-                    },
+                    placeholder = { Text(stringResource(selectedType.searchLabel)) },
                     trailingIcon = {
                         Row {
-                            IconButton(onClick = { viewModel.query = "" }) {
+                            IconButton(onClick = { query = "" }) {
                                 Icon(
                                     imageVector = Icons.Filled.Clear,
                                     contentDescription = stringResource(
@@ -297,14 +279,15 @@ object AnimeSearchScreen {
                                 )
                             }
 
-                            if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME
-                                || viewModel.selectedType == AnimeSearchViewModel.SearchType.MANGA
+                            if (selectedType == SearchType.ANIME
+                                || selectedType == SearchType.MANGA
                             ) {
-                                val mediaViewOption = viewModel.mediaViewOption
-                                val nextMediaViewOption = MediaViewOption.values()
+                                var mediaViewOption by state.mediaViewOption
+                                    .collectAsMutableStateWithLifecycle()
+                                val nextMediaViewOption = MediaViewOption.entries
                                     .let { it[(it.indexOf(mediaViewOption) + 1) % it.size] }
                                 IconButton(onClick = {
-                                    viewModel.mediaViewOption = nextMediaViewOption
+                                    mediaViewOption = nextMediaViewOption
                                 }) {
                                     Icon(
                                         imageVector = nextMediaViewOption.icon,
@@ -319,8 +302,7 @@ object AnimeSearchScreen {
                     modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                 )
 
-                val selectedTypeIndex = AnimeSearchViewModel.SearchType.values()
-                    .indexOf(viewModel.selectedType)
+                val selectedTypeIndex = SearchType.entries.indexOf(selectedType)
                 ScrollableTabRow(
                     selectedTabIndex = selectedTypeIndex,
                     modifier = Modifier
@@ -328,14 +310,14 @@ object AnimeSearchScreen {
                         .align(Alignment.CenterHorizontally),
                     divider = { /* No divider, manually draw so that it's full width */ }
                 ) {
-                    AnimeSearchViewModel.SearchType.values()
+                    SearchType.entries
                         .forEachIndexed { index, tab ->
                             Tab(
                                 selected = selectedTypeIndex == index,
-                                onClick = { viewModel.selectedType = tab },
+                                onClick = { selectedType = tab },
                                 text = {
                                     Text(
-                                        text = stringResource(tab.textRes),
+                                        text = stringResource(tab.tabText),
                                         maxLines = 1,
                                     )
                                 }
@@ -352,16 +334,16 @@ object AnimeSearchScreen {
     private fun EntryItem(
         viewer: AniListViewer?,
         mediaViewOption: () -> MediaViewOption,
-        selectedType: AnimeSearchViewModel.SearchType,
+        selectedType: SearchType,
         entry: AnimeSearchEntry?,
         onClickListEdit: (MediaNavigationData) -> Unit,
     ) {
         when (entry) {
-            is AnimeSearchEntry.Media -> MediaViewOptionRow(
+            is AnimeSearchEntry.Media<*> -> MediaViewOptionRow(
                 mediaViewOption = mediaViewOption(),
                 viewer = viewer,
                 onClickListEdit = onClickListEdit,
-                entry = entry.entry,
+                entry = entry.entry as? MediaPreviewWithDescriptionEntry,
             )
             is AnimeSearchEntry.Character -> CharacterListRow(
                 entry = entry.entry,
@@ -411,34 +393,34 @@ object AnimeSearchScreen {
             )
 
             null -> when (selectedType) {
-                AnimeSearchViewModel.SearchType.ANIME,
-                AnimeSearchViewModel.SearchType.MANGA,
+                SearchType.ANIME,
+                SearchType.MANGA,
                     -> MediaViewOptionRow(
                     mediaViewOption = mediaViewOption(),
                     viewer = viewer,
                     onClickListEdit = onClickListEdit,
                     entry = null,
                 )
-                AnimeSearchViewModel.SearchType.CHARACTER ->
+                SearchType.CHARACTER ->
                     CharacterListRow<Unit>(
                         entry = null,
                         staffDetailsRoute =
                             StaffDestinations.StaffDetails.route,
                         mediaItems = {},
                     )
-                AnimeSearchViewModel.SearchType.STAFF ->
+                SearchType.STAFF ->
                     StaffListRow<Unit>(
                         entry = null,
                         charactersSection = {},
                         mediaSection = {},
                     )
-                AnimeSearchViewModel.SearchType.STUDIO ->
+                SearchType.STUDIO ->
                     StudioListRow<Unit>(
                         entry = null,
                         mediaRow = {},
                         mediaHeight = 180.dp,
                     )
-                AnimeSearchViewModel.SearchType.USER ->
+                SearchType.USER ->
                     UserListRow(
                         entry = null,
                         mediaRow = { media ->
@@ -453,4 +435,12 @@ object AnimeSearchScreen {
             }
         }
     }
+
+    @Stable
+    class State(
+        val unlocked: StateFlow<Boolean>,
+        val selectedType: MutableStateFlow<SearchType>,
+        val query: MutableStateFlow<String>,
+        val mediaViewOption: MutableStateFlow<MediaViewOption>,
+    )
 }

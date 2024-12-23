@@ -71,6 +71,7 @@ import kotlin.reflect.KClass
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class MediaSortFilterController<SortType : SortOption, ParamsType : MediaSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass: KClass<SortType>,
+    defaultSortEnabled: SortType? = null,
     protected val scope: CoroutineScope,
     protected val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
@@ -89,7 +90,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
 
     val sortSection = SortFilterSection.Sort(
         enumClass = sortTypeEnumClass,
-        defaultEnabled = null,
+        defaultEnabled = defaultSortEnabled,
         headerTextRes = Res.string.anime_media_filter_sort_label,
     )
 

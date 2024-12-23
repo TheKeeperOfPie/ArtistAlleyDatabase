@@ -2,10 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.collection.LruCache
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,17 +19,12 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_suggestions_last_season
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_suggestions_next_season
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_suggestions_recent_finished
-import artistalleydatabase.modules.anime.generated.resources.anime_search_type_anime
-import artistalleydatabase.modules.anime.generated.resources.anime_search_type_character
-import artistalleydatabase.modules.anime.generated.resources.anime_search_type_manga
-import artistalleydatabase.modules.anime.generated.resources.anime_search_type_staff
-import artistalleydatabase.modules.anime.generated.resources.anime_search_type_studio
-import artistalleydatabase.modules.anime.generated.resources.anime_search_type_user
 import com.anilist.data.CharacterAdvancedSearchQuery
 import com.anilist.data.MediaAdvancedSearchQuery
 import com.anilist.data.StaffSearchQuery
 import com.anilist.data.StudioSearchQuery
 import com.anilist.data.UserSearchQuery
+import com.anilist.data.fragment.MediaPreviewWithDescription
 import com.anilist.data.type.MediaFormat
 import com.anilist.data.type.MediaStatus
 import com.anilist.data.type.MediaType
@@ -49,7 +40,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSor
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
@@ -77,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
@@ -105,7 +99,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @Inject
-class AnimeSearchViewModel(
+class AnimeSearchViewModel<MediaEntry>(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     private val statusController: MediaListStatusController,
@@ -115,8 +109,9 @@ class AnimeSearchViewModel(
     mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
     private val monetizationController: MonetizationController,
-    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
     private val destination = if (savedStateHandle.keys().isEmpty()) {
@@ -128,9 +123,14 @@ class AnimeSearchViewModel(
         savedStateHandle.toDestination<AnimeDestination.SearchMedia>(navigationTypeMap)
     }
 
-    var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
+    val mediaViewOption = savedStateHandle.getMutableStateFlow(
+        key = "mediaViewOption",
+        initialValue = settings.mediaViewOption.value.name,
+        deserialize = MediaViewOption::valueOf,
+        serialize = MediaViewOption::name,
+    )
     val viewer = aniListApi.authedUser
-    var query by mutableStateOf("")
+    val query = savedStateHandle.getMutableStateFlow("query", "")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
 
     val unlocked = monetizationController.unlocked
@@ -157,6 +157,7 @@ class AnimeSearchViewModel(
         mediaLicensorsController: MediaLicensorsController,
     ) : AnimeSortFilterController<MediaSortOption>(
         sortTypeEnumClass = MediaSortOption::class,
+        defaultSortEnabled = MediaSortOption.SEARCH_MATCH,
         scope = scope,
         aniListApi = aniListApi,
         settings = settings,
@@ -255,6 +256,7 @@ class AnimeSearchViewModel(
 
     val mangaSortFilterController = MangaSortFilterController(
         sortTypeEnumClass = MediaSortOption::class,
+        defaultSortEnabled = MediaSortOption.SEARCH_MATCH,
         scope = viewModelScope,
         aniListApi = aniListApi,
         settings = settings,
@@ -280,13 +282,13 @@ class AnimeSearchViewModel(
 
     private val refresh = RefreshFlow()
 
-    var selectedType by mutableStateOf(
+    val selectedType = MutableStateFlow(
         destination.mediaType?.let {
             when (it) {
                 MediaType.ANIME,
                 MediaType.UNKNOWN__,
-                    -> AnimeSearchViewModel.SearchType.ANIME
-                MediaType.MANGA -> AnimeSearchViewModel.SearchType.MANGA
+                    -> SearchType.ANIME
+                MediaType.MANGA -> SearchType.MANGA
             }
         } ?: run {
             if (settings.preferredMediaType.value == MediaType.ANIME) {
@@ -306,7 +308,7 @@ class AnimeSearchViewModel(
                 it to when (it) {
                     SearchType.ANIME,
                     SearchType.MANGA,
-                        -> PagingData.empty<AnimeSearchEntry.Media>(loadStates)
+                        -> PagingData.empty<AnimeSearchEntry.Media<MediaEntry>>(loadStates)
                     SearchType.CHARACTER -> PagingData.empty<AnimeSearchEntry.Character>(loadStates)
                     SearchType.STAFF -> PagingData.empty<AnimeSearchEntry.Staff>(loadStates)
                     SearchType.STUDIO -> PagingData.empty<AnimeSearchEntry.Studio>(loadStates)
@@ -316,15 +318,6 @@ class AnimeSearchViewModel(
         }
 
     init {
-        viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { selectedType }
-                .flatMapLatest { results[it]!! }
-                .collectLatest {
-                    @Suppress("UNCHECKED_CAST")
-                    content.emit(it as PagingData<AnimeSearchEntry>)
-                }
-        }
-
         // TODO: Move lockSort into destination args?
         val lockSort =
             destination.lockSortOverride ?: (destination.tagId == null && destination.genre == null)
@@ -347,14 +340,23 @@ class AnimeSearchViewModel(
             ),
         )
 
+        viewModelScope.launch(CustomDispatchers.Main) {
+            selectedType
+                .flatMapLatest { results[it]!! }
+                .collectLatest {
+                    @Suppress("UNCHECKED_CAST")
+                    content.emit(it as PagingData<AnimeSearchEntry>)
+                }
+        }
+
         val includeDescriptionFlow =
-            MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption }
+            MediaDataUtils.mediaViewOptionIncludeDescriptionFlow(mediaViewOption)
 
         collectSearch(
             searchType = SearchType.ANIME,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(1.seconds),
+                    query.debounce(1.seconds),
                     includeDescriptionFlow,
                     refresh.updates,
                     animeSortFilterController.filterParams,
@@ -370,15 +372,31 @@ class AnimeSearchViewModel(
                 )
             },
             id = { it.id },
-            entry = { AnimeSearchEntry.Media(it) },
-            filter = { animeSortFilterController.filterMedia(it) { it.media } },
+            entry = {
+                AnimeSearchEntry.Media(
+                    it.id.toString(),
+                    mediaPreviewWithDescriptionEntryProvider.mediaEntry(it)
+                )
+            },
+            filter = {
+                animeSortFilterController.filterMedia(it) {
+                    mediaPreviewWithDescriptionEntryProvider.media(it.entry)
+                }
+            },
             finalTransform = {
                 applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreController = ignoreController,
                     mediaFilteringData = settings.mediaFilteringData(false),
-                    mediaFilterable = { it.entry.mediaFilterable },
-                    copy = { copy(entry = entry.copy(mediaFilterable = it)) },
+                    mediaFilterable = { mediaPreviewWithDescriptionEntryProvider.mediaFilterable(it.entry) },
+                    copy = {
+                        copy(
+                            entry = mediaPreviewWithDescriptionEntryProvider.copyMediaEntry(
+                                entry,
+                                it
+                            )
+                        )
+                    },
                 )
             }
         )
@@ -387,7 +405,7 @@ class AnimeSearchViewModel(
             searchType = SearchType.MANGA,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(1.seconds),
+                    query.debounce(1.seconds),
                     includeDescriptionFlow,
                     refresh.updates,
                     mangaSortFilterController.filterParams,
@@ -403,15 +421,31 @@ class AnimeSearchViewModel(
                 )
             },
             id = { it.id },
-            entry = { AnimeSearchEntry.Media(it) },
-            filter = { mangaSortFilterController.filterMedia(it) { it.media } },
+            entry = {
+                AnimeSearchEntry.Media(
+                    it.id.toString(),
+                    mediaPreviewWithDescriptionEntryProvider.mediaEntry(it)
+                )
+            },
+            filter = {
+                mangaSortFilterController.filterMedia(it) {
+                    mediaPreviewWithDescriptionEntryProvider.media(it.entry)
+                }
+            },
             finalTransform = {
                 applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreController = ignoreController,
                     mediaFilteringData = settings.mediaFilteringData(false),
-                    mediaFilterable = { it.entry.mediaFilterable },
-                    copy = { copy(entry = entry.copy(mediaFilterable = it)) },
+                    mediaFilterable = { mediaPreviewWithDescriptionEntryProvider.mediaFilterable(it.entry) },
+                    copy = {
+                        copy(
+                            entry = mediaPreviewWithDescriptionEntryProvider.copyMediaEntry(
+                                entry,
+                                it
+                            )
+                        )
+                    },
                 )
             }
         )
@@ -420,7 +454,7 @@ class AnimeSearchViewModel(
             searchType = SearchType.CHARACTER,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(1.seconds),
+                    query.debounce(1.seconds),
                     characterSortFilterController.filterParams,
                     refresh.updates,
                     ::Triple
@@ -477,7 +511,7 @@ class AnimeSearchViewModel(
             searchType = SearchType.STAFF,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(1.seconds),
+                    query.debounce(1.seconds),
                     staffSortFilterController.filterParams,
                     refresh.updates,
                     ::Triple
@@ -534,7 +568,7 @@ class AnimeSearchViewModel(
             searchType = SearchType.STUDIO,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(1.seconds),
+                    query.debounce(1.seconds),
                     refresh.updates,
                     studioSortFilterController.filterParams,
                     ::Triple,
@@ -572,20 +606,22 @@ class AnimeSearchViewModel(
                         settings.mediaFilteringData(),
                     ) { statuses, _, filteringData ->
                         it.mapNotNull {
-                            it.copy(entry =
-                                StudioListRowFragmentEntry.provider<MediaWithListStatusEntry>().copyStudioEntry(
-                                    it.entry,
-                                    it.entry.media.mapNotNull {
-                                        applyMediaFiltering(
-                                            statuses = statuses,
-                                            ignoreController = ignoreController,
-                                            filteringData = filteringData,
-                                            entry = it,
-                                            filterableData = it.mediaFilterable,
-                                            copy = { copy(mediaFilterable = it) },
+                            it.copy(
+                                entry =
+                                    StudioListRowFragmentEntry.provider<MediaWithListStatusEntry>()
+                                        .copyStudioEntry(
+                                            it.entry,
+                                            it.entry.media.mapNotNull {
+                                                applyMediaFiltering(
+                                                    statuses = statuses,
+                                                    ignoreController = ignoreController,
+                                                    filteringData = filteringData,
+                                                    entry = it,
+                                                    filterableData = it.mediaFilterable,
+                                                    copy = { copy(mediaFilterable = it) },
+                                                )
+                                            }
                                         )
-                                    }
-                                )
                             )
                         }
                     }
@@ -597,7 +633,7 @@ class AnimeSearchViewModel(
             searchType = SearchType.USER,
             flow = {
                 combine(
-                    snapshotFlow { query }.debounce(1.seconds),
+                    query.debounce(1.seconds),
                     userSortFilterController.filterParams,
                     refresh.updates,
                     ::Triple,
@@ -663,7 +699,7 @@ class AnimeSearchViewModel(
         viewModelScope.launch(CustomDispatchers.Main) {
             monetizationController.unlocked
                 .filter { it || searchType == SearchType.ANIME || searchType == SearchType.MANGA }
-                .flatMapLatest { snapshotFlow { selectedType } }
+                .flatMapLatest { selectedType }
                 .filter { it == searchType }
                 .flatMapLatest { flow() }
                 .flowOn(CustomDispatchers.IO)
@@ -701,12 +737,35 @@ class AnimeSearchViewModel(
 
     fun onRefresh() = refresh.refresh()
 
-    enum class SearchType(val textRes: StringResource) {
-        ANIME(Res.string.anime_search_type_anime),
-        MANGA(Res.string.anime_search_type_manga),
-        CHARACTER(Res.string.anime_search_type_character),
-        STAFF(Res.string.anime_search_type_staff),
-        STUDIO(Res.string.anime_search_type_studio),
-        USER(Res.string.anime_search_type_user),
+    @Inject
+    class Factory(
+        private val aniListApi: AuthedAniListApi,
+        private val settings: AnimeSettings,
+        private val statusController: MediaListStatusController,
+        private val ignoreController: IgnoreController,
+        private val mediaTagsController: MediaTagsController,
+        private val mediaGenresController: MediaGenresController,
+        private val mediaLicensorsController: MediaLicensorsController,
+        private val featureOverrideProvider: FeatureOverrideProvider,
+        private val monetizationController: MonetizationController,
+        private val navigationTypeMap: NavigationTypeMap,
+        @Assisted private val savedStateHandle: SavedStateHandle,
+    ) {
+        fun <MediaEntry> create(
+            mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
+        ) = AnimeSearchViewModel(
+            aniListApi = aniListApi,
+            settings = settings,
+            statusController = statusController,
+            ignoreController = ignoreController,
+            mediaTagsController = mediaTagsController,
+            mediaGenresController = mediaGenresController,
+            mediaLicensorsController = mediaLicensorsController,
+            featureOverrideProvider = featureOverrideProvider,
+            monetizationController = monetizationController,
+            navigationTypeMap = navigationTypeMap,
+            savedStateHandle = savedStateHandle,
+            mediaPreviewWithDescriptionEntryProvider = mediaEntryProvider,
+        )
     }
 }

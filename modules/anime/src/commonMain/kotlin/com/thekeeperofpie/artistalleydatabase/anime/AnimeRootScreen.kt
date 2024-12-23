@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_history
@@ -41,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
@@ -220,6 +222,7 @@ object AnimeRootScreen {
                 modifier = Modifier
                     .fillMaxSize()
             ) {
+                val component = LocalAnimeComponent.current
                 AnimatedContent(
                     targetState = selectedScreen,
                     transitionSpec = {
@@ -265,8 +268,20 @@ object AnimeRootScreen {
                             bottomNavigationState = bottomNavigationState,
                         )
                         AnimeRootNavDestination.SEARCH -> {
+                            val viewModel = viewModel {
+                                component.animeSearchViewModelFactory(createSavedStateHandle())
+                                    .create(MediaPreviewWithDescriptionEntry.Provider)
+                            }
+                            val state = AnimeSearchScreen.State(
+                                unlocked = viewModel.unlocked,
+                                selectedType = viewModel.selectedType,
+                                query = viewModel.query,
+                                mediaViewOption = viewModel.mediaViewOption,
+                            )
                             AnimeSearchScreen(
                                 upIconOption = upIconOption,
+                                viewModel = viewModel,
+                                state = state,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeRootNavDestination.SEARCH.id,
                                     scrollPositions,

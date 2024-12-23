@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -116,7 +117,7 @@ class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSea
         init {
             viewModelScope.launch(CustomDispatchers.Main) {
                 combine(
-                    MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
+                    MediaDataUtils.mediaViewOptionIncludeDescriptionFlow(snapshotFlow { mediaViewOption }),
                     refresh.updates,
                     sortFilterController.filterParams,
                 ) { includeDescription, refreshEvent, filterParams ->

@@ -22,15 +22,17 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_genre_info_content_description
@@ -43,18 +45,20 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
@@ -64,11 +68,10 @@ object MediaSearchScreen {
     @Composable
     operator fun invoke(
         animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        state: State,
         upIconOption: UpIconOption?,
         title: AnimeDestination.SearchMedia.Title?,
-        viewModel: AnimeSearchViewModel = viewModel {
-            animeComponent.animeSearchViewModel(createSavedStateHandle())
-        },
+        viewModel: AnimeSearchViewModel<MediaPreviewWithDescriptionEntry>,
         tagId: String?,
         genre: String?,
     ) {
@@ -78,9 +81,10 @@ object MediaSearchScreen {
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
         ) {
-            val sortFilterController = when (viewModel.selectedType) {
-                AnimeSearchViewModel.SearchType.ANIME -> viewModel.animeSortFilterController
-                AnimeSearchViewModel.SearchType.MANGA -> viewModel.mangaSortFilterController
+            val selectedType by state.selectedType.collectAsMutableStateWithLifecycle()
+            val sortFilterController = when (selectedType) {
+                SearchType.ANIME -> viewModel.animeSortFilterController
+                SearchType.MANGA -> viewModel.mangaSortFilterController
                 else -> throw IllegalStateException(
                     "Invalid search type for this screen: ${viewModel.selectedType}"
                 )
@@ -92,6 +96,7 @@ object MediaSearchScreen {
                 topBar = {
                     TopBar(
                         viewModel = viewModel,
+                        state = state,
                         upIconOption = upIconOption,
                         title = title,
                         tagId = tagId,
@@ -102,12 +107,13 @@ object MediaSearchScreen {
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 val viewer by viewModel.viewer.collectAsState()
-                val content = viewModel.content.collectAsLazyPagingItems(CustomDispatchers.IO)
+                val content = viewModel.content.collectAsLazyPagingItems()
                 val gridState = rememberLazyGridState()
-                val columns = viewModel.mediaViewOption.widthAdaptiveCells
+                val mediaViewOption by state.mediaViewOption.collectAsStateWithLifecycle()
+                val columns = mediaViewOption.widthAdaptiveCells
                 sortFilterController.ImmediateScrollResetEffect(gridState)
                 val showWithSpoiler =
-                    if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
+                    if (selectedType == SearchType.ANIME) {
                         viewModel.animeSortFilterController.tagShowWhenSpoiler
                     } else {
                         viewModel.mangaSortFilterController.tagShowWhenSpoiler
@@ -132,12 +138,12 @@ object MediaSearchScreen {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(scaffoldPadding)
                 ) {
-                    val item = it as? AnimeSearchEntry.Media
+                    val item = it as? AnimeSearchEntry.Media<*>
                     MediaViewOptionRow(
-                        mediaViewOption = viewModel.mediaViewOption,
+                        mediaViewOption = mediaViewOption,
                         viewer = viewer,
                         onClickListEdit = editViewModel::initialize,
-                        entry = item?.entry,
+                        entry = item?.entry as? MediaPreviewWithDescriptionEntry,
                     )
                 }
             }
@@ -146,7 +152,8 @@ object MediaSearchScreen {
 
     @Composable
     private fun TopBar(
-        viewModel: AnimeSearchViewModel,
+        viewModel: AnimeSearchViewModel<*>,
+        state: State,
         upIconOption: UpIconOption?,
         title: AnimeDestination.SearchMedia.Title?,
         tagId: String?,
@@ -192,11 +199,12 @@ object MediaSearchScreen {
                             }
                         }
 
-                        val mediaViewOption = viewModel.mediaViewOption
+                        var mediaViewOption by state.mediaViewOption
+                            .collectAsMutableStateWithLifecycle()
                         val nextMediaViewOption = MediaViewOption.values()
                             .let { it[(it.indexOf(mediaViewOption) + 1) % it.size] }
                         IconButton(onClick = {
-                            viewModel.mediaViewOption = nextMediaViewOption
+                            mediaViewOption = nextMediaViewOption
                         }) {
                             Icon(
                                 imageVector = nextMediaViewOption.icon,
@@ -213,13 +221,14 @@ object MediaSearchScreen {
                     ),
                 )
 
+                var selectedType by state.selectedType.collectAsMutableStateWithLifecycle()
                 if (tagId != null) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
                         val showWithSpoiler =
-                            if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
+                            if (selectedType == SearchType.ANIME) {
                                 viewModel.animeSortFilterController.tagShowWhenSpoiler
                             } else {
                                 viewModel.mangaSortFilterController.tagShowWhenSpoiler
@@ -228,7 +237,7 @@ object MediaSearchScreen {
                         Switch(
                             checked = showWithSpoiler,
                             onCheckedChange = {
-                                if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME) {
+                                if (selectedType == SearchType.ANIME) {
                                     viewModel.animeSortFilterController.tagShowWhenSpoiler = it
                                 } else {
                                     viewModel.mangaSortFilterController.tagShowWhenSpoiler = it
@@ -243,8 +252,7 @@ object MediaSearchScreen {
                     }
                 }
 
-                val selectedIsAnime =
-                    viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME
+                val selectedIsAnime = selectedType == SearchType.ANIME
                 TabRow(
                     selectedTabIndex = if (selectedIsAnime) 0 else 1,
                     modifier = Modifier
@@ -253,30 +261,20 @@ object MediaSearchScreen {
                 ) {
                     Tab(
                         selected = selectedIsAnime,
-                        onClick = {
-                            viewModel.selectedType =
-                                AnimeSearchViewModel.SearchType.ANIME
-                        },
+                        onClick = { selectedType = SearchType.ANIME },
                         text = {
                             Text(
-                                text = stringResource(
-                                    AnimeSearchViewModel.SearchType.ANIME.textRes
-                                ),
+                                text = stringResource(SearchType.ANIME.tabText),
                                 maxLines = 1,
                             )
                         }
                     )
                     Tab(
                         selected = !selectedIsAnime,
-                        onClick = {
-                            viewModel.selectedType =
-                                AnimeSearchViewModel.SearchType.MANGA
-                        },
+                        onClick = { selectedType = SearchType.MANGA},
                         text = {
                             Text(
-                                text = stringResource(
-                                    AnimeSearchViewModel.SearchType.MANGA.textRes
-                                ),
+                                text = stringResource(SearchType.MANGA.tabText),
                                 maxLines = 1,
                             )
                         }
@@ -285,4 +283,10 @@ object MediaSearchScreen {
             }
         }
     }
+
+    @Stable
+    class State(
+        val selectedType: MutableStateFlow<SearchType>,
+        val mediaViewOption: MutableStateFlow<MediaViewOption>,
+    )
 }

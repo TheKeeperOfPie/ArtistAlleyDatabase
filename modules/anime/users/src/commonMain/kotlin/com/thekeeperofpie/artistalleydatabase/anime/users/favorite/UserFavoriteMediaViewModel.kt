@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.users.favorite
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -67,7 +68,7 @@ class UserFavoriteMediaViewModel<MediaEntry : Any>(
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
-                MediaDataUtils.mediaViewOptionIncludeDescriptionFlow { mediaViewOption },
+                MediaDataUtils.mediaViewOptionIncludeDescriptionFlow(snapshotFlow { mediaViewOption }),
                 viewer,
                 refresh.updates,
                 ::Triple,

@@ -53,7 +53,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val animeMediaDetailsActivityViewModel: (mediaId: String) -> AnimeMediaDetailsActivityViewModel
     val animeMediaDetailsViewModel: (SavedStateHandle) -> AnimeMediaDetailsViewModel
     val animeRootViewModel: () -> AnimeRootViewModel
-    val animeSearchViewModel: (SavedStateHandle) -> AnimeSearchViewModel
+    val animeSearchViewModelFactory: (SavedStateHandle) -> AnimeSearchViewModel.Factory
 
     // TODO; Move into users module?
     val animeUserListViewModel: (
