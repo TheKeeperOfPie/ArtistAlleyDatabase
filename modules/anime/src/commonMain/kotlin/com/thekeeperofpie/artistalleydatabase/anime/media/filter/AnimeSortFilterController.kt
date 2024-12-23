@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDateSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
@@ -221,38 +222,60 @@ open class AnimeSortFilterController<SortType : SortOption>(
 
     @Suppress("UNCHECKED_CAST")
     @Composable
-    override fun filterParams() = MediaSearchFilterParams(
-        sort = sortSection.sortOptions,
-        sortAscending = sortSection.sortAscending,
-        genres = genreSection.filterOptions,
-        tagsByCategory = tagsByCategoryFiltered.collectAsState(emptyMap()).value,
-        tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
-        statuses = statusSection.filterOptions,
-        myListStatuses = myListStatusSection.filterOptions.filter { it.value != null }
-                as List<FilterEntry<MediaListStatus>>,
-        onList = when (myListStatusSection.filterOptions.find { it.value == null }?.state) {
-            FilterIncludeExcludeState.INCLUDE -> true
-            FilterIncludeExcludeState.EXCLUDE -> false
-            FilterIncludeExcludeState.DEFAULT,
-            null,
-                -> null
-        },
-        formats = formatSection.filterOptions,
-        averageScoreRange = averageScoreSection.data,
-        episodesRange = episodesSection.data,
-        volumesRange = null,
-        chaptersRange = null,
-        showAdult = settings.showAdult.collectAsState().value,
-        showIgnored = settings.showIgnored.collectAsState(false).value,
-        airingDate = initialParams?.year?.let { AiringDate.Basic(seasonYear = it.toString()) }
-            ?: if (airingDateIsAdvanced) airingDate.second else airingDate.first,
-        sources = sourceSection.filterOptions,
-        licensedBy = licensedBySection.children.flatMap { it.filterOptions },
-        // TODO: See if these can be pushed down
-        theirListStatuses = null,
-        myScore = null,
-        theirScore = null,
-    )
+    override fun filterParams(): MediaSearchFilterParams<SortType> {
+        val flattenedTags = tagsByCategoryFiltered.collectAsState(emptyMap()).value
+            .values
+            .flatMap {
+                when (it) {
+                    is MediaTagSection.Category -> it.flatten()
+                    is MediaTagSection.Tag -> listOf(it)
+                }
+            }
+        return MediaSearchFilterParams(
+            sort = sortSection.sortOptions,
+            sortAscending = sortSection.sortAscending,
+            genreIn = genreSection.filterOptions
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                .map { it.value },
+            genreNotIn = genreSection.filterOptions
+                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
+                .map { it.value },
+            tagIn = flattenedTags
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                .map { it.value.name },
+            tagNotIn = flattenedTags
+                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
+                .map { it.value.name },
+            tagRank = tagRank.toIntOrNull()?.coerceIn(0, 100),
+            statuses = statusSection.filterOptions,
+            myListStatuses = myListStatusSection.filterOptions.filter { it.value != null }
+                    as List<FilterEntry<MediaListStatus>>,
+            onList = when (myListStatusSection.filterOptions.find { it.value == null }?.state) {
+                FilterIncludeExcludeState.INCLUDE -> true
+                FilterIncludeExcludeState.EXCLUDE -> false
+                FilterIncludeExcludeState.DEFAULT,
+                null,
+                    -> null
+            },
+            formats = formatSection.filterOptions,
+            averageScoreRange = averageScoreSection.data,
+            episodesRange = episodesSection.data,
+            volumesRange = null,
+            chaptersRange = null,
+            showAdult = settings.showAdult.collectAsState().value,
+            showIgnored = settings.showIgnored.collectAsState(false).value,
+            airingDate = initialParams?.year?.let { AiringDate.Basic(seasonYear = it.toString()) }
+                ?: if (airingDateIsAdvanced) airingDate.second else airingDate.first,
+            sources = sourceSection.filterOptions,
+            licensedByIdIn = licensedBySection.children.flatMap { it.filterOptions }
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                .mapNotNull { it.value.siteId },
+            // TODO: See if these can be pushed down
+            theirListStatuses = null,
+            myScore = null,
+            theirScore = null,
+        )
+    }
 
     fun onAiringDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC

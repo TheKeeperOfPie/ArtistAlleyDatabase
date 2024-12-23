@@ -8,7 +8,6 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.toAniListFuzzyDateInt
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
@@ -28,15 +27,7 @@ class AnimeSearchMediaPagingSource(
     perPage = 25,
     apiCall = { page ->
         val filterParams = refreshParams.filterParams
-        val flattenedTags = filterParams.tagsByCategory.values.flatMap {
-            when (it) {
-                is MediaTagSection.Category -> it.flatten()
-                is MediaTagSection.Tag -> listOf(it)
-            }
-        }
-
         val onList = filterParams.onList
-
         val season = refreshParams.seasonYearOverride?.first
             ?: (filterParams.airingDate as? AiringDate.Basic)?.season?.toAniListSeason()
 
@@ -51,18 +42,10 @@ class AnimeSearchMediaPagingSource(
             page = page,
             perPage = 25,
             sort = refreshParams.sortApiValue(),
-            genreIn = filterParams.genres
-                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                .map { it.value },
-            genreNotIn = filterParams.genres
-                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                .map { it.value },
-            tagIn = flattenedTags
-                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                .map { it.value.name },
-            tagNotIn = flattenedTags
-                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                .map { it.value.name },
+            genreIn = filterParams.genreIn,
+            genreNotIn = filterParams.genreNotIn,
+            tagIn = filterParams.tagIn,
+            tagNotIn = filterParams.tagNotIn,
             statusIn = filterParams.statuses
                 .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
@@ -102,9 +85,7 @@ class AnimeSearchMediaPagingSource(
             sourcesIn = filterParams.sources
                 .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
-            licensedByIdIn = filterParams.licensedBy
-                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                .mapNotNull { it.value.siteId },
+            licensedByIdIn = filterParams.licensedByIdIn,
             minimumTagRank = filterParams.tagRank,
             includeDescription = refreshParams.includeDescription,
         )

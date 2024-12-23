@@ -88,7 +88,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
@@ -357,8 +356,9 @@ object MediaUtils {
         )
 
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            filterParams.genres,
-            filteredEntries,
+            includes = filterParams.genreIn,
+            excludes = filterParams.genreNotIn,
+            list = filteredEntries,
             transform = { media(it).genres?.filterNotNull().orEmpty() }
         )
 
@@ -374,26 +374,19 @@ object MediaUtils {
                 }
             }
 
-        val allTags = filterParams.tagsByCategory.values.flatMap {
-            when (it) {
-                is MediaTagSection.Category -> it.flatten()
-                is MediaTagSection.Tag -> listOf(it)
-            }
-        }
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            filters = allTags,
+            includes = filterParams.tagIn,
+            excludes = filterParams.tagNotIn,
             list = filteredEntries,
-            state = { it.state },
-            key = { it.value.id.toString() },
             transform = { media(it).tags?.filterNotNull()?.map { it.id.toString() }.orEmpty() },
             transformIncludes = tagTransformIncludes,
         )
 
-        val tagsIncluded = allTags.filter { it.state == FilterIncludeExcludeState.INCLUDE }
+        val tagsIncluded = filterParams.tagIn
         if (!showTagWhenSpoiler && tagsIncluded.isNotEmpty()) {
             filteredEntries = filteredEntries.filter {
                 tagsIncluded.all { tag ->
-                    media(it).tags?.find { it?.id.toString() == tag.id }
+                    media(it).tags?.find { it?.id.toString() == tag }
                         ?.isMediaSpoiler != true
                 }
             }
@@ -583,14 +576,16 @@ object MediaUtils {
             mustContainAll = false,
         )
 
-        filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            filters = filterParams.licensedBy,
-            list = filteredEntries,
-            state = { it.state },
-            key = { it.value.siteId },
-            transform = { media(it).externalLinks?.mapNotNull { it?.siteId }.orEmpty() },
-            mustContainAll = false,
-        )
+        val licensedByIdIn = filterParams.licensedByIdIn
+        if (!licensedByIdIn.isNullOrEmpty()) {
+            filteredEntries = FilterIncludeExcludeState.applyFiltering(
+                includes = licensedByIdIn.orEmpty(),
+                excludes = emptyList(),
+                list = filteredEntries,
+                transform = { media(it).externalLinks?.mapNotNull { it?.siteId }.orEmpty() },
+                mustContainAll = false,
+            )
+        }
 
         return filteredEntries
     }

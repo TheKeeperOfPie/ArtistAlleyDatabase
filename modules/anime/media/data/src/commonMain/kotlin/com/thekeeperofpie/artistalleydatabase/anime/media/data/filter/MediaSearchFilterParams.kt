@@ -1,11 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.data.filter
 
-import com.anilist.data.LicensorsQuery
 import com.anilist.data.type.MediaFormat
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaSource
 import com.anilist.data.type.MediaStatus
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
@@ -14,8 +12,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 data class MediaSearchFilterParams<SortType : SortOption>(
     val sort: List<SortEntry<SortType>>,
     val sortAscending: Boolean,
-    val genres: List<FilterEntry<String>>,
-    val tagsByCategory: Map<String, MediaTagSection>,
+    val genreIn: List<String>,
+    val genreNotIn: List<String>,
+    val tagIn: List<String>,
+    val tagNotIn: List<String>,
     val tagRank: Int?,
     val statuses: List<FilterEntry<MediaStatus>>,
     val myListStatuses: List<FilterEntry<MediaListStatus>>,
@@ -32,5 +32,5 @@ data class MediaSearchFilterParams<SortType : SortOption>(
     val showIgnored: Boolean,
     val airingDate: AiringDate,
     val sources: List<FilterEntry<MediaSource>>,
-    val licensedBy: List<FilterEntry<LicensorsQuery.Data.ExternalLinkSourceCollection>>,
+    val licensedByIdIn: List<Int>?,
 )
