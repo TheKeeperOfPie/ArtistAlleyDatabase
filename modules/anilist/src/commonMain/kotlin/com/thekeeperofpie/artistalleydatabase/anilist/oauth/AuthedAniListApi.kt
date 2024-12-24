@@ -1269,7 +1269,9 @@ open class AuthedAniListApi(
     // TODO: Use a result object to avoid throwing
     private suspend fun <D : Query.Data> query(query: Query<D>, skipCache: Boolean = false) =
         apolloClient.query(query)
-            .fetchPolicy(if (skipCache) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .fetchPolicy(FetchPolicy.NetworkFirst)
+            // TODO: This breaks mutate -> refreshes, like when replying/commenting
+//            .fetchPolicy(if (skipCache) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
             .execute()
             .dataOrError
 
