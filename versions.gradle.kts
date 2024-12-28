@@ -37,7 +37,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.9.0-alpha06"
+        const val gradle = "8.9.0-alpha07"
     }
 
     object androidx {

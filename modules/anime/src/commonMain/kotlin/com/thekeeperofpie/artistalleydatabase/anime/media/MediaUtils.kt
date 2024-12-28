@@ -579,7 +579,7 @@ object MediaUtils {
         val licensedByIdIn = filterParams.licensedByIdIn
         if (!licensedByIdIn.isNullOrEmpty()) {
             filteredEntries = FilterIncludeExcludeState.applyFiltering(
-                includes = licensedByIdIn.orEmpty(),
+                includes = licensedByIdIn,
                 excludes = emptyList(),
                 list = filteredEntries,
                 transform = { media(it).externalLinks?.mapNotNull { it?.siteId }.orEmpty() },
