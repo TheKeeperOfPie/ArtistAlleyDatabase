@@ -1,0 +1,444 @@
+package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
+
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
+import kotlin.reflect.KClass
+
+@Stable
+class SortFilterState<FilterParams>(
+    val sections: StateFlow<List<SortFilterSectionState>>,
+    val filterParams: StateFlow<FilterParams>,
+    val collapseOnClose: StateFlow<Boolean>,
+) {
+    val expanded = SortFilterSection.ExpandedState()
+
+    @Composable
+    fun ImmediateScrollResetEffect(lazyGridState: LazyGridState) {
+        OnChangeEffect(currentValue = filterParams.collectAsState().value) {
+            lazyGridState.scrollToItem(0)
+        }
+    }
+}
+
+@Stable
+sealed class SortFilterSectionState(val id: String) {
+
+    abstract fun clear()
+
+    @Composable
+    abstract fun isDefault(): Boolean
+
+    @Composable
+    abstract fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean)
+
+    @Stable
+    class Sort<SortType : SortOption>(
+        private val enumClass: KClass<SortType>,
+        val headerTextRes: StringResource,
+        private val defaultSort: SortType,
+        private val sortAscending: MutableStateFlow<Boolean>,
+        private val sortOptionEnabled: MutableStateFlow<SortType>,
+        var sortOptions: MutableStateFlow<List<SortType>> =
+            MutableStateFlow(enumClass.java.enumConstants?.toList().orEmpty()),
+    ) : SortFilterSectionState(headerTextRes.key) {
+
+        override fun clear() {
+            sortOptionEnabled.value = defaultSort
+        }
+
+        @Composable
+        override fun isDefault() = sortOptionEnabled.collectAsState().value == defaultSort
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            val sortOptions by sortOptions.collectAsStateWithLifecycle()
+            var sortOptionEnabled by sortOptionEnabled.collectAsMutableStateWithLifecycle()
+            var sortAscending by sortAscending.collectAsMutableStateWithLifecycle()
+            SortAndFilterComposables.SortSection(
+                headerTextRes = headerTextRes,
+                expanded = { state.expandedState[id] == true },
+                onExpandedChange = { state.expandedState[id] = it },
+                sortOptions = { sortOptions },
+                sortOptionsEnabled = { setOf(sortOptionEnabled) },
+                onSortClick = { sortOptionEnabled = it },
+                sortAscending = { sortAscending },
+                onSortAscendingChange = { sortAscending = it },
+                clickable = sortOptions.size > 1,
+                showDivider = showDivider,
+            )
+        }
+    }
+
+    @Stable
+    class Filter<FilterType>(
+        id: String,
+        private val title: @Composable () -> String,
+        private val titleDropdownContentDescription: StringResource,
+        private val includeExcludeIconContentDescription: StringResource,
+        private var options: StateFlow<List<FilterType>>,
+        private val lockedFilterIn: Set<FilterType> = emptySet(),
+        private val filterIn: MutableStateFlow<Set<FilterType>>,
+        private val filterNotIn: MutableStateFlow<Set<FilterType>>,
+        private val valueToText: @Composable (FilterType) -> String,
+        private val valueToImage: (@Composable (FilterType, enabled: Boolean?) -> String?)? = null,
+        var selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
+    ) : SortFilterSectionState(id) {
+        constructor(
+            title: StringResource,
+            titleDropdownContentDescription: StringResource,
+            includeExcludeIconContentDescription: StringResource,
+            options: StateFlow<List<FilterType>>,
+            lockedFilterIn: Set<FilterType> = emptySet(),
+            filterIn: MutableStateFlow<Set<FilterType>>,
+            filterNotIn: MutableStateFlow<Set<FilterType>>,
+            valueToText: @Composable (FilterType) -> String,
+            valueToImage: (@Composable (FilterType, enabled: Boolean?) -> String?)? = null,
+            selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
+        ): this(
+            title = { stringResource(title) },
+            id = title.key,
+            titleDropdownContentDescription = titleDropdownContentDescription,
+            includeExcludeIconContentDescription = includeExcludeIconContentDescription,
+            options = options,
+            lockedFilterIn = lockedFilterIn,
+            filterIn = filterIn,
+            filterNotIn = filterNotIn,
+            valueToText = valueToText,
+            valueToImage = valueToImage,
+            selectionMethod = selectionMethod,
+        )
+
+        enum class SelectionMethod {
+            SINGLE_EXCLUSIVE,
+            ONLY_INCLUDE,
+            ALLOW_EXCLUDE,
+        }
+
+        private var locked by mutableStateOf(false)
+
+        override fun clear() {
+            filterIn.value = lockedFilterIn
+            filterNotIn.value = emptySet()
+        }
+
+        @Composable
+        override fun isDefault() = filterIn.collectAsState().value.isEmpty()
+                && filterNotIn.collectAsState().value.isEmpty()
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            val options by options.collectAsStateWithLifecycle()
+            var filterIn by filterIn.collectAsMutableStateWithLifecycle()
+            var filterNotIn by filterNotIn.collectAsMutableStateWithLifecycle()
+            FilterSection(
+                expanded = { state.expandedState[id] == true },
+                onExpandedChange = { state.expandedState[id] = it },
+                options = options,
+                disabledOptions = lockedFilterIn,
+                filterIn = filterIn,
+                filterNotIn = filterNotIn,
+                onFilterClick = {
+                    if (lockedFilterIn.contains(it)) return@FilterSection
+                    when (selectionMethod) {
+                        SelectionMethod.SINGLE_EXCLUSIVE -> {
+                            filterIn = setOf(it)
+                            filterNotIn = emptySet()
+                        }
+                        SelectionMethod.ONLY_INCLUDE -> {
+                            if (filterIn.contains(it)) {
+                                filterIn -= it
+                            } else {
+                                filterIn += it
+                            }
+                        }
+                        SelectionMethod.ALLOW_EXCLUDE -> {
+                            if (filterIn.contains(it)) {
+                                filterIn -= it
+                                filterNotIn += it
+                            } else if (filterNotIn.contains(it)) {
+                                filterNotIn -= it
+                            } else {
+                                filterIn += it
+                            }
+                        }
+                    }
+                },
+                title = title,
+                titleDropdownContentDescriptionRes = titleDropdownContentDescription,
+                valueToText = valueToText,
+                valueToImage = valueToImage,
+                iconContentDescriptionRes = includeExcludeIconContentDescription,
+                locked = locked,
+                showDivider = showDivider,
+                showIcons = selectionMethod == SelectionMethod.ALLOW_EXCLUDE,
+            )
+        }
+    }
+
+    @Stable
+    class Range(
+        private val title: StringResource,
+        private val titleDropdownContentDescription: StringResource,
+        val initialData: RangeData,
+        val data: MutableStateFlow<RangeData>,
+        // TODO: Can this be de-duped with hardMax?
+        private val unboundedMax: Boolean = false,
+    ) : SortFilterSectionState(title.key) {
+        override fun clear() {
+            data.value = initialData
+        }
+
+        @Composable
+        override fun isDefault() = data.collectAsState().value == initialData
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            var data by data.collectAsMutableStateWithLifecycle()
+            RangeDataFilterSection(
+                expanded = { state.expandedState[id] == true },
+                onExpandedChange = { state.expandedState[id] = it },
+                range = { data },
+                onRangeChange = { start, end ->
+                    data = data.copy(
+                        startString = start,
+                        endString = end.takeIf { !unboundedMax || it != "${data.maxValue}" }
+                            .orEmpty()
+                    )
+                },
+                titleRes = title,
+                titleDropdownContentDescriptionRes = titleDropdownContentDescription,
+                showDivider = showDivider,
+            )
+        }
+    }
+
+    @Stable
+    class Group<Child : SortFilterSectionState>(
+        private val title: StringResource,
+        private val titleDropdownContentDescription: StringResource,
+        val children: StateFlow<List<Child>>,
+        private val onlyShowChildIfSingle: Boolean = false,
+    ) : SortFilterSectionState(title.key) {
+
+        override fun clear() {
+            children.value.forEach(SortFilterSectionState::clear)
+        }
+
+        @Composable
+        override fun isDefault() = children.collectAsState().value.all { it.isDefault() }
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            val children by children.collectAsState()
+            if (onlyShowChildIfSingle && children.size == 1) {
+                children.first().Content(state = state, showDivider = showDivider)
+                return
+            }
+            val expanded = state.expandedState[id] ?: false
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { state.expandedState[id] = !expanded }
+                    .animateContentSize()
+            ) {
+                SortFilterHeaderText(
+                    true,
+                    title,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp)
+                )
+
+                TrailingDropdownIconButton(
+                    expanded = expanded,
+                    contentDescription = stringResource(titleDropdownContentDescription),
+                    onClick = { state.expandedState[id] = !expanded },
+                )
+            }
+
+            if (expanded || !isDefault()) {
+                Column(modifier = Modifier.padding(start = 16.dp)) {
+                    children.forEachIndexed { index, section ->
+                        section.Content(state = state, showDivider = index != children.lastIndex)
+                    }
+                }
+            }
+
+            if (showDivider) {
+                HorizontalDivider()
+            }
+        }
+    }
+
+    @Stable
+    class SwitchBySetting(
+        private val title: StringResource,
+        val property: MutableStateFlow<Boolean>,
+    ) : SortFilterSectionState(title.key) {
+
+        @Composable
+        override fun isDefault() = true
+
+        override fun clear() {
+            // This is persistent, can't be cleared
+        }
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            var enabled by property.collectAsMutableStateWithLifecycle()
+            SortAndFilterComposables.SwitchRow(
+                title = title,
+                enabled = { enabled },
+                onEnabledChanged = { enabled = it },
+                showDivider = showDivider,
+            )
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Stable
+    class Dropdown<T>(
+        private val labelTextRes: StringResource,
+        private val values: List<T>,
+        private val valueToText: @Composable (T) -> String,
+        private val property: MutableStateFlow<T>,
+    ) : SortFilterSectionState(labelTextRes.key) {
+        override fun clear() = Unit
+        @Composable
+        override fun isDefault() = true
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            var expanded by remember { mutableStateOf(false) }
+            var selectedIndex by rememberSaveable {
+                mutableIntStateOf(values.indexOf(property.value).coerceAtLeast(0))
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = true }
+            ) {
+                Text(
+                    text = stringResource(labelTextRes),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .heightIn(min = 32.dp)
+                        .wrapContentHeight(Alignment.CenterVertically)
+                        .align(Alignment.CenterVertically)
+                )
+
+                Box {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    ) {
+                        Text(
+                            text = valueToText(values[selectedIndex]),
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(vertical = 10.dp)
+                        )
+
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        values.forEachIndexed { index, item ->
+                            DropdownMenuItem(
+                                text = { Text(valueToText(item)) },
+                                onClick = {
+                                    selectedIndex = index
+                                    expanded = false
+                                    property.value = values[index]
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (showDivider) {
+                HorizontalDivider()
+            }
+        }
+    }
+
+    @Stable
+    class Suggestions<Suggestion : Suggestions.Suggestion>(
+        private val title: StringResource,
+        private val titleDropdownContentDescription: StringResource,
+        private val suggestions: List<Suggestion>,
+        private val onSuggestionClick: (Suggestion) -> Unit,
+    ) : SortFilterSectionState(title.key) {
+        override fun clear() {
+            // No state to clear
+        }
+
+        @Composable
+        override fun isDefault() = true
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            SuggestionsSection(
+                expanded = { state.expandedState[id] == true },
+                onExpandedChange = { state.expandedState[id] = it },
+                suggestions = { suggestions },
+                onSuggestionClick = onSuggestionClick,
+                suggestionToText = { it.text() },
+                title = { stringResource(title) },
+                titleDropdownContentDescriptionRes = titleDropdownContentDescription,
+                showDivider = showDivider,
+            )
+        }
+
+        interface Suggestion {
+            @Composable
+            fun text(): String
+        }
+    }
+
+    @Stable
+    abstract class Custom(id: String): SortFilterSectionState(id)
+}

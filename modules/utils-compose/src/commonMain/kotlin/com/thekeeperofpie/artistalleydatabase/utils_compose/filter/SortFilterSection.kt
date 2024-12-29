@@ -19,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
@@ -40,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SwitchRow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -372,8 +372,8 @@ sealed class SortFilterSection(val id: String) {
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
-            SwitchRow(
-                titleRes = titleRes,
+            SortAndFilterComposables.SwitchRow(
+                title = titleRes,
                 enabled = { enabled },
                 onEnabledChanged = { enabled = it },
                 showDivider = showDivider,
@@ -396,7 +396,7 @@ sealed class SortFilterSection(val id: String) {
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             val enabled by property.collectAsState()
             SwitchRow(
-                titleRes = titleRes,
+                title = titleRes,
                 enabled = { enabled },
                 onEnabledChanged = { property.value = it },
                 showDivider = showDivider,
@@ -631,39 +631,6 @@ sealed class SortFilterSection(val id: String) {
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             Spacer(Modifier.height(height))
-        }
-    }
-
-    @Composable
-    protected fun SwitchRow(
-        titleRes: StringResource,
-        enabled: () -> Boolean,
-        onEnabledChanged: (Boolean) -> Unit,
-        showDivider: Boolean,
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onEnabledChanged(!enabled()) }
-        ) {
-            Text(
-                text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .weight(1f)
-            )
-
-            Switch(
-                checked = enabled(),
-                onCheckedChange = onEnabledChanged,
-                modifier = Modifier.padding(end = 16.dp),
-            )
-        }
-
-        if (showDivider) {
-            HorizontalDivider()
         }
     }
 

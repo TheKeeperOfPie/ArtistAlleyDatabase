@@ -48,8 +48,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
@@ -65,7 +65,7 @@ object SeasonalScreen {
         upIconOption: UpIconOption? = null,
         initialPage: Int,
         onRefresh: () -> Unit,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: () -> SortFilterState<*>,
         itemsForPage: @Composable (page: Int) -> LazyPagingItems<MediaEntry>,
         itemKey: (MediaEntry) -> String,
         mediaViewOption: () -> MediaViewOption,
@@ -85,7 +85,7 @@ object SeasonalScreen {
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
-            SortFilterBottomScaffold(
+            SortFilterBottomScaffold2(
                 state = sortFilterState,
                 topBar = {
                     TopBar(

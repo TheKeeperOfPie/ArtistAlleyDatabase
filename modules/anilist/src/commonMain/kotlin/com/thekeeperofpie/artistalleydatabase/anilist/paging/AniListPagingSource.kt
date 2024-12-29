@@ -40,7 +40,7 @@ open class AniListPagingSource<T : Any>(
             if (pageInfo?.hasNextPage != true && page == 1 && pageTotal != result.size) {
                 pageTotal = result.size
             }
-            val itemsAfter = if (pageInfo?.hasNextPage != true) {
+            val itemsAfter = if (pageInfo?.hasNextPage != true || result.isEmpty()) {
                 0
             } else {
                 pageTotal?.let { (it - (page * perPage)) }?.takeIf { it > 0 }
@@ -48,7 +48,8 @@ open class AniListPagingSource<T : Any>(
             LoadResult.Page(
                 data = result,
                 prevKey = (page - 1).takeIf { page > 1 },
-                nextKey = (page + 1).takeIf { pageInfo?.hasNextPage == true },
+                nextKey = (page + 1)
+                    .takeIf { pageInfo?.hasNextPage == true && result.isNotEmpty() },
                 itemsBefore = (page - 1) * perPage,
                 itemsAfter = itemsAfter ?: LoadResult.Page.COUNT_UNDEFINED,
             ).also {

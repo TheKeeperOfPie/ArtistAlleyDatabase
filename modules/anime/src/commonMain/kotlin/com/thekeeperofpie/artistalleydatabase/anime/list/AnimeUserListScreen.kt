@@ -84,7 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
@@ -123,11 +123,11 @@ object AnimeUserListScreen {
                 initialPage = 0,
                 pageCount = { (entry.result?.lists?.size ?: 0) + 1 },
             )
-            val sortFilterController = viewModel.sortFilterController
+            val sortFilterController = viewModel.mediaSortFilterViewModel
             sortFilterController.PromptDialog()
             val sortSheetState = rememberStandardBottomSheetState()
-            SortFilterBottomScaffold(
-                sortFilterController = sortFilterController,
+            SortFilterBottomScaffold2(
+                state = sortFilterController::state,
                 topBar = {
                     TopBar(
                         viewModel,
@@ -181,7 +181,7 @@ object AnimeUserListScreen {
                             listEntry?.entries
                         }
                         val gridState = scrollStateSaver.lazyGridState()
-                        sortFilterController.ImmediateScrollResetEffect(gridState)
+                        sortFilterController.state.ImmediateScrollResetEffect(gridState)
                         val viewer by viewModel.viewer.collectAsState()
                         val columns = viewModel.mediaViewOption.widthAdaptiveCells
                         VerticalList(

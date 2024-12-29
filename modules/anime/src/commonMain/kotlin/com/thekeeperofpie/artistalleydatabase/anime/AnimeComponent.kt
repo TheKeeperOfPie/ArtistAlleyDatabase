@@ -13,13 +13,20 @@ import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryComponent
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreComponent
+import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.list.MangaUserListSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSearchSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSearchSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationsComponent
@@ -53,7 +60,11 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val animeMediaDetailsActivityViewModel: (mediaId: String) -> AnimeMediaDetailsActivityViewModel
     val animeMediaDetailsViewModel: (SavedStateHandle) -> AnimeMediaDetailsViewModel
     val animeRootViewModel: () -> AnimeRootViewModel
-    val animeSearchViewModelFactory: (SavedStateHandle) -> AnimeSearchViewModel.Factory
+    val animeSearchSortFilterViewModelFactory: (SavedStateHandle) -> AnimeSearchSortFilterViewModel.Factory
+    val mangaSearchSortFilterViewModelFactory: (SavedStateHandle) -> MangaSearchSortFilterViewModel.Factory
+    val animeUserListSortFilterViewModelFactory: (SavedStateHandle, targetUserId: String?) -> AnimeUserListSortFilterViewModel.Factory
+    val mangaUserListSortFilterViewModelFactory: (SavedStateHandle, targetUserId: String?) -> MangaUserListSortFilterViewModel.Factory
+    val animeSearchViewModelFactory: (SavedStateHandle, MediaSortFilterViewModel<MediaSortOption>, MediaSortFilterViewModel<MediaSortOption>) -> AnimeSearchViewModel.Factory
 
     // TODO; Move into users module?
     val animeUserListViewModel: (
@@ -62,6 +73,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
         userName: String?,
         mediaType: MediaType,
         status: MediaListStatus?,
+        mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
     ) -> AnimeUserListViewModel
     val mediaActivitiesViewModel: (SavedStateHandle, MediaDetailsRoute) -> MediaActivitiesViewModel
     val mediaCharactersViewModel: (SavedStateHandle) -> MediaCharactersViewModel
@@ -69,7 +81,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
     val unlockScreenViewModel: () -> UnlockScreenViewModel
 
-    val animeSortFilterControllerFactory: AnimeSortFilterController.Factory
+    val animeSortFilterViewModelFactory: (SavedStateHandle) -> AnimeSortFilterViewModel.Factory
 
     @SingletonScope
     @Provides

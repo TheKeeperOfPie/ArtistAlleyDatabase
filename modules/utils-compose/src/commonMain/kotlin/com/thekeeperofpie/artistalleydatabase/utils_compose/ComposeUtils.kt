@@ -36,7 +36,7 @@ fun <T : Any> Flow<T>.stateInForCompose(initial: T) =
     stateIn(viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, initial)
 
 @Composable
-fun <T : Any> MutableStateFlow<T>.collectAsMutableStateWithLifecycle(
+fun <T> MutableStateFlow<T>.collectAsMutableStateWithLifecycle(
     lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
     context: CoroutineContext = EmptyCoroutineContext,

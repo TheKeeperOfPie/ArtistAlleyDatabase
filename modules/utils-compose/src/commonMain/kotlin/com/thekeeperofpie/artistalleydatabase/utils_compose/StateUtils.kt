@@ -26,20 +26,27 @@ inline fun <T> observableStateOf(initialValue: T, crossinline onChange: (T) -> U
         }
     }
 
-fun <T> SavedStateHandle.getMutableStateFlow(key: String, initialValue: T): MutableStateFlow<T> =
-    SavedStateStateFlowWrapper(key, this, getStateFlow(key, initialValue))
+inline fun <reified T> SavedStateHandle.getMutableStateFlow(
+    key: String,
+    initialValue: () -> T,
+): MutableStateFlow<T> {
+    val existing = get<T>(key)
+    val stateFlow = getStateFlow(key, existing ?: initialValue())
+    return SavedStateStateFlowWrapper(key, this, stateFlow)
+}
 
 context(ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
-fun <Input, Output> SavedStateHandle.getMutableStateFlow(
-    key: String, initialValue: Input,
-    deserialize: (Input) -> Output,
-    serialize: (Output) -> Input,
-): MutableStateFlow<Output> = SavedStateStateFlowWrapper(key, this, getStateFlow(key, initialValue))
+inline fun <reified Input, Output> SavedStateHandle.getMutableStateFlow(
+    key: String,
+    initialValue: () -> Output,
+    noinline serialize: (Output) -> Input,
+    noinline deserialize: (Input) -> Output,
+): MutableStateFlow<Output> = getMutableStateFlow(key) { serialize(initialValue()) }
     .mapMutableState(viewModelScope, deserialize, serialize)
 
 @OptIn(ExperimentalForInheritanceCoroutinesApi::class)
-private class SavedStateStateFlowWrapper<T>(
+class SavedStateStateFlowWrapper<T>(
     private val key: String,
     private val savedStateHandle: SavedStateHandle,
     private val stateFlow: StateFlow<T>,

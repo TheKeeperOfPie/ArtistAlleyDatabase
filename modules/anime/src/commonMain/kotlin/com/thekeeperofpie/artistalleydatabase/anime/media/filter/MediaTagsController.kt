@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import com.anilist.data.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -10,15 +11,17 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SingletonScope
 @Inject
-class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi) {
+class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi, settings: MediaDataSettings) {
 
     private val refresh = RefreshFlow()
 
@@ -30,8 +33,16 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi)
                 .orEmpty()
         }
         .catch { emit(emptyMap()) }
+        .flatMapLatest { tags ->
+            settings.showAdult.map { showAdult ->
+                if (showAdult) return@map tags
+                tags.values.mapNotNull { it.filter { it.isAdult == false } }
+                    .associateBy { it.name }
+                    .toSortedMap(String.CASE_INSENSITIVE_ORDER)
+            }
+        }
         .flowOn(CustomDispatchers.IO)
-        .shareIn(scope, SharingStarted.Lazily, replay = 1)
+        .stateIn(scope, SharingStarted.Lazily, emptyMap())
 
     fun refresh() = refresh.refresh()
 

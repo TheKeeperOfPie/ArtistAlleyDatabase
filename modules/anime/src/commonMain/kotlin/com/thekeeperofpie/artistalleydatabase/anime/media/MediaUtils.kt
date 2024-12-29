@@ -333,6 +333,8 @@ object MediaUtils {
 
     fun <SortType : SortOption, MediaEntryType> filterEntries(
         filterParams: MediaSearchFilterParams<SortType>,
+        showAdult: Boolean,
+        showIgnored: Boolean,
         showTagWhenSpoiler: Boolean,
         entries: List<MediaEntryType>,
         media: (MediaEntryType) -> MediaPreview,
@@ -342,15 +344,17 @@ object MediaUtils {
         var filteredEntries = entries
 
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            filterParams.statuses,
-            filteredEntries,
+            includes = filterParams.statusIn,
+            excludes = filterParams.statusNotIn,
+            list = filteredEntries,
             transform = { listOfNotNull(media(it).status) },
             mustContainAll = false,
         )
 
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            filterParams.formats,
-            filteredEntries,
+            includes = filterParams.formatIn,
+            excludes = filterParams.formatNotIn,
+            list = filteredEntries,
             transform = { listOfNotNull(media(it).format) },
             mustContainAll = false,
         )
@@ -375,14 +379,14 @@ object MediaUtils {
             }
 
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            includes = filterParams.tagIn,
-            excludes = filterParams.tagNotIn,
+            includes = filterParams.tagNameIn,
+            excludes = filterParams.tagNameNotIn,
             list = filteredEntries,
             transform = { media(it).tags?.filterNotNull()?.map { it.id.toString() }.orEmpty() },
             transformIncludes = tagTransformIncludes,
         )
 
-        val tagsIncluded = filterParams.tagIn
+        val tagsIncluded = filterParams.tagNameIn
         if (!showTagWhenSpoiler && tagsIncluded.isNotEmpty()) {
             filteredEntries = filteredEntries.filter {
                 tagsIncluded.all { tag ->
@@ -392,11 +396,11 @@ object MediaUtils {
             }
         }
 
-        if (!filterParams.showAdult) {
+        if (!showAdult) {
             filteredEntries = filteredEntries.filterNot { media(it).isAdult ?: false }
         }
 
-        if (!filterParams.showIgnored && !forceShowIgnored) {
+        if (!showIgnored && !forceShowIgnored) {
             filteredEntries = filteredEntries.filterNot { mediaFilterable(it).ignored }
         }
 
@@ -570,7 +574,8 @@ object MediaUtils {
         }
 
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
-            filterParams.sources,
+            includes = filterParams.sourceIn,
+            excludes = emptyList(),
             filteredEntries,
             transform = { listOfNotNull(media(it).source) },
             mustContainAll = false,

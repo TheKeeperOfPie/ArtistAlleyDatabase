@@ -25,11 +25,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -69,6 +67,7 @@ class AnimeUserListViewModel(
     @Assisted userName: String?,
     @Assisted val mediaType: MediaType,
     @Assisted val mediaListStatus: MediaListStatus?,
+    @Assisted val mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
 ) : ViewModel() {
 
     companion object {
@@ -88,72 +87,9 @@ class AnimeUserListViewModel(
     var userName by mutableStateOf(userName)
         private set
 
-    lateinit var sortFilterController: MediaSortFilterController<MediaListSortOption, *>
-
     private val refresh = RefreshFlow()
 
     init {
-        val defaultSort = if (userId == null) {
-            MediaListSortOption.MY_UPDATED_TIME
-        } else {
-            MediaListSortOption.THEIR_UPDATED_TIME
-        }
-        sortFilterController = if (mediaType == MediaType.ANIME) {
-            AnimeUserListSortFilterController(
-                scope = viewModelScope,
-                aniListApi = aniListApi,
-                settings = settings,
-                featureOverrideProvider = featureOverrideProvider,
-                mediaTagsController = mediaTagsController,
-                mediaGenresController = mediaGenresController,
-                mediaLicensorsController = mediaLicensorsController,
-                targetUserId = userId,
-            ).apply {
-                initialize(
-                    initialParams = AnimeSortFilterController.InitialParams(
-                        defaultSort = defaultSort,
-                        lockSort = false,
-                        mediaListStatus = mediaListStatus,
-                        lockMediaListStatus = mediaListStatus != null,
-                    )
-                )
-            }
-        } else {
-            MangaUserListSortFilterController(
-                scope = viewModelScope,
-                aniListApi = aniListApi,
-                settings = settings,
-                featureOverrideProvider = featureOverrideProvider,
-                mediaTagsController = mediaTagsController,
-                mediaGenresController = mediaGenresController,
-                mediaLicensorsController = mediaLicensorsController,
-                targetUserId = userId,
-            ).apply {
-                initialize(
-                    initialParams = MangaSortFilterController.InitialParams(
-                        defaultSort = defaultSort,
-                        lockSort = false,
-                        mediaListStatus = mediaListStatus,
-                        lockMediaListStatus = mediaListStatus != null,
-                    )
-                )
-            }
-        }
-
-        viewModelScope.launch(CustomDispatchers.Main) {
-            viewer.collectLatest { viewer ->
-                sortFilterController.sortSection.setOptions(
-                    MediaListSortOption.entries.filter {
-                        when (it.forDifferentUser) {
-                            true -> userId != null
-                            false -> viewer != null
-                            null -> true
-                        }
-                    }
-                )
-            }
-        }
-
         if (userId != null) {
             viewModelScope.launch(CustomDispatchers.IO) {
                 val name = aniListApi.user(userId)?.name
@@ -211,8 +147,8 @@ class AnimeUserListViewModel(
                 response,
                 mediaUpdates,
                 snapshotFlow { query }.debounce(500.milliseconds),
-                sortFilterController.filterParams,
-                snapshotFlow { sortFilterController.tagShowWhenSpoiler },
+                mediaSortFilterViewModel.filterParams,
+                mediaSortFilterViewModel.tagShowWhenSpoiler,
                 ::FilterParams
             ).flatMapLatest { (lists, mediaUpdates, query, filterParams, showTagWhenSpoiler) ->
                 combine(
@@ -237,7 +173,8 @@ class AnimeUserListViewModel(
                                 .flatMap { it.entries }
                                 .let {
                                     FilterIncludeExcludeState.applyFiltering(
-                                        filterParams.myListStatuses,
+                                        includes = filterParams.myListStatusIn,
+                                        excludes = filterParams.myListStatusNotIn,
                                         it,
                                         {
                                             listOfNotNull(
@@ -248,12 +185,14 @@ class AnimeUserListViewModel(
                                     )
                                 }
                                 .let {
-                                    val theirListStatuses = filterParams.theirListStatuses
-                                    if (theirListStatuses == null) it else {
+                                    val theirListStatusesIn = filterParams.theirListStatusIn
+                                    if (theirListStatusesIn == null) it else {
                                         FilterIncludeExcludeState.applyFiltering(
-                                            theirListStatuses,
-                                            it,
-                                            {
+                                            includes = theirListStatusesIn,
+                                            excludes = filterParams.theirListStatusNotIn
+                                                ?: emptyList(),
+                                            list = it,
+                                            transform = {
                                                 listOfNotNull(it.authorData?.status)
                                             },
                                         )
@@ -262,6 +201,8 @@ class AnimeUserListViewModel(
                                 .toFilteredEntries(
                                     query = query,
                                     filterParams = filterParams,
+                                    showAdult = filteringData.showAdult,
+                                    showIgnored = filteringData.showIgnored,
                                     showTagWhenSpoiler = showTagWhenSpoiler,
                                 )
                                 .mapEntries(),
@@ -275,6 +216,8 @@ class AnimeUserListViewModel(
                                             .toFilteredEntries(
                                                 query = query,
                                                 filterParams = filterParams,
+                                                showAdult = filteringData.showAdult,
+                                                showIgnored = filteringData.showIgnored,
                                                 showTagWhenSpoiler = showTagWhenSpoiler,
                                             )
                                             .mapEntries(),
@@ -301,10 +244,14 @@ class AnimeUserListViewModel(
     private fun List<UserMediaListController.MediaEntry>.toFilteredEntries(
         query: String,
         filterParams: MediaSearchFilterParams<MediaListSortOption>,
+        showAdult: Boolean,
+        showIgnored: Boolean,
         showTagWhenSpoiler: Boolean,
     ): List<MediaEntry> {
         var filteredEntries = MediaUtils.filterEntries(
             filterParams = filterParams,
+            showAdult = showAdult,
+            showIgnored = showIgnored,
             showTagWhenSpoiler = showTagWhenSpoiler,
             entries = this,
             media = { it.media },
@@ -355,8 +302,7 @@ class AnimeUserListViewModel(
             }
         }
 
-        val sortOption = filterParams.sort
-            .find { it.state == com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState.INCLUDE }?.value
+        val sortOption = filterParams.sort.firstOrNull()
         if (sortOption != null) {
             val baseComparator: Comparator<UserMediaListController.MediaEntry> =
                 when (sortOption) {

@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 
 sealed interface MediaTagSection {
+    // TODO: Convert to value classes
     val name: String
 
     fun findTag(id: String): Tag? = when (this) {
@@ -104,6 +105,7 @@ sealed interface MediaTagSection {
         }
     }
 
+    // TODO: Remove FilterEntry
     data class Tag(
         val id: String,
         override val name: String,

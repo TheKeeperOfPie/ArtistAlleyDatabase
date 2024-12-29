@@ -65,6 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forums.forumThreadsSection
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
@@ -79,7 +80,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
@@ -97,6 +98,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.reviewsSection
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
+import com.thekeeperofpie.artistalleydatabase.anime.search.SearchType
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
 import com.thekeeperofpie.artistalleydatabase.anime.songs.songsSection
@@ -163,9 +165,38 @@ object AnimeNavigator {
 
         navGraphBuilder.sharedElementComposable<AnimeDestination.SearchMedia>(navigationTypeMap) {
             val destination = it.toRoute<AnimeDestination.SearchMedia>()
+            val animeSortFilterViewModel = viewModel {
+                component.animeSearchSortFilterViewModelFactory(createSavedStateHandle())
+                    .create(
+                        MediaSortFilterViewModel.InitialParams(
+                            defaultSort = destination.sort ?: MediaSortOption.SEARCH_MATCH,
+                            sortClass = MediaSortOption::class,
+                            mediaType = MediaType.ANIME,
+                            tagId = destination.tagId,
+                            genre = destination.genre,
+                            year = destination.year,
+                        )
+                    )
+            }
+            val mangaSortFilterViewModel = viewModel {
+                component.mangaSearchSortFilterViewModelFactory(createSavedStateHandle())
+                    .create(
+                        MediaSortFilterViewModel.InitialParams(
+                            sortClass = MediaSortOption::class,
+                            defaultSort = MediaSortOption.SEARCH_MATCH,
+                            mediaType = MediaType.MANGA,
+                            tagId = destination.tagId,
+                            genre = destination.genre,
+                            year = destination.year,
+                        )
+                    )
+            }
             val viewModel = viewModel {
-                component.animeSearchViewModelFactory(createSavedStateHandle())
-                    .create(MediaPreviewWithDescriptionEntry.Provider)
+                component.animeSearchViewModelFactory(
+                    createSavedStateHandle(),
+                    animeSortFilterViewModel,
+                    mangaSortFilterViewModel,
+                ).create(MediaPreviewWithDescriptionEntry.Provider)
             }
             val state = remember {
                 MediaSearchScreen.State(
@@ -173,6 +204,7 @@ object AnimeNavigator {
                     mediaViewOption = viewModel.mediaViewOption,
                 )
             }
+            val selectedType by state.selectedType.collectAsStateWithLifecycle()
             MediaSearchScreen(
                 title = destination.title,
                 state = state,
@@ -180,7 +212,23 @@ object AnimeNavigator {
                 upIconOption = UpIconOption.Back(navigationController),
                 tagId = destination.tagId,
                 genre = destination.genre,
+                sortFilterState = {
+                    if (selectedType == SearchType.ANIME) {
+                        animeSortFilterViewModel.state
+                    } else {
+                        mangaSortFilterViewModel.state
+                    }
+                },
+                showWithSpoiler = {
+                    if (selectedType == SearchType.ANIME) {
+                        animeSortFilterViewModel.tagShowWhenSpoiler
+                    } else {
+                        mangaSortFilterViewModel.tagShowWhenSpoiler
+                    }
+                },
             )
+            animeSortFilterViewModel.PromptDialog()
+            mangaSortFilterViewModel.PromptDialog()
         }
 
         // TODO: Move to users component?
@@ -920,19 +968,22 @@ object AnimeNavigator {
             component = component,
             mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
             mediaEntryProvider = MediaPreviewWithDescriptionEntry.Provider,
-            sortFilterControllerProvider = {
-                component.animeSortFilterControllerFactory
-                    .create(it, MediaSortOption::class)
-                    .apply {
-                        initialize(
-                            initialParams = AnimeSortFilterController.InitialParams(
-                                airingDateEnabled = false,
-                                defaultSort = MediaSortOption.POPULARITY,
-                                lockSort = false,
-                            ),
+            sortFilterViewModelProvider = {
+                viewModel {
+                    component.animeSortFilterViewModelFactory(createSavedStateHandle()).create(
+                        MediaSortFilterViewModel.InitialParams(
+                            mediaType = MediaType.ANIME,
+                            sortClass = MediaSortOption::class,
+                            airingDateEnabled = false,
+                            defaultSort = MediaSortOption.POPULARITY,
+                            lockSort = false,
                         )
-                    }
+                    )
+                }
             },
+            sortFilterState = { it.state },
+            sortFilterPrompt = { it.PromptDialog() },
+            filterParams = { it.filterParams },
             filterMedia = { sortFilterController, result, transform ->
                 sortFilterController.filterMedia(result, transform)
             },
@@ -1262,14 +1313,36 @@ object AnimeNavigator {
         mediaListStatus: MediaListStatus? = null,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
-        val animeComponent = LocalAnimeComponent.current
+        val component = LocalAnimeComponent.current
+        val defaultSort = if (userId == null) {
+            MediaListSortOption.MY_UPDATED_TIME
+        } else {
+            MediaListSortOption.THEIR_UPDATED_TIME
+        }
+        val initialParams = MediaSortFilterViewModel.InitialParams(
+            mediaType = mediaType,
+            sortClass = MediaListSortOption::class,
+            defaultSort = defaultSort,
+            lockSort = false,
+            mediaListStatus = mediaListStatus,
+        )
+        val mediaSortFilterViewModel = viewModel(key = mediaType.rawValue + "_sortFilter") {
+            if (mediaType == MediaType.ANIME) {
+                component.animeUserListSortFilterViewModelFactory(createSavedStateHandle(), userId)
+                    .create(initialParams)
+            } else {
+                component.mangaUserListSortFilterViewModelFactory(createSavedStateHandle(), userId)
+                    .create(initialParams)
+            }
+        }
         val viewModel = viewModel(key = mediaType.rawValue) {
-            animeComponent.animeUserListViewModel(
+            component.animeUserListViewModel(
                 createSavedStateHandle(),
                 userId,
                 userName,
                 mediaType,
-                mediaListStatus
+                mediaListStatus,
+                mediaSortFilterViewModel,
             )
         }
         AnimeUserListScreen(

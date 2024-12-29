@@ -15,10 +15,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
 
+@Serializable
 sealed interface AiringDate {
 
+    @Serializable
     data class Basic(
         val season: SeasonOption? = null,
         val seasonYear: String = "",
@@ -47,6 +50,7 @@ sealed interface AiringDate {
         }
     }
 
+    @Serializable
     data class Advanced(
         val startDate: LocalDate? = null,
         val endDate: LocalDate? = null,

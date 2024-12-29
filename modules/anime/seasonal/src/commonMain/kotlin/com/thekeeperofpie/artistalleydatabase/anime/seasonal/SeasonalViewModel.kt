@@ -33,14 +33,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringDat
 import com.thekeeperofpie.artistalleydatabase.anime.search.data.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -57,16 +55,15 @@ import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @Inject
-class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSearchFilterParams<MediaSortOption>>, MediaEntry : Any>(
+class SeasonalViewModel<MediaEntry : Any>(
     private val aniListApi: AuthedAniListApi,
     private val settings: MediaDataSettings,
     val ignoreController: IgnoreController,
     private val mediaListStatusController: MediaListStatusController,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted private val sortFilterControllerProvider: (CoroutineScope) -> SortFilterControllerType,
+    @Assisted private val filterParams: Flow<MediaSearchFilterParams<MediaSortOption>>,
     @Assisted private val filterMedia: (
-        sortFilterController: SortFilterControllerType,
         PagingData<MediaEntry>,
         (MediaEntry) -> MediaPreview,
     ) -> Flow<PagingData<MediaEntry>>,
@@ -90,9 +87,6 @@ class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSea
     }
 
     private val refresh = RefreshFlow()
-
-    // TODO: All of the logic for this is extremely messy
-    val sortFilterController = sortFilterControllerProvider(viewModelScope)
 
     fun onRefresh() = refresh.refresh()
 
@@ -119,13 +113,15 @@ class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSea
                 combine(
                     MediaDataUtils.mediaViewOptionIncludeDescriptionFlow(snapshotFlow { mediaViewOption }),
                     refresh.updates,
-                    sortFilterController.filterParams,
-                ) { includeDescription, refreshEvent, filterParams ->
+                    filterParams,
+                    settings.mediaFilteringData(false),
+                ) { includeDescription, refreshEvent, filterParams, filteringData ->
                     AnimeSearchMediaPagingSource.RefreshParams(
                         query = "",
                         includeDescription = includeDescription,
                         refreshEvent = refreshEvent,
                         filterParams = filterParams,
+                        showAdult = filteringData.showAdult,
                         seasonYearOverride = seasonYear,
                     )
                 }
@@ -148,7 +144,7 @@ class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSea
                     .map { it.mapOnIO(mediaEntryProvider::mediaEntry) }
                     .cachedIn(viewModelScope)
                     .flatMapLatest {
-                        filterMedia(sortFilterController, it, mediaEntryProvider::media)
+                        filterMedia(it, mediaEntryProvider::media)
                     }
                     .applyMediaStatusChanges(
                         statusController = mediaListStatusController,
@@ -173,11 +169,10 @@ class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSea
         private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
     ) {
-        fun <SortFilterControllerType : SortFilterController<MediaSearchFilterParams<MediaSortOption>>, MediaEntry : Any> create(
+        fun <MediaEntry : Any> create(
             mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
-            sortFilterControllerProvider: (CoroutineScope) -> SortFilterControllerType,
+            filterParams: Flow<MediaSearchFilterParams<MediaSortOption>>,
             filterMedia: (
-                sortFilterController: SortFilterControllerType,
                 PagingData<MediaEntry>,
                 (MediaEntry) -> MediaPreview,
             ) -> Flow<PagingData<MediaEntry>>,
@@ -188,7 +183,7 @@ class SeasonalViewModel<SortFilterControllerType : SortFilterController<MediaSea
             mediaListStatusController = mediaListStatusController,
             navigationTypeMap = navigationTypeMap,
             savedStateHandle = savedStateHandle,
-            sortFilterControllerProvider = sortFilterControllerProvider,
+            filterParams = filterParams,
             filterMedia = filterMedia,
             mediaEntryProvider = mediaEntryProvider,
         )

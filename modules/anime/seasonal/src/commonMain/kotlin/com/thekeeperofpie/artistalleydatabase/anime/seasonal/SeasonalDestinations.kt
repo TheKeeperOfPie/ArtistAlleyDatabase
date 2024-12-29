@@ -17,12 +17,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 
@@ -38,14 +37,17 @@ object SeasonalDestinations {
         }
     }
 
-    fun <SortFilterControllerType : SortFilterController<MediaSearchFilterParams<MediaSortOption>>, MediaEntry : Any> addToGraph(
+    fun <SortFilterViewModel, MediaEntry : Any> addToGraph(
         navGraphBuilder: NavGraphBuilder,
         navigationTypeMap: NavigationTypeMap,
         component: SeasonalComponent,
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
-        sortFilterControllerProvider: (CoroutineScope) -> SortFilterControllerType,
+        sortFilterViewModelProvider: @Composable () -> SortFilterViewModel,
+        sortFilterState: (SortFilterViewModel) -> SortFilterState<*>,
+        sortFilterPrompt: @Composable (SortFilterViewModel) -> Unit,
+        filterParams: (SortFilterViewModel) -> Flow<MediaSearchFilterParams<MediaSortOption>>,
         filterMedia: (
-            sortFilterController: SortFilterControllerType,
+            SortFilterViewModel,
             PagingData<MediaEntry>,
             (MediaEntry) -> MediaPreview,
         ) -> Flow<PagingData<MediaEntry>>,
@@ -58,12 +60,15 @@ object SeasonalDestinations {
         ) -> Unit,
     ) {
         navGraphBuilder.sharedElementComposable<Seasonal>(navigationTypeMap) {
+            val sortFilterViewModel = sortFilterViewModelProvider()
             val viewModel = viewModel {
                 component.seasonalViewModelFactory(createSavedStateHandle())
                     .create(
                         mediaEntryProvider = mediaEntryProvider,
-                        sortFilterControllerProvider = sortFilterControllerProvider,
-                        filterMedia = filterMedia,
+                        filterParams = filterParams(sortFilterViewModel),
+                        filterMedia = { result, transform ->
+                            filterMedia(sortFilterViewModel, result, transform)
+                        },
                     )
             }
             val viewer by viewModel.viewer.collectAsStateWithLifecycle()
@@ -72,7 +77,7 @@ object SeasonalDestinations {
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 initialPage = viewModel.initialPage,
                 onRefresh = viewModel::onRefresh,
-                sortFilterState = viewModel.sortFilterController::state,
+                sortFilterState = { sortFilterState(sortFilterViewModel) },
                 itemsForPage = { viewModel.items(it) },
                 itemKey = mediaEntryProvider::id,
                 mediaViewOption = { viewModel.mediaViewOption },
@@ -81,7 +86,7 @@ object SeasonalDestinations {
                     mediaViewOptionRow(viewer, viewModel.mediaViewOption, entry, onClickListEdit)
                 },
             )
-            viewModel.sortFilterController.PromptDialog()
+            sortFilterPrompt(sortFilterViewModel)
         }
     }
 }

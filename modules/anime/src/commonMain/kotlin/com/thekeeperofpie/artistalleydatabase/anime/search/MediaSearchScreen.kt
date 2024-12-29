@@ -55,7 +55,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,6 +75,8 @@ object MediaSearchScreen {
         viewModel: AnimeSearchViewModel<MediaPreviewWithDescriptionEntry>,
         tagId: String?,
         genre: String?,
+        sortFilterState: () -> SortFilterState<*>,
+        showWithSpoiler: () -> MutableStateFlow<Boolean>,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
 
@@ -81,18 +84,8 @@ object MediaSearchScreen {
         MediaEditBottomSheetScaffold(
             viewModel = editViewModel,
         ) {
-            val selectedType by state.selectedType.collectAsMutableStateWithLifecycle()
-            val sortFilterController = when (selectedType) {
-                SearchType.ANIME -> viewModel.animeSortFilterController
-                SearchType.MANGA -> viewModel.mangaSortFilterController
-                else -> throw IllegalStateException(
-                    "Invalid search type for this screen: ${viewModel.selectedType}"
-                )
-            }
-            sortFilterController.PromptDialog()
-
-            SortFilterBottomScaffold(
-                sortFilterController = sortFilterController,
+            SortFilterBottomScaffold2(
+                state = sortFilterState,
                 topBar = {
                     TopBar(
                         viewModel = viewModel,
@@ -102,6 +95,7 @@ object MediaSearchScreen {
                         tagId = tagId,
                         genre = genre,
                         scrollBehavior = scrollBehavior,
+                        showWithSpoiler = showWithSpoiler,
                     )
                 },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -111,13 +105,8 @@ object MediaSearchScreen {
                 val gridState = rememberLazyGridState()
                 val mediaViewOption by state.mediaViewOption.collectAsStateWithLifecycle()
                 val columns = mediaViewOption.widthAdaptiveCells
-                sortFilterController.ImmediateScrollResetEffect(gridState)
-                val showWithSpoiler =
-                    if (selectedType == SearchType.ANIME) {
-                        viewModel.animeSortFilterController.tagShowWhenSpoiler
-                    } else {
-                        viewModel.mangaSortFilterController.tagShowWhenSpoiler
-                    }
+                sortFilterState().ImmediateScrollResetEffect(gridState)
+                val showWithSpoiler by showWithSpoiler().collectAsStateWithLifecycle()
                 OnChangeEffect(showWithSpoiler) {
                     gridState.scrollToItem(0)
                 }
@@ -159,6 +148,7 @@ object MediaSearchScreen {
         tagId: String?,
         genre: String?,
         scrollBehavior: TopAppBarScrollBehavior,
+        showWithSpoiler: () -> MutableStateFlow<Boolean>,
     ) {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             Column {
@@ -176,7 +166,7 @@ object MediaSearchScreen {
                             if (tagId != null) {
                                 Res.string.anime_media_tag_info_content_description
                             } else if (genre != null) {
-                                if (MediaGenre.values().any { it.id == genre }) {
+                                if (MediaGenre.entries.any { it.id == genre }) {
                                     Res.string.anime_media_genre_info_content_description
                                 } else null
                             } else null
@@ -227,22 +217,10 @@ object MediaSearchScreen {
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
-                        val showWithSpoiler =
-                            if (selectedType == SearchType.ANIME) {
-                                viewModel.animeSortFilterController.tagShowWhenSpoiler
-                            } else {
-                                viewModel.mangaSortFilterController.tagShowWhenSpoiler
-                            }
-
+                        var showWithSpoiler by showWithSpoiler().collectAsMutableStateWithLifecycle()
                         Switch(
                             checked = showWithSpoiler,
-                            onCheckedChange = {
-                                if (selectedType == SearchType.ANIME) {
-                                    viewModel.animeSortFilterController.tagShowWhenSpoiler = it
-                                } else {
-                                    viewModel.mangaSortFilterController.tagShowWhenSpoiler = it
-                                }
-                            },
+                            onCheckedChange = { showWithSpoiler = it },
                         )
 
                         Text(

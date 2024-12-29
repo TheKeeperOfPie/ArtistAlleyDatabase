@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -66,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
@@ -82,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -100,6 +104,8 @@ object AnimeSearchScreen {
         animeComponent: AnimeComponent = LocalAnimeComponent.current,
         state: State,
         viewModel: AnimeSearchViewModel<MediaPreviewWithDescriptionEntry>,
+        animeSortFilterViewModel: MediaSortFilterViewModel<*>,
+        mangaSortFilterViewModel: MediaSortFilterViewModel<*>,
         upIconOption: UpIconOption? = null,
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
@@ -112,97 +118,88 @@ object AnimeSearchScreen {
             viewModel = editViewModel,
             bottomNavigationState = bottomNavigationState,
         ) {
-            val sortFilterController = when (selectedType) {
-                SearchType.ANIME -> viewModel.animeSortFilterController
-                SearchType.MANGA -> viewModel.mangaSortFilterController
-                SearchType.CHARACTER -> viewModel.characterSortFilterController
-                SearchType.STAFF -> viewModel.staffSortFilterController
-                SearchType.STUDIO -> viewModel.studioSortFilterController
-                SearchType.USER -> viewModel.userSortFilterController
-            }
-            sortFilterController.PromptDialog()
-
             val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-            SortFilterBottomScaffold(
-                sortFilterController = sortFilterController,
-                topBar = {
-                    TopBar(
-                        viewModel = viewModel,
-                        state = state,
-                        upIconOption = upIconOption,
-                        scrollBehavior = scrollBehavior,
-                        sheetState = bottomSheetScaffoldState.bottomSheetState,
-                        mediaEditState = editViewModel.state,
-                    )
-                },
-                sheetState = bottomSheetScaffoldState.bottomSheetState,
-                scaffoldState = bottomSheetScaffoldState,
-                bottomNavigationState = bottomNavigationState,
-                modifier = Modifier
-                    .conditionally(bottomNavigationState != null) {
-                        nestedScroll(bottomNavigationState!!.nestedScrollConnection)
+            if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA) {
+                val sortFilterState =
+                    if (selectedType == SearchType.ANIME) {
+                        animeSortFilterViewModel.state
+                    } else {
+                        mangaSortFilterViewModel.state
                     }
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-            ) { scaffoldPadding ->
-                val content = viewModel.content.collectAsLazyPagingItems()
-                val refreshState = content.loadState.refresh
-                val errorText = (refreshState as? LoadState.Error)
-                    ?.let { stringResource(Res.string.anime_media_list_error_loading) }
-                LaunchedEffect(errorText) {
-                    if (errorText != null) {
-                        bottomSheetScaffoldState.snackbarHostState.showSnackbar(errorText)
-                    }
-                }
-
-                val unlocked by state.unlocked.collectAsStateWithLifecycle()
-                val selectedUnlocked = selectedType == SearchType.ANIME
-                        || selectedType == SearchType.MANGA
-                        || unlocked
-
-                val viewer by viewModel.viewer.collectAsState()
-                val layoutDirection = LocalLayoutDirection.current
-                if (!selectedUnlocked) {
-                    LockedFeatureTiers()
-                } else {
-                    val mediaViewOption by state.mediaViewOption.collectAsStateWithLifecycle()
-                    val columns =
-                        if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA) {
-                            mediaViewOption.widthAdaptiveCells
-                        } else {
-                            GridCells.Adaptive(300.dp)
+                SortFilterBottomScaffold2(
+                    state = { sortFilterState },
+                    topBar = {
+                        TopBar(
+                            viewModel = viewModel,
+                            state = state,
+                            upIconOption = upIconOption,
+                            scrollBehavior = scrollBehavior,
+                            sheetState = bottomSheetScaffoldState.bottomSheetState,
+                            mediaEditState = editViewModel.state,
+                        )
+                    },
+                    sheetState = bottomSheetScaffoldState.bottomSheetState,
+                    scaffoldState = bottomSheetScaffoldState,
+                    bottomNavigationState = bottomNavigationState,
+                    modifier = Modifier
+                        .conditionally(bottomNavigationState != null) {
+                            nestedScroll(bottomNavigationState!!.nestedScrollConnection)
                         }
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                ) { scaffoldPadding ->
+                    val gridState = scrollStateSaver.lazyGridState()
+                    sortFilterState.ImmediateScrollResetEffect(gridState)
+                    Content(
+                        state = state,
+                        viewModel = viewModel,
+                        selectedType = selectedType,
+                        gridState = gridState,
+                        scaffoldPadding = scaffoldPadding,
+                        bottomSheetScaffoldState = bottomSheetScaffoldState,
+                        onClickListEdit = editViewModel::initialize,
+                    )
+                }
+            } else {
+                val sortFilterController = when (selectedType) {
+                    SearchType.ANIME -> TODO()
+                    SearchType.MANGA -> TODO()
+                    SearchType.CHARACTER -> viewModel.characterSortFilterController
+                    SearchType.STAFF -> viewModel.staffSortFilterController
+                    SearchType.STUDIO -> viewModel.studioSortFilterController
+                    SearchType.USER -> viewModel.userSortFilterController
+                }
+                sortFilterController.PromptDialog()
+                SortFilterBottomScaffold(
+                    sortFilterController = sortFilterController,
+                    topBar = {
+                        TopBar(
+                            viewModel = viewModel,
+                            state = state,
+                            upIconOption = upIconOption,
+                            scrollBehavior = scrollBehavior,
+                            sheetState = bottomSheetScaffoldState.bottomSheetState,
+                            mediaEditState = editViewModel.state,
+                        )
+                    },
+                    sheetState = bottomSheetScaffoldState.bottomSheetState,
+                    scaffoldState = bottomSheetScaffoldState,
+                    bottomNavigationState = bottomNavigationState,
+                    modifier = Modifier
+                        .conditionally(bottomNavigationState != null) {
+                            nestedScroll(bottomNavigationState!!.nestedScrollConnection)
+                        }
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                ) { scaffoldPadding ->
                     val gridState = scrollStateSaver.lazyGridState()
                     sortFilterController.ImmediateScrollResetEffect(gridState)
-                    VerticalList(
+                    Content(
+                        state = state,
+                        viewModel = viewModel,
+                        selectedType = selectedType,
                         gridState = gridState,
-                        itemHeaderText = null,
-                        onRefresh = viewModel::onRefresh,
-                        columns = columns,
-                        items = content,
-                        itemKey = { it.entryId.scopedId },
-                        itemContentType = { it.entryId.type },
-                        item = {
-                            EntryItem(
-                                viewer = viewer,
-                                mediaViewOption = { mediaViewOption },
-                                selectedType = selectedType,
-                                entry = it,
-                                onClickListEdit = editViewModel::initialize,
-                            )
-                        },
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 16.dp,
-                            bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(
-                            start = scaffoldPadding.calculateStartPadding(layoutDirection),
-                            end = scaffoldPadding.calculateEndPadding(layoutDirection),
-                            top = scaffoldPadding.calculateTopPadding(),
-                        )
+                        scaffoldPadding = scaffoldPadding,
+                        bottomSheetScaffoldState = bottomSheetScaffoldState,
+                        onClickListEdit = editViewModel::initialize,
                     )
                 }
             }
@@ -235,6 +232,77 @@ object AnimeSearchScreen {
                     )
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun Content(
+        state: State,
+        viewModel: AnimeSearchViewModel<MediaPreviewWithDescriptionEntry>,
+        selectedType: SearchType,
+        gridState: LazyGridState,
+        scaffoldPadding: PaddingValues,
+        bottomSheetScaffoldState: BottomSheetScaffoldState,
+        onClickListEdit: (MediaNavigationData) -> Unit,
+    ) {
+        val content = viewModel.content.collectAsLazyPagingItems()
+        val refreshState = content.loadState.refresh
+        val errorText = (refreshState as? LoadState.Error)
+            ?.let { stringResource(Res.string.anime_media_list_error_loading) }
+        LaunchedEffect(errorText) {
+            if (errorText != null) {
+                bottomSheetScaffoldState.snackbarHostState.showSnackbar(errorText)
+            }
+        }
+
+        val unlocked by state.unlocked.collectAsStateWithLifecycle()
+        val selectedUnlocked = selectedType == SearchType.ANIME
+                || selectedType == SearchType.MANGA
+                || unlocked
+
+        val viewer by viewModel.viewer.collectAsState()
+        val layoutDirection = LocalLayoutDirection.current
+        if (!selectedUnlocked) {
+            LockedFeatureTiers()
+        } else {
+            val mediaViewOption by state.mediaViewOption.collectAsStateWithLifecycle()
+            val columns =
+                if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA) {
+                    mediaViewOption.widthAdaptiveCells
+                } else {
+                    GridCells.Adaptive(300.dp)
+                }
+            VerticalList(
+                gridState = gridState,
+                itemHeaderText = null,
+                onRefresh = viewModel::onRefresh,
+                columns = columns,
+                items = content,
+                itemKey = { it.entryId.scopedId },
+                itemContentType = { it.entryId.type },
+                item = {
+                    EntryItem(
+                        viewer = viewer,
+                        mediaViewOption = { mediaViewOption },
+                        selectedType = selectedType,
+                        entry = it,
+                        onClickListEdit = onClickListEdit,
+                    )
+                },
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
+                ),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(
+                    start = scaffoldPadding.calculateStartPadding(layoutDirection),
+                    end = scaffoldPadding.calculateEndPadding(layoutDirection),
+                    top = scaffoldPadding.calculateTopPadding(),
+                )
+            )
         }
     }
 

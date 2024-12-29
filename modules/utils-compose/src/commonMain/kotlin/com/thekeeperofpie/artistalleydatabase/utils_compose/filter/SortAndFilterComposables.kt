@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,18 +53,21 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -85,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -129,6 +135,7 @@ object SortAndFilterComposables {
         )
     }
 
+    @Deprecated("Use sortOptionsEnabled variant")
     @Composable
     fun <SortType : SortOption> SortSection(
         headerTextRes: StringResource,
@@ -137,6 +144,39 @@ object SortAndFilterComposables {
         sortOptions: @Composable () -> List<SortEntry<SortType>>,
         onSortClick: (SortType) -> Unit,
         sortAscending: @Composable () -> Boolean,
+        onSortAscendingChange: (Boolean) -> Unit,
+        clickable: Boolean = true,
+        showDivider: Boolean = true,
+    ) {
+        val sortOptions = sortOptions().map { it.value }
+        val enabledSortOptions = sortOptions()
+            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+            .map { it.value }
+            .toSet()
+        val sortAscending = sortAscending()
+        SortSection(
+            headerTextRes = headerTextRes,
+            expanded = expanded,
+            onExpandedChange = onExpandedChange,
+            sortOptions = { sortOptions },
+            sortOptionsEnabled = { enabledSortOptions },
+            onSortClick = onSortClick,
+            sortAscending = { sortAscending },
+            onSortAscendingChange = onSortAscendingChange,
+            clickable = clickable,
+            showDivider = showDivider,
+        )
+    }
+
+    @Composable
+    fun <SortType : SortOption> SortSection(
+        headerTextRes: StringResource,
+        expanded: () -> Boolean,
+        onExpandedChange: (Boolean) -> Unit,
+        sortOptions: () -> List<SortType>,
+        sortOptionsEnabled: () -> Set<SortType>,
+        onSortClick: (SortType) -> Unit,
+        sortAscending: () -> Boolean,
         onSortAscendingChange: (Boolean) -> Unit,
         clickable: Boolean = true,
         showDivider: Boolean = true,
@@ -162,22 +202,21 @@ object SortAndFilterComposables {
                 ) {
                     SortFilterHeaderText(expanded, headerTextRes)
 
+                    val enabledSortOptions = sortOptionsEnabled()
                     sortOptions().forEach {
-                        if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
+                        val enabled = it in enabledSortOptions
+                        if (!expanded && !enabled) return@forEach
                         FilterChip(
-                            selected = it.state != FilterIncludeExcludeState.DEFAULT,
+                            selected = enabled,
                             enabled = clickable,
-                            onClick = { onSortClick(it.value) },
-                            label = { Text(stringResource(it.value.textRes)) },
+                            onClick = { onSortClick(it) },
+                            label = { Text(stringResource(it.textRes)) },
                             modifier = Modifier.animateContentSize()
                         )
                     }
 
                     if (!expanded && sortOptions()
-                            .any {
-                                it.state != FilterIncludeExcludeState.DEFAULT
-                                        && it.value.supportsAscending
-                            }
+                            .any { it in enabledSortOptions && it.supportsAscending }
                     ) {
                         val sortAscending = sortAscending()
                         FilterChip(
@@ -215,10 +254,11 @@ object SortAndFilterComposables {
                 }
             }
 
+            val enabledSortOptions = sortOptionsEnabled()
             AnimatedVisibility(
                 visible = expanded && sortOptions()
-                    .filter { it.state != FilterIncludeExcludeState.DEFAULT }
-                    .any { it.value.supportsAscending },
+                    .filter { it in enabledSortOptions }
+                    .any { it.supportsAscending },
                 enter = expandVertically(),
                 exit = shrinkVertically(),
             ) {
@@ -288,6 +328,39 @@ object SortAndFilterComposables {
             Res.string.sort_descending
         }
     )
+
+    @Composable
+    fun SwitchRow(
+        title: StringResource,
+        enabled: () -> Boolean,
+        onEnabledChanged: (Boolean) -> Unit,
+        showDivider: Boolean,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onEnabledChanged(!enabled()) }
+        ) {
+            Text(
+                text = stringResource(title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .weight(1f)
+            )
+
+            Switch(
+                checked = enabled(),
+                onCheckedChange = onEnabledChanged,
+                modifier = Modifier.padding(end = 16.dp),
+            )
+        }
+
+        if (showDivider) {
+            HorizontalDivider()
+        }
+    }
 }
 
 @Composable
@@ -371,6 +444,104 @@ fun <Entry : FilterEntry<*>> FilterSection(
 }
 
 @Composable
+fun <FilterType> FilterSection(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    options: List<FilterType>,
+    disabledOptions: Set<FilterType>,
+    filterIn: Set<FilterType>,
+    filterNotIn: Set<FilterType>,
+    onFilterClick: (FilterType) -> Unit,
+    title: @Composable () -> String,
+    titleDropdownContentDescriptionRes: StringResource,
+    valueToText: @Composable (FilterType) -> String,
+    valueToImage: (@Composable (FilterType, enabled: Boolean?) -> String?)? = null,
+    valueToLeadingIcon: (@Composable (FilterType, enabled: Boolean?) -> ImageVector?)? = null,
+    valueToLeadingIconContentDescription: (@Composable (FilterType, enabled: Boolean?) -> StringResource)? = null,
+    iconContentDescriptionRes: StringResource,
+    locked: Boolean = true,
+    showDivider: Boolean = true,
+    showIcons: Boolean = true,
+) {
+    @Suppress("NAME_SHADOWING")
+    val expanded = expanded() && !locked
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !locked) { onExpandedChange(!expanded) }
+    ) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 16.dp)
+                .animateContentSize()
+        ) {
+            SortFilterHeaderText(expanded, title)
+
+            options.forEach {
+                val enabled = when {
+                    filterIn.contains(it) -> true
+                    filterNotIn.contains(it) -> false
+                    else -> null
+                }
+                if (!expanded && enabled == null) return@forEach
+                val customIcon = valueToImage?.invoke(it, enabled)
+                val leadingIcon: (@Composable () -> Unit)? = if (customIcon != null) {
+                    {
+                        AsyncImage(
+                            model = customIcon,
+                            contentDescription = stringResource(iconContentDescriptionRes),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(2.dp),
+                        )
+                    }
+                } else if (!showIcons) {
+                    null
+                } else {
+                    {
+                        val leadingIcon = valueToLeadingIcon?.invoke(it, enabled)
+                        val leadingIconContentDescription =
+                            valueToLeadingIconContentDescription?.invoke(it, enabled)
+                        IncludeExcludeIcon(
+                            enabled = enabled,
+                            contentDescriptionRes = iconContentDescriptionRes,
+                            leadingIconVector = leadingIcon,
+                            leadingIconContentDescription = leadingIconContentDescription,
+                        )
+                    }
+                }
+                FilterChip(
+                    selected = enabled != null,
+                    onClick = { onFilterClick(it) },
+                    enabled = it !in disabledOptions && !locked,
+                    label = { Text(valueToText(it)) },
+                    leadingIcon = leadingIcon,
+                    modifier = Modifier
+                        .animateContentSize()
+                        .heightIn(min = 32.dp)
+                )
+            }
+        }
+
+        if (!locked) {
+            TrailingDropdownIconButton(
+                expanded = expanded,
+                contentDescription = stringResource(titleDropdownContentDescriptionRes),
+                onClick = { onExpandedChange(!expanded) },
+                modifier = Modifier.align(Alignment.Top),
+            )
+        }
+    }
+
+    if (showDivider) {
+        HorizontalDivider()
+    }
+}
+
+@Composable
 fun <T> SuggestionsSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
@@ -420,7 +591,6 @@ fun <T> SuggestionsSection(
     }
 }
 
-
 @Composable
 fun IncludeExcludeIcon(
     entry: FilterEntry<*>,
@@ -450,6 +620,30 @@ fun IncludeExcludeIcon(
     }
 }
 
+@Composable
+fun IncludeExcludeIcon(
+    enabled: Boolean?,
+    contentDescriptionRes: StringResource,
+    leadingIconVector: ImageVector?,
+    leadingIconContentDescription: StringResource?,
+) {
+    if (enabled == null) {
+        if (leadingIconVector != null) {
+            Icon(
+                imageVector = leadingIconVector,
+                contentDescription = stringResource(leadingIconContentDescription!!),
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .size(20.dp)
+            )
+        }
+    } else {
+        Icon(
+            imageVector = if (enabled) Icons.Filled.Check else Icons.Filled.Close,
+            contentDescription = stringResource(contentDescriptionRes)
+        )
+    }
+}
 
 @Composable
 fun CustomFilterSection(
@@ -506,6 +700,8 @@ fun CustomFilterSection(
     }
 }
 
+// TODO: Serialize only start/end
+@Serializable
 data class RangeData(
     val maxValue: Int = 100,
     val hardMax: Boolean = false,
@@ -639,8 +835,9 @@ fun RangeDataFilterSection(
     }
 }
 
+@Deprecated("Use SortFilterState variant")
 @Composable
-fun SortFilterOptionsPanel(
+fun SortFilterOptionsPanelLegacy(
     state: () -> SortFilterController<*>.State,
     modifier: Modifier = Modifier,
     showClear: Boolean = true,
@@ -672,7 +869,41 @@ fun SortFilterOptionsPanel(
 }
 
 @Composable
-fun SheetDragHandle(
+fun SortFilterOptionsPanel(
+    state: () -> SortFilterState<*>,
+    modifier: Modifier = Modifier,
+    showClear: Boolean = true,
+) {
+    HorizontalDivider()
+    Column(modifier = modifier) {
+        val sections by state().sections.collectAsState()
+        Column(
+            Modifier
+                .weight(1f, fill = false)
+                .verticalScroll(rememberScrollState())
+                .animateContentSize()
+        ) {
+            sections.forEach {
+                it.Content(state().expanded, showDivider = true)
+            }
+            Spacer(Modifier.height(32.dp))
+        }
+
+        HorizontalDivider()
+
+        if (showClear) {
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = { sections.forEach { it.clear() } }) {
+                    Text(text = stringResource(Res.string.clear))
+                }
+            }
+        }
+    }
+}
+
+@Deprecated("Use state variant instead")
+@Composable
+fun SheetDragHandleLegacy(
     state: () -> SortFilterController<*>.State?,
     targetValue: () -> SheetValue,
     onClick: () -> Unit,
@@ -763,8 +994,115 @@ fun SheetDragHandle(
 }
 
 @Composable
-fun SheetContent(
+fun SheetDragHandle(
+    state: () -> SortFilterState<*>?,
+    targetValue: () -> SheetValue,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
+
+        val state = state() ?: return
+        val expandedMap = state.expanded.expandedState
+        val sections by state.sections.collectAsState()
+
+        val collapseOnClose by state.collapseOnClose.collectAsState()
+        val targetValue = targetValue()
+        LaunchedEffect(collapseOnClose, targetValue) {
+            if (targetValue != SheetValue.Expanded) {
+                if (collapseOnClose) {
+                    expandedMap.clear()
+                }
+            }
+        }
+
+        val showExpandAll by remember { derivedStateOf { expandedMap.none { it.value } } }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp)
+        ) {
+            val activatedCount = sections.count { !it.isDefault() }
+
+            val badgeProgress by animateFloatAsState(
+                targetValue = if (activatedCount > 0) 1f else 0f,
+                label = "Sort filter badge progress",
+            )
+            if (badgeProgress > 0f) {
+                Box(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .size(32.dp * badgeProgress)
+                        .background(MaterialTheme.colorScheme.secondary, CircleShape)
+                        .padding(4.dp * badgeProgress)
+                        .align(Alignment.CenterVertically)
+                ) {
+                    AutoSizeText(
+                        text = activatedCount.coerceAtLeast(1).toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
+
+            AnimatedVisibility(visible = targetValue == SheetValue.Expanded) {
+                IconButton(
+                    onClick = {
+                        if (showExpandAll) {
+                            sections.forEach {
+                                expandedMap[it.id] = true
+                                // TODO: Don't use .value here?
+                                if (it is SortFilterSectionState.Group<*> && it.children.value.size == 1) {
+                                    expandedMap[it.children.value.first().id] = true
+                                }
+                            }
+                        } else {
+                            expandedMap.clear()
+                        }
+                    },
+                ) {
+                    Icon(
+                        imageVector = if (showExpandAll) {
+                            Icons.Filled.UnfoldMore
+                        } else {
+                            Icons.Filled.UnfoldLess
+                        },
+                        contentDescription = stringResource(
+                            Res.string.section_expand_all_content_description
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Deprecated("Use state variant instead")
+@Composable
+fun SheetContentLegacy(
     state: () -> SortFilterController<*>.State?,
+    bottomNavigationState: BottomNavigationState?,
+) {
+    val state = state()
+    if (state != null) {
+        SortFilterOptionsPanelLegacy(
+            state = { state },
+            modifier = Modifier.padding(
+                bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
+            )
+        )
+    }
+}
+
+@Composable
+fun SheetContent(
+    state: () -> SortFilterState<*>?,
     bottomNavigationState: BottomNavigationState?,
 ) {
     val state = state()
@@ -798,9 +1136,65 @@ fun SortFilterBottomScaffold(
     modifier = modifier,
 )
 
+@Deprecated("Use state variant instead")
 @Composable
 fun SortFilterBottomScaffold(
     state: () -> SortFilterController<*>.State?,
+    modifier: Modifier = Modifier,
+    topBar: @Composable (() -> Unit)? = null,
+    sheetState: SheetState = rememberStandardBottomSheetState(),
+    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
+    bottomNavigationState: BottomNavigationState? = null,
+    content: @Composable (PaddingValues) -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val bottomSheetState = scaffoldState.bottomSheetState
+    BackHandler(
+        enabled = bottomSheetState.targetValue == SheetValue.Expanded
+                && !WindowInsets.isImeVisibleKmp
+    ) {
+        scope.launch { bottomSheetState.partialExpand() }
+    }
+
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = if (state() == null) {
+            0.dp
+        } else {
+            56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
+        },
+        sheetDragHandle = {
+            SheetDragHandleLegacy(
+                state = state,
+                targetValue = { bottomSheetState.targetValue },
+                onClick = {
+                    if (bottomSheetState.currentValue == SheetValue.Expanded) {
+                        scope.launch { bottomSheetState.partialExpand() }
+                    } else {
+                        scope.launch { bottomSheetState.expand() }
+                    }
+                },
+            )
+        },
+        sheetContent = {
+            SheetContentLegacy(
+                state = state,
+                bottomNavigationState = bottomNavigationState,
+            )
+        },
+        sheetTonalElevation = 4.dp,
+        sheetShadowElevation = 4.dp,
+        topBar = topBar,
+        modifier = modifier,
+        content = content,
+        // TODO: Error state
+        // snackbarHost = {},
+    )
+}
+
+@Composable
+fun SortFilterBottomScaffold2(
+    state: () -> SortFilterState<*>?,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
     sheetState: SheetState = rememberStandardBottomSheetState(),

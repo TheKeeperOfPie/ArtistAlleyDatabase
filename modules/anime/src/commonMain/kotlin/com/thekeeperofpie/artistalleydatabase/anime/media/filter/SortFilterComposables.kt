@@ -48,13 +48,13 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_sea
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_placeholder
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_show_when_spoiler
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilterChip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExcludeIcon
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -65,7 +65,10 @@ fun TagSection(
     onExpandedChange: (Boolean) -> Unit,
     showMediaWithTagSpoiler: () -> Boolean,
     onShowMediaWithTagSpoilerChange: (Boolean) -> Unit,
-    tags: @Composable () -> Map<String, MediaTagSection>,
+    tags: Map<String, MediaTagSection>,
+    tagIdIn: Set<String>,
+    tagIdNotIn: Set<String>,
+    disabledOptions: Set<String>,
     onTagClick: (String) -> Unit,
     tagRank: @Composable () -> String,
     onTagRankChange: (String) -> Unit,
@@ -100,11 +103,10 @@ fun TagSection(
     ) {
         Column(modifier = Modifier.animateContentSize()) {
             @Suppress("NAME_SHADOWING")
-            val tags = tags()
             val subcategoriesToShow = (if (query.isNotBlank()) {
                 tags.values.mapNotNull {
                     it.filter {
-                        it.state != FilterIncludeExcludeState.DEFAULT
+                        tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id)
                                 || it.name.contains(query, ignoreCase = true)
                     }
                 }
@@ -112,7 +114,7 @@ fun TagSection(
                 tags.values
             } else {
                 tags.values.mapNotNull {
-                    it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+                    it.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) }
                 }
             }).filterIsInstance<MediaTagSection.Category>()
 
@@ -167,6 +169,9 @@ fun TagSection(
             if (children.isNotEmpty()) {
                 TagChips(
                     tags = children,
+                    tagIdIn = tagIdIn,
+                    tagIdNotIn = tagIdNotIn,
+                    disabledOptions = disabledOptions,
                     level = 0,
                     onTagClick = onTagClick,
                 )
@@ -176,6 +181,9 @@ fun TagSection(
                 TagSubsection(
                     name = section.name,
                     children = section.children.values,
+                    tagIdIn = tagIdIn,
+                    tagIdNotIn = tagIdNotIn,
+                    disabledOptions = disabledOptions,
                     parentExpanded = expanded,
                     level = 0,
                     onTagClick = onTagClick,
@@ -236,6 +244,9 @@ fun TagSection(
 private fun TagSubsection(
     name: String,
     children: Collection<MediaTagSection>,
+    tagIdIn: Set<String>,
+    tagIdNotIn: Set<String>,
+    disabledOptions: Set<String>,
     parentExpanded: Boolean,
     level: Int,
     onTagClick: (String) -> Unit,
@@ -278,13 +289,13 @@ private fun TagSubsection(
     val tags = children.filterIsInstance<MediaTagSection.Tag>()
     val tagsToShow = if (query.isNotBlank()) {
         tags.filter {
-            it.state != FilterIncludeExcludeState.DEFAULT
+            tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id)
                     || it.name.contains(query, ignoreCase = true)
         }
     } else if (expanded) {
         tags
     } else {
-        tags.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+        tags.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) }
     }
 
     val subcategories =
@@ -292,7 +303,7 @@ private fun TagSubsection(
     val subcategoriesToShow = if (query.isNotBlank()) {
         subcategories.mapNotNull {
             it.filter {
-                it.state != FilterIncludeExcludeState.DEFAULT
+                tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id)
                         || it.name.contains(query, ignoreCase = true)
             } as? MediaTagSection.Category
         }
@@ -300,7 +311,7 @@ private fun TagSubsection(
         subcategories
     } else {
         subcategories.mapNotNull {
-            it.filter { it.state != FilterIncludeExcludeState.DEFAULT } as? MediaTagSection.Category
+            it.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) } as? MediaTagSection.Category
         }
     }
 
@@ -313,19 +324,25 @@ private fun TagSubsection(
     ) {
         if (tagsToShow.isNotEmpty()) {
             TagChips(
-                tagsToShow,
-                level,
-                onTagClick,
+                tags = tagsToShow,
+                tagIdIn = tagIdIn,
+                tagIdNotIn = tagIdNotIn,
+                disabledOptions = disabledOptions,
+                level = level,
+                onTagClick = onTagClick,
             )
         }
 
         subcategoriesToShow.forEachIndexed { index, section ->
             TagSubsection(
-                section.name,
-                section.children.values,
+                name = section.name,
+                children = section.children.values,
+                tagIdIn = tagIdIn,
+                tagIdNotIn = tagIdNotIn,
+                disabledOptions = disabledOptions,
                 parentExpanded = parentExpanded && expanded,
-                level + 1,
-                onTagClick,
+                level = level + 1,
+                onTagClick = onTagClick,
                 query = query,
                 showDivider = index != subcategoriesToShow.size - 1,
             )
@@ -340,6 +357,9 @@ private fun TagSubsection(
 @Composable
 private fun TagChips(
     tags: List<MediaTagSection.Tag>,
+    tagIdIn: Set<String>,
+    tagIdNotIn: Set<String>,
+    disabledOptions: Set<String>,
     level: Int,
     onTagClick: (String) -> Unit,
 ) {
@@ -353,18 +373,30 @@ private fun TagChips(
         val mediaTagDialogController = LocalMediaTagDialogController.current
         tags.forEach {
             FilterChip(
-                selected = it.state != FilterIncludeExcludeState.DEFAULT,
+                selected = tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id),
                 onClick = { onTagClick(it.id) },
                 onLongClickLabel = stringResource(
                     Res.string.anime_media_tag_long_click_content_description
                 ),
                 onLongClick = { mediaTagDialogController?.onLongClickTag(it.id) },
-                enabled = it.clickable,
+                enabled = it.id !in disabledOptions,
                 label = { AutoHeightText(it.value.name) },
                 leadingIcon = {
                     IncludeExcludeIcon(
-                        it,
-                        Res.string.anime_media_filter_tag_chip_state_content_description,
+                        enabled = when {
+                            tagIdIn.contains(it.id) -> true
+                            tagIdNotIn.contains(it.id) -> false
+                            else -> null
+                        },
+                        contentDescriptionRes = Res.string.anime_media_filter_tag_chip_state_content_description,
+                        leadingIconVector = MediaDataUtils.tagLeadingIcon(
+                            isAdult = it.isAdult,
+                            isGeneralSpoiler = it.value.isGeneralSpoiler,
+                        ),
+                        leadingIconContentDescription = MediaDataUtils.tagLeadingIconContentDescription(
+                            isAdult = it.isAdult,
+                            isGeneralSpoiler = it.value.isGeneralSpoiler,
+                        ),
                     )
                 },
                 modifier = Modifier.animateContentSize()

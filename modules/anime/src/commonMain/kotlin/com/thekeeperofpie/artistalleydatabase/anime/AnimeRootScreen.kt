@@ -45,6 +45,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEn
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
@@ -268,9 +270,32 @@ object AnimeRootScreen {
                             bottomNavigationState = bottomNavigationState,
                         )
                         AnimeRootNavDestination.SEARCH -> {
+                            val animeSortFilterViewModel = viewModel {
+                                component.animeSearchSortFilterViewModelFactory(createSavedStateHandle())
+                                    .create(
+                                        MediaSortFilterViewModel.InitialParams(
+                                            sortClass = MediaSortOption::class,
+                                            defaultSort = MediaSortOption.SEARCH_MATCH,
+                                            mediaType = MediaType.ANIME,
+                                        )
+                                    )
+                            }
+                            val mangaSortFilterViewModel = viewModel {
+                                component.mangaSearchSortFilterViewModelFactory(createSavedStateHandle())
+                                    .create(
+                                        MediaSortFilterViewModel.InitialParams(
+                                            sortClass = MediaSortOption::class,
+                                            defaultSort = MediaSortOption.SEARCH_MATCH,
+                                            mediaType = MediaType.MANGA,
+                                        )
+                                    )
+                            }
                             val viewModel = viewModel {
-                                component.animeSearchViewModelFactory(createSavedStateHandle())
-                                    .create(MediaPreviewWithDescriptionEntry.Provider)
+                                component.animeSearchViewModelFactory(
+                                    createSavedStateHandle(),
+                                    animeSortFilterViewModel,
+                                    mangaSortFilterViewModel,
+                                ).create(MediaPreviewWithDescriptionEntry.Provider)
                             }
                             val state = AnimeSearchScreen.State(
                                 unlocked = viewModel.unlocked,
@@ -281,6 +306,8 @@ object AnimeRootScreen {
                             AnimeSearchScreen(
                                 upIconOption = upIconOption,
                                 viewModel = viewModel,
+                                animeSortFilterViewModel = animeSortFilterViewModel,
+                                mangaSortFilterViewModel = mangaSortFilterViewModel,
                                 state = state,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeRootNavDestination.SEARCH.id,
@@ -288,6 +315,8 @@ object AnimeRootScreen {
                                 ),
                                 bottomNavigationState = bottomNavigationState,
                             )
+                            animeSortFilterViewModel.PromptDialog()
+                            mangaSortFilterViewModel.PromptDialog()
                         }
                         AnimeRootNavDestination.PROFILE -> {
                             val navigationController = LocalNavigationController.current

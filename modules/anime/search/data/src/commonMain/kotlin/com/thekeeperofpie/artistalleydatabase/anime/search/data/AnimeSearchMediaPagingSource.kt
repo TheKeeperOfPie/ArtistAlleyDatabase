@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
@@ -44,21 +43,13 @@ class AnimeSearchMediaPagingSource(
             sort = refreshParams.sortApiValue(),
             genreIn = filterParams.genreIn,
             genreNotIn = filterParams.genreNotIn,
-            tagIn = filterParams.tagIn,
-            tagNotIn = filterParams.tagNotIn,
-            statusIn = filterParams.statuses
-                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                .map { it.value },
-            statusNotIn = filterParams.statuses
-                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                .map { it.value },
-            formatIn = filterParams.formats
-                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                .map { it.value },
-            formatNotIn = filterParams.formats
-                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                .map { it.value },
-            showAdult = filterParams.showAdult,
+            tagIn = filterParams.tagNameIn,
+            tagNotIn = filterParams.tagNameNotIn,
+            statusIn = filterParams.statusIn,
+            statusNotIn = filterParams.statusNotIn,
+            formatIn = filterParams.formatIn,
+            formatNotIn = filterParams.formatNotIn,
+            showAdult = refreshParams.showAdult,
             onList = onList,
             season = season,
             seasonYear = seasonYear,
@@ -82,9 +73,7 @@ class AnimeSearchMediaPagingSource(
             chaptersGreater = filterParams.chaptersRange?.apiStart
                 ?.let { it.coerceAtLeast(1) - 1 },
             chaptersLesser = filterParams.chaptersRange?.apiEnd,
-            sourcesIn = filterParams.sources
-                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                .map { it.value },
+            sourcesIn = filterParams.sourceIn,
             licensedByIdIn = filterParams.licensedByIdIn,
             minimumTagRank = filterParams.tagRank,
             includeDescription = refreshParams.includeDescription,
@@ -97,12 +86,12 @@ class AnimeSearchMediaPagingSource(
         val includeDescription: Boolean,
         val refreshEvent: RefreshFlow.Event,
         val filterParams: MediaSearchFilterParams<MediaSortOption>,
+        val showAdult: Boolean,
         val seasonYearOverride: Pair<MediaSeason, Int>? = null,
     ) {
-        fun sortApiValue() =
-            filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                .flatMap { it.value.toApiValue(filterParams.sortAscending) }
-                .distinct()
-                .ifEmpty { listOf(MediaSort.SEARCH_MATCH) }
+        fun sortApiValue() = filterParams.sort
+            .flatMap { it.toApiValue(filterParams.sortAscending) }
+            .distinct()
+            .ifEmpty { listOf(MediaSort.SEARCH_MATCH) }
     }
 }

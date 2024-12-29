@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -36,7 +36,7 @@ class MediaLicensorsController(
         }
         .catch { emit(emptyList()) }
         .flowOn(CustomDispatchers.IO)
-        .shareIn(scope, SharingStarted.Lazily, 1)
+        .stateIn(scope, SharingStarted.Lazily, emptyList())
 
     fun refresh() = refresh.refresh()
 
