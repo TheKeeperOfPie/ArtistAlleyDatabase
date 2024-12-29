@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
@@ -40,6 +41,7 @@ import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 open class AnimeSortFilterViewModel<SortType>(
     aniListApi: AuthedAniListApi,
@@ -238,7 +240,7 @@ open class AnimeSortFilterViewModel<SortType>(
         )
     }
 
-    override val filterParams = animeFilterParams
+    override val filterParams = animeFilterParams.debounceState(viewModelScope, 1.seconds)
 
     override val sections = aniListApi.authedUser
         .mapState(viewModelScope) { viewer ->

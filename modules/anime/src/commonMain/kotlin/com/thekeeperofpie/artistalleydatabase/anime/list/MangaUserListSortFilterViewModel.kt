@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsContro
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
@@ -35,6 +36,7 @@ import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 class MangaUserListSortFilterViewModel(
     aniListApi: AuthedAniListApi,
@@ -163,7 +165,7 @@ class MangaUserListSortFilterViewModel(
         )
     }
 
-    override val filterParams = animeUserListFilterParams
+    override val filterParams = animeUserListFilterParams.debounceState(viewModelScope, 1.seconds)
 
     override val sections = aniListApi.authedUser
         .mapState(viewModelScope) { viewer ->

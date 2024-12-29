@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -27,6 +28,7 @@ import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 class AnimeSearchSortFilterViewModel(
     aniListApi: AuthedAniListApi,
@@ -122,7 +124,7 @@ class AnimeSearchSortFilterViewModel(
     )
 
     @Suppress("UNCHECKED_CAST")
-    override val filterParams = animeFilterParams
+    override val filterParams = animeFilterParams.debounceState(viewModelScope, 1.seconds)
 
     override val sections = aniListApi.authedUser
         .mapState(viewModelScope) { viewer ->

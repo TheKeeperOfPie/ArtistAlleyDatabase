@@ -52,7 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearc
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
@@ -69,7 +68,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.KClass
-import kotlin.time.Duration.Companion.seconds
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -497,7 +495,7 @@ abstract class MediaSortFilterViewModel<SortType>(
                 licensedByIdIn = (it[12] as Set<LicensorsQuery.Data.ExternalLinkSourceCollection>)
                     .mapNotNull { it.siteId },
             )
-        }.debounceState(viewModelScope, 1.seconds)
+        }
 
     open val filterParams = mediaFilterParams
 
