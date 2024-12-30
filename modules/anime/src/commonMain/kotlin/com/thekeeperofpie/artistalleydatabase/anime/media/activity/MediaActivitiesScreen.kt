@@ -111,7 +111,7 @@ object MediaActivitiesScreen {
             snackbarHostState = snackbarHostState,
         ) { scaffoldPadding ->
             SortFilterBottomScaffold2(
-                state = { sortFilterState },
+                state = sortFilterState,
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
                 val following = viewModel.following.collectAsLazyPagingItems()

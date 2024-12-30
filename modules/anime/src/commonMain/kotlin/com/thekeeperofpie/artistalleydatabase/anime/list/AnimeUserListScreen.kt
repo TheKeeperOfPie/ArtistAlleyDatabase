@@ -126,7 +126,7 @@ object AnimeUserListScreen {
             val sortFilterViewModel = viewModel.mediaSortFilterViewModel
             val sortSheetState = rememberStandardBottomSheetState()
             SortFilterBottomScaffold2(
-                state = sortFilterViewModel::state,
+                state = sortFilterViewModel.state,
                 topBar = {
                     TopBar(
                         viewModel,

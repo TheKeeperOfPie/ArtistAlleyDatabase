@@ -298,9 +298,7 @@ object AniListUserScreen {
                                             bottomNavigationState = bottomNavigationState,
                                         )
                                     UserTab.ACTIVITY -> {
-                                        SortFilterBottomScaffold2(
-                                            state = { activitySortFilterState },
-                                        ) {
+                                        SortFilterBottomScaffold2(state = activitySortFilterState) {
                                             activitySection(onClickListEdit, Modifier.padding(it))
                                         }
                                     }

@@ -18,11 +18,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.flow.Flow
@@ -36,11 +33,11 @@ class CharacterMediasViewModel<MediaEntry : Any>(
     private val ignoreController: IgnoreController,
     private val settings: MediaDataSettings,
     favoritesController: FavoritesController,
-    featureOverrideProvider: FeatureOverrideProvider,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted characterMediaSortFilterViewModel: CharacterMediaSortFilterViewModel,
     @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
-) : SortFilteredViewModel<CharacterMediasScreen.Entry, MediaPreview, MediaEntry, CharacterMediaSortFilterController.FilterParams>(
+) : SortFilteredViewModel<CharacterMediasScreen.Entry, MediaPreview, MediaEntry, CharacterMediaSortFilterViewModel.FilterParams>(
     loadingErrorTextRes = Res.string.anime_character_medias_error_loading,
 ) {
     private val destination =
@@ -50,8 +47,7 @@ class CharacterMediasViewModel<MediaEntry : Any>(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    override val sortFilterController =
-        CharacterMediaSortFilterController(viewModelScope, settings, featureOverrideProvider)
+    override val filterParams = characterMediaSortFilterViewModel.state.filterParams
 
     init {
         favoritesToggleHelper.initializeTracking(
@@ -68,17 +64,16 @@ class CharacterMediasViewModel<MediaEntry : Any>(
     override fun entryId(entry: MediaEntry) = mediaEntryProvider.id(entry)
 
     override suspend fun initialRequest(
-        filterParams: CharacterMediaSortFilterController.FilterParams?,
+        filterParams: CharacterMediaSortFilterViewModel.FilterParams?,
     ) = CharacterMediasScreen.Entry(
         aniListApi.characterAndMedias(characterId = characterId)
     )
 
-    override suspend fun request(filterParams: CharacterMediaSortFilterController.FilterParams?): Flow<PagingData<MediaPreview>> =
+    override suspend fun request(filterParams: CharacterMediaSortFilterViewModel.FilterParams?): Flow<PagingData<MediaPreview>> =
         AniListPager { page ->
             aniListApi.characterAndMediasPage(
                 characterId = characterId,
-                sort = filterParams!!.sort.selectedOption(MediaSortOption.TRENDING)
-                    .toApiValue(filterParams.sortAscending),
+                sort = filterParams!!.sort.toApiValue(filterParams.sortAscending),
                 onList = filterParams.onList,
                 page = page,
             ).character.media.run { pageInfo to nodes }
@@ -100,9 +95,9 @@ class CharacterMediasViewModel<MediaEntry : Any>(
         private val ignoreController: IgnoreController,
         private val settings: MediaDataSettings,
         private val favoritesController: FavoritesController,
-        private val featureOverrideProvider: FeatureOverrideProvider,
         private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
+        @Assisted private val characterMediaSortFilterViewModel: CharacterMediaSortFilterViewModel,
     ) {
 
         fun <MediaEntry : Any> create(
@@ -113,9 +108,9 @@ class CharacterMediasViewModel<MediaEntry : Any>(
             ignoreController = ignoreController,
             settings = settings,
             favoritesController = favoritesController,
-            featureOverrideProvider = featureOverrideProvider,
             navigationTypeMap = navigationTypeMap,
             savedStateHandle = savedStateHandle,
+            characterMediaSortFilterViewModel = characterMediaSortFilterViewModel,
             mediaEntryProvider = mediaEntryProvider,
         )
     }

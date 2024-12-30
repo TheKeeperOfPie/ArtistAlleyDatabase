@@ -42,8 +42,10 @@ class MediaReviewsViewModel(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    override val sortFilterController =
+    val sortFilterController =
         MediaReviewsSortFilterController(viewModelScope, settings, featureOverrideProvider)
+
+    override val filterParams = sortFilterController.filterParams
 
     init {
         favoritesToggleHelper.initializeTracking(

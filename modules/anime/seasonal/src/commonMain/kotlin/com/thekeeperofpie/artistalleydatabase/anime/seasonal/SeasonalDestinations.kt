@@ -76,7 +76,7 @@ object SeasonalDestinations {
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 initialPage = viewModel.initialPage,
                 onRefresh = viewModel::onRefresh,
-                sortFilterState = { sortFilterState(sortFilterViewModel) },
+                sortFilterState = sortFilterState(sortFilterViewModel),
                 itemsForPage = { viewModel.items(it) },
                 itemKey = mediaEntryProvider::id,
                 mediaViewOption = { viewModel.mediaViewOption },

@@ -57,8 +57,10 @@ class MediaRecommendationsViewModel<MediaEntry>(
     val recommendationToggleHelper =
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 
-    override val sortFilterController =
+    val sortFilterController =
         MediaRecommendationSortFilterController(viewModelScope, settings, featureOverrideProvider)
+
+    override val filterParams = sortFilterController.filterParams
 
     init {
         favoritesToggleHelper.initializeTracking(

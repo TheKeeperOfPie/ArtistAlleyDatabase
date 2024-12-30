@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.characters.details.CharacterDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.characters.media.CharacterMediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.characters.media.CharacterMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
@@ -141,9 +142,17 @@ object CharacterDestinations {
             navigationTypeMap = navigationTypeMap
         ) {
             val destination = it.toRoute<CharacterMedias>()
+            val characterMediaSortFilterViewModel = viewModel {
+                component.characterMediaSortFilterViewModel(
+                    createSavedStateHandle(),
+                    CharacterMediaSortFilterViewModel.InitialParams()
+                )
+            }
             val viewModel = viewModel {
-                component.characterMediasViewModelFactory(createSavedStateHandle())
-                    .create(mediaEntryProvider)
+                component.characterMediasViewModelFactory(
+                    createSavedStateHandle(),
+                    characterMediaSortFilterViewModel
+                ).create(mediaEntryProvider)
             }
             val headerValues = CharacterHeaderValues(
                 params = destination.headerParams,
@@ -154,7 +163,7 @@ object CharacterDestinations {
             val viewer by viewModel.viewer.collectAsState()
             CharacterMediasScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                sortFilterState = { viewModel.sortFilterController.state },
+                sortFilterState = characterMediaSortFilterViewModel.state,
                 characterId = viewModel.characterId,
                 headerValues = headerValues,
                 sharedTransitionKey = destination.sharedTransitionKey,

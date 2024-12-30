@@ -18,6 +18,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -28,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
@@ -473,6 +475,64 @@ sealed class SortFilterSectionState(val id: String) {
                 onEnabledChanged = { enabled = it },
                 showDivider = showDivider,
             )
+        }
+    }
+
+    class TriStateBoolean(
+        private val titleRes: StringResource,
+        private val defaultEnabled: Boolean?,
+        private val enabled: MutableStateFlow<Boolean?>,
+    ) : SortFilterSectionState(titleRes.key) {
+        @Composable
+        override fun isDefault() = enabled.collectAsStateWithLifecycle().value == defaultEnabled
+
+        override fun clear() {
+            enabled.value = defaultEnabled
+        }
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            var enabled by enabled.collectAsMutableStateWithLifecycle()
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        enabled = when (enabled) {
+                            true -> false
+                            false -> null
+                            null -> true
+                        }
+                    }
+            ) {
+                Text(
+                    text = stringResource(titleRes),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .weight(1f)
+                )
+
+                TriStateCheckbox(
+                    state = when (enabled) {
+                        true -> ToggleableState.On
+                        false -> ToggleableState.Off
+                        null -> ToggleableState.Indeterminate
+                    },
+                    onClick = {
+                        enabled = when (enabled) {
+                            true -> false
+                            false -> null
+                            null -> true
+                        }
+                    },
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+            }
+
+            if (showDivider) {
+                HorizontalDivider()
+            }
         }
     }
 

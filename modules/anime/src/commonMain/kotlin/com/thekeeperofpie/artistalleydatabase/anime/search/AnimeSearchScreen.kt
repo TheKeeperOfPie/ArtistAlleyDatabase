@@ -127,7 +127,7 @@ object AnimeSearchScreen {
                         mangaSortFilterViewModel.state
                     }
                 SortFilterBottomScaffold2(
-                    state = { sortFilterState },
+                    state = sortFilterState,
                     topBar = {
                         TopBar(
                             viewModel = viewModel,

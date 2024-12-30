@@ -59,8 +59,10 @@ class StaffCharactersViewModel<CharacterEntry : Any, MediaEntry>(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    override val sortFilterController =
+    val sortFilterController =
         StaffCharactersSortFilterController(viewModelScope, settings, featureOverrideProvider)
+
+    override val filterParams = sortFilterController.filterParams
 
     init {
         favoritesToggleHelper.initializeTracking(

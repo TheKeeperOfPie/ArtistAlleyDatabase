@@ -34,15 +34,14 @@ abstract class SortFilteredViewModel<EntryType, ListItemType : Any, ListEntryTyp
 
     val items = MutableStateFlow(PagingData.empty<ListEntryType>())
 
-    abstract val sortFilterController: SortFilterController<FilterParams>
+    abstract val filterParams: Flow<FilterParams>
 
     private val refresh = RefreshFlow()
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
             flowForRefreshableContent(refresh.updates, loadingErrorTextRes) {
-                sortFilterController.filterParams
-                    .mapLatest(::initialRequest)
+                filterParams.mapLatest(::initialRequest)
             }
                 .catch { emit(LoadingResult.error(loadingErrorTextRes, it)) }
                 .flowOn(CustomDispatchers.IO)
@@ -51,10 +50,10 @@ abstract class SortFilteredViewModel<EntryType, ListItemType : Any, ListEntryTyp
 
         viewModelScope.launch(CustomDispatchers.IO) {
             refresh.updates
-                .flatMapLatest { sortFilterController.filterParams }
-                .flatMapLatest { request(it) }
-                .map { it.mapOnIO { makeEntry(it) } }
-                .enforceUniqueIds { entryId(it) }
+                .flatMapLatest { filterParams }
+                .flatMapLatest(::request)
+                .map { it.mapOnIO(::makeEntry) }
+                .enforceUniqueIds(::entryId)
                 .cachedIn(viewModelScope)
                 .transformFlow()
                 .cachedIn(viewModelScope)

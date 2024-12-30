@@ -67,7 +67,7 @@ object AnimeActivityScreen {
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
             SortFilterBottomScaffold2(
-                state = { sortFilterState },
+                state = sortFilterState,
                 topBar = {
                     val mediaTitle = mediaTitle()
                     val title = if (mediaTitle == null) {

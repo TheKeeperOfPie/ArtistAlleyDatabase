@@ -65,7 +65,7 @@ object SeasonalScreen {
         upIconOption: UpIconOption? = null,
         initialPage: Int,
         onRefresh: () -> Unit,
-        sortFilterState: () -> SortFilterState<*>,
+        sortFilterState: SortFilterState<*>,
         itemsForPage: @Composable (page: Int) -> LazyPagingItems<MediaEntry>,
         itemKey: (MediaEntry) -> String,
         mediaViewOption: () -> MediaViewOption,
@@ -107,7 +107,7 @@ object SeasonalScreen {
                 ) {
                     val columns = mediaViewOption().widthAdaptiveCells
                     val gridState = rememberLazyGridState()
-                    sortFilterState().ImmediateScrollResetEffect(gridState)
+                    sortFilterState.ImmediateScrollResetEffect(gridState)
                     VerticalList(
                         gridState = gridState,
                         itemHeaderText = null,

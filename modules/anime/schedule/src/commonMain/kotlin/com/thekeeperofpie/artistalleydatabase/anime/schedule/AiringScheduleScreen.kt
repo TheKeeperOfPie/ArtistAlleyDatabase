@@ -86,7 +86,7 @@ object AiringScheduleScreen {
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
             SortFilterBottomScaffold2(
-                state = { sortFilterState },
+                state = sortFilterState,
                 topBar = {
                     EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                         Column {

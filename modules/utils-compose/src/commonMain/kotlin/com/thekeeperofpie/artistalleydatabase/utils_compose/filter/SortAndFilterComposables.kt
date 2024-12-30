@@ -870,13 +870,13 @@ fun SortFilterOptionsPanelLegacy(
 
 @Composable
 fun SortFilterOptionsPanel(
-    state: () -> SortFilterState<*>,
+    state: SortFilterState<*>,
     modifier: Modifier = Modifier,
     showClear: Boolean = true,
 ) {
     HorizontalDivider()
     Column(modifier = modifier) {
-        val sections by state().sections.collectAsState()
+        val sections by state.sections.collectAsState()
         Column(
             Modifier
                 .weight(1f, fill = false)
@@ -884,7 +884,7 @@ fun SortFilterOptionsPanel(
                 .animateContentSize()
         ) {
             sections.forEach {
-                it.Content(state().expanded, showDivider = true)
+                it.Content(state.expanded, showDivider = true)
             }
             Spacer(Modifier.height(32.dp))
         }
@@ -995,7 +995,7 @@ fun SheetDragHandleLegacy(
 
 @Composable
 fun SheetDragHandle(
-    state: () -> SortFilterState<*>?,
+    state: SortFilterState<*>,
     targetValue: () -> SheetValue,
     onClick: () -> Unit,
 ) {
@@ -1006,7 +1006,6 @@ fun SheetDragHandle(
     ) {
         BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
 
-        val state = state() ?: return
         val expandedMap = state.expanded.expandedState
         val sections by state.sections.collectAsState()
 
@@ -1102,18 +1101,15 @@ fun SheetContentLegacy(
 
 @Composable
 fun SheetContent(
-    state: () -> SortFilterState<*>?,
+    state: SortFilterState<*>,
     bottomNavigationState: BottomNavigationState?,
 ) {
-    val state = state()
-    if (state != null) {
-        SortFilterOptionsPanel(
-            state = { state },
-            modifier = Modifier.padding(
-                bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
-            )
+    SortFilterOptionsPanel(
+        state = state,
+        modifier = Modifier.padding(
+            bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
         )
-    }
+    )
 }
 
 @Deprecated("Use state variant instead")
@@ -1194,7 +1190,7 @@ fun SortFilterBottomScaffold(
 
 @Composable
 fun SortFilterBottomScaffold2(
-    state: () -> SortFilterState<*>?,
+    state: SortFilterState<*>,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
     sheetState: SheetState = rememberStandardBottomSheetState(),
@@ -1213,11 +1209,7 @@ fun SortFilterBottomScaffold2(
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = if (state() == null) {
-            0.dp
-        } else {
-            56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
-        },
+        sheetPeekHeight = 56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
         sheetDragHandle = {
             SheetDragHandle(
                 state = state,

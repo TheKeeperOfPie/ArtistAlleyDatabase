@@ -20,8 +20,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -33,7 +33,7 @@ object CharacterMediasScreen {
     @Composable
     operator fun <MediaEntry : Any> invoke(
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: SortFilterState<*>,
         characterId: String,
         headerValues: CharacterHeaderValues,
         sharedTransitionKey: SharedTransitionKey?,
@@ -52,7 +52,7 @@ object CharacterMediasScreen {
             val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
                 snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
             )
-            SortFilterBottomScaffold(
+            SortFilterBottomScaffold2(
                 state = sortFilterState,
                 topBar = {
                     CollapsingToolbar(
@@ -75,7 +75,7 @@ object CharacterMediasScreen {
                 modifier = Modifier.padding(padding)
             ) {
                 val gridState = rememberLazyGridState()
-                sortFilterState().ImmediateScrollResetEffect(gridState)
+                sortFilterState.ImmediateScrollResetEffect(gridState)
                 VerticalList(
                     gridState = gridState,
                     onRefresh = onRefresh,

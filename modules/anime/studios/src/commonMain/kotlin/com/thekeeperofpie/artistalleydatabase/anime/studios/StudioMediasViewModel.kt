@@ -45,8 +45,10 @@ class StudioMediasViewModel<MediaEntry : Any>(
     val studioId =
         savedStateHandle.toDestination<StudioDestinations.StudioMedias>(navigationTypeMap).studioId
 
-    override val sortFilterController =
+    val sortFilterController =
         StudioMediaSortFilterController(viewModelScope, settings, featureOverrideProvider)
+
+    override val filterParams = sortFilterController.filterParams
 
     val viewer = aniListApi.authedUser
     val favoritesToggleHelper =

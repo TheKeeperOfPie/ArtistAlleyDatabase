@@ -85,7 +85,7 @@ object MediaSearchScreen {
             viewModel = editViewModel,
         ) {
             SortFilterBottomScaffold2(
-                state = sortFilterState,
+                state = sortFilterState(),
                 topBar = {
                     TopBar(
                         viewModel = viewModel,
