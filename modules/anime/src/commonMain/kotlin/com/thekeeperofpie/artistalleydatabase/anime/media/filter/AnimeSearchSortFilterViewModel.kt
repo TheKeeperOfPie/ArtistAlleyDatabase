@@ -60,7 +60,7 @@ class AnimeSearchSortFilterViewModel(
         onSuggestionClick = {
             when (it) {
                 AnimeFilterSuggestion.RECENT_FINISHED -> {
-                    sortOptionEnabled.value = MediaSortOption.END_DATE
+                    sortOption.value = MediaSortOption.END_DATE
                     sortAscending.value = false
                     statusIn.value = setOf(MediaStatus.FINISHED)
                     statusNotIn.value = emptySet()
@@ -72,7 +72,7 @@ class AnimeSearchSortFilterViewModel(
                     airingDateIsAdvanced.value = false
                 }
                 AnimeFilterSuggestion.LAST_SEASON -> {
-                    sortOptionEnabled.value = MediaSortOption.POPULARITY
+                    sortOption.value = MediaSortOption.POPULARITY
                     sortAscending.value = false
                     statusIn.value = emptySet()
                     statusNotIn.value = emptySet()
@@ -88,7 +88,7 @@ class AnimeSearchSortFilterViewModel(
                     airingDateIsAdvanced.value = false
                 }
                 AnimeFilterSuggestion.CURRENT_SEASON -> {
-                    sortOptionEnabled.value = MediaSortOption.POPULARITY
+                    sortOption.value = MediaSortOption.POPULARITY
                     sortAscending.value = false
                     statusIn.value = emptySet()
                     statusNotIn.value = emptySet()
@@ -104,7 +104,7 @@ class AnimeSearchSortFilterViewModel(
                     airingDateIsAdvanced.value = false
                 }
                 AnimeFilterSuggestion.NEXT_SEASON -> {
-                    sortOptionEnabled.value = MediaSortOption.POPULARITY
+                    sortOption.value = MediaSortOption.POPULARITY
                     sortAscending.value = false
                     statusIn.value = emptySet()
                     statusNotIn.value = emptySet()

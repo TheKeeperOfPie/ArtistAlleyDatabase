@@ -70,34 +70,40 @@ sealed class SortFilterSectionState(val id: String) {
     @Stable
     class Sort<SortType : SortOption>(
         private val enumClass: KClass<SortType>,
-        val headerTextRes: StringResource,
+        val headerText: StringResource,
         private val defaultSort: SortType,
         private val sortAscending: MutableStateFlow<Boolean>?,
-        private val sortOptionEnabled: MutableStateFlow<SortType>,
+        private val sortOption: MutableStateFlow<SortType>,
         var sortOptions: MutableStateFlow<List<SortType>> =
             MutableStateFlow(enumClass.java.enumConstants?.toList().orEmpty()),
-    ) : SortFilterSectionState(headerTextRes.key) {
+    ) : SortFilterSectionState(headerText.key) {
 
         override fun clear() {
-            sortOptionEnabled.value = defaultSort
+            sortOption.value = defaultSort
         }
 
         @Composable
         override fun isDefault() =
-            sortOptionEnabled.collectAsStateWithLifecycle().value == defaultSort
+            sortOption.collectAsStateWithLifecycle().value == defaultSort
 
         @Composable
         override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
             val sortOptions by sortOptions.collectAsStateWithLifecycle()
-            var sortOptionEnabled by sortOptionEnabled.collectAsMutableStateWithLifecycle()
+            var sortOption by this@Sort.sortOption.collectAsMutableStateWithLifecycle()
             val sortAscending = sortAscending?.collectAsMutableStateWithLifecycle()
             SortAndFilterComposables.SortSection(
-                headerTextRes = headerTextRes,
+                headerTextRes = headerText,
                 expanded = { state.expandedState[id] == true },
                 onExpandedChange = { state.expandedState[id] = it },
                 sortOptions = { sortOptions },
-                sortOptionsEnabled = { setOf(sortOptionEnabled) },
-                onSortClick = { sortOptionEnabled = it },
+                sortOptionsEnabled = { setOf(sortOption) },
+                onSortClick = {
+                    sortOption = if (sortOption == it) {
+                        sortOptions[(sortOptions.indexOf(it) + 1) % sortOptions.size]
+                    } else {
+                        it
+                    }
+                },
                 // TODO: Disable sortAscending at this level instead of the enum?
                 sortAscending = { sortAscending?.value == true },
                 onSortAscendingChange = {

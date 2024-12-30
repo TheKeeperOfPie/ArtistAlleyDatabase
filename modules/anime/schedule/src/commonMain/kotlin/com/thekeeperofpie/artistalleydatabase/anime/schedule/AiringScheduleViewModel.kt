@@ -21,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringDat
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.loading
@@ -43,6 +42,7 @@ import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -54,12 +54,11 @@ class AiringScheduleViewModel<MediaEntry : Any>(
     private val statusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
     featureOverrideProvider: FeatureOverrideProvider,
-    private val mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
+    @Assisted private val airingScheduleSortFilterViewModel: AiringScheduleSortFilterViewModel,
+    @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
-    var sortFilterController =
-        AiringScheduleSortFilterController(viewModelScope, settings, featureOverrideProvider)
     var refresh = RefreshFlow()
 
     private val startDay =
@@ -78,7 +77,7 @@ class AiringScheduleViewModel<MediaEntry : Any>(
         initialized[index] = true
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
-                sortFilterController.filterParams,
+                airingScheduleSortFilterViewModel.state.filterParams,
                 refresh.updates,
                 ::Pair
             )
@@ -110,9 +109,9 @@ class AiringScheduleViewModel<MediaEntry : Any>(
 
     private fun buildPagingData(
         index: Int,
-        filterParams: AiringScheduleSortFilterController.FilterParams,
+        filterParams: AiringScheduleSortFilterViewModel.FilterParams,
     ): Flow<PagingData<AiringScheduleQuery.Data.Page.AiringSchedule>> {
-        val sort = filterParams.sort.selectedOption(AiringScheduleSortOption.POPULARITY)
+        val sort = filterParams.sort
         val date = startDay.plus(index.toLong(), DateTimeUnit.DAY)
         val timeZone = TimeZone.currentSystemDefault()
         val startTime = date.atStartOfDayIn(timeZone).epochSeconds - 1
@@ -198,6 +197,7 @@ class AiringScheduleViewModel<MediaEntry : Any>(
         private val statusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
         private val featureOverrideProvider: FeatureOverrideProvider,
+        @Assisted private val airingScheduleSortFilterViewModel: AiringScheduleSortFilterViewModel,
     ) {
         fun <MediaEntry : Any> create(
             mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
@@ -207,6 +207,7 @@ class AiringScheduleViewModel<MediaEntry : Any>(
             statusController = statusController,
             ignoreController = ignoreController,
             featureOverrideProvider = featureOverrideProvider,
+            airingScheduleSortFilterViewModel = airingScheduleSortFilterViewModel,
             mediaEntryProvider = mediaEntryProvider,
         )
     }

@@ -81,24 +81,24 @@ abstract class MediaSortFilterViewModel<SortType>(
     settings = mediaDataSettings,
     showHideIgnored = initialParams.showHideIgnored,
 ) where SortType : SortOption, SortType : Enum<SortType> {
-    protected val sortOptionEnabled =
+    protected val sortOption =
         savedStateHandle.getMutableStateFlow<String, SortType>(
-            "enabledSortOptions",
+            "sortOption",
             { initialParams.defaultSort },
             // TODO: Find a better serialization method
             serialize = { it.name },
             deserialize = { java.lang.Enum.valueOf<SortType>(initialParams.sortClass.java, it) },
         )
     protected val sortAscending =
-        savedStateHandle.getMutableStateFlow<Boolean>("sortAscending") { false }
+        savedStateHandle.getMutableStateFlow<Boolean>("sortAscending", false)
     protected val sortSection = SortFilterSectionState.Sort(
         enumClass = initialParams.sortClass,
-        headerTextRes = Res.string.anime_media_filter_sort_label,
+        headerText = Res.string.anime_media_filter_sort_label,
         defaultSort = initialParams.defaultSort,
         sortOptions = sortOptions
             ?: MutableStateFlow(initialParams.sortClass.java.enumConstants?.toList().orEmpty()),
         sortAscending = sortAscending,
-        sortOptionEnabled = sortOptionEnabled,
+        sortOption = sortOption,
     )
 
     protected val statusIn = savedStateHandle.getMutableStateFlow<List<String>, Set<MediaStatus>>(
@@ -427,7 +427,7 @@ abstract class MediaSortFilterViewModel<SortType>(
     @Suppress("UNCHECKED_CAST")
     val mediaFilterParams =
         combineStates(
-            sortOptionEnabled,
+            sortOption,
             sortAscending,
             statusIn,
             statusNotIn,

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.schedule
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import com.anilist.data.fragment.MediaNavigationData
@@ -38,12 +39,17 @@ object ScheduleDestinations {
         seasonalCurrentRoute: SeasonalCurrentRoute,
     ) {
         navGraphBuilder.sharedElementComposable<AiringSchedule>(navigationTypeMap) {
-            val viewModel =
-                viewModel { component.airingScheduleViewModelFactory().create(mediaEntryProvider) }
+            val airingScheduleSortFilterViewModel = viewModel {
+                component.airingScheduleSortFilterViewModel(createSavedStateHandle())
+            }
+            val viewModel = viewModel {
+                component.airingScheduleViewModelFactory(airingScheduleSortFilterViewModel)
+                    .create(mediaEntryProvider)
+            }
             val viewer by viewModel.viewer.collectAsState()
             AiringScheduleScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                sortFilterState = viewModel.sortFilterController::state,
+                sortFilterState = airingScheduleSortFilterViewModel.state,
                 onRefresh = viewModel::refresh,
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 itemsForPage = { viewModel.items(it) },

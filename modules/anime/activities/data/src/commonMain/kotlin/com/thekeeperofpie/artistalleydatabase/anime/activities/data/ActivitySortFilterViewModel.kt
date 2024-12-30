@@ -32,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearc
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection.ExpandedState
@@ -47,6 +48,7 @@ import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 @Inject
 class ActivitySortFilterViewModel(
@@ -69,10 +71,10 @@ class ActivitySortFilterViewModel(
         )
     private val sortSection = SortFilterSectionState.Sort(
         enumClass = ActivitySortOption::class,
-        headerTextRes = Res.string.anime_activity_sort_label,
+        headerText = Res.string.anime_activity_sort_label,
         defaultSort = ActivitySortOption.PINNED,
         sortAscending = null,
-        sortOptionEnabled = sortOptionEnabled,
+        sortOption = sortOptionEnabled,
     )
 
     private val typeIn =
@@ -214,7 +216,7 @@ class ActivitySortFilterViewModel(
             date = it[4] as AiringDate.Advanced,
             mediaId = (it[5] as MediaNavigationData?)?.id?.toString(),
         )
-    }
+    }.debounceState(viewModelScope, 1.seconds)
 
     val state = SortFilterState<FilterParams>(
         sections = MutableStateFlow(sections),

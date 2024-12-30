@@ -44,8 +44,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -66,7 +66,7 @@ object AiringScheduleScreen {
     @Composable
     operator fun <MediaEntry> invoke(
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: SortFilterState<*>,
         onRefresh: () -> Unit,
         upIconOption: UpIconOption?,
         itemsForPage: @Composable (page: Int) -> LazyPagingItems<Entry<MediaEntry>>,
@@ -85,8 +85,8 @@ object AiringScheduleScreen {
         mediaEditBottomSheetScaffold { padding, onClickListEdit ->
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-            SortFilterBottomScaffold(
-                state = sortFilterState,
+            SortFilterBottomScaffold2(
+                state = { sortFilterState },
                 topBar = {
                     EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                         Column {
@@ -184,7 +184,7 @@ object AiringScheduleScreen {
                         .fillMaxSize()
                 ) { page ->
                     val gridState = rememberLazyGridState()
-                    sortFilterState().ImmediateScrollResetEffect(gridState)
+                    sortFilterState.ImmediateScrollResetEffect(gridState)
                     val content = itemsForPage(page)
                     VerticalList(
                         itemHeaderText = null,
