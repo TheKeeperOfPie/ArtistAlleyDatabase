@@ -66,8 +66,8 @@ class AnimeSearchSortFilterViewModel(
                     statusNotIn.value = emptySet()
                     formatIn.value = setOf(MediaFormat.TV)
                     formatNotIn.value = emptySet()
-                    myListStatusIn.value = setOf(null)
-                    myListStatusNotIn.value = emptySet()
+                    myListStatusIn.value = emptySet()
+                    myListStatusNotIn.value = setOf(null)
                     airingDate.value = AiringDate.Basic() to airingDate.value.second
                     airingDateIsAdvanced.value = false
                 }

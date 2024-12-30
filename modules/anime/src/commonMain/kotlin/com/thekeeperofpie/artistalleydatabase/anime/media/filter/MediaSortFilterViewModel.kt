@@ -505,7 +505,7 @@ abstract class MediaSortFilterViewModel<SortType>(
         transform: (Entry) -> MediaPreview,
     ) = combine(
         myListStatusIn.map { it.filterNotNull() },
-        myListStatusNotIn,
+        myListStatusNotIn.map { it.filterNotNull() },
         mediaTagsController.tags,
         tagIdIn,
         tagShowWhenSpoiler,
@@ -532,19 +532,6 @@ abstract class MediaSortFilterViewModel<SortType>(
         }
     }
 
-    //    val filterParams = savedStateHandle.getMutableStateFlow(
-//        key = "filterParams",
-//        initialValue = {
-//            MediaSearchFilterParams<SortType>(
-//                sort = listOfNotNull(initialParams.defaultSort),
-//                genreIn = listOfNotNull(initialParams.genre),
-//                tagIn = listOfNotNull(initialParams.tagId),
-//                airingDate =
-//                    AiringDate.Basic(seasonYear = initialParams.year?.toString().orEmpty()),
-//                myListStatusIn = listOfNotNull(initialParams.mediaListStatus),
-//            )
-//        },
-//    )
     val collapseOnClose = mediaDataSettings.collapseAnimeFiltersOnClose
 
     // Subclasses must provide this as a lazy so that it references the overridden sections
