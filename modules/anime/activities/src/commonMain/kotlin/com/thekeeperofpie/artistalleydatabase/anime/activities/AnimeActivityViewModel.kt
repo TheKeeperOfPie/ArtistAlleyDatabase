@@ -8,22 +8,17 @@ import com.anilist.data.UserSocialActivityQuery
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortOption
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -51,23 +46,14 @@ class AnimeActivityViewModel<MediaEntry>(
     private val activityStatusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
-    featureOverrideProvider: FeatureOverrideProvider,
+    @Assisted private val activitySortFilterViewModel: ActivitySortFilterViewModel,
     @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
-    @Assisted mediaDetailsRoute: MediaDetailsRoute,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
 
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
-
-    val sortFilterController = ActivitySortFilterController(
-        scope = viewModelScope,
-        aniListApi = aniListApi,
-        settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
-        mediaDetailsRoute = mediaDetailsRoute,
-    )
 
     private val refresh = RefreshFlow()
 
@@ -119,7 +105,7 @@ class AnimeActivityViewModel<MediaEntry>(
     ) = viewModelScope.launch(CustomDispatchers.IO) {
         aniListApi.authedUser.flatMapLatest { viewer ->
             combine(
-                sortFilterController.filterParams,
+                activitySortFilterViewModel.state.filterParams,
                 refresh.updates,
                 ::Pair
             ).flatMapLatest { (filterParams) ->
@@ -129,17 +115,9 @@ class AnimeActivityViewModel<MediaEntry>(
                         page = it,
                         userId = if (filterToViewer) viewer?.id else null,
                         userIdNot = if (filterToViewer) null else viewer?.id,
-                        sort = filterParams.sort
-                            .selectedOption(ActivitySortOption.NEWEST)
-                            .toApiValue(),
-                        typeIn = filterParams.type
-                            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                            .map { it.value }
-                            .ifEmpty { null },
-                        typeNotIn = filterParams.type
-                            .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                            .map { it.value }
-                            .ifEmpty { null },
+                        sort = filterParams.sort.toApiValue(),
+                        typeIn = filterParams.typeIn.toList(),
+                        typeNotIn = filterParams.typeNotIn.toList(),
                         hasReplies = if (filterParams.hasReplies) true else null,
                         createdAtGreater = filterParams.date.startDate
                             ?.atStartOfDayIn(timeZone)
@@ -213,20 +191,18 @@ class AnimeActivityViewModel<MediaEntry>(
         private val activityStatusController: ActivityStatusController,
         private val mediaListStatusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
-        private val featureOverrideProvider: FeatureOverrideProvider,
+        @Assisted private val activitySortFilterViewModel: ActivitySortFilterViewModel,
     ) : ViewModel() {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
-            mediaDetailsRoute: MediaDetailsRoute,
         ) = AnimeActivityViewModel(
             aniListApi = aniListApi,
             settings = settings,
             activityStatusController = activityStatusController,
             mediaListStatusController = mediaListStatusController,
             ignoreController = ignoreController,
-            featureOverrideProvider = featureOverrideProvider,
+            activitySortFilterViewModel = activitySortFilterViewModel,
             mediaEntryProvider = mediaEntryProvider,
-            mediaDetailsRoute = mediaDetailsRoute,
         )
     }
 }

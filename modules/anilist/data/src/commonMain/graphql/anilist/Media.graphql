@@ -611,6 +611,9 @@ query MediaActivityPage(
     $mediaId: Int!,
     $sort: [ActivitySort]!,
     $following: Boolean!,
+    $hasReplies: Boolean,
+    $createdAtGreater: Int,
+    $createdAtLesser: Int,
     $page: Int!,
     $activitiesPerPage: Int!,
 ) {
@@ -618,7 +621,14 @@ query MediaActivityPage(
         pageInfo @nonnull {
             ...PaginationInfo
         }
-        activities(mediaId: $mediaId, sort: $sort, isFollowing: $following) @nonnull {
+        activities(
+            mediaId: $mediaId,
+            sort: $sort,
+            isFollowing: $following,
+            hasReplies: $hasReplies,
+            createdAt_greater: $createdAtGreater,
+            createdAt_lesser: $createdAtLesser,
+        ) @nonnull {
             ...MediaListActivityItem
         }
     }

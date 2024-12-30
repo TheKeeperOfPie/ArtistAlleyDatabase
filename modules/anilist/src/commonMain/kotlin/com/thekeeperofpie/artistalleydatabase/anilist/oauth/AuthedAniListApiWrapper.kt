@@ -645,9 +645,21 @@ class AuthedAniListApiWrapper(
         id: String,
         sort: List<ActivitySort>,
         following: Boolean,
+        hasReplies: Boolean?,
+        createdAtGreater: Int?,
+        createdAtLesser: Int?,
         page: Int,
         activitiesPerPage: Int,
-    ) = super.mediaActivitiesPage(id, sort, following, page, activitiesPerPage)
+    ) = super.mediaActivitiesPage(
+        id = id,
+        sort = sort,
+        following = following,
+        hasReplies = hasReplies,
+        createdAtGreater = createdAtGreater,
+        createdAtLesser = createdAtLesser,
+        page = page,
+        activitiesPerPage = activitiesPerPage
+    )
 
     override suspend fun toggleActivityLike(id: String) = super.toggleActivityLike(id)
 

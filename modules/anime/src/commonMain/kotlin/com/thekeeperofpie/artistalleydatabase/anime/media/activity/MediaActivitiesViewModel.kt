@@ -15,22 +15,17 @@ import com.anilist.data.fragment.ListActivityWithoutMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortOption
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -45,6 +40,10 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.plus
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -54,11 +53,9 @@ class MediaActivitiesViewModel(
     aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
     private val activityStatusController: ActivityStatusController,
-    settings: AnimeSettings,
-    featureOverrideProvider: FeatureOverrideProvider,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted mediaDetailsRoute: MediaDetailsRoute,
+    @Assisted activitySortFilterViewModel: ActivitySortFilterViewModel,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -66,13 +63,6 @@ class MediaActivitiesViewModel(
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
-    private val activitySortFilterController = ActivitySortFilterController(
-        scope = viewModelScope,
-        aniListApi = aniListApi,
-        settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
-        mediaDetailsRoute = mediaDetailsRoute,
-    )
 
     private val destination =
         savedStateHandle.toDestination<AnimeDestination.MediaActivities>(navigationTypeMap)
@@ -89,6 +79,9 @@ class MediaActivitiesViewModel(
     // TODO: Refresh not exposed to user
     private val refresh = RefreshFlow()
 
+    // TODO: Should this be accessed from inside a composable?
+    private val timeZone = TimeZone.currentSystemDefault()
+
     init {
         favoritesToggleHelper.initializeTracking(
             scope = viewModelScope,
@@ -103,13 +96,12 @@ class MediaActivitiesViewModel(
                 refresh.updates,
                 Res.string.anime_media_activities_error_loading,
             ) {
-                activitySortFilterController.filterParams
+                activitySortFilterViewModel.state.filterParams
                     .mapLatest {
                         MediaActivitiesScreen.Entry(
                             aniListApi.mediaActivities(
                                 id = mediaId,
-                                sort = it.sort.selectedOption(ActivitySortOption.NEWEST)
-                                    .toApiValue(),
+                                sort = it.sort.toApiValue(),
                                 following = initialIsFollowing,
                             )
                         )
@@ -127,10 +119,10 @@ class MediaActivitiesViewModel(
             )
                 .filterNotNull()
                 .flatMapLatest { (entry) ->
-                    combine(activitySortFilterController.filterParams, refresh.updates, ::Pair)
+                    combine(activitySortFilterViewModel.state.filterParams, refresh.updates, ::Pair)
                         .flatMapLatest { (filterParams) ->
                             AniListPager { page ->
-                                if (page == 1 && initialIsFollowing) {
+                                if (page == 1 && initialIsFollowing && filterParams.isDefault) {
                                     val result = entry.data.page
                                     return@AniListPager result.pageInfo to
                                             result.activities
@@ -139,10 +131,18 @@ class MediaActivitiesViewModel(
 
                                 val result = aniListApi.mediaActivitiesPage(
                                     id = entry.data.media.id.toString(),
-                                    sort = filterParams.sort
-                                        .selectedOption(ActivitySortOption.NEWEST)
-                                        .toApiValue(),
+                                    sort = filterParams.sort.toApiValue(),
                                     following = true,
+                                    hasReplies = if (filterParams.hasReplies) true else null,
+                                    createdAtGreater = filterParams.date.startDate
+                                        ?.atStartOfDayIn(timeZone)
+                                        ?.epochSeconds
+                                        ?.toInt(),
+                                    createdAtLesser = filterParams.date.endDate
+                                        ?.plus(1, DateTimeUnit.DAY)
+                                        ?.atStartOfDayIn(timeZone)
+                                        ?.epochSeconds
+                                        ?.toInt(),
                                     page = page,
                                 ).page
                                 result.pageInfo to result.activities
@@ -183,10 +183,10 @@ class MediaActivitiesViewModel(
                 .flowOn(CustomDispatchers.Main)
                 .filterNotNull()
                 .flatMapLatest { entry ->
-                    combine(activitySortFilterController.filterParams, refresh.updates, ::Pair)
+                    combine(activitySortFilterViewModel.state.filterParams, refresh.updates, ::Pair)
                         .flatMapLatest { (filterParams) ->
                             AniListPager { page ->
-                                if (page == 1 && !initialIsFollowing) {
+                                if (page == 1 && !initialIsFollowing && filterParams.isDefault) {
                                     val result = entry.data.page
                                     return@AniListPager result.pageInfo to
                                             result.activities
@@ -195,10 +195,18 @@ class MediaActivitiesViewModel(
 
                                 val result = aniListApi.mediaActivitiesPage(
                                     id = entry.data.media.id.toString(),
-                                    sort = filterParams.sort
-                                        .selectedOption(ActivitySortOption.NEWEST)
-                                        .toApiValue(),
+                                    sort = filterParams.sort.toApiValue(),
                                     following = false,
+                                    hasReplies = if (filterParams.hasReplies) true else null,
+                                    createdAtGreater = filterParams.date.startDate
+                                        ?.atStartOfDayIn(timeZone)
+                                        ?.epochSeconds
+                                        ?.toInt(),
+                                    createdAtLesser = filterParams.date.endDate
+                                        ?.plus(1, DateTimeUnit.DAY)
+                                        ?.atStartOfDayIn(timeZone)
+                                        ?.epochSeconds
+                                        ?.toInt(),
                                     page = page,
                                 ).page
                                 result.pageInfo to result.activities

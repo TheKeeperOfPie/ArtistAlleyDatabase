@@ -30,10 +30,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_clear_media
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_search_media_placeholder_anime
@@ -58,77 +57,72 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 // TODO: Refactor this code so it can be shared with AADB functionality
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
-class MediaSearchSortFilterSection(
+class MediaSearchSortFilterSection2(
     id: String = "mediaSearch",
     private val titleTextRes: StringResource,
     private val titleDropdownContentDescriptionRes: StringResource,
     scope: CoroutineScope,
     aniListApi: AuthedAniListApi,
-    settings: MediaDataSettings,
+    mediaDataSettings: MediaDataSettings,
     private val mediaType: MediaType?,
     private val mediaSharedElement: Boolean = true,
     private val mediaDetailsRoute: MediaDetailsRoute,
-) : SortFilterSection.Custom(id) {
+    private val mediaSelected: MutableStateFlow<MediaNavigationData?>,
+    private val query: MutableStateFlow<String>,
+) : SortFilterSectionState.Custom(id) {
 
-    var selectedMedia by mutableStateOf<MediaNavigationData?>(null)
-        private set
-
-    private var query by mutableStateOf("")
-
-    private var predictions by mutableStateOf(emptyList<Medium>())
-
-    init {
-        scope.launch(CustomDispatchers.Main) {
-            combine(
-                snapshotFlow { query },
-                settings.showAdult,
-            ) { query, showAdult ->
-                if (query.isEmpty()) {
-                    emptyList()
-                } else {
-                    // TODO: Pagination
-                    aniListApi.mediaAutocomplete(
-                        query = query,
-                        isAdult = if (showAdult) null else false,
-                        mediaType = mediaType,
-                    ).page?.media?.filterNotNull().orEmpty()
+    private var predictions = combineStates(query, mediaDataSettings.showAdult, ::Pair)
+        .debounceState(scope, 2.seconds)
+        .mapState(scope, initialValue = { emptyList() }, mapping = { (query, showAdult) ->
+            if (query.isEmpty()) {
+                emptyList()
+            } else {
+                withContext(CustomDispatchers.IO) {
+                    runCatching {
+                        // TODO: Pagination
+                        aniListApi.mediaAutocomplete(
+                            query = query,
+                            isAdult = if (showAdult) null else false,
+                            mediaType = mediaType,
+                        ).page?.media?.filterNotNull().orEmpty()
+                    }.getOrElse { emptyList() }
                 }
             }
-                .catch { emit(emptyList()) }
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest { predictions = it }
-        }
-    }
-
-    override fun showingPreview() = selectedMedia != null
+        })
 
     override fun clear() {
-        selectedMedia = null
+        mediaSelected.value = null
     }
 
     @Composable
-    override fun Content(state: ExpandedState, showDivider: Boolean) {
+    override fun isDefault() = mediaSelected.collectAsMutableStateWithLifecycle().value == null
+
+    @Composable
+    override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
         Column {
             val interactionSource = remember { MutableInteractionSource() }
             val expanded = state.expandedState[id] ?: false
@@ -154,8 +148,10 @@ class MediaSearchSortFilterSection(
                 )
             }
 
+            var selectedMedia by mediaSelected.collectAsMutableStateWithLifecycle()
             if (expanded) {
                 Box(modifier = Modifier.padding(bottom = 8.dp)) {
+                    var query by query.collectAsMutableStateWithLifecycle()
                     TextField(
                         value = query,
                         onValueChange = { query = it },
@@ -185,7 +181,7 @@ class MediaSearchSortFilterSection(
                         focusManager.clearFocus()
                     }
 
-                    val media = predictions
+                    val media by predictions.collectAsStateWithLifecycle()
                     DropdownMenu(
                         expanded = focused && media.isNotEmpty(),
                         onDismissRequest = {
@@ -213,18 +209,17 @@ class MediaSearchSortFilterSection(
                 }
             }
 
-            val selectedMedia = selectedMedia
-            if (selectedMedia != null) {
+            selectedMedia?.let {
                 val navigationController = LocalNavigationController.current
                 val languageOptionMedia = LocalLanguageOptionMedia.current
                 val sharedTransitionKey =
-                    SharedTransitionKey.makeKeyForId(selectedMedia.id.toString())
-                val coverImageState = rememberCoilImageState(selectedMedia.coverImage?.extraLarge)
+                    SharedTransitionKey.makeKeyForId(it.id.toString())
+                val coverImageState = rememberCoilImageState(it.coverImage?.extraLarge)
                 OutlinedCard(
                     onClick = {
                         navigationController.navigate(
                             mediaDetailsRoute(
-                                selectedMedia,
+                                it,
                                 coverImageState.toImageState(),
                                 languageOptionMedia,
                                 sharedTransitionKey,
@@ -235,14 +230,14 @@ class MediaSearchSortFilterSection(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         MediaContent(
-                            media = selectedMedia,
+                            media = it,
                             imageState = coverImageState,
                             sharedTransitionKey = sharedTransitionKey,
                             clipImage = true,
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(
-                            onClick = { this@MediaSearchSortFilterSection.selectedMedia = null },
+                            onClick = { selectedMedia = null },
                             modifier = Modifier.fillMaxHeight()
                         ) {
                             Icon(

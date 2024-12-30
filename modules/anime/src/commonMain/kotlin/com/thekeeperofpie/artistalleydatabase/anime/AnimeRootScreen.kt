@@ -37,6 +37,7 @@ import artistalleydatabase.modules.anime.generated.resources.last_crash_notifica
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityList
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.characters.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
@@ -271,7 +272,9 @@ object AnimeRootScreen {
                         )
                         AnimeRootNavDestination.SEARCH -> {
                             val animeSortFilterViewModel = viewModel {
-                                component.animeSearchSortFilterViewModelFactory(createSavedStateHandle())
+                                component.animeSearchSortFilterViewModelFactory(
+                                    createSavedStateHandle()
+                                )
                                     .create(
                                         MediaSortFilterViewModel.InitialParams(
                                             sortClass = MediaSortOption::class,
@@ -281,7 +284,9 @@ object AnimeRootScreen {
                                     )
                             }
                             val mangaSortFilterViewModel = viewModel {
-                                component.mangaSearchSortFilterViewModelFactory(createSavedStateHandle())
+                                component.mangaSearchSortFilterViewModelFactory(
+                                    createSavedStateHandle()
+                                )
                                     .create(
                                         MediaSortFilterViewModel.InitialParams(
                                             sortClass = MediaSortOption::class,
@@ -315,8 +320,6 @@ object AnimeRootScreen {
                                 ),
                                 bottomNavigationState = bottomNavigationState,
                             )
-                            animeSortFilterViewModel.PromptDialog()
-                            mangaSortFilterViewModel.PromptDialog()
                         }
                         AnimeRootNavDestination.PROFILE -> {
                             val navigationController = LocalNavigationController.current
@@ -334,6 +337,20 @@ object AnimeRootScreen {
                                 bottomNavigationState = bottomNavigationState,
                                 // TODO: Move this elsewhere to avoid remember
                                 activityEntryProvider = activityEntryProvider,
+                                activitySortFilterViewModelProvider = {
+                                    viewModel {
+                                        component.activitySortFilterViewModel(
+                                            createSavedStateHandle(),
+                                            AnimeDestination.MediaDetails.route,
+                                            ActivitySortFilterViewModel.InitialParams(
+                                                // TODO: Re-evaluate this
+                                                // Disable shared element otherwise the tab view will animate into the sort list
+                                                mediaSharedElement = false,
+                                                isMediaSpecific = false,
+                                            ),
+                                        )
+                                    }
+                                },
                                 mediaWithListStatusEntryProvider = MediaWithListStatusEntry.Provider,
                                 mediaCompactWithTagsEntryProvider = MediaCompactWithTagsEntry.Provider,
                                 // TODO: Move this elsewhere to avoid remember
@@ -384,7 +401,7 @@ object AnimeRootScreen {
                                         },
                                     )
                                 },
-                                activitySection = { viewer, activities, sortFilterState, onActivityStatusUpdate, onClickListEdit ->
+                                activitySection = { viewer, activities, sortFilterState, onActivityStatusUpdate, onClickListEdit, modifier ->
                                     ActivityList(
                                         viewer = viewer,
                                         activities = activities,
@@ -396,7 +413,7 @@ object AnimeRootScreen {
                                         onActivityStatusUpdate = onActivityStatusUpdate,
                                         showMedia = true,
                                         allowUserClick = false,
-                                        sortFilterState = { sortFilterState },
+                                        sortFilterState = sortFilterState,
                                         userRoute = UserDestinations.User.route,
                                         mediaRow = { entry, modifier ->
                                             AnimeMediaCompactListRow(
@@ -406,6 +423,7 @@ object AnimeRootScreen {
                                                 modifier = modifier,
                                             )
                                         },
+                                        modifier = modifier,
                                     )
                                 },
                                 mediaDetailsRoute = AnimeDestination.MediaDetails.route,

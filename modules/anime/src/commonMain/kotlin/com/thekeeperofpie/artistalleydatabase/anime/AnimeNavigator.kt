@@ -48,6 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activities.ListActivityCardC
 import com.thekeeperofpie.artistalleydatabase.anime.activities.MessageActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.TextActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.activitiesSection
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
@@ -227,8 +228,6 @@ object AnimeNavigator {
                     }
                 },
             )
-            animeSortFilterViewModel.PromptDialog()
-            mangaSortFilterViewModel.PromptDialog()
         }
 
         // TODO: Move to users component?
@@ -635,10 +634,20 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaActivities>(
             navigationTypeMap = navigationTypeMap,
         ) {
+            val activitySortFilterViewModel = viewModel {
+                component.activitySortFilterViewModel(
+                    createSavedStateHandle(),
+                    AnimeDestination.MediaDetails.route,
+                    ActivitySortFilterViewModel.InitialParams(
+                        mediaSharedElement = true,
+                        isMediaSpecific = true,
+                    ),
+                )
+            }
             val viewModel = viewModel {
                 component.mediaActivitiesViewModel(
                     createSavedStateHandle(),
-                    AnimeDestination.MediaDetails.route,
+                    activitySortFilterViewModel,
                 )
             }
             val destination = it.toRoute<AnimeDestination.MediaActivities>()
@@ -647,9 +656,9 @@ object AnimeNavigator {
                 media = { viewModel.entry.result?.data?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
-
             MediaActivitiesScreen(
                 viewModel = viewModel,
+                sortFilterState = activitySortFilterViewModel.state,
                 upIconOption = UpIconOption.Back(navigationController),
                 headerValues = headerValues,
             )
@@ -976,13 +985,11 @@ object AnimeNavigator {
                             sortClass = MediaSortOption::class,
                             airingDateEnabled = false,
                             defaultSort = MediaSortOption.POPULARITY,
-                            lockSort = false,
                         )
                     )
                 }
             },
             sortFilterState = { it.state },
-            sortFilterPrompt = { it.PromptDialog() },
             filterParams = { it.filterParams },
             filterMedia = { sortFilterController, result, transform ->
                 sortFilterController.filterMedia(result, transform)
@@ -1164,6 +1171,20 @@ object AnimeNavigator {
             studioMediasRoute = StudioDestinations.StudioMedias.route,
             activityEntryProvider =
                 ActivityEntry.provider(MediaCompactWithTagsEntry.Provider),
+            activitySortFilterViewModelProvider = {
+                viewModel {
+                    component.activitySortFilterViewModel(
+                        createSavedStateHandle(),
+                        AnimeDestination.MediaDetails.route,
+                        ActivitySortFilterViewModel.InitialParams(
+                            // TODO: Re-evaluate this
+                            // Disable shared element otherwise the tab view will animate into the sort list
+                            mediaSharedElement = false,
+                            isMediaSpecific = false,
+                        ),
+                    )
+                }
+            },
             characterEntryProvider = CharacterListRow.Entry.NavigationDataProvider(),
             mediaWithListStatusEntryProvider = MediaWithListStatusEntry.Provider,
             mediaCompactWithTagsEntryProvider = MediaCompactWithTagsEntry.Provider,
@@ -1276,7 +1297,7 @@ object AnimeNavigator {
                     },
                 )
             },
-            activitySection = { viewer, activities, sortFilterState, onActivityStatusUpdate, onClickListEdit ->
+            activitySection = { viewer, activities, sortFilterState, onActivityStatusUpdate, onClickListEdit, modifier ->
                 ActivityList(
                     viewer = viewer,
                     activities = activities,
@@ -1298,6 +1319,7 @@ object AnimeNavigator {
                             modifier = modifier,
                         )
                     },
+                    modifier = modifier,
                 )
             },
         )
@@ -1323,7 +1345,6 @@ object AnimeNavigator {
             mediaType = mediaType,
             sortClass = MediaListSortOption::class,
             defaultSort = defaultSort,
-            lockSort = false,
             mediaListStatus = mediaListStatus,
         )
         val mediaSortFilterViewModel = viewModel(key = mediaType.rawValue + "_sortFilter") {

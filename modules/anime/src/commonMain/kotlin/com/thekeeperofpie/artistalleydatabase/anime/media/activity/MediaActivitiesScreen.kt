@@ -37,6 +37,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import org.jetbrains.compose.resources.stringResource
@@ -47,6 +50,7 @@ object MediaActivitiesScreen {
     @Composable
     operator fun invoke(
         viewModel: MediaActivitiesViewModel,
+        sortFilterState: SortFilterState<*>,
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
     ) {
@@ -106,57 +110,63 @@ object MediaActivitiesScreen {
             },
             snackbarHostState = snackbarHostState,
         ) { scaffoldPadding ->
-            val following = viewModel.following.collectAsLazyPagingItems()
-            val global = viewModel.global.collectAsLazyPagingItems()
-            val selectedIsFollowing = viewModel.selectedIsFollowing
-            val items = if (selectedIsFollowing && viewer != null) following else global
+            SortFilterBottomScaffold2(
+                state = { sortFilterState },
+                modifier = Modifier.padding(scaffoldPadding)
+            ) {
+                val following = viewModel.following.collectAsLazyPagingItems()
+                val global = viewModel.global.collectAsLazyPagingItems()
+                val selectedIsFollowing = viewModel.selectedIsFollowing
+                val items = if (selectedIsFollowing && viewer != null) following else global
 
-            Column {
-                if (viewer != null) {
-                    TabRow(selectedTabIndex = if (selectedIsFollowing) 0 else 1) {
-                        Tab(
-                            selected = selectedIsFollowing,
-                            onClick = { viewModel.selectedIsFollowing = true },
-                            text = {
-                                Text(stringResource(Res.string.anime_media_activities_tab_following))
-                            },
-                        )
-                        Tab(
-                            selected = !selectedIsFollowing,
-                            onClick = { viewModel.selectedIsFollowing = false },
-                            text = {
-                                Text(stringResource(Res.string.anime_media_activities_tab_global))
-                            },
-                        )
+                Column(modifier = Modifier.padding(it)) {
+                    if (viewer != null) {
+                        TabRow(selectedTabIndex = if (selectedIsFollowing) 0 else 1) {
+                            Tab(
+                                selected = selectedIsFollowing,
+                                onClick = { viewModel.selectedIsFollowing = true },
+                                text = {
+                                    Text(stringResource(Res.string.anime_media_activities_tab_following))
+                                },
+                            )
+                            Tab(
+                                selected = !selectedIsFollowing,
+                                onClick = { viewModel.selectedIsFollowing = false },
+                                text = {
+                                    Text(stringResource(Res.string.anime_media_activities_tab_global))
+                                },
+                            )
+                        }
                     }
-                }
 
-                VerticalList(
-                    itemHeaderText = Res.string.anime_media_activities_header,
-                    items = items,
-                    itemKey = { it.activityId },
-                    onRefresh = items::refresh,
-                    contentPadding = PaddingValues(
-                        top = 16.dp,
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 32.dp,
-                    ),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .padding(scaffoldPadding)
-                ) {
-                    ListActivitySmallCard(
-                        viewer = viewer,
-                        activity = it?.activity,
-                        entry = it,
-                        onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                        userRoute = UserDestinations.User.route,
-                        clickable = true,
-                    )
+                    VerticalList(
+                        itemHeaderText = Res.string.anime_media_activities_header,
+                        items = items,
+                        itemKey = { it.activityId },
+                        onRefresh = items::refresh,
+                        contentPadding = PaddingValues(
+                            top = 16.dp,
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 32.dp,
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    ) {
+                        SharedTransitionKeyScope("activity_card", it?.activityId) {
+                            ListActivitySmallCard(
+                                viewer = viewer,
+                                activity = it?.activity,
+                                entry = it,
+                                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                userRoute = UserDestinations.User.route,
+                                clickable = true,
+                            )
+                        }
+                    }
                 }
             }
         }

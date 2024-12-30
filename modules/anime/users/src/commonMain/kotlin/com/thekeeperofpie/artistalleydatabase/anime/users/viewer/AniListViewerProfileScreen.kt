@@ -49,6 +49,7 @@ import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.fragment.StudioListRowFragment
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityEntryProvider
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
@@ -69,7 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
@@ -88,6 +89,7 @@ object AniListViewerProfileScreen {
         onSubmitAuthToken: (String) -> Unit,
         onClickSettings: () -> Unit,
         activityEntryProvider: ActivityEntryProvider<ActivityEntry, MediaCompactWithTagsEntry>,
+        activitySortFilterViewModelProvider: @Composable () -> ActivitySortFilterViewModel,
         mediaWithListStatusEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaWithListStatusEntry>,
         mediaCompactWithTagsEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaCompactWithTagsEntry>,
         studioEntryProvider: StudioEntryProvider<StudioListRowFragment, StudioEntry, MediaWithListStatusEntry>,
@@ -120,9 +122,10 @@ object AniListViewerProfileScreen {
         activitySection: @Composable (
             AniListViewer?,
             activities: LazyPagingItems<ActivityEntry>,
-            sortFilterState: SortFilterController<*>.State?,
+            sortFilterState: SortFilterState<*>,
             onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
+            Modifier,
         ) -> Unit,
         mediaDetailsRoute: MediaDetailsRoute,
         searchMediaGenreRoute: SearchMediaGenreRoute,
@@ -139,16 +142,16 @@ object AniListViewerProfileScreen {
                 bottomNavigationState = bottomNavigationState,
             )
         } else {
+            val activitySortFilterViewModel = activitySortFilterViewModelProvider()
             val viewModel = viewModel {
-                component.aniListUserViewModelFactory(
-                    createSavedStateHandle(),
-                    mediaDetailsRoute,
-                ).create(
-                    activityEntryProvider,
-                    mediaWithListStatusEntryProvider,
-                    mediaCompactWithTagsEntryProvider,
-                    studioEntryProvider,
-                )
+                component.aniListUserViewModelFactory(createSavedStateHandle())
+                    .create(
+                        activityEntryProvider,
+                        activitySortFilterViewModel,
+                        mediaWithListStatusEntryProvider,
+                        mediaCompactWithTagsEntryProvider,
+                        studioEntryProvider,
+                    )
             }
             // TODO: Remove ViewModels from this file
             val entry by viewModel.entry.collectAsState()
@@ -162,6 +165,7 @@ object AniListViewerProfileScreen {
             UserScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                 viewModel = viewModel,
+                activitySortFilterViewModel = activitySortFilterViewModel,
                 followingViewModel = followingViewModel,
                 followersViewModel = followersViewModel,
                 upIconOption = upIconOption,
@@ -184,13 +188,14 @@ object AniListViewerProfileScreen {
                 studiosSection = { studios, hasMore, onClickListEdit ->
                     studiosSection(viewer, studios, hasMore, onClickListEdit)
                 },
-                activitySection = { onClickListEdit ->
+                activitySection = { onClickListEdit, modifier ->
                     activitySection(
                         viewer,
                         activities,
-                        viewModel.activitySortFilterController.state,
+                        activitySortFilterViewModel.state,
                         viewModel.activityToggleHelper::toggle,
                         onClickListEdit,
+                        modifier,
                     )
                 },
                 mediaDetailsRoute = mediaDetailsRoute,
@@ -296,6 +301,7 @@ object AniListViewerProfileScreen {
     fun <ActivityEntry : Any, MediaWithListStatusEntry : Any, MediaCompactWithTagsEntry, StudioEntry : Any> UserScreen(
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
         viewModel: AniListUserViewModel<ActivityEntry, MediaWithListStatusEntry, MediaCompactWithTagsEntry, StudioEntry>,
+        activitySortFilterViewModel: ActivitySortFilterViewModel,
         followingViewModel: UserSocialViewModel.Following,
         followersViewModel: UserSocialViewModel.Followers,
         upIconOption: UpIconOption?,
@@ -324,7 +330,10 @@ object AniListViewerProfileScreen {
             hasMore: Boolean,
             onClickListEdit: (MediaNavigationData) -> Unit,
         ) -> Unit,
-        activitySection: @Composable (onClickListEdit: (MediaNavigationData) -> Unit) -> Unit,
+        activitySection: @Composable (
+            onClickListEdit: (MediaNavigationData) -> Unit,
+            Modifier,
+        ) -> Unit,
         mediaDetailsRoute: MediaDetailsRoute,
         searchMediaGenreRoute: SearchMediaGenreRoute,
         searchMediaTagRoute: SearchMediaTagRoute,
@@ -369,7 +378,7 @@ object AniListViewerProfileScreen {
             staffSection = staffSection,
             studios = { studios },
             studiosSection = studiosSection,
-            activitySortFilterState = viewModel.activitySortFilterController::state,
+            activitySortFilterState = activitySortFilterViewModel.state,
             activitySection = activitySection,
             socialFollowing = followingViewModel.data().collectAsLazyPagingItems(),
             socialFollowers = followersViewModel.data().collectAsLazyPagingItems(),

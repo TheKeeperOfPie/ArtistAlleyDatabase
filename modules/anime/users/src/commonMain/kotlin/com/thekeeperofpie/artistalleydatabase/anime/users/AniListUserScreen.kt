@@ -64,8 +64,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -126,8 +126,8 @@ object AniListUserScreen {
             hasMore: Boolean,
             onClickListEdit: (MediaNavigationData) -> Unit,
         ) -> Unit,
-        activitySortFilterState: () -> SortFilterController<*>.State,
-        activitySection: @Composable (onClickListEdit: (MediaNavigationData) -> Unit) -> Unit,
+        activitySortFilterState: SortFilterState<*>,
+        activitySection: @Composable (onClickListEdit: (MediaNavigationData) -> Unit, Modifier) -> Unit,
         socialFollowing: LazyPagingItems<UserSocialFollowingQuery.Data.Page.Following>,
         socialFollowers: LazyPagingItems<UserSocialFollowersQuery.Data.Page.Follower>,
         upIconOption: UpIconOption?,
@@ -298,8 +298,10 @@ object AniListUserScreen {
                                             bottomNavigationState = bottomNavigationState,
                                         )
                                     UserTab.ACTIVITY -> {
-                                        SortFilterBottomScaffold(state = activitySortFilterState) {
-                                            activitySection(onClickListEdit)
+                                        SortFilterBottomScaffold2(
+                                            state = { activitySortFilterState },
+                                        ) {
+                                            activitySection(onClickListEdit, Modifier.padding(it))
                                         }
                                     }
                                     UserTab.ANIME_STATS -> UserMediaScreen(

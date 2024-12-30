@@ -180,6 +180,13 @@ open class AnimeSortFilterViewModel<SortType>(
                 onDateChange = ::onAiringDateChange,
                 showDivider = showDivider,
             )
+            if (airingDateShown != null) {
+                StartEndDateDialog(
+                    shownForStartDate = airingDateShown,
+                    onShownForStartDateChange = { airingDateShown = it },
+                    onDateChange = ::onAiringDateChange,
+                )
+            }
         }
     }
 
@@ -267,18 +274,6 @@ open class AnimeSortFilterViewModel<SortType>(
             filterParams = filterParams,
             collapseOnClose = collapseOnClose,
         )
-    }
-
-    @Composable
-    override fun PromptDialog() {
-        var airingDateShown by airingDateShown.collectAsMutableStateWithLifecycle()
-        if (airingDateShown != null) {
-            StartEndDateDialog(
-                shownForStartDate = airingDateShown,
-                onShownForStartDateChange = { airingDateShown = it },
-                onDateChange = ::onAiringDateChange,
-            )
-        }
     }
 
     @Inject

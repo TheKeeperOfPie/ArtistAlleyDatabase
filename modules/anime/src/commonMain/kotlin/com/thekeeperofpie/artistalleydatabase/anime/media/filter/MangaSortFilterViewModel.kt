@@ -154,6 +154,13 @@ open class MangaSortFilterViewModel<SortType>(
                     )
                 }
             }
+            if (releaseDateShown != null) {
+                StartEndDateDialog(
+                    shownForStartDate = releaseDateShown,
+                    onShownForStartDateChange = { releaseDateShown = it },
+                    onDateChange = ::onReleaseDateChange,
+                )
+            }
         }
     }
 
@@ -252,18 +259,6 @@ open class MangaSortFilterViewModel<SortType>(
             filterParams = filterParams,
             collapseOnClose = collapseOnClose,
         )
-    }
-
-    @Composable
-    override fun PromptDialog() {
-        var releaseDateShown by releaseDateShown.collectAsMutableStateWithLifecycle()
-        if (releaseDateShown != null) {
-            StartEndDateDialog(
-                shownForStartDate = releaseDateShown,
-                onShownForStartDateChange = { releaseDateShown = it },
-                onDateChange = ::onReleaseDateChange,
-            )
-        }
     }
 
     @Inject

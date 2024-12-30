@@ -5,7 +5,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -33,11 +32,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_status_chip_state_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_status_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_status_label
-import artistalleydatabase.modules.anime.media.data.generated.resources.anime_generic_filter_advanced_group
-import artistalleydatabase.modules.anime.media.data.generated.resources.anime_generic_filter_advanced_group_expand_content_description
-import artistalleydatabase.modules.anime.media.data.generated.resources.anime_generic_filter_collapse_on_close
-import artistalleydatabase.modules.anime.media.data.generated.resources.anime_generic_filter_show_adult_content
-import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_filter_hide_ignored
 import com.anilist.data.LicensorsQuery
 import com.anilist.data.fragment.MediaPreview
 import com.anilist.data.type.MediaListStatus
@@ -48,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -68,7 +63,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.KClass
-import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class MediaSortFilterViewModel<SortType>(
@@ -82,7 +76,11 @@ abstract class MediaSortFilterViewModel<SortType>(
     initialParams: InitialParams<SortType>,
     savedStateHandle: SavedStateHandle,
     sortOptions: MutableStateFlow<List<SortType>>? = null,
-) : ViewModel() where SortType : SortOption, SortType : Enum<SortType> {
+) : MediaDataSortFilterViewModel(
+    featureOverrideProvider = featureOverrideProvider,
+    settings = mediaDataSettings,
+    showHideIgnored = initialParams.showHideIgnored,
+) where SortType : SortOption, SortType : Enum<SortType> {
     protected val sortOptionEnabled =
         savedStateHandle.getMutableStateFlow<String, SortType>(
             "enabledSortOptions",
@@ -97,7 +95,8 @@ abstract class MediaSortFilterViewModel<SortType>(
         enumClass = initialParams.sortClass,
         headerTextRes = Res.string.anime_media_filter_sort_label,
         defaultSort = initialParams.defaultSort,
-        sortOptions = sortOptions ?: MutableStateFlow(initialParams.sortClass.java.enumConstants?.toList().orEmpty()),
+        sortOptions = sortOptions
+            ?: MutableStateFlow(initialParams.sortClass.java.enumConstants?.toList().orEmpty()),
         sortAscending = sortAscending,
         sortOptionEnabled = sortOptionEnabled,
     )
@@ -380,21 +379,6 @@ abstract class MediaSortFilterViewModel<SortType>(
         property = mediaDataSettings.languageOptionMedia,
     )
 
-    private val showAdultSection = SortFilterSectionState.SwitchBySetting(
-        title = MediaDataRes.string.anime_generic_filter_show_adult_content,
-        property = mediaDataSettings.showAdult,
-    ).takeUnless { featureOverrideProvider.isReleaseBuild }
-
-    private val collapseOnCloseSection = SortFilterSectionState.SwitchBySetting(
-        title = MediaDataRes.string.anime_generic_filter_collapse_on_close,
-        property = mediaDataSettings.collapseAnimeFiltersOnClose,
-    )
-
-    private val hideIgnoredSection = SortFilterSectionState.SwitchBySetting(
-        title = MediaDataRes.string.anime_media_filter_hide_ignored,
-        property = mediaDataSettings.mediaIgnoreHide,
-    )
-
     private val showLessImportantTagsSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.anime_media_filter_show_less_important_tags,
         property = mediaDataSettings.showLessImportantTags,
@@ -406,18 +390,9 @@ abstract class MediaSortFilterViewModel<SortType>(
     )
 
     // TODO: Actually de-dupe advanced section across controllers
-    protected val advancedSection = SortFilterSectionState.Group<SortFilterSectionState>(
-        title = MediaDataRes.string.anime_generic_filter_advanced_group,
-        titleDropdownContentDescription = MediaDataRes.string.anime_generic_filter_advanced_group_expand_content_description,
-        children = MutableStateFlow(
-            listOfNotNull(
-                showAdultSection,
-                collapseOnCloseSection,
-                hideIgnoredSection.takeIf { initialParams.showIgnoredEnabled },
-                showLessImportantTagsSection,
-                showSpoilerTagsSection,
-            )
-        ),
+    protected val advancedSection = makeAdvancedSection(
+        showLessImportantTagsSection,
+        showSpoilerTagsSection,
     )
 
     open val sections = aniListApi.authedUser
@@ -537,21 +512,16 @@ abstract class MediaSortFilterViewModel<SortType>(
     // Subclasses must provide this as a lazy so that it references the overridden sections
     abstract val state: SortFilterState<MediaSearchFilterParams<SortType>>
 
-    // TODO: Find a better way to do this
-    @Composable
-    open fun PromptDialog() {}
-
     data class InitialParams<SortType : SortOption>(
         val mediaType: MediaType,
         val sortClass: KClass<SortType>,
         val defaultSort: SortType,
-        val lockSort: Boolean = false,
         val tagId: String? = null,
         val genre: String? = null,
         val year: Int? = null,
         val mediaListStatus: MediaListStatus? = null,
         val airingDateEnabled: Boolean = year == null,
         val onListEnabled: Boolean = true,
-        val showIgnoredEnabled: Boolean = true,
+        val showHideIgnored: Boolean = true,
     )
 }

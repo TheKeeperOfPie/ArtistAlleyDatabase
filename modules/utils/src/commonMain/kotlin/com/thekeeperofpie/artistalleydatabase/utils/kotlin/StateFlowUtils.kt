@@ -103,6 +103,12 @@ fun <T> StateFlow<T>.debounceState(scope: CoroutineScope, duration: Duration): S
 fun <Input, Output> StateFlow<Input>.mapState(scope: CoroutineScope, mapping: (Input) -> Output) =
     map { mapping(it) }.stateIn(scope, SharingStarted.Eagerly, mapping(value))
 
+fun <Input, Output> StateFlow<Input>.mapState(
+    scope: CoroutineScope,
+    initialValue: (Input) -> Output,
+    mapping: suspend (Input) -> Output,
+) = map { mapping(it) }.stateIn(scope, SharingStarted.Eagerly, initialValue(value))
+
 fun <Input, Output> MutableStateFlow<Input>.mapMutableState(
     scope: CoroutineScope,
     deserialize: (Input) -> Output,

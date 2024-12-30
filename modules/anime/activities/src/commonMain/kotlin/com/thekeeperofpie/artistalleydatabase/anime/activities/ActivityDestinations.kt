@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -13,6 +14,7 @@ import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activities.details.ActivityDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
@@ -101,18 +103,29 @@ object ActivityDestinations {
         }
 
         navGraphBuilder.sharedElementComposable<Activity>(navigationTypeMap) {
+            val activitySortFilterViewModel = viewModel {
+                component.activitySortFilterViewModel(
+                    createSavedStateHandle(),
+                    mediaDetailsRoute,
+                    ActivitySortFilterViewModel.InitialParams(
+                        mediaSharedElement = true,
+                        isMediaSpecific = false,
+                    ),
+                )
+            }
             val viewModel = viewModel {
-                component.animeActivityViewModelFactory()
-                    .create(mediaEntryProvider, mediaDetailsRoute)
+                component.animeActivityViewModelFactory(activitySortFilterViewModel)
+                    .create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
             AnimeActivityScreen(
                 viewer = { viewer },
                 userRoute = userRoute,
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                sortFilterState = { viewModel.sortFilterController.state },
+                sortFilterState = activitySortFilterViewModel.state,
                 mediaTitle = {
-                    viewModel.sortFilterController.selectedMedia()?.title?.primaryTitle()
+                    activitySortFilterViewModel.mediaSelected.collectAsStateWithLifecycle()
+                        .value?.title?.primaryTitle()
                 },
                 ownActivity = { viewModel.ownActivity().collectAsLazyPagingItems() },
                 globalActivity = { viewModel.globalActivity().collectAsLazyPagingItems() },

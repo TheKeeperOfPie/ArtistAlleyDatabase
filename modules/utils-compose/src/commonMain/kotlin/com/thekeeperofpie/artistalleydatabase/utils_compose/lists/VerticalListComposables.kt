@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
@@ -188,7 +190,11 @@ object VerticalList {
                         span = GridUtils.maxSpanFunction,
                         contentType = "detailsSectionHeader",
                     ) {
-                        DetailsSectionHeader(text = stringResource(itemHeaderText))
+                        DetailsSectionHeader(
+                            text = stringResource(itemHeaderText),
+                            useHorizontalPadding =
+                                contentPadding.calculateStartPadding(LayoutDirection.Ltr) == 0.dp,
+                        )
                     }
                 }
                 val refreshState = refreshState()

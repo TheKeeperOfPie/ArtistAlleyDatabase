@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +50,7 @@ class SortFilterState<FilterParams>(
 
     @Composable
     fun ImmediateScrollResetEffect(lazyGridState: LazyGridState) {
-        OnChangeEffect(currentValue = filterParams.collectAsState().value) {
+        OnChangeEffect(currentValue = filterParams.collectAsStateWithLifecycle().value) {
             lazyGridState.scrollToItem(0)
         }
     }
@@ -73,7 +72,7 @@ sealed class SortFilterSectionState(val id: String) {
         private val enumClass: KClass<SortType>,
         val headerTextRes: StringResource,
         private val defaultSort: SortType,
-        private val sortAscending: MutableStateFlow<Boolean>,
+        private val sortAscending: MutableStateFlow<Boolean>?,
         private val sortOptionEnabled: MutableStateFlow<SortType>,
         var sortOptions: MutableStateFlow<List<SortType>> =
             MutableStateFlow(enumClass.java.enumConstants?.toList().orEmpty()),
@@ -84,13 +83,14 @@ sealed class SortFilterSectionState(val id: String) {
         }
 
         @Composable
-        override fun isDefault() = sortOptionEnabled.collectAsState().value == defaultSort
+        override fun isDefault() =
+            sortOptionEnabled.collectAsStateWithLifecycle().value == defaultSort
 
         @Composable
         override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
             val sortOptions by sortOptions.collectAsStateWithLifecycle()
             var sortOptionEnabled by sortOptionEnabled.collectAsMutableStateWithLifecycle()
-            var sortAscending by sortAscending.collectAsMutableStateWithLifecycle()
+            val sortAscending = sortAscending?.collectAsMutableStateWithLifecycle()
             SortAndFilterComposables.SortSection(
                 headerTextRes = headerTextRes,
                 expanded = { state.expandedState[id] == true },
@@ -98,8 +98,13 @@ sealed class SortFilterSectionState(val id: String) {
                 sortOptions = { sortOptions },
                 sortOptionsEnabled = { setOf(sortOptionEnabled) },
                 onSortClick = { sortOptionEnabled = it },
-                sortAscending = { sortAscending },
-                onSortAscendingChange = { sortAscending = it },
+                // TODO: Disable sortAscending at this level instead of the enum?
+                sortAscending = { sortAscending?.value == true },
+                onSortAscendingChange = {
+                    if (sortAscending != null) {
+                        sortAscending.value = it
+                    }
+                },
                 clickable = sortOptions.size > 1,
                 showDivider = showDivider,
             )
@@ -131,7 +136,7 @@ sealed class SortFilterSectionState(val id: String) {
             valueToText: @Composable (FilterType) -> String,
             valueToImage: (@Composable (FilterType, enabled: Boolean?) -> String?)? = null,
             selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
-        ): this(
+        ) : this(
             title = { stringResource(title) },
             id = title.key,
             titleDropdownContentDescription = titleDropdownContentDescription,
@@ -159,8 +164,8 @@ sealed class SortFilterSectionState(val id: String) {
         }
 
         @Composable
-        override fun isDefault() = filterIn.collectAsState().value.isEmpty()
-                && filterNotIn.collectAsState().value.isEmpty()
+        override fun isDefault() = filterIn.collectAsStateWithLifecycle().value.isEmpty()
+                && filterNotIn.collectAsStateWithLifecycle().value.isEmpty()
 
         @Composable
         override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
@@ -226,7 +231,7 @@ sealed class SortFilterSectionState(val id: String) {
         }
 
         @Composable
-        override fun isDefault() = data.collectAsState().value == initialData
+        override fun isDefault() = data.collectAsStateWithLifecycle().value == initialData
 
         @Composable
         override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
@@ -262,11 +267,12 @@ sealed class SortFilterSectionState(val id: String) {
         }
 
         @Composable
-        override fun isDefault() = children.collectAsState().value.all { it.isDefault() }
+        override fun isDefault() =
+            children.collectAsStateWithLifecycle().value.all { it.isDefault() }
 
         @Composable
         override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
-            val children by children.collectAsState()
+            val children by children.collectAsStateWithLifecycle()
             if (onlyShowChildIfSingle && children.size == 1) {
                 children.first().Content(state = state, showDivider = showDivider)
                 return
@@ -342,6 +348,7 @@ sealed class SortFilterSectionState(val id: String) {
         private val property: MutableStateFlow<T>,
     ) : SortFilterSectionState(labelTextRes.key) {
         override fun clear() = Unit
+
         @Composable
         override fun isDefault() = true
 
@@ -439,6 +446,30 @@ sealed class SortFilterSectionState(val id: String) {
         }
     }
 
+    class Switch(
+        private val title: StringResource,
+        private val defaultEnabled: Boolean,
+        private val enabled: MutableStateFlow<Boolean>,
+    ) : SortFilterSectionState(title.key) {
+        override fun clear() {
+            enabled.value = defaultEnabled
+        }
+
+        @Composable
+        override fun isDefault() = enabled.collectAsStateWithLifecycle().value == defaultEnabled
+
+        @Composable
+        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+            var enabled by enabled.collectAsMutableStateWithLifecycle()
+            SortAndFilterComposables.SwitchRow(
+                title = title,
+                enabled = { enabled },
+                onEnabledChanged = { enabled = it },
+                showDivider = showDivider,
+            )
+        }
+    }
+
     @Stable
-    abstract class Custom(id: String): SortFilterSectionState(id)
+    abstract class Custom(id: String) : SortFilterSectionState(id)
 }

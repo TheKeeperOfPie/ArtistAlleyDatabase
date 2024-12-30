@@ -123,11 +123,10 @@ object AnimeUserListScreen {
                 initialPage = 0,
                 pageCount = { (entry.result?.lists?.size ?: 0) + 1 },
             )
-            val sortFilterController = viewModel.mediaSortFilterViewModel
-            sortFilterController.PromptDialog()
+            val sortFilterViewModel = viewModel.mediaSortFilterViewModel
             val sortSheetState = rememberStandardBottomSheetState()
             SortFilterBottomScaffold2(
-                state = sortFilterController::state,
+                state = sortFilterViewModel::state,
                 topBar = {
                     TopBar(
                         viewModel,
@@ -181,7 +180,7 @@ object AnimeUserListScreen {
                             listEntry?.entries
                         }
                         val gridState = scrollStateSaver.lazyGridState()
-                        sortFilterController.state.ImmediateScrollResetEffect(gridState)
+                        sortFilterViewModel.state.ImmediateScrollResetEffect(gridState)
                         val viewer by viewModel.viewer.collectAsState()
                         val columns = viewModel.mediaViewOption.widthAdaptiveCells
                         VerticalList(

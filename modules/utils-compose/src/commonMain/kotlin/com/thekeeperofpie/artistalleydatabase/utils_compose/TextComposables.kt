@@ -116,54 +116,54 @@ fun CustomOutlinedTextField(
     CompositionLocalProvider(LocalTextSelectionColors provides LocalTextSelectionColors.current) {
         @OptIn(ExperimentalMaterial3Api::class)
         (BasicTextField(
-        value = value,
-        modifier = if (label != null) {
-            modifier
-                // Merge semantics at the beginning of the modifier chain to ensure padding is
-                // considered part of the text field.
-                .semantics(mergeDescendants = true) {}
-                .padding(top = 8.dp)
-        } else {
-            modifier
-        },
-        onValueChange = onValueChange,
-        enabled = enabled,
-        readOnly = readOnly,
-        textStyle = mergedTextStyle,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        visualTransformation = visualTransformation,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        interactionSource = interactionSource,
-        singleLine = singleLine,
-        maxLines = maxLines,
-        decorationBox = @Composable { innerTextField ->
-            OutlinedTextFieldDefaults.DecorationBox(
-                value = value,
-                visualTransformation = visualTransformation,
-                innerTextField = innerTextField,
-                placeholder = placeholder,
-                label = label,
-                leadingIcon = leadingIcon,
-                trailingIcon = trailingIcon,
-                singleLine = singleLine,
-                enabled = enabled,
-                isError = isError,
-                interactionSource = interactionSource,
-                colors = colors,
-                contentPadding = contentPadding,
-                container = {
-                    OutlinedTextFieldDefaults.Container(
-                        enabled = enabled,
-                        isError = isError,
-                        interactionSource = interactionSource,
-                        colors = colors,
-                        shape = shape,
-                    )
-                },
-            )
-        }
-    ))
+            value = value,
+            modifier = if (label != null) {
+                modifier
+                    // Merge semantics at the beginning of the modifier chain to ensure padding is
+                    // considered part of the text field.
+                    .semantics(mergeDescendants = true) {}
+                    .padding(top = 8.dp)
+            } else {
+                modifier
+            },
+            onValueChange = onValueChange,
+            enabled = enabled,
+            readOnly = readOnly,
+            textStyle = mergedTextStyle,
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            interactionSource = interactionSource,
+            singleLine = singleLine,
+            maxLines = maxLines,
+            decorationBox = @Composable { innerTextField ->
+                OutlinedTextFieldDefaults.DecorationBox(
+                    value = value,
+                    visualTransformation = visualTransformation,
+                    innerTextField = innerTextField,
+                    placeholder = placeholder,
+                    label = label,
+                    leadingIcon = leadingIcon,
+                    trailingIcon = trailingIcon,
+                    singleLine = singleLine,
+                    enabled = enabled,
+                    isError = isError,
+                    interactionSource = interactionSource,
+                    colors = colors,
+                    contentPadding = contentPadding,
+                    container = {
+                        OutlinedTextFieldDefaults.Container(
+                            enabled = enabled,
+                            isError = isError,
+                            interactionSource = interactionSource,
+                            colors = colors,
+                            shape = shape,
+                        )
+                    },
+                )
+            }
+        ))
     }
 }
 
@@ -325,6 +325,7 @@ fun DetailsSectionHeader(
     modifier: Modifier = Modifier,
     onClickViewAll: (() -> Unit)? = null,
     viewAllContentDescriptionTextRes: StringResource? = null,
+    useHorizontalPadding: Boolean = true,
 ) {
     if (onClickViewAll != null) {
         Row(
@@ -338,7 +339,12 @@ fun DetailsSectionHeader(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                    .padding(
+                        start = if (useHorizontalPadding) 16.dp else 0.dp,
+                        end = if (useHorizontalPadding) 16.dp else 0.dp,
+                        top = 16.dp,
+                        bottom = 10.dp,
+                    ),
             )
             IconButton(
                 onClick = onClickViewAll,
@@ -359,7 +365,12 @@ fun DetailsSectionHeader(
             modifier = modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp)
+                .padding(
+                    start = if (useHorizontalPadding) 16.dp else 0.dp,
+                    end = if (useHorizontalPadding) 16.dp else 0.dp,
+                    top = 16.dp,
+                    bottom = 10.dp,
+                )
                 .recomposeHighlighter()
         )
     }

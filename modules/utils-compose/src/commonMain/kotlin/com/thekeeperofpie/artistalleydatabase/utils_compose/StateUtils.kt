@@ -11,6 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.json.Json
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -35,6 +36,15 @@ inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     return SavedStateStateFlowWrapper(key, this, stateFlow)
 }
 
+inline fun <reified T> SavedStateHandle.getMutableStateFlow(
+    key: String,
+    initialValue: T,
+): MutableStateFlow<T> {
+    val existing = get<T>(key)
+    val stateFlow = getStateFlow(key, existing ?: initialValue)
+    return SavedStateStateFlowWrapper(key, this, stateFlow)
+}
+
 context(ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 inline fun <reified Input, Output> SavedStateHandle.getMutableStateFlow(
@@ -44,6 +54,24 @@ inline fun <reified Input, Output> SavedStateHandle.getMutableStateFlow(
     noinline deserialize: (Input) -> Output,
 ): MutableStateFlow<Output> = getMutableStateFlow(key) { serialize(initialValue()) }
     .mapMutableState(viewModelScope, deserialize, serialize)
+
+context(ViewModel)
+@Suppress("CONTEXT_RECEIVERS_DEPRECATED")
+inline fun <reified T> SavedStateHandle.getMutableStateFlow(
+    json: Json,
+    key: String,
+    initialValue: () -> T,
+): MutableStateFlow<T> = getMutableStateFlow(key) { json.encodeToString(initialValue()) }
+    .mapMutableState(viewModelScope, json::decodeFromString, json::encodeToString)
+
+context(ViewModel)
+@Suppress("CONTEXT_RECEIVERS_DEPRECATED")
+inline fun <reified T> SavedStateHandle.getMutableStateFlow(
+    json: Json,
+    key: String,
+    initialValue: T,
+): MutableStateFlow<T> = getMutableStateFlow(key) { json.encodeToString(initialValue) }
+    .mapMutableState(viewModelScope, json::decodeFromString, json::encodeToString)
 
 @OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 class SavedStateStateFlowWrapper<T>(

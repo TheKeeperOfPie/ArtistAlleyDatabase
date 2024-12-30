@@ -25,8 +25,7 @@ import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityEntryProvider
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortOption
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.applyActivityFiltering
@@ -34,7 +33,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDet
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
@@ -43,13 +41,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.anime.studios.data.StudioEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.users.stats.UserStatsDetailScreen
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -92,11 +87,10 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
     private val ignoreController: IgnoreController,
     private val settings: MediaDataSettings,
     private val markdown: Markdown,
-    featureOverrideProvider: FeatureOverrideProvider,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted mediaDetailsRoute: MediaDetailsRoute,
     @Assisted activityEntryProvider: ActivityEntryProvider<ActivityEntry, MediaCompactWithTagsEntry>,
+    @Assisted activitySortFilterViewModel: ActivitySortFilterViewModel,
     @Assisted mediaWithListStatusEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaWithListStatusEntry>,
     @Assisted mediaCompactWithTagsEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaCompactWithTagsEntry>,
     @Assisted studioEntryProvider: StudioEntryProvider<StudioListRowFragment, StudioEntry, MediaWithListStatusEntry>,
@@ -155,7 +149,7 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
         entry.mapLatestNotNull { it.result }
             .flatMapLatest { entry ->
                 combine(
-                    activitySortFilterController.filterParams,
+                    activitySortFilterViewModel.state.filterParams,
                     refresh.updates,
                     ::Pair
                 ).flatMapLatest { (filterParams) ->
@@ -165,17 +159,9 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
                             page = it,
                             userId = entry.user.id.toString(),
                             userIdNot = null,
-                            sort = filterParams.sort
-                                .selectedOption(ActivitySortOption.NEWEST)
-                                .toApiValue(),
-                            typeIn = filterParams.type
-                                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                                .map { it.value }
-                                .ifEmpty { null },
-                            typeNotIn = filterParams.type
-                                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                                .map { it.value }
-                                .ifEmpty { null },
+                            sort = filterParams.sort.toApiValue(),
+                            typeIn = filterParams.typeIn.toList(),
+                            typeNotIn = filterParams.typeNotIn.toList(),
                             hasReplies = if (filterParams.hasReplies) true else null,
                             createdAtGreater = filterParams.date.startDate
                                 ?.atStartOfDayIn(timeZone)
@@ -252,16 +238,6 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
 
     val animeStats = States.Anime(viewModelScope, aniListApi)
     val mangaStats = States.Manga(viewModelScope, aniListApi)
-
-    val activitySortFilterController = ActivitySortFilterController(
-        scope = viewModelScope,
-        aniListApi = aniListApi,
-        settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
-        // Disable shared element otherwise the tab view will animate into the sort list
-        mediaSharedElement = false,
-        mediaDetailsRoute = mediaDetailsRoute,
-    )
 
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
@@ -508,13 +484,12 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
         private val ignoreController: IgnoreController,
         private val settings: MediaDataSettings,
         private val markdown: Markdown,
-        private val featureOverrideProvider: FeatureOverrideProvider,
         private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
-        @Assisted private val mediaDetailsRoute: MediaDetailsRoute,
     ) {
         fun <ActivityEntry : Any, MediaWithListStatusEntry : Any, MediaCompactWithTagsEntry, StudioEntry> create(
             activityEntryProvider: ActivityEntryProvider<ActivityEntry, MediaCompactWithTagsEntry>,
+            activitySortFilterViewModel: ActivitySortFilterViewModel,
             mediaWithListStatusEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaWithListStatusEntry>,
             mediaCompactWithTagsEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaCompactWithTagsEntry>,
             studioEntryProvider: StudioEntryProvider<StudioListRowFragment, StudioEntry, MediaWithListStatusEntry>,
@@ -525,11 +500,10 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
             ignoreController = ignoreController,
             settings = settings,
             markdown = markdown,
-            featureOverrideProvider = featureOverrideProvider,
             navigationTypeMap = navigationTypeMap,
             savedStateHandle = savedStateHandle,
-            mediaDetailsRoute = mediaDetailsRoute,
             activityEntryProvider = activityEntryProvider,
+            activitySortFilterViewModel = activitySortFilterViewModel,
             mediaWithListStatusEntryProvider = mediaWithListStatusEntryProvider,
             mediaCompactWithTagsEntryProvider = mediaCompactWithTagsEntryProvider,
             studioEntryProvider = studioEntryProvider,

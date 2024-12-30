@@ -44,7 +44,6 @@ object SeasonalDestinations {
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
         sortFilterViewModelProvider: @Composable () -> SortFilterViewModel,
         sortFilterState: (SortFilterViewModel) -> SortFilterState<*>,
-        sortFilterPrompt: @Composable (SortFilterViewModel) -> Unit,
         filterParams: (SortFilterViewModel) -> Flow<MediaSearchFilterParams<MediaSortOption>>,
         filterMedia: (
             SortFilterViewModel,
@@ -86,7 +85,6 @@ object SeasonalDestinations {
                     mediaViewOptionRow(viewer, viewModel.mediaViewOption, entry, onClickListEdit)
                 },
             )
-            sortFilterPrompt(sortFilterViewModel)
         }
     }
 }

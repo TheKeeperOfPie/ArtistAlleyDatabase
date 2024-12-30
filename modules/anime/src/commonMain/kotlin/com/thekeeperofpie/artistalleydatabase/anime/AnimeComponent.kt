@@ -7,6 +7,7 @@ import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeMediaDetailsActivityViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersComponent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryComponent
@@ -19,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.list.MangaUserListSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -75,7 +75,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
         status: MediaListStatus?,
         mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
     ) -> AnimeUserListViewModel
-    val mediaActivitiesViewModel: (SavedStateHandle, MediaDetailsRoute) -> MediaActivitiesViewModel
+    val mediaActivitiesViewModel: (SavedStateHandle, ActivitySortFilterViewModel) -> MediaActivitiesViewModel
     val mediaCharactersViewModel: (SavedStateHandle) -> MediaCharactersViewModel
     val mediaEditViewModel: () -> MediaEditViewModel
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory

@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -37,6 +38,7 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityEntryProvider
+import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterEntryProvider
@@ -60,7 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.users.follow.UserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.users.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -139,7 +141,7 @@ object UserDestinations {
         val mediaListStatus: MediaListStatus? = null,
     ) : NavDestination
 
-    fun <ActivityEntry : Any, CharacterEntry : Any, MediaWithListStatusEntry : Any, MediaCompactWithTagsEntry : Any, MediaPreviewWithDescriptionEntry : Any, StaffEntry: Any, StudioEntry : Any> addToGraph(
+    fun <ActivityEntry : Any, CharacterEntry : Any, MediaWithListStatusEntry : Any, MediaCompactWithTagsEntry : Any, MediaPreviewWithDescriptionEntry : Any, StaffEntry : Any, StudioEntry : Any> addToGraph(
         navGraphBuilder: NavGraphBuilder,
         navigationTypeMap: NavigationTypeMap,
         component: UsersComponent,
@@ -150,6 +152,7 @@ object UserDestinations {
         staffDetailsRoute: StaffDetailsRoute,
         studioMediasRoute: StudioMediasRoute,
         activityEntryProvider: ActivityEntryProvider<ActivityEntry, MediaCompactWithTagsEntry>,
+        activitySortFilterViewModelProvider: @Composable () -> ActivitySortFilterViewModel,
         characterEntryProvider: CharacterEntryProvider<UserFavoritesCharactersQuery.Data.User.Favourites.Characters.Node, CharacterEntry, MediaWithListStatusEntry>,
         mediaWithListStatusEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaWithListStatusEntry>,
         mediaCompactWithTagsEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaCompactWithTagsEntry>,
@@ -211,9 +214,10 @@ object UserDestinations {
         activitySection: @Composable (
             AniListViewer?,
             activities: LazyPagingItems<ActivityEntry>,
-            sortFilterState: () -> SortFilterController<*>.State,
+            sortFilterState: SortFilterState<*>,
             onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
             onClickListEdit: (MediaNavigationData) -> Unit,
+            Modifier,
         ) -> Unit,
     ) {
         navGraphBuilder.sharedElementComposable<User>(
@@ -224,16 +228,17 @@ object UserDestinations {
             ),
         ) {
             val destination = it.toRoute<User>()
+
+            val activitySortFilterViewModel = activitySortFilterViewModelProvider()
             val viewModel = viewModel {
-                component.aniListUserViewModelFactory(
-                    createSavedStateHandle(),
-                    mediaDetailsRoute,
-                ).create(
-                    activityEntryProvider = activityEntryProvider,
-                    mediaWithListStatusEntryProvider = mediaWithListStatusEntryProvider,
-                    mediaCompactWithTagsEntryProvider = mediaCompactWithTagsEntryProvider,
-                    studioEntryProvider = studioEntryProvider,
-                )
+                component.aniListUserViewModelFactory(createSavedStateHandle())
+                    .create(
+                        activityEntryProvider = activityEntryProvider,
+                        activitySortFilterViewModel = activitySortFilterViewModel,
+                        mediaWithListStatusEntryProvider = mediaWithListStatusEntryProvider,
+                        mediaCompactWithTagsEntryProvider = mediaCompactWithTagsEntryProvider,
+                        studioEntryProvider = studioEntryProvider,
+                    )
             }
             val entry by viewModel.entry.collectAsState()
             val headerValues = UserHeaderValues(
@@ -246,9 +251,11 @@ object UserDestinations {
                 viewModel { component.userSocialViewModelFollowers(viewModel.userId) }
             val viewer by viewModel.viewer.collectAsState()
             val activities = viewModel.activities.collectAsLazyPagingItems()
+
             AniListViewerProfileScreen.UserScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                 viewModel = viewModel,
+                activitySortFilterViewModel = activitySortFilterViewModel,
                 followingViewModel = followingViewModel,
                 followersViewModel = followersViewModel,
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
@@ -268,13 +275,14 @@ object UserDestinations {
                 studiosSection = { studios, hasMore, onClickListEdit ->
                     studiosSection(viewer, studios, hasMore, onClickListEdit)
                 },
-                activitySection = { onClickListEdit ->
+                activitySection = { onClickListEdit, modifier ->
                     activitySection(
                         viewer,
                         activities,
-                        viewModel.activitySortFilterController::state,
+                        activitySortFilterViewModel.state,
                         viewModel.activityToggleHelper::toggle,
                         onClickListEdit,
+                        modifier,
                     )
                 },
                 mediaDetailsRoute = mediaDetailsRoute,

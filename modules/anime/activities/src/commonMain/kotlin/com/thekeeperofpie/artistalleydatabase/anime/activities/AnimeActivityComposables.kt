@@ -85,7 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
@@ -115,16 +115,17 @@ fun <ActivityEntry : Any, MediaEntry> ActivityList(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     showMedia: Boolean,
     allowUserClick: Boolean = true,
-    sortFilterState: () -> SortFilterController<*>.State?,
+    sortFilterState: SortFilterState<*>,
     userRoute: UserRoute,
     mediaRow: @Composable (
         MediaEntry?,
         Modifier,
     ) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val gridState = rememberLazyGridState()
     // TODO: Move this further up
-    sortFilterState()?.ImmediateScrollResetEffect(gridState)
+    sortFilterState.ImmediateScrollResetEffect(gridState)
     VerticalList(
         gridState = gridState,
         onRefresh = activities::refresh,
@@ -183,7 +184,8 @@ fun <ActivityEntry : Any, MediaEntry> ActivityList(
                     )
                 }
             }
-        }
+        },
+        modifier = modifier
     )
 }
 

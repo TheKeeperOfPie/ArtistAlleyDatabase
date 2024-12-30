@@ -29,8 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
@@ -44,7 +44,7 @@ object AnimeActivityScreen {
         viewer: () -> AniListViewer?,
         userRoute: UserRoute,
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
-        sortFilterState: () -> SortFilterController<*>.State?,
+        sortFilterState: SortFilterState<*>,
         mediaTitle: @Composable () -> String?,
         ownActivity: @Composable () -> LazyPagingItems<ActivityEntry<MediaEntry>>,
         globalActivity: @Composable () -> LazyPagingItems<ActivityEntry<MediaEntry>>,
@@ -66,8 +66,8 @@ object AnimeActivityScreen {
         mediaEditBottomSheetScaffold { padding, onClickListEdit ->
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-            SortFilterBottomScaffold(
-                state = sortFilterState,
+            SortFilterBottomScaffold2(
+                state = { sortFilterState },
                 topBar = {
                     val mediaTitle = mediaTitle()
                     val title = if (mediaTitle == null) {
