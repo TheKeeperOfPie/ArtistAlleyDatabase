@@ -159,7 +159,7 @@ sealed class SortFilterSectionState(val id: String) {
         )
 
         enum class SelectionMethod {
-            SINGLE_EXCLUSIVE,
+            AT_MOST_ONE,
             ONLY_INCLUDE,
             ALLOW_EXCLUDE,
         }
@@ -190,8 +190,9 @@ sealed class SortFilterSectionState(val id: String) {
                 onFilterClick = {
                     if (lockedFilterIn.contains(it)) return@FilterSection
                     when (selectionMethod) {
-                        SelectionMethod.SINGLE_EXCLUSIVE -> {
-                            filterIn = setOf(it)
+                        SelectionMethod.AT_MOST_ONE -> {
+                            if (lockedFilterIn.isNotEmpty()) return@FilterSection
+                            filterIn = if (it in filterIn) emptySet() else setOf(it)
                             filterNotIn = emptySet()
                         }
                         SelectionMethod.ONLY_INCLUDE -> {

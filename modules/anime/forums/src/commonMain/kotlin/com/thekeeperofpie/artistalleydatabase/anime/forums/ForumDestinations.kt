@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ForumThreadCommentRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ForumThreadRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -144,11 +145,24 @@ object ForumDestinations {
             ),
         ) {
             val destination = it.toRoute<ForumSearch>()
+            val forumSubsectionSortFilterViewModel = viewModel {
+                component.forumSubsectionSortFilterViewModel(
+                    createSavedStateHandle("forumSubsectionSortFilter"),
+                    mediaDetailsRoute, ForumSubsectionSortFilterViewModel.InitialParams(
+                        defaultSort = destination.sort,
+                        categoryId = destination.categoryId,
+                        mediaCategoryId = destination.mediaCategoryId,
+                    )
+                )
+            }
             val viewModel = viewModel {
-                component.forumSearchViewModel(createSavedStateHandle(), mediaDetailsRoute)
+                component.forumSearchViewModel(
+                    createSavedStateHandle(),
+                    forumSubsectionSortFilterViewModel,
+                )
             }
             ForumSearchScreen(
-                sortFilterState = viewModel.sortFilterController::state,
+                sortFilterState = forumSubsectionSortFilterViewModel.state,
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 title = destination.title,
                 query = { viewModel.query },
@@ -156,7 +170,6 @@ object ForumDestinations {
                 content = viewModel.content,
                 userRoute = userRoute,
             )
-            viewModel.sortFilterController.PromptDialog()
         }
 
 

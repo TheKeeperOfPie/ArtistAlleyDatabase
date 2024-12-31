@@ -12,11 +12,7 @@ import androidx.paging.cachedIn
 import com.anilist.data.ForumThreadSearchQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
@@ -34,23 +30,13 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class ForumSearchViewModel(
     aniListApi: AuthedAniListApi,
-    settings: MediaDataSettings,
-    featureOverrideProvider: FeatureOverrideProvider,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted mediaDetailsRoute: MediaDetailsRoute,
+    @Assisted forumSubsectionSortFilterViewModel: ForumSubsectionSortFilterViewModel,
 ) : ViewModel() {
 
     private val destination =
         savedStateHandle.toDestination<ForumDestinations.ForumSearch>(navigationTypeMap)
-
-    val sortFilterController = ForumSubsectionSortFilterController(
-        scope = viewModelScope,
-        aniListApi = aniListApi,
-        settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
-        mediaDetailsRoute = mediaDetailsRoute,
-    )
 
     var query by mutableStateOf("")
 
@@ -58,18 +44,10 @@ class ForumSearchViewModel(
         MutableStateFlow(PagingData.empty<ForumThreadSearchQuery.Data.Page.Thread>())
 
     init {
-        sortFilterController.initialize(
-            ForumSubsectionSortFilterController.InitialParams(
-                defaultSort = destination.sort,
-                categoryId = destination.categoryId,
-                mediaCategoryId = destination.mediaCategoryId,
-            )
-        )
-
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(
                 snapshotFlow { query }.flowOn(CustomDispatchers.Main),
-                sortFilterController.filterParams,
+                forumSubsectionSortFilterViewModel.state.filterParams,
                 ::Pair
             )
                 .flatMapLatest { (query, filterParams) ->
@@ -77,15 +55,9 @@ class ForumSearchViewModel(
                         val result = aniListApi.forumThreadSearch(
                             search = query,
                             subscribed = filterParams.subscribed,
-                            categoryId = filterParams.categories
-                                .firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
-                                ?.value
-                                ?.categoryId
-                                ?.toString(),
+                            categoryId = filterParams.categoryId,
                             mediaCategoryId = filterParams.mediaCategoryId,
-                            sort = filterParams.sortOptions.firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
-                                ?.value
-                                ?.toApiValue(filterParams.sortAscending),
+                            sort = filterParams.sort.toApiValue(filterParams.sortAscending),
                             page = it,
                         )
                         result.page.pageInfo to result.page.threads?.filterNotNull().orEmpty()

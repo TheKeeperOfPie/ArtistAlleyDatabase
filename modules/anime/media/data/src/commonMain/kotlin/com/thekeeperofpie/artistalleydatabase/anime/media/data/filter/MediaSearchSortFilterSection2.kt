@@ -49,6 +49,7 @@ import com.anilist.data.MediaAutocompleteQuery.Data.Page.Medium
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaNavigationDataImpl
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
@@ -91,7 +92,7 @@ class MediaSearchSortFilterSection2(
     private val mediaType: MediaType?,
     private val mediaSharedElement: Boolean = true,
     private val mediaDetailsRoute: MediaDetailsRoute,
-    private val mediaSelected: MutableStateFlow<MediaNavigationData?>,
+    private val mediaSelected: MutableStateFlow<MediaNavigationDataImpl?>,
     private val query: MutableStateFlow<String>,
 ) : SortFilterSectionState.Custom(id) {
 
@@ -200,7 +201,7 @@ class MediaSearchSortFilterSection2(
                             MediaDropdownItem(
                                 media = it,
                                 onClick = {
-                                    selectedMedia = it
+                                    selectedMedia = MediaNavigationDataImpl(it)
                                     focusManager.clearFocus(true)
                                 },
                             )

@@ -20,6 +20,7 @@ import artistalleydatabase.modules.anime.activities.data.generated.resources.ani
 import artistalleydatabase.modules.anime.activities.data.generated.resources.anime_activity_sort_label
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.ActivityType
+import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaNavigationDataImpl
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
@@ -157,7 +158,7 @@ class ActivitySortFilterViewModel(
     }
 
     val mediaSelected =
-        savedStateHandle.getMutableStateFlow<MediaNavigationData?>(json, "mediaSelected", null)
+        savedStateHandle.getMutableStateFlow<MediaNavigationDataImpl?>(json, "mediaSelected", null)
     private val mediaQuery = savedStateHandle.getMutableStateFlow("mediaQuery", "")
     private val mediaSection =
         if (initialParams.isMediaSpecific) null else MediaSearchSortFilterSection2(

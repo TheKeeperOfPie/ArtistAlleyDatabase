@@ -42,8 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
@@ -62,7 +62,7 @@ object ForumSearchScreen {
 
     @Composable
     operator fun invoke(
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: SortFilterState<*>,
         upIconOption: UpIconOption?,
         title: ForumDestinations.ForumSearch.Title?,
         query: () -> String,
@@ -79,7 +79,7 @@ object ForumSearchScreen {
             refreshing = refreshing,
             onRefresh = content::refresh,
         )
-        SortFilterBottomScaffold(
+        SortFilterBottomScaffold2(
             state = sortFilterState,
             topBar = {
                 TopBar(
@@ -115,7 +115,7 @@ object ForumSearchScreen {
                 } else {
                     val columns = GridCells.Adaptive(300.dp)
                     val gridState = rememberLazyGridState()
-                    sortFilterState().ImmediateScrollResetEffect(gridState)
+                    sortFilterState.ImmediateScrollResetEffect(gridState)
                     LazyVerticalGrid(
                         state = gridState,
                         columns = columns,
