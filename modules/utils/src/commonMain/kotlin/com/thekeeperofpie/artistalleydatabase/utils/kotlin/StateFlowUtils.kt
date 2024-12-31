@@ -116,14 +116,13 @@ fun <Input, Output> MutableStateFlow<Input>.mapMutableState(
 ): MutableStateFlow<Output> {
     val original = this
     val mapped = map { deserialize(it) }.stateIn(scope, SharingStarted.Eagerly, deserialize(value))
-    return MappedMutableStateFlowWrapper(original, mapped, deserialize, serialize)
+    return MappedMutableStateFlowWrapper(original, mapped, serialize)
 }
 
 @OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 private class MappedMutableStateFlowWrapper<Original, Mapped>(
     private val original: MutableStateFlow<Original>,
     private val mapped: StateFlow<Mapped>,
-    private val deserialize: (Original) -> Mapped,
     private val serialize: (Mapped) -> Original,
 ) : MutableStateFlow<Mapped>, StateFlow<Mapped> by mapped {
 

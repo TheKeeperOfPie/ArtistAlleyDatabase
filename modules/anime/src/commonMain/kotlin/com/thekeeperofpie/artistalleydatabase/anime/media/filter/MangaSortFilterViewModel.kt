@@ -6,7 +6,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -31,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
@@ -60,7 +60,7 @@ open class MangaSortFilterViewModel<SortType>(
     mediaDataSettings: MediaDataSettings,
     @Assisted sortOptions: MutableStateFlow<List<SortType>>? = null,
     @Assisted initialParams: InitialParams<SortType>,
-    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: ScopedSavedStateHandle,
 ) : MediaSortFilterViewModel<SortType>(
     aniListApi = aniListApi,
     featureOverrideProvider = featureOverrideProvider,
@@ -270,7 +270,7 @@ open class MangaSortFilterViewModel<SortType>(
         private val mediaLicensorsController: MediaLicensorsController,
         private val mediaTagsController: MediaTagsController,
         private val mediaDataSettings: MediaDataSettings,
-        @Assisted private val savedStateHandle: SavedStateHandle,
+        @Assisted private val savedStateHandle: ScopedSavedStateHandle,
     ) {
         fun <SortType> create(initialParams: InitialParams<SortType>)
                 where SortType : SortOption, SortType : Enum<SortType> =

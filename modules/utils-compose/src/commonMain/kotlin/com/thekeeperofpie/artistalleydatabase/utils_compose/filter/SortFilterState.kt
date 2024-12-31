@@ -91,7 +91,7 @@ sealed class SortFilterSectionState(val id: String) {
         @Composable
         override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
             val sortOptions by sortOptions.collectAsStateWithLifecycle()
-            var sortOption by this@Sort.sortOption.collectAsMutableStateWithLifecycle()
+            var sortOption by sortOption.collectAsMutableStateWithLifecycle()
             val sortAscending = sortAscending?.collectAsMutableStateWithLifecycle()
             SortAndFilterComposables.SortSection(
                 headerTextRes = headerText,

@@ -86,6 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -106,6 +107,7 @@ object AnimeSearchScreen {
         viewModel: AnimeSearchViewModel<MediaPreviewWithDescriptionEntry>,
         animeSortFilterViewModel: MediaSortFilterViewModel<*>,
         mangaSortFilterViewModel: MediaSortFilterViewModel<*>,
+        characterSortFilterState: SortFilterState<*>,
         upIconOption: UpIconOption? = null,
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
@@ -119,13 +121,13 @@ object AnimeSearchScreen {
             bottomNavigationState = bottomNavigationState,
         ) {
             val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-            if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA) {
-                val sortFilterState =
-                    if (selectedType == SearchType.ANIME) {
-                        animeSortFilterViewModel.state
-                    } else {
-                        mangaSortFilterViewModel.state
-                    }
+            if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA || selectedType == SearchType.CHARACTER) {
+                val sortFilterState = when (selectedType) {
+                    SearchType.ANIME -> animeSortFilterViewModel.state
+                    SearchType.MANGA -> mangaSortFilterViewModel.state
+                    SearchType.CHARACTER -> characterSortFilterState
+                    else -> TODO()
+                }
                 SortFilterBottomScaffold2(
                     state = sortFilterState,
                     topBar = {
@@ -163,7 +165,7 @@ object AnimeSearchScreen {
                 val sortFilterController = when (selectedType) {
                     SearchType.ANIME -> TODO()
                     SearchType.MANGA -> TODO()
-                    SearchType.CHARACTER -> viewModel.characterSortFilterController
+                    SearchType.CHARACTER -> TODO()
                     SearchType.STAFF -> viewModel.staffSortFilterController
                     SearchType.STUDIO -> viewModel.studioSortFilterController
                     SearchType.USER -> viewModel.userSortFilterController
@@ -419,6 +421,7 @@ object AnimeSearchScreen {
                     StaffDestinations.StaffDetails.route,
                 mediaItems = {
                     characterMediaItems(
+                        characterId = entry.entry.character.id.toString(),
                         media = it,
                         viewer = { viewer },
                         onClickListEdit = onClickListEdit,

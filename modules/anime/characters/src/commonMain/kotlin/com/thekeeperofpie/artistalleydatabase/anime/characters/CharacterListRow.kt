@@ -42,7 +42,6 @@ import artistalleydatabase.modules.anime.characters.generated.resources.Res
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_favorites_icon_content_description
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_image_long_press_preview
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_staff_image_content_description
-import co.touchlab.kermit.Logger
 import coil3.request.crossfade
 import com.anilist.data.CharacterAdvancedSearchQuery
 import com.anilist.data.UserFavoritesCharactersQuery
@@ -67,6 +66,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
@@ -189,9 +189,6 @@ object CharacterListRow {
                 .width(IMAGE_WIDTH)
                 .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                 .sharedElement(sharedTransitionKey, "character_image")
-                .also {
-                    Logger.d("SharedDebug") { "CharacterListRow Image = $sharedTransitionKey - character_image" }
-                }
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .placeholder(
                     visible = entry == null,
@@ -303,34 +300,40 @@ object CharacterListRow {
             if (showStaff && voiceActor?.image?.large != null) {
                 val staffId = voiceActor.id
                 item(staffId) {
-                    val voiceActorName = voiceActor.name?.primaryName()
-                    val voiceActorSubtitle = voiceActor.name?.subtitleName()
-                    val voiceActorImageState = rememberCoilImageState(voiceActor.image?.large)
-                    val sharedTransitionKey =
-                        SharedTransitionKey.makeKeyForId(voiceActor.id.toString())
-                    ListRowSmallImage(
-                        ignored = false,
-                        imageState = voiceActorImageState,
-                        contentDescriptionTextRes = UiRes.string.anime_staff_image_content_description,
-                        onClick = {
-                            navigationController.navigate(
-                                staffDetailsRoute(
-                                    voiceActor.id.toString(),
-                                    sharedTransitionKey,
-                                    voiceActorName,
-                                    voiceActorSubtitle,
-                                    voiceActorImageState.toImageState(),
-                                    null,
+                    SharedTransitionKeyScope(
+                        "character_staff_card",
+                        entry.character.id.toString(),
+                        staffId.toString(),
+                    ) {
+                        val voiceActorName = voiceActor.name?.primaryName()
+                        val voiceActorSubtitle = voiceActor.name?.subtitleName()
+                        val voiceActorImageState = rememberCoilImageState(voiceActor.image?.large)
+                        val sharedTransitionKey =
+                            SharedTransitionKey.makeKeyForId(voiceActor.id.toString())
+                        ListRowSmallImage(
+                            ignored = false,
+                            imageState = voiceActorImageState,
+                            contentDescriptionTextRes = UiRes.string.anime_staff_image_content_description,
+                            onClick = {
+                                navigationController.navigate(
+                                    staffDetailsRoute(
+                                        voiceActor.id.toString(),
+                                        sharedTransitionKey,
+                                        voiceActorName,
+                                        voiceActorSubtitle,
+                                        voiceActorImageState.toImageState(),
+                                        null,
+                                    )
                                 )
+                            },
+                            width = 80.dp,
+                            height = 120.dp,
+                            modifier = Modifier.sharedElement(
+                                sharedTransitionKey,
+                                "staff_image"
                             )
-                        },
-                        width = 80.dp,
-                        height = 120.dp,
-                        modifier = Modifier.sharedElement(
-                            sharedTransitionKey,
-                            "staff_image"
                         )
-                    )
+                    }
                 }
             }
 

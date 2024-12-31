@@ -1,15 +1,16 @@
-package com.thekeeperofpie.artistalleydatabase.anime.characters.media
+package com.thekeeperofpie.artistalleydatabase.anime.characters
 
+import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.characters.generated.resources.Res
-import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_media_filter_on_list_label
-import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_media_filter_setting_title_language
+import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_filter_birthday_label
+import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_filter_setting_name_language
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_media_filter_sort_label
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -19,80 +20,75 @@ import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 @Inject
-class CharacterMediaSortFilterViewModel(
+class CharacterSortFilterViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     json: Json,
-    mediaDataSettings: MediaDataSettings,
+    settings: CharacterSettings,
     @Assisted savedStateHandle: ScopedSavedStateHandle,
     @Assisted initialParams: InitialParams,
 ) : MediaDataSortFilterViewModel(
     featureOverrideProvider = featureOverrideProvider,
-    settings = mediaDataSettings,
+    settings = settings,
 ) {
     private val sortOption = savedStateHandle
-        .getMutableStateFlow(json, "sortOption", MediaSortOption.TRENDING)
+        .getMutableStateFlow(json, "sortOption", CharacterSortOption.SEARCH_MATCH)
     private val sortAscending =
         savedStateHandle.getMutableStateFlow<Boolean>("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = MediaSortOption::class,
-        defaultSort = MediaSortOption.TRENDING,
+        enumClass = CharacterSortOption::class,
+        defaultSort = CharacterSortOption.SEARCH_MATCH,
         headerText = Res.string.anime_character_media_filter_sort_label,
         sortOptions = MutableStateFlow(
             if (initialParams.allowRelevanceSort) {
-                MediaSortOption.entries
+                CharacterSortOption.entries
             } else {
-                MediaSortOption.entries.filter { it != MediaSortOption.SEARCH_MATCH }
+                CharacterSortOption.entries.filter { it != CharacterSortOption.RELEVANCE }
             }
         ),
         sortOption = sortOption,
         sortAscending = sortAscending,
     )
 
-    private val onList = savedStateHandle.getMutableStateFlow<Boolean?>(json, "onList", null)
-    private val onListSection = SortFilterSectionState.TriStateBoolean(
-        titleRes = Res.string.anime_character_media_filter_on_list_label,
-        defaultEnabled = null,
-        enabled = onList,
+    private val birthday = savedStateHandle.getMutableStateFlow("birthday", false)
+    private val birthdaySection = SortFilterSectionState.Switch(
+        title = Res.string.anime_character_filter_birthday_label,
+        defaultEnabled = false,
+        enabled = birthday,
     )
 
-    private val titleLanguageSection = SortFilterSectionState.Dropdown(
-        labelTextRes = Res.string.anime_character_media_filter_setting_title_language,
+    private val nameLanguageSection = SortFilterSectionState.Dropdown(
+        labelTextRes = Res.string.anime_character_filter_setting_name_language,
         values = AniListLanguageOption.entries,
         valueToText = { stringResource(it.textRes) },
-        property = mediaDataSettings.languageOptionMedia,
+        property = settings.languageOptionCharacters,
     )
 
     private val sections = listOf(
         sortSection,
-        onListSection,
-        titleLanguageSection,
+        birthdaySection,
+        nameLanguageSection,
         makeAdvancedSection(),
     )
 
     private val filterParams =
-        combineStates(sortOption, sortAscending, onList) { sortOption, sortAscending, onList ->
-            FilterParams(
+        combineStates(sortOption, sortAscending, birthday) { sortOption, sortAscending, birthday ->
+            CharacterSortFilterParams(
                 sort = sortOption,
                 sortAscending = sortAscending,
-                onList = onList,
+                isBirthday = birthday,
             )
-        }
+        }.debounceState(viewModelScope, 1.seconds)
 
     val state = SortFilterState(
         sections = MutableStateFlow(sections),
         filterParams = filterParams,
-        collapseOnClose = mediaDataSettings.collapseAnimeFiltersOnClose,
+        collapseOnClose = settings.collapseAnimeFiltersOnClose,
     )
 
     data class InitialParams(
         val allowRelevanceSort: Boolean = false,
-    )
-
-    data class FilterParams(
-        val sort: MediaSortOption,
-        val sortAscending: Boolean,
-        val onList: Boolean?,
     )
 }

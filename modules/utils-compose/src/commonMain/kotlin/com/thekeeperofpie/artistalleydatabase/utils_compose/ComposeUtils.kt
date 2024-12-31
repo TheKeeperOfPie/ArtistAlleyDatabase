@@ -41,7 +41,7 @@ fun <T> MutableStateFlow<T>.collectAsMutableStateWithLifecycle(
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
     context: CoroutineContext = EmptyCoroutineContext,
 ): MutableState<T> {
-    val result = remember { MutableStateFlowState(this) }
+    val result = remember(this) { MutableStateFlowState(this) }
     @Suppress("CHANGING_ARGUMENTS_EXECUTION_ORDER_FOR_NAMED_VARARGS")
     LaunchedEffect(this, lifecycle, minActiveState, context) {
         lifecycle.repeatOnLifecycle(minActiveState) {

@@ -6,7 +6,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.activities.data.generated.resources.Res
@@ -33,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection.ExpandedState
@@ -56,7 +56,7 @@ class ActivitySortFilterViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     json: Json,
     mediaDataSettings: MediaDataSettings,
-    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: ScopedSavedStateHandle,
     @Assisted mediaDetailsRoute: MediaDetailsRoute,
     @Assisted initialParams: InitialParams,
 ) : MediaDataSortFilterViewModel(

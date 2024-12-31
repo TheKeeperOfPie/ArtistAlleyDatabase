@@ -90,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateSharedTransitionWithOtherState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.rememberSharedContentState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
@@ -608,6 +609,7 @@ fun MediaViewOptionRow(
 
 
 fun LazyListScope.characterMediaItems(
+    characterId: String?,
     media: List<MediaWithListStatusEntry?>,
     viewer: () -> AniListViewer?,
     onClickListEdit: (MediaNavigationData) -> Unit,
@@ -617,48 +619,50 @@ fun LazyListScope.characterMediaItems(
         key = { index, item -> item?.media?.id ?: "placeholder_$index" },
     ) { index, item ->
         Box {
-            val languageOptionMedia = LocalLanguageOptionMedia.current
-            val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
-            val sharedTransitionKey = item?.media?.id?.toString()
-                ?.let { SharedTransitionKey.makeKeyForId(it) }
-            val sharedContentState =
-                rememberSharedContentState(sharedTransitionKey, "media_image")
-            val navigationController = LocalNavigationController.current
-            ListRowSmallImage(
-                ignored = item?.mediaFilterable?.ignored ?: false,
-                imageState = imageState,
-                contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
-                onClick = {
-                    if (item != null) {
-                        navigationController.navigate(
-                            AnimeDestination.MediaDetails(
-                                mediaNavigationData = item.media,
-                                coverImage = imageState.toImageState(),
-                                languageOptionMedia = languageOptionMedia,
-                                sharedTransitionKey = sharedTransitionKey,
+            SharedTransitionKeyScope("character_media_card", characterId, item?.media?.id?.toString()) {
+                val languageOptionMedia = LocalLanguageOptionMedia.current
+                val imageState = rememberCoilImageState(item?.media?.coverImage?.extraLarge)
+                val sharedTransitionKey = item?.media?.id?.toString()
+                    ?.let { SharedTransitionKey.makeKeyForId(it) }
+                val sharedContentState =
+                    rememberSharedContentState(sharedTransitionKey, "media_image")
+                val navigationController = LocalNavigationController.current
+                ListRowSmallImage(
+                    ignored = item?.mediaFilterable?.ignored == true,
+                    imageState = imageState,
+                    contentDescriptionTextRes = UiRes.string.anime_media_cover_image_content_description,
+                    onClick = {
+                        if (item != null) {
+                            navigationController.navigate(
+                                AnimeDestination.MediaDetails(
+                                    mediaNavigationData = item.media,
+                                    coverImage = imageState.toImageState(),
+                                    languageOptionMedia = languageOptionMedia,
+                                    sharedTransitionKey = sharedTransitionKey,
+                                )
                             )
-                        )
-                    }
-                },
-                width = 80.dp,
-                height = 120.dp,
-                modifier = Modifier.sharedElement(sharedContentState)
-            )
-
-            val viewer = viewer()
-            if (viewer != null && item != null) {
-                MediaListQuickEditIconButton(
-                    viewer = viewer,
-                    mediaType = item.media.type,
-                    media = item.mediaFilterable,
-                    maxProgress = MediaUtils.maxProgress(item.media),
-                    maxProgressVolumes = item.media.volumes,
-                    onClick = { onClickListEdit(item.media) },
-                    padding = 6.dp,
-                    modifier = Modifier
-                        .animateSharedTransitionWithOtherState(sharedContentState)
-                        .align(Alignment.BottomStart)
+                        }
+                    },
+                    width = 80.dp,
+                    height = 120.dp,
+                    modifier = Modifier.sharedElement(sharedContentState)
                 )
+
+                val viewer = viewer()
+                if (viewer != null && item != null) {
+                    MediaListQuickEditIconButton(
+                        viewer = viewer,
+                        mediaType = item.media.type,
+                        media = item.mediaFilterable,
+                        maxProgress = MediaUtils.maxProgress(item.media),
+                        maxProgressVolumes = item.media.volumes,
+                        onClick = { onClickListEdit(item.media) },
+                        padding = 6.dp,
+                        modifier = Modifier
+                            .animateSharedTransitionWithOtherState(sharedContentState)
+                            .align(Alignment.BottomStart)
+                    )
+                }
             }
         }
     }

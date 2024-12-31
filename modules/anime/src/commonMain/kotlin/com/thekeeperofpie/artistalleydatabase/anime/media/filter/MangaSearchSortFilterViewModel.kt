@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import androidx.lifecycle.SavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Assisted
@@ -19,7 +19,7 @@ class MangaSearchSortFilterViewModel(
     mediaTagsController: MediaTagsController,
     mediaDataSettings: MediaDataSettings,
     @Assisted initialParams: InitialParams<MediaSortOption>,
-    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: ScopedSavedStateHandle,
 ) : MangaSortFilterViewModel<MediaSortOption>(
     aniListApi = aniListApi,
     featureOverrideProvider = featureOverrideProvider,
@@ -41,7 +41,7 @@ class MangaSearchSortFilterViewModel(
         private val mediaLicensorsController: MediaLicensorsController,
         private val mediaTagsController: MediaTagsController,
         private val mediaDataSettings: MediaDataSettings,
-        @Assisted private val savedStateHandle: SavedStateHandle,
+        @Assisted private val savedStateHandle: ScopedSavedStateHandle,
     ) {
         fun create(initialParams: InitialParams<MediaSortOption>) =
             MangaSearchSortFilterViewModel(

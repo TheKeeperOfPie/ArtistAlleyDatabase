@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.collection.LruCache
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
@@ -24,8 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
@@ -36,10 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.search.data.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
@@ -54,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationControlle
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -66,6 +62,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -87,26 +84,26 @@ class AnimeSearchViewModel<MediaEntry>(
     settings: AnimeSettings,
     private val statusController: MediaListStatusController,
     val ignoreController: IgnoreController,
-    mediaTagsController: MediaTagsController,
-    mediaGenresController: MediaGenresController,
-    mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
     private val monetizationController: MonetizationController,
     navigationTypeMap: NavigationTypeMap,
-    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: ScopedSavedStateHandle,
     @Assisted animeSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
     @Assisted mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
+    @Assisted characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
     @Assisted mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
-    private val destination = if (savedStateHandle.keys().isEmpty()) {
-        AnimeDestination.SearchMedia(
-            sort = MediaSortOption.SEARCH_MATCH,
-            lockSortOverride = false,
-        )
-    } else {
-        savedStateHandle.toDestination<AnimeDestination.SearchMedia>(navigationTypeMap)
-    }
+    private val destination =
+        if (savedStateHandle.savedStateHandle.keys().isEmpty()) {
+            AnimeDestination.SearchMedia(
+                sort = MediaSortOption.SEARCH_MATCH,
+                lockSortOverride = false,
+            )
+        } else {
+            savedStateHandle.savedStateHandle
+                .toDestination<AnimeDestination.SearchMedia>(navigationTypeMap)
+        }
 
     val mediaViewOption = savedStateHandle.getMutableStateFlow(
         key = "mediaViewOption",
@@ -119,9 +116,6 @@ class AnimeSearchViewModel<MediaEntry>(
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
 
     val unlocked = monetizationController.unlocked
-
-    val characterSortFilterController =
-        CharacterSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     val staffSortFilterController =
         StaffSortFilterController(viewModelScope, settings, featureOverrideProvider)
@@ -288,7 +282,7 @@ class AnimeSearchViewModel<MediaEntry>(
             flow = {
                 combine(
                     query.debounce(1.seconds),
-                    characterSortFilterController.filterParams,
+                    characterSortFilterParams,
                     refresh.updates,
                     ::Triple
                 )
@@ -299,8 +293,7 @@ class AnimeSearchViewModel<MediaEntry>(
                         query = query,
                         page = it,
                         perPage = 25,
-                        sort = filterParams.sort.selectedOption(CharacterSortOption.SEARCH_MATCH)
-                            .toApiValueForSearch(filterParams.sortAscending),
+                        sort = filterParams.sort.toApiValueForSearch(filterParams.sortAscending),
                         isBirthday = filterParams.isBirthday,
                     ).page.run { pageInfo to characters }
                 }
@@ -576,15 +569,13 @@ class AnimeSearchViewModel<MediaEntry>(
         private val settings: AnimeSettings,
         private val statusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
-        private val mediaTagsController: MediaTagsController,
-        private val mediaGenresController: MediaGenresController,
-        private val mediaLicensorsController: MediaLicensorsController,
         private val featureOverrideProvider: FeatureOverrideProvider,
         private val monetizationController: MonetizationController,
         private val navigationTypeMap: NavigationTypeMap,
-        @Assisted private val savedStateHandle: SavedStateHandle,
+        @Assisted private val savedStateHandle: ScopedSavedStateHandle,
         @Assisted private val animeSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
         @Assisted private val mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
+        @Assisted private val characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
     ) {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
@@ -593,14 +584,12 @@ class AnimeSearchViewModel<MediaEntry>(
             settings = settings,
             statusController = statusController,
             ignoreController = ignoreController,
-            mediaTagsController = mediaTagsController,
-            mediaGenresController = mediaGenresController,
-            mediaLicensorsController = mediaLicensorsController,
             featureOverrideProvider = featureOverrideProvider,
             monetizationController = monetizationController,
             navigationTypeMap = navigationTypeMap,
             animeSortFilterViewModel = animeSortFilterViewModel,
             mangaSortFilterViewModel = mangaSortFilterViewModel,
+            characterSortFilterParams = characterSortFilterParams,
             savedStateHandle = savedStateHandle,
             mediaPreviewWithDescriptionEntryProvider = mediaEntryProvider,
         )

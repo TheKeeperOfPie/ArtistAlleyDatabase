@@ -8,6 +8,7 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeMediaDetailsActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersComponent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryComponent
@@ -41,6 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.studios.StudiosComponent
 import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
+import kotlinx.coroutines.flow.StateFlow
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 import kotlin.reflect.KType
@@ -60,11 +63,16 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val animeMediaDetailsActivityViewModel: (mediaId: String) -> AnimeMediaDetailsActivityViewModel
     val animeMediaDetailsViewModel: (SavedStateHandle) -> AnimeMediaDetailsViewModel
     val animeRootViewModel: () -> AnimeRootViewModel
-    val animeSearchSortFilterViewModelFactory: (SavedStateHandle) -> AnimeSearchSortFilterViewModel.Factory
-    val mangaSearchSortFilterViewModelFactory: (SavedStateHandle) -> MangaSearchSortFilterViewModel.Factory
-    val animeUserListSortFilterViewModelFactory: (SavedStateHandle, targetUserId: String?) -> AnimeUserListSortFilterViewModel.Factory
-    val mangaUserListSortFilterViewModelFactory: (SavedStateHandle, targetUserId: String?) -> MangaUserListSortFilterViewModel.Factory
-    val animeSearchViewModelFactory: (SavedStateHandle, MediaSortFilterViewModel<MediaSortOption>, MediaSortFilterViewModel<MediaSortOption>) -> AnimeSearchViewModel.Factory
+    val animeSearchSortFilterViewModelFactory: (ScopedSavedStateHandle) -> AnimeSearchSortFilterViewModel.Factory
+    val mangaSearchSortFilterViewModelFactory: (ScopedSavedStateHandle) -> MangaSearchSortFilterViewModel.Factory
+    val animeUserListSortFilterViewModelFactory: (ScopedSavedStateHandle, targetUserId: String?) -> AnimeUserListSortFilterViewModel.Factory
+    val mangaUserListSortFilterViewModelFactory: (ScopedSavedStateHandle, targetUserId: String?) -> MangaUserListSortFilterViewModel.Factory
+    val animeSearchViewModelFactory: (
+        ScopedSavedStateHandle,
+        MediaSortFilterViewModel<MediaSortOption>,
+        MediaSortFilterViewModel<MediaSortOption>,
+        StateFlow<CharacterSortFilterParams>,
+    ) -> AnimeSearchViewModel.Factory
 
     // TODO; Move into users module?
     val animeUserListViewModel: (
@@ -81,7 +89,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
     val unlockScreenViewModel: () -> UnlockScreenViewModel
 
-    val animeSortFilterViewModelFactory: (SavedStateHandle) -> AnimeSortFilterViewModel.Factory
+    val animeSortFilterViewModelFactory: (ScopedSavedStateHandle) -> AnimeSortFilterViewModel.Factory
 
     @SingletonScope
     @Provides

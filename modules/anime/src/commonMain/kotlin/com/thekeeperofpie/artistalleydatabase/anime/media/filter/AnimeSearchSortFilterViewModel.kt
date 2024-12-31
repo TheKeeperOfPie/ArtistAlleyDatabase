@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_suggestions_current_season
@@ -20,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortO
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +39,7 @@ class AnimeSearchSortFilterViewModel(
     mediaTagsController: MediaTagsController,
     mediaDataSettings: MediaDataSettings,
     @Assisted initialParams: InitialParams<MediaSortOption>,
-    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted savedStateHandle: ScopedSavedStateHandle,
 ) : AnimeSortFilterViewModel<MediaSortOption>(
     aniListApi = aniListApi,
     featureOverrideProvider = featureOverrideProvider,
@@ -175,7 +175,7 @@ class AnimeSearchSortFilterViewModel(
         private val mediaLicensorsController: MediaLicensorsController,
         private val mediaTagsController: MediaTagsController,
         private val mediaDataSettings: MediaDataSettings,
-        @Assisted private val savedStateHandle: SavedStateHandle,
+        @Assisted private val savedStateHandle: ScopedSavedStateHandle,
     ) {
         fun create(@Assisted initialParams: InitialParams<MediaSortOption>) =
             AnimeSearchSortFilterViewModel(
